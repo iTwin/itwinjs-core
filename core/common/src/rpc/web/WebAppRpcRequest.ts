@@ -11,7 +11,7 @@ import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError"
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
@@ -96,6 +96,11 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Sends the response for a web request. */
   public static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const versionHeader = protocol.protocolVersionHeaderName;
+    if (versionHeader && RpcProtocol.protocolVersion) {
+      res.set(versionHeader, RpcProtocol.protocolVersion.toString());
+    }
+
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
     if (transportType === RpcContentType.Binary) {
       WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
@@ -205,6 +210,13 @@ export class WebAppRpcRequest extends RpcRequest {
         if (!response) {
           reject(new IModelError(BentleyStatus.ERROR, "Invalid state."));
           return;
+        }
+
+        if (this.protocol.protocolVersionHeaderName) {
+          const version = response.headers.get(this.protocol.protocolVersionHeaderName);
+          if (version) {
+            this.responseProtocolVersion = parseInt(version, 10);
+          }
         }
 
         const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);

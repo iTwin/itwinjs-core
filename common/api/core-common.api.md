@@ -7416,6 +7416,16 @@ export class RpcInvocation {
     }
 
 // @internal
+export interface RpcManagedStatus {
+    // (undocumented)
+    iTwinRpcCoreResponse: true;
+    // (undocumented)
+    managedStatus: "pending" | "notFound";
+    // (undocumented)
+    responseValue: string;
+}
+
+// @internal
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -7535,13 +7545,14 @@ export abstract class RpcProtocol {
     // (undocumented)
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     preserveStreams: boolean;
-    static readonly protocolVersion = 1;
+    static readonly protocolVersion: number;
     protocolVersionHeaderName: string;
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
     serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
+    supportsStatusCategory: boolean;
     transferChunkThreshold: number;
 }
 
@@ -7577,6 +7588,16 @@ export enum RpcProtocolEvent {
 
 // @internal
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
+
+// @internal
+export enum RpcProtocolVersion {
+    // (undocumented)
+    IntroducedNoContent = 1,
+    // (undocumented)
+    IntroducedStatusCategory = 2,
+    // (undocumented)
+    None = 0
+}
 
 // @internal
 export class RpcPushChannel<T> {
@@ -7730,6 +7751,8 @@ export abstract class RpcRequest<TResponse = any> {
     readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
+    // (undocumented)
+    protected responseProtocolVersion: number;
     get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
@@ -7740,6 +7763,8 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
+    // (undocumented)
+    protected supportsStatusCategory(): boolean;
     }
 
 // @internal
@@ -9497,6 +9522,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
+    // (undocumented)
+    supportsStatusCategory: boolean;
 }
 
 // @internal
