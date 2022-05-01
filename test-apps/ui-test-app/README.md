@@ -104,13 +104,13 @@ If you do have an existing client, set the following environment variables with 
   * IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_BROWSER_TEST_SCOPES
-    * By default set this to `openid profile organization email itwinjs projects:read`
+    * By default set this to `openid profile organization email itwinjs projects:read imodels:read`
 * For Electron/Desktop, use a client that is "Type" `Desktop/Mobile` and set the following variables
   * IMJS_OIDC_ELECTRON_TEST_CLIENT_ID
   * IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_ELECTRON_TEST_SCOPES
-    * By default set this to `openid profile organization email itwinjs offline_access projects:read`
+    * By default set this to `openid profile organization email itwinjs offline_access projects:read imodels:read`
 
 > Note: In the Web case, if you change the PORT of the frontend then you will also need to update the redirect_uri in both the Developer Portal and the `IMJS_OIDC_BROWSER_TEST_REDIRECT_URI` variable to reflect the new port. The default port is `3000`.
 
