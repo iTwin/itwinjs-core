@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix scaled monochrome mode not applying to instanced geometry.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

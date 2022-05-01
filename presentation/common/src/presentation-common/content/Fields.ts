@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, NavigationPropertyInfo, NavigationPropertyInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
   StrippedRelationshipPath,
 } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
@@ -601,8 +601,19 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
   assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
+
+  const { navigationPropertyInfo, ...leftOverPropertyJSON } = compressedPropertyJSON;
+
   return {
-    ...compressedPropertyJSON,
+    ...leftOverPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
+    ...(navigationPropertyInfo ? { navigationPropertyInfo: fromCompressedNavigationPropertyInfoJSON(navigationPropertyInfo, classesMap) } : undefined),
+  };
+}
+
+function fromCompressedNavigationPropertyInfoJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfo {
+  return {
+    ...compressedNavigationPropertyInfoJSON,
+    classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
   };
 }

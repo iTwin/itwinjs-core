@@ -85,8 +85,10 @@ enum GltfMinFilter {
   LinearMipMapLinear = 9987,
 }
 
-/** Describes how texture coordinates outside of the range [0..1] are handled. */
-enum GltfWrapMode {
+/** Describes how texture coordinates outside of the range [0..1] are handled.
+ * @internal
+ */
+export enum GltfWrapMode {
   ClampToEdge = 33071,
   MirroredRepeat = 33648,
   Repeat = 10497,
@@ -307,7 +309,9 @@ interface GltfTextureInfo extends GltfProperty {
   texCoord?: number;
 }
 
-/** Describes a texture and its sampler. */
+/** Describes a texture and its sampler.
+ * @internal
+ */
 interface GltfTexture extends GltfChildOfRootProperty {
   /** The Id of the [[GltfSampler]] used by this texture.
    * If undefined, a sampler with repeat wrapping and auto filtering should be used by default.
@@ -322,8 +326,9 @@ interface GltfTexture extends GltfChildOfRootProperty {
 /** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]].
  * @note The implementation currently does not support MirroredRepeat and does not support different wrapping for U and V;
  * effectively, unless `wrapS` or `wrapT` is set to ClampToEdge, the sampler will use GltfWrapMode.Repeat.
+ * @internal
  */
-interface GltfSampler extends  GltfChildOfRootProperty {
+export interface GltfSampler extends  GltfChildOfRootProperty {
   /** Magnification filter. */
   magFilter?: GltfMagFilter;
   /** Minification filter. */
@@ -1998,6 +2003,27 @@ export abstract class GltfReader {
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
+  /** The glTF spec says that if GltfSampler.wrapS/T are omitted, they default to Repeat.
+   * However, the reality data service serves tiles that lack any wrapS/T property, and we want those clamped to edge, not repeated.
+   * (We also don't want to produce mip-maps for them, which is determined indirectly from the wrap mode).
+   * Allow the default to be optionally overridden.
+   */
+  public defaultWrapMode = GltfWrapMode.Repeat;
+
+  /** Exposed strictly for testing. */
+  public getTextureType(sampler?: GltfSampler): RenderTexture.Type {
+    // ###TODO: RenderTexture currently does not support different wrapping behavior for U vs V, nor does it support mirrored repeat.
+    let wrapS = sampler?.wrapS;
+    let wrapT = sampler?.wrapT;
+    if (undefined === wrapS && undefined === wrapT)
+      wrapS = wrapT = this.defaultWrapMode;
+
+    if (GltfWrapMode.ClampToEdge === wrapS || GltfWrapMode.ClampToEdge === wrapT)
+      return RenderTexture.Type.TileSection;
+
+    return RenderTexture.Type.Normal;
+  }
+
   private resolveTexture(textureId: string, isTransparent: boolean): RenderTexture | false {
     const texture = this._textures[textureId];
     if (!texture || undefined === texture.source)
@@ -2009,9 +2035,7 @@ export abstract class GltfReader {
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
-    // ###TODO: RenderTexture should support different wrapping behavior for U vs V, and support mirrored repeat.
-    // For now, repeat unless either explicitly clamps.
-    const textureType = GltfWrapMode.ClampToEdge === sampler?.wrapS || GltfWrapMode.ClampToEdge === sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
+    const textureType = this.getTextureType(sampler);
     const renderTexture = this._system.createTexture({
       type: textureType,
       image: {

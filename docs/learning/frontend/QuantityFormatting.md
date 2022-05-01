@@ -171,6 +171,18 @@ The default angle format (FormatProps) is used during parsing to supply the defa
 
 ```
 
+## SchemaUnitProvider
+
+It is possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
+
+```ts
+    // Provide the QuantityFormatter with the iModelConnection so it can find the unit definitions defined in the iModel
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(schemaLocater));
+```
+
+>IMPORTANT: the `core-quantity` package is not a peer dependency of the `ecschema-metadata` package
+
 ## Quantity Package
 
 The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes used to specify formatting and provide information needed to parse strings into quantity values. It should be noted that most of the classes and interfaces used in this package are based on the native C++ code that formats quantities on the back-end. The purpose of this frontend package was to produce the same formatted strings without requiring constant calls to the backend to do the work.
