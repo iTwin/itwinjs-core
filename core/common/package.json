@@ -1,11 +1,10 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.2.0-dev.19",
+  "version": "3.2.0-dev.60",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
   "typings": "lib/cjs/core-common",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -14,7 +13,8 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=core-common",
+    "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
+    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"
@@ -42,8 +42,8 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.19",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.19"
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.60",
+    "@itwin/core-geometry": "workspace:^3.2.0-dev.60"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -70,6 +70,18 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "@itwin/public-extension-exports": [
+        "error",
+        {
+          "releaseTags": [
+            "public",
+            "preview"
+          ],
+          "outputApiFile": false
+        }
+      ]
+    }
   }
 }

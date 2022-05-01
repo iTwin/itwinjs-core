@@ -54,7 +54,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
 
 const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>(
   function ForwardRefColorPickerPopup(props, ref) {
-    const target = React.useRef<HTMLButtonElement>();
+    const target = React.useRef<HTMLButtonElement>(null);
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
     const [colorDef, setColorDef] = React.useState(props.initialColor);

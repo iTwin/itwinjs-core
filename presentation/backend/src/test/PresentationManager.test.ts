@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
@@ -342,15 +342,6 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
-        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: false }), (_) => {
-          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
-        });
-        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: true }), (_) => {
-          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
-        });
-      });
-
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
@@ -553,14 +544,6 @@ describe("PresentationManager", () => {
       nativePlatformMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
-    it("unsubscribes from `IModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true });
-      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
-      manager.dispose();
-      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
-    });
-
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
@@ -660,20 +643,6 @@ describe("PresentationManager", () => {
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
       expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
-    });
-
-  });
-
-  describe("preloading schemas", () => {
-
-    it("calls addon's `forceLoadSchemas` on `IModelDb.onOpened` events", () => {
-      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
-      using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
-        BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
-        nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
-      });
     });
 
   });

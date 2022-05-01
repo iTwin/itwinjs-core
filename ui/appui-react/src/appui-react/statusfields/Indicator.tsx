@@ -10,7 +10,7 @@ import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalStringValue, StatusBarLabelSide } from "@itwin/appui-abstract";
-import { CommonProps, Icon } from "@itwin/core-react";
+import { CommonProps, Icon, IconSpec } from "@itwin/core-react";
 import { FooterPopup, FooterPopupContentType } from "@itwin/appui-layout-react";
 
 /** Properties of [[Indicator]] component. */
@@ -22,7 +22,7 @@ interface IndicatorProps extends CommonProps {
   /** Icon to use in the footer. @deprecated use iconSpec */
   iconName?: string;
   /** specification for Icon, overrides iconName specification */
-  iconSpec?: string | ConditionalStringValue;
+  iconSpec?: IconSpec;
   /** Describes if the indicator label is visible. */
   isLabelVisible?: boolean;
   /** Indicator label. */

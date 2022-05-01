@@ -8,8 +8,9 @@ import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes, ClassInfo, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, Field, InstanceKey, KeySet, NodeKey,
-  PropertiesField, PropertiesFieldDescriptor, PropertyInfo, RelationshipDirection, Ruleset, RuleTypes, StrippedRelationshipPath, Value,
+  ChildNodeSpecificationTypes, ClassInfo, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, Field, FieldDescriptor, InstanceKey,
+  KeySet, NodeKey, PropertiesField, PropertiesFieldDescriptor, PropertyInfo, RelationshipDirection, Ruleset, RuleTypes, StrippedRelationshipPath,
+  Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
@@ -21,9 +22,8 @@ import { getFieldsByLabel } from "../Utils";
  * component behavior. The fields should be picked based on the iModel.
  */
 
-// Recommended iModel:
-// https://qa-connect-imodelhubwebsite.bentley.com/Context/892aa2c9-5be8-4865-9f37-7d4c7e75ebbf/iModel/ed0c408b-add2-496e-ac58-5a7e853cbc0b
-const iModelFileName = "S - Bayer - Plantsight connection_dtr-27be16d959645985fca80cff502bd237b82f0f84.bim";
+// Recommended iModel - the "Bay Town Process Plant" sample
+const iModelFileName = "BayTownProcessPlant.bim";
 const testedPropertyLabels = [
   // good for testing direct property
   "Active Item",
@@ -159,12 +159,17 @@ describe("#performance DataViz requests", () => {
           // make a `getPagedDistinctValues` request for every ruleset and merge the values into a single map
           await Promise.all(rulesets.map(async (ruleset) => {
             ++requestsCount;
+            const fieldDescriptor = filteredField.getFieldDescriptor();
+            if (FieldDescriptor.isProperties(fieldDescriptor)) {
+              // we select related fields as direct ones, so need to clear the relationship path
+              fieldDescriptor.pathFromSelectToPropertyClass = [];
+            }
             const res = await Presentation.presentation.getPagedDistinctValues({
               imodel: iModel,
               rulesetOrId: ruleset,
               descriptor: {},
               keys: new KeySet(),
-              fieldDescriptor: filteredField.getFieldDescriptor(),
+              fieldDescriptor,
             });
             res.items.map((dv) => {
               const displayValue = dv.displayValue ? dv.displayValue.toString() : "";

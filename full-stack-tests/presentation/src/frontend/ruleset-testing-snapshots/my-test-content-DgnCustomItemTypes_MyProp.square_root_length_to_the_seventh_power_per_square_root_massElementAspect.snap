@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DgnCustomItemTypes_MyProp.square_root_length_to_the_seventh_power_per_square_root_massElementAspect`] = `
+Array [
+  PropertyRecord {
+    "description": "1.23",
+    "property": Object {
+      "displayLabel": "Gallon per minute per square root pounds per inch squared",
+      "name": "pc_MyProp_square__x0020__root__x0020__length__x0020__to__x0020__the__x0020__seventh__x0020__power__x0020__per__x0020__square__x0020__root__x0020__massElementAspect_Gallon__x0020__per__x0020__minute__x0020__per__x0020__square__x0020__root__x0020__pounds__x0020__per__x0020__inch__x0020__squared",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "1.23",
+      "value": 1.2346,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

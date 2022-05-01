@@ -159,6 +159,7 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
@@ -553,7 +554,11 @@ export class AppNotificationManager extends NotificationManager {
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
+    animateToolSettings: UiStateEntry<boolean>;
+    // (undocumented)
     apply(storage: UiStateStorage): Promise<void>;
+    // (undocumented)
+    autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
     // (undocumented)
     colorTheme: UiStateEntry<string>;
     // (undocumented)
@@ -1155,6 +1160,10 @@ export class ConfigurableCreateInfo {
 // @public
 export enum ConfigurableUiActionId {
     // (undocumented)
+    AnimateToolSettings = "configurableui:set-animate-tool-settings",
+    // @alpha (undocumented)
+    AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
+    // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
     // (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
@@ -1181,7 +1190,9 @@ export const ConfigurableUiActions: {
     setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
     setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>;
     setShowWidgetIcon: (showWidgetIcon: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetShowWidgetIcon, boolean>;
+    setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>;
     setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
+    setAnimateToolSettings: (animateToolSettings: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AnimateToolSettings, boolean>;
 };
 
 // @public
@@ -1273,6 +1284,10 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, ac
 
 // @public
 export interface ConfigurableUiState {
+    // (undocumented)
+    animateToolSettings: boolean;
+    // @alpha (undocumented)
+    autoCollapseUnpinnedPanels: boolean;
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
@@ -2154,6 +2169,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2166,6 +2182,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2178,6 +2195,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -2191,6 +2209,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -2360,7 +2379,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -3290,6 +3309,10 @@ export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
+    // (undocumented)
+    animateToolSettings?: boolean;
+    // @alpha (undocumented)
+    autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
     colorTheme: string;
     // (undocumented)
@@ -4500,6 +4523,8 @@ export const PromptField: import("react-redux").ConnectedComponent<typeof Prompt
 
 // @public
 export class PropsHelper {
+    // (undocumented)
+    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem>;
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
@@ -4876,6 +4901,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4888,6 +4914,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4900,6 +4927,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -4913,6 +4941,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5064,6 +5093,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5076,6 +5106,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5088,6 +5119,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5101,6 +5133,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5233,6 +5266,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5245,6 +5279,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5257,6 +5292,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5270,6 +5306,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5466,6 +5503,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5478,6 +5516,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5490,6 +5529,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5503,6 +5543,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5721,7 +5762,7 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5810,7 +5851,7 @@ export class StagePanelZoneDef extends WidgetHost {
 }
 
 // @internal (undocumented)
-export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
 // @public @deprecated
 export interface StagePanelZoneProps {
@@ -5827,8 +5868,6 @@ export class StagePanelZonesDef {
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void;
     // (undocumented)
-    get middle(): StagePanelZoneDef;
-    // (undocumented)
     get start(): StagePanelZoneDef;
     }
 
@@ -5841,12 +5880,23 @@ export interface StagePanelZonesProps {
 
 // @public
 export class StandardContentToolsProvider extends BaseUiItemsProvider {
-    constructor(providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
+    constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+    static register(providerId: string, defaultContentTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+}
+
+// @beta (undocumented)
+export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultContextTools?: DefaultContentTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
 }
 
 // @public
@@ -5903,6 +5953,15 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
     static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardNavigationToolsProvider;
 }
 
+// @beta
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultNavigationTools?: DefaultNavigationTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+}
+
 // @alpha
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
@@ -5925,6 +5984,15 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardStatusbarItemsProvider;
+}
+
+// @beta
+export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
+    constructor(_defaultItems?: DefaultStatusbarItems | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
 }
 
 // @public
@@ -6741,6 +6809,9 @@ export interface UiDataProvidedDialogProps {
 
 // @public
 export class UiFramework {
+    static get animateToolSettings(): boolean;
+    // @alpha (undocumented)
+    static get autoCollapseUnpinnedPanels(): boolean;
     // (undocumented)
     static get backstageManager(): BackstageManager;
     // (undocumented)
@@ -6810,6 +6881,10 @@ export class UiFramework {
     static setActiveIModelId(iModelId: string): void;
     // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
+    // (undocumented)
+    static setAnimateToolSettings(value: boolean): void;
+    // @alpha
+    static setAutoCollapseUnpinnedPanels(value: boolean): void;
     // (undocumented)
     static setColorTheme(theme: string): void;
     // (undocumented)
@@ -7045,6 +7120,9 @@ export function useScheduleAnimationDataProvider(viewport: ScreenViewport | unde
 
 // @beta
 export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
+
+// @public
+export function useSpecificWidgetDef(widgetId: string): WidgetDef | undefined;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -7364,6 +7442,9 @@ export class WidgetDef {
     get defaultFloatingPosition(): PointProps | undefined;
     set defaultFloatingPosition(position: PointProps | undefined);
     // @internal (undocumented)
+    get defaultFloatingSize(): SizeProps | undefined;
+    set defaultFloatingSize(size: SizeProps | undefined);
+    // @internal (undocumented)
     get defaultState(): WidgetState;
     // @alpha
     expand(): void;
@@ -7374,7 +7455,8 @@ export class WidgetDef {
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
-    get iconSpec(): string | ConditionalStringValue | React.ReactNode;
+    get iconSpec(): IconSpec;
+    set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -7453,7 +7535,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }

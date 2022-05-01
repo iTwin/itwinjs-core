@@ -15,6 +15,7 @@ import { TileTreeReference } from "./internal";
  * @see [Exploded View Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=explode-sample&imodel=House+Sample) for an interactive
  * demonstration of a custom provider.
  * @public
+ * @extensions
  */
 export interface TiledGraphicsProvider {
   /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function. */

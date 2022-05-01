@@ -54,7 +54,6 @@ import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
-import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
@@ -128,6 +127,8 @@ import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
 import * as https from 'https';
 import { HttpStatus } from '@itwin/core-bentley';
+import { HydrateViewStateRequestProps } from '@itwin/core-common';
+import { HydrateViewStateResponseProps } from '@itwin/core-common';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -169,6 +170,8 @@ import { MapLayerProps } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
+import { MassPropertiesPerCandidateRequestProps } from '@itwin/core-common';
+import { MassPropertiesPerCandidateResponseProps } from '@itwin/core-common';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
@@ -277,6 +280,7 @@ import { StringifiedClipVector } from '@itwin/core-geometry';
 import { StrokeOptions } from '@itwin/core-geometry';
 import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryOverride } from '@itwin/core-common';
+import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
 import { SyncMode } from '@itwin/core-common';
 import { TelemetryManager } from '@itwin/core-telemetry';
@@ -293,15 +297,12 @@ import { TileHeader } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
-import { ToolbarOrientation } from '@itwin/appui-abstract';
-import { ToolbarUsage } from '@itwin/appui-abstract';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
-import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1027,10 +1028,7 @@ export enum ACSType {
 }
 
 // @alpha (undocumented)
-export enum ActivationEvent {
-    // (undocumented)
-    onStartup = "onStartup"
-}
+export type ActivationEvent = "onStartup";
 
 // @public
 export class ActivityMessageDetails {
@@ -2367,6 +2365,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
+    onTouchStart(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
     static toolId: string;
 }
 
@@ -2678,7 +2678,9 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
-    load(): Promise<void>;
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
@@ -3096,40 +3098,6 @@ export enum EventHandled {
     No = 0,
     // (undocumented)
     Yes = 1
-}
-
-// @alpha
-export class ExtensionAdmin {
-    constructor();
-    addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
-    addExtensionLoader(extensionLoader: ExtensionLoader): void;
-    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
-    // @internal
-    onStartup: () => Promise<void>;
-}
-
-// @alpha
-export class ExtensionHost {
-    protected constructor();
-    // (undocumented)
-    static get accuSnap(): AccuSnap;
-    // (undocumented)
-    static get locateManager(): ElementLocateManager;
-    // (undocumented)
-    static get notifications(): NotificationManager;
-    // (undocumented)
-    static get renderSystem(): RenderSystem;
-    // (undocumented)
-    static get toolAdmin(): ToolAdmin;
-    // (undocumented)
-    static get viewManager(): ViewManager;
-}
-
-// @alpha (undocumented)
-export class ExtensionImpl {
-    constructor(_id: string);
-    // (undocumented)
-    registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
 }
 
 // @alpha
@@ -3880,12 +3848,14 @@ export abstract class GltfReader {
     protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
+    defaultWrapMode: GltfWrapMode;
     // (undocumented)
     protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
     }, accessorName: string): GltfBufferView | undefined;
+    getTextureType(sampler?: GltfSampler): RenderTexture.Type;
     // (undocumented)
     protected readonly _glTF: Gltf;
     // (undocumented)
@@ -4008,6 +3978,24 @@ export class GltfReaderProps {
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
     readStatus: TileReadStatus;
+}
+
+// @internal
+export interface GltfSampler extends GltfChildOfRootProperty {
+    magFilter?: GltfMagFilter;
+    minFilter?: GltfMinFilter;
+    wrapS?: GltfWrapMode;
+    wrapT?: GltfWrapMode;
+}
+
+// @internal
+export enum GltfWrapMode {
+    // (undocumented)
+    ClampToEdge = 33071,
+    // (undocumented)
+    MirroredRepeat = 33648,
+    // (undocumented)
+    Repeat = 10497
 }
 
 // @internal (undocumented)
@@ -4876,6 +4864,7 @@ export abstract class IModelConnection extends IModel {
     // @internal (undocumented)
     getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
     get isBlank(): boolean;
@@ -4960,10 +4949,12 @@ export namespace IModelConnection {
         get repositoryModelId(): string;
         // @internal
         unload(modelId: Id64String): void;
+        updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void>;
     }
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
+        convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState>;
         // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
@@ -5073,11 +5064,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -5841,13 +5831,9 @@ export enum MapLayerImageryProviderStatus {
 
 // @beta
 export interface MapLayerOptions {
-    // (undocumented)
     [format: string]: MapLayerKey | undefined;
-    // (undocumented)
     AzureMaps?: MapLayerKey;
-    // (undocumented)
     BingMaps?: MapLayerKey;
-    // (undocumented)
     MapboxImagery?: MapLayerKey;
 }
 
@@ -7339,6 +7325,7 @@ export class OnScreenTarget extends Target {
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(fbo: FrameBuffer): void;
+    checkFboDimensions(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -8279,7 +8266,7 @@ export abstract class RealityTileLoader {
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
-    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
+    static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
     computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number;
     // (undocumented)
@@ -9760,8 +9747,10 @@ export class SheetViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
     isSheetView(): this is SheetViewState;
-    // @internal
-    load(): Promise<void>;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
@@ -9958,14 +9947,16 @@ export class SpatialViewState extends ViewState3d {
     getViewedExtents(): AxisAlignedBox3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
-    // (undocumented)
-    load(): Promise<void>;
     // @internal (undocumented)
     markModelSelectorChanged(): void;
     // (undocumented)
     get modelSelector(): ModelSelectorState;
     set modelSelector(selector: ModelSelectorState);
     readonly onViewedModelsChanged: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // (undocumented)
     removeViewedModel(id: Id64String): void;
     // @internal
@@ -10084,6 +10075,8 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
+    postload(options: HydrateViewStateResponseProps): void;
+    preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
     }
 
 // @internal
@@ -10123,16 +10116,7 @@ export namespace SubCategoriesCache {
         get wasCanceled(): boolean;
     }
     // (undocumented)
-    export type Result = ResultRow[];
-    // (undocumented)
-    export interface ResultRow {
-        // (undocumented)
-        appearance: SubCategoryAppearance.Props;
-        // (undocumented)
-        id: Id64String;
-        // (undocumented)
-        parentId: Id64String;
-    }
+    export type Result = SubCategoryResultRow[];
 }
 
 // @internal
@@ -10289,6 +10273,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
+    // (undocumented)
+    protected _fbo?: FrameBuffer;
     // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
@@ -11198,8 +11184,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)
@@ -11750,15 +11734,6 @@ export interface ToolAssistanceSection {
 // @public (undocumented)
 export type ToolList = ToolType[];
 
-// @alpha (undocumented)
-export class ToolProvider implements UiItemsProvider {
-    constructor(tool: ToolType);
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
-    }
-
 // @public
 export class ToolRegistry {
     create(toolId: string, ...args: any[]): Tool | undefined;
@@ -11785,6 +11760,7 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     // @beta
     static enableVirtualCursorForLocate: boolean;
+    static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
     static startDragDelay: BeDuration;
@@ -13567,6 +13543,9 @@ export abstract class ViewState extends ElementState {
     readonly onViewedCategoriesChanged: BeEvent<() => void>;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
+    // (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     resetExtentLimits(): void;
@@ -13645,9 +13624,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
-    load(): Promise<void>;
-    // (undocumented)
     readonly origin: Point2d;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     savePose(): ViewPose;
     // (undocumented)
@@ -13980,6 +13961,8 @@ export class WmsCapabilities {
     // (undocumented)
     getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined;
     // (undocumented)
+    readonly isVersion13: boolean;
+    // (undocumented)
     get json(): any;
     // (undocumented)
     readonly layer?: WmsCapability.Layer;
@@ -13995,7 +13978,7 @@ export class WmsCapabilities {
 export namespace WmsCapability {
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(json: any, capabilities: WmsCapabilities);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
@@ -14029,7 +14012,7 @@ export namespace WmsCapability {
     }
     // (undocumented)
     export class SubLayer {
-        constructor(_json: any, parent?: SubLayer | undefined);
+        constructor(_json: any, capabilities: WmsCapabilities, parent?: SubLayer | undefined);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)

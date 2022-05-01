@@ -1,6 +1,60 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+### Updates
+
+- Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects."
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+### Updates
+
+- Improved support for WMS 1.1.1 servers.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Non-pickable decorations used to fail to render if Ambient Occlusion was enabled.
+- Add support for map layers using model geometry.
+- Fix overlay map layers that were displayed at the wrong elevation
+- Deprecate IModelReadRpcInterface.getViewThumbnail
+- Add support for decoding draco-compressed point clouds and glTF meshes.
+- Add support for obtaining polyfaces from tile geometry using TileGeometryCollector and GeometryTileTreeReference.
+- Fix openImageDataUrlInNewWindow displaying an empty window in Electron.
+- Dynamically import approximate terrain heights instead of fetching as JSON.
+- Expose iTwin.js Core Version for extensions
+- Fixed interaction between linear elements and planar elements when antialiasing is turned on.
+- Supplied missing 'iModelJs' namespace in some calls to getLocalizedString.
+- Added new getMapFeatureInfo API to Viewport.
+- Simplify RenderMaterial creation by deprecating RenderSystem.createMaterial in favor of RenderSystem.createRenderMaterial.
+- Change the type of ToolAdmin.idleTool from IdleTool to InteractiveTool
+- Add RealityDataError in  RealityDataSource API
+- Fully implement the point cloud 3d tile specification.
+- Promote QuantityFormatter from beta to public.
+- Now initializing Unit alternate display labels from UNIT_EXTRA_DATA. Minimal changes to support Units schema retrieval from backend iModels.
+- Functions that fit a view to a volume accept an optional MarginOptions specifying how tightly to fit.
+- Defaulting to the internal BasicUnitsProvider if QuantityFormatter units provider initialization fails. 
+- Ensure view attachments referencing section drawings transform the spatial view's clip into sheet coordinates.
+- Switched to more flexible extension api
+- Generalize the concept of a TileUser to include types other than Viewports.
+- Web IPC fix (when reloading frontend).
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
 
 ## 3.0.2
 Thu, 10 Mar 2022 21:18:13 GMT

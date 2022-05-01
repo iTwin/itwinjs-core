@@ -7,9 +7,6 @@
  * @module Polyface
  */
 
-// For boundary sorting, an edge exists as a (packed!) Float64Array.
-// Fixed entries are:
-// 0:
 /**
  * * For boundary sorting, an edge is a (packed!) Float64Array.
  * * Fixed entry positions are:
