@@ -315,11 +315,13 @@ export async function assertIdentityTransformation(
       for (const [propName, prop] of Object.entries(
         getAllElemMetaDataProperties(sourceElem) ?? {}
       )) {
+        // known cases for the prop expecting to have been changed by the transformation under normal circumstances
+        const propExpectedToHaveChangedRandomly = sourceElem.federationGuid === undefined;
         if (prop.isNavigation) {
           expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
           // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name
           // so we query the prop instead of the checking for the property on the element
-          const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
+          const sql = `SELECT [${propName}].Id from [${sourceElem.schemaName}].[${sourceElem.className}] WHERE ECInstanceId=:id`;
           const relationTargetInSourceId = sourceDb.withPreparedStatement(sql, (stmt) => {
             stmt.bindId("id", sourceElemId);
             stmt.step();
@@ -334,12 +336,14 @@ export async function assertIdentityTransformation(
           expect(relationTargetInTargetId).to.equal(
             mappedRelationTargetInTargetId
           );
-        } else {
+        } else if (!propExpectedToHaveChangedRandomly) {
           /// / HACK: change the appearance in the source to not care about the difference from the target
-          const myColor = 0x0000ff;
-          if (propName === "geom")
-            (sourceElem.asAny[propName] as GeometryStreamProps).map((e) => "appearance" in e ? {appearance: {...e.appearance, color: myColor}} : e);
+          // const myColor = 0x0000ff;
+          // if (propName === "geom")
+          // (sourceElem.asAny[propName] as GeometryStreamProps).map((e) => "appearance" in e ? {appearance: {...e.appearance, color: myColor}} : e);
           /// /////////////////////
+          // kept for conditional breakpoints
+          const _eq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
