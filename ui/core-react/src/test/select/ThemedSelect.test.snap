@@ -4,16 +4,13 @@ exports[`<ThemedSelect /> renders array options correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -53,16 +50,13 @@ exports[`<ThemedSelect /> renders correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -83,15 +77,13 @@ exports[`<ThemedSelect /> renders default value correctly when options are provi
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
     defaultValue={
       Object {
         "label": "White",
@@ -137,15 +129,13 @@ exports[`<ThemedSelect /> renders defaultValue correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
     defaultValue={
       Object {
         "label": "White",
@@ -172,16 +162,13 @@ exports[`<ThemedSelect /> renders initial value correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -227,16 +214,13 @@ exports[`<ThemedSelect /> renders object options correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -276,16 +260,13 @@ exports[`<ThemedSelect /> renders placeholder correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -307,16 +288,13 @@ exports[`<ThemedSelect /> renders placeholder correctly when options are provide
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -357,15 +335,13 @@ exports[`<ThemedSelect /> renders status correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
     defaultValue={
       Object {
         "label": "Red",
@@ -392,16 +368,13 @@ exports[`<ThemedSelect /> renders value correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -428,16 +401,13 @@ exports[`<ThemedSelect /> renders with fixed menu correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     noOptionsMessage={[Function]}
     options={
       Array [
@@ -478,16 +448,13 @@ exports[`<ThemedSelect /> renders with no options correctly 1`] = `
 <div
   className="uicore-reactSelectTop"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"
@@ -533,16 +500,13 @@ exports[`<ThemedSelect /> renders with no options correctly 2`] = `
 <div
   className="uicore-reactSelectTop uicore-reactSelect.width100"
 >
-  <StateManager
+  <ForwardRef
     classNamePrefix="react-select"
     components={
       Object {
         "Menu": [Function],
       }
     }
-    defaultInputValue=""
-    defaultMenuIsOpen={false}
-    defaultValue={null}
     menuPortalTarget={
       <div
         id="portal"

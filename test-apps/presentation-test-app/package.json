@@ -53,7 +53,6 @@
     "@itwin/itwinui-react": "^1.32.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-select": "3.2.0",
     "react-resize-detector": "^6.7.6",
     "semver": "^5.5.0"
   },
@@ -64,7 +63,6 @@
     "@types/bunyan": "^1.8.4",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",
-    "@types/react-select": "3.0.26",
     "autoprefixer": "^8.6.5",
     "cpx2": "^3.0.0",
     "cross-env": "^5.1.4",
