@@ -93,6 +93,7 @@ export class ArcGisTokenManager {
 
     }
     ArcGisTokenManager._oauth2Cache.set(key, token);
+
     ArcGisTokenManager.saveToBrowserStorage();
   }
 
@@ -125,11 +126,13 @@ export class ArcGisTokenManager {
     const storageTokens: ArcGisTokenProps = {};
 
     ArcGisTokenManager._oauth2Cache.forEach((value: ArcGisOAuth2Token, key: string) => {
-      if (value.persist === true) {
-        storageTokens[key] = value;
-      } else {
-        sessionTokens[key] = value;
-      }
+      // ignore the persist flag for now, and only save to session storage
+      // if (value.persist === true) {
+      //   storageTokens[key] = value;
+      // } else {
+      //   sessionTokens[key] = value;
+      // }
+      sessionTokens[key] = value;
     });
     window.sessionStorage.setItem(this._browserStorageKey, JSON.stringify(sessionTokens));
     window.localStorage.setItem(this._browserStorageKey, JSON.stringify(storageTokens));

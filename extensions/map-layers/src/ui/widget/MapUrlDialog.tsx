@@ -192,11 +192,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       if (accessClient !== undefined && accessClient.getTokenServiceEndPoint !== undefined && settings !== undefined) {
         try {
           const tokenEndpoint = await accessClient.getTokenServiceEndPoint(settings.url);
-          if (tokenEndpoint && tokenEndpoint.getUrl() !== undefined ) {
-            const stateData = new URL(tokenEndpoint.getUrl()).origin;
-            const loginUrl = tokenEndpoint.getLoginUrl(stateData);
+          if (tokenEndpoint !== undefined) {
+            const loginUrl = tokenEndpoint.getLoginUrl();
             setExternalLoginUrl(loginUrl);
           }
+
         } catch (_error){
 
         }
@@ -396,7 +396,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, onOkResult, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
   React.useEffect(() => {
-    const handleOAuthProcessEnd = (success: boolean, _state: string ) => {
+    const handleOAuthProcessEnd = (success: boolean, _state: any ) => {
       onOauthProcessEnd.raiseEvent(success, _state);
     };
 
@@ -485,7 +485,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // onOauthProcessEnd events handler
   React.useEffect(() => {
-    const handleOauthProcess = (success: boolean, _state: string ) => {
+    const handleOauthProcess = (success: boolean, _state: any ) => {
       setLayerAuthPending(false);
       if (success) {
         setOAuthProcessSucceeded(true);
