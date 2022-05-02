@@ -33,6 +33,8 @@ interface EditorProps {
   logging?: boolean;
   /** prefetch for listDb */
   prefetch?: boolean;
+  /** turn on curl diagnostics */
+  curlDiagnostics?: boolean;
 }
 
 interface EditorOpts extends EditorProps, WorkspaceContainer.Props, WorkspaceAccount.Props {
@@ -206,7 +208,8 @@ async function listWorkspaceDb(args: ListOptions) {
     const timer = new StopWatch("list", true);
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+      //      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+      void CloudSqlite.transferDb("download", cloudContainer, { dbName: file.dbFileName, localFileName: "d:/temp/downloadTest.tmp" });
     }
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
@@ -446,8 +449,9 @@ async function versionWorkspaceDb(args: MakeVersionOpt) {
 async function pinWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = getCloudContainer(args);
+  const timer = new StopWatch("pinDb", true);
   await container.pinDatabase(args.dbFileName, true);
-  showMessage(`pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
+  showMessage(`pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
@@ -517,7 +521,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         containerDir: args.directory,
         cloudCacheProps: {
           nRequests: args.nRequests,
-          verboseLog: true,
+          curlDiagnostics: args.curlDiagnostics,
         },
       };
       await IModelHost.startup(config);
@@ -565,6 +569,7 @@ Yargs.options({
   storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
   logging: { describe: "enable log messages", boolean: true, default: false },
   prefetch: { boolean: true, default: false },
+  curlDiagnostics: { boolean: true, default: false },
 });
 Yargs.command<AddFileOptions>({
   command: "add <dbName> <files>",
