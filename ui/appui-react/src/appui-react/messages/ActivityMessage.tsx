@@ -33,6 +33,7 @@ export interface ActivityMessageProps {
 
 /** Activity Message React component
  * @public
+ * @deprecated
  */
 export function ActivityMessage(props: ActivityMessageProps) {
   const messageDetails = props.activityMessageInfo.details;

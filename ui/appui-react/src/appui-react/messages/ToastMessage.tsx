@@ -32,6 +32,7 @@ export interface ToastMessageProps {
 
 /** Toast Message React component
  * @public
+ * @deprecated
  */
 export function ToastMessage(props: ToastMessageProps) {
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;

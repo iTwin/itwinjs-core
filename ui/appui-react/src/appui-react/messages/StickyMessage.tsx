@@ -33,6 +33,7 @@ export interface StickyMessageProps {
 
 /** Sticky Message React component
  * @public
+ * @deprecated
  */
 export function StickyMessage(props: StickyMessageProps) {
   const { id, messageDetails, severity, closeMessage } = props;
