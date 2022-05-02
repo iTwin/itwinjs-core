@@ -71,6 +71,7 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./extension/Extension";
+export * from "./extension/providers";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";

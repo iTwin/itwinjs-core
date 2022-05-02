@@ -6,39 +6,31 @@
  * @module Extensions
  */
 
-import { Extension, ExtensionProvider, LocalExtensionProvider, RemoteExtensionProvider } from "./Extension";
+import { Logger } from "@itwin/core-bentley";
+
+import { ExtensionProvider, InstalledExtension, loggerCategory } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
  *      1. Load a manifest file
- *      2. Load the the main module when necessary
+ *      2. Load the the main module when necessary (usually at an activation event)
  *   2. Download the extension's files
  *
- * 2 ways to load an Extension into the system:
+ * 3 ways to load an Extension into the system:
  *
- *  1. At build-time provide the function to load both the Extension Manifest and import the main module of the extension.
- *     The main module must contain the activate() function.
- *  2. A minimum set of ExtensionLoaderProps that provide enough information to get the manifest
+ *  1. Load both the Extension Manifest and import the main module of the extension from a local file/package.
+ *  2. A minimum set of properties that provide enough information to get the manifest from a remote server.
  *
- * An Extension can be in 3 different states:
- *   - Known
- *      - The Extension Admin has the minimal information needed to fetch the manifest for the Extension.
- *        knows the Extension exists but has not yet loaded the manifest
- *   - Installed
- *      - The Extension has the full manifest loaded and can be executed on the activation events
- *   - Disabled
- *      - The Extension has the full manifest but is not currently enabled and will not be executed based on the
- *        activation events.
+ * An Extension must be added to ExtensionAdmin before it can be executed during activation events.
  */
 
-/** The Extension Admin controls the list of currently known, loaded and executing an Extension.
- * Handles the loading of Extensions and maintains a list of the currently loaded Extensions.
+/** The Extension Admin controls the list of currently loaded Extensions.
  *
  * @alpha
  */
 export class ExtensionAdmin {
   /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
-  private _extensions: Map<string, Extension> = new Map<string, Extension>();
+  private _extensions: Map<string, InstalledExtension> = new Map<string, InstalledExtension>();
   private _hosts: string[];
 
   /** Fired when an Extension has been added or removed.
@@ -53,31 +45,38 @@ export class ExtensionAdmin {
   }
 
   /**
-   * Register a local or remote extension
+   * Adds an extension.
+   * The manifest will be fetched and the extension will be activated on an activation event.
    * @param provider
    * @alpha
    */
-  public async addExtension(provider: LocalExtensionProvider | RemoteExtensionProvider): Promise<void> {
-    if (provider instanceof RemoteExtensionProvider) {
+  public async addExtension(provider: ExtensionProvider): Promise<void> {
+    if ("hostname" in provider) {
       const hostName = provider.hostname;
       if (this._hosts.indexOf(hostName) < 0) {
-        // TODO throw error if hostname wasn't registered ?
-        // (DR can register the hostname of the iframe's parent as valid)
+        // TODO throw error if hostname wasn't registered
         // throw new Error(
         //   `Remote extension could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
         // );
       }
     }
-    const { manifestPromise } = provider;
-    const manifest = await manifestPromise;
-    this._extensions.set(manifest.name, {
-      manifest,
-      provider,
-    });
+    try {
+      const manifest = await provider.getManifest();
+      this._extensions.set(manifest.name, {
+        manifest,
+        provider,
+      });
+      // TODO - temporary fix to execute the missed startup event
+      if (manifest.activationEvents.includes("onStartup"))
+        void provider.execute();
+    } catch (e) {
+      // catch the error because we don't want to prevent other extensions from loading
+      Logger.logError(loggerCategory, `Error loading extension: ${e}`);
+    }
   }
 
   /**
-   * Register a list of local and/or remote extensions
+   * Adds a list of extensions
    * @param providers
    * @alpha
    */
@@ -104,7 +103,11 @@ export class ExtensionAdmin {
       if (!extension.manifest.activationEvents) continue;
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
-          extension.provider.main(); // eslint-disable-line @typescript-eslint/no-floating-promises
+          try {
+            void extension.provider.execute();
+          } catch (e) {
+            Logger.logError(loggerCategory, `Error executing extension ${extension.manifest.name}: ${e}`);
+          }
         }
       }
     }
