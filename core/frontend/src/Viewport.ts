@@ -3064,7 +3064,11 @@ export class ScreenViewport extends Viewport {
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
-  /** @public */
+  /** Queue an animation that interpolates between this viewport's previous [Frustum]($common) and its current frustum.
+   * This function is typically called by [ViewTool]($frontend)s after modifying the viewport's [ViewState]($frontend), to smoothly transition to the new view;
+   * as opposed to calling [[synchWithView]] which immediately transitions to the new view. It uses [[FrustumAnimator]] to perform the animation.
+   * @public
+   */
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
