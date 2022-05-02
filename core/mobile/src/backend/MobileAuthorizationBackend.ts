@@ -33,7 +33,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
         resolve(this._accessToken);
       } else {
         this._fetchingToken = true;
-        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: String, error?: String) => {
+        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
           if (error) {
             this._accessToken = "";
             reject(error);
@@ -41,7 +41,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
 
           this._accessToken = tokenString ?? "";
           if (expirationDate !== undefined)
-            this._expirationDate = new Date(expirationDate.toString())
+            this._expirationDate = new Date(expirationDate)
           resolve(this._accessToken);
         });
         this._fetchingToken = false;
