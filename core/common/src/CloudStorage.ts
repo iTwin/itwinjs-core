@@ -116,7 +116,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
       if (!request) {
         request = new Promise(async (resolve, reject) => {
           try {
-            container = await this.obtainContainerUrl(id, { name });
+            container = await this.obtainContainerUrl(id, { name, resource });
             this._containers.set(key, container);
             this._pendingContainerRequests.delete(key);
             resolve(container);
