@@ -149,7 +149,7 @@ export class ArcGisTokenGenerator {
       const httpRequestOptions: RequestInit = {
         method: "POST",
         body: `username=${encodedUsername}&password=${encodedPassword}${clientStr}${expirationStr}&f=pjson`,
-        headers: { "content-type": "application/x-www-form-urlencoded" }
+        headers: { "content-type": "application/x-www-form-urlencoded" },
       };
 
       const response = await fetch(tokenServiceUrl, httpRequestOptions);

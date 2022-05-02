@@ -6,7 +6,6 @@
  * @module Tiles
  */
 
-
 import { MapLayerAccessToken } from "@itwin/core-frontend";
 import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "./ArcGisTokenGenerator";
 

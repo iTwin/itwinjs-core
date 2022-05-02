@@ -12,7 +12,6 @@ describe("ArcGisUrl", () => {
   const sampleRestUrl = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/";
   const sampleGenerateTokenUrl = `${sampleRestUrl}generateToken`;
 
-
   afterEach(async () => {
     sandbox.restore();
   });
@@ -35,15 +34,15 @@ describe("ArcGisUrl", () => {
   });
 
   it("should extract RestUrl From GenerateToken Url", async () => {
-    const fetchJsonStub = sandbox.stub(ArcGisUrl, <any>"fetchJson").callsFake(async function _(_url: URL) {
+    const fetchJsonStub = sandbox.stub(ArcGisUrl, "fetchJson" as any).callsFake(async function _(_url: URL) {
       return Promise.resolve({
-        authInfo: { tokenServicesUrl: sampleGenerateTokenUrl }
+        authInfo: { tokenServicesUrl: sampleGenerateTokenUrl },
       });
     });
 
     let restUrl;
     try {
-      restUrl = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(new URL(sampleRestUrl))
+      restUrl = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(new URL(sampleRestUrl));
     } catch {
 
     }
@@ -55,7 +54,7 @@ describe("ArcGisUrl", () => {
     // Make sure fetchJson has been called with the right request URL
     chai.expect(fetchJsonStub.calledOnce).to.be.true;
     const urlArg = fetchJsonStub.getCalls()[0].args[0] as URL;
-    chai.expect(urlArg?.toString()).to.equals(`${sampleRestUrl}info?f=json`)
+    chai.expect(urlArg?.toString()).to.equals(`${sampleRestUrl}info?f=json`);
   });
 
 });

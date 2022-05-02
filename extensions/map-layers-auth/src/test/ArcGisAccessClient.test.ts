@@ -69,7 +69,7 @@ describe("ArcGisUtilities tests", () => {
       return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
     });
 
-    sandbox.stub(ArcGisAccessClient.prototype, <any>"validateOAuth2Endpoint").callsFake(async function _(_url: string) {
+    sandbox.stub(ArcGisAccessClient.prototype, "validateOAuth2Endpoint" as any).callsFake(async function _(_url: string) {
       return Promise.resolve(true);
     });
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
@@ -85,11 +85,11 @@ describe("ArcGisUtilities tests", () => {
 
   it("should build proper OAuth2 enterprise endpoint URL if no generateTokenUrl response", async () => {
 
-    const fetchJsonStub = sandbox.stub(ArcGisUrl, "getRestUrlFromGenerateTokenUrl").callsFake(async function _(_url: URL) {
+    sandbox.stub(ArcGisUrl, "getRestUrlFromGenerateTokenUrl").callsFake(async function _(_url: URL) {
       return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
     });
 
-    sandbox.stub(ArcGisAccessClient.prototype, <any>"validateOAuth2Endpoint").callsFake(async function _(url: string) {
+    sandbox.stub(ArcGisAccessClient.prototype, "validateOAuth2Endpoint" as any).callsFake(async function _(url: string) {
       if (url.startsWith(sampleOnPremiseMapServerAuthorizeUrl))
         return Promise.resolve(false);    // Simulate that endpoint derived from generateToken is invalid
       else
