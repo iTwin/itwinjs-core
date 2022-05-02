@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
@@ -66,7 +66,7 @@ export abstract class MobileDevice {
   public abstract resumeDownloadInForeground(requestId: number): boolean;
   public abstract resumeDownloadInBackground(requestId: number): boolean;
   public abstract reconnect(connection: number): void;
-  public abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
+  public abstract authGetAccessToken(callback: (accessToken?: string, expirationDate?: string, err?: string) => void): void;
 }
 
 class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
@@ -75,7 +75,14 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
     MobileHost.reconnect(connection);
   }
   public async getAccessToken() {
-    return IModelHost.authorizationClient?.getAccessToken() ?? "";
+    return new Promise<[AccessToken, string]>((resolve, reject) => {
+      MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+        if (error) {
+          reject(error);
+        }
+        resolve([tokenString ?? "", expirationDate ?? ""]);
+      });
+    });
   }
 }
 

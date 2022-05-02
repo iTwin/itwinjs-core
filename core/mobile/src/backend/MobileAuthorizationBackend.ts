@@ -14,21 +14,37 @@ import { MobileHost } from "./MobileHost";
  * @beta
  */
 export class MobileAuthorizationBackend implements AuthorizationClient {
-  protected _accessToken: AccessToken = "";
+  private _accessToken: AccessToken = "";
+  private _expirationDate: Date | undefined;
+  private _expiryBuffer = 60 * 10; // ten minutes
+  private _fetchingToken = false;
+
+  private get hasExpired(): boolean {
+    return this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000;
+  }
 
   public async getAccessToken(): Promise<AccessToken> {
+    if (this._fetchingToken) {
+      return Promise.reject(); // short-circuits any recursive use of this function
+    }
+
     return new Promise<AccessToken>((resolve, reject) => {
-      if (this._accessToken) {
+      if (this._accessToken && !this.hasExpired) {
         resolve(this._accessToken);
       } else {
-        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, error?: String) => {
+        this._fetchingToken = true;
+        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: String, error?: String) => {
           if (error) {
             this._accessToken = "";
             reject(error);
           }
+
           this._accessToken = tokenString ?? "";
+          if (expirationDate !== undefined)
+            this._expirationDate = new Date(expirationDate.toString())
           resolve(this._accessToken);
         });
+        this._fetchingToken = false;
       }
     });
   }

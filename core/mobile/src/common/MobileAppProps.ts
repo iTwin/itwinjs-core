@@ -42,5 +42,5 @@ export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForegr
 */
 export interface MobileAppFunctions {
   reconnect: (connection: number) => Promise<void>;
-  getAccessToken: () => Promise<AccessToken>;
+  getAccessToken: () => Promise<[AccessToken, string]>;
 }
