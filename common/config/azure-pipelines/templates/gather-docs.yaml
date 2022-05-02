@@ -4,7 +4,7 @@
 parameters:
   - name: workingDir
     type: string
-    default: $(System.DefaultWorkingDirectory)
+    default: $(Build.SourcesDirectory)/itwinjs-core
   - name: stagingDir
     type: string
     default: $(System.ArtifactsDirectory)/staging/
