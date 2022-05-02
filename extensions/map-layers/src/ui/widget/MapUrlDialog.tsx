@@ -203,7 +203,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       }
 
     }
-    setServerRequireCredentials(sourceRequireAuth);
+    setServerRequireCredentials(sourceRequireAuth || invalidCredentials);
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
     } else if (invalidCredentialsProvided) {
@@ -604,9 +604,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 <LabeledInput className="map-layer-source-input"
                   displayStyle="inline"
                   placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
-                  status={!userName && serverRequireCredentials ? "warning" : undefined}
+                  status={(!userName && serverRequireCredentials) || invalidCredentialsProvided ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onUsernameChange}
+                  value={userName}
                   size="small" />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
@@ -614,11 +615,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
                   displayStyle="inline"
                   type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
-                  status={!password && serverRequireCredentials ? "warning" : undefined}
+                  status={(!password && serverRequireCredentials) || invalidCredentialsProvided? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown}
+                  value={password}
                   size="small" />
+
               </>
             }
 
