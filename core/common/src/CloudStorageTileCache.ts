@@ -51,6 +51,9 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
   protected async obtainContainerUrl(id: TileContentIdentifier, descriptor: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const client = IModelTileRpcInterface.getClient();
+    if (this.provider === CloudStorageProvider.Azure && descriptor.resource !== undefined) {
+      delete descriptor.resource;
+    }
     return client.getTileCacheContainerUrl(id.tokenProps, descriptor);
   }
 
