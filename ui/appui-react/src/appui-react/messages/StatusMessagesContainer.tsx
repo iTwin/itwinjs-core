@@ -32,6 +32,7 @@ export interface StatusMessagesContainerProps {
 
 /** Component that renders one or more Toast, Sticky or Activity messages
  * @internal
+ * @deprecated
  */
 export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
   const [containerElement, setContainerElement] = React.useState<HTMLDivElement | null>(null);

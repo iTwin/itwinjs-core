@@ -6,6 +6,8 @@
  * @module Message
  */
 
+import { MessageSeverity } from "@itwin/appui-abstract";
+
 /** Available status types of status message.
  * @internal
  */
@@ -41,5 +43,27 @@ export class StatusHelpers {
       case Status.Warning:
         return StatusHelpers.WARNING_CLASS_NAME;
     }
+  }
+
+  public static severityToStatus(severity: MessageSeverity): Status {
+    let status = Status.Information;
+
+    switch (severity) {
+      case MessageSeverity.None:
+        status = Status.Success;
+        break;
+      case MessageSeverity.Information:
+        status = Status.Information;
+        break;
+      case MessageSeverity.Warning:
+        status = Status.Warning;
+        break;
+      case MessageSeverity.Error:
+      case MessageSeverity.Fatal:
+        status = Status.Error;
+        break;
+    }
+
+    return status;
   }
 }

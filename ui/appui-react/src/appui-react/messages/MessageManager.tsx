@@ -25,6 +25,7 @@ import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 import { StatusMessageManager } from "./StatusMessageManager";
+import { toaster, ToastOptions } from "@itwin/itwinui-react";
 
 class MessageBoxCallbacks {
   constructor(
@@ -143,6 +144,7 @@ export class MessageManager {
   private static _messages: NotifyMessageDetailsType[] = [];
   private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
+  // eslint-disable-next-line deprecation/deprecation
   private static _activeMessageManager = new StatusMessageManager();
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
@@ -174,7 +176,11 @@ export class MessageManager {
   public static get messages(): Readonly<NotifyMessageDetailsType[]> { return this._messages; }
 
   /** Manager of active messages. */
+  /** @deprecated */
+  // eslint-disable-next-line deprecation/deprecation
   public static get activeMessageManager(): StatusMessageManager { return this._activeMessageManager; }
+
+  public static animateOutToRef: HTMLElement | null;
 
   /** Clear the message list. */
   public static clearMessages(): void {
@@ -221,6 +227,39 @@ export class MessageManager {
     MessageManager.addMessage(message);
   }
 
+  public static registerAnimateOutRef(el: HTMLElement | null) {
+    this.animateOutToRef = el;
+  }
+
+  private static displayToast(message: NotifyMessageDetailsType) {
+    const options: ToastOptions = {
+      hasCloseButton: true,
+      duration: message.displayTime.milliseconds,
+      type:
+        message.msgType === OutputMessageType.Sticky
+          ? "persisting"
+          : "temporary",
+      animateOutTo: this.animateOutToRef,
+      link: { title: message.detailedMessage as string, onClick: toaster.closeAll },
+    };
+    toaster.setSettings({ placement: "bottom", order: "ascending" });
+    switch (message.priority) {
+      case OutputMessagePriority.Warning:
+        toaster.warning(message.briefMessage, options);
+        break;
+      case OutputMessagePriority.Info:
+        toaster.informational(message.briefMessage, options);
+        break;
+      case OutputMessagePriority.Error:
+      case OutputMessagePriority.Fatal:
+        toaster.negative(message.briefMessage, options);
+        break;
+      default:
+        toaster.positive(message.briefMessage, options);
+        break;
+    }
+  }
+
   /** Output a message and/or alert to the user.
    * @param  message  Details about the message to output.
    */
@@ -230,7 +269,7 @@ export class MessageManager {
       this._lastMessage = message;
     }
 
-    this._activeMessageManager.add(message);
+    this.displayToast(message);
 
     this.onMessageAddedEvent.emit({ message });
   }

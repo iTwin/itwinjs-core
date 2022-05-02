@@ -7,13 +7,20 @@
  */
 
 import * as React from "react";
-import { UiCore } from "@itwin/core-react";
-import { MessageHyperlink, MessageLayout, MessageProgress, Status } from "@itwin/appui-layout-react";
+import { Icon, UiCore } from "@itwin/core-react";
+import {
+  Message,
+  MessageButton,
+  MessageHyperlink,
+  MessageLayout,
+  MessageProgress,
+  Status,
+} from "@itwin/appui-layout-react";
 import { Small } from "@itwin/itwinui-react";
-import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import { UiFramework } from "../UiFramework";
 import { ActivityMessageEventArgs } from "../messages/MessageManager";
 import { MessageLabel } from "./MessageLabel";
+import { HollowIcon } from "./HollowIcon";
 
 /** Properties for a [[ActivityMessage]]
  * @public
@@ -33,30 +40,40 @@ export function ActivityMessage(props: ActivityMessageProps) {
   const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
 
   return (
-    <ToastPresentation
-      category="informational"
-      hasCloseButton={true}
-      onClose={props.dismissActivityMessage}
-      content={
-        <MessageLayout
-          buttons={(messageDetails && messageDetails.supportsCancellation) &&
-            <MessageHyperlink onClick={props.cancelActivityMessage}>{cancelLabel}</MessageHyperlink>
-          }
-          progress={(messageDetails && messageDetails.showProgressBar) &&
+    <Message // eslint-disable-line deprecation/deprecation
+      status={Status.Information}
+      icon={<HollowIcon iconSpec="icon-info-hollow" />}
+    >
+      <MessageLayout
+        buttons={(messageDetails && messageDetails.supportsCancellation) ? (
+          <div>
+            <MessageHyperlink onClick={props.cancelActivityMessage}>
+              {cancelLabel}
+            </MessageHyperlink>
+            <span>&nbsp;</span>
+            <MessageButton onClick={props.dismissActivityMessage}>
+              <Icon iconSpec="icon-close" />
+            </MessageButton>
+          </div>
+        ) : (
+          <MessageButton onClick={props.dismissActivityMessage}>
+            <Icon iconSpec="icon-close" />
+          </MessageButton>
+        )}
+        progress={(messageDetails && messageDetails.showProgressBar) &&
             <MessageProgress
               status={Status.Information}
               progress={props.activityMessageInfo.percentage}
             />
+        }
+      >
+        <div>
+          <MessageLabel message={props.activityMessageInfo.message} className="uifw-statusbar-message-brief" />
+          {(messageDetails && messageDetails.showPercentInMessage) &&
+            <Small>{props.activityMessageInfo.percentage + percentCompleteLabel}</Small>
           }
-        >
-          <div>
-            <MessageLabel message={props.activityMessageInfo.message} className="uifw-statusbar-message-brief" />
-            {(messageDetails && messageDetails.showPercentInMessage) &&
-              <Small>{props.activityMessageInfo.percentage + percentCompleteLabel}</Small>
-            }
-          </div>
-        </MessageLayout>
-      }
-    />
+        </div>
+      </MessageLayout>
+    </Message>
   );
 }
