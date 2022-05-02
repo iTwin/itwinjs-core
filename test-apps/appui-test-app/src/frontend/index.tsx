@@ -498,7 +498,6 @@ const SampleAppViewer2 = () => {
   return (
     <Provider store={SampleAppIModelApp.store} >
       <ThemeManager>
-        {/* eslint-disable-next-line deprecation/deprecation */}
         <SafeAreaContext.Provider value={SafeAreaInsets.All}>
           <AppDragInteraction>
             <AppFrameworkVersion>
