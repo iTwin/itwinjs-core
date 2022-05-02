@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Do not pass the resource name when getting the cache container url",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
