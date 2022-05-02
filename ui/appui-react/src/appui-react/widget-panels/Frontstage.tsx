@@ -46,8 +46,7 @@ import { useUiVisibility } from "../hooks/useUiVisibility";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
-// istanbul ignore next
-const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+const WidgetInternals = React.memo(function WidgetInternals() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   const uiIsVisible = useUiVisibility();
 
@@ -55,7 +54,6 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
     <>
       <ToolbarPopupAutoHideContext.Provider value={!uiIsVisible}>
         <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
-        <WidgetPanelsToolSettings />
         <WidgetPanels
           className="uifw-widgetPanels"
           centerContent={<WidgetPanelsToolbars />}
@@ -65,6 +63,17 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
         <WidgetPanelsStatusBar />
         <FloatingWidgets />
       </ToolbarPopupAutoHideContext.Provider>
+    </>
+  );
+});
+
+// istanbul ignore next
+const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+
+  return (
+    <>
+      <WidgetPanelsToolSettings />
+      <WidgetInternals />
     </>
   );
 });
@@ -215,6 +224,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useFrontstageManager(frontstageDef);
   useItemsManager(frontstageDef);
   const labels = useLabels();
+  const uiIsVisible = useUiVisibility();
   const showWidgetIcon = useSelector((state: FrameworkRootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return !!frameworkState.configurableUiState.showWidgetIcon;
@@ -222,6 +232,10 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   const autoCollapseUnpinnedPanels = useSelector((state: FrameworkRootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return !!frameworkState.configurableUiState.autoCollapseUnpinnedPanels;
+  });
+  const animateToolSettings = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.animateToolSettings;
   });
 
   const handleKeyDown = useEscapeSetFocusToHome();
@@ -240,6 +254,8 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         autoCollapseUnpinnedPanels={autoCollapseUnpinnedPanels}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
+        animateDockedToolSettings={animateToolSettings}
+        uiIsVisible={uiIsVisible}
       >
         {widgetPanelsFrontstage}
       </NineZone>

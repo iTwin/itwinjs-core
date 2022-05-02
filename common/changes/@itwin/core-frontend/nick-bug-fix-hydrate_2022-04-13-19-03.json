@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "bugfix for viewstate2d's hydrateViewState",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

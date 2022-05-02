@@ -17,6 +17,7 @@ import { TileUser } from "./internal";
  * The marker is used to allow tiles to be discarded after they become disused by any tile user, via [[Tile.prune]].
  * @see [[Tile.usageMarker]].
  * @public
+ * @extensions
  */
 export class TileUsageMarker {
   private _timePoint = BeTimePoint.now();

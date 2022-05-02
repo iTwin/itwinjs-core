@@ -10,6 +10,7 @@ import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public
+ * @extensions
  */
 export enum PlanarClipMaskMode {
   /** No masking. */
@@ -32,6 +33,7 @@ export enum PlanarClipMaskMode {
 /** The default priority values for a [[PlanarClipMaskSettings]], based on model type. Models with a lower priority are masked by models with a higher priority.
  * The default can be overridden by [[PlanarClipMaskSettings.priority]].
  *  @public
+ * @extensions
  */
 export enum PlanarClipMaskPriority {
   /** Background map. */
@@ -47,6 +49,7 @@ export enum PlanarClipMaskPriority {
 /** JSON representation of a [[PlanarClipMaskSettings]].
  * @see [[DisplayStyleSettingsProps.planarClipOvr]] and [[ContextRealityModelProps.planarClipMask]].
  * @public
+ * @extensions
  */
 export interface PlanarClipMaskProps {
   /** Controls how the mask geometry is collected */

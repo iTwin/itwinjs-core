@@ -14,7 +14,7 @@ import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { SerializedRpcActivity } from "../core/RpcInvocation";
 import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { ReadableFormData, RpcMultipart } from "./RpcMultipart";
@@ -35,7 +35,7 @@ export class WebAppRpcRequest extends RpcRequest {
   /** The maximum size permitted for an encoded component in a URL.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
-  public static maxUrlComponentSize = 1024;
+  public static maxUrlComponentSize = 4096;
 
   /** The HTTP method for this request. */
   public override method: HttpMethod_T;
@@ -104,6 +104,11 @@ export class WebAppRpcRequest extends RpcRequest {
     req: HttpServerRequest,
     res: HttpServerResponse,
   ): void {
+    const versionHeader = protocol.protocolVersionHeaderName;
+    if (versionHeader && RpcProtocol.protocolVersion) {
+      res.set(versionHeader, RpcProtocol.protocolVersion.toString());
+    }
+
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
     let responseBody: Buffer | Readable | string;
     if (transportType === RpcContentType.Binary) {
@@ -231,6 +236,13 @@ export class WebAppRpcRequest extends RpcRequest {
         if (!response) {
           reject(new IModelError(BentleyStatus.ERROR, "Invalid state."));
           return;
+        }
+
+        if (this.protocol.protocolVersionHeaderName) {
+          const version = response.headers.get(this.protocol.protocolVersionHeaderName);
+          if (version) {
+            this.responseProtocolVersion = parseInt(version, 10);
+          }
         }
 
         const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);

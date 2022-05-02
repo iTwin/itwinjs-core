@@ -15,6 +15,7 @@ import { TileLoadPriority } from "./internal";
 
 /** Parameters used to construct a [[TileTree]].
  * @public
+ * @extensions
  */
 export interface TileTreeParams {
   /** Uniquely identifies the tile tree in the context of the [[IModelConnection]]. */

@@ -15,6 +15,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -80,16 +81,27 @@ export class PolyfaceQuery {
     }
     return result;
   }
-  /** Return the sum of all facets areas. */
-  public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number {
+  /** Return the sum of all facet areas.
+   * @param vectorToEye compute facet area projected to a view plane perpendicular to this vector
+  */
+  public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number {
     let s = 0;
     if (source !== undefined) {
       if (source instanceof Polyface)
-        return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
-
+        return PolyfaceQuery.sumFacetAreas(source.createVisitor(1), vectorToEye);
+      let unitVectorToEye: Vector3d | undefined;
+      if (vectorToEye !== undefined)
+        unitVectorToEye = vectorToEye.normalize();
       source.reset();
       while (source.moveToNextFacet()) {
-        s += PolygonOps.areaNormal(source.point.getPoint3dArray()).magnitude();
+        const scaledNormal = PolygonOps.areaNormal(source.point.getPoint3dArray());
+        let area = scaledNormal.magnitude();
+        if (unitVectorToEye !== undefined) {
+          const scale = Geometry.conditionalDivideCoordinate(1.0, area);
+          if (scale !== undefined)
+            area *= scaledNormal.dotProduct(unitVectorToEye) * scale;
+        }
+        s += area;
       }
     }
     return s;
@@ -248,7 +260,7 @@ export class PolyfaceQuery {
   /** Test edges pairing in `source` mesh.
    * * for `allowSimpleBoundaries === false` true return means this is a closed 2-manifold surface
    * * for `allowSimpleBoundaries === true` true means this is a 2-manifold surface which may have boundary, but is still properly matched internally.
-   * * Any edge with 3 ore more incident facets triggers `false` return.
+   * * Any edge with 3 or more incident facets triggers `false` return.
    * * Any edge with 2 incident facets in the same direction triggers a `false` return.
   */
   public static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries: boolean = false): boolean {
@@ -328,7 +340,7 @@ export class PolyfaceQuery {
   }
 
   /** Execute context.projectToPolygon until its work estimates accumulate to workLimit  */
-  private static async continueAnnouunceSweepLinestringToConvexPolyfaceXY(
+  private static async continueAnnounceSweepLinestringToConvexPolyfaceXY(
     context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel): Promise<number> {
     let workCount = 0;
     while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
@@ -367,7 +379,7 @@ export class PolyfaceQuery {
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;
-      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnouunceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
+      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
         workTotal += workCount;
         this.awaitBlockCount++;
         // console.log({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });

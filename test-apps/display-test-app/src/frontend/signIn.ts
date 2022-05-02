@@ -22,9 +22,11 @@ export async function signIn(): Promise<boolean> {
     });
   }
 
-  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient;
+  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
   if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
+  } else if (ProcessDetector.isMobileAppFrontend){
+    // not implemented
   } else {
     authClient = new BrowserAuthorizationClient({
       clientId: "imodeljs-spa-test",
@@ -37,14 +39,18 @@ export async function signIn(): Promise<boolean> {
     } catch (err) { }
   }
 
-  IModelApp.authorizationClient = authClient;
-  if (authClient.isAuthorized)
-    return true;
+  if (typeof authClient === "undefined") {
+    return false;
+  } else {
+    IModelApp.authorizationClient = authClient;
+    if (authClient.isAuthorized)
+      return true;
 
-  return new Promise<boolean>((resolve, reject) => {
-    authClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
-    authClient.signIn().catch((err) => reject(err));
-  });
+    return new Promise<boolean>((resolve, reject) => {
+      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      authClient!.signIn().catch((err) => reject(err));
+    });
+  }
 }
 
 export async function signOut(): Promise<void> {

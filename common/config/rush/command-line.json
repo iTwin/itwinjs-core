@@ -63,6 +63,15 @@
       "ignoreDependencyOrder": true
     },
     {
+      "name": "extract-extension-api",
+      "commandKind": "bulk",
+      "summary": "Run eslint rule to generate extension API files",
+      "description": "Iterates through each package in the monorepo and runs the 'extract-extension-api' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true
+    },
+    {
       "name": "lint",
       "commandKind": "bulk",
       "summary": "Run lint rules on each package",

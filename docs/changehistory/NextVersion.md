@@ -42,7 +42,7 @@ It is now possible to set property specification [`isDisplayed` attribute](../pr
 
 ### Fixed nested hierarchy rules handling
 
-There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for all child node rules available at the current context.
+There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for child node rules nested under the parent node rule and at the root level of the ruleset.
 
 Example:
 
@@ -56,7 +56,7 @@ Example:
       "type": "child-1",
       "label": "Child 1",
       "nestedRules": [{
-        "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+        "ruleType": "ChildNodes",
         "specifications": [{
           "specType": "CustomNode",
           "type": "child-1.1",
@@ -87,7 +87,7 @@ Example:
 }
 ```
 
-With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at other child node rules available in the context of the specification that created the node. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
+With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
 
 ## Detecting integrated graphics
 
@@ -109,6 +109,14 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
 
+## UiItemsManager Changes
+
+When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
+
+```ts
+    UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
+```
+
 ## Widget Panel Changes
 
 Based on usability testing, the following changes to widget panels have been implemented.
@@ -127,6 +135,10 @@ The API impact of these updates are listed below.
 ## Deprecations in @itwin/components-react package
 
 The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.
+
+## Deprecations in @itwin/core-geometry package
+
+The low-level [PolyfaceBuilder]($core-geometry) methods `findOrAddPoint`, `findOrAddPointXYZ`, `findOrAddParamXY`, and `findOrAddParamInGrowableXYArray` are deprecated in favor of the more appropriately named new methods `addPoint`, `addPointXYZ`, `addParamXY` and `addParamInGrowableXYArray`. These methods always add their inputs to the relevant builder array, rather than searching it and returning the index of a duplicate. The intent is to enable efficient `IndexedPolyface` construction by allowing duplicate data to be accumulated as facets are added, and to compress the data when done with `claimPolyface`.
 
 ## Deprecations in @itwin/core-react package
 
