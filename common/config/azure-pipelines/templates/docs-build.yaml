@@ -4,7 +4,7 @@
 parameters:
   - name: workingDir
     type: string
-    default: $(System.DefaultWorkingDirectory)
+    default: $(Build.SourcesDirectory)/itwinjs-core
   - name: stagingDir
     type: string
     default: $(System.ArtifactsDirectory)/staging
@@ -16,6 +16,12 @@ parameters:
     default: false
 
 steps:
+  - task: CopyFiles@2
+    displayName: Copy Files to $(Build.SourcesDirectory)\itwinjs-core
+    inputs:
+      SourceFolder: $(Build.SourcesDirectory)
+      TargetFolder: ${{ parameters.workingDir }}
+
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
