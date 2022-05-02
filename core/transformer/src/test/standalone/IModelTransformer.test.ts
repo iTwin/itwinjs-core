@@ -13,6 +13,7 @@ import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
+  GeometricElement3d,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
@@ -20,7 +21,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, GeometricElement3dProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -1871,6 +1872,78 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("Deven color change test", async () => {
+    const sourceDbPath = "/home/mike/Downloads/small.bim";
+    const sourceDb = SnapshotDb.openFile(sourceDbPath);
+
+    class MyTransformer extends IModelTransformer {
+      /** This override of IModelTransformer.onTransformElement exists for debugging purposes */
+      public override onTransformElement(sourceElement: Element): ElementProps {
+        const targetElementProps = super.onTransformElement(sourceElement);
+
+        if (sourceElement instanceof GeometricElement3d) {
+          let appearanceFound = false;
+          if (sourceElement.geom) {
+            (targetElementProps as any).geom = sourceElement.geom;
+            let index = 0;
+            for (const geomStreamEntryProps of (targetElementProps as GeometricElement3dProps).geom!) {
+              if (geomStreamEntryProps.appearance) {
+                appearanceFound = true;
+                const newAppearance = { ...geomStreamEntryProps.appearance, color: 0x00ffff };
+                (targetElementProps as GeometricElement3dProps).geom!.splice(index, 1, { appearance: newAppearance });
+                // (targetElementProps as GeometricElement3dProps).geom!.push({"appearance": newAppearance});
+                break;
+              }
+              index = index + 1;
+            }
+
+            if ((targetElementProps as GeometricElement3dProps).geom && !appearanceFound) {
+              (targetElementProps as GeometricElement3dProps).geom?.push({ appearance: { color: 0x0000ff, weight: 100, transparency: 1 } });
+            }
+          }
+
+          // Uncomment below and comment above lines to run colorization on 2 elements only. Comment all above under if
+          // 1) Element that is not getting colored
+          // if(sourceElement.id === '0x50000000430'){
+          //   let geom = sourceElement.geom?.map(function(item){
+          //     if("appearance" in item){
+          //       item.appearance = {...item.appearance, color: 0xffff00}
+          //     }
+          //     return item;
+          //   });
+          //   targetElementProps.geom = geom;
+          // }
+
+          // 2) Element that is successfully getting colored
+          // if(sourceElement.id === '0x500000002e8'){
+          // let geom = sourceElement.geom?.map(function(item){
+          //   if("appearance" in item){
+          //     item.appearance = {...item.appearance, color: 0xffff00}
+          //   }
+          //   return item;
+          // });
+          // targetElementProps.geom = geom;
+          // }
+        }
+
+        return targetElementProps;
+      }
+    }
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const transformer = new MyTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
 
     sourceDb.close();
     targetDb.close();
