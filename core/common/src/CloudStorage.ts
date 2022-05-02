@@ -102,7 +102,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   protected async getContainer(id: TContentId): Promise<CloudStorageContainerUrl> {
     const now = new Date().getTime();
     const name = this.formContainerName(id);
-    const resource = this.formResourceName(id);
+    // const resource = this.formResourceName(id);
     const key = this.formContainerKey(id);
 
     let container = this._containers.get(key);
@@ -116,7 +116,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
       if (!request) {
         request = new Promise(async (resolve, reject) => {
           try {
-            container = await this.obtainContainerUrl(id, { name, resource });
+            container = await this.obtainContainerUrl(id, { name });
             this._containers.set(key, container);
             this._pendingContainerRequests.delete(key);
             resolve(container);
