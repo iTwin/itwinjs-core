@@ -3088,11 +3088,6 @@ export enum EventHandled {
 }
 
 // @alpha
-export type Extension = ExtensionContentProvider & {
-    readonly manifest: ExtensionManifest;
-};
-
-// @alpha
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
     readonly description?: string;
@@ -3104,13 +3099,33 @@ export interface ExtensionManifest {
 }
 
 // @alpha
-export type ExtensionProvider = ExtensionContentProvider & ({
-    readonly manifestPromise: Promise<ExtensionManifest>;
-    manifestUrl?: never;
-} | {
-    readonly manifestPromise?: never;
-    manifestUrl: string;
-});
+export interface ExtensionProps {
+    // (undocumented)
+    contextId: string;
+    // (undocumented)
+    extensionName: string;
+    // (undocumented)
+    files: FileInfo[];
+    // (undocumented)
+    isPublic: boolean;
+    // (undocumented)
+    status: ExtensionUploadStatus;
+    // (undocumented)
+    timestamp: Date;
+    // (undocumented)
+    uploadedBy: string;
+    // (undocumented)
+    version: string;
+}
+
+// @alpha
+export type ExtensionProvider = LocalExtensionProvider | RemoteExtensionProvider | ServiceExtensionProvider;
+
+// @alpha
+export interface ExtensionProviderInterface {
+    execute: ResolveFunc;
+    getManifest: ResolveManifestFunc;
+}
 
 // @public
 export interface ExtentLimits {
@@ -5146,6 +5161,14 @@ export enum InputSource {
     Unknown = 0
 }
 
+// @alpha
+export interface InstalledExtension {
+    // (undocumented)
+    manifest: ExtensionManifest;
+    // (undocumented)
+    provider: ExtensionProvider;
+}
+
 // @internal
 export interface InstancedGraphicParams {
     readonly count: number;
@@ -5336,6 +5359,28 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
+// @internal (undocumented)
+export interface LoadedExtensionProps {
+    // (undocumented)
+    basePath: string;
+    // (undocumented)
+    props: ExtensionProps;
+}
+
+// @alpha
+export class LocalExtensionProvider implements ExtensionProviderInterface {
+    constructor(_props: LocalExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface LocalExtensionProviderProps {
+    main: ResolveFunc;
+    // (undocumented)
+    manifestPromise: Promise<any>;
+}
+
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
@@ -5432,6 +5477,9 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
+
+// @internal (undocumented)
+export const loggerCategory = "imodeljs-frontend.Extension";
 
 // @public
 export class LookAndMoveTool extends ViewManip {
@@ -8417,6 +8465,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get treeOwner(): TileTreeOwner;
     }
 
+// @alpha
+export class RemoteExtensionProvider implements ExtensionProviderInterface {
+    constructor(_props: RemoteExtensionProviderProps);
+    execute(): Promise<string>;
+    getManifest(): Promise<ExtensionManifest>;
+    readonly hostname: string;
+    }
+
+// @alpha
+export interface RemoteExtensionProviderProps {
+    jsUrl: string;
+    manifestUrl: string;
+}
+
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
@@ -9070,6 +9132,9 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 // @alpha (undocumented)
 export type ResolveFunc = () => Promise<any>;
 
+// @alpha (undocumented)
+export type ResolveManifestFunc = () => Promise<ExtensionManifest>;
+
 // @internal
 export type RootIModelTile = Tile & {
     tileScreenSize: number;
@@ -9535,6 +9600,24 @@ export interface SelectReplaceEvent {
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Replace;
+}
+
+// @alpha
+export class ServiceExtensionProvider implements ExtensionProviderInterface {
+    constructor(_props: ServiceExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    get name(): string;
+    }
+
+// @alpha
+export interface ServiceExtensionProviderProps {
+    // (undocumented)
+    contextId: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version: string;
 }
 
 // @public
