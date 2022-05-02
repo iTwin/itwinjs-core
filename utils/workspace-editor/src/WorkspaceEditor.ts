@@ -31,13 +31,13 @@ interface EditorProps {
   nRequests?: number;
   /** enable logging */
   logging?: boolean;
+  /** prefetch for listDb */
+  prefetch?: boolean;
 }
 
 interface EditorOpts extends EditorProps, WorkspaceContainer.Props, WorkspaceAccount.Props {
-  /** user name */
+  /** user name for write lock */
   user: string;
-  writeable?: boolean;
-  syncOnConnect?: boolean;
 }
 
 /** options for initializing a WorkspaceContainer */
@@ -96,6 +96,7 @@ interface ListOptions extends WorkspaceDbOpt {
   blobs?: boolean;
 }
 
+/** options for performing an upload or download of a WorkspaceDb */
 type TransferOptions = WorkspaceDbOpt & CloudSqlite.TransferDbProps & {
   noVacuum?: boolean;
 };
@@ -110,10 +111,13 @@ async function askQuestion(query: string) {
   return new Promise<string>((resolve) => rl.question(query, (ans) => { rl.close(); resolve(ans); }));
 }
 
+function flushLog() {
+  IModelHost.platform.flushLog();
+}
 /** show a message, potentially flushing log messages first */
 function showMessage(msg: string) {
   if (logTimer)
-    IModelHost.platform.flushLog();
+    flushLog();
   console.log(msg);
 }
 
@@ -198,6 +202,12 @@ function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspac
 /** List the contents of a WorkspaceDb */
 async function listWorkspaceDb(args: ListOptions) {
   readWorkspace(args, (file, args) => {
+    const cloudContainer = file.container.cloudContainer;
+    const timer = new StopWatch("list", true);
+    if (args.prefetch && cloudContainer) {
+      console.log(`start prefetch`);
+      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+    }
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
 
@@ -229,6 +239,7 @@ async function listWorkspaceDb(args: ListOptions) {
         }
       });
     }
+    console.log(`time = ${timer.elapsedSeconds.toString()}`);
   });
 }
 
@@ -506,6 +517,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         containerDir: args.directory,
         cloudCacheProps: {
           nRequests: args.nRequests,
+          verboseLog: true,
         },
       };
       await IModelHost.startup(config);
@@ -513,7 +525,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
-        logTimer = setInterval(() => IModelHost.platform.flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
+        logTimer = setInterval(() => flushLog(), 20); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
       await cmd(args);
@@ -524,7 +536,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         console.log(BentleyError.getErrorMessage(e));
     } finally {
       if (logTimer) {
-        IModelHost.platform.flushLog();
+        flushLog();
         clearInterval(logTimer);
       }
     }
@@ -545,13 +557,14 @@ Yargs.help();
 Yargs.version("V2.0");
 Yargs.options({
   directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
-  nRequest: { describe: "number of simultaneous http requests for cloud operations", number: true },
+  nRequests: { describe: "number of simultaneous http requests for cloud operations", number: true },
   containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, demandOption: true },
   user: { describe: "user name", string: true, default: "workspace-editor" },
   accessName: { alias: "a", describe: "cloud storage account name for container", string: true },
   accessToken: { describe: "token that grants access to the container (either SAS or account key)", string: true, default: "" },
   storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
-  logging: { describe: "enable log messages", boolean: true, default: "false" },
+  logging: { describe: "enable log messages", boolean: true, default: false },
+  prefetch: { boolean: true, default: false },
 });
 Yargs.command<AddFileOptions>({
   command: "add <dbName> <files>",
@@ -683,11 +696,12 @@ async function runScript(arg: EditorProps & { scriptName: string }) {
   const val = fs.readFileSync(arg.scriptName, "utf-8");
   const lines = val.split("\r");
   let i = 0;
+
   for (let line of lines) {
     i++;
-    line = line.split("#")[0].trim();
+    line = line.split("#")[0].trim(); // ignore leading/trailing whitespace and comments (anything after a "#")
     if (line.length === 0)
-      continue;
+      continue; // blank line
 
     await Yargs.parseAsync(line, {}, (err: Error | undefined, _argv: any, _output: string) => {
       if (err) {
@@ -709,6 +723,7 @@ async function main() {
     return;
   }
 
+  Yargs.strictCommands();
   Yargs.demandCommand();
   await Yargs.parseAsync();
 }

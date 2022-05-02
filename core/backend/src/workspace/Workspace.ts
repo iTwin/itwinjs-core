@@ -18,7 +18,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
-import { SettingSchema, SettingsSchemas } from "./SettingsSchemas";
+import { SettingsSchemas } from "./SettingsSchemas";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey

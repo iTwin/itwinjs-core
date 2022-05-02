@@ -233,7 +233,7 @@ To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]
 
 Cloud storage systems (aka *blob storage*) provide access to data through a top-level concept called a *storage account*. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called *containers*. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
 
-Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token or `sasToken` from the storage authority.
+Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token (a `sasToken`) from the storage authority.
 
 Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `WorkspaceDb`s through a secure, reliable, and highly available cloud api.
 
@@ -505,4 +505,4 @@ All changes to `WorkspaceDb`s are performed locally and are not visible to users
 
 The WorkspaceEditor enforces that `WorkspaceDb`s always have a version number associated with them within a `WorkspaceContainer` (by default, the initial version is marked "1.0.0"). WorkspaceDb version numbers follow the [semver versioning](https://semver.org/) rules. To modify an existing WorkspaceDb within a `WorkspaceContainer`, administrators must (with the write-lock held) make a new version using the `versionDb` command. New versions may be of type "patch", "minor", or "major", depending on its impact to users. When the write-lock is released, the newly edited version of the WorkspaceDb becomes immutable and may never be changed again. This way old or archived projects may continue to refer to consistent workspace data without risk.
 
-By specifying an acceptable [version range](https://docs.npmjs.com/cli/v6/using-npm/semver#ranges) in `workspace/databases` Settings, administrators can control when, how, and if users see updates to workspace resources.
+By specifying acceptable [version ranges](https://docs.npmjs.com/cli/v6/using-npm/semver#ranges) in `workspace/databases` Settings, administrators can control when, how, and if users see updates to workspace resources.
