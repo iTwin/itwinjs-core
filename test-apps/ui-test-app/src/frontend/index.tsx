@@ -352,17 +352,28 @@ export class SampleAppIModelApp {
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
 
-    const accessClient = new ArcGisAccessClient();
-    const initStatus = accessClient.initialize("http://localhost:3000/esri-oauth2-callback");
-    assert(initStatus === true);
-    if (SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId)
-      accessClient.arcGisOnlineClientId = SampleAppIModelApp.testAppConfiguration.arcGisOnlineClientId;
+    // ArcGIS Oauth setup
+    if ((SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
+      || SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId) {
+      let enterpriseClientIds: ArcGisEnterpriseClientId[]|undefined;
+      if (SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
+        enterpriseClientIds = [{
+          serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
+          clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
+        }];
 
-    if (SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
-      accessClient.setEnterpriseClientId(
-        SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl,
-        SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId );
+    const accessClient = new ArcGisAccessClient();
+
+      const initStatus = accessClient.initialize({
+        redirectUri: "http://localhost:3000/esri-oauth2-callback",
+        clientIds: {
+          arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+          enterpriseClientIds,
+        }});
+
     IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+      assert(initStatus === true);
+    }
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

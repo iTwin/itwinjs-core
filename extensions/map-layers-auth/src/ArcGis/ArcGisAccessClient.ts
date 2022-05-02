@@ -8,20 +8,46 @@
 
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
-import { ArcGisOAuth2Token, ArcGisTokenClientType } from "../map-layers-auth";
+import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator";
 import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
 import { ArcGisUrl } from "./ArcGisUrl";
 
 /** @beta */
 export interface ArcGisEnterpriseClientId {
+  /* Oauth API endpoint base URL (i.e. https://hostname/portal/sharing/oauth2/authorize)
+  used to identify uniquely each enterprise server. */
   serviceBaseUrl: string;
+
+  /* Application's clientId for this enterprise server.*/
   clientId: string;
 }
+
 /** @beta */
 export interface ArcGisOAuthClientIds {
+  /* Application's OAuth clientId in ArcGIS online */
   arcgisOnlineClientId?: string;
+
+  /* Application's OAuth clientId for each enterprise server used. */
   enterpriseClientIds?: ArcGisEnterpriseClientId[];
+}
+
+/** @beta
+ * ArcGIS OAuth configurations parameters.
+ * See https://developers.arcgis.com/documentation/mapping-apis-and-services/security/arcgis-identity/serverless-web-apps/
+ * more details.
+*/
+export interface ArcGisOAuthConfig {
+  /* URL to which a user is sent once they complete sign in authorization.
+    Must match a URI you define in the developer dashboard, otherwise, the authorization will be rejected.
+  */
+  redirectUri: string;
+
+  /* Optional expiration after which the token will expire. Defined in minutes with a maximum of two weeks (20160 minutes)*/
+  tokenExpiration?: number;
+
+  /* Application client Ids */
+  clientIds: ArcGisOAuthClientIds;
 }
 
 /** @beta */
@@ -34,10 +60,18 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public constructor() {
   }
 
-  public initialize(redirectUri: string, tokenExpiration?: number): boolean {
-    this._redirectUri = redirectUri;
-    this._expiration = tokenExpiration;
+  public initialize(oAuthConfig?: ArcGisOAuthConfig): boolean {
+    if (oAuthConfig) {
+      this._redirectUri = oAuthConfig.redirectUri;
+      this._expiration = oAuthConfig.tokenExpiration;
+      this._clientIds = oAuthConfig.clientIds;
 
+      this.initOauthCallbackFunction();
+    }
+    return true;
+  }
+
+  private initOauthCallbackFunction() {
     (window as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
       let eventSuccess = false;
       let decodedState;
@@ -62,7 +96,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       }
       this.onOAuthProcessEnd.raiseEvent(eventSuccess, decodedState);
     };
-    return true;
   }
 
   public unInitialize() {
@@ -79,7 +112,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         return oauth2Token;
 
       if (params.userName && params.password) {
-        return ArcGisTokenManager.getToken(params.mapLayerUrl.toString(), params.userName, params.password, { client: ArcGisTokenClientType.referer });
+        return await ArcGisTokenManager.getToken(params.mapLayerUrl.toString(), params.userName, params.password, { client: ArcGisTokenClientType.referer });
       }
     } catch {
 
@@ -89,12 +122,14 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
   public async getTokenServiceEndPoint(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined> {
     let tokenEndpoint: ArcGisOAuth2Endpoint | undefined;
+
     try {
       tokenEndpoint = await this.getOAuth2Endpoint(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
       if (tokenEndpoint) {
 
       }
     } catch { }
+
     return tokenEndpoint;
   }
 
@@ -105,7 +140,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     }
     return found;
   }
-
 
   public get redirectUri() {
     return this._redirectUri;
@@ -284,7 +318,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     }
     return undefined;   // we could not find any valid oauth2 endpoint
   }
-
 
   /**
  * Construct the complete Authorize url to starts the Oauth process

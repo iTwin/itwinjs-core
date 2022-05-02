@@ -7,7 +7,7 @@ import { expect } from "chai";
 
 import * as sinon from "sinon";
 import { ArcGisAccessClient } from "../ArcGis/ArcGisAccessClient";
-import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType, ArcGisUrl } from "../map-layers-auth";
+import { ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
@@ -15,9 +15,16 @@ describe("ArcGisUtilities tests", () => {
 
   beforeEach(async () => {
     fakeAccessClient = new ArcGisAccessClient();
-    fakeAccessClient.initialize("https://test.com/oauth-redirect");
-    fakeAccessClient.arcGisOnlineClientId = "dummy_clientId1";
-    fakeAccessClient.setEnterpriseClientId("https://dtlgeoarcgis.adtl.com", "dummy_clientId2");
+    fakeAccessClient.initialize({
+      redirectUri: "https://test.com/oauth-redirect",
+      clientIds: {
+        arcgisOnlineClientId: "dummy_clientId1",
+        enterpriseClientIds: [{
+          serviceBaseUrl: "https://dtlgeoarcgis.adtl.com",
+          clientId: "dummy_clientId2",
+        }],
+      }});
+
   });
 
   afterEach(async () => {
@@ -25,14 +32,12 @@ describe("ArcGisUtilities tests", () => {
     fakeAccessClient = undefined;
   });
 
-
   const sampleOnPremiseMapServer = "https://dtlgeoarcgis.adtl.com/server/rest/services/NewYork/NewYork3857/MapServer";
   const sampleOnPremiseMapServerRestUrl = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/";
   const sampleOnPremiseMapServerAuthorizeUrl = `${sampleOnPremiseMapServerRestUrl}oauth2/authorize`;
   const sampleOnPremiseMapServerFallbackAuthorizeUrl = "https://dtlgeoarcgis.adtl.com/server/sharing/rest/oauth2/authorize";
 
   const sampleOnlineAuthorize1 = "https://www.arcgis.com/sharing/rest/oauth2/authorize";
-
 
   it("should construct the proper login Url from a enterprise token url", async () => {
 
@@ -70,7 +75,7 @@ describe("ArcGisUtilities tests", () => {
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
-      acOnPremiseEndpoint = onPremiseEndpoint as ArcGisOAuth2Endpoint;
+      acOnPremiseEndpoint = onPremiseEndpoint ;
 
     expect(acOnPremiseEndpoint).to.not.undefined;
     expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
@@ -94,7 +99,7 @@ describe("ArcGisUtilities tests", () => {
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
-      acOnPremiseEndpoint = onPremiseEndpoint as ArcGisOAuth2Endpoint;
+      acOnPremiseEndpoint = onPremiseEndpoint ;
 
     expect(acOnPremiseEndpoint).to.not.undefined;
     expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
