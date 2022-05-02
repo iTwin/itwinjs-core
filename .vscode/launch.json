@@ -203,6 +203,23 @@
         "${workspaceFolder}/extensions/map-layers/lib/**/*.js"
       ]
     },
+    {
+      "name": "MapLayers Auth Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-auth/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
