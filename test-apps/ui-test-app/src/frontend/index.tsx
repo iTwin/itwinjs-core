@@ -70,7 +70,6 @@ import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { InspectUiItemInfoTool } from "./tools/InspectTool";
-import { MichelTestPrefs } from "./MichelTestPrefs";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -364,7 +363,7 @@ export class SampleAppIModelApp {
           clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
         }];
 
-    const accessClient = new ArcGisAccessClient();
+      const accessClient = new ArcGisAccessClient();
 
       const initStatus = accessClient.initialize({
         redirectUri: "http://localhost:3000/esri-oauth2-callback",
@@ -373,7 +372,7 @@ export class SampleAppIModelApp {
           enterpriseClientIds,
         }});
 
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+      IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
       assert(initStatus === true);
     }
 
