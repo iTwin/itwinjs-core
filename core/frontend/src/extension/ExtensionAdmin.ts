@@ -53,11 +53,8 @@ export class ExtensionAdmin {
   public async addExtension(provider: ExtensionProvider): Promise<void> {
     if ("hostname" in provider) {
       const hostName = provider.hostname;
-      if (this._hosts.indexOf(hostName) < 0) {
-        // TODO throw error if hostname wasn't registered
-        // throw new Error(
-        //   `Remote extension could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
-        // );
+      if (this._hosts.length > 0 && this._hosts.indexOf(hostName) < 0) {
+        Logger.logError(loggerCategory, `Error loading extension: ${hostName} was not registered.`);
       }
     }
     try {
