@@ -18,7 +18,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
+  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
@@ -351,16 +351,8 @@ export async function assertIdentityTransformation(
             mappedRelationTargetInTargetId
           );
         } else if (!propExpectedToHaveChangedRandomly) {
-          /// / HACK: change the appearance in the source to not care about the difference from the target
-          const myColor = 0x0000ff;
-          if (propName === "geom") {
-            (sourceElem.asAny[propName] as GeometryStreamProps | undefined)?.map(
-              (e) => "appearance" in e ? { appearance: { ...e.appearance, color: myColor } } : e
-            );
-          }
-          /// /////////////////////
           // kept for conditional breakpoints
-          const _eq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
