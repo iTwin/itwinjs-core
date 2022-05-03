@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, BeTimePoint, dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
+import { assert, BeTimePoint, dispose, disposeArray, DuplicatePolicy, IDisposable, SortedArray } from "@itwin/core-bentley";
 import { ImageBuffer, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { CreateTextureArgs } from "../RenderTexture";
 import { System } from "./System";
@@ -40,13 +40,22 @@ class Stats {
   public createdRatio = 0;
   public reusedRatio = 0;
 
+  private _totalCreateTime = 0;
+  private _totalReuseTime = 0;
+  public meanCreateTime = 0;
+  public meanReuseTime = 0;
+
   public createPerDim = new Map<string, number>();
   public reusePerDim = new Map<string, number>();
+  public createTimePerDim = new Map<string, number>();
+  public reuseTimePerDim = new Map<string, number>();
   public insertPerDim = new Map<string, number>();
   public wastedPerDim = new Map<string, number>();
   public missingPerDim = new Map<string, number>();
   public createRatioPerDim = new Map<string, number>();
   public reuseRatioPerDim = new Map<string, number>();
+  public meanCreateTimePerDim = new Map<string, number>();
+  public meanReuseTimePerDim = new Map<string, number>();
   public insertRatioPerDim = new Map<string, number>();
   public wastedRatioPerDim = new Map<string, number>();
   public missingRatioPerDim = new Map<string, number>();
@@ -54,8 +63,32 @@ class Stats {
   constructor() {
     setInterval(() => {
       // eslint-disable-next-line no-console
-      console.log(this);
+      console.log(this.prettyPrint);
     }, 1000 * 30);
+  }
+
+  public get prettyPrint(): string{
+    const sortFn = (key1: string, key2: string) => {
+      const [w1, h1] = key1.split("x").map((str1) => Number.parseFloat(str1));
+      const [w2, h2] = key2.split("x").map((str2) => Number.parseFloat(str2));
+      return (w1 * h1) - (w2 * h2) || w1 - w2 || h1 - h2; // Sort by area
+    };
+
+    return `{${Object.keys(this).map(
+      (key) => {
+        const value = this[key as keyof this];
+        if (typeof value === "string") {
+          return `"${key}":"${value}"`;
+        } else if (typeof value === "number") {
+          return `"${key}":${value}`;
+        } else if (value instanceof Map) {
+          return `"${key}":"\\"Key\\",\\"Value\\"\\n${
+            Array.from(value.keys()).sort(sortFn).map((dim) => `\\"${dim}\\",${value.get(dim)}`).join("\\n")
+          }"`;
+        } else   {
+          return "";
+        }
+      }).join(",")}}`;
   }
 
   public statSize(size: number) {
@@ -64,21 +97,27 @@ class Stats {
     this.meanSize = this._totalSize / this._totalSizeCount;
   }
 
-  public statCreate(size: number, width: number, height: number) {
+  public statCreate(size: number, width: number, height: number, time: number) {
     this.totalCreatedBytes += size;
+    this._totalCreateTime += time;
     this._totalCreatedCount++;
     this.meanCreatedBytes = this.totalCreatedBytes / this._totalCreatedCount;
+    this.meanCreateTime = this._totalCreateTime / this._totalCreatedCount;
     const key = this.dimensionKey(width, height);
-    this.createPerDim.set(key, (this.createPerDim.get(key) ?? 0 ) + 1);
+    this.createPerDim.set(key, (this.createPerDim.get(key) ?? 0) + 1);
+    this.createTimePerDim.set(key, (this.createTimePerDim.get(key) ?? 0) + time);
     this.computeRatios();
   }
 
-  public statReuse(size: number, width: number, height: number) {
+  public statReuse(size: number, width: number, height: number, time: number) {
     this.totalReusedBytes += size;
+    this._totalReuseTime += time;
     this._totalReusedCount++;
     this.meanReusedBytes = this.totalReusedBytes / this._totalReusedCount;
+    this.meanReuseTime = this._totalReuseTime / this._totalReusedCount;
     const key = this.dimensionKey(width, height);
-    this.reusePerDim.set(key, (this.reusePerDim.get(key) ?? 0 ) + 1);
+    this.reusePerDim.set(key, (this.reusePerDim.get(key) ?? 0) + 1);
+    this.reuseTimePerDim.set(key, (this.reuseTimePerDim.get(key) ?? 0) + time);
     this.computeRatios();
   }
 
@@ -134,6 +173,14 @@ class Stats {
     for (const [key, value] of this.missingPerDim) {
       this.missingRatioPerDim.set(key, value / this._totalMissingCount);
     }
+
+    for (const [key, value] of this.createTimePerDim) {
+      this.meanCreateTimePerDim.set(key, value / (this.createPerDim.get(key) ?? 1));
+    }
+
+    for (const [key, value] of this.reuseTimePerDim) {
+      this.meanReuseTimePerDim.set(key, value / (this.reusePerDim.get(key) ?? 1));
+    }
   }
 
   private dimensionKey(width: number, height: number, type?: RenderTexture.Type) {
@@ -157,6 +204,9 @@ class TrackedTexture implements IDisposable {
   /// Last time it has been used
   private _lastUsage: BeTimePoint;
 
+  /// Byte used by the texture
+  private _bytesUsed: number;
+
   public get texture(): Texture {
     return this._texture;
   }
@@ -177,18 +227,23 @@ class TrackedTexture implements IDisposable {
     return this._lastUsage;
   }
 
+  public get bytesUsed(): number {
+    return this._bytesUsed;
+  }
+
   constructor(texture: Texture) {
     this._texture = texture;
     this.next = this.previous = null;
+    this._bytesUsed = texture.bytesUsed;
     this._lastUsage = BeTimePoint.now();
   }
 
-  public canBeReusedWith(type: RenderTexture.Type, width: number, height: number) {
-    return this.type === type && this.width === width && this.height === height;
+  public compareWithParams(type: RenderTexture.Type, width: number, height: number) {
+    return this.width - width || this.height - height || this.type - type;
   }
 
-  public compare(other: TrackedTexture) {
-    return this.width - other.width || this.height - other.height || this.type - other.type;
+  public static compare(lhs: TrackedTexture, rhs: TrackedTexture) {
+    return lhs.compareWithParams(rhs.type, rhs.width, rhs.height);
   }
 
   public dispose(): void {
@@ -227,23 +282,23 @@ class LRUTextureList {
       assert(false, "unimplemented"); // TODO: handle case when we insert a texture that should not be at the end
     }
 
-    this._totalBytesUsed += texture.texture.bytesUsed;
+    this._totalBytesUsed += texture.bytesUsed;
   }
 
   public remove(texture: TrackedTexture) {
-    if (texture.previous !== null)
-      texture.previous.next = texture.next;
-    if (texture.next !== null)
-      texture.next.previous = texture.previous;
-
     if (this._tail === texture)
       this._tail = texture.previous;
     if (this._head === texture)
       this._head = texture.next;
 
+    if (texture.previous !== null)
+      texture.previous.next = texture.next;
+    if (texture.next !== null)
+      texture.next.previous = texture.previous;
+
     texture.next = texture.previous = null;
 
-    this._totalBytesUsed -= texture.texture.bytesUsed;
+    this._totalBytesUsed -= texture.bytesUsed;
     assert(this._totalBytesUsed >= 0, "Removed more from the lru list than available");
   }
 
@@ -253,11 +308,34 @@ class LRUTextureList {
   }
 }
 
+/// Sorted array of textures
+class TextureSortedArray extends SortedArray<TrackedTexture> {
+  constructor() {
+    super(TrackedTexture.compare, DuplicatePolicy.Allow);
+  }
+
+  /** Get a texture matching the parameters and extract it from the array.
+   * Parameters can either be a texture or a type/width/height combination
+   * Returns undefined if no matching texture has been found.
+   */
+  public spliceTexture(args: {type: RenderTexture.Type, width: number, height: number} | TrackedTexture): TrackedTexture | undefined {
+    const index = args instanceof TrackedTexture
+      ? this.indexOf(args)
+      : this.indexOfEquivalent((element) => (element.compareWithParams(args.type, args.width, args.height)));
+
+    if (index < 0)
+      return undefined;
+
+    return this._array.splice(index, 1)[0];
+  }
+}
+
 /** @internal */
 export class TexturePool implements IDisposable {
   private _system: System;
-  /// Textures are first split using their type, then sorted by width and finally height
-  private _textures: Array<TrackedTexture> = [];
+
+  /// Textures are stored in a sorted array to find quickly fitting candidate
+  private _textures = new TextureSortedArray();
 
   /// LRU list
   private _lruList = new LRUTextureList();
@@ -265,14 +343,15 @@ export class TexturePool implements IDisposable {
   /// Maximum size of the pool
   public readonly maxSize = 2048 * 2048 * 4 * 64;
 
-  /// Minimum size of textures stored
-  public readonly minimumTextureSize = 128;
+  /// Limit of size for stored textures
+  public readonly minimumTextureSize = 1;
+  public readonly maximumTextureSize = 512;
 
   /// Number of milliseconds before removing textures from the list
   public readonly textureExpirationTime = 1000 * 60;
 
   /// Time between two pruning
-  public readonly pruningTime = 1000 * 1;
+  public readonly pruningTime = 1000 * 30;
 
   /// Last time we pruned
   private _lastPruneTime?: BeTimePoint;
@@ -287,8 +366,7 @@ export class TexturePool implements IDisposable {
   }
 
   public dispose(): void { // FIXME never called?
-    disposeArray(this._textures);
-    this._textures.length = 0;
+    disposeArray(this._textures.extractArray());
     this._lruList.clear();
     // eslint-disable-next-line no-console
     console.log("Disposing", this._stats);
@@ -297,9 +375,10 @@ export class TexturePool implements IDisposable {
   public prune(): void {
     const now = BeTimePoint.now();
     let head = this._lruList.head;
+    const beforeBytes = this._lruList.totalBytesUsed;
     let freedMemory = 0;
     while (head !== null && now.milliseconds - head.lastUsage.milliseconds > this.textureExpirationTime) {
-      const bytesUsed = head.texture.bytesUsed;
+      const bytesUsed = head.bytesUsed;
       this._stats.statWaste(bytesUsed, head.width, head.height);
       const successfullyRemoved = this.removeTexture(head);
       freedMemory += bytesUsed;
@@ -308,7 +387,8 @@ export class TexturePool implements IDisposable {
       head = this._lruList.head;
     }
     // eslint-disable-next-line no-console
-    console.log(`Pruning ${freedMemory} bytes`);
+    console.log(`Pruning ${freedMemory} bytes. New size is ${this._lruList.totalBytesUsed}.`);
+    assert(this._lruList.totalBytesUsed === beforeBytes - freedMemory, `Pruning error (Expected ${beforeBytes - freedMemory} Got ${this._lruList.totalBytesUsed}`);
     this._lastPruneTime = now;
   }
 
@@ -319,25 +399,29 @@ export class TexturePool implements IDisposable {
   private requestPruning(): void {
     const now = BeTimePoint.now();
 
-    if (!this._lastPruneTime || this._lastPruneTime.milliseconds - now.milliseconds > this.pruningTime)
+    if (!this._lastPruneTime || now.milliseconds - this._lastPruneTime.milliseconds > this.pruningTime)
       this.prune();
 
     if (this._pruneTimeout) {
       clearTimeout(this._pruneTimeout);
     }
 
-    this._pruneTimeout = setTimeout(() => {this.prune();} , Math.max(this.pruningTime, this.textureExpirationTime));
+    // We compute the duration to make sure we won't need to prune after this call if no texture is inserted
+    const timeoutDuration = Math.max(this.pruningTime, this.textureExpirationTime);
+    this._pruneTimeout = setTimeout(() => {this.prune();}, timeoutDuration);
   }
 
   public createOrReuseTexture(args: CreateTextureArgs): RenderTexture | undefined {
     const texture = this.extractMatchingTexture(args.type ?? RenderTexture.Type.Normal, args.image.source.width, args.image.source.height);
 
     this._stats.statSize(this._lruList.totalBytesUsed);
+
+    const startTime = window.performance.now();
     if (texture !== undefined) {
-      const result =  this.reuseTexture(texture,  args);
+      const result = this.reuseTexture(texture, args);
 
       if (result !== undefined) {
-        this._stats.statReuse(texture.texture.bytesUsed, texture.width, texture.height);
+        this._stats.statReuse(texture.bytesUsed, texture.width, texture.height, window.performance.now() - startTime);
         // eslint-disable-next-line no-console
         console.log(`Reuse texture of size ${texture.width}x${texture.height} (target is ${args.image.source.width}x${args.image.source.height}). New size is ${this._lruList.totalBytesUsed}/${this.maxSize}`);
       } else {
@@ -345,6 +429,7 @@ export class TexturePool implements IDisposable {
         console.log(`Failed to reuse texture`);
       }
 
+      this.requestPruning();
       if (result !== undefined)
         return result;
       else
@@ -355,8 +440,7 @@ export class TexturePool implements IDisposable {
 
     const tmpResult = this._system.createTexture(args) as Texture;
 
-    this.requestPruning();
-    this._stats.statCreate(tmpResult.bytesUsed, tmpResult.texture.width, tmpResult.texture.height);
+    this._stats.statCreate(tmpResult.bytesUsed, tmpResult.texture.width, tmpResult.texture.height, window.performance.now() - startTime);
     return tmpResult;
   }
 
@@ -393,7 +477,8 @@ export class TexturePool implements IDisposable {
 
     const shouldReuse = this._lruList.totalBytesUsed + texture.bytesUsed < this.maxSize
       && texture instanceof Texture && texture.texture instanceof Texture2DHandle
-      && texture.texture.width >= this.minimumTextureSize && texture.texture.width >= this.minimumTextureSize;
+      && texture.texture.width >= this.minimumTextureSize && texture.texture.height >= this.minimumTextureSize
+      && texture.texture.width <= this.maximumTextureSize && texture.texture.height <= this.maximumTextureSize;
 
     if (shouldReuse) {
       this.insertTexture(texture);
@@ -417,15 +502,13 @@ export class TexturePool implements IDisposable {
     if (this._textures.length === 0)
       return undefined;
 
-    if (width < this.minimumTextureSize || height < this.minimumTextureSize)
+    if (width < this.minimumTextureSize || height < this.minimumTextureSize || width > this.maximumTextureSize || height < this.maximumTextureSize)
       return undefined;
 
-    const index = this._textures.findIndex((texture) => (texture.canBeReusedWith(type, width, height)));
+    const result = this._textures.spliceTexture({type, width, height});
 
-    if (index < 0)
+    if (result === undefined)
       return undefined;
-
-    const result = this._textures.splice(index, 1)[0];
 
     this._lruList.remove(result);
 
@@ -433,12 +516,10 @@ export class TexturePool implements IDisposable {
   }
 
   private removeTexture(texture: TrackedTexture): boolean {
-    const index = this._textures.findIndex((current) => (current === texture));
+    const result = this._textures.spliceTexture(texture);
 
-    if (index < 0)
+    if (result === undefined)
       return false;
-
-    const result = this._textures.splice(index, 1)[0];
 
     this._lruList.remove(result);
 
@@ -449,9 +530,8 @@ export class TexturePool implements IDisposable {
 
   private insertTexture(texture: Texture) {
     const trackedTexture = new TrackedTexture(texture);
-    this._textures.push(trackedTexture);
-    this._textures.sort((t1, t2) => t1.compare(t2)); // TODO: insert at the correct index
 
+    this._textures.insert(trackedTexture);
     this._lruList.insert(trackedTexture);
 
     // eslint-disable-next-line no-console

@@ -519,7 +519,7 @@ export class Texture2DHandle extends TextureHandle {
 
     const gl = System.instance.context;
 
-    // Go through System to ensure we don't interfere with currently-bound textures!
+    // Go through System to ensure we don't interfere with currently-bound textures
     System.instance.activateTexture2d(TextureUnit.Zero, tex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this._format, this._dataType, source);
     if (useMipMaps)
