@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { MapLayerTokenEndpoint } from "@itwin/core-frontend";
-import { url } from "inspector";
 
 /** @internal */
 export enum ArcGisOAuth2EndpointType {Authorize,Token}

@@ -16,7 +16,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
-/** @internal */
+/** @alpha */
 export enum MapLayerSourceStatus {
   Valid,
   InvalidCredentials,

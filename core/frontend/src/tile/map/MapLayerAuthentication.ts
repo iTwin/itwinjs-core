@@ -8,13 +8,13 @@
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
 
-/** @internal */
+/** @alpha */
 export interface MapLayerTokenEndpoint {
   getLoginUrl(stateData?: any): string|undefined;
   getUrl(): string;
 }
 
-/** @internal */
+/** @alpha */
 export interface MapLayerAuthenticationInfo {
   tokenEndpoint?: MapLayerTokenEndpoint;
 }

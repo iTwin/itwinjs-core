@@ -13,11 +13,14 @@ import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 import { RequestBasicCredentials } from "../../request/Request";
 
-/** @internal */
+/** @alpha */
 export class MapLayerFormat {
   public static formatId: string;
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
+
+  /** @internal */
   public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+  /** @internal */
   public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;
@@ -25,10 +28,10 @@ export class MapLayerFormat {
   public static async validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 }
 
-/** @internal */
+/** @alpha */
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-/** @internal */
+/** @alpha */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
@@ -56,6 +59,7 @@ export interface MapLayerOptions {
   [format: string]: MapLayerKey | undefined;
 }
 
+/** @internal */
 export interface MapLayerFormatEntry {
   type: MapLayerFormatType;
   accessClient?: MapLayerAccessClient;
@@ -95,12 +99,15 @@ export class MapLayerFormatRegistry {
   public get configOptions(): MapLayerOptions {
     return this._configOptions;
   }
+
+  /** @internal */
   public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
   }
 
+  /** @internal */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
