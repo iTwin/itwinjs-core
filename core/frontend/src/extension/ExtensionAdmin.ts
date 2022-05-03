@@ -100,13 +100,18 @@ export class ExtensionAdmin {
       if (!extension.manifest.activationEvents) continue;
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
-          try {
-            void extension.provider.execute();
-          } catch (e) {
-            Logger.logError(loggerCategory, `Error executing extension ${extension.manifest.name}: ${e}`);
-          }
+          void this._execute(extension);
         }
       }
+    }
+  }
+
+  /** Executes the extension. Catches and logs any errors (so that an extension will not crash the main application). */
+  private async _execute(extension: InstalledExtension) {
+    try {
+      await extension.provider.execute();
+    } catch (e) {
+      Logger.logError(loggerCategory, `Error executing extension ${extension.manifest.name}: ${e}`);
     }
   }
 }
