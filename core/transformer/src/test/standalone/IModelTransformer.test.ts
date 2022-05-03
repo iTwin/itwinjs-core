@@ -13,8 +13,6 @@ import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  GeometricElement3d,
-  GeometryPart,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
@@ -22,7 +20,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, GeometricElement3dProps, GeometryPartProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -1873,72 +1871,6 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
-
-    sourceDb.close();
-    targetDb.close();
-  });
-
-  it.only("Deven color change test", async () => {
-    const sourceDbPath = "/home/mike/Downloads/small.bim";
-    const sourceDb = SnapshotDb.openFile(sourceDbPath);
-
-    class MyTransformer extends IModelTransformer {
-      /** This override of IModelTransformer.onTransformElement exists for debugging purposes */
-      public override onTransformElement(sourceElement: Element): ElementProps {
-        const targetElementProps = super.onTransformElement(sourceElement);
-
-        if ("geom" in sourceElement || sourceElement instanceof GeometricElement || sourceElement instanceof GeometryPart) {
-          const targetGeomElementProps = targetElementProps as GeometricElement3dProps | GeometryPartProps;
-          const myColor = 0x00ffff;
-          const hasAppearance = targetGeomElementProps.geom?.some((g) => "appearance" in g);
-          if (targetGeomElementProps.geom)
-            targetGeomElementProps.geom =
-              hasAppearance
-                ? targetGeomElementProps.geom.map((e) =>
-                  "appearance" in e
-                    ? { appearance: { ...e.appearance, color: myColor } }
-                    : e
-                )
-                // keep the header
-                : [targetGeomElementProps.geom[0], {appearance: { color: myColor }}, ...targetGeomElementProps.geom.slice(1)];
-
-          // Uncomment below and comment above lines to run colorization on 2 elements only. Comment all above under if
-          // 1) Element that is not getting colored
-          // if(sourceElement.id === '0x50000000430'){
-          //   let geom = sourceElement.geom?.map(function(item){
-          //     if("appearance" in item){
-          //       item.appearance = {...item.appearance, color: 0xffff00}
-          //     }
-          //     return item;
-          //   });
-          //   targetElementProps.geom = geom;
-          // }
-
-          // 2) Element that is successfully getting colored
-          // if(sourceElement.id === '0x500000002e8'){
-          // let geom = sourceElement.geom?.map(function(item){
-          //   if("appearance" in item){
-          //     item.appearance = {...item.appearance, color: 0xffff00}
-          //   }
-          //   return item;
-          // });
-          // targetElementProps.geom = geom;
-          // }
-        }
-
-        return targetElementProps;
-      }
-    }
-
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-    const transformer = new MyTransformer(sourceDb, targetDb, { loadSourceGeometry: true, cloneUsingBinaryGeometry: false });
-    await transformer.processSchemas();
-    await transformer.processAll();
-
-    targetDb.saveChanges();
-
-    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
 
     sourceDb.close();
     targetDb.close();
