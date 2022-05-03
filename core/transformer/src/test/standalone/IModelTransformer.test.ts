@@ -1887,14 +1887,20 @@ describe("IModelTransformer", () => {
       public override onTransformElement(sourceElement: Element): ElementProps {
         const targetElementProps = super.onTransformElement(sourceElement);
 
-        if (sourceElement instanceof GeometricElement || sourceElement instanceof GeometryPart) {
+        if ("geom" in sourceElement || sourceElement instanceof GeometricElement || sourceElement instanceof GeometryPart) {
           const targetGeomElementProps = targetElementProps as GeometricElement3dProps | GeometryPartProps;
           const myColor = 0x00ffff;
-          targetGeomElementProps.geom = targetGeomElementProps.geom?.map((e) =>
-            "appearance" in e
-              ? { appearance: { ...e.appearance, color: myColor } }
-              : e
-          );
+          const hasAppearance = targetGeomElementProps.geom?.some((g) => "appearance" in g);
+          if (targetGeomElementProps.geom)
+            targetGeomElementProps.geom =
+              hasAppearance
+                ? targetGeomElementProps.geom.map((e) =>
+                  "appearance" in e
+                    ? { appearance: { ...e.appearance, color: myColor } }
+                    : e
+                )
+                // keep the header
+                : [targetGeomElementProps.geom[0], {appearance: { color: myColor }}, ...targetGeomElementProps.geom.slice(1)];
 
           // Uncomment below and comment above lines to run colorization on 2 elements only. Comment all above under if
           // 1) Element that is not getting colored
