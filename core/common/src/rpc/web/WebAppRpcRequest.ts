@@ -6,8 +6,6 @@
  * @module RpcInterface
  */
 
-import { Readable, Stream } from "stream";
-import { createGzip } from "zlib";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -109,8 +107,13 @@ export class WebAppRpcRequest extends RpcRequest {
       res.set(versionHeader, RpcProtocol.protocolVersion.toString());
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-var-requires
+    const { Readable, Stream } = require("stream");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createGzip } = require("zlib");
+
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
-    let responseBody: Buffer | Readable | string;
+    let responseBody: Buffer | typeof Readable | string;
     if (transportType === RpcContentType.Binary) {
       responseBody = WebAppRpcRequest.configureBinary(fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
@@ -314,7 +317,7 @@ export class WebAppRpcRequest extends RpcRequest {
     return response;
   }
 
-  private static configureStream(fulfillment: RpcRequestFulfillment): Readable {
+  private static configureStream(fulfillment: RpcRequestFulfillment) {
     return fulfillment.result.stream!;
   }
 
