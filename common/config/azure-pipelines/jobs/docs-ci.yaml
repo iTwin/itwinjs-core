@@ -47,4 +47,4 @@ jobs:
       - publish: $(Agent.BuildDirectory)/tempDocsBuild/
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+        condition: and(succeeded(), or(true, eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
