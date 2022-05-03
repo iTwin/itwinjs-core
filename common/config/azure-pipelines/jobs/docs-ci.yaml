@@ -29,6 +29,7 @@ jobs:
 
     steps:
       - checkout: self
+        path: $(Build.SourcesDirectory)/itwinjs-core
         clean: true
 
       - task: NodeTool@0
@@ -43,6 +44,9 @@ jobs:
         displayName: Setup git config
 
       - template: ../templates/docs-build.yaml
+        parameters:
+          workingDir: $(Build.SourcesDirectory)/itwinjs-core
+          outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
 
       - publish: $(Agent.BuildDirectory)/tempDocsBuild/
         artifact: DocsBuild

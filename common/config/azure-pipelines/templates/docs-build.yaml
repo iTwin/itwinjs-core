@@ -16,12 +16,6 @@ parameters:
     default: false
 
 steps:
-  - task: CopyFiles@2
-    displayName: Copy Files to $(Build.SourcesDirectory)\itwinjs-core
-    inputs:
-      SourceFolder: $(Build.SourcesDirectory)
-      TargetFolder: ${{ parameters.workingDir }}
-
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
