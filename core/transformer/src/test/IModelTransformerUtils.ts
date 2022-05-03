@@ -401,8 +401,8 @@ export async function assertIdentityTransformation(
           viewProps.acs = remapElem(viewProps.acs);
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
+      // kept for conditional breakpoints
       const _eq = deepEqualWithFpTolerance(
-        // kept for conditional breakpoints
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
