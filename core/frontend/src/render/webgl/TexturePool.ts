@@ -20,11 +20,11 @@ class Stats {
 
   public meanCreatedBytes = 0;
   public totalCreatedBytes = 0;
-  private _totalCreatedCount = 0;
+  public totalCreatedCount = 0;
 
   public meanReusedBytes = 0;
   public totalReusedBytes = 0;
-  private _totalReusedCount = 0;
+  public totalReusedCount = 0;
 
   public meanDisposedBytes = 0;
   public totalDisposedBytes = 0;
@@ -33,9 +33,7 @@ class Stats {
   private _totalInsertedCount = 0;
 
   public totalWastedBytes = 0;
-  private _totalWastedCount = 0;
-
-  private _totalMissingCount = 0;
+  public totalWastedCount = 0;
 
   public createdRatio = 0;
   public reusedRatio = 0;
@@ -47,18 +45,16 @@ class Stats {
 
   public createPerDim = new Map<string, number>();
   public reusePerDim = new Map<string, number>();
-  public createTimePerDim = new Map<string, number>();
-  public reuseTimePerDim = new Map<string, number>();
+  private _createTimePerDim = new Map<string, number>();
+  private _reuseTimePerDim = new Map<string, number>();
   public insertPerDim = new Map<string, number>();
   public wastedPerDim = new Map<string, number>();
-  public missingPerDim = new Map<string, number>();
   public createRatioPerDim = new Map<string, number>();
   public reuseRatioPerDim = new Map<string, number>();
   public meanCreateTimePerDim = new Map<string, number>();
   public meanReuseTimePerDim = new Map<string, number>();
   public insertRatioPerDim = new Map<string, number>();
   public wastedRatioPerDim = new Map<string, number>();
-  public missingRatioPerDim = new Map<string, number>();
 
   constructor() {
     setInterval(() => {
@@ -74,21 +70,24 @@ class Stats {
       return (w1 * h1) - (w2 * h2) || w1 - w2 || h1 - h2; // Sort by area
     };
 
-    return `{${Object.keys(this).map(
-      (key) => {
-        const value = this[key as keyof this];
-        if (typeof value === "string") {
-          return `"${key}":"${value}"`;
-        } else if (typeof value === "number") {
-          return `"${key}":${value}`;
-        } else if (value instanceof Map) {
-          return `"${key}":"\\"Key\\",\\"Value\\"\\n${
-            Array.from(value.keys()).sort(sortFn).map((dim) => `\\"${dim}\\",${value.get(dim)}`).join("\\n")
-          }"`;
-        } else   {
-          return "";
-        }
-      }).join(",")}}`;
+    return `{${Object.keys(this)
+      .filter((key) => !key.startsWith("_"))
+      .map(
+        (key) => {
+          const value = this[key as keyof this];
+          if (typeof value === "string") {
+            return `"${key}":"${value}"`;
+          } else if (typeof value === "number") {
+            return `"${key}":${value}`;
+          } else if (value instanceof Map) {
+            return `"${key}":"\\"Key\\",\\"Width\\",\\"Height\\",\\"Value\\"\\n${
+              Array.from(value.keys()).sort(sortFn).map((dim) => `\\"${dim}\\",${dim.split("x").join(",")},${value.get(dim)}`).join("\\n")
+            }"`;
+          } else   {
+            return "";
+          }
+        })
+      .join(",\n")}}`;
   }
 
   public statSize(size: number) {
@@ -100,24 +99,24 @@ class Stats {
   public statCreate(size: number, width: number, height: number, time: number) {
     this.totalCreatedBytes += size;
     this._totalCreateTime += time;
-    this._totalCreatedCount++;
-    this.meanCreatedBytes = this.totalCreatedBytes / this._totalCreatedCount;
-    this.meanCreateTime = this._totalCreateTime / this._totalCreatedCount;
+    this.totalCreatedCount++;
+    this.meanCreatedBytes = this.totalCreatedBytes / this.totalCreatedCount;
+    this.meanCreateTime = this._totalCreateTime / this.totalCreatedCount;
     const key = this.dimensionKey(width, height);
     this.createPerDim.set(key, (this.createPerDim.get(key) ?? 0) + 1);
-    this.createTimePerDim.set(key, (this.createTimePerDim.get(key) ?? 0) + time);
+    this._createTimePerDim.set(key, (this._createTimePerDim.get(key) ?? 0) + time);
     this.computeRatios();
   }
 
   public statReuse(size: number, width: number, height: number, time: number) {
     this.totalReusedBytes += size;
     this._totalReuseTime += time;
-    this._totalReusedCount++;
-    this.meanReusedBytes = this.totalReusedBytes / this._totalReusedCount;
-    this.meanReuseTime = this._totalReuseTime / this._totalReusedCount;
+    this.totalReusedCount++;
+    this.meanReusedBytes = this.totalReusedBytes / this.totalReusedCount;
+    this.meanReuseTime = this._totalReuseTime / this.totalReusedCount;
     const key = this.dimensionKey(width, height);
     this.reusePerDim.set(key, (this.reusePerDim.get(key) ?? 0) + 1);
-    this.reuseTimePerDim.set(key, (this.reuseTimePerDim.get(key) ?? 0) + time);
+    this._reuseTimePerDim.set(key, (this._reuseTimePerDim.get(key) ?? 0) + time);
     this.computeRatios();
   }
 
@@ -130,16 +129,9 @@ class Stats {
 
   public statWaste(size: number, width: number, height: number) {
     this.totalWastedBytes += size;
-    this._totalWastedCount++;
+    this.totalWastedCount++;
     const key = this.dimensionKey(width, height);
     this.wastedPerDim.set(key, (this.wastedPerDim.get(key) ?? 0 ) + 1);
-    this.computeRatios();
-  }
-
-  public statMissing(width: number, height: number, type: RenderTexture.Type) {
-    this._totalMissingCount++;
-    const key = this.dimensionKey(width, height, type);
-    this.missingPerDim.set(key, (this.missingPerDim.get(key) ?? 0 ) + 1);
     this.computeRatios();
   }
 
@@ -150,16 +142,16 @@ class Stats {
   }
 
   private computeRatios() {
-    const totalCount = this._totalCreatedCount + this._totalReusedCount;
-    this.createdRatio = this._totalCreatedCount / totalCount;
-    this.reusedRatio = this._totalReusedCount / totalCount;
+    const totalCount = this.totalCreatedCount + this.totalReusedCount;
+    this.createdRatio = this.totalCreatedCount / totalCount;
+    this.reusedRatio = this.totalReusedCount / totalCount;
 
     for (const [key, value] of this.createPerDim) {
-      this.createRatioPerDim.set(key, value / this._totalCreatedCount);
+      this.createRatioPerDim.set(key, value / this.totalCreatedCount);
     }
 
     for (const [key, value] of this.reusePerDim) {
-      this.reuseRatioPerDim.set(key, value / this._totalReusedCount);
+      this.reuseRatioPerDim.set(key, value / this.totalReusedCount);
     }
 
     for (const [key, value] of this.insertPerDim) {
@@ -167,18 +159,14 @@ class Stats {
     }
 
     for (const [key, value] of this.wastedPerDim) {
-      this.wastedRatioPerDim.set(key, value / this._totalWastedCount);
+      this.wastedRatioPerDim.set(key, value / this.totalWastedCount);
     }
 
-    for (const [key, value] of this.missingPerDim) {
-      this.missingRatioPerDim.set(key, value / this._totalMissingCount);
-    }
-
-    for (const [key, value] of this.createTimePerDim) {
+    for (const [key, value] of this._createTimePerDim) {
       this.meanCreateTimePerDim.set(key, value / (this.createPerDim.get(key) ?? 1));
     }
 
-    for (const [key, value] of this.reuseTimePerDim) {
+    for (const [key, value] of this._reuseTimePerDim) {
       this.meanReuseTimePerDim.set(key, value / (this.reusePerDim.get(key) ?? 1));
     }
   }
@@ -434,8 +422,6 @@ export class TexturePool implements IDisposable {
         return result;
       else
         dispose(texture); // TODO: Maybe put it back in the array?
-    } else {
-      this._stats.statMissing(args.image.source.width, args.image.source.height, args.type ?? RenderTexture.Type.Normal);
     }
 
     const tmpResult = this._system.createTexture(args) as Texture;
