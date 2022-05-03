@@ -88,6 +88,9 @@
     "PullChanges": {
       "keyin": "dta pull"
     },
+    "ToggleElementGraphics": {
+      "keyin": "dta elem graphics"
+    },
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
     },

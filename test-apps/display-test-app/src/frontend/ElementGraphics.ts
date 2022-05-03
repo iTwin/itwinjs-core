@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, compareStrings, Id64Set, Id64String, partitionArray, SortedArray } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ImdlReader, IModelApp, IModelConnection, RenderSystem, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs, TileParams,
-  TileRequest, TileRequestChannel, TileTree, TileTreeParams, TileTreeReference, Viewport,
+  BatchType, ContentFlags, CurrentImdlVersion, ElementGraphicsRequestProps, Frustum, FrustumPlanes, Placement3d, QueryRowFormat, TileFormat, ViewFlagOverrides,
+} from "@itwin/core-common";
+import {
+  ImdlReader, IModelApp, IModelConnection, RenderSystem, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileParams,
+  TileRequest, TileRequestChannel, TileTree, TileTreeParams, TileTreeReference, TileTreeSupplier, Tool, Viewport,
 } from "@itwin/core-frontend";
-import {BatchType, ContentFlags, CurrentImdlVersion, ElementGraphicsRequestProps, Frustum, FrustumPlanes, Placement3d, QueryRowFormat, TileFormat, ViewFlagOverrides} from "../../../../core/common/lib/cjs/core-common";
+import { parseToggle } from "@itwin/frontend-devtools";
 
 function* makeIdSequence() {
   let current = 0;
@@ -185,7 +188,7 @@ class Tree extends TileTree {
 
   public override get rootTile() { return this._rootTile; }
   public override get is3d() { return true; }
-  public override get maxDepth() { return undefined; }
+  public override get maxDepth() { return 2; }
   public override get viewFlagOverrides(): ViewFlagOverrides { return { }; }
 
   protected override _selectTiles(args: TileDrawArgs): Tile[] {
@@ -225,32 +228,30 @@ class Tree extends TileTree {
   }
 }
 
-const scratchFrustum = new Frustum();
+class NaiveElementsSource implements ElementsSource {
+  private readonly _elements: ElementNode[];
 
-class Provider implements TiledGraphicsProvider, ElementsSource {
-  private readonly _nodes: ElementNode[];
-
-  private constructor(nodes: ElementNode[]) {
-    this._nodes = nodes;
-  }
-
-  public forEachTileTreeRef(_viewport: Viewport, _func: (ref: TileTreeReference) => void): void {
+  private constructor(elements: ElementNode[]) {
+    this._elements = elements;
   }
 
   public getElements(criteria: ElementsCriteria): Iterable<ElementNode> {
-    return this._nodes.filter((x) => {
+    // ###TODO take into account feature symbology overrides that cause individual elements to always/never draw
+    return this._elements.filter((x) => {
       if (!criteria.models.has(x.modelId) || !criteria.categories.has(x.categoryId))
         return false;
+
+      // ###TODO frustum tests are not working...
+      const testFrustum = false;
+      if (!testFrustum)
+        return true;
 
       const frustum = Frustum.fromRange(x.aabb, scratchFrustum);
       return FrustumPlanes.Containment.Outside !== criteria.args.frustumPlanes.computeFrustumContainment(frustum);
     });
   }
 
-  public static async registerProvider(viewport: Viewport): Promise<void> {
-    if (!viewport.view.isSpatialView())
-      return;
-
+  public static async create(iModel: IModelConnection): Promise<ElementsSource> {
     const ecsql = `
       SELECT ECInstanceId, Model.Id, Category.Id, BBoxLow, BBoxHigh, Origin, Yaw, Pitch, Roll
       FROM bis.SpatialElement
@@ -258,11 +259,15 @@ class Provider implements TiledGraphicsProvider, ElementsSource {
     `;
 
     const nodes: ElementNode[] = [];
-    for await (const row of viewport.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+    for await (const row of iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
       const placement = Placement3d.fromJSON({
         origin: row[5],
         angles: { yaw: row[6], pitch: row[7], roll: row[8] },
-        bbox: { low: row[3], high: row[4] },
+        // ECSql gives upper-case coordinates, core-geometry wants lower-case...
+        bbox: {
+          low: { x: row[3].X, y: row[3].Y, z: row[3].Z, },
+          high: { x: row[4].X, y: row[4].Y, z: row[4].Z },
+        },
       });
 
       nodes.push({
@@ -273,7 +278,65 @@ class Provider implements TiledGraphicsProvider, ElementsSource {
       });
     }
 
-    const provider = new Provider(nodes);
+    return new NaiveElementsSource(nodes);
+  }
+}
+
+class Supplier implements TileTreeSupplier {
+  public compareTileTreeIds(lhs: Provider, rhs: Provider): number {
+    return lhs.providerId - rhs.providerId;
+  }
+
+  public async createTileTree(provider: Provider, iModel: IModelConnection): Promise<TileTree | undefined> {
+    assert(provider.iModel === iModel);
+    const source = await NaiveElementsSource.create(iModel);
+    const params: TileTreeParams = {
+      iModel,
+      id: `ElemGfx_${provider.providerId.toString()}`,
+      modelId: "0",
+      location: Transform.createIdentity(), // ###TODO center of project extents
+      priority: TileLoadPriority.Primary,
+    };
+
+    return new Tree(source, params);
+  }
+}
+
+const supplier = new Supplier();
+
+class Reference extends TileTreeReference {
+  public constructor(private readonly _provider: Provider) {
+    super();
+  }
+
+  public get treeOwner() {
+    return this._provider.iModel.tiles.getTileTreeOwner(this._provider, supplier);
+  }
+}
+
+const scratchFrustum = new Frustum();
+
+class Provider implements TiledGraphicsProvider {
+  private static _nextId = 1;
+  public readonly providerId: number;
+  public readonly iModel: IModelConnection;
+  private readonly _ref: Reference;
+
+  private constructor(iModel: IModelConnection) {
+    this.iModel = iModel;
+    this.providerId = Provider._nextId++;
+    this._ref = new Reference(this);
+  }
+
+  public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void): void {
+    func(this._ref);
+  }
+
+  public static async registerProvider(viewport: Viewport): Promise<void> {
+    if (!viewport.view.isSpatialView())
+      return;
+
+    const provider = new Provider(viewport.iModel);
     viewport.addTiledGraphicsProvider(provider);
 
     const iModel = viewport.view.iModel;
@@ -281,5 +344,45 @@ class Provider implements TiledGraphicsProvider, ElementsSource {
       if (viewport.view.iModel !== iModel || !viewport.view.isSpatialView())
         viewport.dropTiledGraphicsProvider(provider);
     });
+  }
+}
+
+export class ToggleElementGraphicsTool extends Tool {
+  public static override toolId = "ToggleElementGraphics";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public override async run(enable?: boolean): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || !vp.view.isSpatialView())
+      return false;
+
+    let provider;
+    for (const p of vp.tiledGraphicsProviders) {
+      if (p instanceof Provider) {
+        provider = p;
+        break;
+      }
+    }
+
+    if (undefined === enable)
+      enable = undefined === provider;
+
+    if (enable) {
+      if (!provider)
+        await Provider.registerProvider(vp);
+    } else if (provider) {
+      vp.dropTiledGraphicsProvider(provider);
+    }
+
+    return true;
+  }
+
+  public override parseAndRun(...args: string[]): Promise<boolean> {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      return this.run(enable);
+
+    return Promise.resolve(false);
   }
 }

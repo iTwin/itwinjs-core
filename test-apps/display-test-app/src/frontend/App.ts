@@ -38,6 +38,7 @@ import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { GltfDecorationTool } from "./GltfDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { ToggleElementGraphicsTool } from "./ElementGraphics";
 import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
@@ -315,8 +316,9 @@ export class DisplayTestApp {
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
-      ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
+      ToggleAspectRatioSkewDecoratorTool,
+      ToggleElementGraphicsTool,
       ToggleShadowMapTilesTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
