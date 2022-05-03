@@ -3,66 +3,66 @@
 ### Guide
 
 #### Introduction
-- [Overview](./index.md)
-- [Federated Digital Twins](./fundamentals/intro/federated-digital-twins.md)
-- [Modeling with BIS](./fundamentals/intro/modeling-with-bis.md)
-- [Organization of BIS](./fundamentals/intro/bis-organization.md)
-- [Fabric of the Universe](./fundamentals/intro/fabric-of-the-universe.md)
+- [Overview](./guide/intro/overview.md)
+- [Federated Digital Twins](./guide/intro/federated-digital-twins.md)
+- [Modeling with BIS](./guide/intro/modeling-with-bis.md)
+- [Organization of BIS](./guide/intro/bis-organization.md)
+- [Fabric of the Universe](./guide/intro/fabric-of-the-universe.md)
 
 #### Fundamentals
-- [Element Fundamentals](./fundamentals/foundation/element-fundamentals.md)
-- [Codes](./fundamentals/foundation/codes.md)
-- [ElementAspect Fundamentals](./fundamentals/foundation/elementaspect-fundamentals.md)
-- [Mixins](./fundamentals/foundation/mixins.md)
-- [Model Fundamentals](./fundamentals/foundation/model-fundamentals.md)
-- [Relationship Fundamentals](./fundamentals/foundation/relationship-fundamentals.md)
-- [Schemas (“Domains”)](./fundamentals/foundation/schemas-domains.md)
-- [Classifying Elements](./fundamentals/foundation/data-classification.md)
-- [Type Definitions](./fundamentals/foundation/type-definitions.md)
-- [Categories](./fundamentals/foundation/categories.md)
+- [Element Fundamentals](./guide/fundamentals/element-fundamentals.md)
+- [Codes](./guide/fundamentals/codes.md)
+- [ElementAspect Fundamentals](./guide/fundamentals/elementaspect-fundamentals.md)
+- [Mixins](./guide/fundamentals/mixins.md)
+- [Model Fundamentals](./guide/fundamentals/model-fundamentals.md)
+- [Relationship Fundamentals](./guide/fundamentals/relationship-fundamentals.md)
+- [Schemas (“Domains”)](./guide/fundamentals/schemas-domains.md)
+- [Classifying Elements](./guide/fundamentals/data-classification.md)
+- [Type Definitions](./guide/fundamentals/type-definitions.md)
+- [Categories](./guide/fundamentals/categories.md)
 
 #### Data Organization
-- [Information Hierarchy](./fundamentals/data-organization/information-hierarchy.md)
-- [Modeling Perspectives](./fundamentals/data-organization/modeling-perspectives.md)
-- [Top of the World](./fundamentals/data-organization/top-of-the-world.md)
-- [Organizing Models and Elements](./fundamentals/data-organization/organizing-models-and-elements.md)
-- [Spatial Composition](./fundamentals/data-organization/spatial-composition.md)
-- [Modeling Systems](./fundamentals/data-organization/modeling-systems.md)
-- [Overlapping Systems](./fundamentals/data-organization/overlapping-systems.md)
-- [Organizing Repository-global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
+- [Information Hierarchy](./guide/data-organization/information-hierarchy.md)
+- [Modeling Perspectives](./guide/data-organization/modeling-perspectives.md)
+- [Top of the World](./guide/data-organization/top-of-the-world.md)
+- [Organizing Models and Elements](./guide/data-organization/organizing-models-and-elements.md)
+- [Spatial Composition](./guide/data-organization/spatial-composition.md)
+- [Modeling Systems](./guide/data-organization/modeling-systems.md)
+- [Overlapping Systems](./guide/data-organization/overlapping-systems.md)
+- [Organizing Repository-global Definition Elements](./guide/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
-- [3D Guidance](./fundamentals/physical-perspective/3d-guidance.md)
-- [PhysicalModel Hierarchy](./fundamentals/physical-perspective/physical-hierarchy-organization.md)
-- [Physical Models and Elements](./fundamentals/physical-perspective/physical-models-and-elements.md)
-- [Physical Materials](./fundamentals/physical-perspective/physical-materials.md)
-- [Quantity Takeoffs: Guidelines](./fundamentals/physical-perspective/qto-guidelines.md)
+- [3D Guidance](./guide/physical-perspective/3d-guidance.md)
+- [PhysicalModel Hierarchy](./guide/physical-perspective/physical-hierarchy-organization.md)
+- [Physical Models and Elements](./guide/physical-perspective/physical-models-and-elements.md)
+- [Physical Materials](./guide/physical-perspective/physical-materials.md)
+- [Quantity Takeoffs: Guidelines](./guide/physical-perspective/qto-guidelines.md)
 
 #### Other Modeling Perspectives
-- [Functional Models and Elements](./fundamentals/other-perspectives/functional-models-and-elements.md)
-- [Analysis Models and Elements](./fundamentals/other-perspectives/analysis-models-and-elements.md)
-- [Information Models and Elements](./fundamentals/other-perspectives/information-models-and-elements.md)
+- [Functional Models and Elements](./guide/other-perspectives/functional-models-and-elements.md)
+- [Analysis Models and Elements](./guide/other-perspectives/analysis-models-and-elements.md)
+- [Information Models and Elements](./guide/other-perspectives/information-models-and-elements.md)
 
 #### Schema Evolution
-- [Schema Customization](./fundamentals/schema-evolution/schema-customization.md)
-- [Data Evolution Across Time](./fundamentals/schema-evolution/data-evolution-across-time.md)
-- [Schema Versioning](./fundamentals/schema-evolution/schema-versioning-and-generations.md)
-- [Schema Production Status](./fundamentals/schema-evolution/schema-production-status.md)
-- [Schema Design Guidelines](./fundamentals/schema-evolution/schema-design-guidelines.md)
+- [Schema Customization](./guide/schema-evolution/schema-customization.md)
+- [Data Evolution Across Time](./guide/schema-evolution/data-evolution-across-time.md)
+- [Schema Versioning](./guide/schema-evolution/schema-versioning-and-generations.md)
+- [Schema Production Status](./guide/schema-evolution/schema-production-status.md)
+- [Schema Design Guidelines](./guide/schema-evolution/schema-design-guidelines.md)
 
 #### BIS Naming Guidelines
 
-- [Rules and Recommendations](./fundamentals/naming-guidelines/rules-and-recommendations.md)
-- [Special Terms](./fundamentals/naming-guidelines/special-terms.md)
-- [Summary of Exceptions](./fundamentals/naming-guidelines/summary-of-exceptions.md)
-- [Abbreviations and Acronyms](./fundamentals/naming-guidelines/standard-abbreviations-and-acronyms.md)
-- [Relationship “Strengths”](./fundamentals/naming-guidelines/standard-relationship-strengths-names.md)
+- [Rules and Recommendations](./guide/naming-guidelines/rules-and-recommendations.md)
+- [Special Terms](./guide/naming-guidelines/special-terms.md)
+- [Summary of Exceptions](./guide/naming-guidelines/summary-of-exceptions.md)
+- [Abbreviations and Acronyms](./guide/naming-guidelines/standard-abbreviations-and-acronyms.md)
+- [Relationship “Strengths”](./guide/naming-guidelines/standard-relationship-strengths-names.md)
 
 #### Other topics
-- [BIS Schema Units](./fundamentals/other-topics/units.md)
-- [BIS Schema Validation](./fundamentals/other-topics/bis-schema-validation.md)
+- [BIS Schema Units](./guide/other-topics/units.md)
+- [BIS Schema Validation](./guide/other-topics/bis-schema-validation.md)
 
-#### [BIS Glossary](./fundamentals/glossary.md)
+#### [BIS Glossary](./guide/glossary.md)
 
 &nbsp;
 

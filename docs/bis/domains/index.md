@@ -2,7 +2,7 @@
 
 ## Introduction
 
-BIS domains are organized in this reference according to their intended [layer](../fundamentals/intro/bis-organization.md) and discipline.
+BIS domains are organized in this reference according to their intended [layer](../guide/intro/bis-organization.md) and discipline.
 
 ## BIS domains
 

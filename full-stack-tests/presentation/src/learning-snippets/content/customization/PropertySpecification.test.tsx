@@ -283,15 +283,15 @@ describe("Learning Snippets", () => {
               return data;
             },
           };
-          const { findByText } = render(
+          const { findAllByText } = render(
             <VirtualizedPropertyGridWithDataProvider
               dataProvider={expandedDataProvider}
               width={500}
               height={1200}
             />,
           );
-          const renderedElement = await findByText("DgnV8Bridge");
-          expect(renderedElement.style.color).to.eq("red");
+          const renderedElements = await findAllByText("DgnV8Bridge");
+          expect(renderedElements[0].style.color).to.eq("red");
         } finally {
           PropertyValueRendererManager.defaultManager.unregisterRenderer("my-renderer");
         }

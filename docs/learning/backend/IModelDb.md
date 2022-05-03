@@ -28,7 +28,7 @@ Every now and then the schemas in the iModel may become incompatible with newer 
 
 There are two kinds of schemas that typically get upgraded:
 
-- [Domain schemas](../../bis/fundamentals/foundation/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/fundamentals/glossary/#domain)
+- [Domain schemas](../../bis/guide/fundamentals/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/guide/glossary/#domain)
 - *Profile schemas* - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
 
 The iTwin.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -

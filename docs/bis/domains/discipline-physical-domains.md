@@ -1,6 +1,6 @@
 ## Discipline-Physical domains
 
-The following domains lay out the [Discipline-Physical layer](../fundamentals/intro/bis-organization.md) in the BIS hierarchy. They define real-world concrete physical / spatial entities and closely associated information, used by the Physical modeling perspectives of Subjects.
+The following domains lay out the [Discipline-Physical layer](../guide/intro/bis-organization.md) in the BIS hierarchy. They define real-world concrete physical / spatial entities and closely associated information, used by the Physical modeling perspectives of Subjects.
 
 ### [Building domains](./discipline-physical-domains/building-domains.md)
 

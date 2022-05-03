@@ -15,7 +15,7 @@ The responsible-parties may be organizations or individuals. Because there are t
 
 In the physical perspective, responsibilities are generally assigned according to systems, with one party responsible for designing a given system. This drives organization within the physical partition. For details see [Physical Hierarchy](../physical-perspective/physical-hierarchy-organization.md).
 
-The SRPP essentially defines a workflow-driven constraint on the organization of `Element`s into Models. Within that constraint, there is a high degree of flexibility regarding the `Element`/`Model` organization. Generally, the organization of `Element`s and `Model`s that are the responsibility of a single party should be driven by anticipated user workflows, keeping in mind the practical ramifications of `Model`s, described in [Model Fundamentals](../foundation/model-fundamentals.md).
+The SRPP essentially defines a workflow-driven constraint on the organization of `Element`s into Models. Within that constraint, there is a high degree of flexibility regarding the `Element`/`Model` organization. Generally, the organization of `Element`s and `Model`s that are the responsibility of a single party should be driven by anticipated user workflows, keeping in mind the practical ramifications of `Model`s, described in [Model Fundamentals](../fundamentals/model-fundamentals.md).
 
 ---
 | Next: [Organizing Models and Elements](./organizing-models-and-elements.md)

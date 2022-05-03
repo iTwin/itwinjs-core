@@ -98,7 +98,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * uniqueness of id, code, and federationGuid.
  *
  * See:
- * * [Element Fundamentals]($docs/bis/fundamentals/foundation/element-fundamentals.md)
+ * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
@@ -109,17 +109,17 @@ export class Element extends Entity {
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
-  /** The ModelId of the [Model]($docs/bis/fundamentals/foundation/model-fundamentals.md) containing this element */
+  /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
-  /** The [Code]($docs/bis/fundamentals/foundation/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
-  /** A [FederationGuid]($docs/bis/fundamentals/foundation/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/fundamentals/foundation/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
-  /** Optional [json properties]($docs/bis/fundamentals/foundation/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
   public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.

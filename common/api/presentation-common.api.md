@@ -1509,6 +1509,29 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
     type: FieldDescriptorType.Name;
 }
 
+// @beta
+export interface NavigationPropertyInfo {
+    classInfo: ClassInfo;
+    isForwardRelationship: boolean;
+}
+
+// @beta (undocumented)
+export namespace NavigationPropertyInfo {
+    export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
+    export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfoJSON<string>;
+    export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON;
+}
+
+// @beta
+export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+    // (undocumented)
+    classInfo: TClassInfoJSON;
+    // (undocumented)
+    isForwardRelationship: boolean;
+}
+
 // @public
 export type NavigationRule = RootNodeRule | ChildNodeRule;
 
@@ -2151,6 +2174,8 @@ export interface PropertyInfo {
     // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
+    // @beta
+    navigationPropertyInfo?: NavigationPropertyInfo;
     type: string;
 }
 
@@ -2173,6 +2198,8 @@ export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     kindOfQuantity?: KindOfQuantityInfo;
     // (undocumented)
     name: string;
+    // @beta (undocumented)
+    navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
     // (undocumented)
     type: string;
 }

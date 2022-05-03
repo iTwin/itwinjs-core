@@ -36,7 +36,7 @@ It is now possible to set property specification [`isDisplayed` attribute](../pr
 
 ### Fixed nested hierarchy rules handling
 
-There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for all child node rules available at the current context.
+There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for child node rules nested under the parent node rule and at the root level of the ruleset.
 
 Example:
 
@@ -50,7 +50,7 @@ Example:
       "type": "child-1",
       "label": "Child 1",
       "nestedRules": [{
-        "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+        "ruleType": "ChildNodes",
         "specifications": [{
           "specType": "CustomNode",
           "type": "child-1.1",
@@ -81,7 +81,7 @@ Example:
 }
 ```
 
-With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at other child node rules available in the context of the specification that created the node. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
+With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
 
 ### Detecting integrated graphics
 

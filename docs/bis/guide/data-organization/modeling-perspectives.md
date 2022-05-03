@@ -30,7 +30,7 @@ Modeling perspectives are also manifested in `Element` subclasses. Often there i
 
 <!-- The above paragraph is intentionally vague. I am hoping we can approve it for now and improve it when we figure out our mixin (or whatever strategy)-->
 
-[Top of the World](./top-of-the-world.md) discusses `InformationPartitionElement`s and [Model Fundamentals](../foundation/model-fundamentals.md) discusses `Model`s.
+[Top of the World](./top-of-the-world.md) discusses `InformationPartitionElement`s and [Model Fundamentals](../fundamentals/model-fundamentals.md) discusses `Model`s.
 
 <!-- Temporarily left this out:>
 

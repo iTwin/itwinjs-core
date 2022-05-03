@@ -40,7 +40,7 @@ Examples of entities that are NOT modeled with PhysicalElements are:
 - Construction Superintendents
 - Cranes (when used only for resource planning)
 
-See [Element Fundamentals](../foundation/element-fundamentals.md) for more information on Elements.
+See [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on Elements.
 
 ## PhysicalType
 
@@ -50,19 +50,19 @@ PhysicalTypes are often used when a particular PhysicalElement can be ordered fr
 PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related.
 Each PhysicalElement can be related to a maximum of one PhysicalType.
 
-See [Type Definitions](../foundation/type-definitions.md).
+See [Type Definitions](../fundamentals/type-definitions.md).
 
 ## PhysicalModels
 
 Each PhysicalElement is contained in exactly one PhysicalModel. A PhysicalModel is a container of PhysicalElements (and potentially related Elements of other classes) that together model some real-world physical entity. For example, a PhysicalModel might model a campus, a building, a sewer system or a pipe rack.
 
-See [Model Fundamentals](../foundation/model-fundamentals.md) for more information on Models.
+See [Model Fundamentals](../fundamentals/model-fundamentals.md) for more information on Models.
 
 ## Physical Breakdown
 
 Some PhysicalElements have associated "breakdown" PhysicalModels that model the same real world physical entity in finer granularity. For example, a SewerSystem PhysicalElement might be broken down into a SewerSystemModel that contains Pipe PhysicalElements that model the individual pipes in the sewer system.
 
-See  [Element Fundamentals](../foundation/element-fundamentals.md) for more information on Model breakdown concepts.
+See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on Model breakdown concepts.
 
 ### Top of the World - PhysicalPartition
 
@@ -72,7 +72,7 @@ At the top of the PhysicalElement-PhysicalModel tree is a PhysicalPartition Elem
 
 As an alternate modeling technique PhysicalElement can have child Elements instead of breakdown Models. Elements with child Elements are essentially aggregates. For example, a SteelConnection might be an aggregate of Bolts, Plates and Welds.
 
-See  [Element Fundamentals](../foundation/element-fundamentals.md) for more information on aggregates and child Elements.
+See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on aggregates and child Elements.
 
 ## Physical Backbone
 

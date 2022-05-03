@@ -7,32 +7,23 @@ import { IModelApp } from "@itwin/core-frontend";
 import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
-  opened: boolean;
   dialogId: string;
   onClose?: () => void;
   movable?: boolean;
 }
 
-export interface SampleModelessDialogState {
-  opened: boolean;
-}
-
-export class SampleModelessDialog extends React.Component<SampleModelessDialogProps, SampleModelessDialogState> {
-  public override readonly state: Readonly<SampleModelessDialogState>;
+export class SampleModelessDialog extends React.Component<SampleModelessDialogProps> {
   private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModelessDialog");
 
   constructor(props: SampleModelessDialogProps) {
     super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
   }
 
   public override render(): JSX.Element {
     return (
       <ModelessDialog
         title={this._title}
-        opened={this.state.opened}
+        opened={true}
         dialogId={this.props.dialogId}
         width={450}
         height={300}
@@ -55,14 +46,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
   };
 
   private _closeDialog = () => {
-    this.setState(
-      { opened: false },
-      () => {
-        if (this.props.onClose)
-          this.props.onClose();
-        else
-          ModelessDialogManager.closeDialog(this.props.dialogId);
-      }
-    );
+    this.props.onClose && this.props.onClose();
+    ModelessDialogManager.closeDialog(this.props.dialogId);
   };
 }
