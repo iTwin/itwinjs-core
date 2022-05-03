@@ -243,19 +243,31 @@ export class IModelTransformerTestUtils {
   }
 }
 
-/** get all properties, including those of bases and mixins from metadata */
+/** map of properties in class's EC definition to their name in the JS implementation if different */
+const aliasedProperties: Record<string, Record<string, string> | undefined> = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  "BisCore.GeometricElement3d": {
+    geometryStream: "geom",
+  },
+};
+
+/**
+ * get all properties, including those of bases and mixins from metadata,
+ * and aliases some properties where the name differs in JS land from the ec property
+ */
 function getAllElemMetaDataProperties(elem: Element) {
-  function getAllClassMetaDataProperties(metadata: EntityMetaData) {
+  function getAllClassMetaDataProperties(className: string, metadata: EntityMetaData) {
     const allProperties = { ...metadata?.properties };
     for (const baseName of metadata?.baseClasses ?? []) {
       const base = elem.iModel.getMetaData(baseName);
-      Object.assign(allProperties, getAllClassMetaDataProperties(base));
+      Object.assign(allProperties, getAllClassMetaDataProperties(baseName, base));
     }
+    Object.assign(allProperties, aliasedProperties[className.toLowerCase()]);
     return allProperties;
   }
   const classMetaData = elem.getClassMetaData();
   if (!classMetaData) return undefined;
-  return getAllClassMetaDataProperties(classMetaData);
+  return getAllClassMetaDataProperties(elem.classFullName, classMetaData);
 }
 
 /**
@@ -338,9 +350,14 @@ export async function assertIdentityTransformation(
           );
         } else if (!propExpectedToHaveChangedRandomly) {
           /// / HACK: change the appearance in the source to not care about the difference from the target
-          // const myColor = 0x0000ff;
-          // if (propName === "geom")
-          // (sourceElem.asAny[propName] as GeometryStreamProps).map((e) => "appearance" in e ? {appearance: {...e.appearance, color: myColor}} : e);
+          /*
+          const myColor = 0x0000ff;
+          if (propName === "geom") {
+            (sourceElem.asAny[propName] as GeometryStreamProps | undefined)?.map(
+              (e) => "appearance" in e ? { appearance: { ...e.appearance, color: myColor } } : e
+            );
+          }
+          */
           /// /////////////////////
           // kept for conditional breakpoints
           const _eq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
