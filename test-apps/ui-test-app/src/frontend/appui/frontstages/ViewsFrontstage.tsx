@@ -413,7 +413,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                     },
                   },
                 }}
-                fillZone={true} />,
+                fillZone={true} defaultFloatingSize={{width:330, height:540}} isFloatingStateWindowResizable={true} />,
             ]}
           />
         }
@@ -446,8 +446,11 @@ export class ViewsFrontstage extends FrontstageProvider {
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                   applicationData={{ iModelConnection }}
+                  isFloatingStateWindowResizable={true}
+                  defaultFloatingSize={{width:200, height:300}}
                 />,
-                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder"
+                  labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
           />
         }
@@ -799,8 +802,12 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        widgetDef.setWidgetState(WidgetState.Open);
-        widgetDef.expand();
+        if (widgetDef.activeState === WidgetState.Open) {
+          widgetDef.setWidgetState(WidgetState.Hidden);
+        } else {
+          widgetDef.setWidgetState(WidgetState.Open);
+          widgetDef.expand();
+        }
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),

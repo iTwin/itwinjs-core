@@ -60,17 +60,19 @@ exports[`ToolSettingsDockedContent should render settings 1`] = `
       />
     </div>
   </div>
-  <div
-    class="nz-toolSettings-setting"
-  >
+  <div>
     <div
-      class="uif-toolsetting-label-docked-horizontal"
+      class="nz-toolSettings-setting"
     >
-      Date
+      <div
+        class="uif-toolsetting-label-docked-horizontal"
+      >
+        Date
+      </div>
+      <input
+        type="date"
+      />
     </div>
-    <input
-      type="date"
-    />
   </div>
 </div>
 `;

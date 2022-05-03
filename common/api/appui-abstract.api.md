@@ -9,6 +9,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
+import { MarkRequired } from '@itwin/core-bentley';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -76,6 +77,10 @@ export interface AbstractWidgetProps extends ProvidedItem {
         x: number;
         y: number;
     };
+    defaultFloatingSize?: {
+        width: number;
+        height: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly floatingContainerId?: string;
@@ -116,6 +121,16 @@ export interface ActionButton extends ToolbarItem {
     readonly execute: () => void;
     readonly icon: string | ConditionalStringValue;
     readonly label: string | ConditionalStringValue;
+}
+
+// @public
+export interface AllowedUiItemProviderOverrides {
+    // @beta
+    providerId?: string;
+    // @beta
+    stageIds?: string[];
+    // @beta
+    stageUsages?: string[];
 }
 
 // @public
@@ -274,7 +289,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     // (undocumented)
     provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     // (undocumented)
-    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, _stageAppData?: any): AbstractWidgetProps[];
     // (undocumented)
     unregister(): void;
 }
@@ -1729,7 +1744,7 @@ export enum StagePanelLocation {
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
-    // (undocumented)
+    // @deprecated (undocumented)
     Middle = 1,
     // (undocumented)
     Start = 0
@@ -2091,12 +2106,18 @@ export interface UiFlags {
 }
 
 // @public
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+
+// @public
 export interface UiItemProviderRegisteredEventArgs {
     // (undocumented)
     providerId: string;
 }
 
-// @public
+// @public @deprecated
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,
@@ -2114,7 +2135,7 @@ export class UiItemsManager {
     static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: UiItemsProvider): void;
+    static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void;
     static get registeredProviderIds(): string[];
     static unregister(uiProviderId: string): void;
 }

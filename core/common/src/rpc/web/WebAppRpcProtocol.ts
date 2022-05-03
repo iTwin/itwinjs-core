@@ -184,6 +184,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     }
   }
 
+  public override supportsStatusCategory = true;
+
   /** Whether an HTTP status code indicates a request timeout. */
   public isTimeout(code: number): boolean {
     return code === 504;

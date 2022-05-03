@@ -145,10 +145,10 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "049d0761fb6bf0bffa6a161a8e19bb7a",
-              "df09d7650467c5704fbcf30291b5032b",
+              "d6448d44e7ee51c4d1a0b76895384418",
+              "f311dfef4c5ea495ef7ad9f8142a297d",
             ],
-            "type": "nodeType",
+            "type": "nodeType11",
             "version": 2,
           },
           "label": Object {
@@ -171,11 +171,11 @@ Array [
             "node": Object {
               "key": Object {
                 "pathFromRoot": Array [
-                  "049d0761fb6bf0bffa6a161a8e19bb7a",
-                  "06f1e28d08a34b2bd3265d0189c5782c",
-                  "0aad958227b8f327fe56485357f1fa8d",
+                  "d6448d44e7ee51c4d1a0b76895384418",
+                  "0ec5e9f1ddd4f09eff9151fa39a98d16",
+                  "ff569b1cf07f2eda7114084df402b1e1",
                 ],
-                "type": "nodeType",
+                "type": "nodeType131",
                 "version": 2,
               },
               "label": Object {
@@ -196,10 +196,10 @@ Array [
           "hasChildren": true,
           "key": Object {
             "pathFromRoot": Array [
-              "049d0761fb6bf0bffa6a161a8e19bb7a",
-              "06f1e28d08a34b2bd3265d0189c5782c",
+              "d6448d44e7ee51c4d1a0b76895384418",
+              "0ec5e9f1ddd4f09eff9151fa39a98d16",
             ],
-            "type": "nodeType",
+            "type": "nodeType13",
             "version": 2,
           },
           "label": Object {
@@ -220,9 +220,9 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "049d0761fb6bf0bffa6a161a8e19bb7a",
+          "d6448d44e7ee51c4d1a0b76895384418",
         ],
-        "type": "nodeType",
+        "type": "nodeType1",
         "version": 2,
       },
       "label": Object {
@@ -245,10 +245,10 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
-              "387655582c59afcd86ec1e0367536c7b",
+              "fafa795f43ac3379cd1392ee8375888d",
+              "4fe547d202499bac6d5fb0b38876540e",
             ],
-            "type": "nodeType",
+            "type": "nodeType32",
             "version": 2,
           },
           "label": Object {
@@ -269,9 +269,9 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
+          "fafa795f43ac3379cd1392ee8375888d",
         ],
-        "type": "nodeType",
+        "type": "nodeType3",
         "version": 2,
       },
       "label": Object {
@@ -309,7 +309,7 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "0724c83a8f4da39d6b6e9fa6f0249214",
+                      "e51b2266d19b4300d39be2617531f8cb",
                       "1a4d09db5bdc365efcdbbf97cf82444b",
                       "bae951c69239e9a5f927a1578c2ea51d",
                       "6353eaa324a9bd3ce40812bb86657761",
@@ -339,7 +339,7 @@ Array [
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "0724c83a8f4da39d6b6e9fa6f0249214",
+                  "e51b2266d19b4300d39be2617531f8cb",
                   "1a4d09db5bdc365efcdbbf97cf82444b",
                   "bae951c69239e9a5f927a1578c2ea51d",
                   "6353eaa324a9bd3ce40812bb86657761",
@@ -373,7 +373,7 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "0724c83a8f4da39d6b6e9fa6f0249214",
+                      "e51b2266d19b4300d39be2617531f8cb",
                       "1a4d09db5bdc365efcdbbf97cf82444b",
                       "bae951c69239e9a5f927a1578c2ea51d",
                       "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
@@ -403,7 +403,7 @@ Array [
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "0724c83a8f4da39d6b6e9fa6f0249214",
+                  "e51b2266d19b4300d39be2617531f8cb",
                   "1a4d09db5bdc365efcdbbf97cf82444b",
                   "bae951c69239e9a5f927a1578c2ea51d",
                   "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
@@ -435,7 +435,7 @@ Array [
               },
             ],
             "pathFromRoot": Array [
-              "0724c83a8f4da39d6b6e9fa6f0249214",
+              "e51b2266d19b4300d39be2617531f8cb",
               "1a4d09db5bdc365efcdbbf97cf82444b",
               "bae951c69239e9a5f927a1578c2ea51d",
             ],
@@ -466,15 +466,15 @@ Array [
           },
         ],
         "pathFromRoot": Array [
-          "0724c83a8f4da39d6b6e9fa6f0249214",
+          "e51b2266d19b4300d39be2617531f8cb",
           "1a4d09db5bdc365efcdbbf97cf82444b",
         ],
         "type": "ECInstancesNode",
         "version": 2,
       },
       "label": Object {
-        "displayValue": "Ñót spêçìfíêd",
-        "rawValue": "@RulesEngine:LABEL_General_NotSpecified@",
+        "displayValue": "DgnV8Bridge",
+        "rawValue": "DgnV8Bridge",
         "typeName": "string",
       },
     },

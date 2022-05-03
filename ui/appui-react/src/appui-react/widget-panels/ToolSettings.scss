@@ -7,6 +7,13 @@
   align-self: center;
 }
 
+.uif-toolsetting-label-docked-horizontal-empty {
+  padding-right: 0.5em;
+  align-self: center;
+  font-style: italic;
+  color: var(--iui-text-color-muted);
+}
+
 .uifw-standard-toolsettings-two-column-grid {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -19,6 +26,15 @@
   margin: 4px 4px 0px 4px;
 
   .uifw-standard-toolsettings-label-entry {
-     text-align: end;
+    text-align: end;
   }
+}
+
+.uifw-floating-toolsettings-container {
+  padding-top: 4px;
+}
+
+.nz-toolSettings-docked {
+  padding-top: 3px;
+  padding-bottom: 3px;
 }

@@ -6,9 +6,7 @@
  * @module Extensions
  */
 
-import { IModelApp } from "../IModelApp";
-import { ActivationEvent, BuildExtensionManifest, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
-import { ExtensionLoader } from "./ExtensionLoader";
+import type { ActivationEvent, BuildExtensionManifest, ExtensionLoader, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -49,12 +47,8 @@ export class ExtensionAdmin {
    * @internal
    */
   public onStartup = async () => {
-    await this.activateExtensionEvents(ActivationEvent.onStartup);
+    await this.activateExtensionEvents("onStartup");
   };
-
-  public constructor() {
-    IModelApp.onAfterStartup.addListener(this.onStartup);
-  }
 
   /** Add an ExtensionLoader to the front of the list of extension loaders. Extension loaders are invoked front to back.
    * @param extensionLoader Extension loader to add
@@ -80,7 +74,7 @@ export class ExtensionAdmin {
   }
 
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
-  private async activateExtensionEvents(event: string) {
+  private async activateExtensionEvents(event: ActivationEvent) {
     for (const extension of this._installedExtensions.values()) {
       if (!extension.manifest.activationEvents)
         continue;

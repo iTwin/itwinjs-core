@@ -69,7 +69,7 @@ export enum RealityDataFormat {
 /** Utility function for RealityDataFormat
  * @beta
  */
-export namespace RealityDataFormat  {
+export namespace RealityDataFormat {
   /**
    * Try to extract the RealityDataFormat from the url
    * @param tilesetUrl the reality data attachment url
@@ -116,7 +116,7 @@ export namespace RealityDataSourceKey {
   export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
     if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
       return true; // ignore other properties for CesiumIonAsset, id is hidden
-    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id) ) {
+    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id)) {
       // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data
       return true;
     }
@@ -134,6 +134,7 @@ export interface RealityDataSourceProps {
 
 /** JSON representation of a [[ContextRealityModel]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelProps {
   /** @see [[ContextRealityModel.rdSourceKey]].
@@ -213,7 +214,7 @@ export class ContextRealityModel {
    * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
    * @beta
    */
-  public readonly  rdSourceKey?: RealityDataSourceKey;
+  public readonly rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -295,6 +296,7 @@ export class ContextRealityModel {
  * @see [[ContextRealityModels]].
  * @see [[DisplayStyleSettingsProps.contextRealityModels]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */

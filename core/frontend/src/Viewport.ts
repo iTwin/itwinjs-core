@@ -945,7 +945,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @alpha */
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
-    const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
+    const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
@@ -3064,7 +3064,11 @@ export class ScreenViewport extends Viewport {
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
-  /** @internal */
+  /** Queue an animation that interpolates between this viewport's previous [Frustum]($common) and its current frustum.
+   * This function is typically called by [ViewTool]($frontend)s after modifying the viewport's [ViewState]($frontend), to smoothly transition to the new view;
+   * as opposed to calling [[synchWithView]] which immediately transitions to the new view. It uses [[FrustumAnimator]] to perform the animation.
+   * @public
+   */
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
@@ -3356,7 +3360,11 @@ export class ScreenViewport extends Viewport {
       _clear2dCanvas(this.canvas);
     }
 
-    this.target.updateViewRect();
+    const resized = this.target.updateViewRect();
+    if (resized) {
+      this.target.onResized();
+      this.invalidateController();
+    }
     this.invalidateRenderPlan();
   }
 }
