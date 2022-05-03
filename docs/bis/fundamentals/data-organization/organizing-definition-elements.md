@@ -1,4 +1,4 @@
-# Organizing Repository-global Definition Elements
+# Organizing Definition Elements
 
 Instances of [DefinitionElement](../glossary.md#DefinitionElement) hold configuration-related information that is meant to be referenced and shared. They are expected to be contained in `DefinitionModel`s as explained in [Model Fundamentals](../foundation/model-fundamentals.md).
 
@@ -11,25 +11,44 @@ Examples of `DefinitionElement`s include instances of:
 * `LineStyle`
 * etc.
 
-In some cases, one or more iModel data writers have the need to coordinate the sharing of the same `DefinitionElement`s among themselves, in light of a single iModel. This need is typically the result of data-alignment efforts in a BIS Domain. In those cases, a BIS Domain may standardize some of its concepts in terms of particular instances of its own `DefinitionElement` subclasses.
+## Definition Rank
 
-Consequently, BIS defines a strategy for anyone to be able to locate any repository-global `DefinitionElement`s in an iModel. The [DictionaryModel](../glossary.md#DictionaryModel) addresses such need.
+Every definition has a `Rank` property that indicates its basis of standardization. The values of Rank are:
 
-## The DictionaryModel
+* 0 = System (for standardized definitions that are semantically at the "core" layer of BIS. In the case "the system" is essentially BIS. There are actually no examples of these, to-date.)
+* 1 = Domain (for domain-specific standards)
+* 2 = Application (for application-specific definitions. Note that applications and connectors should endeavor to define and use standardized domains, so this does not mean "any definition written by a connector")
+* 3 = User (for most definitions, which are user-specific or project-specific)
 
-The `DictionaryModel` is a singleton container for repository-global `DefinitionElement` instances. It can be accessed via a `DefinitionPartition` with code 'BisCore.DictionaryModel' always created as a child of the root `Subject` of an iModel.
+## Definition scope
 
-Storing `DefinitionElement`s directly on the `DictionaryModel` may face *Code* collision problems. It is recommended that `DefinitionElement`s are instead organized in submodels of `DefinitionContainer`s.
+The `Subject` hierarchy in the repository essentially defines various levels of scope. The Root `Subject` is a "global" scope and all other `Subjects` define narrower scopes.
 
-Any repository-global `DefinitionElement`s introduced by a BIS Domain are expected to be organized in a submodel of `DefinitionContainer` instance, identified by the BIS Domain's schema alias, followed by the ':DomainDefinitions' suffix on their *Code*s.
+Each `Subject` can have 0 or 1 child `DefinitionPartition` element which is sub-modeled by a `DefinitionModel`.
 
-Standardized `DomainElement` instances within those `DefinitionContainer` submodels are also expected to carry their BIS Domain's schema alias as prefix on their *Code*s.
+### DictionaryModel (for global-scoped definitions)
+
+The `DefinitionPartion` of the Root `Subject` always has a `CodeValue` of "BisCore.DictionaryModel". Its sub-model is called the "DictionaryModel". The [DictionaryModel](../glossary.md#DictionaryModel) is a singleton container of `DefinitionElement` instances. It *directly* holds User-rank definitions and holds System, Domain, and Application-standardized definitions organized under `DefinitionContainer`s.
+
+* For Domain-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of "{domain alias}:DomainDefinitions" (where {domain alias} is the schema alias for the domain that is doing the standardization, *not* the schema that defines the particular `DefinitionElement` subclass) and a `CodeScope` that is the id of the `DefinitionModel` that contains it. Domain-standardized definitions should go in the sub-model of that `DefinitionContainer.
+* For Application-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of "{application name}:ApplicationsDefinitions" and a `CodeScope` that is the id of the `DefinitionModel` that contains it. Application-standardized definitions should go in the sub-model of that `DefinitionContainer.
+* For System-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of "SystemDefinitions" and a `CodeScope` that is the id of the `DefinitionModel` that contains it. BIS-standardized definitions should go in the sub-model of that `DefinitionContainer.
+
+All System-rank, Domain-rank, and Application-rank definitions should be organized under the DictionaryModel.
+
+As an example of domain-ranked definitions, the "Terrain" domain (with prefix "trrn") defines a set of standard `Category` elements and the "Earthworks" domain (with prefix "ew") defines some standard `PhysicalType` elements to be used with Connectors and Applications that support that domain. See diagram below.
+
+### Subject-specific definitions
+
+Only User-rank definitions should be placed in Subject-specific `DictionaryModel`s, which are typically created by iModel Connectors. The `DefinitionPartion` for Subject-specific definitions should have `CodeValue` of "Definitions" and `CodeScope` of its parent `Subject`.
+
+### Example organization of definitions
+
+System-rank and Application-rank definitions are not shown, but would go under DefinitionContainers in the DictionaryModel.
 
 &nbsp;
 ![Repository-Global DefinitionElements](../media/repository-global-definitions.png)
 &nbsp;
-
-Application schemas, as explained in [BIS Organization](../intro/bis-organization.md), shall contain no data that other Application schemas need or want to access. Therefore, Application-specific `DefinitionElement`s shall be stored in a model-hierarchy different than the `DictionaryModel`'s.
 
 ---
 | Next: [3D Guidance](../physical-perspective/3d-guidance.md)

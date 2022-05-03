@@ -6,13 +6,13 @@ Quantity takeoffs and material estimating are an important use-cases that BIS ta
 
 ## General approach
 
-It is expected that each Discipline-Physical schema modeling concepts of interest for Quantity takeoffs purposes introduce any relevant quantity-related concepts in light of its domain as first-class properties of its classes. Those quantity-related properties shall be introduced with the appropriate name according to their domain and applicable [Kind of Quantity](../../ec/kindofquantity.md) definitions.
+It is expected that each Discipline-Physical schema includes relevant quantities as first-class properties of its classes using appropriate names for the domain and applicable [Kind of Quantity](../../ec/kindofquantity.md) definitions.
 
 ## Fallback strategies
 
 Since not all BIS schemas at the Discipline-Physical layer have quantity-related properties, a fallback approach is needed. This approach primarily targets iModel Connectors and iModel-writers in need to write quantity-related data for BIS domains which do not exist yet, or may not have the equivalent properties yet.
 
-The first fallback strategy to be used in such circumnstance is the usage of the aspect classes from the [Quantity Takeoffs Aspects](../../domains/quantitytakeoffsaspects.ecschema) schema. It contains a number of commonly used quantity-related properties that can be attached to any Element as unique-aspects.
+The first fallback strategy to be used in such circumstance is the usage of the aspect classes from the [Quantity Takeoffs Aspects](../../domains/quantitytakeoffsaspects.ecschema) schema. It contains a number of commonly used quantity-related properties that can be attached to any Element as unique-aspects.
 
 The last-resource strategy to be used in order to store quantity-related properties not yet available in any BIS schema is for the iModel Connector or iModel-writer to introduce them into their own Application-level schema. This strategy should be seen as temporary as a request to add those missing quantity-related properties should be made to the BIS Working Group.
 

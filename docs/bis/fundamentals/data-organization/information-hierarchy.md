@@ -95,7 +95,7 @@ The following instance diagram depicts the information hierarchy for an hypothet
 
 ### iModel Connector Repository Organization
 
-iModel Connectors transform data in an external format into an iModel. As part of that job, they need to organize the resulting data in a way that is comprenhensible by both humans and software.
+iModel Connectors transform data in an external format into an iModel. As part of that job, they need to organize the resulting data in a way that is comprehensible by both humans and software.
 
 The following instance diagram depicts the organization of information in one iModel target by three iModel Connectors: IFC, OpenBuilding Designer and Bentley Civil. The last two are shown with more detail, including their parallel `Model`, `ExternalSource` and `SpatialComposition` hierarchies. The sample iModel shows data synchronized from three different datasets, two .dgn-based and one .ifc.
 
