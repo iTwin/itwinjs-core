@@ -208,8 +208,8 @@ async function listWorkspaceDb(args: ListOptions) {
     const timer = new StopWatch("list", true);
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      //      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
-      void CloudSqlite.transferDb("download", cloudContainer, { dbName: file.dbFileName, localFileName: "d:/temp/downloadTest.tmp" });
+      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+      // void CloudSqlite.transferDb("download", cloudContainer, { dbName: file.dbFileName, localFileName: "d:/temp/downloadTest.tmp" });
     }
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
