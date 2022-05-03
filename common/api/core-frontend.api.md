@@ -157,6 +157,7 @@ import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
+import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
@@ -1128,18 +1129,6 @@ export enum ArcGisErrorCode {
 }
 
 // @internal (undocumented)
-export interface ArcGisGenerateTokenOptions {
-    // (undocumented)
-    client: ArcGisTokenClientType;
-    // (undocumented)
-    expiration?: number;
-    // (undocumented)
-    ip?: string;
-    // (undocumented)
-    referer?: string;
-}
-
-// @internal (undocumented)
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
@@ -1196,51 +1185,9 @@ export class ArcGISTileMap {
     }
 
 // @internal (undocumented)
-export interface ArcGisToken {
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    ssl: boolean;
-    // (undocumented)
-    token: string;
-}
-
-// @internal (undocumented)
-export enum ArcGisTokenClientType {
-    // (undocumented)
-    ip = 0,
-    // (undocumented)
-    referer = 1,
-    // (undocumented)
-    requestIp = 2
-}
-
-// @internal (undocumented)
-export class ArcGisTokenGenerator {
-    // (undocumented)
-    static fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static formEncode(str: string): string;
-    // (undocumented)
-    generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static getTokenServiceFromInfoJson(json: any): string | undefined;
-    // (undocumented)
-    getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static rfc1738Encode(str: string): string;
-    }
-
-// @internal (undocumented)
-export class ArcGisTokenManager {
-    // (undocumented)
-    static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
-    }
-
-// @internal (undocumented)
 export class ArcGisUtilities {
+    // (undocumented)
+    static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
@@ -5665,22 +5612,38 @@ export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
 
-// @internal (undocumented)
-export interface MapLayerAuthenticationInfo {
+// @alpha (undocumented)
+export interface MapLayerAccessClient {
     // (undocumented)
-    authMethod: MapLayerAuthType;
+    getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
-    tokenEndpoint?: MapLayerTokenEndpoint;
+    getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+    // (undocumented)
+    invalidateToken?(token: MapLayerAccessToken): boolean;
+    // (undocumented)
+    onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
-// @beta (undocumented)
-export enum MapLayerAuthType {
+// @alpha (undocumented)
+export interface MapLayerAccessToken {
     // (undocumented)
-    Basic = 2,
+    token: string;
+}
+
+// @alpha (undocumented)
+export interface MapLayerAccessTokenParams {
     // (undocumented)
-    EsriToken = 3,
+    mapLayerUrl: URL;
     // (undocumented)
-    None = 1
+    password?: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @alpha (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
 // @internal (undocumented)
@@ -5694,11 +5657,11 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export class MapLayerFormat {
-    // (undocumented)
+    // @internal (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
@@ -5709,21 +5672,33 @@ export class MapLayerFormat {
 }
 
 // @internal (undocumented)
+export interface MapLayerFormatEntry {
+    // (undocumented)
+    accessClient?: MapLayerAccessClient;
+    // (undocumented)
+    type: MapLayerFormatType;
+}
+
+// @alpha (undocumented)
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // (undocumented)
-    register(formatClass: MapLayerFormatType): void;
+    getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // (undocumented)
+    register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
+    // (undocumented)
+    setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
     // (undocumented)
     validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type MapLayerFormatType = typeof MapLayerFormat;
 
 // @internal
@@ -5890,7 +5865,7 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidCredentials = 1,
@@ -5906,7 +5881,7 @@ export enum MapLayerSourceStatus {
     Valid = 0
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
@@ -5944,10 +5919,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected get _transparency(): number | undefined;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface MapLayerTokenEndpoint {
     // (undocumented)
-    getLoginUrl(stateData?: string): string | undefined;
+    getLoginUrl(stateData?: any): string | undefined;
     // (undocumented)
     getUrl(): string;
 }
@@ -6319,7 +6294,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
