@@ -244,12 +244,14 @@ export class IModelTransformerTestUtils {
 }
 
 /** map of properties in class's EC definition to their name in the JS implementation if different */
-const aliasedProperties: Record<string, Record<string, string> | undefined> = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  "BisCore.GeometricElement3d": {
+const aliasedProperties: Record<string, Record<string, string> | undefined> = new Proxy({
+  // can't use GeometricElement.classFullName at module scope
+  ["BisCore:GeometricElement3d".toLowerCase()]: {
     geometryStream: "geom",
   },
-};
+}, {
+  get(target, key: string, receiver) { return Reflect.get(target, key.toLowerCase(), receiver); },
+});
 
 /**
  * get all properties, including those of bases and mixins from metadata,
@@ -350,14 +352,12 @@ export async function assertIdentityTransformation(
           );
         } else if (!propExpectedToHaveChangedRandomly) {
           /// / HACK: change the appearance in the source to not care about the difference from the target
-          /*
           const myColor = 0x0000ff;
           if (propName === "geom") {
             (sourceElem.asAny[propName] as GeometryStreamProps | undefined)?.map(
               (e) => "appearance" in e ? { appearance: { ...e.appearance, color: myColor } } : e
             );
           }
-          */
           /// /////////////////////
           // kept for conditional breakpoints
           const _eq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
