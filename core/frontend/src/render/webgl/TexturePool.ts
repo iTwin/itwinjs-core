@@ -345,7 +345,7 @@ export class TexturePool implements IDisposable {
 
   /// Limit of size for stored textures
   public readonly minimumTextureSize = 1;
-  public readonly maximumTextureSize = 512;
+  public readonly maximumTextureSize = 4096;
 
   /// Number of milliseconds before removing textures from the list
   public readonly textureExpirationTime = 1000 * 60;
@@ -502,7 +502,7 @@ export class TexturePool implements IDisposable {
     if (this._textures.length === 0)
       return undefined;
 
-    if (width < this.minimumTextureSize || height < this.minimumTextureSize || width > this.maximumTextureSize || height < this.maximumTextureSize)
+    if (width < this.minimumTextureSize || height < this.minimumTextureSize || width > this.maximumTextureSize || height > this.maximumTextureSize)
       return undefined;
 
     const result = this._textures.spliceTexture({type, width, height});
