@@ -14,6 +14,7 @@ import {
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   GeometricElement3d,
+  GeometryPart,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
@@ -21,7 +22,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, GeometricElement3dProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, GeometricElement3dProps, GeometryPartProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -1886,26 +1887,14 @@ describe("IModelTransformer", () => {
       public override onTransformElement(sourceElement: Element): ElementProps {
         const targetElementProps = super.onTransformElement(sourceElement);
 
-        if (sourceElement instanceof GeometricElement3d) {
-          let appearanceFound = false;
-          if (sourceElement.geom) {
-            (targetElementProps as any).geom = sourceElement.geom;
-            let index = 0;
-            for (const geomStreamEntryProps of (targetElementProps as GeometricElement3dProps).geom!) {
-              if (geomStreamEntryProps.appearance) {
-                appearanceFound = true;
-                const newAppearance = { ...geomStreamEntryProps.appearance, color: 0x00ffff };
-                (targetElementProps as GeometricElement3dProps).geom!.splice(index, 1, { appearance: newAppearance });
-                // (targetElementProps as GeometricElement3dProps).geom!.push({"appearance": newAppearance});
-                break;
-              }
-              index = index + 1;
-            }
-
-            if ((targetElementProps as GeometricElement3dProps).geom && !appearanceFound) {
-              (targetElementProps as GeometricElement3dProps).geom?.push({ appearance: { color: 0x0000ff, weight: 100, transparency: 1 } });
-            }
-          }
+        if (sourceElement instanceof GeometricElement || sourceElement instanceof GeometryPart) {
+          const targetGeomElementProps = targetElementProps as GeometricElement3dProps | GeometryPartProps;
+          const myColor = 0x00ffff;
+          targetGeomElementProps.geom = targetGeomElementProps.geom?.map((e) =>
+            "appearance" in e
+              ? { appearance: { ...e.appearance, color: myColor } }
+              : e
+          );
 
           // Uncomment below and comment above lines to run colorization on 2 elements only. Comment all above under if
           // 1) Element that is not getting colored
@@ -1937,7 +1926,7 @@ describe("IModelTransformer", () => {
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-    const transformer = new MyTransformer(sourceDb, targetDb);
+    const transformer = new MyTransformer(sourceDb, targetDb, { loadSourceGeometry: true, cloneUsingBinaryGeometry: false });
     await transformer.processSchemas();
     await transformer.processAll();
 
