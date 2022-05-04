@@ -14,6 +14,8 @@ import { LinePixels } from "./LinePixels";
  * @public
  */
 export namespace HiddenLine {
+  export type PolyfaceEdgeInference = "crease" | "all";
+
   /** Describes the symbology with which edges should be drawn. */
   export interface StyleProps {
     /** @internal
@@ -168,6 +170,7 @@ export namespace HiddenLine {
      * @note Defaults to 1.0.
      */
     readonly transThreshold?: number;
+    polyfaceEdgeInference?: PolyfaceEdgeInference;
   }
 
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
@@ -186,6 +189,8 @@ export namespace HiddenLine {
     public readonly transparencyThreshold: number;
     public get transThreshold(): number { return this.transparencyThreshold; }
 
+    public readonly polyfaceEdgeInference: PolyfaceEdgeInference;
+
     /** The default display settings. */
     public static defaults = new Settings({});
 
@@ -200,11 +205,16 @@ export namespace HiddenLine {
     }
 
     public toJSON(): SettingsProps {
-      return {
+      const props: SettingsProps = {
         visible: this.visible.toJSON(),
         hidden: this.hidden.toJSON(),
         transThreshold: this.transThreshold,
       };
+
+      if ("all" === this.polyfaceEdgeInference)
+        props.polyfaceEdgeInference = "all";
+
+      return props;
     }
 
     /** Create a Settings equivalent to this one with the exception of those properties defined in the supplied JSON. */
@@ -216,6 +226,7 @@ export namespace HiddenLine {
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
         transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
+        polyfaceEdgeInference: props.polyfaceEdgeInference ?? this.polyfaceEdgeInference,
       });
     }
 
@@ -223,7 +234,10 @@ export namespace HiddenLine {
       if (this === other)
         return true;
 
-      return this.visible.equals(other.visible) && this.hidden.equals(other.hidden) && this.transparencyThreshold === other.transparencyThreshold;
+      return this.visible.equals(other.visible)
+        && this.hidden.equals(other.hidden)
+        && this.transparencyThreshold === other.transparencyThreshold
+        && this.polyfaceEdgeInference === other.polyfaceEdgeInference;
     }
 
     public get matchesDefaults(): boolean {
@@ -234,6 +248,7 @@ export namespace HiddenLine {
       this.visible = Style.fromJSON(json.visible);
       this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
+      this.polyfaceEdgeInference = "all" === json.polyfaceEdgeInference ? "all" : "crease";
     }
   }
 }
