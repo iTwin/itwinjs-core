@@ -1,7 +1,8 @@
 import { AccessToken } from "@itwin/core-bentley";
 
 import { request, RequestOptions } from "../../request/Request";
-import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProvider";
+
+import type { ExtensionProps } from "../Extension";
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions.
@@ -85,4 +86,72 @@ export class ExtensionClient {
 
     return extensionPropsFromJSON(response.body[0]);
   }
+}
+
+/**
+ * Validates JSON and returns ExtensionProps
+ */
+function extensionPropsFromJSON(jsonObject: any): ExtensionProps | undefined {
+  if (jsonObject.contextId === undefined || typeof jsonObject.contextId !== "string" ||
+    jsonObject.extensionName === undefined || typeof jsonObject.extensionName !== "string" ||
+    jsonObject.version === undefined || typeof jsonObject.version !== "string" ||
+    jsonObject.files === undefined || !(jsonObject.files instanceof Array) ||
+    jsonObject.uploadedBy === undefined || typeof jsonObject.uploadedBy !== "string" ||
+    jsonObject.timestamp === undefined || typeof jsonObject.timestamp !== "string" ||
+    jsonObject.isPublic === undefined || typeof jsonObject.isPublic !== "boolean" ||
+    jsonObject.extensionStatus === undefined) {
+
+    return undefined;
+  }
+
+  const status = statusFromJSON(jsonObject.extensionStatus);
+  if (status === undefined)
+    return undefined;
+
+  const files = new Array(jsonObject.files.length);
+  for (let i = 0; i < jsonObject.files.length; i++) {
+    const parsed = fileInfoFromJSON(jsonObject.files[i]);
+    if (parsed === undefined)
+      return undefined;
+    files[i] = parsed;
+  }
+
+  return {
+    contextId: jsonObject.contextId,
+    extensionName: jsonObject.extensionName,
+    version: jsonObject.version,
+    files,
+    uploadedBy: jsonObject.uploadedBy,
+    timestamp: new Date(jsonObject.timestamp),
+    isPublic: jsonObject.isPublic,
+    status,
+  };
+}
+
+function statusFromJSON(jsonObject: any) {
+  if (jsonObject.statusUpdateTime === undefined || typeof jsonObject.statusUpdateTime !== "string" ||
+    jsonObject.status === undefined || (jsonObject.status !== null && typeof jsonObject.status !== "string")) {
+
+    return undefined;
+  }
+
+  return {
+    updateTime: new Date(jsonObject.statusUpdateTime),
+    status: jsonObject.status ?? "Valid",
+  };
+}
+
+function fileInfoFromJSON(jsonObject: any) {
+  if (jsonObject.url === undefined || typeof jsonObject.url !== "string" ||
+    jsonObject.expiresAt === undefined || typeof jsonObject.expiresAt !== "string" ||
+    jsonObject.checksum === undefined || (typeof jsonObject.checksum !== "string" && jsonObject.checksum !== null)) {
+
+    return undefined;
+  }
+
+  return {
+    url: jsonObject.url,
+    expires: new Date(jsonObject.expiresAt),
+    checksum: jsonObject.checksum,
+  };
 }

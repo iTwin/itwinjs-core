@@ -1,6 +1,6 @@
 import type {
   ExtensionManifest,
-  ExtensionProviderInterface,
+  ExtensionProvider,
   LocalExtensionProviderProps,
 } from "../Extension";
 
@@ -10,7 +10,7 @@ import type {
  * The execute() and getManifest() methods are used by the ExtensionAdmin.
  * @alpha
  */
-export class LocalExtensionProvider implements ExtensionProviderInterface {
+export class LocalExtensionProvider implements ExtensionProvider {
   constructor(private readonly _props: LocalExtensionProviderProps) { }
 
   /** returns the manifest (package.json) of a local extension */

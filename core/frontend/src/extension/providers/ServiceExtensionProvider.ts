@@ -1,11 +1,11 @@
 import { rcompare } from "semver";
 
 import { IModelApp } from "../../IModelApp";
-import { ExtensionProps, loadScript } from "./ExtensionProvider";
+import { loadScript } from "./ExtensionLoadScript";
 import { ExtensionClient } from "./ExtensionServiceClient";
 
 import type {
-  ExtensionManifest, ExtensionProviderInterface, ServiceExtensionProviderProps,
+  ExtensionManifest, ExtensionProps, ExtensionProvider, ServiceExtensionProviderProps,
 } from "../Extension";
 
 /**
@@ -14,7 +14,7 @@ import type {
  * The execute() and getManifest() methods are used by the ExtensionAdmin to load and execute the extension.
  * @alpha
  */
-export class ServiceExtensionProvider implements ExtensionProviderInterface {
+export class ServiceExtensionProvider implements ExtensionProvider {
 
   constructor(private readonly _props: ServiceExtensionProviderProps) { }
 

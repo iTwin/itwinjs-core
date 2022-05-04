@@ -1,9 +1,9 @@
 import type {
   ExtensionManifest,
-  ExtensionProviderInterface,
+  ExtensionProvider,
   RemoteExtensionProviderProps,
 } from "../Extension";
-import { loadScript } from "./ExtensionProvider";
+import { loadScript } from "./ExtensionLoadScript";
 
 /**
  * Implements a "remote" extension.
@@ -11,7 +11,7 @@ import { loadScript } from "./ExtensionProvider";
  * The execute() and getManifest() methods are used by the ExtensionAdmin to load and execute the extension.
  * @alpha
  */
-export class RemoteExtensionProvider implements ExtensionProviderInterface {
+export class RemoteExtensionProvider implements ExtensionProvider {
   /** The name of the server where the extension is hosted. */
   public readonly hostname: string;
 

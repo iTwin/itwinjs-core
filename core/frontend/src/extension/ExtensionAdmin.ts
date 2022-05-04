@@ -51,10 +51,10 @@ export class ExtensionAdmin {
    * @alpha
    */
   public async addExtension(provider: ExtensionProvider): Promise<void> {
-    if ("hostname" in provider) {
+    if (provider.hostname) {
       const hostName = provider.hostname;
       if (this._hosts.length > 0 && this._hosts.indexOf(hostName) < 0) {
-        Logger.logError(loggerCategory, `Error loading extension: ${hostName} was not registered.`);
+        throw new Error(`Error loading extension: ${hostName} was not registered.`);
       }
     }
     try {
@@ -67,8 +67,7 @@ export class ExtensionAdmin {
       if (manifest.activationEvents.includes("onStartup"))
         void provider.execute();
     } catch (e) {
-      // catch the error because we don't want to prevent other extensions from loading
-      Logger.logError(loggerCategory, `Error loading extension: ${e}`);
+      throw new Error(`Failed to get manifest from extension: ${e}`);
     }
   }
 
