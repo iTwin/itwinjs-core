@@ -120,4 +120,25 @@ describe("useCrossOriginPopup", () => {
     clock.restore();
   });
 
+  it("should call the 'onClose' callback when the parent's browser window get closed", () => {
+
+    const fakeWindow: any = {
+      focus: () => {},
+      close: sinon.spy(),
+      closed: true,   // Mark it as already 'closed' to simulate user-user closing immediately the popup window
+    };
+
+    const windowOpenStub = sandbox.stub(window, "open").callsFake(() => { return fakeWindow;} );
+    window.open = windowOpenStub;
+
+    const onClosePopup = sinon.spy();
+    const visible = true;
+    renderHook(() => useCrossOriginPopup(visible, fakeUrl, fakeTitle, fakeWidth,fakeHeight, onClosePopup));
+
+    window.dispatchEvent(new Event("beforeunload"));
+
+    // We simulated that parent window has been closed, the 'onClose' callback should have been called.
+    expect(onClosePopup).to.have.been.calledOnce;
+  });
+
 });
