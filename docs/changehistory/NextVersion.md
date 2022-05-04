@@ -101,6 +101,93 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
     alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
 ```
 
+### Fixed inconsistent property representation in a property grid
+
+Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties]($presentation-common) attribute, the properties were loaded differently based on whether parent specification included any properties or not. Now the behavior is consistent.
+
+```json
+{
+  "id": "example",
+  "rules": [{
+      "ruleType": "Content",
+      "specifications": [{
+          "specType": "ContentInstancesOfSpecificClasses",
+          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
+        }]
+    }, {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Model"
+      },
+      "relatedProperties": [{
+          "propertiesSource": {
+            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
+            "direction": "Forward",
+            "targetClass": { "schemaName": "Generic", "className": "PhysicalObject" }
+          },
+          "properties": "_none_",
+          "nestedRelatedProperties": [{
+              "propertiesSource": {
+                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
+                "direction": "Forward"
+              }
+            }]
+        }]
+    }]
+}
+```
+
+| Value of `"properties"` attribute | before                                                                                                                            | after                                                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `"_none_"`                        | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
+| `["UserLabel"]`                   | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
+
+### Fixed a bug that prevented disabling `relatedProperties` specifications
+
+The bug made it impossible to remove related properties if a lower priority rule specified that the property should be included.
+
+For example, the [default BisCore supplemental ruleset](https://github.com/iTwin/itwinjs-core/blob/504a7b88e9ade29cc306bd55d093be1d76ddad43/presentation/backend/assets/supplemental-presentation-rules/BisCore.PresentationRuleSet.json#L372-L419) automatically includes `ExternalSourceAspect.Identifier` property to all Elements' content when they have such aspect. It's now possible to disable that rule using one of these approaches:
+
+- Set `"properties"` to `"_none_"` or `[]`:
+
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
+        },
+        "properties": "_none_"
+      }
+    ]
+  }
+  ```
+
+- Disable property display:
+
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
+        },
+        "properties": [{
+          "name": "Identifier",
+          "isDisplayed": false
+        }]
+      }
+    ]
+  }
+  ```
+
 ## ColorDef validation
 
 [ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
