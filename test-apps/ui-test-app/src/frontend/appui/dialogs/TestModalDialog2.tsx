@@ -9,6 +9,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/c
 import { ColorPickerButton } from "@itwin/imodel-components-react";
 import { Dialog } from "@itwin/core-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export interface TestModalDialog2Props {
   opened: boolean;
@@ -16,7 +17,6 @@ export interface TestModalDialog2Props {
 }
 
 export interface TestModalDialog2State {
-  opened: boolean;
   movable: boolean;
   resizable: boolean;
   overlay: boolean;
@@ -37,7 +37,6 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     const greenDef = ColorDef.from(0, 255, 0, 0);
 
     this.state = {
-      opened: this.props.opened,
       movable: true,
       resizable: true,
       overlay: true,
@@ -67,7 +66,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     return (
       <Dialog
         title={"Modal Dialog"}
-        opened={this.state.opened}
+        opened={true}
         resizable={this.state.resizable}
         movable={this.state.movable}
         modal={this.state.overlay}
@@ -116,9 +115,5 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     });
   };
 
-  private _closeDialog = (_followUp: () => void) => {
-    this.setState({
-      opened: false,
-    });
-  };
+  private _closeDialog = (_followUp: () => void) => ModalDialogManager.closeDialog();
 }

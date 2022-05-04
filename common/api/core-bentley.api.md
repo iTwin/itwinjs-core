@@ -517,6 +517,12 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
+// @alpha
+export abstract class ErrorCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -1480,6 +1486,23 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     remove(value: T): number;
 }
 
+// @alpha
+export abstract class StatusCategory {
+    // (undocumented)
+    abstract code: number;
+    // (undocumented)
+    abstract error: boolean;
+    // (undocumented)
+    static for(error: BentleyError): StatusCategory;
+    // (undocumented)
+    static handlers: Set<StatusCategoryHandler>;
+    // (undocumented)
+    abstract name: string;
+}
+
+// @alpha (undocumented)
+export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+
 // @beta
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
@@ -1501,6 +1524,12 @@ export class StopWatch {
     start(): void;
     stop(): BeDuration;
     }
+
+// @alpha
+export abstract class SuccessCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
 
 // @public
 export class TransientIdSequence {

@@ -15,7 +15,7 @@ import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheCo
 import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -123,6 +123,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
+  protected responseProtocolVersion = 0;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -283,6 +284,14 @@ export abstract class RpcRequest<TResponse = any> {
     this._transientFaults = 0;
   }
 
+  protected supportsStatusCategory() {
+    if (!this.protocol.supportsStatusCategory) {
+      return false;
+    }
+
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+  }
+
   /* @internal */
   public cancel() {
     if (typeof (this._sending) === "undefined") {
@@ -359,7 +368,8 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
-    const status = this.protocol.getStatus(code);
+    const protocolStatus = this.protocol.getStatus(code);
+    const status = this.transformResponseStatus(protocolStatus, value);
 
     if (RpcRequestStatus.isTransientError(status)) {
       return this.handleTransientError(status);
@@ -386,6 +396,35 @@ export abstract class RpcRequest<TResponse = any> {
         return this.handleNoContent();
       }
     }
+  }
+
+  private transformResponseStatus(protocolStatus: RpcRequestStatus, value: RpcSerializedValue): RpcRequestStatus {
+    if (!this.supportsStatusCategory()) {
+      return protocolStatus;
+    }
+
+    let status = protocolStatus;
+
+    if (protocolStatus === RpcRequestStatus.Pending) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.NotFound) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.Unknown) {
+      status = RpcRequestStatus.Rejected;
+    }
+
+    if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
+      const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
+      value.objects = managedStatus.responseValue;
+
+      if (managedStatus.managedStatus === "pending") {
+        status = RpcRequestStatus.Pending;
+      } else if (managedStatus.managedStatus === "notFound") {
+        status = RpcRequestStatus.NotFound;
+      }
+    }
+
+    return status;
   }
 
   private handleResolved(value: RpcSerializedValue) {
