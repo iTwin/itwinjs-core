@@ -203,12 +203,14 @@ function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspac
 
 /** List the contents of a WorkspaceDb */
 async function listWorkspaceDb(args: ListOptions) {
-  readWorkspace(args, (file, args) => {
+  let prefetch: Promise<void>;
+  readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
+
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      void CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+      prefetch = CloudSqlite.prefetch(cloudContainer, file.dbFileName);
       // void CloudSqlite.transferDb("download", cloudContainer, { dbName: file.dbFileName, localFileName: "d:/temp/downloadTest.tmp" });
     }
     if (!args.strings && !args.blobs && !args.files)
@@ -243,6 +245,10 @@ async function listWorkspaceDb(args: ListOptions) {
       });
     }
     console.log(`time = ${timer.elapsedSeconds.toString()}`);
+    if (prefetch !== undefined) {
+      await prefetch;
+      console.log(`prefetch time = ${timer.elapsedSeconds.toString()}`);
+    }
   });
 }
 
