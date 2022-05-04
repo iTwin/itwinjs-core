@@ -387,6 +387,37 @@ describe("test resuming transformations", () => {
     return targetDb;
   });
 
+  it("should fail to resume from a different(ly named) transformer class", async () => {
+    const sourceDb = seedDb;
+    const targetDb = SnapshotDb.createFrom(seedDb, IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeDifferentClass.bim"));
+
+    const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+    transformer.elementExportsUntilCall = 2;
+    let crashed = false;
+    try {
+      await transformer.processSchemas();
+      await transformer.processAll();
+    } catch (transformerErr) {
+      expect((transformerErr as Error).message).to.equal("crash");
+      crashed = true;
+      const dumpPath = IModelTestUtils.prepareOutputFile(
+        "IModelTransformerResumption",
+        "transformer-state.db"
+      );
+      transformer.saveStateToFile(dumpPath);
+      class DifferentTransformerClass extends (transformer.constructor as typeof IModelTransformer) {}
+      // redownload targetDb so that it is reset to the old state
+      expect(
+        () => DifferentTransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
+      ).to.throw(/it is not.*valid to resume with a different.*class/);
+    }
+
+    expect(crashed).to.be.true;
+    targetDb.saveChanges();
+    transformer.dispose();
+    return targetDb;
+  });
+
   it("should fail to resume from an old target while processing relationships", async () => {
     const sourceDbId = await IModelHost.hubAccess.createNewIModel({
       iTwinId,

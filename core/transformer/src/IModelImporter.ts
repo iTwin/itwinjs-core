@@ -511,9 +511,24 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
+   * You may override this to store arbitrary json state in a exporter state dump, useful for some resumptions
+   * @see [[IModelTransformer.saveStateToFile]]
+   */
+  protected getAdditionalStateJson(): any {
+    return {};
+  }
+
+  /**
+   * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
+   * @see [[IModelTransformer.loadStateFromFile]]
+   */
+  protected loadAdditionalStateJson(_additionalState: any): void {}
+
+  /**
    * Reload our state from a JSON object
-   * intended for [[IModelTransformer.resumeTransformation]]
+   * Intended for [[IModelTransformer.resumeTransformation]]
    * @internal
+   * You can load custom json from the importer save state for custom importers by overriding [[IModelImporter.loadAdditionalStateJson]]
    */
   public loadStateFromJson(state: IModelImporterState): void {
     // ignore readonly since this runs right after construction in [[IModelTransformer.resumeTransformation]]
@@ -523,18 +538,21 @@ export class IModelImporter implements Required<IModelImportOptions> {
     // TODO: fix upstream, looks like a bad case for the linter rule when casting away readonly for this generic
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     (this.doNotUpdateElementIds as Set<Id64String>) = CompressedId64Set.decompressSet(state.doNotUpdateElementIds);
+    this.loadAdditionalStateJson(state.additionalState);
   }
 
   /**
    * Serialize state to a JSON object
-   * intended for [[IModelTransformer.resumeTransformation]]
+   * Intended for [[IModelTransformer.resumeTransformation]]
    * @internal
+   * You can add custom json to the importer save state for custom importers by overriding [[IModelImporter.getAdditionalStateJson]]
    */
   public saveStateToJson(): IModelImporterState {
     return {
       options: this.options,
       targetDbId: this.targetDb.iModelId || this.targetDb.nativeDb.getFilePath(),
       doNotUpdateElementIds: CompressedId64Set.compressSet(this.doNotUpdateElementIds),
+      additionalState: this.getAdditionalStateJson(),
     };
   }
 }
@@ -551,6 +569,7 @@ export interface IModelImporterState {
   options: IModelImportOptions;
   targetDbId: string;
   doNotUpdateElementIds: CompressedId64Set;
+  additionalState?: any;
 }
 
 /** Returns true if a change within an Entity is detected.

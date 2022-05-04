@@ -696,9 +696,24 @@ export class IModelExporter {
   }
 
   /**
+   * You may override this to store arbitrary json state in a exporter state dump, useful for some resumptions
+   * @see [[IModelTransformer.saveStateToFile]]
+   */
+  protected getAdditionalStateJson(): any {
+    return {};
+  }
+
+  /**
+   * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
+   * @see [[IModelTransformer.loadStateFromFile]]
+   */
+  protected loadAdditionalStateJson(_additionalState: any): void {}
+
+  /**
    * Reload our state from a JSON object
-   * intended for [[IModelTransformer.resumeTransformation]]
+   * Intended for [[IModelTransformer.resumeTransformation]]
    * @internal
+   * You can load custom json from the exporter save state for custom exporters by overriding [[IModelExporter.loadAdditionalStateJson]]
    */
   public loadStateFromJson(state: IModelExporterState): void {
     this.wantGeometry = state.wantGeometry;
@@ -713,12 +728,14 @@ export class IModelExporter {
     this._excludedElementAspectClassFullNames = new Set(state.excludedElementAspectClassFullNames);
     this._excludedElementAspectClasses = new Set(state.excludedElementAspectClassFullNames.map((c) => this.sourceDb.getJsClass(c)));
     this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));
+    this.loadAdditionalStateJson(state.additionalState);
   }
 
   /**
    * Serialize state to a JSON object
-   * intended for [[IModelTransformer.resumeTransformation]]
+   * Intended for [[IModelTransformer.resumeTransformation]]
    * @internal
+   * You can add custom json to the exporter save state for custom exporters by overriding [[IModelExporter.getAdditionalStateJson]]
    */
   public saveStateToJson(): IModelExporterState {
     return {
@@ -733,6 +750,7 @@ export class IModelExporter {
       excludedElementClassNames: Array.from(this._excludedElementClasses, (cls) => cls.classFullName),
       excludedElementAspectClassFullNames: [...this._excludedElementAspectClassFullNames],
       excludedRelationshipClassNames: Array.from(this._excludedRelationshipClasses, (cls) => cls.classFullName),
+      additionalState: this.getAdditionalStateJson(),
     };
   }
 }
@@ -746,7 +764,6 @@ export class IModelExporter {
  * @internal
  */
 export interface IModelExporterState {
-  /* eslint-disable @typescript-eslint/naming-convention */
   wantGeometry: boolean;
   wantTemplateModels: boolean;
   wantSystemSchemas: boolean;
@@ -758,7 +775,7 @@ export interface IModelExporterState {
   excludedElementClassNames: string[];
   excludedElementAspectClassFullNames: string[];
   excludedRelationshipClassNames: string[];
-  /* eslint-enable @typescript-eslint/naming-convention */
+  additionalState?: any;
 }
 
 class ChangedInstanceOps {
