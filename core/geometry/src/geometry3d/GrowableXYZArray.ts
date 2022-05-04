@@ -7,6 +7,7 @@
  * @module ArraysAndInterfaces
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
@@ -56,18 +57,21 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param sourceCount copy the first sourceCount points; all points if undefined
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    */
-  private copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
+  private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
     // convert inputs from points to entries
     const count = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
-    if (count < 0 || count > source.length)
+    if (count <= 0 || count > source.length)
       return;
+    assert(count % 3 === 0);
     const offset = (undefined !== destOffset) ? destOffset * 3 : 0;
     if (offset < 0 || offset + count > this._data.length)
       return;
     if (count === source.length)
       this._data.set(source, offset);
-    else
+    else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, count), offset);
+    else
+      this._data.set(source.slice(0, count), offset);
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
@@ -81,11 +85,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    */
   public float64Data(): Float64Array { return this._data; }
 
-  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
+  /** If necessary, increase the capacity to the new number of points.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyzCapacity) {
-      if (applyGrowthFactor)
+      if (applyGrowthFactor) {
         pointCapacity *= this._growthFactor;
+        if (pointCapacity < 4) pointCapacity = 4;
+      }
       const prevData = this._data;
       this._data = new Float64Array(pointCapacity * 3);
       this.copyData(prevData, this._xyzInUse);
@@ -157,7 +163,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** push all points of an array */
   public pushAll(points: Point3d[]) {
-    for (const p of points) this.push(p);     // START HERE: cant use copyData! Ensurecap first...
+    this.ensureCapacity(this._xyzInUse + points.length, false);
+    for (const p of points) this.push(p);
   }
   /** Push points from variant sources.
    * Valid inputs are:
@@ -179,10 +186,11 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this.pushFromGrowableXYZArray(p);
     else if (p instanceof Point2d)
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (Geometry.isNumberArray(p, 4)) {
-      const n = p.length;
-      for (let i = 0; i + 2 < n; i += 3)
-        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    else if (Geometry.isNumberArray(p, 4) || p instanceof Float64Array) {
+      const xyzToAdd = Math.trunc(p.length / 3);
+      this.ensureCapacity(this._xyzInUse + xyzToAdd, false);
+      this.copyData(p, xyzToAdd, this._xyzInUse);
+      this._xyzInUse += xyzToAdd;
     } else if (Geometry.isNumberArray(p, 3))
       this.pushXYZ(p[0], p[1], p[2]);
     else if (Geometry.isNumberArray(p, 2))
@@ -195,12 +203,10 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this.pushXYZ(p.x, p.y, p.z);
     else if (Point3d.isXAndY(p))
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (p instanceof Float64Array) {
+    else if (p instanceof IndexedXYZCollection) {
       const n = p.length;
-      for (let i = 0; i + 2 < n; i += 3)
-        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
-    } else if (p instanceof IndexedXYZCollection) {
-      for (let i = 0; i < p.length; i++)
+      this.ensureCapacity(this._xyzInUse + n, false);
+      for (let i = 0; i < n; i++)
         this.pushXYZ(p.getXAtUncheckedPointIndex(i), p.getYAtUncheckedPointIndex(i), p.getZAtUncheckedPointIndex(i));
     }
   }
@@ -209,19 +215,18 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param numWrap number of xyz values to replicate
    */
   public pushWrap(numWrap: number) {
-    if (this._xyzInUse > 0) {
-      let k;
+    if (this._xyzInUse >= numWrap) {
+      this.ensureCapacity(this._xyzInUse + numWrap, false);
       for (let i = 0; i < numWrap; i++) {
-        k = 3 * i;
+        const k = 3 * i;
         this.pushXYZ(this._data[k], this._data[k + 1], this._data[k + 2]);
       }
     }
   }
   /** append a new point with given x,y,z */
   public pushXYZ(x: number, y: number, z: number) {
+    this.ensureCapacity(this._xyzInUse + 1);
     const index = this._xyzInUse * 3;
-    if (index >= this._data.length)
-      this.ensureCapacity(this.length === 0 ? 4 : this.length * 2);
     this._data[index] = x;
     this._data[index + 1] = y;
     this._data[index + 2] = z;
@@ -234,11 +239,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   private shiftForward(numPoints: number) {
     if (numPoints <= 0)
       return;
-    let newCapacity = this.length + numPoints;  // in POINTS
-    if (newCapacity > this._xyzCapacity) {
-      newCapacity = Math.max(4, 2 * this._xyzCapacity);
-      this.ensureCapacity(newCapacity);
-    }
+    this.ensureCapacity(this._xyzInUse + numPoints);
     const numAddedDouble = 3 * numPoints;
     const lastIndex = this._xyzInUse * 3;
     this._data.copyWithin(numAddedDouble, 0, lastIndex);
@@ -399,11 +400,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     // full array push  . . .
     if (sourceIndex === undefined) {
       const numXYZAdd = source.length;
-      this.ensureCapacity(this.length + numXYZAdd);
-      const nXAdd = source.length * 3;
-      const i0 = this._xyzInUse * 3;
-      for (let i = 0; i < nXAdd; i++)
-        this._data[i0 + i] = source._data[i];
+      this.ensureCapacity(this.length + numXYZAdd, false);
+      this.copyData(source._data, source.length, this.length);
       this._xyzInUse += numXYZAdd;
       return numXYZAdd;
     }
@@ -976,6 +974,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     let b0 = pointIndex0 * 3;
     const nb = other.length * 3;
     let numAdded = 0;
+    this.ensureCapacity(this._xyzInUse + numAdd, false);
     while (b0 >= 0 && b0 + 2 < nb && numAdded < numAdd) {
       this.pushXYZ(dataB[b0], dataB[b0 + 1], dataB[b0 + 2]);
       b0 += step * 3;
@@ -1012,11 +1011,11 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       points.pop();
   }
   /**
-   * * Triangle for (unchecked!) for three points identified by index
+   * Compute frame for a triangle formed by three (unchecked!) points identified by index.
    * * z direction of frame is 001.
-   * * Transform axes from origin to targetX and targetY
+   * * Transform axes from origin to targetA and targetB
    * * in local coordinates (u,v,w) the xy interior of the triangle is `u>=0, v>= 0, w>= 0, u+v+w<1`
-   * * Return undefined if transform is invertible (i.e. points are not in a vertical plane.)
+   * * Return undefined if transform is not invertible, e.g. if points are in a vertical plane.
    */
   public fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
@@ -1042,7 +1041,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
   /**
-   * Pass the (x,y,z) of each point to a function which returns a replacement for of of the 3 components.
+   * Pass the (x,y,z) of each point to a function which returns a replacement for one of the 3 components.
    * @param componentIndex Index (0,1,2) of component to be replaced.
    * @param func function to be called as `func(x,y,z)`, returning a replacement value for componentIndex
    */

@@ -48,7 +48,7 @@ export class GrowableFloat64Array {
    */
   private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
     const count = sourceCount ?? source.length;
-    if (count < 0 || count > source.length)
+    if (count <= 0 || count > source.length)
       return;
     const offset = destOffset ?? 0;
     if (offset < 0 || offset + count > this.capacity())
