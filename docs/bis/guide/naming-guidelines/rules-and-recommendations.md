@@ -83,4 +83,4 @@ The rules and recommendations below try to balance these concerns:
 
 |   | Description | Note |
 |---|-------------|------|
-| Rec. | In general, use names postfixed with *Type* or no postfix at all. | E.g. `SurfaceVariationType`, `CoordinateSystem` or `ExternalSourceAttachmentRole`. |
+| Rec. | In general, use descriptive names with no postfix. | E.g. `SurfaceVariation`, `CoordinateSystem` or `ExternalSourceAttachmentRole`. |
