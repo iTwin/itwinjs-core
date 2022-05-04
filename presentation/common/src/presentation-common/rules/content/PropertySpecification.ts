@@ -65,6 +65,12 @@ export interface PropertyOverrides {
    * all other properties of the same class. When `true`, this behavior is disabled.
    */
   doNotHideOtherPropertiesOnDisplayOverride?: boolean;
+
+  /**
+   * This attribute controls whether the property field is read-only. If the attribute value is not set, the field is
+   * read-only when at least one of the properties is read-only.
+   */
+  isReadOnly?: boolean;
 }
 
 /**

@@ -1909,6 +1909,10 @@
             "boolean"
           ]
         },
+        "isReadOnly": {
+          "description": "This attribute controls whether the property field is read-only. If the attribute value is not set, the field is\nread-only when at least one of the properties is read-only.",
+          "type": "boolean"
+        },
         "labelOverride": {
           "description": "This is an attribute that allows overriding the property label. May be localized.",
           "type": "string"

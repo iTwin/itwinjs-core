@@ -2216,6 +2216,7 @@ export interface PropertyOverrides {
     doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
     isDisplayed?: boolean | string;
+    isReadOnly?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
     renderer?: CustomRendererSpecification;

@@ -739,6 +739,40 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
         });
 
+        it("uses `isReadOnly` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.IsReadOnly.Ruleset
+          // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
+          // property is made read-only.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                propertyOverrides: [{
+                  name: "UserLabel",
+                  isReadOnly: true,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.IsReadOnly.Result
+          // Ensure the `UserLabel` field is read-only.
+          const content = (await Presentation.presentation.getContent({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          }))!;
+          expect(content.descriptor.fields).to.containSubset([{
+            label: "User Label",
+            isReadonly: true,
+          }]);
+          // __PUBLISH_EXTRACT_END__
+        });
       });
 
       describe("CalculatedPropertiesSpecification", () => {
