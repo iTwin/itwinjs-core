@@ -93,153 +93,183 @@ export namespace TileOptions {
   }
 }
 
+type ParsedPrimary = Omit<PrimaryTileTreeId, "type" | "animationId" | "enforceDisplayPriority">;
+interface ParsedClassifier {
+  type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+  expansion: number;
+}
+
+export interface ParsedTileTreeIdAndContentId {
+  modelId: Id64String;
+  treeId: IModelTileTreeId;
+  contentId: ContentIdSpec;
+  options: TileOptions;
+}
+
+class Parser {
+  readonly input: string;
+  curPos = 0;
+
+  public constructor(input: string) {
+    this.input = input;
+  }
+
+  public parse(contentId: string): ParsedTileTreeIdAndContentId {
+    this.require(this.input.length > 0);
+
+    // Skip version and flags, they're handled by TileOptions.fromTreeIdAndContentId
+    while (this.curPos < this.input.length && this.cur() !== "-")
+      this.advance();
+
+    this.eat("-");
+    this.require(this.curPos < this.input.length);
+
+    let classifier = this.cur() === "C" ? this.parseClassifier() : undefined;
+    const animationId = this.parseAnimation();
+
+    let primary = classifier ? undefined : this.parsePrimary();
+    this.require((undefined === classifier) !== (undefined === primary));
+
+    const modelId = this.input.substr(this.curPos);
+    this.require(Id64.isId64(modelId));
+
+    const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(this.input);
+    const options = TileOptions.fromTreeIdAndContentId(this.input, contentId);
+
+    let parsedContentId: ContentIdSpec;
+    try {
+      parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
+    } catch (e) {
+      this.reject("Invalid content Id");
+    }
+
+    if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+      throw new Error("Invalid content Id");
+
+    let treeId: IModelTileTreeId;
+    if (classifier) {
+      treeId = { ...classifier, animationId };
+    } else {
+      assert(undefined !== primary);
+      const enforceDisplayPriority = (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
+      treeId = { ...primary!, animationId, type: BatchType.Primary, enforceDisplayPriority };
+    }
+
+    return {
+      contentId: parsedContentId,
+      modelId,
+      options,
+      treeId,
+    };
+  }
+
+  private cur(): string {
+    this.require(this.curPos < this.input.length);
+    return this.input[this.curPos];
+  }
+
+  private advance(): void {
+    this.require(this.curPos < this.input.length);
+    ++this.curPos;
+  }
+
+  private eat(expectedChar: string): void {
+    this.require(this.cur() === expectedChar);
+    this.advance();
+  }
+
+  private reject(message = "Invalid tree Id"): never {
+    throw new Error(message);
+  }
+
+  private require(condition: boolean, message = "Invalid tree Id"): asserts condition {
+    if (!condition)
+      this.reject(message);
+  }
+
+  private parseClassifier(): ParsedClassifier | undefined {
+    this.eat("C");
+    let type = BatchType.VolumeClassifier;
+    if (this.cur() === "P") {
+      type = BatchType.PlanarClassifier;
+      this.advance();
+    }
+
+    this.eat(":");
+
+    // C: or CP: is always folowed by expansion then an underscore.
+    let expansionStr = "";
+    while (this.curPos < this.input.length && (this.cur() >= "0" && this.cur() <= "9" || this.cur() === ".")) {
+      expansionStr += this.cur();
+      this.advance();
+    }
+
+    this.eat("_");
+
+    const expansion = Number.parseFloat(expansionStr);
+    this.require(!Number.isNaN(expansion));
+
+    return { type, expansion };
+  }
+
+  private parseAnimation(): Id64String | undefined {
+    if (this.cur() !== "A")
+      return undefined;
+
+    this.eat("A");
+    this.eat(":");
+
+    const termPos = this.input.indexOf("_", this.curPos);
+    this.require(termPos > this.curPos);
+
+    const animationId = this.input.substring(this.curPos, termPos);
+    this.require(Id64.isId64(animationId));
+
+    this.curPos = termPos + 1; // Skip "_"
+    return animationId;
+  }
+
+  private parsePrimary(): ParsedPrimary {
+    const edges = this.parseEdges();
+    const sectionCut = this.parseSectionCut();
+    return { edges, sectionCut };
+  }
+
+  private parseEdges(): EdgeType {
+    if ("E" !== this.cur())
+      return EdgeType.NonIndexed;
+
+    this.eat("E");
+    this.eat(":");
+
+    const typeStr = this.cur();
+    this.require(typeStr === "0" || typeStr === "2");
+
+    const type = "0" === typeStr ? EdgeType.None : EdgeType.Indexed;
+    this.eat(typeStr);
+    this.eat("_");
+
+    return type;
+  }
+
+  private parseSectionCut(): string | undefined {
+    if ("S" !== this.cur())
+      return undefined;
+
+    this.eat("S");
+    const termPos = this.input.indexOf("s", this.curPos);
+    this.require(termPos > this.curPos);
+
+    const sectionCut = this.input.substring(this.curPos, termPos);
+    this.curPos = termPos + 1; // Skip "_";
+    return sectionCut;
+  }
+}
+
 /** @internal */
-export function parseTileTreeIdAndContentId(treeId: string, contentId: string): { modelId: Id64String, treeId: IModelTileTreeId, contentId: ContentIdSpec, options: TileOptions } {
-  let idx = 0;
-  let type: BatchType,
-    expansion: number | undefined,
-    animationId: string | undefined,
-    edges: EdgeType | undefined,
-    sectionCut: string | undefined;
-
-  // Skip version and flags, they're handled by TileOptions.fromTreeIdAndContentId
-  while (idx < treeId.length && treeId[idx] !== "-")
-    idx++;
-  idx++; // -
-  if (idx >= treeId.length)
-    throw new Error("Invalid tree Id");
-
-  if (treeId[idx] === "C") {
-    // PlanarClassifier or VolumeClassifier
-    ({ idx, type, expansion } = parseClassifier(idx, treeId, expansion));
-  } else {
-    type = BatchType.Primary;
-  }
-
-  // Animation
-  // eslint-disable-next-line prefer-const
-  ({ idx, animationId } = parseAnimation(idx, treeId, animationId));
-
-  if (type === BatchType.Primary) {
-    ({ idx, edges, sectionCut } = parsePrimary(idx, treeId, edges, sectionCut));
-  }
-
-  const modelId = treeId.substr(idx);
-  if (!Id64.isId64(modelId))
-    throw new Error("Invalid tree Id");
-
-  const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(treeId);
-  const parsedTreeId = getTreeId(type, edges, sectionCut, animationId, expansion, (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined);
-  const options = TileOptions.fromTreeIdAndContentId(treeId, contentId);
-
-  let parsedContentId: ContentIdSpec;
-  try {
-    parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
-  } catch (e) {
-    throw new Error("Invalid content Id");
-  }
-
-  if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
-    throw new Error("Invalid content Id");
-
-  return {
-    contentId: parsedContentId,
-    modelId,
-    options,
-    treeId: parsedTreeId,
-  };
-}
-
-function getTreeId(type: BatchType, edges?: EdgeType, sectionCut?: string, animationId?: string, expansion?: number, enforceDisplayPriority?: boolean): IModelTileTreeId {
-  if (type === BatchType.Primary)
-    return {
-      type,
-      edges,
-      sectionCut,
-      animationId,
-      enforceDisplayPriority,
-    } as PrimaryTileTreeId;
-  else
-    return {
-      type,
-      expansion,
-      animationId,
-    } as ClassifierTileTreeId;
-}
-
-function parsePrimary(idx: number, treeId: string, edges: EdgeType = EdgeType.None, sectionCut: string | undefined) {
-  // Edges
-  edges = EdgeType.NonIndexed;
-  if (idx < treeId.length ) {
-    const noEdgesStr = "E:0_";
-    if (treeId.startsWith(noEdgesStr, idx))
-      edges = EdgeType.None;
-    else if (treeId.startsWith("E:2_", idx))
-      edges = EdgeType.Indexed;
-
-    if (EdgeType.NonIndexed !== edges)
-      idx += noEdgesStr.length;
-  }
-
-  // Section cut
-  if (idx + 1 < treeId.length && treeId[idx] === "S") {
-    idx++; // S
-    sectionCut = "";
-    while (idx < treeId.length && treeId[idx] !== "s") {
-      sectionCut += treeId[idx++];
-    }
-    if (idx === treeId.length)
-      throw new Error("Invalid tree Id");
-    idx++; // s
-  }
-  return { idx, edges, sectionCut };
-}
-
-function parseClassifier(idx: number, treeId: string, expansion: number | undefined) {
-  let type: BatchType;
-  idx++; // C
-  if (idx + 1 < treeId.length && treeId[idx] === "P" && treeId[idx + 1] === ":") {
-    type = BatchType.PlanarClassifier;
-    idx += 2; // P:
-  } else if (idx < treeId.length && treeId[idx] === ":") {
-    type = BatchType.VolumeClassifier;
-    idx++; // :
-  } else {
-    throw new Error("Invalid tree Id");
-  }
-
-  // C: or CP: is always followed by {expansion}_
-  let expansionStr = "";
-  while (idx < treeId.length && (treeId[idx] >= "0" && treeId[idx] <= "9" || treeId[idx] === ".")) {
-    expansionStr += treeId[idx++];
-  }
-
-  if (idx === treeId.length || treeId[idx] !== "_")
-    throw new Error("Invalid tree Id");
-  idx++; // _
-
-  expansion = Number.parseFloat(expansionStr);
-  return { idx, type, expansion };
-}
-
-function parseAnimation(idx: number, treeId: string, animationId: string | undefined) {
-  if (idx < treeId.length && treeId[idx] === "A") {
-    if (idx + 1 < treeId.length && treeId[idx + 1] !== ":")
-      throw new Error("Invalid tree Id");
-    idx += 2;
-
-    // Parse animation id
-    animationId = "";
-    while (idx < treeId.length && treeId[idx] !== "_") {
-      animationId += treeId[idx++];
-    }
-
-    if (!Id64.isId64(animationId) || idx === treeId.length)
-      throw new Error("Invalid tree Id");
-    idx++; // _
-  }
-
-  return { idx, animationId };
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId {
+  const parser = new Parser(treeId);
+  return parser.parse(contentId);
 }
 
 /** @internal */
@@ -330,6 +360,11 @@ export enum EdgeType {
   NonIndexed = 1,
   /** Include indexed edges, which use less memory and draw more efficiently than [[NonIndexed]] edges, but require WebGL 2. */
   Indexed = 2,
+}
+
+export enum EdgeFlags {
+  None = 0,
+  InferAllPolyfaceEdges,
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
