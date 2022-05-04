@@ -36,7 +36,7 @@ Modeling perspectives other than Physical may have the need to capture Physical 
 
 ## Heterogeneous Assemblies
 
-It is not uncommon to find physical assemblies composed of parts made of different materials. This use-case spans multiple disciplines, from composite walls and structural beams to rigid pavement structures. The approach in BIS explained above associates one and only one `PhysicalMaterial` instance for each `PhysicalElement` instance. Heterogeneous assemblies are, therefore, accomodated by associating `PhysicalMaterial` instances with the parts being assembled rather than the parent assembly.
+It is not uncommon to find physical assemblies composed of parts made of different materials. This use-case spans multiple disciplines, from composite walls and structural beams to rigid pavement structures. The approach in BIS explained above associates one and only one `PhysicalMaterial` instance for each `PhysicalElement` instance. Heterogeneous assemblies are, therefore, accommodated by associating `PhysicalMaterial` instances with the parts being assembled rather than the parent assembly.
 
 The following instance diagram shows an example of a composite beam as an heterogeneous assembly.
 
