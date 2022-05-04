@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
 import { useInterval } from "../../../core-react";
 
-describe.only("useInterval", () => {
+describe("useInterval", () => {
 
   it("should call interval's callback when timeout is reached", () => {
     const clock = sinon.useFakeTimers();
