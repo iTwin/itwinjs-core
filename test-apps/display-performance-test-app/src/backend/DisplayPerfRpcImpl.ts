@@ -227,6 +227,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   public override async initializeRemoteIModel(iTwinId: string, iModelId: string, savedViewNames?: string[]): Promise<void> {
     const existing = BriefcaseManager.getCachedBriefcases(iModelId);
     if(existing.length < 1) {
+      await this.consoleLog(`Downloading iModel "${iModelId}"`);
       await BriefcaseManager.downloadBriefcase({
         iTwinId,
         iModelId,
@@ -235,6 +236,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       });
     }
     if(savedViewNames !== undefined && savedViewNames.length > 0) {
+      await this.consoleLog(`Fetching saved views for iModel "${iModelId}"`);
       const savedViews = await fetchSavedViews(iTwinId, iModelId, new Set(savedViewNames));
 
       const esvFileName = this.createEsvFilename( await this.getInitializedRemoteIModelFilepath(iModelId) );
