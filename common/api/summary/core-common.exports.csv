@@ -593,6 +593,7 @@ internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
 internal;RpcInvocation
+internal;RpcManagedStatus
 internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
@@ -608,6 +609,7 @@ public;RpcPendingResponse
 internal;class RpcProtocol
 public;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcProtocolVersion
 internal;RpcPushChannel
 internal;class RpcPushConnection
 internal;RpcPushMessageListener

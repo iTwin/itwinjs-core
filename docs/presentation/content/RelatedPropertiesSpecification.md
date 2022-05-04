@@ -50,6 +50,8 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | ![Example when selecting all related instances](./media/relatedpropertiesspecification-with-instancefilter-attribute-unfiltered.png) | ![Example when filtering related instances](./media/relatedpropertiesspecification-with-instancefilter-attribute-filtered.png) |
 
+**Note:** A specification with higher priority and no instance filter overrides a specification with lower priority whether or not it has a filter.
+
 ### Attribute: `handleTargetClassPolymorphically`
 
 The attribute tells whether the target class specified through [`propertiesSource` attribute](#attribute-propertiessource) should be handled
