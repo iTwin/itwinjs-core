@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
+import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { IModelImporter } from "../../IModelImporter";
+import { IModelExporter } from "../../IModelExporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
 
@@ -406,7 +407,6 @@ describe("test resuming transformations", () => {
       );
       transformer.saveStateToFile(dumpPath);
       class DifferentTransformerClass extends (transformer.constructor as typeof IModelTransformer) {}
-      // redownload targetDb so that it is reset to the old state
       expect(
         () => DifferentTransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
       ).to.throw(/it is not.*valid to resume with a different.*class/);
@@ -416,6 +416,68 @@ describe("test resuming transformations", () => {
     targetDb.saveChanges();
     transformer.dispose();
     return targetDb;
+  });
+
+  it("should save custom additional state", async () => {
+    class AdditionalStateImporter extends IModelImporter {
+      public state1 = "importer";
+      protected override getAdditionalStateJson() { return { state1: this.state1 }; }
+      protected override loadAdditionalStateJson(additionalState: any) { this.state1 = additionalState.state1; }
+    }
+    class AdditionalStateExporter extends IModelExporter {
+      public state1  = "exporter";
+      protected override getAdditionalStateJson() { return { state1: this.state1 }; }
+      protected override loadAdditionalStateJson(additionalState: any) { this.state1 = additionalState.state1; }
+    }
+    class AdditionalStateTransformer extends IModelTransformer {
+      public state1 = "default";
+      public state2 = 42;
+      protected override saveStateToDb(db: SQLiteDb): void {
+        db.executeSQL("CREATE TABLE additionalState (state1 TEXT, state2 INTEGER)");
+        db.saveChanges();
+        db.withSqliteStatement(`INSERT INTO additionalState (state1) VALUES (?)`, (stmt) => {
+          stmt.bindString(1, this.state1);
+          expect(stmt.step()).to.equal(DbResult.BE_SQLITE_DONE);
+        });
+      }
+      protected override loadStateFromDb(db: SQLiteDb): void {
+        db.withSqliteStatement(`SELECT state1 FROM additionalState`, (stmt) => {
+          expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+          this.state1 = stmt.getValueString(0);
+        });
+      }
+      protected override getAdditionalStateJson() { return { state2: this.state2 }; }
+      protected override loadAdditionalStateJson(additionalState: any) { this.state2 = additionalState.state2; }
+    }
+
+    const sourceDb = seedDb;
+    const targetDb = SnapshotDb.createEmpty(
+      IModelTestUtils.prepareOutputFile(
+        "IModelTransformerResumption",
+        "CustomAdditionalState.bim"
+      ),
+      { rootSubject: { name: "CustomAdditionalStateTest" } }
+    );
+
+    const transformer = new AdditionalStateTransformer(new AdditionalStateExporter(sourceDb), new AdditionalStateImporter(targetDb));
+    transformer.state1 = "transformer-state-1";
+    transformer.state2 = 43;
+    (transformer.importer as AdditionalStateImporter).state1 = "importer-state-1";
+    (transformer.exporter as AdditionalStateExporter).state1 = "exporter-state-1";
+
+    const dumpPath = IModelTestUtils.prepareOutputFile(
+      "IModelTransformerResumption",
+      "transformer-state.db"
+    );
+    transformer.saveStateToFile(dumpPath);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const TransformerClass = transformer.constructor as typeof AdditionalStateTransformer;
+    const resumedTransformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
+    expect(resumedTransformer).not.to.equal(transformer);
+    expect(resumedTransformer.state1).to.equal(transformer.state1);
+    expect(resumedTransformer.state2).to.equal(transformer.state2);
+    expect((resumedTransformer.importer as AdditionalStateImporter).state1).to.equal((transformer.importer as AdditionalStateImporter).state1);
+    expect((resumedTransformer.exporter as AdditionalStateExporter).state1).to.equal((transformer.exporter as AdditionalStateExporter).state1);
   });
 
   it("should fail to resume from an old target while processing relationships", async () => {

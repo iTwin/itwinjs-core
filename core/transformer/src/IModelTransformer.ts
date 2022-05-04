@@ -1278,6 +1278,8 @@ export class IModelTransformer extends IModelExportHandler {
     if (IModelJsFs.existsSync(nativeStatePath))
       IModelJsFs.unlinkSync(nativeStatePath);
     db.createDb(nativeStatePath);
+    this.saveStateToDb(db);
+    db.saveChanges();
     db.closeDb();
   }
 
