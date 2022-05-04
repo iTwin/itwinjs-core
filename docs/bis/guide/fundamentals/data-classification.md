@@ -45,6 +45,12 @@ Relating an Element to one or more Classifications in one or more Classification
 
 See [ClassificationSystems](../../domains/classificationsystems.ecschema.md/).
 
+## General Recommendations
+
+- If a concept can be further classified beyond what is covered by the chosen Element-Class strategy, it typically leads to the need of introducing `bis:TypeDefinitionElement` subclasses.
+- Deep physical-element hierarchies typically model multiple levels of containment. Such cases are usually better modeled via *Spatial Composition*. That usually results in the more fundamental and granular physical concepts modeled via `bis:PhysicalElement`s while the higher-level containment semantics are captured in classes that follow the patterns defined by the `SpatialComposition` schema.
+- Categories are usually introduced driven by element-visualization needs. However, there are cases in which it is appropriate to introduce them for data-classification purposes. This is typically done when a classification in need is orthogonal to the element-class and Type-Definition schemes.
+
 ---
 | Next: [Type Definitions](./type-definitions.md)
 |:---
