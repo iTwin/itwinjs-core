@@ -9691,7 +9691,7 @@ packages:
     resolution: {integrity: sha1-w7M6te42DYbg5ijwRorn7yfWVN8=}
     engines: {node: '>=0.10.0'}
 
-  /ansi-regex/3.0.0:
+  /ansi-regex/3.0.1:
     resolution: {integrity: sha1-7QMXwyIGT3lGbAKWa922Bas32Zg=}
     engines: {node: '>=4'}
 
@@ -18929,7 +18929,7 @@ packages:
   /pretty-format/21.2.1:
     resolution: {integrity: sha512-ZdWPGYAnYfcVP8yKA3zFjCn8s4/17TeYH28MXuC8vTp0o21eXjbFGcOAXZEaDaOFJjc3h2qa7HQNHNshhvoh2A==}
     dependencies:
-      ansi-regex: 3.0.0
+      ansi-regex: 3.0.1
       ansi-styles: 3.2.1
 
   /pretty-format/26.6.2:
@@ -20985,7 +20985,7 @@ packages:
     resolution: {integrity: sha1-qEeQIusaw2iocTibY1JixQXuNo8=}
     engines: {node: '>=4'}
     dependencies:
-      ansi-regex: 3.0.0
+      ansi-regex: 3.0.1
 
   /strip-ansi/5.2.0:
     resolution: {integrity: sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA==}
