@@ -46,6 +46,7 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
+alpha;class ErrorCategory 
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -109,8 +110,11 @@ beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
+alpha;class StatusCategory
+alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
 beta;StatusCodeWithMessage
 public;StopWatch
+alpha;class SuccessCategory 
 public;TransientIdSequence
 public;UnexpectedErrors
 public;using

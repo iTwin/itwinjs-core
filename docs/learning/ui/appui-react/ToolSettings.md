@@ -75,6 +75,56 @@ export class SampleToolWithSetting extends PrimitiveTool {
 }
 ```
 
+### Example using ToolSettings helper methods to simplify setting up properties for Tool Settings UI
+
+```tsx
+export class ToolWithSettings extends PrimitiveTool {
+  public static override toolId = "ToolWithSettings";
+
+  // --- some code removed for brevity ---
+
+  // ------------- use length toggle  ---------------
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+    return this._useLengthProperty;
+  }
+
+  // ------------- Length (persisted in meters) ---------------
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5, undefined, !this.useLengthProperty.value);
+    return this._lengthProperty;
+  }
+
+
+  /** Used to supply DefaultToolSettingProvider with a list of properties used to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([
+      this.useLengthProperty,
+      this.lengthProperty,
+    ]);
+
+    const toolSettings = new Array<DialogItem>();
+    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }, lengthLock));
+    return toolSettings;
+  }
+
+  /** Override to return the property that is disabled/enabled if the supplied property is a lock property. */
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useLengthProperty ? this.lengthProperty : undefined);
+  }
+
+  /** Used to allow Tool to react to ToolSettings changes in UI */
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+}
+```
+
 ### Informing Tool of property changes
 
 When a user interacts with any of the generated type editors in the Tool Settings Widget, the changes are sent back to the active tool by calling its `applyToolSettingPropertyChange` method, passing in the name of the changed property and the property's new value.
