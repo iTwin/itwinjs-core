@@ -1,12 +1,9 @@
-# iTwin.js iOS Testing
+# iTwin.js Valgrind Testing
 
 trigger:
   branches:
     include:
       - master
-
-variables:
-  - group: iTwin.js ios and App Center variables
 
 jobs:
   - job:
