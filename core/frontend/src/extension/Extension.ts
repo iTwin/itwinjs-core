@@ -52,12 +52,14 @@ export interface ExtensionManifest {
 }
 
 /**
- * A "ready to use" Extension (contains a manifest object).
+ * A "ready to use" Extension (contains a manifest object and a function to execute).
  * Will be used as the type for in-memory extensions in the ExtensionAdmin
  * @alpha
  */
 export interface InstalledExtension {
-  provider: ExtensionProvider;
+  /** A function that executes the main entry point of the extension */
+  execute: ResolveFunc;
+  /** The manifest (package.json) of the extension */
   manifest: ExtensionManifest;
 }
 

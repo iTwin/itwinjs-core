@@ -7,19 +7,9 @@
  * @internal
  */
 export async function loadScript(jsUrl: string): Promise<any> {
-  function loadModule(m: any) {
-    if (typeof m === "function")
-      return m();
-    if (m.main && typeof m.main === "function")
-      return m.main();
-    if (m.default && typeof m.default === "function")
-      return m.default();
-    throw new Error(`No default function was found to execute in extension at ${jsUrl}`);
-  }
-
   try {
     const module = await import(/* webpackIgnore: true */jsUrl);
-    return loadModule(module);
+    return execute(module);
   } catch (e) {
     return new Promise((resolve, reject) => {
       const head = document.getElementsByTagName("head")[0];
@@ -36,7 +26,7 @@ export async function loadScript(jsUrl: string): Promise<any> {
 
       // https://github.com/tc39/proposal-dynamic-import fallback
       (window as any)[tempGlobal] = async function (module: any) {
-        await loadModule(module);
+        await execute(module);
         cleanup();
         resolve(module);
       };
@@ -51,4 +41,14 @@ export async function loadScript(jsUrl: string): Promise<any> {
       head.insertBefore(scriptElement, head.lastChild);
     });
   }
+}
+
+function execute(m: any) {
+  if (typeof m === "function")
+    return m();
+  if (m.main && typeof m.main === "function")
+    return m.main();
+  if (m.default && typeof m.default === "function")
+    return m.default();
+  throw new Error(`Failed to load extension. No default function was found to execute.`);
 }

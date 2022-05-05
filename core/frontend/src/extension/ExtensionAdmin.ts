@@ -61,7 +61,7 @@ export class ExtensionAdmin {
       const manifest = await provider.getManifest();
       this._extensions.set(manifest.name, {
         manifest,
-        provider,
+        execute: provider.execute,
       });
       // TODO - temporary fix to execute the missed startup event
       if (manifest.activationEvents.includes("onStartup"))
@@ -108,7 +108,7 @@ export class ExtensionAdmin {
   /** Executes the extension. Catches and logs any errors (so that an extension will not crash the main application). */
   private async _execute(extension: InstalledExtension) {
     try {
-      await extension.provider.execute();
+      await extension.execute();
     } catch (e) {
       Logger.logError(loggerCategory, `Error executing extension ${extension.manifest.name}: ${e}`);
     }
