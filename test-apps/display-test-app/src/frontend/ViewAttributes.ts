@@ -16,6 +16,7 @@ import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
 import { ToolBarDropDown } from "./ToolBar";
+import { AtmosphericScatteringEditor } from "./AtmosphericScattering";
 
 // cspell:ignore cels
 
@@ -227,6 +228,9 @@ const renderingStyles: RenderingStyle[] = [{
     hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
     transThreshold: 1,
   },
+}, {
+  name: "0_Atmospheric",
+  viewflags: { ...renderingStyleViewFlags, atmosphericScattering: true },
 }];
 
 export class ViewAttributes {
@@ -307,6 +311,7 @@ export class ViewAttributes {
 
     this.addAmbientOcclusion();
     this.addThematicDisplay();
+    this.addAtmosphericScattering();
 
     // Set initial states
     this.update();
@@ -466,6 +471,11 @@ export class ViewAttributes {
   private addThematicDisplay(): void {
     const thematic = new ThematicDisplayEditor(this._vp, this._element);
     this._updates.push((view) => thematic.update(view));
+  }
+
+  private addAtmosphericScattering(): void {
+    const atmosphericScattering = new AtmosphericScatteringEditor(this._vp, this._element);
+    this._updates.push((view) => atmosphericScattering.update(view));
   }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }

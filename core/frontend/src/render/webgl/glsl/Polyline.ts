@@ -25,6 +25,7 @@ import {
   addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
 } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
+import { addAtmosphericScattering } from "./AthmosphericScattering";
 
 const checkForDiscard = "return discardByLineCode;";
 
@@ -345,6 +346,8 @@ export function createPolylineBuilder(isInstanced: IsInstanced, positionType: Po
   addColor(builder);
   addEdgeContrast(builder.vert);
   addWhiteOnWhiteReversal(builder.frag);
+
+  addAtmosphericScattering(builder);
 
   return builder;
 }

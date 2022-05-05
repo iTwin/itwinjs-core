@@ -22,6 +22,7 @@ import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
 import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
+import { addAtmosphericScattering } from "./AthmosphericScattering";
 
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
@@ -309,5 +310,6 @@ export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced,
   addColor(builder);
   addEdgeContrast(builder.vert);
   addWhiteOnWhiteReversal(builder.frag);
+  addAtmosphericScattering(builder);
   return builder;
 }

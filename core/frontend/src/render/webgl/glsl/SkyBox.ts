@@ -14,10 +14,12 @@ import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture } from "../Texture";
+import { addAtmosphericScattering } from "./AthmosphericScattering";
 
 const computeBaseColor = `return vec4(0, 0, 0, 0);`;
-const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
-const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
+const setFinalBaseColor = `return TEXTURE_CUBE(s_cube, v_texDir);`;
+const assignFragData = `FragColor = baseColor;`;
+const computePosition = `vec3 pos = u_rot * vec3(rawPos.x, rawPos.z, -rawPos.y); v_eyeSpace = pos.xyz; return pos.xyzz;`; // rawPos swizzling accounts for iModel rotation.
 const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
 const scratchRotMatrix = new Matrix3();
@@ -27,6 +29,8 @@ export function createSkyBoxProgram(context: WebGLContext): ShaderProgram {
   const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  prog.frag.set(FragmentShaderComponent.SetFinalBaseColor, setFinalBaseColor);
+  addAtmosphericScattering(prog);
   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.vert.addUniform("u_rot", VariableType.Mat3, (prg) => {

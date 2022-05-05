@@ -921,6 +921,8 @@ export const enum FragmentShaderComponent {
   // (Optional) Override render order to be output to pick buffers.
   // float overrideRenderOrder(float renderOrder)
   OverrideRenderOrder,
+  ApplyAtmosphericScattering,
+  SetFinalBaseColor,
   COUNT,
 }
 
@@ -1085,6 +1087,18 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (applyWiremesh) {
       prelude.addFunction("vec4 applyWiremesh(vec4 baseColor)", applyWiremesh);
       main.addline("  baseColor = applyWiremesh(baseColor);");
+    }
+
+    const setFinalBaseColor = this.get(FragmentShaderComponent.SetFinalBaseColor);
+    if (setFinalBaseColor) {
+      prelude.addFunction("vec4 setFinalBaseColor(vec4 baseColor)", setFinalBaseColor);
+      main.addline("  baseColor = setFinalBaseColor(baseColor);");
+    }
+
+    const applyAtmosphericScattering = this.get(FragmentShaderComponent.ApplyAtmosphericScattering);
+    if (applyAtmosphericScattering) {
+      prelude.addFunction("vec4 applyAtmosphericScattering(vec4 baseColor)", applyAtmosphericScattering);
+      main.addline("  baseColor = applyAtmosphericScattering(baseColor);");
     }
 
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);
