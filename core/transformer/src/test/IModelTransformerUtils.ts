@@ -5,7 +5,7 @@
 
 import { assert, Assertion, expect, util } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
+import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
 import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -23,24 +23,34 @@ import {
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 
+interface DeepEqualWithFpToleranceOpts {
+  tolerance?: number;
+  /** e.g. consider {x: undefined} and {} as deeply equal */
+  considerNonExistingAndUndefinedEqual?: boolean;
+}
+
 declare global {
   namespace Chai {
     interface Deep {
       // might be better to implement .approximately.deep.equal, but this is simpler
-      equalWithFpTolerance(actual: any, tolerance: number): Assertion;
+      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
     }
   }
 }
 
 const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
 
-export function deepEqualWithFpTolerance(a: any, b: any, tolerance: number): boolean {
+export function deepEqualWithFpTolerance(
+  a: any,
+  b: any,
+  options: DeepEqualWithFpToleranceOpts = {},
+): boolean {
+  if (options.tolerance === undefined) options.tolerance = 1e-10;
   if (a === b) return true;
-  if (typeof a !== typeof b)
-    return false;
+  if (typeof a !== typeof b) return false;
   switch (typeof a) {
     case "number":
-      return isAlmostEqualNumber(a, b, tolerance);
+      return isAlmostEqualNumber(a, b, options.tolerance);
     case "string":
     case "boolean":
     case "function":
@@ -48,27 +58,43 @@ export function deepEqualWithFpTolerance(a: any, b: any, tolerance: number): boo
     case "undefined":
       return false; // these objects can only be strict equal which was already tested
     case "object":
-      if ((a === null) !== (b === null))
-        return false;
-      return Object.keys(a).every((key) => key in a && key in b && deepEqualWithFpTolerance(a[key], b[key], tolerance));
+      if ((a === null) !== (b === null)) return false;
+      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
+      const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
+      return aSize === bSize && Object.keys(a).every(
+        (key) =>
+          (key in b || options.considerNonExistingAndUndefinedEqual) &&
+          deepEqualWithFpTolerance(a[key], b[key], options)
+      );
     default: // bigint unhandled
       throw Error("unhandled deep compare type");
   }
 }
 
-Assertion.addMethod("equalWithFpTolerance", function equalWithFpTolerance(expected: any, tolerance: number) {
-  const actual = this._obj;
-  const isDeep = util.flag(this, "deep");
-  this.assert(
-    isDeep
-      ? deepEqualWithFpTolerance(expected, actual, tolerance)
-      : isAlmostEqualNumber(expected, actual, tolerance),
-    `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
-    `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
-    expected,
-    actual
-  );
-});
+Assertion.addMethod(
+  "equalWithFpTolerance",
+  function equalWithFpTolerance(
+    expected: any,
+    options: DeepEqualWithFpToleranceOpts = {}
+  ) {
+    if (options.tolerance === undefined) options.tolerance = 1e-10;
+    const actual = this._obj;
+    const isDeep = util.flag(this, "deep");
+    this.assert(
+      isDeep
+        ? deepEqualWithFpTolerance(expected, actual, options)
+        : isAlmostEqualNumber(expected, actual, options.tolerance),
+      `expected ${
+        isDeep ? "deep equality of " : " "
+      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${
+        isDeep ? "deep inequality of " : " "
+      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      expected,
+      actual
+    );
+  }
+);
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
@@ -217,10 +243,16 @@ export class IModelTransformerTestUtils {
   }
 }
 
+/**
+ * Assert that an identity (no changes) transformation has occurred between two IModelDbs
+ * @note If you do not pass a transformer or custom implemention of an id remapping context, it defaults to assuming
+ *       no remapping occurred and therefore can be used as a general db-content-equivalence check
+ */
 export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
-  transformer: IModelTransformer,
+  /** either an IModelTransformer instance or a function mapping source element ids to target elements */
+  remapContainer: IModelTransformer | ((id: Id64String) => Id64String) = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
@@ -229,10 +261,16 @@ export async function assertIdentityTransformation(
   }: {
     expectedElemsOnlyInSource?: Partial<ElementProps>[];
     /** before checking elements that are only in the source are correct, filter out elements of these classes */
-    classesToIgnoreMissingElemsOfInTarget?: (typeof Entity)[];
+    classesToIgnoreMissingElemsOfInTarget?: typeof Entity[];
   } = {}
 ) {
-  const geometryConversionTolerance = 1e-10;
+  const remap =
+    typeof remapContainer === "function"
+      ? remapContainer
+      : remapContainer.context.findTargetElementId.bind(remapContainer.context);
+
+  expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
+  expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
 
   const sourceToTargetElemsMap = new Map<Element, Element | undefined>();
   const targetToSourceElemsMap = new Map<Element, Element | undefined>();
@@ -241,7 +279,7 @@ export async function assertIdentityTransformation(
   for await (const [sourceElemId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
-    const targetElemId = transformer.context.findTargetElementId(sourceElemId);
+    const targetElemId = remap(sourceElemId);
     const sourceElem = sourceDb.elements.getElement(sourceElemId);
     const targetElem = targetDb.elements.tryGetElement(targetElemId);
     // expect(targetElem.toExist)
@@ -269,15 +307,13 @@ export async function assertIdentityTransformation(
             expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
             relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
           });
-          const mappedRelationTargetInTargetId =
-            transformer.context.findTargetElementId(relationTargetInSourceId);
+          const mappedRelationTargetInTargetId = remap(relationTargetInSourceId);
           expect(relationTargetInTargetId).to.equal(
             mappedRelationTargetInTargetId
           );
         } else {
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
-            sourceElem.asAny[propName],
-            geometryConversionTolerance
+            sourceElem.asAny[propName]
           );
         }
       }
@@ -294,34 +330,40 @@ export async function assertIdentityTransformation(
         }
       }
       if (sourceElem instanceof DisplayStyle3d) {
-        const styles = expectedSourceElemJsonProps.styles as DisplayStyle3dSettingsProps | undefined;
+        const styles = expectedSourceElemJsonProps.styles as
+          | DisplayStyle3dSettingsProps
+          | undefined;
         if (styles?.environment?.sky) {
           const sky = styles.environment.sky;
+          if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
           const image = sky.image;
-          if (sky.image?.texture === Id64.invalid)
-            delete image?.texture;
-          if (!sky.image)
-            sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
-          if (!sky.twoColor)
-            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-          if ((sky as any).file === "")
-            delete (sky as any).file;
+          if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
+          if (image?.texture) image.texture = remap(image.texture);
+          if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+          if ((sky as any).file === "") delete (sky as any).file;
+        }
+        const excludedElements = typeof styles?.excludedElements === "string"
+          ? CompressedId64Set.decompressArray(styles.excludedElements)
+          : styles?.excludedElements;
+        for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
+          const id = excludedElements![i];
+          excludedElements![i] = remap(id);
         }
         for (const ovr of styles?.subCategoryOvr ?? []) {
-          if (ovr.subCategory) {
-            ovr.subCategory = transformer.context.findTargetElementId(ovr.subCategory);
-          }
+          if (ovr.subCategory)
+            ovr.subCategory = remap(ovr.subCategory);
         }
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
-      const _eq = deepEqualWithFpTolerance( // kept for conditional breakpoints
+      const _eq = deepEqualWithFpTolerance(
+        // kept for conditional breakpoints
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
-        geometryConversionTolerance
+        { considerNonExistingAndUndefinedEqual: true }
       );
       expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(
         expectedSourceElemJsonProps,
-        geometryConversionTolerance
+        { considerNonExistingAndUndefinedEqual: true }
       );
     }
   }
@@ -335,14 +377,25 @@ export async function assertIdentityTransformation(
     }
   }
 
-  const onlyInSourceElements = new Map([...sourceToTargetElemsMap]
-    .filter(([_inSource, inTarget]) => inTarget === undefined)
-    .map(([inSource]) => [inSource.id, inSource]));
-  const onlyInTargetElements = new Map([...targetToSourceElemsMap]
-    .filter(([_inTarget, inSource]) => inSource === undefined)
-    .map(([inTarget]) => [inTarget.id, inTarget]));
-  const notIgnoredElementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()]
-    .filter((elem) => !classesToIgnoreMissingElemsOfInTarget.some((cls) => elem instanceof cls))
+  const onlyInSourceElements = new Map(
+    [...sourceToTargetElemsMap]
+      .filter(([_inSource, inTarget]) => inTarget === undefined)
+      .map(([inSource]) => [inSource.id, inSource])
+  );
+  const onlyInTargetElements = new Map(
+    [...targetToSourceElemsMap]
+      .filter(([_inTarget, inSource]) => inSource === undefined)
+      .map(([inTarget]) => [inTarget.id, inTarget])
+  );
+  const notIgnoredElementsOnlyInSourceAsInvariant = [
+    ...onlyInSourceElements.values(),
+  ]
+    .filter(
+      (elem) =>
+        !classesToIgnoreMissingElemsOfInTarget.some(
+          (cls) => elem instanceof cls
+        )
+    )
     .map((elem) => {
       const rawProps = { ...elem } as Partial<Mutable<Element>>;
       delete rawProps.iModel;
@@ -351,7 +404,9 @@ export async function assertIdentityTransformation(
       return rawProps;
     });
 
-  expect(notIgnoredElementsOnlyInSourceAsInvariant).to.deep.equal(expectedElemsOnlyInSource);
+  expect(notIgnoredElementsOnlyInSourceAsInvariant).to.deep.equal(
+    expectedElemsOnlyInSource
+  );
   expect(onlyInTargetElements).to.have.length(0);
 
   const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
@@ -361,8 +416,7 @@ export async function assertIdentityTransformation(
   for await (const [sourceModelId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
-    const targetModelId =
-      transformer.context.findTargetElementId(sourceModelId);
+    const targetModelId = remap(sourceModelId);
     const sourceModel = sourceDb.models.getModel(sourceModelId);
     const targetModel = targetDb.models.tryGetModel(targetModelId);
     // expect(targetModel.toExist)
@@ -374,11 +428,9 @@ export async function assertIdentityTransformation(
       const _eq = deepEqualWithFpTolerance(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
-        geometryConversionTolerance
       );
       expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(
         expectedSourceModelJsonProps,
-        geometryConversionTolerance
       );
     }
   }
@@ -409,37 +461,59 @@ export async function assertIdentityTransformation(
   expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
   expect(onlyInTargetModels).to.have.length(0);
 
-  const makeRelationKey = (rel: any) => `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
-  const query: Parameters<IModelDb["query"]> = ["SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }];
+  const makeRelationKey = (rel: any) =>
+    `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const query: Parameters<IModelDb["query"]> = [
+    "SELECT * FROM bis.ElementRefersToElements",
+    undefined,
+    { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
+  ];
   const sourceRelationships = new Map<string, any>();
   for await (const row of sourceDb.query(...query)) {
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
-  const targetRelationshipQueue = new Map<string, any>();
+  const targetRelationshipsToFind = new Map<string, any>();
   for await (const row of targetDb.query(...query)) {
-    targetRelationshipQueue.set(makeRelationKey(row), row);
+    targetRelationshipsToFind.set(makeRelationKey(row), row);
   }
 
   /* eslint-disable @typescript-eslint/naming-convention */
   for (const relInSource of sourceRelationships.values()) {
-    const isOnlyInSource = onlyInSourceElements.has(relInSource.SourceECInstanceId) && onlyInSourceElements.has(relInSource.TargetECInstanceId);
+    const isOnlyInSource =
+      onlyInSourceElements.has(relInSource.SourceECInstanceId) &&
+      onlyInSourceElements.has(relInSource.TargetECInstanceId);
     if (isOnlyInSource) continue;
-    const relSourceInTarget = transformer.context.findTargetElementId(relInSource.SourceECInstanceId);
+    const relSourceInTarget = remap(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
-    const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
+    const relTargetInTarget = remap(relInSource.TargetECInstanceId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
-    const relInTargetKey = makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget });
-    const relInTarget = targetRelationshipQueue.get(relInTargetKey);
-    expect(relInTarget).not.to.be.undefined;
-    // this won't work if it has navigation properties (or any remapped property)
-    const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
-    expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
-    targetRelationshipQueue.delete(relInTargetKey);
+    const relInTargetKey = makeRelationKey({
+      SourceECInstanceId: relSourceInTarget,
+      TargetECInstanceId: relTargetInTarget,
+    });
+    const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
+    const relClassName = sourceDb.withPreparedStatement(
+      "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
+      (s) => { s.bindId(1,relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+    );
+    expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
+    // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
+    const makeRelInvariant = ({
+      SourceECInstanceId: _1,
+      TargetECInstanceId: _2,
+      ECClassId: _3,
+      ECInstanceId: _4,
+      ...rel
+    }: any) => rel;
+    expect(makeRelInvariant(relInSource)).to.deep.equal(
+      makeRelInvariant(relInTarget)
+    );
+    targetRelationshipsToFind.delete(relInTargetKey);
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 
-  expect(targetRelationshipQueue.size).to.equal(0);
+  expect(targetRelationshipsToFind.size).to.equal(0);
 }
 
 export class TransformerExtensiveTestScenario {
