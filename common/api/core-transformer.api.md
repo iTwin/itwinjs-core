@@ -27,6 +27,7 @@ import { Relationship } from '@itwin/core-backend';
 import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
+import { SQLiteDb } from '@itwin/core-backend';
 
 // @beta
 export class IModelExporter {
@@ -53,7 +54,9 @@ export class IModelExporter {
     exportRelationships(baseRelClassFullName: string): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
+    protected getAdditionalStateJson(): any;
     protected get handler(): IModelExportHandler;
+    protected loadAdditionalStateJson(_additionalState: any): void;
     // @internal
     loadStateFromJson(state: IModelExporterState): void;
     progressInterval: number;
@@ -72,6 +75,8 @@ export class IModelExporter {
 // @internal
 export interface IModelExporterState {
     // (undocumented)
+    additionalState?: any;
+    // (undocumented)
     excludedCodeSpecNames: string[];
     // (undocumented)
     excludedElementAspectClassFullNames: string[];
@@ -83,6 +88,8 @@ export interface IModelExporterState {
     excludedElementIds: CompressedId64Set;
     // (undocumented)
     excludedRelationshipClassNames: string[];
+    // (undocumented)
+    exporterClass: string;
     // (undocumented)
     visitElements: boolean;
     // (undocumented)
@@ -128,11 +135,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
+    protected getAdditionalStateJson(): any;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
+    protected loadAdditionalStateJson(_additionalState: any): void;
     // @internal
     loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
@@ -164,7 +173,11 @@ export class IModelImporter implements Required<IModelImportOptions> {
 // @internal
 export interface IModelImporterState {
     // (undocumented)
+    additionalState?: any;
+    // (undocumented)
     doNotUpdateElementIds: CompressedId64Set;
+    // (undocumented)
+    importerClass: string;
     // (undocumented)
     options: IModelImportOptions;
     // (undocumented)
@@ -188,6 +201,7 @@ export class IModelTransformer extends IModelExportHandler {
     detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
     readonly exporter: IModelExporter;
+    protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
@@ -195,6 +209,8 @@ export class IModelTransformer extends IModelExportHandler {
     static readonly jsStateTable = "TransformerJsState";
     // @internal
     static readonly lastProvenanceEntityInfoTable = "LastProvenanceEntityInfo";
+    protected loadAdditionalStateJson(_additionalState: any): void;
+    protected loadStateFromDb(db: SQLiteDb): void;
     onDeleteElement(sourceElementId: Id64String): void;
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
@@ -232,6 +248,7 @@ export class IModelTransformer extends IModelExportHandler {
     static get provenanceElementAspectClasses(): (typeof Entity)[];
     static get provenanceElementClasses(): (typeof Entity)[];
     static resumeTransformation<SubClass extends new (...a: any[]) => IModelTransformer = typeof IModelTransformer>(this: SubClass, statePath: string, ...constructorArgs: ConstructorParameters<SubClass>): InstanceType<SubClass>;
+    protected saveStateToDb(db: SQLiteDb): void;
     saveStateToFile(nativeStatePath: string): void;
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
