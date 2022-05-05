@@ -735,6 +735,11 @@ export class ViewAttributes {
     });
     slider.div.style.textAlign = "left";
 
+    const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
+      this.overrideEdgeSettings({ smoothPolyfaceEdges: enabled });
+      this.sync();
+    }, edgeDisplayDiv);
+
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
       hidEdgesCb.checkbox.disabled = !enabled;
@@ -749,11 +754,6 @@ export class ViewAttributes {
     const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("hiddenEdges", enabled);
       hidEditor.hidden = !enabled;
-      this.sync();
-    }, edgeDisplayDiv);
-
-    const smoothEdgesCb = this.addCheckbox("Smooth Edges", (enabled: boolean) => {
-      this.overrideEdgeSettings({ smoothPolyfaceEdges: enabled });
       this.sync();
     }, edgeDisplayDiv);
 
@@ -776,7 +776,6 @@ export class ViewAttributes {
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
       smoothEdgesCb.checkbox.checked = settings.smoothPolyfaceEdges;
-      smoothEdgesCb.div.hidden = !vf.visibleEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");
