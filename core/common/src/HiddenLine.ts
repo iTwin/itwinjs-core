@@ -14,8 +14,6 @@ import { LinePixels } from "./LinePixels";
  * @public
  */
 export namespace HiddenLine {
-  export type PolyfaceEdgeInference = "crease" | "all";
-
   /** Describes the symbology with which edges should be drawn. */
   export interface StyleProps {
     /** @internal
@@ -31,15 +29,15 @@ export namespace HiddenLine {
      *  - width is overridden if width != undefined and width != 0
      *  - pattern is overridden if pattern != undefined and pattern != LinePixels.Invalid
      */
-    readonly ovrColor?: boolean;
+    ovrColor?: boolean;
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
-    readonly color?: ColorDefProps;
+    color?: ColorDefProps;
     /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
-    readonly pattern?: LinePixels;
+    pattern?: LinePixels;
     /** If defined, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
      * @note Non-integer values are truncated, and values are clamped to the range [1, 32].
      */
-    readonly width?: number;
+    width?: number;
   }
 
   /** Describes the symbology with which edges should be drawn. */
@@ -159,9 +157,9 @@ export namespace HiddenLine {
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
   export interface SettingsProps {
     /** Describes how visible edges (those unobscured by other geometry) should be displayed. */
-    readonly visible?: StyleProps;
+    visible?: StyleProps;
     /** Describes how hidden edges (those obscured by other geometry) should be displayed. */
-    readonly hidden?: StyleProps;
+    hidden?: StyleProps;
     /** A value in the range [0.0, 1.0] specifying a threshold below which transparent surfaces should not be drawn.
      * A value of 0.0 indicates any surface that is not 100% opaque should not be drawn.
      * A value of 0.25 indicates any surface that is less than 25% opaque should not be drawn.
@@ -169,8 +167,8 @@ export namespace HiddenLine {
      * @note values will be clamped to the range [0.0, 1.0].
      * @note Defaults to 1.0.
      */
-    readonly transThreshold?: number;
-    polyfaceEdgeInference?: PolyfaceEdgeInference;
+    transThreshold?: number;
+    displaySmoothEdges?: boolean;
   }
 
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
@@ -189,7 +187,7 @@ export namespace HiddenLine {
     public readonly transparencyThreshold: number;
     public get transThreshold(): number { return this.transparencyThreshold; }
 
-    public readonly polyfaceEdgeInference: PolyfaceEdgeInference;
+    public readonly displaySmoothEdges: boolean;
 
     /** The default display settings. */
     public static defaults = new Settings({});
@@ -211,8 +209,8 @@ export namespace HiddenLine {
         transThreshold: this.transThreshold,
       };
 
-      if ("all" === this.polyfaceEdgeInference)
-        props.polyfaceEdgeInference = "all";
+      if (this.displaySmoothEdges)
+        props.displaySmoothEdges = true;
 
       return props;
     }
@@ -226,7 +224,7 @@ export namespace HiddenLine {
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
         transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
-        polyfaceEdgeInference: props.polyfaceEdgeInference ?? this.polyfaceEdgeInference,
+        displaySmoothEdges: props.displaySmoothEdges ?? this.displaySmoothEdges,
       });
     }
 
@@ -237,7 +235,7 @@ export namespace HiddenLine {
       return this.visible.equals(other.visible)
         && this.hidden.equals(other.hidden)
         && this.transparencyThreshold === other.transparencyThreshold
-        && this.polyfaceEdgeInference === other.polyfaceEdgeInference;
+        && this.displaySmoothEdges === other.displaySmoothEdges;
     }
 
     public get matchesDefaults(): boolean {
@@ -248,7 +246,7 @@ export namespace HiddenLine {
       this.visible = Style.fromJSON(json.visible);
       this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
-      this.polyfaceEdgeInference = "all" === json.polyfaceEdgeInference ? "all" : "crease";
+      this.displaySmoothEdges = true === json.displaySmoothEdges;
     }
   }
 }
