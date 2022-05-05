@@ -265,6 +265,7 @@ export class RpcInvocation {
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
+      allowCompression: this.operation.policy.allowResponseCompression,
     };
 
     this.transformResponseStatus(fulfillment, rawResult);
