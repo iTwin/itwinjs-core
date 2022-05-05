@@ -1,0 +1,50 @@
+# iTwin.js iOS Testing
+
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  - group: iTwin.js ios and App Center variables
+
+jobs:
+  - job:
+    timeoutInMinutes: 120
+    pool:
+      name: iModelTechCI
+      demands:
+      - Agent.OS -equals Linux
+      - Agent.Name -equals BuildMinion03L-A #only 03L-A and 03L-B have valgrind installed. There is no way to OR-combine demands, so we limit to this single machine
+    variables:
+      VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+
+      - task: NodeTool@0
+        displayName: "Use Node 14.17.4"
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+
+      - script: node common/scripts/install-run-rush.js build -v -p max --to core-backend
+        displayName: rush build
+        condition: succeeded()
+
+      - script: mkdir $(VALGRIND_RESULTS)
+
+      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all rush cover |& tee $(VALGRIND_RESULTS)log-BeJsonCpp.txt'
+        displayName: 'Run Valgrind on rush cover'
+
+      - task: archiveandpublishartifact@0
+        inputs:
+          rootFolderOrFile: '$(VALGRIND_RESULTS)'
+          archiveFolder: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'ValgrindReport-$(Build.BuildId)'
