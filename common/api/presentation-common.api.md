@@ -2219,6 +2219,7 @@ export interface PropertyOverrides {
     isReadOnly?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
+    priority?: number;
     renderer?: CustomRendererSpecification;
 }
 

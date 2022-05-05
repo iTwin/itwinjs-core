@@ -773,6 +773,39 @@ describe("Learning Snippets", () => {
           }]);
           // __PUBLISH_EXTRACT_END__
         });
+
+        it("uses `priority` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Priority.Ruleset
+          // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
+          // property's priority is set to 9999.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                propertyOverrides: [{
+                  name: "UserLabel",
+                  priority: 9999,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Ensure the `UserLabel` field's priority is 9999.
+          const content = (await Presentation.presentation.getContent({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          }))!;
+          expect(content.descriptor.fields).to.containSubset([{
+            label: "User Label",
+            priority: 9999,
+          }]);
+        });
       });
 
       describe("CalculatedPropertiesSpecification", () => {

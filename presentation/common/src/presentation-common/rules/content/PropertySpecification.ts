@@ -71,6 +71,13 @@ export interface PropertyOverrides {
    * read-only when at least one of the properties is read-only.
    */
   isReadOnly?: boolean;
+
+  /**
+   * This attribute controls the order in which property fields should be displayed. Property fields with higher priority
+   * will appear before property fields with lower priority. If the attribute value is not set, the field's priority
+   * will be the maximum priority of its properties.
+   */
+  priority?: number;
 }
 
 /**

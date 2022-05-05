@@ -182,6 +182,10 @@ For example, the [default BisCore supplemental ruleset](https://github.com/iTwin
   }
   ```
 
+### Property override enhancements
+
+It is now possible to override values of [`isReadOnly`](../presentation/Content/PropertySpecification.md#attribute-isreadonly) and [`priority`](../presentation/Content/PropertySpecification.md#attribute-priority) property attributes.
+
 ## ColorDef validation
 
 [ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
