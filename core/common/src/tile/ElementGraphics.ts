@@ -11,7 +11,7 @@ import { TransformProps } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { ContentFlags, EdgeType, TreeFlags } from "../tile/TileMetadata";
+import { ContentFlags, EdgeOptions, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
@@ -39,7 +39,7 @@ export interface GraphicsRequestProps {
   /** If omitEdges is false, specifies the type of edges to produce. Generally determined by TileAdmin.requestElementGraphics.
    * @internal
    */
-  readonly edgeType?: EdgeType;
+  readonly edges?: EdgeOptions;
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
   /** If defined, the compact string representation of a [ClipVector]($core-geometry) to be applied to the geometry to produce section-cut

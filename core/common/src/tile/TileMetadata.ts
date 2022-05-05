@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
@@ -235,21 +235,24 @@ class Parser {
     return { edges, sectionCut };
   }
 
-  private parseEdges(): EdgeType {
+  private parseEdges(): EdgeOptions | false {
     if ("E" !== this.cur())
-      return EdgeType.NonIndexed;
+      return { indexed: false, smooth: false };
 
     this.eat("E");
     this.eat(":");
 
     const typeStr = this.cur();
-    this.require(typeStr === "0" || typeStr === "2");
-
-    const type = "0" === typeStr ? EdgeType.None : EdgeType.Indexed;
     this.eat(typeStr);
     this.eat("_");
 
-    return type;
+    switch (typeStr) {
+      case "0": return false;
+      case "2": return { indexed: true, smooth: false };
+      case "3": return { indexed: false, smooth: true };
+      case "4": return { indexed: true, smooth: true };
+      default: this.reject();
+    }
   }
 
   private parseSectionCut(): string | undefined {
@@ -350,21 +353,26 @@ export enum TreeFlags {
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
 }
 
-/** Describes the type of edges to include in the graphics for a tile tree.
- * @alpha
- */
-export enum EdgeType {
-  /** Omit all edges. */
-  None = 0,
-  /** Include non-indexed edges, which consume more memory and are less efficient to draw than [[Indexed]] edges, but are compatible with WebGL 1. */
-  NonIndexed = 1,
-  /** Include indexed edges, which use less memory and draw more efficiently than [[NonIndexed]] edges, but require WebGL 2. */
-  Indexed = 2,
+export interface EdgeOptions {
+  indexed: boolean;
+  smooth: boolean;
 }
 
-export enum EdgeFlags {
-  None = 0,
-  InferAllPolyfaceEdges,
+function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): number {
+  if (typeof a !== typeof b)
+    return a ? 1 : -1;
+
+  if (typeof a === "boolean") {
+    assert(typeof b === "boolean");
+    return compareBooleans(a, b);
+  }
+
+  assert(typeof b === "object");
+  let cmp = compareBooleans(a.indexed, b.indexed);
+  if (0 === cmp)
+    cmp = compareBooleans(a.smooth, b.smooth);
+
+  return cmp;
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -374,7 +382,7 @@ export interface PrimaryTileTreeId {
   /** Describes the type of tile tree. */
   type: BatchType.Primary;
   /** The type of edges to include in tile content. */
-  edges: EdgeType;
+  edges: EdgeOptions | false;
   /** Id of the [DisplayStyle]($backend) or [RenderTimeline]($backend) element holding the [[RenderSchedule]] script to be applied to the tiles. */
   animationId?: Id64String;
   /** If true, meshes within the tiles will be grouped into nodes based on the display priority associated with their subcategories,
@@ -424,7 +432,16 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
-    const edges = treeId.edges !== EdgeType.NonIndexed ? `E:${treeId.edges}_` : "";
+    let edges;
+    if (!treeId.edges) {
+      edges = "E:0_";
+    } else {
+      if (!treeId.edges.smooth)
+        edges = treeId.edges.indexed ? "E:2_" : "";
+      else
+        edges = treeId.edges.indexed ? "E:4_" : "E:3_";
+    }
+
     const sectionCut = treeId.sectionCut ? `S${treeId.sectionCut}s` : "";
     idStr = `${idStr}${edges}${sectionCut}`;
   } else {
@@ -461,7 +478,7 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
   // NB: The redundant checks on BatchType below are to satisfy compiler.
   assert(lhs.type === rhs.type);
   if (BatchType.Primary === lhs.type && BatchType.Primary === rhs.type) {
-    cmp = compareNumbers(lhs.edges, rhs.edges);
+    cmp = compareEdgeOptions(lhs.edges, rhs.edges);
     if (0 === cmp) {
       cmp = compareBooleansOrUndefined(lhs.enforceDisplayPriority, rhs.enforceDisplayPriority);
       if (0 === cmp)
