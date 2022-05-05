@@ -1,5 +1,5 @@
 {
-  "name": "appui-test-app",
+  "name": "appui-standalone-app",
   "description": "AppUI Test Application",
   "private": true,
   "license": "MIT",

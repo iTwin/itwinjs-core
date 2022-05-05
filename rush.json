@@ -460,8 +460,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "appui-test-app",
-      "projectFolder": "test-apps/appui-test-app",
+      "packageName": "appui-connected-app",
+      "projectFolder": "test-apps/appui-test-app/connected",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "appui-standalone-app",
+      "projectFolder": "test-apps/appui-test-app/standalone",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
