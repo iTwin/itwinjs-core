@@ -16,6 +16,8 @@ This specification allows overriding some attributes of specific ECProperty or d
 | [`doNotHideOtherPropertiesOnDisplayOverride`](#attribute-donothideotherpropertiesondisplayoverride) | No        | `boolean`                                                         | `false`     |
 | [`renderer`](#attribute-renderer)                                                                   | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
 | [`editor`](#attribute-editor)                                                                       | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
+| [`isReadOnly`](#attribute-isreadonly)                                                               | No        | `boolean`                                                         | No override |
+| [`priority`](#attribute-priority)                                                                   | No        | `number`                                                          | No override |
 
 ### Attribute: `name`
 
@@ -170,3 +172,41 @@ to be used in UI.
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.Editor.Result]]
 ```
+
+### Attribute `isReadOnly`
+
+This attribute controls whether the property field is read-only. If the attribute value is not set, the field is read-only when at least one of the properties is read-only.
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `boolean`   |
+| **Is Required**   | No          |
+| **Default Value** | No override |
+
+```ts
+[[include:Presentation.Content.Customization.PropertySpecification.IsReadOnly.Ruleset]]
+```
+
+```ts
+[[include:Presentation.Content.Customization.PropertySpecification.IsReadOnly.Result]]
+```
+
+### Attribute `priority`
+
+This attribute controls the order in which property fields should be displayed. Property fields with higher priority
+will appear before property fields with lower priority. If the attribute value is not set, the field's priority
+will be the maximum priority of its properties.
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `number`    |
+| **Is Required**   | No          |
+| **Default Value** | No override |
+
+```ts
+[[include:Presentation.Content.Customization.PropertySpecification.Priority.Ruleset]]
+```
+
+| `priority: 0`                                                                                                       | `priority: 9999`                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| ![Example when "priority" attribute value is set to 0](./media/propertyspecification-with-priority-attribute-0.png) | ![Example when "priority" attribute value is set to 9999](./media/propertyspecification-with-priority-attribute-9999.png) |

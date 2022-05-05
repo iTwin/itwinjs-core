@@ -188,6 +188,10 @@ For example, the [default BisCore supplemental ruleset](https://github.com/iTwin
   }
   ```
 
+### Property override enhancements
+
+It is now possible to override values of [`isReadOnly`](../presentation/Content/PropertySpecification.md#attribute-isreadonly) and [`priority`](../presentation/Content/PropertySpecification.md#attribute-priority) property attributes.
+
 ## ColorDef validation
 
 [ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
@@ -240,3 +244,12 @@ In addition to toolbar buttons, React icons are now supported for use in [Widget
 The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
 have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
 since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
+
+## Resuming transformations
+
+The functions [IModelTransformer.saveStateToFile]($transformer) and [IModelTransformer.resumeTransformation]($transformer) have been
+added to the transformer, and can be used to save the transformer internal state to a file. This can then be used, in combination with a
+target at the same state as it was when the transformer state file was made, to "resume" a transformation.
+[IModelTransformer.resumeTransformation]($transformer) will create a new transformer instance upon which calling
+[IModelTransformer.processAll]($transformer) or [IModelTransformer.processChanges]($transformer) will start the transformation but not re-export
+already inserted entities. This can be useful in some cases where a transformation is a long running process and may need to be paused and resumed.
