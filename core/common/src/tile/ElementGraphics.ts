@@ -37,9 +37,15 @@ export interface GraphicsRequestProps {
   /** If true, surface edges will be omitted from the graphics. */
   readonly omitEdges?: boolean;
   /** If omitEdges is false, specifies the type of edges to produce. Generally determined by TileAdmin.requestElementGraphics.
+   * @note This uses the deleted EdgeType enum where 1 indicates non-indexed edges and 2 indicates indexed edges, to avoid breaking the RPC API.
    * @internal
    */
-  readonly edges?: EdgeOptions;
+  readonly edgeType?: 1 | 2;
+  /** If true, and omitEdges is false, a polyface with no edge visibility info will display edges for all faces;
+   * if false, edges will be inferred from the polyface's topology.
+   * @internal
+   */
+  readonly smoothPolyfaceEdges?: boolean;
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
   /** If defined, the compact string representation of a [ClipVector]($core-geometry) to be applied to the geometry to produce section-cut

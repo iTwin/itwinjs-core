@@ -360,7 +360,8 @@ class GraphicsTile extends Tile {
       location: this.tree.iModelTransform.toJSON(),
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.edgeOptions,
-      edges: this.tree.edgeOptions ? this.tree.edgeOptions : undefined,
+      edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
+      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
       sectionCut: this.tree.stringifiedSectionClip,
     };

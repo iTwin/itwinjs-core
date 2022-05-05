@@ -642,15 +642,8 @@ export class TileAdmin {
    * @public
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    if (true !== requestProps.omitEdges && undefined === requestProps.edges) {
-      requestProps = {
-        ...requestProps,
-        edges: {
-          indexed: this.enableIndexedEdges,
-          smooth: false,
-        },
-      };
-    }
+    if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
+      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
