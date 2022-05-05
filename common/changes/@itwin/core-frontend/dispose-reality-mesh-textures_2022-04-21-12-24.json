@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Dispose reality mesh textures when disposing the tiles are dispose",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

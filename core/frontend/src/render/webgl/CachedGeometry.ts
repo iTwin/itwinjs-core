@@ -757,22 +757,32 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
+export enum BlurType {
+  NoTest = 0,
+  TestOrder = 1,
+}
+
+/** @internal */
 export class BlurGeometry extends TexturedViewportQuadGeometry {
   public readonly blurDir: Vector2d;
 
-  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, blurDir: Vector2d) {
+  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, depthAndOrderHidden: WebGLTexture | undefined, blurDir: Vector2d, blurType: BlurType) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
-    return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir);
+    if (undefined === depthAndOrderHidden || BlurType.NoTest === blurType)
+      return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir, blurType);
+    else
+      return new BlurGeometry(params, [texToBlur, depthAndOrder, depthAndOrderHidden], blurDir, blurType);
   }
 
   public get textureToBlur() { return this._textures[0]; }
   public get depthAndOrder() { return this._textures[1]; }
+  public get depthAndOrderHidden() { return this._textures[2]; }
 
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
-    super(params, TechniqueId.Blur, textures);
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d, blurType: BlurType) {
+    super(params, BlurType.NoTest === blurType ? TechniqueId.Blur : TechniqueId.BlurTestOrder, textures);
     this.blurDir = blurDir;
   }
 }

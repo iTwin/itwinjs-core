@@ -13,11 +13,16 @@
   3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
-  6. Select the **Visualization** API
-  7. Select application type **Desktop/Mobile**
-  8. Enter **Redirect URI** `http://localhost:3000/signin-callback`
-  9. Enter **Post logout Redirect URI**: `http://localhost:3000`.
-  10. Click the **Save** button
+  6. Select the **Visualization**, **iModels**, **Reality Data**, and **Projects** APIs
+  7. Enable the following scopes:
+      - **Visualization**: `imodelaccess:read`
+      - **iModels**: `imodels:read`
+      - **Reality Data**: `realitydata:read`
+      - **Projects**: `projects:read`
+  8. Select application type **Desktop/Mobile**
+  9. Enter **Redirect URI** `http://localhost:3000/signin-callback`
+  10. Enter **Post logout Redirect URI**: `http://localhost:3000`.
+  11. Click the **Save** button
 
 Once your new application is saved a client ID is generated, add the client ID and redirect uri to the the following variables in the `.env` file within the application's root directory: `ITWIN_VIEWER_CLIENT_ID` and `ITWIN_VIEWER_REDIRECT_URI`.
 
