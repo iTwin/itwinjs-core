@@ -48,6 +48,8 @@ export async function initializeBackend() {
   });
   iModelHost.authorizationClient = authClient;
   console.log("Signing in");
+  for(const key of Object.keys(process.env))
+    console.log(`${key}: ${process.env[key]}`)
   await authClient.signIn();
   console.log("finally");
 
