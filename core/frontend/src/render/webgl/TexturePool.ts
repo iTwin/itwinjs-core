@@ -329,7 +329,7 @@ export class TexturePool implements IDisposable {
   private _lruList = new LRUTextureList();
 
   /// Maximum size of the pool
-  public readonly maxSize = 2048 * 2048 * 4 * 64;
+  public readonly maxSize = 1 * 1073741824; // 1giB
 
   /// Limit of size for stored textures
   public readonly minimumTextureSize = 1;
@@ -410,8 +410,6 @@ export class TexturePool implements IDisposable {
 
       if (result !== undefined) {
         this._stats.statReuse(texture.bytesUsed, texture.width, texture.height, window.performance.now() - startTime);
-        // eslint-disable-next-line no-console
-        console.log(`Reuse texture of size ${texture.width}x${texture.height} (target is ${args.image.source.width}x${args.image.source.height}). New size is ${this._lruList.totalBytesUsed}/${this.maxSize}`);
       } else {
         // eslint-disable-next-line no-console
         console.log(`Failed to reuse texture`);
@@ -421,7 +419,7 @@ export class TexturePool implements IDisposable {
       if (result !== undefined)
         return result;
       else
-        dispose(texture); // TODO: Maybe put it back in the array?
+        dispose(texture); // Dispose the texture that we failed to reuse
     }
 
     const tmpResult = this._system.createTexture(args) as Texture;
@@ -435,7 +433,7 @@ export class TexturePool implements IDisposable {
 
     const type = args.type ?? RenderTexture.Type.Normal;
     const source = args.image.source;
-    const useMipMaps = args.type !== RenderTexture.Type.TileSection;
+    const useMipMaps = args.type !== RenderTexture.Type.TileSection; // TODO: factorize with create texture?
 
     let replacementSuccessful;
     if (source instanceof ImageBuffer)
@@ -443,13 +441,11 @@ export class TexturePool implements IDisposable {
     else if (source instanceof HTMLImageElement)
       replacementSuccessful = handle.replaceTextureDataWithSource(source, useMipMaps);
     // else if (source instanceof ImageBitmap)
-    //  handle.replaceTextureDataWithSource(source, useMipMapsZ);
+    //   replacementSuccessful = handle.replaceTextureDataWithSource(source, useMipMaps);
     else
       assert(false);
 
     if (!replacementSuccessful) {
-      // eslint-disable-next-line no-console
-      console.log("Failed to reuse texture.");
       return undefined;
     }
 
@@ -519,8 +515,5 @@ export class TexturePool implements IDisposable {
 
     this._textures.insert(trackedTexture);
     this._lruList.insert(trackedTexture);
-
-    // eslint-disable-next-line no-console
-    console.log(`Inserted texture of size ${texture.texture.width}x${texture.texture.height}. New size is ${this._lruList.totalBytesUsed}/${this.maxSize}`);
   }
 }
