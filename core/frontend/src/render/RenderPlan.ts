@@ -8,7 +8,7 @@
 
 import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  AmbientOcclusion, AnalysisStyle, AtmosphericScattering, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import { FlashSettings } from "../FlashSettings";
@@ -36,6 +36,7 @@ export interface RenderPlan {
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
   readonly thematic?: ThematicDisplay;
+  readonly atmosphericScattering?: AtmosphericScattering;
   readonly isFadeOutActive: boolean;
   readonly analysisTexture?: RenderTexture;
   readonly frustum: Frustum;
@@ -100,6 +101,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
+  const atmosphericScattering = (style.is3d() && view.displayStyle.viewFlags.atmosphericScattering) ? style.settings.atmosphericScattering : undefined;
 
   let upVector;
   const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
@@ -131,6 +133,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     analysisStyle,
     ao,
     thematic,
+    atmosphericScattering,
     isFadeOutActive,
     analysisTexture,
     frustum,

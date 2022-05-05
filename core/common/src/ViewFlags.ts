@@ -99,6 +99,8 @@ export interface ViewFlagProps {
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
+  /** If true, apply [[AtmosphericScattering]]. */
+  atmosphericScattering?: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation.
    * @beta
    */
@@ -206,6 +208,8 @@ export class ViewFlags {
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
+  /** Whether to apply [[AtmosphericScattering]]. Default: false. */
+  public readonly atmosphericScattering: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation.
    * @beta
    */
@@ -254,6 +258,7 @@ export class ViewFlags {
     this.backgroundMap = flags?.backgroundMap ?? false;
     this.ambientOcclusion = flags?.ambientOcclusion ?? false;
     this.thematicDisplay = flags?.thematicDisplay ?? false;
+    this.atmosphericScattering = flags?.atmosphericScattering ?? false;
     this.wiremesh = flags?.wiremesh ?? false;
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
@@ -391,6 +396,7 @@ export class ViewFlags {
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
     if (this.thematicDisplay) out.thematicDisplay = true;
+    if (this.atmosphericScattering) out.atmosphericScattering = true;
     if (this.wiremesh) out.wiremesh = true;
     if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
     if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
@@ -427,6 +433,7 @@ export class ViewFlags {
       backgroundMap: this.backgroundMap,
       ambientOcclusion: this.ambientOcclusion,
       thematicDisplay: this.thematicDisplay,
+      atmosphericScattering: this.atmosphericScattering,
       wiremesh: this.wiremesh,
       forceSurfaceDiscard: this.forceSurfaceDiscard,
       noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
@@ -487,6 +494,7 @@ export class ViewFlags {
       backgroundMap: JsonUtils.asBool(json.backgroundMap),
       ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
       thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
+      atmosphericScattering: JsonUtils.asBool(json.atmosphericScattering),
       wiremesh: JsonUtils.asBool(json.wiremesh),
       forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
       whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
@@ -519,6 +527,7 @@ export class ViewFlags {
       && this.backgroundMap === other.backgroundMap
       && this.ambientOcclusion === other.ambientOcclusion
       && this.thematicDisplay === other.thematicDisplay
+      && this.atmosphericScattering === other.atmosphericScattering
       && this.wiremesh === other.wiremesh
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
       && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
