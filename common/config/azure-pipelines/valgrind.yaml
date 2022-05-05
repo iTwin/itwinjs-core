@@ -42,7 +42,7 @@ jobs:
 
       - script: mkdir $(VALGRIND_RESULTS)
 
-      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)log-BeJsonCpp.txt'
+      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)log-BeJsonCpp.txt'
         displayName: 'Run Valgrind on rush cover'
         failOnStderr: false
 
