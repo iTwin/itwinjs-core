@@ -12,8 +12,8 @@ import {
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { mobileAppChannel } from "../common/MobileAppChannel";
-import { BatteryState, DeviceEvents, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
+import { BatteryState, DeviceEvents, MobileAppFunctions, Orientation, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
@@ -75,14 +75,7 @@ class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
     MobileHost.reconnect(connection);
   }
   public async getAccessToken() {
-    return new Promise<[AccessToken, string]>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
-        if (error) {
-          reject(error);
-        }
-        resolve([tokenString ?? "", expirationDate ?? ""]);
-      });
-    });
+    return MobileHost.authGetAccessToken();
   }
 }
 
@@ -107,9 +100,26 @@ export class MobileHost {
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
 
+  /** Send a notification to the MobileApp connected to this MobileHost. */
+  public static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>) {
+    return IpcHost.send(mobileAppNotify, methodName, ...args);
+  }
+
   /**  @internal */
   public static reconnect(connection: number) {
     this.device.reconnect(connection);
+  }
+
+  /**  @internal */
+  public static authGetAccessToken() {
+    return new Promise<[AccessToken, string]>((resolve, reject) => {
+      MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+        if (error) {
+          reject(error);
+        }
+        resolve([tokenString ?? "", expirationDate ?? ""]);
+      });
+    });
   }
 
   /**  @internal */
@@ -156,6 +166,22 @@ export class MobileHost {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       // set global device interface.
       (global as any).__iTwinJsNativeBridge = this._device;
+      this.onMemoryWarning.addListener(() => {
+        MobileHost.notifyMobileFrontend("notifyMemoryWarning",);
+      });
+      this.onOrientationChanged.addListener(() => {
+        MobileHost.notifyMobileFrontend("notifyOrientationChanged",);
+      });
+      this.onEnterForeground.addListener(() => {
+        MobileHost.notifyMobileFrontend("notifyEnterForeground",);
+      });
+      this.onEnterBackground.addListener(() => {
+        MobileHost.notifyMobileFrontend("notifyEnterBackground",);
+      });
+      this.onWillTerminate.addListener(() => {
+        MobileHost.notifyMobileFrontend("notifyWillTerminate",);
+      });
+
       // following will provide impl for device specific api.
       setupMobileRpc();
     }
