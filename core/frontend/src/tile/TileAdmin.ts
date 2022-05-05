@@ -10,7 +10,7 @@ import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeType, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -642,8 +642,15 @@ export class TileAdmin {
    * @public
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
-      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed };
+    if (true !== requestProps.omitEdges && undefined === requestProps.edges) {
+      requestProps = {
+        ...requestProps,
+        edges: {
+          indexed: this.enableIndexedEdges,
+          smooth: false,
+        },
+      };
+    }
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();

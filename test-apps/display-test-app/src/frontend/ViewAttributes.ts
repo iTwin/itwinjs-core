@@ -752,6 +752,11 @@ export class ViewAttributes {
       this.sync();
     }, edgeDisplayDiv);
 
+    const smoothEdgesCb = this.addCheckbox("Smooth Edges", (enabled: boolean) => {
+      this.overrideEdgeSettings({ displaySmoothEdges: enabled });
+      this.sync();
+    }, edgeDisplayDiv);
+
     const hidEditor = this.addHiddenLineEditor(true);
     edgeDisplayDiv.appendChild(hidEditor);
 
@@ -770,6 +775,8 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      smoothEdgesCb.checkbox.checked = settings.displaySmoothEdges;
+      smoothEdgesCb.div.hidden = !vf.visibleEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");
