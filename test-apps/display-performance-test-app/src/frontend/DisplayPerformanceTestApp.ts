@@ -93,9 +93,6 @@ async function initializeRemoteIModels(props: TestSetsProps): Promise<void> {
 
 async function main() {
   try {
-    // TODO
-    await DisplayPerfRpcInterface.getClient().consoleLog("DPTA main");
-
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
