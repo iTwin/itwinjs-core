@@ -96,6 +96,9 @@ function startWebServer() {
 
   DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
 
+  // TODO
+  console.log("Starting the browser...");
+
   // ---------------------------------------------
   // Start the browser, if given a specific one
   // ---------------------------------------------
