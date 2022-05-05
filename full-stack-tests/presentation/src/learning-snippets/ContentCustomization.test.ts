@@ -794,7 +794,7 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
-          // Ensure the `UserLabel` field's priority is 9999.
+          // Ensure the `UserLabel` field's priority is 9999, which makes it appear higher in the property grid.
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
