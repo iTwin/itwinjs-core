@@ -228,6 +228,9 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     const existing = BriefcaseManager.getCachedBriefcases(iModelId);
     if(existing.length < 1) {
       await this.consoleLog(`Downloading iModel "${iModelId}"`);
+      const token = await IModelHost.getAccessToken();
+      if(!token) // TODO
+        await this.consoleLog("Here's your problem");
       await BriefcaseManager.downloadBriefcase({
         iTwinId,
         iModelId,
