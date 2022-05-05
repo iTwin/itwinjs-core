@@ -658,5 +658,4 @@ describe("IModelTransformerHub", () => {
       return physicalObjectId;
     }
   }
-
 });
