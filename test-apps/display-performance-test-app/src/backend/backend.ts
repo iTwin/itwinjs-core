@@ -37,7 +37,7 @@ export async function initializeBackend() {
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
-  const authClient = new TestBrowserAuthorizationClient({
+  iModelHost.authorizationClient = new TestBrowserAuthorizationClient({
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
     scope: process.env.IMJS_OIDC_SCOPES!,
@@ -46,12 +46,6 @@ export async function initializeBackend() {
     email: process.env.IMJS_OIDC_EMAIL!,
     password: process.env.IMJS_OIDC_PASSWORD!,
   });
-  iModelHost.authorizationClient = authClient;
-  console.log("Signing in");
-  for(const key of Object.keys(process.env))
-    console.log(`${key}: ${process.env[key]}`)
-  await authClient.signIn();
-  console.log("finally");
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
