@@ -531,6 +531,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * You can load custom json from the importer save state for custom importers by overriding [[IModelImporter.loadAdditionalStateJson]]
    */
   public loadStateFromJson(state: IModelImporterState): void {
+    if (state.importerClass !== this.constructor.name)
+      throw Error("resuming from a differently named importer class, it is not necessarily valid to resume with a different importer class");
     // ignore readonly since this runs right after construction in [[IModelTransformer.resumeTransformation]]
     (this.options as IModelTransformOptions) = state.options;
     if (this.targetDb.iModelId !== state.targetDbId)
@@ -549,6 +551,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    */
   public saveStateToJson(): IModelImporterState {
     return {
+      importerClass: this.constructor.name,
       options: this.options,
       targetDbId: this.targetDb.iModelId || this.targetDb.nativeDb.getFilePath(),
       doNotUpdateElementIds: CompressedId64Set.compressSet(this.doNotUpdateElementIds),
@@ -566,6 +569,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
  * @internal
  */
 export interface IModelImporterState {
+  importerClass: string;
   options: IModelImportOptions;
   targetDbId: string;
   doNotUpdateElementIds: CompressedId64Set;

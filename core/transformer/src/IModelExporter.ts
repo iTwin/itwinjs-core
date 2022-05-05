@@ -716,6 +716,8 @@ export class IModelExporter {
    * You can load custom json from the exporter save state for custom exporters by overriding [[IModelExporter.loadAdditionalStateJson]]
    */
   public loadStateFromJson(state: IModelExporterState): void {
+    if (state.exporterClass !== this.constructor.name)
+      throw Error("resuming from a differently named exporter class, it is not necessarily valid to resume with a different exporter class");
     this.wantGeometry = state.wantGeometry;
     this.wantTemplateModels = state.wantTemplateModels;
     this.wantSystemSchemas = state.wantSystemSchemas;
@@ -739,6 +741,7 @@ export class IModelExporter {
    */
   public saveStateToJson(): IModelExporterState {
     return {
+      exporterClass: this.constructor.name,
       wantGeometry: this.wantGeometry,
       wantTemplateModels: this.wantTemplateModels,
       wantSystemSchemas: this.wantSystemSchemas,
@@ -764,6 +767,7 @@ export class IModelExporter {
  * @internal
  */
 export interface IModelExporterState {
+  exporterClass: string;
   wantGeometry: boolean;
   wantTemplateModels: boolean;
   wantSystemSchemas: boolean;

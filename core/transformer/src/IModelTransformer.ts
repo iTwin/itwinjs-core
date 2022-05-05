@@ -27,6 +27,13 @@ import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
+const nullLastProvenanceEntityInfo = {
+  entityId: Id64.invalid,
+  aspectId: Id64.invalid,
+  aspectVersion: "",
+  aspectKind: ExternalSourceAspect.Kind.Element,
+};
+
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
  * @note if adding an option, you must explicitly add its serialization to [[IModelTransformer.saveStateToFile]]!
@@ -1092,12 +1099,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
-  private _lastProvenanceEntityInfo = {
-    entityId: Id64.invalid,
-    aspectId: Id64.invalid,
-    aspectVersion: "",
-    aspectKind: ExternalSourceAspect.Kind.Element,
-  };
+  private _lastProvenanceEntityInfo = nullLastProvenanceEntityInfo;
 
   private markLastProvenance(sourceAspect: MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship = false }) {
     this._lastProvenanceEntityInfo = {
@@ -1129,36 +1131,40 @@ export class IModelTransformer extends IModelExportHandler {
             "expected row when getting lastProvenanceEntityId from target state table"
           );
         return {
-          entityId: stmt.getValueId(0),
-          aspectId: stmt.getValueId(1),
+          entityId: stmt.getValueString(0),
+          aspectId: stmt.getValueString(1),
           aspectVersion: stmt.getValueString(2),
           aspectKind: stmt.getValueString(3) as ExternalSourceAspect.Kind,
         };
       }
     );
-    const targetHasCorrectLastProvenance = this.provenanceDb.withPreparedStatement(`
-      SELECT Version FROM ${ExternalSourceAspect.classFullName}
-      WHERE Scope.Id=:scopeId
-        AND ECInstanceId=:aspectId
-        AND Kind=:kind
-        AND Element.Id=:entityId
-    `,
-    (statement: ECSqlStatement): boolean => {
-      statement.bindId("scopeId", this.targetScopeElementId);
-      statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
-      statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
-      statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
-      const stepResult = statement.step();
-      switch (stepResult) {
-        case DbResult.BE_SQLITE_ROW:
-          const version = statement.getValue(0).getString();
-          return version === lastProvenanceEntityInfo.aspectVersion;
-        case DbResult.BE_SQLITE_DONE:
-          return false;
-        default:
-          throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
-      }
-    });
+    const targetHasCorrectLastProvenance =
+      // ignore provenance check if it's null since we can't bind those ids
+      !Id64.isValidId64(lastProvenanceEntityInfo.aspectId) ||
+      !Id64.isValidId64(lastProvenanceEntityInfo.entityId) ||
+      this.provenanceDb.withPreparedStatement(`
+        SELECT Version FROM ${ExternalSourceAspect.classFullName}
+        WHERE Scope.Id=:scopeId
+          AND ECInstanceId=:aspectId
+          AND Kind=:kind
+          AND Element.Id=:entityId
+      `,
+      (statement: ECSqlStatement): boolean => {
+        statement.bindId("scopeId", this.targetScopeElementId);
+        statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
+        statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
+        statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
+        const stepResult = statement.step();
+        switch (stepResult) {
+          case DbResult.BE_SQLITE_ROW:
+            const version = statement.getValue(0).getString();
+            return version === lastProvenanceEntityInfo.aspectVersion;
+          case DbResult.BE_SQLITE_DONE:
+            return false;
+          default:
+            throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
+        }
+      });
     if (!targetHasCorrectLastProvenance)
       throw Error([
         "Target for resuming from does not have the expected provenance ",
@@ -1239,8 +1245,9 @@ export class IModelTransformer extends IModelExportHandler {
     )) throw Error("Failed to create the js state table in the state database");
     if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
       CREATE TABLE ${IModelTransformer.lastProvenanceEntityInfoTable} (
-        entityId INTEGER,
-        aspectId INTEGER,
+        -- because we cannot bind the invalid id which we use for our null state, we actually store the id as a hex string
+        entityId TEXT,
+        aspectId TEXT,
         aspectVersion TEXT,
         aspectKind TEXT
       )
@@ -1255,8 +1262,8 @@ export class IModelTransformer extends IModelExportHandler {
     db.withSqliteStatement(
       `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion, aspectKind) VALUES (?,?,?,?)`,
       (stmt) => {
-        stmt.bindId(1, this._lastProvenanceEntityInfo.entityId);
-        stmt.bindId(2, this._lastProvenanceEntityInfo.aspectId);
+        stmt.bindString(1, this._lastProvenanceEntityInfo.entityId);
+        stmt.bindString(2, this._lastProvenanceEntityInfo.aspectId);
         stmt.bindString(3, this._lastProvenanceEntityInfo.aspectVersion);
         stmt.bindString(4, this._lastProvenanceEntityInfo.aspectKind);
         if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");

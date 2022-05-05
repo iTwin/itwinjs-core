@@ -388,35 +388,75 @@ describe("test resuming transformations", () => {
     return targetDb;
   });
 
-  it("should fail to resume from a different(ly named) transformer class", async () => {
-    const sourceDb = seedDb;
-    const targetDb = SnapshotDb.createFrom(seedDb, IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeDifferentClass.bim"));
-
-    const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
-    transformer.elementExportsUntilCall = 2;
-    let crashed = false;
-    try {
-      await transformer.processSchemas();
-      await transformer.processAll();
-    } catch (transformerErr) {
-      expect((transformerErr as Error).message).to.equal("crash");
-      crashed = true;
-      const dumpPath = IModelTestUtils.prepareOutputFile(
-        "IModelTransformerResumption",
-        "transformer-state.db"
+  /* eslint-disable @typescript-eslint/naming-convention */
+  it("should fail to resume from a different(ly named) transformer classes", async () => {
+    async function testResumeCrashTransformerWithClasses({
+      StartTransformerClass = IModelTransformer,
+      StartImporterClass = IModelImporter,
+      StartExporterClass = IModelExporter,
+      ResumeTransformerClass = StartTransformerClass,
+      ResumeImporterClass = StartImporterClass,
+      ResumeExporterClass = StartExporterClass,
+    }: {
+      StartTransformerClass?: typeof IModelTransformer;
+      StartImporterClass?: typeof IModelImporter;
+      StartExporterClass?: typeof IModelExporter;
+      ResumeTransformerClass?: typeof IModelTransformer;
+      ResumeImporterClass?: typeof IModelImporter;
+      ResumeExporterClass?: typeof IModelExporter;
+    } = {}) {
+      const sourceDb = seedDb;
+      const targetDb = SnapshotDb.createFrom(
+        seedDb,
+        IModelTestUtils.prepareOutputFile(
+          "IModelTransformerResumption",
+          "ResumeDifferentClass.bim"
+        )
       );
-      transformer.saveStateToFile(dumpPath);
-      class DifferentTransformerClass extends (transformer.constructor as typeof IModelTransformer) {}
-      expect(
-        () => DifferentTransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
-      ).to.throw(/it is not.*valid to resume with a different.*class/);
+
+      const transformer = new StartTransformerClass(new StartExporterClass(sourceDb), new StartImporterClass(targetDb));
+      let crashed = false;
+      try {
+        await transformer.processSchemas();
+        await transformer.processAll();
+      } catch (transformerErr) {
+        expect((transformerErr as Error).message).to.equal("crash");
+        crashed = true;
+        const dumpPath = IModelTestUtils.prepareOutputFile(
+          "IModelTransformerResumption",
+          "transformer-state.db"
+        );
+        transformer.saveStateToFile(dumpPath);
+        expect(() =>
+          ResumeTransformerClass.resumeTransformation(
+            dumpPath,
+            new ResumeExporterClass(sourceDb),
+            new ResumeImporterClass(targetDb),
+          )
+        ).to.throw(/it is not.*valid to resume with a different.*class/);
+      }
+
+      expect(crashed).to.be.true;
+      transformer.dispose();
+      targetDb.close();
     }
 
-    expect(crashed).to.be.true;
-    targetDb.saveChanges();
-    transformer.dispose();
-    return targetDb;
+    class CrashOn2Transformer extends CountdownToCrashTransformer {
+      public constructor(...args: ConstructorParameters<typeof CountdownToCrashTransformer>) {
+        super(...args);
+        this.elementExportsUntilCall = 2;
+      }
+    }
+
+    class DifferentTransformerClass extends CrashOn2Transformer {}
+    class DifferentImporterClass extends IModelImporter {}
+    class DifferentExporterClass extends IModelExporter {}
+
+    await testResumeCrashTransformerWithClasses({ StartTransformerClass: CrashOn2Transformer, ResumeTransformerClass: DifferentTransformerClass });
+    await testResumeCrashTransformerWithClasses({ StartTransformerClass: CrashOn2Transformer, ResumeImporterClass: DifferentImporterClass });
+    await testResumeCrashTransformerWithClasses({ StartTransformerClass: CrashOn2Transformer, ResumeExporterClass: DifferentExporterClass });
   });
+  /* eslint-enable @typescript-eslint/naming-convention */
 
   it("should save custom additional state", async () => {
     class AdditionalStateImporter extends IModelImporter {
@@ -433,6 +473,7 @@ describe("test resuming transformations", () => {
       public state1 = "default";
       public state2 = 42;
       protected override saveStateToDb(db: SQLiteDb): void {
+        super.saveStateToDb(db);
         db.executeSQL("CREATE TABLE additionalState (state1 TEXT, state2 INTEGER)");
         db.saveChanges();
         db.withSqliteStatement(`INSERT INTO additionalState (state1) VALUES (?)`, (stmt) => {
@@ -441,6 +482,7 @@ describe("test resuming transformations", () => {
         });
       }
       protected override loadStateFromDb(db: SQLiteDb): void {
+        super.loadStateFromDb(db);
         db.withSqliteStatement(`SELECT state1 FROM additionalState`, (stmt) => {
           expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
           this.state1 = stmt.getValueString(0);
@@ -472,7 +514,7 @@ describe("test resuming transformations", () => {
     transformer.saveStateToFile(dumpPath);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TransformerClass = transformer.constructor as typeof AdditionalStateTransformer;
-    const resumedTransformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
+    const resumedTransformer = TransformerClass.resumeTransformation(dumpPath, new AdditionalStateExporter(sourceDb), new AdditionalStateImporter(targetDb));
     expect(resumedTransformer).not.to.equal(transformer);
     expect(resumedTransformer.state1).to.equal(transformer.state1);
     expect(resumedTransformer.state2).to.equal(transformer.state2);
