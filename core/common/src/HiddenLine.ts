@@ -154,20 +154,15 @@ export namespace HiddenLine {
     }
   }
 
-  /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
+  /** The JSON representation of a [[HiddenLine.Settings]]. */
   export interface SettingsProps {
-    /** Describes how visible edges (those unobscured by other geometry) should be displayed. */
+    /** @see [[HiddenLine.Settings.visible]]. */
     visible?: StyleProps;
-    /** Describes how hidden edges (those obscured by other geometry) should be displayed. */
+    /** @see [[HiddenLine.Settings.hidden]]. */
     hidden?: StyleProps;
-    /** A value in the range [0.0, 1.0] specifying a threshold below which transparent surfaces should not be drawn.
-     * A value of 0.0 indicates any surface that is not 100% opaque should not be drawn.
-     * A value of 0.25 indicates any surface that is less than 25% opaque should not be drawn.
-     * A value of 1.0 indicates that all surfaces should be drawn regardless of transparency.
-     * @note values will be clamped to the range [0.0, 1.0].
-     * @note Defaults to 1.0.
-     */
+    /** @see [[HiddenLine.Settings.transparencyThreshold. */
     transThreshold?: number;
+    /** @see [[HiddenLine.Settings.smoothPolyfaceEdges]]. */
     smoothPolyfaceEdges?: boolean;
   }
 
@@ -185,8 +180,17 @@ export namespace HiddenLine {
      * @note Defaults to 1.0.
      */
     public readonly transparencyThreshold: number;
+
+    /** An alias for [[transparencyThreshold]]. */
     public get transThreshold(): number { return this.transparencyThreshold; }
 
+    /** A [Polyface]($goemetry-core) may or may not specify the visibility of the edges of its faces (@see [PolyfaceData.edgeVisible]($geometry-core).
+     * If it does not, then by default the display system will infer edge visibility based on the topology - an edge between two faces is considered
+     * visible if the angle between the two faces is sufficiently large.
+     * If `smoothPolyfaceEdges` is `true`, this inference will not be applied; instead, the edges of all faces will be visible.
+     * @note This property applies only to polyfaces - not other types of geometry - and only if the polyface lacks explicit edge visibility information.
+     * @beta
+     */
     public readonly smoothPolyfaceEdges: boolean;
 
     /** The default display settings. */

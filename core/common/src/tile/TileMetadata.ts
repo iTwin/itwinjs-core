@@ -99,6 +99,9 @@ interface ParsedClassifier {
   expansion: number;
 }
 
+/** The result of [[parseTileTreeIdAndContentId]].
+ * @internal
+ */
 export interface ParsedTileTreeIdAndContentId {
   modelId: Id64String;
   treeId: IModelTileTreeId;
@@ -353,8 +356,15 @@ export enum TreeFlags {
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
 }
 
+/** Describes how edges should be produced for tiles in a tile tree.
+ * @internal
+ */
 export interface EdgeOptions {
+  /** Generate indexed edges. These use less memory and draw more efficiently than non-indexed edges, but require WebGL 2.
+   * Generally the display system will determine which to use based on the device's capabilities and application configuration.
+   */
   indexed: boolean;
+  /** For polyfaces that lack edge visibility information, generate edges for all faces; otherwise, infer edges from mesh topology. */
   smooth: boolean;
 }
 
