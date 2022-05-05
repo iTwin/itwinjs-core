@@ -36,14 +36,15 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
-      - script: node common/scripts/install-run-rush.js build -v -p max --to core-backend
-        displayName: rush build
+      - script: node common/scripts/install-run-rush.js rebuild
+        displayName: rush rebuild
         condition: succeeded()
 
       - script: mkdir $(VALGRIND_RESULTS)
 
-      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all rush cover |& tee $(VALGRIND_RESULTS)log-BeJsonCpp.txt'
+      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)log-BeJsonCpp.txt'
         displayName: 'Run Valgrind on rush cover'
+        failOnStderr: false
 
       - task: archiveandpublishartifact@0
         inputs:
