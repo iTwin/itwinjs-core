@@ -72,8 +72,13 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
     }),
     displayStyle: {
       scheduleState,
+      settings: {
+        hiddenLineSettings: {
+          smoothPolyfaceEdges: false,
+        },
+      },
     },
-  } as ViewState;
+  } as unknown as ViewState;
 }
 
 function delta(a: number, b: number): number { return Math.abs(a - b); }
