@@ -28,6 +28,11 @@ jobs:
           versionSpec: 14.17.4
           checkLatest: true
 
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: git config
+
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
