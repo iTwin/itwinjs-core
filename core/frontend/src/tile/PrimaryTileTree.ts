@@ -267,7 +267,7 @@ class PrimaryTreeReference extends TileTreeReference {
     if (edgesRequired) {
       edges = {
         indexed: IModelApp.tileAdmin.enableIndexedEdges,
-        smooth: view.is3d() && view.displayStyle.settings.hiddenLineSettings.displaySmoothEdges,
+        smooth: view.is3d() && view.displayStyle.settings.hiddenLineSettings.smoothPolyfaceEdges,
       };
     }
 

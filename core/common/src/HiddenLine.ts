@@ -168,7 +168,7 @@ export namespace HiddenLine {
      * @note Defaults to 1.0.
      */
     transThreshold?: number;
-    displaySmoothEdges?: boolean;
+    smoothPolyfaceEdges?: boolean;
   }
 
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
@@ -187,7 +187,7 @@ export namespace HiddenLine {
     public readonly transparencyThreshold: number;
     public get transThreshold(): number { return this.transparencyThreshold; }
 
-    public readonly displaySmoothEdges: boolean;
+    public readonly smoothPolyfaceEdges: boolean;
 
     /** The default display settings. */
     public static defaults = new Settings({});
@@ -209,8 +209,8 @@ export namespace HiddenLine {
         transThreshold: this.transThreshold,
       };
 
-      if (this.displaySmoothEdges)
-        props.displaySmoothEdges = true;
+      if (this.smoothPolyfaceEdges)
+        props.smoothPolyfaceEdges = true;
 
       return props;
     }
@@ -224,7 +224,7 @@ export namespace HiddenLine {
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
         transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
-        displaySmoothEdges: props.displaySmoothEdges ?? this.displaySmoothEdges,
+        smoothPolyfaceEdges: props.smoothPolyfaceEdges ?? this.smoothPolyfaceEdges,
       });
     }
 
@@ -235,7 +235,7 @@ export namespace HiddenLine {
       return this.visible.equals(other.visible)
         && this.hidden.equals(other.hidden)
         && this.transparencyThreshold === other.transparencyThreshold
-        && this.displaySmoothEdges === other.displaySmoothEdges;
+        && this.smoothPolyfaceEdges === other.smoothPolyfaceEdges;
     }
 
     public get matchesDefaults(): boolean {
@@ -246,7 +246,7 @@ export namespace HiddenLine {
       this.visible = Style.fromJSON(json.visible);
       this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
-      this.displaySmoothEdges = true === json.displaySmoothEdges;
+      this.smoothPolyfaceEdges = true === json.smoothPolyfaceEdges;
     }
   }
 }
