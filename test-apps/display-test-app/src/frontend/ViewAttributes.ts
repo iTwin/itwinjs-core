@@ -753,7 +753,7 @@ export class ViewAttributes {
     }, edgeDisplayDiv);
 
     const smoothEdgesCb = this.addCheckbox("Smooth Edges", (enabled: boolean) => {
-      this.overrideEdgeSettings({ displaySmoothEdges: enabled });
+      this.overrideEdgeSettings({ smoothPolyfaceEdges: enabled });
       this.sync();
     }, edgeDisplayDiv);
 
@@ -775,7 +775,7 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
-      smoothEdgesCb.checkbox.checked = settings.displaySmoothEdges;
+      smoothEdgesCb.checkbox.checked = settings.smoothPolyfaceEdges;
       smoothEdgesCb.div.hidden = !vf.visibleEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
