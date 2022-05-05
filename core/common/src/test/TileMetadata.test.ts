@@ -454,6 +454,50 @@ describe("TileMetadata", () => {
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
 
+    test("19_d-E:3_S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+      tileOptions: {
+        elision: true,
+        instancing: true,
+        noPatterns: false,
+        version: 25,
+        projectExtents: true,
+        externalTextures: true,
+        optimizeBReps: true,
+        largerTiles: true,
+      },
+      modelId: "0x1d",
+      treeId: {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: true },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+        animationId: undefined,
+        enforceDisplayPriority: undefined,
+      },
+      contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+    });
+
+    test("19_d-E:4_S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+      tileOptions: {
+        elision: true,
+        instancing: true,
+        noPatterns: false,
+        version: 25,
+        projectExtents: true,
+        externalTextures: true,
+        optimizeBReps: true,
+        largerTiles: true,
+      },
+      modelId: "0x1d",
+      treeId: {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: true },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+        animationId: undefined,
+        enforceDisplayPriority: undefined,
+      },
+      contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+    });
+
     test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
     test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
     test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'
