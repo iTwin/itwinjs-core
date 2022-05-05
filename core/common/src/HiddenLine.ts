@@ -184,7 +184,7 @@ export namespace HiddenLine {
     /** An alias for [[transparencyThreshold]]. */
     public get transThreshold(): number { return this.transparencyThreshold; }
 
-    /** A [Polyface]($goemetry-core) may or may not specify the visibility of the edges of its faces (@see [PolyfaceData.edgeVisible]($geometry-core).
+    /** A [Polyface]($geometry-core) may or may not specify the visibility of the edges of its faces (@see [PolyfaceData.edgeVisible]($geometry-core).
      * If it does not, then by default the display system will infer edge visibility based on the topology - an edge between two faces is considered
      * visible if the angle between the two faces is sufficiently large.
      * If `smoothPolyfaceEdges` is `true`, this inference will not be applied; instead, the edges of all faces will be visible.
