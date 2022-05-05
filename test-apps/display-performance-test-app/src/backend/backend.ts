@@ -46,7 +46,12 @@ export async function initializeBackend() {
     email: process.env.IMJS_OIDC_EMAIL!,
     password: process.env.IMJS_OIDC_PASSWORD!,
   });
+  try{
   await (iModelHost.authorizationClient as TestBrowserAuthorizationClient).signIn(); // TODO
+  } catch(err) {
+    console.log(JSON.stringify(err));
+    throw err;
+  }
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
