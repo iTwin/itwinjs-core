@@ -110,8 +110,8 @@ export interface ParsedTileTreeIdAndContentId {
 }
 
 class Parser {
-  readonly input: string;
-  curPos = 0;
+  public readonly input: string;
+  public curPos = 0;
 
   public constructor(input: string) {
     this.input = input;
@@ -127,10 +127,10 @@ class Parser {
     this.eat("-");
     this.require(this.curPos < this.input.length);
 
-    let classifier = this.cur() === "C" ? this.parseClassifier() : undefined;
+    const classifier = this.cur() === "C" ? this.parseClassifier() : undefined;
     const animationId = this.parseAnimation();
 
-    let primary = classifier ? undefined : this.parsePrimary();
+    const primary = classifier ? undefined : this.parsePrimary();
     this.require((undefined === classifier) !== (undefined === primary));
 
     const modelId = this.input.substr(this.curPos);
@@ -155,7 +155,7 @@ class Parser {
     } else {
       assert(undefined !== primary);
       const enforceDisplayPriority = (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
-      treeId = { ...primary!, animationId, type: BatchType.Primary, enforceDisplayPriority };
+      treeId = { ...primary, animationId, type: BatchType.Primary, enforceDisplayPriority };
     }
 
     return {

@@ -11,7 +11,7 @@ import { TransformProps } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { ContentFlags, EdgeOptions, TreeFlags } from "../tile/TileMetadata";
+import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
