@@ -23,6 +23,13 @@ export async function initializeBackend() {
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
   iModelHost.authorizationClient = setupAuthorizationClient();
+  // TODO
+  try { await (iModelHost.authorizationClient as TestBrowserAuthorizationClient).signIn();  }
+  catch(e) {
+    console.log(JSON.stringify(e));
+    throw e;
+  }
+  console.log("signed in");
   
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
