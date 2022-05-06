@@ -9,6 +9,7 @@ import { Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   AtmosphericScattering,
   AtmosphericScatteringProps,
+  defaultAtmosphericScatteringProps,
   ViewFlags,
 } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
@@ -17,11 +18,7 @@ type Required<T> = {
   [P in keyof T]-?: T[P];
 };
 
-const defaultSettings: Required<AtmosphericScatteringProps> = {
-  sunDirection: [0.0, 0.0, 1.0],
-  earthCenter: [0.0, 0.0, -6371000.0],
-  atmosphereRadius: 6371100,
-};
+const defaultSettings: Required<AtmosphericScatteringProps> = defaultAtmosphericScatteringProps;
 
 export class AtmosphericScatteringEditor {
 
@@ -36,6 +33,12 @@ export class AtmosphericScatteringEditor {
   private readonly _earthCenterY: LabeledNumericInput;
   private readonly _earthCenterZ: LabeledNumericInput;
   private readonly _atmosphereRadius: LabeledNumericInput;
+  private readonly _earthRadius: LabeledNumericInput;
+  private readonly _densityFalloff: LabeledNumericInput;
+  private readonly _scatteringStrength: LabeledNumericInput;
+  private readonly _wavelenghtR: LabeledNumericInput;
+  private readonly _wavelenghtG: LabeledNumericInput;
+  private readonly _wavelenghtB: LabeledNumericInput;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -190,9 +193,12 @@ export class AtmosphericScatteringEditor {
       name: "Z: ",
     });
 
+    const spanRadius = document.createElement("span");
+    spanRadius.style.display = "flex";
+    atmosphericScatteringControlsDiv.appendChild(spanRadius);
     this._atmosphereRadius = createLabeledNumericInput({
       id: "atmosphericScattering_atmosphereRadius",
-      parent: atmosphericScatteringControlsDiv,
+      parent: spanRadius,
       value: 0.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
@@ -204,6 +210,113 @@ export class AtmosphericScatteringEditor {
       step: 1,
       parseAsFloat: true,
       name: "Atmosphere Radius: ",
+    });
+
+    this._earthRadius = createLabeledNumericInput({
+      id: "atmosphericScattering_earthRadius",
+      parent: spanRadius,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.earthRadius = value;
+        return props;
+      }),
+      min: 0.0,
+      max: 10000000.0,
+      step: 1,
+      parseAsFloat: true,
+      name: "Earth Radius: ",
+    });
+
+    const spanScattering = document.createElement("span");
+    spanScattering.style.display = "flex";
+    atmosphericScatteringControlsDiv.appendChild(spanScattering);
+    this._scatteringStrength = createLabeledNumericInput({
+      id: "atmosphericScattering_scatteringStrength",
+      parent: spanScattering,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.scatteringStrength = value;
+        return props;
+      }),
+      min: 0.0,
+      max: 10.0,
+      step: 0.1,
+      parseAsFloat: true,
+      name: "Scattering Strength: ",
+    });
+
+    this._wavelenghtR = createLabeledNumericInput({
+      id: "atmosphericScattering_wavelenghtR",
+      parent: spanScattering,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        const wavelenghts = props.wavelenghts!;
+        wavelenghts[0] = value;
+        props.wavelenghts = wavelenghts;
+        return props;
+      }),
+      min: 0.0,
+      max: 1000.0,
+      step: 10,
+      parseAsFloat: true,
+      name: "Wavelenght R: ",
+    });
+    this._wavelenghtR.div.style.marginRight = "0.5em";
+
+    this._wavelenghtG = createLabeledNumericInput({
+      id: "atmosphericScattering_wavelenghtG",
+      parent: spanScattering,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        const wavelenghts = props.wavelenghts!;
+        wavelenghts[1] = value;
+        props.wavelenghts = wavelenghts;
+        return props;
+      }),
+      min: 0.0,
+      max: 1000.0,
+      step: 10,
+      parseAsFloat: true,
+      name: "G: ",
+    });
+    this._wavelenghtG.div.style.marginRight = "0.5em";
+
+    this._wavelenghtB = createLabeledNumericInput({
+      id: "atmosphericScattering_wavelenghtB",
+      parent: spanScattering,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        const wavelenghts = props.wavelenghts!;
+        wavelenghts[2] = value;
+        props.wavelenghts = wavelenghts;
+        return props;
+      }),
+      min: 0.0,
+      max: 1000.0,
+      step: 10,
+      parseAsFloat: true,
+      name: "B: ",
+    });
+
+    this._densityFalloff = createLabeledNumericInput({
+      id: "atmosphericScattering_densityFalloff",
+      parent: atmosphericScatteringControlsDiv,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.densityFalloff = value;
+        return props;
+      }),
+      min: 0.0,
+      max: 20.0,
+      step: 1.0,
+      parseAsFloat: true,
+      name: "Density Falloff: ",
     });
 
     this._update = (view) => {
@@ -251,6 +364,12 @@ export class AtmosphericScatteringEditor {
     this._sunDirectionY.input.value = settings.sunDirection.y.toString();
     this._sunDirectionZ.input.value = settings.sunDirection.z.toString();
     this._atmosphereRadius.input.value = settings.atmosphereRadius.toString();
+    this._earthRadius.input.value = settings.earthRadius.toString();
+    this._densityFalloff.input.value = settings.densityFalloff.toString();
+    this._scatteringStrength.input.value = settings.scatteringStrength.toString();
+    this._wavelenghtR.input.value = settings.wavelenghts[0].toString();
+    this._wavelenghtG.input.value = settings.wavelenghts[1].toString();
+    this._wavelenghtB.input.value = settings.wavelenghts[2].toString();
   }
 
   private updateAtmosphericScattering(updateFunction: (view: ViewState) => AtmosphericScatteringProps) {
