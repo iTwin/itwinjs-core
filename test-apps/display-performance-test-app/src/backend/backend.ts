@@ -22,16 +22,11 @@ export async function initializeBackend() {
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
-  iModelHost.authorizationClient = setupAuthorizationClient();
-  // TODO debug
-  console.log("signing in");
-  try {
-    await (iModelHost.authorizationClient as TestBrowserAuthorizationClient).signIn();
-  } catch(e) {
-    console.log(JSON.stringify(e));
-    throw e;
+  const authClient = setupAuthorizationClient();
+  if(authClient !== undefined) {
+    iModelHost.authorizationClient = authClient;
+    await authClient.getAccessToken();
   }
-  console.log("signed in");
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
@@ -61,7 +56,13 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
+/**
+ * @returns Auth client if all env vars are set, undefined if none
+ * @throws If only some env vars are set
+ */
 function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined {
+  console.log(`Sanity check: ${process.env.IMJS_OIDC_PASSWORD?.length}`);
+
   const requiredEnvKeys = [
     "IMJS_OIDC_CLIENT_ID",
     "IMJS_OIDC_REDIRECT_URI",
@@ -74,9 +75,7 @@ function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined 
   for(const key of requiredEnvKeys) {
     if(! (process.env[key]))
       undefinedEnvKeys.push(key);
-    console.log(`${key}: ${process.env[key]}`) // shhhh
   }
-
   if(undefinedEnvKeys.length > 0) {
     if(undefinedEnvKeys.length === requiredEnvKeys.length)
       return undefined;
