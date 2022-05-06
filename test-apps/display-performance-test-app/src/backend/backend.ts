@@ -37,31 +37,15 @@ export async function initializeBackend() {
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
-  const authArgs = {
+  iModelHost.authorizationClient = new TestBrowserAuthorizationClient({
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
     scope: process.env.IMJS_OIDC_SCOPES!,
-    authority: process.env.IMJS_AUTH_AUTHORITY,
-  };
-  const userArgs = {
+    authority: process.env.IMJS_OIDC_AUTHORITY,
+  }, {
     email: process.env.IMJS_OIDC_EMAIL!,
     password: process.env.IMJS_OIDC_PASSWORD!
-  };
-  for(const key of Object.keys(authArgs))
-    console.log(`${key}: "${(authArgs[key] as string)?.length}"`)
-  for(const key of Object.keys(userArgs))
-    console.log(`${key}: "${(authArgs[key] as string)?.length}"`)
-
-  const authClient = new TestBrowserAuthorizationClient(authArgs, userArgs);
-  console.log("!!! Signing in");
-  try { authClient.signIn(); }
-  catch(e) {
-    console.log("!!! Signin failure");
-    console.log(JSON.stringify(e));
-    throw e;
-  }
-  console.log("!!! signed in");
-  iModelHost.authorizationClient = authClient;
+  });
   
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
