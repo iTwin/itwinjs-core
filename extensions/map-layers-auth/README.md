@@ -1,4 +1,4 @@
-# MapLayers Extension/Package
+# MapLayers-auth Extension/Package
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
@@ -25,7 +25,7 @@ This package can also be installed into an application and the method MapLayersU
     npm run start:servers
     ```
 
-5. Open a web browser (e.g., Chrome), and browse to http://localhost:3000.
+5. Open a web browser (e.g., Chrome), and browse to <http://localhost:3000>.
 
 ## Contributing
 
