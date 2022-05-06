@@ -76,7 +76,7 @@ jobs:
                     numberOfErrors += int(match.group(1))
                     numberOfSuppressions += int(match.group(3))
             
-            msg = 'Found ' + numberOfErrors + ' errors and ' + numberOfSuppressions + ' suppressions.'
+            msg = 'Found ' + str(numberOfErrors) + ' errors and ' + str(numberOfSuppressions) + ' suppressions.'
             if numberOfErrors >= 1:
                 print('##vso[task.logissue type=error]' + msg)
                 sys.exit(1)
