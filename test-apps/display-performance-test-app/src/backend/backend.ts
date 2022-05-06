@@ -71,9 +71,11 @@ function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined 
     "IMJS_OIDC_PASSWORD",
   ];
   const undefinedEnvKeys = [];
-  for(const key of requiredEnvKeys)
+  for(const key of requiredEnvKeys) {
     if(! (process.env[key]))
       undefinedEnvKeys.push(key);
+    console.log(`${key}: ${process.env[key]}`) // shhhh
+  }
 
   if(undefinedEnvKeys.length > 0) {
     if(undefinedEnvKeys.length === requiredEnvKeys.length)
