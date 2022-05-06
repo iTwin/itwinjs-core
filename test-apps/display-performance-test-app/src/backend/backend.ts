@@ -10,7 +10,7 @@ import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { TestBrowserAuthorizationClient, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -23,14 +23,16 @@ export async function initializeBackend() {
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
   iModelHost.authorizationClient = setupAuthorizationClient();
-  // TODO
-  try { await (iModelHost.authorizationClient as TestBrowserAuthorizationClient).signIn();  }
-  catch(e) {
+  // TODO debug
+  console.log("signing in");
+  try {
+    await (iModelHost.authorizationClient as TestBrowserAuthorizationClient).signIn();
+  } catch(e) {
     console.log(JSON.stringify(e));
     throw e;
   }
   console.log("signed in");
-  
+
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     await ElectronHost.startup({
@@ -60,25 +62,33 @@ function loadEnv(envFile: string) {
 }
 
 function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined {
-  const authConfig: TestBrowserAuthorizationClientConfiguration = {
+  const requiredEnvKeys = [
+    "IMJS_OIDC_CLIENT_ID",
+    "IMJS_OIDC_REDIRECT_URI",
+    "IMJS_OIDC_SCOPES",
+    "IMJS_OIDC_AUTHORITY",
+    "IMJS_OIDC_EMAIL",
+    "IMJS_OIDC_PASSWORD",
+  ];
+  const undefinedEnvKeys = [];
+  for(const key of requiredEnvKeys)
+    if(! (process.env[key]))
+      undefinedEnvKeys.push(key);
+
+  if(undefinedEnvKeys.length > 0) {
+    if(undefinedEnvKeys.length === requiredEnvKeys.length)
+      return undefined;
+    else
+      throw new Error(`Incomplete env vars for OIDC: ${ undefinedEnvKeys.join(" ") }`);
+  }
+
+  return new TestBrowserAuthorizationClient({
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
     scope: process.env.IMJS_OIDC_SCOPES!,
-    authority: process.env.IMJS_OIDC_AUTHORITY
-  };
-  const authCredentials: TestUserCredentials = {
+    authority: process.env.IMJS_OIDC_AUTHORITY,
+  }, {
     email: process.env.IMJS_OIDC_EMAIL!,
-    password: process.env.IMJS_OIDC_PASSWORD!
-  };
-
-  const allArgs = Object.entries({...authConfig, ...authCredentials});
-  const missingKeys = allArgs.filter(([_key, val]) => !val).map(([key, _val]) => key);
-  if(missingKeys.length === 0)
-    return new TestBrowserAuthorizationClient(authConfig, authCredentials);
-  else {
-    if(missingKeys.length === allArgs.length)
-      return undefined;
-
-    throw new Error(`Missing env configuration for OIDC keys: ${ missingKeys.join(' ') }`);
-  }
+    password: process.env.IMJS_OIDC_PASSWORD!,
+  });
 }
