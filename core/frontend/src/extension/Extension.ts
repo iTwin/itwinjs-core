@@ -7,11 +7,6 @@
  */
 
 /**
- * @internal
- */
-export const loggerCategory = "imodeljs-frontend.Extension";
-
-/**
  * @alpha
  */
 export type ActivationEvent = "onStartup";

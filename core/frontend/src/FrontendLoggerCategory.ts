@@ -37,4 +37,7 @@ export enum FrontendLoggerCategory {
 
   /** The logger category used for creating and displaying graphics. */
   Render = "core-frontend.Render",
+
+  /** The logger category used for loading and executing Extensions */
+  Extensions = "core-frontend.Extensions",
 }

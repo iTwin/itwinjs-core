@@ -8,7 +8,8 @@
 
 import { Logger } from "@itwin/core-bentley";
 
-import { ExtensionProvider, InstalledExtension, loggerCategory } from "./Extension";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import type { ExtensionProvider, InstalledExtension } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -110,7 +111,7 @@ export class ExtensionAdmin {
     try {
       await extension.execute();
     } catch (e) {
-      Logger.logError(loggerCategory, `Error executing extension ${extension.manifest.name}: ${e}`);
+      Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${e}`);
     }
   }
 }
