@@ -150,11 +150,11 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
-function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => void) {
+async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
   ws.open();
   showMessage(`WorkspaceDb [${ws.sqliteDb.nativeDb.getFilePath()}]`);
   try {
-    fn(ws, args);
+    await fn(ws, args);
   } finally {
     ws.close();
   }
@@ -184,7 +184,7 @@ function fixVersionArg(args: WorkspaceDbOpt) {
 }
 
 /** Open for write, call a function to process, then close a WorkspaceDb */
-function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => void) {
+async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => Promise<void>) {
   fixVersionArg(args);
 
   const ws = new EditableWorkspaceDb(args, getContainer(args));
@@ -192,26 +192,25 @@ function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorks
   if (cloudContainer && cloudContainer.queryDatabase(ws.dbFileName)?.state !== "copied")
     throw new Error(`${args.dbFileName} is not editable. Create a new version first`);
 
-  processWorkspace(args, ws, fn);
+  await processWorkspace(args, ws, fn);
 }
 
 /** Open for read, call a function to process, then close a WorkspaceDb */
-function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspaceDb, args: T) => void) {
+async function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspaceDb, args: T) => Promise<void>) {
   fixVersionArg(args);
-  processWorkspace(args, new ITwinWorkspaceDb(args, getContainer(args)), fn);
+  return processWorkspace(args, new ITwinWorkspaceDb(args, getContainer(args)), fn);
 }
 
 /** List the contents of a WorkspaceDb */
 async function listWorkspaceDb(args: ListOptions) {
   let prefetch: Promise<void>;
-  readWorkspace(args, async (file, args) => {
+  await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
 
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
       prefetch = CloudSqlite.prefetch(cloudContainer, file.dbFileName);
-      // void CloudSqlite.transferDb("download", cloudContainer, { dbName: file.dbFileName, localFileName: "d:/temp/downloadTest.tmp" });
     }
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
@@ -223,6 +222,7 @@ async function listWorkspaceDb(args: ListOptions) {
           showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueString(1).length}`);
       });
     }
+
     if (args.blobs) {
       showMessage(" blobs:");
       file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
@@ -231,6 +231,7 @@ async function listWorkspaceDb(args: ListOptions) {
       });
 
     }
+
     if (args.files) {
       showMessage(" files:");
       file.sqliteDb.withSqliteStatement("SELECT name FROM be_EmbedFile ORDER BY name COLLATE NOCASE", (stmt) => {
@@ -244,17 +245,18 @@ async function listWorkspaceDb(args: ListOptions) {
         }
       });
     }
-    console.log(`time = ${timer.elapsedSeconds.toString()}`);
+
+    showMessage(`time = ${timer.elapsedSeconds.toString()}`);
     if (prefetch !== undefined) {
       await prefetch;
-      console.log(`prefetch time = ${timer.elapsedSeconds.toString()}`);
+      showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}`);
     }
   });
 }
 
 /** Add files into a WorkspaceDb. */
 async function addResource(args: AddFileOptions) {
-  editWorkspace(args, (wsFile, args) => {
+  return editWorkspace(args, async (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
       if (!IModelJsFs.existsSync(file))
@@ -280,7 +282,7 @@ async function addResource(args: AddFileOptions) {
 
 /** Replace files in a WorkspaceDb. */
 async function replaceResource(args: AddFileOptions) {
-  editWorkspace(args, (wsFile, args) => {
+  return editWorkspace(args, async (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
       if (!IModelJsFs.existsSync(file))
@@ -306,7 +308,7 @@ async function replaceResource(args: AddFileOptions) {
 
 /** Extract a single resource from a WorkspaceDb into a local file */
 async function extractResource(args: ExtractResourceOpts) {
-  readWorkspace(args, (file, args) => {
+  return readWorkspace(args, async (file, args) => {
     const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
         throw new Error(` ${args.type} resource "${args.rscName}" does not exist`);
@@ -326,7 +328,7 @@ async function extractResource(args: ExtractResourceOpts) {
 
 /** Remove a single resource from a WorkspaceDb */
 async function removeResource(args: RemoveResourceOpts) {
-  editWorkspace(args, (wsFile, args) => {
+  return editWorkspace(args, async (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.rscName);
     else if (args.type === "blob")
