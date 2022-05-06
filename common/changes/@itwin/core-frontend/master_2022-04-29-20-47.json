@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Mark animateFrustumChange public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
