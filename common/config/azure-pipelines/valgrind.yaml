@@ -12,7 +12,6 @@ jobs:
       name: iModelTechCI
       demands:
       - Agent.OS -equals Linux
-      - Agent.Name -equals BuildMinion03L-A #only 03L-A and 03L-B have valgrind installed. There is no way to OR-combine demands, so we limit to this single machine
     variables:
       VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
     workspace:
@@ -51,3 +50,36 @@ jobs:
           rootFolderOrFile: '$(VALGRIND_RESULTS)'
           archiveFolder: '$(Build.ArtifactStagingDirectory)'
           artifactName: 'ValgrindReport-$(Build.BuildId)'
+
+      - task: PythonScript@0
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import sys, re
+            
+            # ==6451== ERROR SUMMARY: 667 errors from 26 contexts (suppressed: 451 from 451)
+            pattern = re.compile (r"==\d+== ERROR SUMMARY: (\d+) errors from (\d+) contexts \(suppressed: (\d+) from (\d+)\)")
+            
+            if len(sys.argv) < 2:
+                print ('Syntax: ' + sys.argv[0] + ' logFilePath)')
+                exit(1)
+            
+            logFilePath = sys.argv[1]
+            numberOfErrors = 0
+            numberOfSuppressions = 0
+            with open(logFilePath, 'r') as f:
+                lines=f.readlines()
+                for line in lines:
+                    match = pattern.match(line)
+                    if not match:
+                        continue
+                    numberOfErrors += int(match.group(1))
+                    numberOfSuppressions += int(match.group(3))
+            
+            msg = 'Found ' + numberOfErrors + ' errors and ' + numberOfSuppressions + ' suppressions.'
+            if numberOfErrors >= 1:
+                print('##vso[task.logissue type=error]' + msg)
+                sys.exit(1)
+            else:
+                print(msg)
+          arguments: '$(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
