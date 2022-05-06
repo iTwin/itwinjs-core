@@ -48,4 +48,9 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
       }
     });
   }
+
+  public setAccessToken(accessToken?: string, expirationDate?: string) {
+    this._accessToken = accessToken ?? "";
+    this._expirationDate = expirationDate ? new Date(expirationDate) : undefined;
+  }
 }

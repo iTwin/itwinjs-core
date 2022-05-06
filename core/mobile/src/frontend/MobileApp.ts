@@ -26,6 +26,9 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
   public notifyEnterForeground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyEnterBackground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
+  public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
+    MobileApp.onAuthAccessTokenChanged.raiseEvent(accessToken, expirationDate);
+  };
 }
 
 /** @beta */
@@ -35,6 +38,7 @@ export class MobileApp {
   public static onEnterForeground = new BeEvent<() => void>();
   public static onEnterBackground = new BeEvent<() => void>();
   public static onWillTerminate = new BeEvent<() => void>();
+  public static onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
   public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
     return IpcApp.callIpcChannel(mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
   }
@@ -46,16 +50,21 @@ export class MobileApp {
    * @internal
    */
   public static async startup(opts?: NativeAppOpts) {
+    const iModelAppOpts = {
+      ...opts?.iModelApp,
+    };
+    const authorizationClient = new MobileAuthorizationFrontend();
+    iModelAppOpts.authorizationClient = authorizationClient;
+
     if (!this._isValid) {
+      this.onAuthAccessTokenChanged.addListener((accessToken: string | undefined, expirationDate: string | undefined) => {
+        authorizationClient.setAccessToken(accessToken, expirationDate);
+      });
+
       const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }
-
-    const iModelAppOpts = {
-      ...opts?.iModelApp,
-    };
-    iModelAppOpts.authorizationClient = new MobileAuthorizationFrontend();
 
     const socket = new IpcWebSocketFrontend(); // needs work
     await NativeApp.startup(socket, { ...opts, iModelApp: iModelAppOpts });

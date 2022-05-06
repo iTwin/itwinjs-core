@@ -54,6 +54,8 @@ export abstract class MobileDevice {
         MobileHost.onEnterBackground.raiseEvent(...args); break;
       case "willTerminate":
         MobileHost.onWillTerminate.raiseEvent(...args); break;
+      case "authAccessTokenChanged":
+        MobileHost.onAuthAccessTokenChanged.raiseEvent(args[0], args[1]); break;
     }
   }
 
@@ -99,6 +101,7 @@ export class MobileHost {
   public static readonly onEnterForeground = new BeEvent();
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
+  public static readonly onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
 
   /** Send a notification to the MobileApp connected to this MobileHost. */
   public static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>) {
@@ -162,24 +165,31 @@ export class MobileHost {
 
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
+    const authorizationClient = new MobileAuthorizationBackend();
+    IModelHost.authorizationClient = authorizationClient;
+
     if (!this.isValid) {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       // set global device interface.
       (global as any).__iTwinJsNativeBridge = this._device;
       this.onMemoryWarning.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyMemoryWarning",);
+        MobileHost.notifyMobileFrontend("notifyMemoryWarning");
       });
       this.onOrientationChanged.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyOrientationChanged",);
+        MobileHost.notifyMobileFrontend("notifyOrientationChanged");
       });
       this.onEnterForeground.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyEnterForeground",);
+        MobileHost.notifyMobileFrontend("notifyEnterForeground");
       });
       this.onEnterBackground.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyEnterBackground",);
+        MobileHost.notifyMobileFrontend("notifyEnterBackground");
       });
       this.onWillTerminate.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyWillTerminate",);
+        MobileHost.notifyMobileFrontend("notifyWillTerminate");
+      });
+      this.onAuthAccessTokenChanged.addListener((accessToken: string | undefined, expirationDate: string | undefined) => {
+        authorizationClient.setAccessToken(accessToken, expirationDate)
+        MobileHost.notifyMobileFrontend("notifyAuthAccessTokenChanged", accessToken, expirationDate);
       });
 
       // following will provide impl for device specific api.
@@ -198,7 +208,5 @@ export class MobileHost {
     ];
 
     MobileRpcManager.initializeImpl(rpcInterfaces);
-
-    IModelHost.authorizationClient = new MobileAuthorizationBackend();
   }
 }

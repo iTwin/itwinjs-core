@@ -40,4 +40,9 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
       return this._accessToken;
     }
   }
+
+  public setAccessToken(accessToken?: string, expirationDate?: string) {
+    this._accessToken = accessToken ?? "";
+    this._expirationDate = expirationDate ? new Date(expirationDate) : undefined;
+  }
 }

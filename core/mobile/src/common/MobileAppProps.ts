@@ -31,10 +31,11 @@ export interface MobileNotifications {
   notifyEnterForeground: () => void;
   notifyEnterBackground: () => void;
   notifyWillTerminate: () => void;
+  notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
 }
 
 /** @beta */
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
 
 /**
 * The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.
