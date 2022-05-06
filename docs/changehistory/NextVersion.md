@@ -30,6 +30,33 @@ Some [RpcInterfaces](https://www.itwinjs.org/learning/rpcinterface/) define oper
 
 This enhancement relies on request's `Accept-Encoding` header not gettting stripped before it reaches the backend server.
 
+## Display
+
+### Detecting integrated graphics
+
+Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
+
+iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
+
+```ts
+  const compatibility = IModelApp.queryRenderCompatibility();
+  if (compatibility.usingIntegratedGraphics)
+    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
+```
+
+### Polyface edges
+
+A [Polyface]($geometry-core) can optionally specify the visibility of the edges of each of its faces. If present, the edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry-core) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, then the display system will infer the visibility of each interior edge based on the angle between the two adjacent faces. For example, an edge between two faces of a cube would be visible, whereas an edge between two nearly-coplanar faces would be invisible.
+
+In some cases, you may wish to visualize all of the edges for a polyface that lacks edge visibility information. This is the default behavior in some applications like MicroStation. You can now enable this behavior in iTwin.js via [HiddenLineSettings.smoothPolyfaceEdges]($common). For example, given a [Viewport]($frontend) `viewport`:
+
+```ts
+  if (viewport.view.is3d()) {
+    const styleSettings = viewport.view.displayStyle.settings;
+    styleSettings.hiddenLine = styleSettings.hiddenLine.override({ smoothPolyfaceEdges: true });
+  }
+ ```
+
 ## Presentation
 
 ### Filtering related property instances
@@ -88,18 +115,6 @@ Example:
 ```
 
 With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
-
-## Detecting integrated graphics
-
-Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
-
-iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
-
-```ts
-  const compatibility = IModelApp.queryRenderCompatibility();
-  if (compatibility.usingIntegratedGraphics)
-    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
-```
 
 ### Fixed inconsistent property representation in a property grid
 
