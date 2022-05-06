@@ -192,6 +192,45 @@ For example, the [default BisCore supplemental ruleset](https://github.com/iTwin
 
 It is now possible to override values of [`isReadOnly`](../presentation/Content/PropertySpecification.md#attribute-isreadonly) and [`priority`](../presentation/Content/PropertySpecification.md#attribute-priority) property attributes.
 
+### Fixed incorrect categories of property fields when intermediate classes are different
+
+Previously, nested related properties of different intermediate classes were all categorized under the first intermediate class. Now the properties are categorized under the intermediate classes to which they belong.
+
+```json
+{
+  "id": "example",
+  "rules": [{
+      "ruleType": "Content",
+      "specifications": [{
+          "specType": "ContentInstancesOfSpecificClasses",
+          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
+        }]
+    }, {
+      "ruleType": "ContentModifier",
+      "class": { "schemaName": "BisCore", "className": "Model" },
+      "relatedProperties": [{
+          "propertiesSource": {
+            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
+            "direction": "Forward",
+            "targetClass": { "schemaName": "BisCore", "className": "GeometricElement3d" }
+          },
+          "properties": "_none_",
+          "nestedRelatedProperties": [{
+              "propertiesSource": {
+                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
+                "direction": "Forward"
+              }
+            }],
+          "handleTargetClassPolymorphically": true
+        }]
+    }]
+}
+```
+
+| before                                                                                         | after                                                                                                       |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| ![All properties fall under one category](./media/AllSpatialCategoriesUnderPhysicalObject.png) | ![Properties fall under different categories](./media/SpatialCategoriesUnderPhysicalObjectAndTestClass.png) |
+
 ## ColorDef validation
 
 [ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
