@@ -37,23 +37,30 @@ export async function initializeBackend() {
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
-  const authClient = new TestBrowserAuthorizationClient({
+  const authArgs = {
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
     scope: process.env.IMJS_OIDC_SCOPES!,
     authority: process.env.IMJS_AUTH_AUTHORITY,
-  }, {
+  };
+  const userArgs = {
     email: process.env.IMJS_OIDC_EMAIL!,
-    password: process.env.IMJS_OIDC_PASSWORD!,
-  });
-  console.log("Signing in");
+    password: process.env.IMJS_OIDC_PASSWORD!
+  };
+  for(const key of Object.keys(authArgs))
+    console.log(`${key}: "${(authArgs[key] as string)?.length}"`)
+  for(const key of Object.keys(userArgs))
+    console.log(`${key}: "${(authArgs[key] as string)?.length}"`)
+
+  const authClient = new TestBrowserAuthorizationClient(authArgs, userArgs);
+  console.log("!!! Signing in");
   try { authClient.signIn(); }
   catch(e) {
-    console.log("Signgin failure");
+    console.log("!!! Signin failure");
     console.log(JSON.stringify(e));
     throw e;
   }
-  console.log("signed in");
+  console.log("!!! signed in");
   iModelHost.authorizationClient = authClient;
   
   if (ProcessDetector.isElectronAppBackend) {
