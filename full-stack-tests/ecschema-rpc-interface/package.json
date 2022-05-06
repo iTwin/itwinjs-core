@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-tests",
-  "version": "2.19.37",
+  "version": "2.19.38",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",

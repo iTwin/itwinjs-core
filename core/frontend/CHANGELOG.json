@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.19.38",
+      "tag": "@bentley/imodeljs-frontend_v2.19.38",
+      "date": "Fri, 06 May 2022 16:24:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix view zoom jumps on touch devices"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.37",
       "tag": "@bentley/imodeljs-frontend_v2.19.37",
       "date": "Wed, 13 Apr 2022 14:00:41 GMT",

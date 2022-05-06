@@ -1,6 +1,11 @@
 # Change Log - @bentley/usage-logging-client
 
-This log was last generated on Wed, 13 Apr 2022 14:00:41 GMT and should not be manually modified.
+This log was last generated on Fri, 06 May 2022 16:24:59 GMT and should not be manually modified.
+
+## 2.19.38
+Fri, 06 May 2022 16:24:59 GMT
+
+_Version update only_
 
 ## 2.19.37
 Wed, 13 Apr 2022 14:00:41 GMT
