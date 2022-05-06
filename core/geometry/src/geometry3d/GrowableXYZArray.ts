@@ -7,7 +7,6 @@
  * @module ArraysAndInterfaces
  */
 
-import { assert } from "@itwin/core-bentley";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
@@ -52,19 +51,26 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
 
-  /** Copy points from source array. Does not reallocate or change active point count.
+  /** Copy xyz points from source array. Does not reallocate or change active point count.
    * @param source array to copy from
    * @param sourceCount copy the first sourceCount points; all points if undefined
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    */
   private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
-    // convert inputs from points to entries
-    const count = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
-    if (count <= 0 || count > source.length)
+    // validate inputs and convert from points to entries
+    let offset = (undefined !== destOffset) ? destOffset * 3 : 0;
+    if (offset < 0)
+      offset = 0;
+    if (offset >= this._data.length)
       return;
-    assert(count % 3 === 0);
-    const offset = (undefined !== destOffset) ? destOffset * 3 : 0;
-    if (offset < 0 || offset + count > this._data.length)
+    let count = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
+    if (count > source.length)
+      count = source.length;
+    if (offset + count > this._data.length)
+      count = this._data.length - offset;
+    if (count % 3 !== 0)
+      count -= count % 3;
+    if (count <= 0)
       return;
     if (count === source.length)
       this._data.set(source, offset);
@@ -123,7 +129,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       result = new GrowableXYZArray(this.length);
     else {
       if (result.length !== this.length)
-        result.clear();
+        result.clear();   // force resize to trim excess capacity
       result.resize(this.length);
     }
     result.copyData(this._data, this.length);
@@ -151,7 +157,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       const pointCount = typeof data[0] === "number" ? data.length / 3 : data.length;
       result = new GrowableXYZArray(pointCount);
     }
-
     result.pushFrom(data);
     return result;
   }
@@ -318,13 +323,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** copy xyz into strongly typed Point3d */
   public getPoint3dAtCheckedPointIndex(pointIndex: number, result?: Point3d): Point3d | undefined {
-    const index = 3 * pointIndex;
     if (this.isIndexValid(pointIndex)) {
-      if (!result) result = Point3d.create();
-      result.x = this._data[index];
-      result.y = this._data[index + 1];
-      result.z = this._data[index + 2];
-      return result;
+      const index = 3 * pointIndex;
+      return Point3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
     }
     return undefined;
   }
@@ -349,24 +350,17 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** copy xy into strongly typed Point2d */
   public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
-    const index = 3 * pointIndex;
     if (this.isIndexValid(pointIndex)) {
-      if (!result) result = Point2d.create();
-      result.x = this._data[index];
-      result.y = this._data[index + 1];
-      return result;
+      const index = 3 * pointIndex;
+      return Point2d.create(this._data[index], this._data[index + 1], result);
     }
     return undefined;
   }
   /** copy xyz into strongly typed Vector3d */
   public getVector3dAtCheckedVectorIndex(vectorIndex: number, result?: Vector3d): Vector3d | undefined {
-    const index = 3 * vectorIndex;
-    if (vectorIndex >= 0 && vectorIndex < this._xyzInUse) {
-      if (!result) result = Vector3d.create();
-      result.x = this._data[index];
-      result.y = this._data[index + 1];
-      result.z = this._data[index + 2];
-      return result;
+    if (this.isIndexValid(vectorIndex)) {
+      const index = 3 * vectorIndex;
+      return Vector3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
     }
     return undefined;
   }
@@ -401,7 +395,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     if (sourceIndex === undefined) {
       const numXYZAdd = source.length;
       this.ensureCapacity(this.length + numXYZAdd, false);
-      this.copyData(source._data, source.length, this.length);
+      this.copyData(source._data, numXYZAdd, this.length);
       this._xyzInUse += numXYZAdd;
       return numXYZAdd;
     }
@@ -463,12 +457,11 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * Copy all points into a simple array of Point3d
    */
   public getPoint3dArray(): Point3d[] {
+    const n = 3 * this._xyzInUse;
     const result = [];
     const data = this._data;
-    const n = this.length;
-    for (let i = 0; i < n; i++) {
-      result.push(Point3d.create(data[i * 3], data[i * 3 + 1], data[i * 3 + 2]));
-    }
+    for (let i = 0; i < n; i += 3)
+      result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
     return result;
   }
     /** multiply each point by the transform, replace values. */
@@ -617,7 +610,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     let x = 0;
     let y = 0;
     let z = 0;
-    for (let i = 0; i + 3 <= nDouble; i += 3) {
+    for (let i = 0; i + 2 < nDouble; i += 3) {
       x = data[i] - x0;
       y = data[i + 1] - y0;
       z = data[i + 2] - z0;
@@ -632,10 +625,10 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const numDouble = this.float64Length;
     const data = this._data;
     if (transform) {
-      for (let i = 0; i + 3 <= numDouble; i += 3)
+      for (let i = 0; i + 2 < numDouble; i += 3)
         rangeToExtend.extendTransformedXYZ(transform, data[i], data[i + 1], data[i + 2]);
     } else {
-      for (let i = 0; i + 3 <= numDouble; i += 3)
+      for (let i = 0; i + 2 < numDouble; i += 3)
         rangeToExtend.extendXYZ(data[i], data[i + 1], data[i + 2]);
 
     }
@@ -760,14 +753,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
-    if (!result) result = Vector3d.create();
     const data = this._data;
     i = 3 * i;
     j = 3 * j;
-    result.x = data[j] - data[i];
-    result.y = data[j + 1] - data[i + 1];
-    result.z = data[j + 2] - data[i + 2];
-    return result;
+    return Vector3d.create(
+      data[j] - data[i],
+      data[j + 1] - data[i + 1],
+      data[j + 2] - data[i + 2], result);
   }
 
   /** Compute a vector from origin to indexed target j */
@@ -785,15 +777,16 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
   public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
-    const i = originIndex * 3;
-    const j = targetAIndex * 3;
-    const k = targetBIndex * 3;
-    const data = this._data;
-    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex))
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+      const i = originIndex * 3;
+      const j = targetAIndex * 3;
+      const k = targetBIndex * 3;
+      const data = this._data;
       return Geometry.crossProductXYZXYZ(
         data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
         data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
         result);
+    }
     return undefined;
   }
 
@@ -815,16 +808,16 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * accumulate it to the result.
    */
   public accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void {
-    const i = originIndex * 3;
-    const j = targetAIndex * 3;
-    const k = targetBIndex * 3;
-    const data = this._data;
-    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex))
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+      const i = originIndex * 3;
+      const j = targetAIndex * 3;
+      const k = targetBIndex * 3;
+      const data = this._data;
       result.addCrossProductToTargetsInPlace(
         data[i], data[i + 1], data[i + 2],
         data[j], data[j + 1], data[j + 2],
         data[k], data[k + 1], data[k + 2]);
-    return undefined;
+      }
   }
 
   /**
@@ -832,9 +825,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * accumulate it to the result.
    */
   public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
-    const i = index * 3;
-    const data = this._data;
     if (this.isIndexValid(index)) {
+      const i = index * 3;
+      const data = this._data;
       sum.x += scale * data[i];
       sum.y += scale * data[i + 1];
       sum.z += scale * data[i + 2];
@@ -843,20 +836,21 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
   public crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
-    const j = targetAIndex * 3;
-    const k = targetBIndex * 3;
-    const data = this._data;
-    if (this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex))
+    if (this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+      const j = targetAIndex * 3;
+      const k = targetBIndex * 3;
+      const data = this._data;
       return Geometry.crossProductXYZXYZ(
         data[j] - origin.x, data[j + 1] - origin.y, data[j + 2] - origin.z,
         data[k] - origin.x, data[k + 1] - origin.y, data[k + 2] - origin.z,
         result);
+    }
     return undefined;
   }
 
   /** Return the distance between an array point and the input point. */
   public distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined {
-    if (i >= 0 && i < this._xyzInUse) {
+    if (this.isIndexValid(i)) {
       const i0 = 3 * i;
       return Geometry.hypotenuseXYZ(
         spacePoint.x - this._data[i0],
@@ -868,14 +862,11 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /**
    * Return distance squared between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
-   * @param index0 first point index
-   * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
-   *
+   * @param i first point index
+   * @param j second point index
    */
   public distanceSquaredIndexIndex(i: number, j: number): number | undefined {
-    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+    if (this.isIndexValid(i) && this.isIndexValid(j)) {
       const i0 = 3 * i;
       const j0 = 3 * j;
       return Geometry.hypotenuseSquaredXYZ(
@@ -887,13 +878,11 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /**
    * Return distance between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
-   * @param index0 first point index
-   * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   * @param i first point index
+   * @param j second point index
    */
   public distanceIndexIndex(i: number, j: number): number | undefined {
-    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+    if (this.isIndexValid(i) && this.isIndexValid(j)) {
       const i0 = 3 * i;
       const j0 = 3 * j;
       return Geometry.hypotenuseXYZ(
@@ -905,8 +894,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /** Return the distance between points in distinct arrays. */
   public static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined {
-
-    if (i >= 0 && i < arrayA._xyzInUse && j >= 0 && j <= arrayB._xyzInUse) {
+    if (arrayA.isIndexValid(i) && arrayB.isIndexValid(j)) {
       const i0 = 3 * i;
       const j0 = 3 * j;
       return Geometry.hypotenuseXYZ(
@@ -935,7 +923,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const n = this._xyzInUse;
     // let numCompare = 0;
     const result = new Uint32Array(n);
-    for (let i = 0; i < n; i++)result[i] = i;
+    for (let i = 0; i < n; i++) result[i] = i;
     result.sort(
       (blockIndexA: number, blockIndexB: number) => {
         // numCompare++;

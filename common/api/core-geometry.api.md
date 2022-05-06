@@ -2202,7 +2202,7 @@ export class GrowableBlockedArray {
 
 // @public
 export class GrowableFloat64Array {
-    constructor(initialCapacity?: number);
+    constructor(initialCapacity?: number, growthFactor?: number);
     atUncheckedIndex(index: number): number;
     back(): number;
     capacity(): number;
@@ -2211,7 +2211,7 @@ export class GrowableFloat64Array {
     static compare(a: any, b: any): number;
     compressAdjacentDuplicates(tolerance?: number): void;
     static create(contents: Float64Array | number[]): GrowableFloat64Array;
-    ensureCapacity(newCapacity: number): void;
+    ensureCapacity(newCapacity: number, applyGrowthFactor?: boolean): void;
     front(): number;
     get length(): number;
     move(i: number, j: number): void;
@@ -2229,7 +2229,7 @@ export class GrowableFloat64Array {
 
 // @public
 export class GrowableXYArray extends IndexedXYCollection {
-    constructor(numPoints?: number);
+    constructor(numPoints?: number, growthFactor?: number);
     areaXY(): number;
     back(result?: Point2d): Point2d | undefined;
     clear(): void;
@@ -2243,7 +2243,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined;
     distance(i: number, j: number): number | undefined;
     distanceIndexToPoint(i: number, spacePoint: Point2d): number | undefined;
-    ensureCapacity(pointCapacity: number): void;
+    ensureCapacity(pointCapacity: number, applyGrowthFactor?: boolean): void;
     extendRange(rangeToExtend: Range2d, transform?: Transform): void;
     float64Data(): Float64Array;
     get float64Length(): number;
@@ -2271,10 +2271,12 @@ export class GrowableXYArray extends IndexedXYCollection {
     pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
     pushXY(x: number, y: number): void;
-    resize(pointCount: number): void;
+    resize(pointCount: number, padWithZero?: boolean): void;
     reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
+    setXYAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
+    // @deprecated
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
     sortIndicesLexical(): Uint32Array;
     sumLengths(): number;
@@ -2286,7 +2288,7 @@ export class GrowableXYArray extends IndexedXYCollection {
 
 // @public
 export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
-    constructor(numPoints?: number);
+    constructor(numPoints?: number, growthFactor?: number);
     accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
     accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
@@ -2304,7 +2306,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined;
     static distanceRangeBetweenCorrespondingPoints(arrayA: GrowableXYZArray, arrayB: GrowableXYZArray): Range1d;
     distanceSquaredIndexIndex(i: number, j: number): number | undefined;
-    ensureCapacity(pointCapacity: number): void;
+    ensureCapacity(pointCapacity: number, applyGrowthFactor?: boolean): void;
     evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number;
     evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -2347,7 +2349,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     pushWrap(numWrap: number): void;
     pushXYZ(x: number, y: number, z: number): void;
     static removeClosure(points: IndexedReadWriteXYZCollection, tolerance?: number): void;
-    resize(pointCount: number): void;
+    resize(pointCount: number, padWithZero?: boolean): void;
     reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XYAndZ): boolean;

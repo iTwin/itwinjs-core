@@ -47,11 +47,17 @@ export class GrowableFloat64Array {
    * @param destOffset copy to instance array starting at this index; zero if undefined
    */
   private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
-    const count = sourceCount ?? source.length;
-    if (count <= 0 || count > source.length)
+    let offset = destOffset ?? 0;
+    if (offset < 0)
+      offset = 0;
+    if (offset >= this._data.length)
       return;
-    const offset = destOffset ?? 0;
-    if (offset < 0 || offset + count > this.capacity())
+    let count = sourceCount ?? source.length;
+    if (count > source.length)
+      count = source.length;
+    if (offset + count > this._data.length)
+      count = this._data.length - offset;
+    if (count <= 0)
       return;
     if (count === source.length)
       this._data.set(source, offset);
