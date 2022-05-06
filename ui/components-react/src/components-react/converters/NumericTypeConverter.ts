@@ -43,6 +43,11 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
  * @public
  */
 export class FloatTypeConverter extends NumericTypeConverterBase {
+  private static parseString(value: string): number {
+    const parsedValue = parseFloat(value);
+    return Number.isNaN(parsedValue) ? 0 : parsedValue;
+  }
+
   public override convertToString(value?: Primitives.Float) {
     if (value === undefined)
       return "";
@@ -53,7 +58,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
         // handle these semi-valid values as 0
         numericValue = 0;
       } else {
-        numericValue = parseFloat(value);
+        numericValue = FloatTypeConverter.parseString(value);
       }
     } else {
       numericValue = value;
@@ -68,7 +73,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
   }
 
   public override convertFromString(value: string): number {
-    return parseFloat(value);
+    return FloatTypeConverter.parseString(value);
   }
 }
 TypeConverterManager.registerConverter(StandardTypeNames.Float, FloatTypeConverter);
@@ -80,6 +85,11 @@ TypeConverterManager.registerConverter(StandardTypeNames.Number, FloatTypeConver
  * @public
  */
 export class IntTypeConverter extends NumericTypeConverterBase {
+  private static parseString(value: string): number {
+    const parsedValue = parseInt(value, 10);
+    return Number.isNaN(parsedValue) ? 0 : parsedValue;
+  }
+
   public override convertToString(value?: Primitives.Int) {
     if (value === undefined)
       return "";
@@ -90,7 +100,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
         // handle these semi-valid values as 0
         numericValue = 0;
       } else {
-        numericValue = parseInt(value, 10);
+        numericValue = IntTypeConverter.parseString(value);
       }
     } else {
       numericValue = value;
@@ -99,7 +109,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
   }
 
   public override convertFromString(value: string): number {
-    return parseInt(value, 10);
+    return IntTypeConverter.parseString(value);
   }
 }
 
