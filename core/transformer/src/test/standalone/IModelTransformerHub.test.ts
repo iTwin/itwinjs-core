@@ -8,10 +8,10 @@ import { join } from "path";
 import * as semver from "semver";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
-  IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  IModelHost, IModelJsFs, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
@@ -508,9 +508,10 @@ describe("IModelTransformerHub", () => {
         const changesetPath = masterDbChangeset.pathname;
         assert.isTrue(IModelJsFs.existsSync(changesetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeset
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
+        const statusOrResult = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
         assert.isUndefined(statusOrResult.error);
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        const result = statusOrResult.result;
+        if (result === undefined) throw Error("expected to be defined");
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => masterDeletedElementIds.add(id));
@@ -546,9 +547,9 @@ describe("IModelTransformerHub", () => {
         const changesetPath = replayedDbChangeset.pathname;
         assert.isTrue(IModelJsFs.existsSync(changesetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeset
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-        assert.isUndefined(statusOrResult.error);
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        const statusOrResult = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
+        const result = statusOrResult.result;
+        if (result === undefined) throw Error("expected to be defined");
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => replayedDeletedElementIds.add(id));
