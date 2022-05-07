@@ -43,22 +43,22 @@ const applyAtmosphericScattering = `
     // point on ray where atmosphere starts
     vec3 pointInAtmosphere = rayOrigin + rayDir * distanceToAtmosphere;
     float light = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere);
-    if (light < 0.0)
-      return vec4(1.0, 0.0, 0.0, 1.0);
-    if (light == 0.0)
-      return vec4(0.0, 0.0, 0.0, 1.0);
-    if (light > 0.0 && light <= 1.0)
-      return vec4(0.0, 0.2, 0.0, 0.5);
-    if (light > 1.0 && light <= 10.0)
-      return vec4(0.0, 0.4, 0.0, 0.5);
-    if (light > 10.0 && light <= 100.0)
-      return vec4(0.0, 0.6, 0.0, 0.5);
-    if (light > 100.0 && light <= 1000.0)
-      return vec4(0.0, 0.8, 0.0, 0.5);
-    if (light > 1000.0 && light <= 10000.0)
-      return vec4(0.0, 1.0, 0.0, 0.5);
-    else
-      return vec4(1.0, 1.0, 1.0, 1.0);
+    // if (light < 0.0)
+    //   return vec4(1.0, 0.0, 0.0, 1.0);
+    // if (light == 0.0)
+    //   return vec4(0.0, 0.0, 0.0, 1.0);
+    // if (light > 0.0 && light <= 1.0)
+    //   return vec4(0.0, 0.2, 0.0, 1.0);
+    // if (light > 1.0 && light <= 10.0)
+    //   return vec4(0.0, 0.4, 0.0, 1.0);
+    // if (light > 10.0 && light <= 100.0)
+    //   return vec4(0.0, 0.6, 0.0, 1.0);
+    // if (light > 100.0 && light <= 1000.0)
+    //   return vec4(0.0, 0.8, 0.0, 1.0);
+    // if (light > 1000.0 && light <= 10000.0)
+    //   return vec4(0.0, 1.0, 0.0, 1.0);
+    // else
+    //   return vec4(1.0, 1.0, 1.0, 1.0);
 
     return vec4(mix(baseColor.rgb, vec3(1.0, 1.0, 1.0), light), baseColor.a);
   }
@@ -110,10 +110,8 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
 const densityAtPoint = `
 float densityAtPoint(vec3 densitySamplePoint) {
   float heightAboveSurface = distance(densitySamplePoint, u_earthCenter) - u_earthRadius;
-  float height01 = heightAboveSurface / (u_atmosphereRadius - u_earthRadius);
+  float height01 = clamp(heightAboveSurface / (u_atmosphereRadius - u_earthRadius), 0.0, 1.0);
   float localDensity = exp(-height01 * u_densityFalloff) * (1.0 - height01);
-  if (localDensity < 0.0 || localDensity > 1.0)
-    return -1.0;
   return localDensity;
 }
 `;
@@ -132,12 +130,12 @@ float calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength) {
     float viewRayOpticalDepth = opticalDepth(inScatterPoint, -rayDir, stepSize * float(i));
     float transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth));
     float localDensity = densityAtPoint(inScatterPoint);
-    debugLocalDensity += localDensity;
+    // debugLocalDensity = min(localDensity, debugLocalDensity);
 
     inScatteredLight += localDensity * transmittance * stepSize;
     inScatterPoint += rayDir * stepSize;
   }
-  return debugLocalDensity / float(numInScatteringPoints);
+  // return debugLocalDensity;
   return inScatteredLight;
   // float originalColorTransmittance = exp(-viewRayOpticalDepth);
   // return vec4(baseColor.rgb * originalColorTransmittance + inScatteredLight, baseColor.a);
