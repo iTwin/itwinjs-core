@@ -5,7 +5,7 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 /** Include application registered Controls in Webpack
  */
-import { ContentLayoutProps, FunctionKey, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
+import { ContentLayoutProps, FunctionKey, StandardContentLayouts } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 
 import {
@@ -13,13 +13,12 @@ import {
   AccuDrawKeyboardShortcuts,
   CommandItemDef,
   ConfigurableUiManager,
-  FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
 } from "@itwin/appui-react";
-// import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
-// import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
-// import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
+import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
+import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 
 // cSpell:ignore uitestapp
 
@@ -36,30 +35,10 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    // ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
-    // ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
-    // ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
   }
-
-  public static command1 = () => {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Open);
-      }
-    }
-  };
-
-  public static command2 = () => {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Hidden);
-      }
-    }
-  };
 
   public static findLayoutFromContentCount(contentCount: number): ContentLayoutProps | undefined {
     if (contentCount < 0)

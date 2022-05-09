@@ -8,48 +8,49 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-// import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-// import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
-  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageManager,
+  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   IModelViewportControl,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-// import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { FrontendDevTools } from "@itwin/frontend-devtools";
-import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
-// import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
+import { ExternalIModel } from "./appui/ExternalIModel";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
-// cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
+import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
+import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
+import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
+
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
+// cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -60,6 +61,13 @@ export enum SampleAppUiActionId {
   setIsIModelLocal = "sampleapp:setisimodellocal",
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
+
+/* ----------------------------------------------------------------------------
+* The following variable is used to test initializing UiFramework to use UI 1.0
+* and using that initial value in ui-test-app. By default UiFramework initializes
+* the Redux state to UI 2.0 mode.
+----------------------------------------------------------------------------- */
+const useUi1Mode = false;
 
 export interface SampleAppState {
   testProperty: string;
@@ -159,66 +167,50 @@ export class SampleAppIModelApp {
       ...opts.iModelApp,
     };
 
-    if (hubClient) {
-      //      // set up OIDC authorization if hubClient is specified
-      //      if (ProcessDetector.isElectronAppFrontend) {
-      //        const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
-      //        iModelAppOpts.authorizationClient = authClient;
-      //        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
-      //        NativeAppLogger.initialize();
-      //      } else if (ProcessDetector.isIOSAppFrontend) {
-      //        await IOSApp.startup(opts);
-      //      } else if (ProcessDetector.isAndroidAppFrontend) {
-      //        await AndroidApp.startup(opts);
-      //      } else {
-      //        // if an auth client has not already been configured, use a default Browser client
-      //        const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
-      //        const urlObj = new URL(redirectUri);
-      //        if (urlObj.pathname === window.location.pathname) {
-      //          await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
-      //          return;
-      //        }
-      //
-      //        if (undefined === process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID && undefined === process.env.IMJS_OIDC_BROWSER_TEST_SCOPES) {
-      //          Logger.logWarning(loggerCategory, "Missing IMJS_OIDC_BROWSER_TEST_CLIENT_ID and IMJS_OIDC_BROWSER_TEST_SCOPES environment variables. Authentication will not be possible if not properly set.");
-      //          await IModelApp.startup(iModelAppOpts);
-      //          return;
-      //        }
-      //
-      //        const auth = new BrowserAuthorizationClient({
-      //          clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
-      //          redirectUri,
-      //          scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
-      //          responseType: "code",
-      //        });
-      //        try {
-      //          await auth.signInSilent();
-      //        } catch (err) { }
-      //
-      //        const rpcParams: BentleyCloudRpcParams =
-      //          undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-      //            { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
-      //            : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      //        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
-      //
-      //        await IModelApp.startup({
-      //          ...iModelAppOpts,
-      //          authorizationClient: auth,
-      //        });
-      //      }
+    if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
+      iModelAppOpts.authorizationClient = authClient;
+      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
+      NativeAppLogger.initialize();
+    } else if (ProcessDetector.isIOSAppFrontend) {
+      await IOSApp.startup(opts);
+    } else if (ProcessDetector.isAndroidAppFrontend) {
+      await AndroidApp.startup(opts);
     } else {
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
-      if (ProcessDetector.isElectronAppFrontend) {
-        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
-        NativeAppLogger.initialize();
-      } else if (ProcessDetector.isIOSAppFrontend) {
-        await IOSApp.startup(opts);
-      } else if (ProcessDetector.isAndroidAppFrontend) {
-        await AndroidApp.startup(opts);
-      } else {
-        await IModelApp.startup(iModelAppOpts);
+      // if an auth client has not already been configured, use a default Browser client
+      const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
+      const urlObj = new URL(redirectUri);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+        return;
       }
+
+      if (undefined === process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID && undefined === process.env.IMJS_OIDC_BROWSER_TEST_SCOPES) {
+        Logger.logWarning(loggerCategory, "Missing IMJS_OIDC_BROWSER_TEST_CLIENT_ID and IMJS_OIDC_BROWSER_TEST_SCOPES environment variables. Authentication will not be possible if not properly set.");
+        await IModelApp.startup(iModelAppOpts);
+        return;
+      }
+
+      const auth = new BrowserAuthorizationClient({
+        clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+        redirectUri,
+        scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
+        responseType: "code",
+      });
+      try {
+        await auth.signInSilent();
+      } catch (err) { }
+
+      const rpcParams: BentleyCloudRpcParams =
+        undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
+          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
+
+      await IModelApp.startup({
+        ...iModelAppOpts,
+        authorizationClient: auth,
+      });
     }
 
     window.onerror = function (error) {
@@ -237,6 +229,7 @@ export class SampleAppIModelApp {
       });
     }
 
+    // register local commands.
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
 
@@ -248,7 +241,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined, undefined);
+    await UiFramework.initialize(undefined, undefined, useUi1Mode);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -274,25 +267,25 @@ export class SampleAppIModelApp {
     Presentation.presentation.activeUnitSystem = "imperial";
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true)); // pass true to save per imodel
 
-    await FrontendDevTools.initialize();
-    await HyperModeling.initialize();
-    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
-
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults: InitialAppUiSettings = {
-      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-      dragInteraction: false,
-      frameworkVersion: "2",
-      widgetOpacity: 0.8,
-      showWidgetIcon: true,
-      autoCollapseUnpinnedPanels: false,
-    };
+    if (!useUi1Mode) {
+      const defaults: InitialAppUiSettings = {
+        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+        dragInteraction: false,
+        frameworkVersion: "2",
+        widgetOpacity: 0.8,
+        showWidgetIcon: true,
+        autoCollapseUnpinnedPanels: false,
+      };
 
-    // initialize any settings providers that may need to have defaults set by iModelApp
-    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+      // initialize any settings providers that may need to have defaults set by iModelApp
+      UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+    } else {
+      window.localStorage.removeItem("AppUiSettings.FrameworkVersion");
+    }
 
     UiFramework.useDefaultPopoutUrl = true;
 
@@ -305,34 +298,34 @@ export class SampleAppIModelApp {
 
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
-    const category = `appui-test-app.${className}`;
+    const category = `ui-test-app.${className}`;
     return category;
   }
 
-  // public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
-  //   // Close the current iModelConnection
-  //   await SampleAppIModelApp.closeCurrentIModel();
-  //
-  //   Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-  //     `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
-  //
-  //   let iModelConnection: IModelConnection | undefined;
-  //   if (ProcessDetector.isMobileAppFrontend) {
-  //     const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-  //       Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-  //     });
-  //     await req.downloadPromise;
-  //     iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
-  //     SampleAppIModelApp.setIsIModelLocal(true, true);
-  //   } else {
-  //     const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-  //     await iModel.openIModel();
-  //     iModelConnection = iModel.iModelConnection!;
-  //     SampleAppIModelApp.setIsIModelLocal(false, true);
-  //   }
-  //
-  //   await this.openViews(iModelConnection, viewIdsSelected);
-  // }
+  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+    // Close the current iModelConnection
+    await SampleAppIModelApp.closeCurrentIModel();
+
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+      `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+
+    let iModelConnection: IModelConnection | undefined;
+    if (ProcessDetector.isMobileAppFrontend) {
+      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+      });
+      await req.downloadPromise;
+      iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
+      SampleAppIModelApp.setIsIModelLocal(true, true);
+    } else {
+      const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+      await iModel.openIModel();
+      iModelConnection = iModel.iModelConnection!;
+      SampleAppIModelApp.setIsIModelLocal(false, true);
+    }
+
+    await this.openViews(iModelConnection, viewIdsSelected);
+  }
 
   public static async closeCurrentIModel() {
     if (SampleAppIModelApp.isIModelLocal) {
@@ -366,13 +359,16 @@ export class SampleAppIModelApp {
     else
       stageId = defaultFrontstage;
 
+    let frontstageDef: FrontstageDef | undefined;
     if (stageId === defaultFrontstage) {
       if (stageId === MainFrontstage.stageId) {
         MainFrontstage.register();
       }
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
+    } else {
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
     }
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
@@ -383,9 +379,138 @@ export class SampleAppIModelApp {
     }
   }
 
-  public static async showLocalFileStage() {
-    // open to the Local File frontstage
+  public static async handleWorkOffline() {
     await LocalFileOpenFrontstage.open();
+  }
+
+  public static async showIModelIndex(iTwinId: string, iModelId: string) {
+    const currentConnection = UiFramework.getIModelConnection();
+    if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
+      // Close the current iModelConnection
+      await SampleAppIModelApp.closeCurrentIModel();
+
+      // open the imodel
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+        `showIModelIndex: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+
+      let iModelConnection: IModelConnection | undefined;
+      if (ProcessDetector.isMobileAppFrontend) {
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+          // eslint-disable-next-line no-console
+          console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+        });
+        await req.downloadPromise;
+        iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
+      } else {
+        try {
+          const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+          await iModel.openIModel();
+          iModelConnection = iModel.iModelConnection!;
+        } catch (e: any) {
+          alert(`Error opening selected iModel: ${e.message}`);
+          iModelConnection = undefined;
+          await LocalFileOpenFrontstage.open();
+          return;
+        }
+      }
+
+      SampleAppIModelApp.setIsIModelLocal(!!iModelConnection?.isBriefcaseConnection, true);
+
+      // store the IModelConnection in the sample app store
+      UiFramework.setIModelConnection(iModelConnection, true);
+    }
+
+    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
+  }
+
+  public static async showIModelOpen() {
+    await SampleAppIModelApp.showFrontstage(IModelOpenFrontstage.stageId);
+  }
+
+  public static async showSignInPage() {
+    await SampleAppIModelApp.showFrontstage(SignInFrontstage.stageId);
+  }
+
+  // called after the user has signed in (or access token is still valid)
+  public static async showSignedIn() {
+    SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
+
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_ITWIN_NAME) {
+      const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
+
+      const iTwinName = process.env.IMJS_UITESTAPP_ITWIN_NAME ?? "";
+      const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
+
+      const accessToken = await IModelApp.getAccessToken();
+      const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
+        search: {
+          searchString: iTwinName,
+          propertyName: ProjectsSearchableProperty.Name,
+          exactMatch: true,
+        },
+      });
+
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${iTwinName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${iTwinName} were found for the user.`);
+
+      const iTwin: ITwin = iTwinList[0];
+
+      if (!SampleAppIModelApp.hubClient)
+        return;
+
+      let iModel;
+      for await (const imodel of SampleAppIModelApp.hubClient.iModels.getRepresentationList({
+        urlParams: {
+          name: iModelName,
+          projectId: iTwin.id,
+          $top: 1,
+        },
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      }))
+        iModel = imodel;
+
+      if (!iModel)
+        throw new Error(`No iModel with the name ${iModelName}`);
+
+      if (viewId) {
+        // open directly into the iModel (view)
+        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel?.id, [viewId]);
+      } else {
+        // open to the IModelIndex frontstage
+        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel?.id);
+      }
+    } else if (SampleAppIModelApp.iModelParams) {
+      if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
+        // open directly into the iModel (view)
+        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
+      } else {
+        // open to the IModelIndex frontstage
+        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId);
+      }
+    } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
+      // open to the Local File frontstage
+      await LocalFileOpenFrontstage.open();
+    } else {
+      // open to the IModelOpen frontstage
+      await SampleAppIModelApp.showIModelOpen();
+    }
+  }
+
+  private static _usingParams(): SampleIModelParams | undefined {
+    const urlParams = new URLSearchParams(window.location.search);
+    const iTwinId = urlParams.get("iTwinId");
+    const iModelId = urlParams.get("iModelId");
+
+    if (iTwinId && iModelId) {
+      const viewIds = urlParams.getAll("viewId");
+      const stageId = urlParams.get("stageId") || undefined;
+
+      return { iTwinId, iModelId, viewIds, stageId };
+    }
+
+    return undefined;
   }
 
   public static isEnvVarOn(envVar: string): boolean {
@@ -470,13 +595,26 @@ const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragIntera
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
 const SampleAppViewer2 = () => {
+  const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
+
   React.useEffect(() => {
     AppUi.initialize();
+
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {
+      setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
+    }
   }, []);
 
   React.useEffect(() => {
-    void SampleAppIModelApp.showLocalFileStage();
-  }, []);
+    // Load the correct Frontstage based on whether or not you're authorized.
+    isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignInPage(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [isAuthorized]);
+
+  const _onAccessTokenChanged = () => {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {
+      setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
+    }
+  };
 
   const _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
@@ -487,9 +625,13 @@ const SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
+      IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
+        IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
     };
@@ -498,6 +640,7 @@ const SampleAppViewer2 = () => {
   return (
     <Provider store={SampleAppIModelApp.store} >
       <ThemeManager>
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <SafeAreaContext.Provider value={SafeAreaInsets.All}>
           <AppDragInteraction>
             <AppFrameworkVersion>
@@ -546,7 +689,7 @@ async function main() {
     MapboxImagery: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "access_token", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
 
-  // const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
 
   const realityDataClientOptions: RealityDataClientOptions = {
     /** API Version. v1 by default */
@@ -564,14 +707,14 @@ async function main() {
       realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
 
   // Start the app.
-  // await SampleAppIModelApp.startup(opts, iModelClient);
-  await SampleAppIModelApp.startup(opts);
+  await SampleAppIModelApp.startup(opts, iModelClient);
 
   await SampleAppIModelApp.initialize();
 
