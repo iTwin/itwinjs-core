@@ -3963,8 +3963,6 @@ export namespace HiddenLine {
         // (undocumented)
         get matchesDefaults(): boolean;
         override(props: SettingsProps): Settings;
-        // @beta
-        readonly smoothPolyfaceEdges: boolean;
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
@@ -3973,7 +3971,6 @@ export namespace HiddenLine {
     }
     export interface SettingsProps {
         hidden?: StyleProps;
-        smoothPolyfaceEdges?: boolean;
         transThreshold?: number;
         visible?: StyleProps;
     }
@@ -8986,6 +8983,8 @@ export interface TileOptions {
     readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
+    // (undocumented)
+    readonly generateAllPolyfaceEdges: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)

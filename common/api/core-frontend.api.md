@@ -10736,6 +10736,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    get edgeOptions(): EdgeOptions;
+    // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
@@ -10748,6 +10750,9 @@ export class TileAdmin {
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
+    // @internal (undocumented)
+    get generateAllPolyfaceEdges(): boolean;
+    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -10864,6 +10869,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @beta
+        generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal

@@ -294,7 +294,6 @@ export class TileAdmin {
   public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
   /** @internal */
   public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
-  /** Strictly for testing @internal */
   public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
   /** @internal */
   public get edgeOptions(): EdgeOptions {
