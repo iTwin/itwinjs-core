@@ -50,7 +50,9 @@ These hierarchies can go N levels deep, which means that an Element can be both 
 ### Element Held by Spatial Organizer
 
 A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can *hold* Spatial Elements and aggregate other Spatial Structure elements.
+
 These concepts are part of the rules and patterns introduced by the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. They aim to enable the modeling of the Spatial Structure of infrastructure.
+
 The resulting hierarchy can define as many levels as needed. These Spatial Composition hierarchies can co-exist with the other organization mechanisms listed above.
 
 For example, a `Building` is modeled as a subclass of `spcomp:SpatialStructureElement`, which spatially aggregates other Spatial Organizers such as `Stories` and `Spaces`. Physical elements such as `Wall`s, `Column`s and `Door`s are associated to (held or referenced by depending on the case) those concepts from the Building decomposition.
