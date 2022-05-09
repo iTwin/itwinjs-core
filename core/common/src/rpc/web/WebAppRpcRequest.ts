@@ -293,9 +293,7 @@ export class WebAppRpcRequest extends RpcRequest {
       // If response size is > 50 MB, do not cache it.
       if (fulfillment.result.objects.length > (50 * 10**7)) {
         res.set("Cache-Control", "no-store");
-        break;
-      }
-      if (request.operation.operationName === "generateTileContent") {
+      } else if (request.operation.operationName === "generateTileContent") {
         res.set("Cache-Control", "no-store");
       } else if (request.operation.operationName === "getConnectionProps") {
         // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
