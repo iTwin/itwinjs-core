@@ -162,8 +162,6 @@ export namespace HiddenLine {
     hidden?: StyleProps;
     /** @see [[HiddenLine.Settings.transparencyThreshold. */
     transThreshold?: number;
-    /** @see [[HiddenLine.Settings.smoothPolyfaceEdges]]. */
-    smoothPolyfaceEdges?: boolean;
   }
 
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
@@ -183,15 +181,6 @@ export namespace HiddenLine {
 
     /** An alias for [[transparencyThreshold]]. */
     public get transThreshold(): number { return this.transparencyThreshold; }
-
-    /** A [Polyface]($geometry-core) may or may not specify the visibility of the edges of its faces (@see [PolyfaceData.edgeVisible]($geometry-core).
-     * If it does not, then by default the display system will infer edge visibility based on the topology - an edge between two faces is considered
-     * visible if the angle between the two faces is sufficiently large.
-     * If `smoothPolyfaceEdges` is `true`, this inference will not be applied; instead, the edges of all faces will be visible.
-     * @note This property applies only to polyfaces - not other types of geometry - and only if the polyface lacks explicit edge visibility information.
-     * @beta
-     */
-    public readonly smoothPolyfaceEdges: boolean;
 
     /** The default display settings. */
     public static defaults = new Settings({});
@@ -213,9 +202,6 @@ export namespace HiddenLine {
         transThreshold: this.transThreshold,
       };
 
-      if (this.smoothPolyfaceEdges)
-        props.smoothPolyfaceEdges = true;
-
       return props;
     }
 
@@ -228,7 +214,6 @@ export namespace HiddenLine {
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
         transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
-        smoothPolyfaceEdges: props.smoothPolyfaceEdges ?? this.smoothPolyfaceEdges,
       });
     }
 
@@ -239,7 +224,6 @@ export namespace HiddenLine {
       return this.visible.equals(other.visible)
         && this.hidden.equals(other.hidden)
         && this.transparencyThreshold === other.transparencyThreshold
-        && this.smoothPolyfaceEdges === other.smoothPolyfaceEdges;
     }
 
     public get matchesDefaults(): boolean {
@@ -250,7 +234,6 @@ export namespace HiddenLine {
       this.visible = Style.fromJSON(json.visible);
       this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
-      this.smoothPolyfaceEdges = true === json.smoothPolyfaceEdges;
     }
   }
 }

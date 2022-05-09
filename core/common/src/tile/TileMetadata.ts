@@ -63,6 +63,7 @@ export interface TileOptions {
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
   readonly enableIndexedEdges: boolean;
+  readonly generateAllPolyfaceEdges: boolean;
 }
 
 /** @internal */
@@ -76,6 +77,7 @@ export namespace TileOptions {
   export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions {
     const tree = treeFlagsAndFormatVersionFromId(treeId);
     const contentFlags = contentFlagsFromId(contentId);
+    const edgeOptions = edgeOptionsFromTreeId(treeId);
 
     return {
       maximumMajorTileFormatVersion: tree.version,
@@ -88,7 +90,8 @@ export namespace TileOptions {
       useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
-      enableIndexedEdges: true,
+      enableIndexedEdges: edgeOptions && edgeOptions.indexed,
+      generateAllPolyfaceEdges: edgeOptions && edgeOptions.smooth,
     };
   }
 }
@@ -291,6 +294,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
   enableIndexedEdges: true,
+  generateAllPolyfaceEdges: true,
 });
 
 function contentFlagsFromId(id: string): ContentFlags {
@@ -321,6 +325,21 @@ function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, versio
       if (!Number.isNaN(version) || !Number.isNaN(flags))
         return { version, flags };
     }
+  }
+
+  throw new Error("Invalid tree Id");
+}
+
+function edgeOptionsFromTreeId(id: string): EdgeOptions {
+  const pos = id.indexOf("E:");
+  if (pos <= 0)
+    return { indexed: false, smooth: false };
+
+  switch (id[pos + 2]) {
+    case "0": return { indexed: defaultTileOptions.enableIndexedEdges, smooth: defaultTileOptions.generateAllPolyfaceEdges };
+    case "2": return { indexed: true, smooth: false };
+    case "3": return { indexed: false, smooth: true };
+    case "4": return { indexed: true, smooth: true };
   }
 
   throw new Error("Invalid tree Id");
