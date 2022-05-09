@@ -30,6 +30,34 @@ Some [RpcInterfaces](https://www.itwinjs.org/learning/rpcinterface/) define oper
 
 This enhancement relies on request's `Accept-Encoding` header not gettting stripped before it reaches the backend server.
 
+## Display
+
+### Detecting integrated graphics
+
+Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
+
+iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
+
+```ts
+  const compatibility = IModelApp.queryRenderCompatibility();
+  if (compatibility.usingIntegratedGraphics)
+    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
+```
+
+### Polyface edges
+
+A [Polyface]($geometry-core) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry-core) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
+
+Previously, the display system would attempt to infer the visibility of each interior edge based on the angle between its two adjacent faces. For example, an edge between two faces of a cube would be visible, whereas an edge between two nearly-coplanar faces would be invisible. However, this inference does not work well for polyfaces with smoother topology. Now, instead of attempting to infer edge visibility, the display system will simply render the edges of all faces visible.
+
+The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry-core).
+
+| Inferred edges (previous behavior) | All edges (new behavior) |
+| ---------------------------------- | ------------------------ |
+| ![Edge visibility is inferred](./assets/infer-polyface-edges.jpg) | ![All edges are visible](./assets/all-polyface-edges.jpg) |
+
+If for some reason you wish to revert to the previous behavior, you can set [TileAdmin.Props.generateAllPolyfaceEdges]($frontend) to `false` when calling [IModelApp.startup]($frontend).
+
 ## Presentation
 
 ### Filtering related property instances
@@ -88,18 +116,6 @@ Example:
 ```
 
 With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
-
-## Detecting integrated graphics
-
-Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
-
-iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
-
-```ts
-  const compatibility = IModelApp.queryRenderCompatibility();
-  if (compatibility.usingIntegratedGraphics)
-    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
-```
 
 ### Fixed inconsistent property representation in a property grid
 
