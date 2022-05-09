@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix checkbox alignment in visibility trees.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
