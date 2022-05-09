@@ -59,8 +59,10 @@ function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): 
 }
 
 async function createCantilever(): Promise<Polyface> {
-  const response = await fetch("Cantilever.json");
-  const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
+  const { cantileverJsonString } = await import("./Cantilever");
+  const polyface = IModelJson.Reader.parse(
+    JSON.parse(cantileverJsonString)
+  ) as Polyface;
   assert(polyface instanceof Polyface);
 
   const transform = Transform.createScaleAboutPoint(new Point3d(), 30);

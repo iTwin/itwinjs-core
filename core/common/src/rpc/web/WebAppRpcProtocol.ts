@@ -120,7 +120,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     const request = await WebAppRpcRequest.parseRequest(this, req);
     const fulfillment = await this.fulfill(request);
-    WebAppRpcRequest.sendResponse(this, request, fulfillment, res);
+    WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
@@ -183,6 +183,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       default: return 501;
     }
   }
+
+  public override supportsStatusCategory = true;
 
   /** Whether an HTTP status code indicates a request timeout. */
   public isTimeout(code: number): boolean {
