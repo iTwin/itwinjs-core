@@ -71,6 +71,7 @@ export class BackendTileGenerator {
     optimizeBRepProcessing: true,
     useLargerTiles: true,
     enableIndexedEdges: true,
+    generateAllPolyfaceEdges: true,
   };
   private readonly _stats: Stats = {
     modelCount: 0,
