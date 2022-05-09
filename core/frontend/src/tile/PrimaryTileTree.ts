@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, EdgeOptions, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";

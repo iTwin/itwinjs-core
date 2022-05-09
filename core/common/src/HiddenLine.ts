@@ -223,7 +223,7 @@ export namespace HiddenLine {
 
       return this.visible.equals(other.visible)
         && this.hidden.equals(other.hidden)
-        && this.transparencyThreshold === other.transparencyThreshold
+        && this.transparencyThreshold === other.transparencyThreshold;
     }
 
     public get matchesDefaults(): boolean {
