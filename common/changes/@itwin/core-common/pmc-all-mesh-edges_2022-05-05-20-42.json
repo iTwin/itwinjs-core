@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Add HiddenLine.Settings.smoothPolyfaceEdges to control how edge visibility is inferred for polyfaces.",
+      "comment": "Improve edge generation for polyfaces that lack edge visibility information.",
       "type": "none"
     }
   ],

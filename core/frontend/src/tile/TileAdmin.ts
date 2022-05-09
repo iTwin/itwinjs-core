@@ -10,7 +10,7 @@ import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -116,6 +116,7 @@ export class TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _enableIndexedEdges: boolean;
+  private _generateAllPolyfaceEdges: boolean;
   /** @internal */
   public readonly enableImprovedElision: boolean;
   /** @internal */
@@ -217,6 +218,7 @@ export class TileAdmin {
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
+    this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
@@ -290,6 +292,17 @@ export class TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   /** @internal */
   public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  /** @internal */
+  public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
+  /** Strictly for testing @internal */
+  public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
+  /** @internal */
+  public get edgeOptions(): EdgeOptions {
+    return {
+      indexed: this.enableIndexedEdges,
+      smooth: this.generateAllPolyfaceEdges,
+    };
+  }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -934,6 +947,15 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: true
      */
     enableIndexedEdges?: boolean;
+
+    /** If true then if a [Polyface]($geometry-core) lacks edge visibility information, the display system will display the edges of all of its faces.
+     * Otherwise, the display system will attempt to infer the visibility of each interior edge based on the angle between the two adjacent faces.
+     * Edge inference can produce less visually useful results.
+     *
+     * Default value: true
+     * @beta
+     */
+    generateAllPolyfaceEdges?: boolean;
 
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.

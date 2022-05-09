@@ -263,14 +263,7 @@ class PrimaryTreeReference extends TileTreeReference {
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
-    let edges: EdgeOptions | false = false;
-    if (edgesRequired) {
-      edges = {
-        indexed: IModelApp.tileAdmin.enableIndexedEdges,
-        smooth: view.is3d() && view.displayStyle.settings.hiddenLineSettings.smoothPolyfaceEdges,
-      };
-    }
-
+    const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
     return { type: BatchType.Primary, edges, animationId, sectionCut };
   }

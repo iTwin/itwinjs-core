@@ -72,11 +72,6 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
     }),
     displayStyle: {
       scheduleState,
-      settings: {
-        hiddenLineSettings: {
-          smoothPolyfaceEdges: false,
-        },
-      },
     },
   } as unknown as ViewState;
 }
