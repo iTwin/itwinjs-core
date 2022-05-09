@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Each `Subject` in a BIS Repository can have one `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](information-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](information-hierarchy.md#InformationPartitionElements), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
+Each `Subject` in a BIS Repository can have one `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](information-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](information-hierarchy.md#InformationPartitionElements), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components to make the hierarchy of Models understandable by software and users.
 
 &nbsp;
 ![Top of the PhysicalModel Hierarchy](../media/physical-hierarchy-organization-top-of-the-world.png)
@@ -19,8 +19,9 @@ Within a BIS repository, the representation of the physical world becomes the fr
 ### Motivations
 
 BIS defines a data model that is shared by a growing set of applications and services. Many of these applications and services read and/or write `PhysicalModel` data. There are two choices to ensure that these applications and services will be coordinated:
- - Require every application and service to work with any data organization.
- - Specify a data organization which applications and services should read and write.
+
+- Require every application and service to work with any data organization.
+- Specify a data organization which applications and services should read and write.
 
  The second option has been chosen for BIS as it is the more practical solution.
 
