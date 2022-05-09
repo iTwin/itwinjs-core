@@ -10,8 +10,8 @@ import { AccessToken } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@itwin/core-common";
 import { MobileApp } from "./MobileApp";
 
-/** Utility to request OIDC/OAuth tokens from mobile frontend to mobile backend.
- * @beta
+/** Utility to provide and cache auth tokens from native mobile apps to IModelApp.
+ * @internal
  */
 export class MobileAuthorizationFrontend implements AuthorizationClient {
   private _accessToken: AccessToken = "";
