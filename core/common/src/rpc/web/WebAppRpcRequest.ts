@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { Buffer } from "buffer";
+// import { Buffer } from "buffer";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
