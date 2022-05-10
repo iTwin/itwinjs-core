@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Readable, Writable } from "stream";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -18,7 +19,6 @@ import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { BentleyError, Logger } from "@itwin/core-bentley";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";
@@ -120,7 +120,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     const request = await WebAppRpcRequest.parseRequest(this, req);
     const fulfillment = await this.fulfill(request);
-    WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
+    await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
