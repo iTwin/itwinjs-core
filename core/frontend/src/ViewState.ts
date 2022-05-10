@@ -1485,7 +1485,7 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
 
-    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;

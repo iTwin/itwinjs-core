@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
+import { GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps } from "../../tile/GltfReader";
+import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps, GltfSampler, GltfWrapMode } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
@@ -306,5 +306,60 @@ describe("GltfReader", () => {
     expectCycle(1);
     expectCycle(2);
     expectCycle(3);
+  });
+
+  describe("textures", () => {
+    function expectTextureType(expected: RenderTexture.Type, sampler: GltfSampler | undefined, defaultWrap?: GltfWrapMode): void {
+      const reader = createReader(makeGlb(minimalJson, minimalBin))!;
+      expect(reader).not.to.be.undefined;
+      if (undefined !== defaultWrap)
+        reader.defaultWrapMode = defaultWrap;
+
+      expect(reader.getTextureType(sampler)).to.equal(expected);
+    }
+
+    // This test includes a current deviation from the glTF spec: we currently do not support mirrored repeat.
+    it("produces normal textures unless clamp-to-edge is specified", () => {
+      expectTextureType(RenderTexture.Type.Normal, undefined);
+      expectTextureType(RenderTexture.Type.Normal, { });
+      expectTextureType(RenderTexture.Type.Normal, { magFilter: 9728, minFilter: 9987 });
+
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat });
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.Repeat });
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.Repeat });
+
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat });
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.MirroredRepeat });
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat, wrapT: GltfWrapMode.MirroredRepeat });
+    });
+
+    // This test includes a current deviation from the glTF spec: we currently do not support different wrapping behavior for S/U and T/V.
+    it("produces tile section if either S or T are clamped to edge", () => {
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge });
+      expectTextureType(RenderTexture.Type.TileSection, { wrapT: GltfWrapMode.ClampToEdge });
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge });
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.ClampToEdge });
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat });
+    });
+
+    it("overrides default texture type if unspecified by sampler", () => {
+      expectTextureType(RenderTexture.Type.TileSection, undefined, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { magFilter: 9728, minFilter: 9987 }, GltfWrapMode.ClampToEdge);
+
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
+
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+    });
   });
 });

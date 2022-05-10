@@ -24,6 +24,12 @@ If you are using [IModelTransformer]($transformer), you can configure automatic 
   transformer.processAll();
 ```
 
+## Compression of certain RPC operation responses
+
+Some [RpcInterfaces](https://www.itwinjs.org/learning/rpcinterface/) define operations that may return so much data, that downloading it becomes a significant part of a Web request duration. Such operations can now utilize `gzip` compression to cut download time by an order of magnitude on large JSON responses.
+
+This enhancement relies on request's `Accept-Encoding` header not gettting stripped before it reaches the backend server.
+
 ## Presentation
 
 ### Filtering related property instances
@@ -36,7 +42,7 @@ It is now possible to set property specification [`isDisplayed` attribute](../pr
 
 ### Fixed nested hierarchy rules handling
 
-There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for all child node rules available at the current context.
+There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for child node rules nested under the parent node rule and at the root level of the ruleset.
 
 Example:
 
@@ -50,7 +56,7 @@ Example:
       "type": "child-1",
       "label": "Child 1",
       "nestedRules": [{
-        "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+        "ruleType": "ChildNodes",
         "specifications": [{
           "specType": "CustomNode",
           "type": "child-1.1",
@@ -81,9 +87,9 @@ Example:
 }
 ```
 
-With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at other child node rules available in the context of the specification that created the node. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
+With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
 
-### Detecting integrated graphics
+## Detecting integrated graphics
 
 Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
 
@@ -94,6 +100,93 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
   if (compatibility.usingIntegratedGraphics)
     alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
 ```
+
+### Fixed inconsistent property representation in a property grid
+
+Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties]($presentation-common) attribute, the properties were loaded differently based on whether parent specification included any properties or not. Now the behavior is consistent.
+
+```json
+{
+  "id": "example",
+  "rules": [{
+      "ruleType": "Content",
+      "specifications": [{
+          "specType": "ContentInstancesOfSpecificClasses",
+          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
+        }]
+    }, {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Model"
+      },
+      "relatedProperties": [{
+          "propertiesSource": {
+            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
+            "direction": "Forward",
+            "targetClass": { "schemaName": "Generic", "className": "PhysicalObject" }
+          },
+          "properties": "_none_",
+          "nestedRelatedProperties": [{
+              "propertiesSource": {
+                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
+                "direction": "Forward"
+              }
+            }]
+        }]
+    }]
+}
+```
+
+| Value of `"properties"` attribute | before                                                                                                                            | after                                                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `"_none_"`                        | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
+| `["UserLabel"]`                   | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
+
+### Fixed a bug that prevented disabling `relatedProperties` specifications
+
+The bug made it impossible to remove related properties if a lower priority rule specified that the property should be included.
+
+For example, the [default BisCore supplemental ruleset](https://github.com/iTwin/itwinjs-core/blob/504a7b88e9ade29cc306bd55d093be1d76ddad43/presentation/backend/assets/supplemental-presentation-rules/BisCore.PresentationRuleSet.json#L372-L419) automatically includes `ExternalSourceAspect.Identifier` property to all Elements' content when they have such aspect. It's now possible to disable that rule using one of these approaches:
+
+- Set `"properties"` to `"_none_"` or `[]`:
+
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
+        },
+        "properties": "_none_"
+      }
+    ]
+  }
+  ```
+
+- Disable property display:
+
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
+        },
+        "properties": [{
+          "name": "Identifier",
+          "isDisplayed": false
+        }]
+      }
+    ]
+  }
+  ```
 
 ## ColorDef validation
 
