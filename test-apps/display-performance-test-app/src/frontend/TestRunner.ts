@@ -1155,6 +1155,9 @@ function getTileProps(props: TileAdmin.Props): string {
       case "enableIndexedEdges":
         if (!props[key]) tilePropsStr += "-idxEdg";
         break;
+      case "generateAllPolyfaceEdges":
+        if (!props[key]) tilePropsStr += "-pfEdg";
+        break;
     }
   }
 
