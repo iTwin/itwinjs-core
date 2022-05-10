@@ -3401,6 +3401,7 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
+    // @alpha
     Extensions = "core-frontend.Extensions",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
