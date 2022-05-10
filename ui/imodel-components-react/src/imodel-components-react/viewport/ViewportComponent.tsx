@@ -179,6 +179,7 @@ export function ViewportComponent(props: ViewportProps) {
     }
   };
 
+  // istanbul ignore next
   const handleWindowUnload = () => {
     const parentDiv = viewportDiv.current;
     if (parentDiv) {
