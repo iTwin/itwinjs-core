@@ -20,6 +20,7 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
 ## iModel Connector schemas
 
+- Use an existing element-class or type-definition class from a schema in the Discipline-Physical or Discipline-Other layers as target of the mapping done by an iModel Connector when possible.
 - Make use of Type-Definitions when appropriate in order to avoid an unnecessary large number of classes in a schema.
 - Categorize properties from the source format into:
 
@@ -28,3 +29,8 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
   3) **User-defined**. These should be captured by an *Aspect* class in a dynamic schema (generated at runtime).
 
 Another way to think about it is to ask if a given set of properties would appear on many different classes. If there is a single natural "base class" for all of the classes that need those properties and only classes that need those properties, then it makes sense to add the properties to that *Element Class or* its related *TypeDefinition* class. Otherwise, it may be better to use an *Aspect* class.
+
+- Regarding concepts whose semantics are not well understood by the iModel Connector, they can be addressed by either:
+
+  1) Targeting the appropriate class from the `Generic` schema, or,
+  2) Directly subclassing the appropriate base-class from the `BisCore` schema if Standard-intrinsic properties need to be introduced on such concept. Avoid introducing an intermediate base-class for this kind of subclasses. They will get in the way of re-targeting a more appropriate base-class from a schema in the Discipline-Physical or Discipline-Other layers if the iModel Connector is able to understand the concept's semantics at a later time.
