@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Map tiles need to retain their textures longer than reality mesh geometry will if it disposes of everything when requested. These changes make reality meshes that are maps hold onto their textures.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
