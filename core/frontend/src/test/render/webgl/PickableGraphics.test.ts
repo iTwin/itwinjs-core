@@ -77,7 +77,7 @@ describe("Pickable graphic", () => {
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
-  });
+  }).timeout(20000); // macOS is slow.
 
   it("can contain multiple features", () => {
     expect(viewport.viewFlags.constructions).to.be.false;
@@ -118,5 +118,5 @@ describe("Pickable graphic", () => {
     viewport.setNeverDrawn(new Set<string>([leftId]));
     expectColors(viewport, [rightColor, bgColor]);
     expectIds([rightId]);
-  });
-}).timeout(20000); // macOS is slow.
+  }).timeout(20000); // macOS is slow.
+});
