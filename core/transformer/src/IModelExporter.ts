@@ -811,22 +811,19 @@ class ChangedInstanceIds {
     const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     const changedInstanceIds = new ChangedInstanceIds();
-    changesets.forEach((changeset): void => {
-      const changesetPath = changeset.pathname;
-      const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-      if (statusOrResult.error) {
-        throw new IModelError(statusOrResult.error.status, "Error processing changeset");
-      }
-      if (statusOrResult.result && statusOrResult?.result !== "") {
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
-        changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
-        changedInstanceIds.model.addFromJson(result.model);
-        changedInstanceIds.element.addFromJson(result.element);
-        changedInstanceIds.aspect.addFromJson(result.aspect);
-        changedInstanceIds.relationship.addFromJson(result.relationship);
-        changedInstanceIds.font.addFromJson(result.font);
-      }
-    });
+    const changesetFiles = changesets.map((c) => c.pathname);
+    const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSets(changesetFiles);
+    if (statusOrResult.error) {
+      throw new IModelError(statusOrResult.error.status, "Error processing changeset");
+    }
+    const result = statusOrResult.result;
+    assert(result !== undefined);
+    changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
+    changedInstanceIds.model.addFromJson(result.model);
+    changedInstanceIds.element.addFromJson(result.element);
+    changedInstanceIds.aspect.addFromJson(result.aspect);
+    changedInstanceIds.relationship.addFromJson(result.relationship);
+    changedInstanceIds.font.addFromJson(result.font);
     return changedInstanceIds;
   }
 }
