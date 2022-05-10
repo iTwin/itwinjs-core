@@ -91,6 +91,48 @@ With the above ruleset, when creating children for `Child 1.2.1` node, the libra
 
 ## Display
 
+### Batching of pickable graphics
+
+[Pickable decorations]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) associate an [Id64String]($bentley) with a [RenderGraphic]($frontend), enabling the graphic to be interacted with using mouse or touch inputs and to have its [appearance overridden]($docs/learning/display/SymbologyOverrides.md). Previously, a [GraphicBuilder]($frontend) accepted only a single pickable Id. [Decorator]($frontend)s that produce many pickable objects were therefore required to create a separate graphic for each pickable Id. This can negatively impact display performance by increasing the number of draw calls.
+
+Now, [GraphicBuilder.activatePickableId]($frontend) and [GraphicBuilder.activateFeature]($frontend) enable any number of pickable objects can be batched together into one graphic, improving performance. The following simple example illustrates how to batch a pickable sphere and a pickable box into one graphic.
+
+```ts
+  class MyDecorator implements Decorator {
+    boxId: Id64String;
+    sphereId: Id64String;
+
+    public constructor(iModel: IModelConnection) {
+      // reserve pickable Ids for each of our features.
+      this.boxId = iModel.transientIds.next;
+      this.sphereId = iModel.transientIds.next;
+    }
+
+    public decorate(context: DecorateContext): void {
+      // We must supply a PickableGraphicOptions when creating the GraphicBuilder.
+      // Any geometry added to the builder will use this.boxId as its pickable Id.
+      const builder = context.createGraphic({
+        type: GraphicType.Scene,
+        pickable: { id: boxId },
+      };
+
+      // Add a box.
+      const box = Box.createRange(new Range3d(0, 0, 0, 1, 1, 1))!;
+      builder.addSolidPrimitive(box);
+
+      // Change the pickable Id. Any subsequently-added geometry will use this.sphereId as its pickable Id.
+      builder.activatePickableId(this.sphereId);
+
+      // Add a sphere.
+      const sphere = Sphere.createCenterRadius(new Point3d(0, 0, 0), 1)!;
+      builder.addSolidPrimitive(sphere);
+
+      // Add the finished graphic to the viewport.
+      context.addDecorationFromBuilder(builder);
+    }
+  }
+```
+
 ### Detecting integrated graphics
 
 Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
