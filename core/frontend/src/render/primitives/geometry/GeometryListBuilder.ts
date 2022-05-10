@@ -41,6 +41,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       analysisStyleDisplacement: this.analysisStyle?.displacement,
       viewIndependentOrigin: options.viewIndependentOrigin,
     });
+
+    if (this.pickable)
+      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
 
   public finish(): RenderGraphic {

@@ -180,7 +180,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const map = accum.toMeshBuilderMap(new GeometryOptions(GenerateEdges.No), 0.22);
+    const map = accum.toMeshBuilderMap(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(map.size).to.equal(2);
   });
 
@@ -221,7 +221,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const meshes = accum.toMeshes(new GeometryOptions(GenerateEdges.No), 0.22);
+    const meshes = accum.toMeshes(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(meshes.length).to.equal(2);
   });
 
@@ -262,7 +262,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphics = new Array<RenderGraphic>();
-    accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22);
+    accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
     expect(graphic instanceof Branch).to.be.true;
