@@ -30,7 +30,9 @@ export class WebAppRpcRequest extends RpcRequest {
   private _pathSuffix: string = "";
   private get _headers() { return this._request.headers as { [key: string]: string }; }
 
-  /** The maximum size permitted for an encoded component in a URhow do i know which a cumulative request size of 16 kb. An authorization header may also add considerably to the request size.
+  /** The maximum size permitted for an encoded component in a URL.
+   * Note that some backends limit the total cumulative request size. Our current node backends accept requests with a max size of 16 kb.
+   * In addition to the url size, an authorization header may also add considerably to the request size.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
   public static maxUrlComponentSize = 1024 * 8;
