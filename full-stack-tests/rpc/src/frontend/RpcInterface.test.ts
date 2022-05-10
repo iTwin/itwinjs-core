@@ -433,7 +433,6 @@ describe("RpcInterface", () => {
   });
 
   it("should be able to send large requests as get requests", async () => {
-    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
     // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
@@ -458,7 +457,6 @@ describe("RpcInterface", () => {
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
       return this.skip();
-    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
     const input = "test";
     let response: any;
     TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
