@@ -175,7 +175,7 @@ void (async () => {
           default: false,
         },
         cloneUsingJsonGeometry: {
-          desc: "clone using json geometry",
+          desc: "sets cloneUsingBinaryGeometry in the transformer options to true, which is slower but allows simple editing of geometry in javascript.",
           type: "boolean",
           default: false,
         },
