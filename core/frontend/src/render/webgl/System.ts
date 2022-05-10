@@ -528,15 +528,15 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return PlanarGridGeometry.create(frustum, grid, this);
   }
 
-  public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform): RealityMeshGeometry | undefined {
-    return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform);
+  public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform, disableTextureDisposal?: true): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform, disableTextureDisposal);
   }
 
-  public override createRealityMeshGraphic(params: RealityMeshGraphicParams): RenderGraphic | undefined {
-    return RealityMeshGeometry.createGraphic(this, params);
+  public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal?: true): RenderGraphic | undefined {
+    return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
-  public override createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
-    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);
+  public override createRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal?: true): RenderGraphic | undefined {
+    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
     return geom ? Primitive.create(geom) : undefined;
   }
 

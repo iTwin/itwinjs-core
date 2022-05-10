@@ -233,7 +233,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
   public get transform(): Transform | undefined { return this._transform; }
 
-  private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
+  private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean, private _disableTextureDisposal?: true) {
     super(_realityMeshParams);
     this.hasTextures = undefined !== textureParams && textureParams.params.some((x) => undefined !== x.texture);
   }
@@ -241,28 +241,29 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public override dispose() {
     super.dispose();
     dispose(this._realityMeshParams);
-    dispose(this.textureParams);
+    if (true !== this._disableTextureDisposal)
+      dispose(this.textureParams);
   }
 
-  public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
+  public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined, disableTextureDisposal?: true) {
     const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
-    return params ? new RealityMeshGeometry(params, undefined, transform, undefined, false, true) : undefined;
+    return params ? new RealityMeshGeometry(params, undefined, transform, undefined, false, true, disableTextureDisposal) : undefined;
   }
 
-  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive): RealityMeshGeometry | undefined {
+  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal?: true): RealityMeshGeometry | undefined {
     const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
     if (!params)
       return undefined;
     const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
-    return new RealityMeshGeometry(params, texture ? RealityTextureParams.create([texture]) : undefined, undefined, undefined, false, false);
+    return new RealityMeshGeometry(params, texture ? RealityTextureParams.create([texture]) : undefined, undefined, undefined, false, false, disableTextureDisposal);
   }
 
   public getRange(): Range3d {
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }
 
-  public static createGraphic(system: RenderSystem, params: RealityMeshGraphicParams): RenderGraphic | undefined {
+  public static createGraphic(system: RenderSystem, params: RealityMeshGraphicParams, disableTextureDisposal?: true): RenderGraphic | undefined {
     const meshes = [];
     const textures = params.textures ?? [];
     const realityMesh = params.realityMesh as RealityMeshGeometry;
@@ -283,7 +284,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
     if (layers.length < 2 && !layerClassifiers?.size && textures.length < texturesPerMesh) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
-      meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
+      meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain, disableTextureDisposal));
     } else {
       let primaryLayer;
       while (primaryLayer === undefined)
@@ -319,10 +320,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
           }
         }
         while (layerTextures.length > texturesPerMesh) {
-          meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
+          meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain, disableTextureDisposal));
           layerTextures = layerTextures.slice(texturesPerMesh);
         }
-        meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
+        meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain, disableTextureDisposal));
       }
     }
 
