@@ -3,7 +3,7 @@
     "../scripts/copy-test-setup-noreact.js",
     "raf/polyfill",
     "source-map-support/register",
-    "global-jsdom/register",
+    "jsdom-global/register",
     "ignore-styles"
   ],
   "checkLeaks": true,

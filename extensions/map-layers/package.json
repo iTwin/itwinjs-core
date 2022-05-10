@@ -118,7 +118,7 @@
       "scripts/copy-test-setup.js",
       "raf/polyfill",
       "source-map-support/register",
-      "global-jsdom/register",
+      "jsdom-global/register",
       "ignore-styles"
     ],
     "checkLeaks": true,

@@ -149,7 +149,7 @@
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
-      "global-jsdom/register",
+      "jsdom-global/register",
       "source-map-support/register",
       "ts-node/register"
     ],

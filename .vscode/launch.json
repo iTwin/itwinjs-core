@@ -576,7 +576,7 @@
         "-r",
         "ignore-styles",
         "-r",
-        "global-jsdom/register",
+        "jsdom-global/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
@@ -597,7 +597,7 @@
         "../.mocharc.json",
         "--no-timeouts",
         "-r",
-        "global-jsdom/register",
+        "jsdom-global/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
@@ -641,7 +641,7 @@
         "-r",
         "ignore-styles",
         "-r",
-        "global-jsdom/register",
+        "jsdom-global/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [

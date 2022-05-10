@@ -49,7 +49,7 @@
     ],
     "require": [
       "source-map-support/register",
-      "global-jsdom/register"
+      "jsdom-global/register"
     ],
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
