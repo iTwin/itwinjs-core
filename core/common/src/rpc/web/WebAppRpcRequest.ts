@@ -300,7 +300,7 @@ export class WebAppRpcRequest extends RpcRequest {
         res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
       } else if (request.operation.operationName === "getTileCacheContainerUrl") {
         // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
-        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 16}, max-age=${oneHourInSeconds * 16}, immutable`);
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 23}, max-age=${oneHourInSeconds * 23}, immutable`);
       } else {
         res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=${oneHourInSeconds * 48}, immutable`);
       }
