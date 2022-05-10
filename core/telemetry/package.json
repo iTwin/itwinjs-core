@@ -1,11 +1,10 @@
 {
   "name": "@itwin/core-telemetry",
-  "version": "3.1.0-dev.12",
+  "version": "3.2.0-dev.69",
   "description": "iTwin.js Telemetry Client",
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
   "typings": "lib/cjs/core-telemetry",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

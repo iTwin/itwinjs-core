@@ -18,6 +18,7 @@ import { useTransientState } from "./ContentRenderer";
 export interface ScrollableWidgetContentProps {
   /** Optional unique identifier for item. If defined it will be added to DOM Element attribute as data-item-id */
   itemId?: string;
+  providerId?: string;
   children?: React.ReactNode;
 }
 
@@ -41,6 +42,7 @@ export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(
   return (
     <div
       data-item-id={props.itemId}
+      data-item-provider-id={props.providerId}
       data-item-type="widget-content"
       className="nz-widget-content"
       ref={ref}

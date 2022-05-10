@@ -16,11 +16,12 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapLayerFeatureInfo, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public
+ * @extensions
  */
 export enum TileGraphicType {
   /** Rendered behind all other geometry without depth. */
@@ -40,6 +41,7 @@ export enum TileGraphicType {
  * differing levels of transparency.
  * @see [[TiledGraphicsProvider]] to supply custom [[TileTreeReference]]s to be drawn within a [[Viewport]].
  * @public
+ * @extensions
  */
 export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed at any time. */
@@ -69,6 +71,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Optionally return a tooltip describing the hit. */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+
+  /** Optionally return a MapLayerFeatureInfo object describing the hit.].
+   * @alpha
+   */
+  public async getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.

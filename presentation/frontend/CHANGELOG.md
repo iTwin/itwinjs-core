@@ -1,6 +1,70 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+_Version update only_
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+### Updates
+
+- Fix paged requests result accumulation resulting in infinite loop.
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- fix code for breaking change to .query() method
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- fix ecsql row format
+- getAccessToken always returns a token
+- rename contextId -> iTwinId
+- rename to @itwin/presentation-frontend
+- remove ClientRequestContext and its subclasses
+- Allow supplying `SelectionManager` and `FavoritePropertiesManager` props when initializing `Presentation`.
+- Change default `IFavoritePropertiesStorage` implementation to no-op and provide ability to choose another one when initializing `Presentation`.
+- Clean up deprecated APIs
+- Added API to get properties of all elements.
+- Fix hilite set provider somtimes caching results with wrong GUID, causing invalid hilite set being returned afterwards.
+- Added `PresentationManager.getContentSources` API to retrieve information about where content for specific types of elements comes from.
+- Fix `RulesetVariablesManager.onVariableChanged` event not being fired when a mutable value is set.
+- Remove ability to get multiple element properties in frontend.
+- Add `getContentInstanceKeys` RPC to efficiently get content instance keys.
+- Remove `PresentationManager.loadHierarchy` API.
+- Changed uses of `PresentationUnitSystem` to `UnitSystemKey`.
+- Replace usage of I18N with generic Localization interface.
+- Switching to consume new Projects-Client
+-  Renamed an iModel's parent container to iTwin
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -327,7 +391,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets.
+- Changed 'compareHierarchy' to build result in pages for massive result sets. 
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -770,7 +834,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

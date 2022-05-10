@@ -1,11 +1,10 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "3.1.0-dev.12",
+  "version": "3.2.0-dev.69",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
   "typings": "lib/cjs/presentation-frontend",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -42,11 +41,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.12",
-    "@itwin/core-common": "workspace:^3.1.0-dev.12",
-    "@itwin/core-frontend": "workspace:^3.1.0-dev.12",
-    "@itwin/core-quantity": "workspace:^3.1.0-dev.12",
-    "@itwin/presentation-common": "workspace:^3.1.0-dev.12"
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.69",
+    "@itwin/core-common": "workspace:^3.2.0-dev.69",
+    "@itwin/core-frontend": "workspace:^3.2.0-dev.69",
+    "@itwin/core-quantity": "workspace:^3.2.0-dev.69",
+    "@itwin/presentation-common": "workspace:^3.2.0-dev.69"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -75,7 +74,7 @@
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
     "jsdom": "^19.0.0",
-    "global-jsdom": "8.4.0",
+    "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

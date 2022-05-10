@@ -298,6 +298,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
+  public override wantMixMonochromeColor(target: Target): boolean { return this._repr.wantMixMonochromeColor(target); }
 
   public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;

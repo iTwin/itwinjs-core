@@ -5,40 +5,9 @@
 import "./ViewItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ThumbnailProps, ViewDefinitionProps } from "@itwin/core-common";
+import { ViewDefinitionProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CommonProps, LoadingSpinner } from "@itwin/core-react";
-
-class ThumbnailCache {
-  private static _thumbnails: Map<string, ThumbnailProps | undefined> = new Map<string, ThumbnailProps>();
-
-  /** Caches thumbnails */
-  public static async getThumbnail(iModelConnection: IModelConnection | undefined, viewProps: ViewDefinitionProps) {
-    const viewId = viewProps.id!;
-    // eslint-disable-next-line no-console
-    console.log(`Retrieving thumbnail for iModel=${iModelConnection!.name} view=${viewId}`);
-
-    if (ThumbnailCache._thumbnails.has(viewId.toString()))
-      return ThumbnailCache._thumbnails.get(viewId.toString());
-    else if (iModelConnection) {
-      let thumbnail: ThumbnailProps | undefined;
-      try {
-        thumbnail = await iModelConnection.views.getThumbnail(viewProps.id!);
-      } catch {
-        if (!thumbnail) {
-          // eslint-disable-next-line no-console
-          console.log("Failed to obtain a thumbnail from the iModel");
-        }
-      }
-
-      // There are cases where the file may not have a thumbnail for the view
-      // Set even if undefined so that we avoid querying over and over again
-      ThumbnailCache._thumbnails.set(viewId.toString(), thumbnail);
-      return thumbnail;
-    }
-    return undefined;
-  }
-}
 
 /** Properties for [[ViewItem]] component
  * @internal
@@ -79,14 +48,6 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
 
   /** Load thumbnail from the iModelConnection if necessary */
   public override async componentDidMount() {
-    if (this.props.showThumbnail) {
-      const thumbnail = await ThumbnailCache.getThumbnail(this.props.iModelConnection, this.props.viewProps);
-      if (thumbnail) {
-        const blob = new Blob([thumbnail.image], { type: `image/${thumbnail.format}` });
-        // Load thumbnails
-        this.setState({ thumbnail: URL.createObjectURL(blob) });
-      }
-    }
     this.setState({ waitingForThumbnail: false });
   }
 

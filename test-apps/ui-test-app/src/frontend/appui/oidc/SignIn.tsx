@@ -105,7 +105,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
             <span className="components-signin-prompt">{this.state.prompt}</span>
           }
           <Button className="components-signin-button" styleType="cta" disabled={this.state.isSigningIn && disableSignInOnClick}
-            onClick={this._onSignInClick} onKeyUp={(e) => this._handleKeyUp(e, this._onSigningIn)}>
+            onClick={this._onSignInClick} onKeyUp={(e: React.KeyboardEvent<HTMLButtonElement>) => this._handleKeyUp(e, this._onSigningIn)}>
             {this.state.signInButton}
           </Button>
           {this.props.onRegister !== undefined &&

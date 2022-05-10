@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BisCore.RepositoryLink`] = `
+Array [
+  PropertyRecord {
+    "description": "DgnV8Bridge",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Model",
+      "name": "pc_bis_Element_Model",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": Object {
+        "className": "BisCore:RepositoryModel",
+        "id": "0x1",
+      },
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+    "property": Object {
+      "displayLabel": "URL",
+      "name": "pc_bis_UrlLink_Url",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      "valueFormat": 0,
+    },
+  },
+]
+`;

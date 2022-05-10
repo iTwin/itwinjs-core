@@ -87,7 +87,6 @@ class PolylineVertex {
 
 class PolylineTesselator {
   private _polylines: PolylineData[];
-  private _points: QPoint3dList;
   private _doJoints: boolean;
   private _numIndices = 0;
   private _vertIndex: number[] = [];
@@ -96,9 +95,15 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
 
-  public constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
+  public constructor(polylines: PolylineData[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
     this._polylines = polylines;
-    this._points = points;
+    if (points instanceof QPoint3dList) {
+      for (const p of points.list)
+        this._position.push(p.unquantize(points.params));
+    } else {
+      this._position = points;
+    }
+
     this._doJoints = doJointTriangles;
   }
 
@@ -107,16 +112,13 @@ class PolylineTesselator {
   }
 
   public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
-    if (undefined !== args.edges.polylines.lines && undefined !== args.points)
-      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, args.is2d));
+    if (undefined !== args.edges?.polylines.lines && undefined !== args.points)
+      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, true === args.is2d));
 
     return undefined;
   }
 
   public tesselate(): TesselatedPolyline {
-    for (const p of this._points.list)
-      this._position.push(p.unquantize(this._points.params));
-
     this._tesselate();
 
     const vertIndex = VertexIndices.fromArray(this._vertIndex);

@@ -24,6 +24,7 @@ class TileRequestQueue extends PriorityQueue<TileRequest> {
  * @see [[TileRequestChannels.statistics]] for statistics from all channels.
  * @see [[TileAdmin.statistics]] for additional statistics.
  * @public
+ * @extensions
  */
 export class TileRequestChannelStatistics {
   /** The number of queued requests that have not yet been dispatched. */
@@ -75,6 +76,7 @@ export class TileRequestChannelStatistics {
  * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[Tile.channel]] to specify the channel to be used to request a given tile's content.
  * @public
+ * @extensions
  */
 export class TileRequestChannel {
   /** The channel's name. It must be unique among all registered [[TileRequestChannels]]. */

@@ -1,6 +1,7 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "outDir": "./lib",
     "types": [
       "@bentley/react-scripts"

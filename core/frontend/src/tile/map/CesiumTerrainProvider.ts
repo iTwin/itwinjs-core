@@ -76,14 +76,14 @@ function notifyTerrainError(detailedDescription?: string): void {
     return;
 
   notifiedTerrainError = true;
-  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`BackgroundMap.CannotObtainTerrain`), detailedDescription);
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
 }
 
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
-    notifyTerrainError(IModelApp.localization.getLocalizedString(`BackgroundMap.MissingCesiumToken`));
+    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
   }
 

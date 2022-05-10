@@ -9,9 +9,9 @@ import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
+  BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
+  MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -25,6 +25,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
+import { GeometricModelState } from "./ModelState";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -36,6 +37,7 @@ export class TerrainDisplayOverrides {
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public
+ * @extensions
  */
 export interface OsmBuildingDisplayOptions {
   /** If defined, enables or disables display of the buildings by attaching or detaching the OpenStreetMap Buildings reality model. */
@@ -46,6 +48,7 @@ export interface OsmBuildingDisplayOptions {
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
+ * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
@@ -217,12 +220,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;
-    if (base instanceof ColorDef)
-      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
-    else
+    if (base instanceof ColorDef) {
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(BackgroundMapProvider.fromJSON(props));
+    } else {
+      const provider = base.provider ? base.provider.clone(props) : BackgroundMapProvider.fromJSON(props);
       this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+    }
 
     this._synchBackgroundMapImagery();
   }
@@ -414,13 +418,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean {
-    return -1 !== this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean {
+    return -1 !== this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
   }
 
   /** @internal */
-  public detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void {
-    const index = this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
+    const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
     if (- 1 !== index)
       this.detachMapLayerByIndex(index, isOverlay);
   }
@@ -439,8 +443,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
-    return this.getMapLayers(isOverlay).findIndex((x) => x.matchesNameAndUrl(name, url));
+  public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
+    return this.getMapLayers(isOverlay).findIndex((layer) => layer.matchesNameAndSource(name, source));
   }
 
   /** @internal */
@@ -479,14 +483,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
-    layers[index].setCredentials(userName, password);
-    this._synchBackgroundMapImagery();
+    const layer = layers[index];
+    if (layer instanceof ImageMapLayerSettings) {
+      layer.setCredentials(userName, password);
+      this._synchBackgroundMapImagery();
+    }
   }
 
   public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;
+
+    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
+      assert (false);
+      return;
+    }
 
     const subLayers = new Array<MapSubLayerProps>();
     for (const subLayer of mapLayerSettings.subLayers) {
@@ -501,6 +513,24 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return undefined;
+
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      const ecefTransform = this.iModel.ecefLocation?.getTransform();
+      if (!ecefTransform)
+        return undefined;
+      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
+      if (!model || !(model instanceof GeometricModelState))
+        return undefined;
+
+      const modelRange = await model.queryModelRange();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
+
+      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
+    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
+      assert(false);
+      return undefined;
+    }
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
     if (undefined === imageryProvider)
@@ -759,6 +789,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 /** A display style that can be applied to 2d views.
  * @public
+ * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
@@ -779,6 +810,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
+ * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */

@@ -7,6 +7,7 @@ import {
   DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
   WipRpcInterface,
 } from "@itwin/core-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
@@ -55,4 +56,5 @@ export const rpcInterfaces = [
   WipRpcInterface,
   DevToolsRpcInterface,
   EventsTestRpcInterface,
+  ECSchemaRpcInterface,
 ];

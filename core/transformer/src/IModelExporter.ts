@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
@@ -65,6 +65,14 @@ export abstract class IModelExportHandler {
    * @note This should be overridden to actually do the export.
    */
   public onExportElement(_element: Element, _isUpdate: boolean | undefined): void { }
+
+  /**
+   * Do any asynchronous actions before exporting an element
+   * @note Do not implement this handler manually, it is internal, it will be removed.
+   *       This will become a part of onExportElement once that becomes async
+   * @internal
+   */
+  public async preExportElement(_element: Element): Promise<void> {}
 
   /** Called when an element should be deleted. */
   public onDeleteElement(_elementId: Id64String): void { }
@@ -440,6 +448,8 @@ export class IModelExporter {
     return this.trackProgress();
   }
 
+  private _yieldManager = new YieldManager();
+
   /** Export the model contents.
    * @param modelId The only required parameter
    * @param elementClassFullName Can be optionally specified if the goal is to export a subset of the model contents
@@ -475,6 +485,7 @@ export class IModelExporter {
       }
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         await this.exportElement(statement.getValue(0).getId());
+        await this._yieldManager.allowYield();
       }
     });
   }
@@ -561,6 +572,7 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
+      await this.handler.preExportElement(element);
       this.handler.onExportElement(element, isUpdate);
       await this.trackProgress();
       await this.exportElementAspects(elementId);
@@ -638,6 +650,7 @@ export class IModelExporter {
         const relInstanceId: Id64String = statement.getValue(0).getId();
         const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
         await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+        await this._yieldManager.allowYield();
       }
     });
   }
@@ -715,10 +728,10 @@ class ChangedInstanceIds {
     changesets.forEach((changeset): void => {
       const changesetPath = changeset.pathname;
       const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-      if (undefined !== statusOrResult.error) {
+      if (statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeset");
       }
-      if ("" !== statusOrResult.result) {
+      if (statusOrResult.result && statusOrResult?.result !== "") {
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
         changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
         changedInstanceIds.model.addFromJson(result.model);

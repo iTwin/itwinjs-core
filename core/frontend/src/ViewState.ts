@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
   ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
@@ -46,6 +47,7 @@ import { EnvironmentDecorations } from "./EnvironmentDecorations";
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
+ * @extensions
  */
 export interface ExtentLimits {
   /** The smallest allowed extent in any dimension. */
@@ -157,7 +159,15 @@ const scratchRange2dIntersect = Range2d.createNull();
  * @internal
  */
 export interface AttachToViewportArgs {
+  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
   invalidateDecorations: () => void;
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   */
+  drawingToSheetTransform?: Transform;
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
@@ -167,6 +177,7 @@ export interface AttachToViewportArgs {
  * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
+ * @extensions
  */
 export abstract class ViewState extends ElementState {
   /** @internal */
@@ -321,21 +332,39 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /**
+   * Populates the hydrateRequest object stored on the ViewState with:
+   *  not loaded categoryIds based off of the ViewStates categorySelector.
+   *  Auxiliary coordinate system id if valid.
+   */
+  protected preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValid(acsId))
+      hydrateRequest.acsId = acsId;
+    this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
+  }
+
   /** Asynchronously load any required data for this ViewState from the backend.
+   * FINAL, No subclass should override load. If additional load behavior is needed, see preload and postload.
    * @note callers should await the Promise returned by this method before using this ViewState.
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    const hydrateRequest: HydrateViewStateRequestProps = {};
+    this.preload(hydrateRequest);
     const promises = [
-      this.loadAcs(),
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest),
       this.displayStyle.load(),
     ];
+    const result = await Promise.all<any>(promises);
+    const hydrateResponse = result[0];
+    await this.postload(hydrateResponse);
+  }
 
-    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
-    if (undefined !== subcategories)
-      promises.push(subcategories.promise.then((_) => { }));
-
-    await Promise.all(promises);
+  protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    this.iModel.subcategories.postload(hydrateResponse);
+    if (hydrateResponse.acsElementProps)
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -740,7 +769,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`iModelJs:Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -1278,6 +1307,7 @@ export abstract class ViewState extends ElementState {
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  * @public
+ * @extensions
  */
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
@@ -1455,7 +1485,7 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
 
-    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
@@ -2149,6 +2179,7 @@ export abstract class ViewState3d extends ViewState {
 
 /** Defines the state of a view of a single 2d model.
  * @public
+ * @extensions
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
@@ -2236,9 +2267,20 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.iModel.models.load(this.baseModelId);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
+      hydrateRequest.baseModelId = this.baseModelId;
+  }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.baseModelProps !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
+    await Promise.all(promises);
   }
 
   /** Provides access to optional detail settings for this view. */

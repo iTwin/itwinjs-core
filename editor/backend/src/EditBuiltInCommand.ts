@@ -176,7 +176,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       elementId,
     };
 
-    if (DbResult.BE_SQLITE_OK !== this.iModel.elementGeometryRequest(requestProps))
+    if (IModelStatus.Success !== this.iModel.elementGeometryRequest(requestProps))
       return undefined;
 
     return accepted;

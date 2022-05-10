@@ -8,14 +8,14 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
   PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
   SingleElementPropertiesRequestOptions,
@@ -30,7 +30,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey } from "./Utils";
+import { getElementKey, getLocalesDirectory } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -240,6 +240,8 @@ export interface PresentationManagerProps {
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
+   *
+   * @deprecated Use [[PresentationPropsBase.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
@@ -312,7 +314,6 @@ export class PresentationManager {
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
   private _isDisposed: boolean;
-  private _disposeIModelOpenedListener?: () => void;
   private _updatesTracker?: UpdatesTracker;
   private _onManagerUsed?: () => void;
 
@@ -358,9 +359,6 @@ export class PresentationManager {
 
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
 
-    if (this._props.enableSchemasPreload)
-      this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
-
     if (IpcHost.isValid && isChangeTrackingEnabled) {
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
@@ -377,9 +375,6 @@ export class PresentationManager {
       this.getNativePlatform().dispose();
       this._nativePlatform = undefined;
     }
-
-    if (this._disposeIModelOpenedListener)
-      this._disposeIModelOpenedListener();
 
     if (this._updatesTracker) {
       this._updatesTracker.dispose();
@@ -409,13 +404,6 @@ export class PresentationManager {
   public vars(rulesetId: string): RulesetVariablesManager {
     return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
   }
-
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelOpened = (imodel: BriefcaseDb) => {
-    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.getNativePlatform().forceLoadSchemas(imodelAddon);
-  };
 
   /** @internal */
   public getNativePlatform = (): NativePlatformDefinition => {

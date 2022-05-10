@@ -390,7 +390,6 @@ describe("DisplayStyleSettings overrides", () => {
     mapImagery: {
       backgroundBase: {
         formatId: "BingMaps",
-        isBase: true,
         name: "Bing Maps: Aerial Imagery",
         provider: {
           name: "BingProvider",

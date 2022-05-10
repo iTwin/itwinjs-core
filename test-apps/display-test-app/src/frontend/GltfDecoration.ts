@@ -13,9 +13,9 @@ class GltfDecoration {
   private readonly _tooltip: string;
   private readonly _pickableId?: string;
 
-  public constructor(graphic: RenderGraphic, tooltip: string, pickableId?: string) {
+  public constructor(graphic: RenderGraphic, tooltip: string | undefined, pickableId?: string) {
     this._graphic = graphic;
-    this._tooltip = tooltip;
+    this._tooltip = tooltip ?? "glTF model";
     this._pickableId = pickableId;
   }
 
@@ -40,24 +40,42 @@ class GltfDecoration {
  */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
-  public static override get minArgs() { return 1; }
+  public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
   public override async parseAndRun(...args: string[]) {
     return this.run(args[0]);
   }
 
-  public override async run(url?: string) {
-    if ("string" !== typeof url)
-      return false;
+  private async queryAsset(url?: string): Promise<ArrayBuffer | undefined> {
+    if (url) {
+      const response = await fetch(url);
+      return response.arrayBuffer();
+    }
 
+    // No url specified - choose an asset from local file system.
+    const [handle] = await (window as any).showOpenFilePicker({
+      types: [
+        {
+          description: "glTF",
+          accept: { "model/*": [".gltf", ".glb"] },
+        },
+      ],
+    });
+
+    const file = await handle.getFile();
+    return file.arrayBuffer();
+  }
+
+  public override async run(url?: string) {
     const iModel = IModelApp.viewManager.selectedView?.iModel;
     if (!iModel)
       return false;
 
     try {
-      const response = await fetch(url);
-      const buffer = await response.arrayBuffer();
+      const buffer = await this.queryAsset(url);
+      if (!buffer)
+        return false;
 
       // Convert the glTF into a RenderGraphic.
       const id = iModel.transientIds.next;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added public method IModelConnection.getMassPropertiesPerCandidate.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

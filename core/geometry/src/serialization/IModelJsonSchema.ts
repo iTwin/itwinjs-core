@@ -117,6 +117,10 @@ export namespace IModelJson {
     uKnots: [number];
     /** Array of knots for the v direction bspline */
     vKnots: [number];
+    /** optional flag for periodic data in the u parameter direction */
+    closedU?: boolean;
+    /** optional flag for periodic data in the v parameter direction */
+    closedV?: boolean;
   }
 
   /**

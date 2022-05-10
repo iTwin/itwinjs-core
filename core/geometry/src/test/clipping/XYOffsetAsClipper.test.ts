@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable no-console */
 
 import { expect } from "chai";
 import * as fs from "fs";
@@ -34,6 +35,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Loop } from "../../curve/Loop";
+import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
 
 function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], clipper: UnionOfConvexClipPlaneSets,
   x0: number,
@@ -504,6 +506,7 @@ describe("OffsetByClip", () => {
   it("IncompletePasteWithDoublePoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    // A backwards C with an almost-doubled start point
     const shard0: Point3d[] = [
       Point3d.create(1, 1.0000000000000007, 0),
       Point3d.create(1.0000000000000004, 1, 0),
@@ -524,26 +527,40 @@ describe("OffsetByClip", () => {
       Point3d.create(2, 1.5, 0),
     ];
 
+    // The backward C without the doubled start point
     const shard0A = Point3dArray.clonePoint3dArray(shard0);
     shard0A.shift();
+    // The backward C with doubled start but less fuzz in y. .
     const shard0B = Point3dArray.clonePoint3dArray(shard0);
     shard0B[0].y = 1.0;
     shard0B[1].y = 1.0;
+    // The backward C with doubled start, move both starts down off the horizontal
     const shard0C = Point3dArray.clonePoint3dArray(shard0);
     shard0C[0].y -= 0.5;
     shard0C[1].y -= 0.5;
 
     let y0 = 0;
     let x0 = 0;
+    const showVertexNeighborhoods = false;
+    const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
+      console.log({ nodeCount: edgeData.length });
+      for (const data of edgeData) {
+        console.log (` id: ${data.node.id}  x: ${  data.node.x}, y: ${  data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+      }
+    };
     for (const candidates of [
       [shard0, shard1],
       [shard0A, shard1],
       [shard0B, shard1],
       [shard0C, shard1],
+      [shard0A, shard1A],
       [shard0, shard1A],
     ]) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, candidates, x0, y0);
+      if (showVertexNeighborhoods)
+        HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = vertexNeighborhoodFunction;
       const insidePieces = RegionOps.polygonBooleanXYToLoops(candidates, RegionBinaryOpType.Union, []);
+      HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = undefined;
       ck.testType(insidePieces, Loop, "Expect single loop for pasting.");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, insidePieces, x0, y0 += 5);
       y0 = 0;

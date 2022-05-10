@@ -7,16 +7,18 @@
  */
 
 import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { FontId } from "../Fonts";
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensions
  */
 export interface TextStringProps {
   /** text string */
   text: string;
-  /** font number. Font numbers are mapped to font names and types via the FontMap */
-  font: number;
+  /** FontId for the TextString. FontIds are mapped to font names and types via the FontMap */
+  font: FontId;
   /* text height */
   height: number;
   /*  width / height ratio. Default is 1.0 */
@@ -41,8 +43,8 @@ export interface TextStringProps {
 export class TextString {
   /** Text string */
   public text: string;
-  /** font number. Font numbers are mapped to font names and types via the FontMap */
-  public font: number;
+  /** FontId for this TextString. FontIds are mapped to font names and types via the FontMap */
+  public font: FontId;
   /* text height, in meters */
   public height: number;
   /*  width / height ratio. Default is 1.0 */

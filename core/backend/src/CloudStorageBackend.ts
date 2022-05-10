@@ -17,6 +17,7 @@ import { IModelHost } from "./IModelHost";
 export interface AzureBlobStorageCredentials {
   account: string;
   accessKey: string;
+  baseUrl?: string;
 }
 
 /** @beta */
@@ -44,6 +45,7 @@ export abstract class CloudStorageService {
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
   private _credential: Azure.StorageSharedKeyCredential;
+  private _baseUrl: string;
 
   public constructor(credentials: AzureBlobStorageCredentials) {
     super();
@@ -52,10 +54,12 @@ export class AzureBlobStorage extends CloudStorageService {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
 
+    this._baseUrl = credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`;
+
     this._credential = new Azure.StorageSharedKeyCredential(credentials.account, credentials.accessKey);
     const options: Azure.StoragePipelineOptions = {};
     const pipeline = Azure.newPipeline(this._credential, options);
-    this._service = new Azure.BlobServiceClient(`https://${credentials.account}.blob.core.windows.net`, pipeline);
+    this._service = new Azure.BlobServiceClient(this._baseUrl, pipeline);
   }
 
   public readonly id = CloudStorageProvider.Azure;
@@ -72,15 +76,18 @@ export class AzureBlobStorage extends CloudStorageService {
     }
 
     const token = Azure.generateBlobSASQueryParameters(policy, this._credential);
+    const url = new URL(this._baseUrl);
+    url.pathname = `${url.pathname.replace(/\/*$/, "")}/${id.name}`;
+    url.search = token.toString();
 
-    const url: CloudStorageContainerUrl = {
+    const urlObject: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
       valid: 0,
       expires: expiry.getTime(),
-      url: `https://${this._credential.accountName}.blob.core.windows.net/${id.name}?${token.toString()}`,
+      url: url.toString(),
     };
 
-    return url;
+    return urlObject;
   }
 
   public async ensureContainer(name: string): Promise<void> {

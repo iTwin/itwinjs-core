@@ -7,14 +7,14 @@
  */
 
 import { assert, ByteStream } from "@itwin/core-bentley";
-import { Point3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
+import { ScreenViewport, Viewport } from "../Viewport";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, GltfWrapMode, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
@@ -38,7 +38,7 @@ export abstract class RealityTileLoader {
 
   public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
-    return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
+    return RealityTileLoader.computeTileLocationPriority(tile, viewports, tile.tree.iModelTransform);
   }
 
   public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
@@ -82,6 +82,9 @@ export abstract class RealityTileLoader {
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+    if (reader)
+      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+
     return { geometry: reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform) };
   }
 
@@ -95,7 +98,7 @@ export abstract class RealityTileLoader {
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        let graphic = readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
         if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);
@@ -133,6 +136,9 @@ export abstract class RealityTileLoader {
 
     let content: TileContent = {};
     if (undefined !== reader) {
+      // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
+      // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
+      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {
@@ -146,14 +152,45 @@ export abstract class RealityTileLoader {
 
   public get viewFlagOverrides(): ViewFlagOverrides { return defaultViewFlagOverrides; }
 
-  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
-    // Prioritize tiles closer to eye.
-    // NB: In NPC coords, 0 = far plane, 1 = near plane.
-    const center = location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+  public static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
+    // Compute a priority value for tiles that are:
+    // * Closer to the eye;
+    // * Closer to the center of attention (center of the screen or zoom target).
+    // This way, we can load in priority tiles that are more likely to be important.
+    let center: Point3d | undefined;
     let minDistance = 1.0;
+
+    const currentInputState = IModelApp.toolAdmin.currentInputState;
+    const now = Date.now();
+    const wheelEventRelevanceTimeout = 1000; // Wheel events older than this value will not be considered
+
     for (const viewport of viewports) {
+      center = center ?? location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
-      const distance = 1.0 - npc.z;
+
+      let focusPoint = new Point2d(0.5, 0.5);
+
+      if (currentInputState.viewport === viewport && viewport instanceof ScreenViewport) {
+        // Try to get a better target point from the last zoom target
+        const {lastWheelEvent} = currentInputState;
+
+        if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
+          const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));
+
+          if (focusPointCandidate.x > 0 && focusPointCandidate.x < 1 && focusPointCandidate.y > 0 && focusPointCandidate.y < 1)
+            focusPoint = focusPointCandidate;
+        }
+      }
+
+      // NB: In NPC coords, 0 = far plane, 1 = near plane.
+      const distanceToEye = 1.0 - npc.z;
+      const distanceToCenter = Math.min(npc.distanceXY(focusPoint) / 0.707, 1.0); // Math.sqrt(0.5) = 0.707
+
+      // Distance is a mix of the two previously computed values, still in range [0; 1]
+      // We use this factor to determine how much the distance to the center of attention is important compared to distance to the eye
+      const distanceToCenterWeight = 0.3;
+      const distance = distanceToEye * (1.0 - distanceToCenterWeight) + distanceToCenter * distanceToCenterWeight;
+
       minDistance = Math.min(distance, minDistance);
     }
 

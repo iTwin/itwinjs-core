@@ -6,7 +6,9 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import {
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, Logger, utf8ToString,
+} from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
@@ -15,6 +17,7 @@ import {
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -22,11 +25,13 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
+import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
+import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -80,8 +85,10 @@ enum GltfMinFilter {
   LinearMipMapLinear = 9987,
 }
 
-/** Describes how texture coordinates outside of the range [0..1] are handled. */
-enum GltfWrapMode {
+/** Describes how texture coordinates outside of the range [0..1] are handled.
+ * @internal
+ */
+export enum GltfWrapMode {
   ClampToEdge = 33071,
   MirroredRepeat = 33648,
   Repeat = 10497,
@@ -138,6 +145,12 @@ interface GltfChildOfRootProperty extends GltfProperty {
   name?: string;
 }
 
+interface DracoMeshCompression {
+  bufferView: GltfId;
+  // TEXCOORD_0, POSITION, etc
+  attributes: { [k: string]: number | undefined };
+}
+
 /** A unit of geometry belonging to a [[GltfMesh]]. */
 interface GltfMeshPrimitive extends GltfProperty {
   /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
@@ -162,6 +175,11 @@ interface GltfMeshPrimitive extends GltfProperty {
        */
       indices?: GltfId;
     };
+    /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
+     * allows glTF to support geometry compressed with Draco geometry compression.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    KHR_draco_mesh_compression?: DracoMeshCompression;
   };
 }
 
@@ -291,7 +309,9 @@ interface GltfTextureInfo extends GltfProperty {
   texCoord?: number;
 }
 
-/** Describes a texture and its sampler. */
+/** Describes a texture and its sampler.
+ * @internal
+ */
 interface GltfTexture extends GltfChildOfRootProperty {
   /** The Id of the [[GltfSampler]] used by this texture.
    * If undefined, a sampler with repeat wrapping and auto filtering should be used by default.
@@ -306,8 +326,9 @@ interface GltfTexture extends GltfChildOfRootProperty {
 /** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]].
  * @note The implementation currently does not support MirroredRepeat and does not support different wrapping for U and V;
  * effectively, unless `wrapS` or `wrapT` is set to ClampToEdge, the sampler will use GltfWrapMode.Repeat.
+ * @internal
  */
-interface GltfSampler extends  GltfChildOfRootProperty {
+export interface GltfSampler extends  GltfChildOfRootProperty {
   /** Magnification filter. */
   magFilter?: GltfMagFilter;
   /** Minification filter. */
@@ -688,8 +709,8 @@ export class GltfReaderProps {
 }
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
-  * ContextCapture, then a RealityMesh is created directly from this data.  Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated.   The MeshPrimitve path is much less efficient but should be rarely used.
+  * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
+  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -885,6 +906,7 @@ export abstract class GltfReader {
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
+  private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -1018,9 +1040,9 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
+  private graphicFromMeshData(gltfMesh: GltfMeshData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return;
+      return gltfMesh.primitive.getGraphics(this._system, instances);
 
     const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
@@ -1031,6 +1053,7 @@ export abstract class GltfReader {
 
     const mesh = gltfMesh.primitive;
     const pointCount = gltfMesh.points.length / 3;
+    assert(mesh.points instanceof QPoint3dList);
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
     if (mesh.triangles && gltfMesh.indices)
       mesh.triangles.addFromTypedArray(gltfMesh.indices);
@@ -1045,7 +1068,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return mesh.getGraphics(meshGraphicArgs, this._system, instances);
+    return mesh.getGraphics(this._system, instances);
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
@@ -1071,17 +1094,16 @@ export abstract class GltfReader {
     for (const meshKey of getNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
-        const meshGraphicArgs = new MeshGraphicArgs();
         const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
 
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
           if (1 === meshes.length) {
-            renderGraphic = this.graphicFromMeshData(meshes[0], meshGraphicArgs, instances);
+            renderGraphic = this.graphicFromMeshData(meshes[0], instances);
           } else {
             const thisList: RenderGraphic[] = [];
             for (const mesh of meshes) {
-              renderGraphic = this.graphicFromMeshData(mesh, meshGraphicArgs, instances);
+              renderGraphic = this.graphicFromMeshData(mesh, instances);
               if (undefined !== renderGraphic)
                 thisList.push(renderGraphic);
             }
@@ -1410,6 +1432,7 @@ export abstract class GltfReader {
       isPlanar: false,
       hasBakedLighting,
       isVolumeClassifier,
+      quantizePositions: true,
     });
 
     const mesh = new GltfMeshData(meshPrimitive);
@@ -1438,16 +1461,9 @@ export abstract class GltfReader {
       }
     }
 
-    if (primitive.extensions?.KHR_draco_mesh_compression) {
-      return undefined; // Defer Draco decompression until web workers implementation.
-      /*
-      const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
-      const bufferView = this._bufferViews[dracoExtension.bufferView];
-      if (undefined === bufferView) return undefined;
-      const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
-
-      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes); */
-    }
+    const draco = primitive.extensions?.KHR_draco_mesh_compression;
+    if (draco)
+      return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
 
@@ -1502,6 +1518,70 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private readDracoMeshPrimitive(mesh: Mesh, ext: DracoMeshCompression): boolean {
+    const draco = this._dracoMeshes.get(ext);
+    if (!draco || "triangle-list" !== draco.topology)
+      return false;
+
+    const indices = draco.indices?.value;
+    if (!indices || (indices.length % 3) !== 0)
+      return false;
+
+    const pos = draco.attributes.POSITION?.value;
+    if (!pos || (pos.length % 3) !== 0)
+      return false;
+
+    // ###TODO: I have yet to see a draco-encoded mesh with interleaved attributes. Currently not checking.
+    const triangle = new Triangle();
+    for (let i = 0; i < indices.length; i += 3) {
+      triangle.setIndices(indices[i], indices[i + 1], indices[i + 2]);
+      mesh.addTriangle(triangle);
+    }
+
+    let posRange: Range3d;
+    const bbox = draco.header?.boundingBox;
+    if (bbox) {
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
+    } else {
+      posRange = Range3d.createNull();
+      for (let i = 0; i < pos.length; i += 3)
+        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+    }
+
+    assert(mesh.points instanceof QPoint3dList);
+    mesh.points.params.setFromRange(posRange);
+    const pt = Point3d.createZero();
+    for (let i = 0; i < pos.length; i += 3) {
+      pt.set(pos[i], pos[i + 1], pos[i + 2]);
+      mesh.points.add(pt);
+    }
+
+    const normals = draco.attributes.NORMAL?.value;
+    if (normals && (normals.length % 3) === 0) {
+      const vec = Vector3d.createZero();
+      for (let i = 0; i < normals.length; i += 3) {
+        vec.set(normals[i], normals[i + 1], normals[i + 2]);
+        mesh.normals.push(OctEncodedNormal.fromVector(vec));
+      }
+    }
+
+    const uvs = draco.attributes.TEXCOORD_0?.value;
+    if (uvs && (uvs.length & 2) === 0)
+      for (let i = 0; i < uvs.length; i += 2)
+        mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
+
+    const batchIds = draco.attributes._BATCHID?.value;
+    if (batchIds && mesh.features) {
+      const featureIndices = [];
+      for (const batchId of batchIds)
+        featureIndices.push(batchId);
+
+      mesh.features.setIndices(featureIndices);
+    }
+
+    return true;
   }
 
   private deduplicateVertices(mesh: GltfMeshData): boolean {
@@ -1795,6 +1875,35 @@ export abstract class GltfReader {
   }
 
   protected async resolveResources(): Promise<void> {
+    // Load any external images and buffers.
+    await this._resolveResources();
+
+    // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
+    const dracoMeshes: DracoMeshCompression[] = [];
+
+    for (const node of this.traverseScene()) {
+      for (const meshId of getNodeMeshIds(node)) {
+        const mesh = this._meshes[meshId];
+        if (mesh?.primitives)
+          for (const primitive of mesh.primitives)
+            if (primitive.extensions?.KHR_draco_mesh_compression)
+              dracoMeshes.push(primitive.extensions.KHR_draco_mesh_compression);
+      }
+    }
+
+    if (dracoMeshes.length === 0)
+      return;
+
+    try {
+      const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+    } catch (err) {
+      Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
+      Logger.logException(FrontendLoggerCategory.Render, err);
+    }
+  }
+
+  private async _resolveResources(): Promise<void> {
     // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
     // be required for the scene.
     const promises: Array<Promise<void>> = [];
@@ -1815,6 +1924,22 @@ export abstract class GltfReader {
       await Promise.all(promises);
     } catch (_) {
     }
+  }
+
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+    const bv = this._bufferViews[ext.bufferView];
+    if (!bv || !bv.byteLength)
+      return;
+
+    let buf = this._buffers[bv.buffer]?.resolvedBuffer;
+    if (!buf)
+      return;
+
+    const offset = bv.byteOffset ?? 0;
+    buf = buf.subarray(offset, offset + bv.byteLength);
+    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    if (mesh)
+      this._dracoMeshes.set(ext, mesh);
   }
 
   private resolveUrl(uri: string): string | undefined {
@@ -1878,6 +2003,27 @@ export abstract class GltfReader {
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
+  /** The glTF spec says that if GltfSampler.wrapS/T are omitted, they default to Repeat.
+   * However, the reality data service serves tiles that lack any wrapS/T property, and we want those clamped to edge, not repeated.
+   * (We also don't want to produce mip-maps for them, which is determined indirectly from the wrap mode).
+   * Allow the default to be optionally overridden.
+   */
+  public defaultWrapMode = GltfWrapMode.Repeat;
+
+  /** Exposed strictly for testing. */
+  public getTextureType(sampler?: GltfSampler): RenderTexture.Type {
+    // ###TODO: RenderTexture currently does not support different wrapping behavior for U vs V, nor does it support mirrored repeat.
+    let wrapS = sampler?.wrapS;
+    let wrapT = sampler?.wrapT;
+    if (undefined === wrapS && undefined === wrapT)
+      wrapS = wrapT = this.defaultWrapMode;
+
+    if (GltfWrapMode.ClampToEdge === wrapS || GltfWrapMode.ClampToEdge === wrapT)
+      return RenderTexture.Type.TileSection;
+
+    return RenderTexture.Type.Normal;
+  }
+
   private resolveTexture(textureId: string, isTransparent: boolean): RenderTexture | false {
     const texture = this._textures[textureId];
     if (!texture || undefined === texture.source)
@@ -1889,9 +2035,7 @@ export abstract class GltfReader {
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
-    // ###TODO: RenderTexture should support different wrapping behavior for U vs V, and support mirrored repeat.
-    // For now, repeat unless either explicitly clamps.
-    const textureType = GltfWrapMode.ClampToEdge === sampler?.wrapS || GltfWrapMode.ClampToEdge === sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
+    const textureType = this.getTextureType(sampler);
     const renderTexture = this._system.createTexture({
       type: textureType,
       image: {

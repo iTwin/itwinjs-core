@@ -133,12 +133,12 @@ describe("useHorizontalToolSettingNodes", () => {
     removeListenerSpy.calledOnce.should.true;
   });
 
-  it("should return undefined if activeToolSettingsProvider is unset", () => {
+  it("should not return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useHorizontalToolSettingNodes());
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
     });
-    (result.current === undefined).should.true;
+    (result.current === undefined).should.false;
   });
 
   it("should update tool settings", () => {

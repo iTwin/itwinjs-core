@@ -1,0 +1,54 @@
+{
+  "name": "extension-prototype",
+  "description": "extension-prototype",
+  "main": "./dist/index.js",
+  "module": "./lib/loader.js",
+  "typings": "./lib/loader",
+  "private": true,
+  "license": "MIT",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "tsc --project ./src 1>&2",
+    "build:ci": "npm run -s build",
+    "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --target=es2020 --external:os --minify",
+    "clean": "rimraf lib dist",
+    "lint": "",
+    "//lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
+    "start": "",
+    "test": "",
+    "cover": "",
+    "docs": ""
+  },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "esbuild": "^0.13.8",
+    "eslint": "^7.11.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "dependencies": {
+    "@itwin/core-extension": "workspace:*",
+    "buffer": "^6.0.3",
+    "url": "^0.11.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "activationEvents": [
+    "onStartup"
+  ]
+}

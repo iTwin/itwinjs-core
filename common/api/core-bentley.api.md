@@ -517,6 +517,12 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
+// @alpha
+export abstract class ErrorCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -954,6 +960,12 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
+
+// @internal
+export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
+
+// @internal
+export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
 // @public (undocumented)
 export interface JSONSchema {
@@ -1422,6 +1434,16 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
+// @alpha
+export enum RealityDataStatus {
+    // (undocumented)
+    InvalidData = 151553,
+    // (undocumented)
+    REALITYDATA_ERROR_BASE = 151552,
+    // (undocumented)
+    Success = 0
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1464,6 +1486,23 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     remove(value: T): number;
 }
 
+// @alpha
+export abstract class StatusCategory {
+    // (undocumented)
+    abstract code: number;
+    // (undocumented)
+    abstract error: boolean;
+    // (undocumented)
+    static for(error: BentleyError): StatusCategory;
+    // (undocumented)
+    static handlers: Set<StatusCategoryHandler>;
+    // (undocumented)
+    abstract name: string;
+}
+
+// @alpha (undocumented)
+export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+
 // @beta
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
@@ -1485,6 +1524,12 @@ export class StopWatch {
     start(): void;
     stop(): BeDuration;
     }
+
+// @alpha
+export abstract class SuccessCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
 
 // @public
 export class TransientIdSequence {
@@ -1510,6 +1555,23 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
+
+// @internal
+export class YieldManager {
+    constructor(options?: YieldManagerOptions);
+    // (undocumented)
+    protected actualYield(): Promise<void>;
+    // (undocumented)
+    allowYield(): Promise<void>;
+    // (undocumented)
+    options: Readonly<Required<YieldManagerOptions>>;
+}
+
+// @internal
+export interface YieldManagerOptions {
+    // (undocumented)
+    iterationsBeforeYield?: number;
+}
 
 
 // (No @packageDocumentation comment for this package)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add two new rpcinterfaces, hydrateViewState and getCustomViewState3dData",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

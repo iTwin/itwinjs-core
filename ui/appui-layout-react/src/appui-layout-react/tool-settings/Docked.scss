@@ -25,3 +25,16 @@
   column-gap: 4px;
   align-items: flex-start;
 }
+
+.toolsettings-appear {
+  opacity: 0.1;
+  transition: opacity 150ms ease-in-out;
+  transform: translateY(-100%);
+}
+
+.toolsettings-appear-active {
+  opacity: 0.7;
+  transition: opacity 150ms ease-in-out;
+  transform: translateY(0);
+  transition: transform 400ms ease-out;
+}

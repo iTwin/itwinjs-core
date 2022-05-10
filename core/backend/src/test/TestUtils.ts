@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { BentleyLoggerCategory, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
 
@@ -58,7 +58,11 @@ export class TestUtils {
    */
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
     const cfg = config ? config : new IModelHostConfiguration();
-    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    if (ProcessDetector.isIOSAppBackend) {
+      cfg.cacheDir = undefined; // Let the native side handle the cache.
+    } else {
+      cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    }
     return IModelHost.startup(cfg);
   }
 

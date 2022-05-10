@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
-import { Format, FormatProps, FormatTraits } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatTraits, getTraitString } from "@itwin/core-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { ThousandsSelector } from "./ThousandsSelector";
 import { UiIModelComponents } from "../../UiIModelComponents";
@@ -33,7 +33,7 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
   }, [onChange]);
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
-    const traitStr = Format.getTraitString(trait);
+    const traitStr = getTraitString(trait);
     let formatTraits: string[] = [traitStr];
     if (setActive) {// setting trait
       // istanbul ignore else

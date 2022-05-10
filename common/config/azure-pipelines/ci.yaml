@@ -14,7 +14,7 @@
 #   `/azp run imodeljs.imodeljs`
 
 trigger: none
-
+pr: none
 schedules:
   - cron: "0 5 * * *"
     displayName: Daily midnight build

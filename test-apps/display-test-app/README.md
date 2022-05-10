@@ -206,9 +206,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta version compare` - emulate version comparison.
-* `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
@@ -250,6 +254,9 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+* `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+  * `elementId=Id` The element for which to obtain graphics
+  * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 
 ## Editing
 

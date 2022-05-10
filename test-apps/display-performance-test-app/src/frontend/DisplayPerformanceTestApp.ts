@@ -36,7 +36,7 @@ export class DisplayPerfTestApp {
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
       BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */

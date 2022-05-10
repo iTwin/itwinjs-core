@@ -32,6 +32,10 @@ export interface BackstageItemProps extends CommonProps {
   subtitle?: string;
   /** A badge to draw. */
   badge?: React.ReactNode;
+
+  providerId?: string;
+  itemPriority?: number;
+  groupPriority?: number;
 }
 
 /** Item in the [[Backstage]].
@@ -51,6 +55,9 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
       <li
         data-item-id={this.props.itemId}
         data-item-type="backstage-item"
+        data-item-group-priority={this.props.groupPriority}
+        data-item-priority={this.props.itemPriority}
+        data-item-provider-id={this.props.providerId}
         className={className}
         onClick={this.props.onClick}
         style={this.props.style}
