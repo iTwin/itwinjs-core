@@ -104,13 +104,17 @@ export interface BatchOptions {
  * @extensions
  */
 export interface PickableGraphicOptions extends BatchOptions {
-  /** Unique identifier for the graphic.
+  /** A unique identifier for the graphic.
    * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
+   * @see [[GraphicBuilder.activatePickableId]] or [[GraphicBuilder.activateFeature]] to change the pickable object while adding geometry.
    */
   id: Id64String;
-  modelId?: Id64String;
+  /** Optional Id of the subcategory with which the graphic should be associated. */
   subCategoryId?: Id64String;
+  /** Optional geometry class for the graphic - defaults to [GeometryClass.Primary]($common). */
   geometryClass?: GeometryClass;
+  /** The optional Id of the model with which the graphic should be associated. */
+  modelId?: Id64String;
 }
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
@@ -353,14 +357,24 @@ export abstract class GraphicBuilder {
    */
   public abstract activateGraphicParams(graphicParams: GraphicParams): void;
 
+  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry. */
   protected abstract _activateFeature(feature: Feature): void;
 
+  /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
+   * for more efficient rendering.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
   public activateFeature(feature: Feature): void {
     assert(undefined !== this._options.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
     if (this._options.pickable)
       this._activateFeature(feature);
   }
 
+  /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
+   * for more efficient rendering. This method calls [[activateFeature]], using the subcategory Id and [GeometryClass]($common) specified in [[GraphicBuilder.pickable]]
+   * at construction, if any.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
   public activatePickableId(id: Id64String): void {
     const pick = this._options.pickable;
     this.activateFeature(new Feature(id, pick?.subCategoryId, pick?.geometryClass));
