@@ -93,7 +93,7 @@ With the above ruleset, when creating children for `Child 1.2.1` node, the libra
 
 ### Batching of pickable graphics
 
-[Pickable decorations]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) associate an [Id64String]($bentley) with a [RenderGraphic]($frontend), enabling the graphic to be interacted with using mouse or touch inputs and to have its [appearance overridden]($docs/learning/display/SymbologyOverrides.md). Previously, a [GraphicBuilder]($frontend) accepted only a single pickable Id. [Decorator]($frontend)s that produce many pickable objects were therefore required to create a separate graphic for each pickable Id. This can negatively impact display performance by increasing the number of draw calls.
+[Pickable decorations](../learning/frontend/ViewDecorations#pickable-view-graphic-decorations) associate an [Id64String]($bentley) with a [RenderGraphic]($frontend), enabling the graphic to be interacted with using mouse or touch inputs and to have its [appearance overridden](../learning/display/SymbologyOverrides.md). Previously, a [GraphicBuilder]($frontend) accepted only a single pickable Id. [Decorator]($frontend)s that produce many pickable objects were therefore required to create a separate graphic for each pickable Id. This can negatively impact display performance by increasing the number of draw calls.
 
 Now, [GraphicBuilder.activatePickableId]($frontend) and [GraphicBuilder.activateFeature]($frontend) enable any number of pickable objects can be batched together into one graphic, improving performance. The following simple example illustrates how to batch a pickable sphere and a pickable box into one graphic.
 
