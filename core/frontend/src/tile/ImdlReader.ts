@@ -227,6 +227,7 @@ interface ImdlVertexTable {
   };
   /** If the vertex table contains multiple surface materials, describes the embedded material atlas. */
   readonly materialAtlas?: ImdlMaterialAtlas;
+  readonly usesUnquantizedPositions?: boolean;
 }
 
 /** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
@@ -936,6 +937,7 @@ export class ImdlReader {
       numVertices: json.count,
       numRgbaPerVertex: json.numRgbaPerVertex,
       uvParams,
+      usesUnquantizedPositions: true === json.usesUnquantizedPositions,
     });
   }
 

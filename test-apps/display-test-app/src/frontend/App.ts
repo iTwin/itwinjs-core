@@ -24,7 +24,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
-import { GenerateTileContentTool } from "./TileContentTool";
+import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -287,6 +287,7 @@ export class DisplayTestApp {
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      GenerateElementGraphicsTool,
       GenerateTileContentTool,
       GltfDecorationTool,
       IncidentMarkerDemoTool,
