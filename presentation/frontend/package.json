@@ -73,7 +73,7 @@
     "deep-equal": "^1",
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
-    "jsdom": "^17.0.0",
+    "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",

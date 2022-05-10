@@ -37,7 +37,7 @@ jobs:
         demands: Agent.OS -equals $(platform)
   - template: ci-core.yaml
     parameters:
-      name: Node_12_20
-      nodeVersion: 12.20.0
+      name: Node_12_22
+      nodeVersion: 12.22.0
       pool:
         demands: Agent.OS -equals $(platform)
