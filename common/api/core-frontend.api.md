@@ -4114,7 +4114,10 @@ export interface GraphicBranchOptions {
 export abstract class GraphicBuilder {
     // @internal
     protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions);
+    activateFeature(feature: Feature): void;
+    protected _activateFeature(_feature: Feature): void;
     abstract activateGraphicParams(graphicParams: GraphicParams): void;
+    activatePickableId(id: Id64String): void;
     abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
     abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
     addCurvePrimitive(curve: AnyCurvePrimitive): void;
@@ -4146,6 +4149,7 @@ export abstract class GraphicBuilder {
     // (undocumented)
     protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
     readonly pickable?: Readonly<PickableGraphicOptions>;
+    // @deprecated
     get pickId(): Id64String | undefined;
     readonly placement: Transform;
     readonly preserveOrder: boolean;
@@ -7623,7 +7627,10 @@ export class PhysicalModelState extends SpatialModelState {
 
 // @public
 export interface PickableGraphicOptions extends BatchOptions {
+    geometryClass?: GeometryClass;
     id: Id64String;
+    modelId?: Id64String;
+    subCategoryId?: Id64String;
 }
 
 // @internal
@@ -7971,9 +7978,7 @@ export interface ReadGltfGraphicsArgs {
     baseUrl?: string;
     gltf: Uint8Array | Object;
     iModel: IModelConnection;
-    pickableOptions?: PickableGraphicOptions & {
-        modelId?: Id64String;
-    };
+    pickableOptions?: PickableGraphicOptions;
 }
 
 // @public
