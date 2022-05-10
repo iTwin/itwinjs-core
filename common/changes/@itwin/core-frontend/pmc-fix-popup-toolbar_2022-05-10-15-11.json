@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Prevent calls to readPixels from being enqueued when mousing over canvas decorations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
