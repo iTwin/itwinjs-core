@@ -5,11 +5,14 @@
 
 import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
-import { IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
+import { IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
 import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
+
+/** @beta */
+export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never } };
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
@@ -45,12 +48,9 @@ export class MobileApp {
 
   private static _isValid = false;
   public static get isValid() { return this._isValid; }
-  /**
-   * This is called by either AndroidApp.startup or IOSApp.startup - it should not be called directly
-   * @internal
-   */
-  public static async startup(opts?: NativeAppOpts) {
-    const iModelAppOpts = {
+  /** @beta */
+  public static async startup(opts?: MobileAppOpts) {
+    const iModelAppOpts: IModelAppOptions = {
       ...opts?.iModelApp,
     };
     const authorizationClient = new MobileAuthorizationFrontend();

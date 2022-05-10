@@ -6,7 +6,7 @@
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
@@ -165,6 +165,10 @@ export class MobileHost {
 
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
+    const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
+    const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
+    opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } }
+
     const authorizationClient = new MobileAuthorizationBackend();
     IModelHost.authorizationClient = authorizationClient;
 
