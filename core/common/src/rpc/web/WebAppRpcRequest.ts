@@ -297,7 +297,7 @@ export class WebAppRpcRequest extends RpcRequest {
         res.set("Cache-Control", "no-store");
       } else if (request.operation.operationName === "getConnectionProps") {
         // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
-        res.set("Cache-Control", "s-maxage=7200, max-age=1, immutable");
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
       } else if (request.operation.operationName === "getTileCacheContainerUrl") {
         // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
         res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 16}, max-age=${oneHourInSeconds * 16}, immutable`);
