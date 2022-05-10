@@ -131,11 +131,13 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
 
   private static _handleMouseMove(event: MouseEvent){
     const el = event.currentTarget as Document;
+    /* Only monitor mouse movement when an ElementTooltip is open. */
     if (el && ElementTooltip._isTooltipHalted || !ElementTooltip._isTooltipVisible) {
       el.removeEventListener("mousemove", ElementTooltip._handleMouseMove);
       return;
     }
     const hoveredElement = el ? el.elementFromPoint(event.clientX, event.clientY) : undefined;
+    /* If the mouse has moved to an element that is not the view canvas, close the ElementTooltip. */
     if (hoveredElement && hoveredElement.localName !== "canvas" ) {
       ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
       el.removeEventListener("mousemove", ElementTooltip._handleMouseMove);
