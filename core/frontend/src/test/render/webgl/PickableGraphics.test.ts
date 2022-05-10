@@ -83,23 +83,23 @@ describe("Pickable graphic", () => {
     expect(viewport.viewFlags.constructions).to.be.false;
     const bgColor = viewport.view.displayStyle.backgroundColor;
 
-    const lineId = "0x1";
-    const shapeId = "0x2";
-    const lineColor = ColorDef.red;
-    const shapeColor = ColorDef.blue;
+    const leftId = "0x1";
+    const rightId = "0x2";
+    const leftColor = ColorDef.red;
+    const rightColor = ColorDef.blue;
 
     class MultiFeatureDecorator extends TestDecorator {
       public decorate(context: DecorateContext): void {
         const builder = context.createGraphic({
           type: GraphicType.Scene,
-          pickable: { id: lineId },
+          pickable: { id: leftId },
         });
 
-        builder.setSymbology(lineColor, lineColor, 1);
-        builder.addLineString([new Point3d(0, 0, 0), new Point3d(0, 0.5, 0), new Point3d(0.5, 0.5, 0)]);
+        builder.setSymbology(leftColor, leftColor, 1);
+        builder.addShape([new Point3d(0, 0, 0), new Point3d(0, 0.5, 0), new Point3d(0.5, 0.5, 0), new Point3d(0, 0, 0)]);
 
-        builder.setSymbology(shapeColor, shapeColor, 1);
-        builder.activateFeature(new Feature(shapeId, undefined, GeometryClass.Construction));
+        builder.setSymbology(rightColor, rightColor, 1);
+        builder.activateFeature(new Feature(rightId, undefined, GeometryClass.Construction));
         builder.addShape([new Point3d(0, 0, 0), new Point3d(0.5, 0, 0), new Point3d(0.5, 0.5, 0), new Point3d(0, 0, 0)]);
 
         context.addDecorationFromBuilder(builder);
@@ -108,15 +108,15 @@ describe("Pickable graphic", () => {
 
     IModelApp.viewManager.addDecorator(new MultiFeatureDecorator());
 
-    expectColors(viewport, [lineColor, bgColor]);
-    expectIds([lineId]);
+    expectColors(viewport, [leftColor, bgColor]);
+    expectIds([leftId]);
 
     viewport.viewFlags = viewport.viewFlags.with("constructions", true);
-    expectColors(viewport, [lineColor, shapeColor, bgColor]);
-    expectIds([lineId, shapeId]);
+    expectColors(viewport, [leftColor, rightColor, bgColor]);
+    expectIds([leftId, rightId]);
 
-    viewport.setNeverDrawn(new Set<string>([lineId]));
-    expectColors(viewport, [shapeColor, bgColor]);
-    expectIds([shapeId]);
+    viewport.setNeverDrawn(new Set<string>([leftId]));
+    expectColors(viewport, [rightColor, bgColor]);
+    expectIds([rightId]);
   });
 }).timeout(20000); // macOS is slow.
