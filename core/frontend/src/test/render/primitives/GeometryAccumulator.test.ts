@@ -106,7 +106,7 @@ describe("GeometryAccumulator tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     // query polyface list from loopGeom
     const pfPrimList = loopGeom.getPolyfaces(0)!;
@@ -163,7 +163,7 @@ describe("GeometryAccumulator tests", () => {
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const pathPoints: Point3d[] = [];
     pathPoints.push(new Point3d(0, 0, 0));
@@ -204,7 +204,7 @@ describe("GeometryAccumulator tests", () => {
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const pathPoints: Point3d[] = [];
     pathPoints.push(new Point3d(0, 0, 0));
@@ -245,7 +245,7 @@ describe("GeometryAccumulator tests", () => {
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const pathPoints: Point3d[] = [];
     pathPoints.push(new Point3d(0, 0, 0));

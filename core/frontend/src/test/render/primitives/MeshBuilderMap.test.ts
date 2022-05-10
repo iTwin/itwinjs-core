@@ -103,7 +103,7 @@ describe("MeshBuilderMap Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
@@ -153,7 +153,7 @@ describe("MeshBuilderMap Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
@@ -230,7 +230,7 @@ describe("MeshBuilderMap Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
     // query polyface list from loopGeom
     const pfPrimList = loopGeom.getPolyfaces(0)!;
     assert(pfPrimList !== undefined);
@@ -275,8 +275,8 @@ describe("MeshBuilderMap Tests", () => {
 
     const loopRange2: Range3d = new Range3d();
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
-    const emptyloopGeom = Geometry.createFromLoop(emptyLoop, Transform.createIdentity(), loopRange2, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const emptyloopGeom = Geometry.createFromLoop(emptyLoop, Transform.createIdentity(), loopRange2, displayParams, false, undefined);
     // query polyface list from loopGeom
     const pfPrimList = loopGeom.getPolyfaces(0)!;
     assert(pfPrimList !== undefined);

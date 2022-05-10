@@ -24,6 +24,7 @@ describe("GraphicPrimitive", () => {
       });
     }
 
+    protected _activateFeature() { }
     public activateGraphicParams() { }
     public finish() { return {} as any; }
 

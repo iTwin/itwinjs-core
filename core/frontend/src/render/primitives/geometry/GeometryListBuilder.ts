@@ -9,7 +9,7 @@
 import {
   Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -51,6 +51,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public activateGraphicParams(graphicParams: GraphicParams): void {
     graphicParams.clone(this.graphicParams);
+  }
+
+  protected _activateFeature(feature: Feature): void {
+    this.accum.currentFeature = feature;
   }
 
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
