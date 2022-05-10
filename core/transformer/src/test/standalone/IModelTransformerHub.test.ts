@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { join } from "path";
 import * as semver from "semver";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
-  IModelHost, IModelJsFs, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
+import { IModelExporter, IModelImporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
@@ -566,6 +566,103 @@ describe("IModelTransformerHub", () => {
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId1 });
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId2 });
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
+    }
+  });
+
+  it("ModelSelector processChanges", async () => {
+    const sourceIModelName = "ModelSelectorSource";
+    const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
+    let targetIModelId!: GuidString;
+    assert.isTrue(Guid.isGuid(sourceIModelId));
+
+    try {
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
+
+      // setup source
+      const physModel1Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-1");
+      const physModel2Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-2");
+      const modelSelectorInSource = ModelSelector.create(sourceDb, IModelDb.dictionaryId, "model-selector", [physModel1Id]);
+      const modelSelectorCode = modelSelectorInSource.code;
+      const modelSelectorId = modelSelectorInSource.insert();
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges({ accessToken, description: "setup source models and selector" });
+
+      // create target branch
+      const targetIModelName = "ModelSelectorTarget";
+      targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
+      assert.isTrue(Guid.isGuid(targetIModelId));
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+      const provenanceInitializer = new IModelTransformer(sourceDb, targetDb, { wasSourceIModelCopiedToTarget: true });
+      await provenanceInitializer.processSchemas();
+      await provenanceInitializer.processAll();
+      provenanceInitializer.dispose();
+
+      // update source (add model2 to model selector)
+      const modelSelectorUpdate = sourceDb.elements.getElement<ModelSelector>(modelSelectorId, ModelSelector);
+      modelSelectorUpdate.models = [...modelSelectorUpdate.models, physModel2Id];
+      modelSelectorUpdate.update();
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges({ accessToken, description: "add model2 to model selector" });
+
+      // check that the model selector has the expected change in the source
+      const modelSelectorUpdate2 = sourceDb.elements.getElement<ModelSelector>(modelSelectorId, ModelSelector);
+      expect(modelSelectorUpdate2.models).to.have.length(2);
+
+      // test extracted changed ids
+      const sourceDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: sourceIModelId, targetDir: BriefcaseManager.getChangeSetsPath(sourceIModelId) });
+      expect(sourceDbChangesets).to.have.length(2);
+      const latestChangeset = sourceDbChangesets[1];
+      const extractedChangedIds = sourceDb.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
+      const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
+        element: { update: [modelSelectorId] },
+        // TODO: why is this changed
+        model: { update: [IModel.dictionaryId] },
+      };
+      expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
+
+      // synchronize
+      let didExportModelSelector = false, didImportModelSelector = false;
+      class IModelImporterInjected extends IModelImporter {
+        public override importElement(sourceElement: ElementProps): Id64String {
+          if (sourceElement.id === modelSelectorId)
+            didImportModelSelector = true;
+          return super.importElement(sourceElement);
+        }
+      }
+      class IModelTransformerInjected extends IModelTransformer {
+        public override async onExportElement(sourceElement: Element) {
+          if (sourceElement.id === modelSelectorId)
+            didExportModelSelector = true;
+          return super.onExportElement(sourceElement);
+        }
+      }
+      const synchronizer = new IModelTransformerInjected (sourceDb, new IModelImporterInjected(targetDb));
+      await synchronizer.processChanges(accessToken);
+      expect(didExportModelSelector).to.be.true;
+      expect(didImportModelSelector).to.be.true;
+      provenanceInitializer.dispose();
+      targetDb.saveChanges();
+      await targetDb.pushChanges({ accessToken, description: "synchronize" });
+
+      // check that the model selector has the expected change in the target
+      const modelSelectorInTargetId = targetDb.elements.queryElementIdByCode(modelSelectorCode);
+      if (modelSelectorInTargetId === undefined) throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+      const modelSelectorInTarget = targetDb.elements.getElement<ModelSelector>(modelSelectorInTargetId, ModelSelector);
+      expect(modelSelectorInTarget.models).to.have.length(2);
+
+      // close iModel briefcases
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
+    } finally {
+      try {
+        // delete iModel briefcases
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
+      } catch (err) {
+        assert.fail(err, undefined, "failed to clean up");
+      }
     }
   });
 
