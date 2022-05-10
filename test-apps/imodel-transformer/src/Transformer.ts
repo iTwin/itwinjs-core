@@ -66,6 +66,29 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
+  /** attempt to isolate a set of elements by transforming only them from the source to the target */
+  public static async transformIsolated(
+    sourceDb: IModelDb,
+    targetDb: IModelDb,
+    isolatedElementIds: Id64Array,
+    options?: TransformerOptions
+  ): Promise<void> {
+    // might need to inject RequestContext for schemaExport.
+    const transformer = new Transformer(sourceDb, targetDb, options);
+    transformer.initialize(options);
+    await transformer.processSchemas();
+    await transformer.saveChanges("processSchemas");
+    for (const id of isolatedElementIds)
+      await transformer.processElement(id);
+    await transformer.saveChanges("process isolated elements");
+    if (options?.deleteUnusedGeometryParts) {
+      transformer.deleteUnusedGeometryParts();
+      await transformer.saveChanges("deleteUnusedGeometryParts");
+    }
+    transformer.dispose();
+    transformer.logElapsedTime();
+  }
+
   private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions) {
     super(sourceDb, new IModelImporter(targetDb, { simplifyElementGeometry: options?.simplifyElementGeometry }), options);
   }

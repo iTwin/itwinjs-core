@@ -165,6 +165,10 @@ void (async () => {
           type: "boolean",
           default: false,
         },
+        isolateElements: {
+          desc: "transform filtering all unnecessary element/model trees except for those listed in a comma-separated argument of ids",
+          type: "string",
+        },
       })
       .parse();
 
@@ -334,6 +338,8 @@ void (async () => {
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(await acquireAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+    } else if (args.isolateElements !== undefined) {
+      await Transformer.transformIsolated(sourceDb, targetDb, args.isolateElements.split(","), transformerOptions);
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }
