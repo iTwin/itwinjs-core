@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/appui-react",
-      "comment": "Fix for losing viewport context after clicking PW link.",
+      "comment": "Fix for losing viewport content after clicking PW link.",
       "type": "none"
     }
   ],
