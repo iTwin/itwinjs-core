@@ -357,8 +357,10 @@ export abstract class GraphicBuilder {
    */
   public abstract activateGraphicParams(graphicParams: GraphicParams): void;
 
-  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry. */
-  protected abstract _activateFeature(feature: Feature): void;
+  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
+   * This default implementation does nothing.
+   */
+  protected _activateFeature(_feature: Feature): void { }
 
   /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
    * for more efficient rendering.

@@ -4115,7 +4115,7 @@ export abstract class GraphicBuilder {
     // @internal
     protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions);
     activateFeature(feature: Feature): void;
-    protected abstract _activateFeature(feature: Feature): void;
+    protected _activateFeature(_feature: Feature): void;
     abstract activateGraphicParams(graphicParams: GraphicParams): void;
     activatePickableId(id: Id64String): void;
     abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;

@@ -56,7 +56,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     graphicParams.clone(this.graphicParams);
   }
 
-  protected _activateFeature(feature: Feature): void {
+  protected override _activateFeature(feature: Feature): void {
     this.accum.currentFeature = feature;
   }
 
