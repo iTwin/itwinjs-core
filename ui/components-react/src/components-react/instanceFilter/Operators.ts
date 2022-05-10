@@ -69,6 +69,7 @@ export function getAvailableOperators(property: PropertyDescription) {
   return operators;
 }
 
+/* istanbul ignore next */
 /** @alpha */
 export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
   switch(operator) {

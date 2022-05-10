@@ -157,7 +157,7 @@ export type ThemedSelectProps = {
   /* Handle blur events on the control */
   onBlur?: React.FocusEventHandler;
   /* Handle change events on the select */
-  onChange?: (value: OptionType, action: ActionMeta<OptionType>) => void;
+  onChange?: (value: PropsValue<OptionType>, action: ActionMeta<OptionType>) => void;
   /* Handle focus events on the control */
   onFocus?: React.FocusEventHandler;
   /* Handle change events on the input */

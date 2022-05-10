@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PropertyDescription } from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import {
   FilterBuilderAction, FilterRule, FilterRuleGroup, FilterRuleGroupItem, isFilterRuleGroup, useFilterBuilderState,
 } from "./FilterBuilderState";
@@ -18,7 +18,7 @@ import "./FilterBuilder.scss";
 export interface FilterBuilderProps {
   properties: PropertyDescription[];
   onFilterChanged: (filter?: Filter) => void;
-  onRulePropertySelected: (property: PropertyDescription) => void;
+  onRulePropertySelected?: (property: PropertyDescription) => void;
   ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
 }
@@ -27,17 +27,17 @@ export interface FilterBuilderProps {
 export type FilterBuilderDispatch = (action: FilterBuilderAction) => void;
 
 /** @alpha */
-interface FilterBuilderContext {
+export interface FilterBuilderContext {
   dispatch: FilterBuilderDispatch;
   properties: PropertyDescription[];
-  onRulePropertySelected: (property: PropertyDescription) => void;
+  onRulePropertySelected?: (property: PropertyDescription) => void;
 }
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FilterBuilderContext = React.createContext<FilterBuilderContext>(undefined!);
 
 /** @alpha */
-interface FilterBuilderRuleRenderingContext {
+export interface FilterBuilderRuleRenderingContext {
   ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
 }
@@ -69,7 +69,8 @@ export function FilterBuilder(props: FilterBuilderProps) {
   );
 }
 
-function buildFilter(groupItem: FilterRuleGroupItem): Filter | undefined {
+/** @internal */
+export function buildFilter(groupItem: FilterRuleGroupItem): Filter | undefined {
   if (isFilterRuleGroup(groupItem))
     return buildFilterFromRuleGroup(groupItem);
   return buildFilterFromRule(groupItem);
@@ -102,6 +103,9 @@ function buildFilterFromRule(rule: FilterRule): Filter | undefined {
     return undefined;
 
   if (filterRuleOperatorNeedsValue(operator) && !value)
+    return undefined;
+
+  if (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined)
     return undefined;
 
   return {property, operator, value};

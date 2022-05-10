@@ -33,9 +33,9 @@ export function FilterBuilderRuleGroup(props: FilterBuilderRuleGroupProps) {
     <div className="header">
       <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
       <ButtonGroup className="actions">
-        <Button onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule</Button>
-        <Button onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule Group</Button>
-        {group.groupId !== undefined && <IconButton onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
+        <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule</Button>
+        <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule Group</Button>
+        {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
       </ButtonGroup>
     </div>
     <div className="items">
@@ -45,13 +45,13 @@ export function FilterBuilderRuleGroup(props: FilterBuilderRuleGroupProps) {
 }
 
 /** @alpha */
-export interface FilterRuleGroupOperatorProps {
+export interface FilterBuilderRuleGroupOperatorProps {
   operator: FilterRuleGroupOperator;
   onChange: (operator: FilterRuleGroupOperator) => void;
 }
 
 /** @alpha */
-export function FilterBuilderRuleGroupOperator(props: FilterRuleGroupOperatorProps) {
+export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps) {
   const {operator, onChange} = props;
 
   const options = React.useMemo<Array<SelectOption<FilterRuleGroupOperator>>>(() => ([{

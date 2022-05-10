@@ -28,7 +28,7 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
     dispatch({type: "SET_RULE_PROPERTY", path, property: newProperty});
-    if (newProperty)
+    if (onRulePropertySelected && newProperty)
       onRulePropertySelected(newProperty);
   }, [path, onRulePropertySelected, dispatch]);
 
@@ -42,21 +42,17 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
 
   const removeRule = () => dispatch({type: "REMOVE_ITEM", path});
 
-  const operatorRenderer = React.useCallback(() => {
-    if (!property)
-      return undefined;
+  const operatorRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleOperatorRenderer)
-      return ruleOperatorRenderer({property, operator, onChange: onRuleOperatorChange});
-    return <FilterBuilderRuleOperator property={property} onChange={onRuleOperatorChange} operator={operator} />;
-  }, [ruleOperatorRenderer, property, operator, onRuleOperatorChange]);
+      return ruleOperatorRenderer({property: prop, operator, onChange: onRuleOperatorChange});
+    return <FilterBuilderRuleOperator property={prop} onChange={onRuleOperatorChange} operator={operator} />;
+  }, [ operator,ruleOperatorRenderer, onRuleOperatorChange]);
 
-  const valueRenderer = React.useCallback(() => {
-    if (!property || !operator || !filterRuleOperatorNeedsValue(operator))
-      return undefined;
+  const valueRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleValueRenderer)
-      return ruleValueRenderer({property, value, onChange: onRuleValueChange});
-    return <FilterBuilderRuleValue property={property} onChange={onRuleValueChange} value={value} />;
-  }, [property, operator, value, ruleValueRenderer, onRuleValueChange]);
+      return ruleValueRenderer({property: prop, value, onChange: onRuleValueChange});
+    return <FilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
+  }, [value, ruleValueRenderer, onRuleValueChange]);
 
   return <div className="rule">
     <div className="rule-condition">
@@ -68,10 +64,10 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
         />
       </div>
       <div className="rule-operator">
-        {property && operatorRenderer()}
+        {property && operatorRenderer(property)}
       </div>
       <div className="rule-value">
-        {property && valueRenderer()}
+        {property && operator && filterRuleOperatorNeedsValue(operator) && valueRenderer(property)}
       </div>
     </div>
     <div className="rule-actions">
