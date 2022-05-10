@@ -29,15 +29,17 @@ BIS defines a data model that is shared by a growing set of applications and ser
 
  BIS has been created to facilitate multi-discipline coordination, and that naturally adds some complexity to single-discipline use cases.
 
-### PhysicalModels and the Elements that they Model
+### PhysicalModels and Sub-modeling
 
-As described in [Model Hierarchy](../data-organization/information-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
+As described in [Model Hierarchy](../data-organization/information-hierarchy.md), every `Model` " "sub-models" an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
-Breakdown `Model`s are weakly-typed in BIS. To understand the real-world Entity that a `Model` is modeling, it is necessary to look at the `Element` which the `Model` is breaking down. ***PhysicalModel should not be subclassed.*** The few `PhysicalModel` subclasses that exist are deprecated and should not be used. When terms such as "Site Model" are used, they indicate "a `Model` that breaks down a `Site`", but do not indicate a strongly-typed `SiteModel`.
+Sub-`Model`s are weakly-typed in BIS. To understand the real-world Entity that a `Model` is modeling, it is necessary to look at the `Element` which the `Model` is sub-modeling.
+
+***Note: PhysicalModel should not be subclassed.*** The few `PhysicalModel` subclasses that exist are deprecated and should not be used. When a term such as "Site Model" is used, it indicates "a `Model` that sub-models a `Site`", but does not indicate a strongly-typed `SiteModel`.
 
 ![Element and Model Modeling Building](../media/physical-hierarchy-organization-building-model.png)
 
-There is no strict requirement limiting the top `PhysicalModel` to contain only a single `PhysicalElement`. iModels that are generated from other repositories will sometimes have top `PhysicalModel`s with multiple `PhysicalElement`s as that best matches the organization of the source data. Legacy data may also have a non-standard organization.
+There is no strict requirement limiting the top `PhysicalModel` to contain only a single `PhysicalElement`. iModels that are generated from other repositories will sometimes have top `PhysicalModel`s with multiple `PhysicalElement`s if that best matches the organization of the source data. Legacy data may also have a non-standard organization.
 
 ---
 | Next: [Physical Models and Elements](./physical-models-and-elements.md)

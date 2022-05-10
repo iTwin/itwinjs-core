@@ -52,7 +52,7 @@ Form and Type approaches will both be available through the schema, but will nev
 
 ## Using Child Elements
 
-Stairs using either a Type or a FormAspect may eventually need to be detailed (detailed modeling could also be done from the start). This detailing is enabled using child Elements. To support this, the Stair class designer will add the mixin class IParentElement as a superclass of Stair (indicating that this Stair can be defined via its children, but not via a breakdown model). For further clarity, thee Stair class designer will subclass PhysicalElementAssemblesChildElements…..
+Stairs using either a Type or a FormAspect may eventually need to be detailed (detailed modeling could also be done from the start). This detailing is enabled using child Elements. To support this, the Stair class designer will add the mixin class IParentElement as a superclass of Stair (indicating that this Stair can be defined via its children, but not via a sub-Model). For further clarity, thee Stair class designer will subclass PhysicalElementAssemblesChildElements…..
 
 <!-- (image of Stair, etc….) -->
 

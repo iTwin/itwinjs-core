@@ -83,9 +83,9 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 Each Element *lives in* a single Model. That Model *contains* and *owns* the Element. Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
 
-Every `Model` models (breaks down or describes) some `Element`. This is the basic building block of the [Information Hierarchy](../data-organization/information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](../glossary.md#subject-root) for the entire BIS Repository.
+Every `Model` sub-models some `Element`, meaning that it models the same subject as the `Element`, but at a finer granularity. This is the basic building block of the [Information Hierarchy](../data-organization/information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](../glossary.md#subject-root) for the entire BIS Repository.
 
-There is one exception to the “Every Model models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not Model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element [Information Hierarchy](../data-organization/information-hierarchy.md).
+There is one exception to the “Every Model sub-models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not sub-model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element [Information Hierarchy](../data-organization/information-hierarchy.md).
 
 ## ElementIds in iModels
 
@@ -211,16 +211,16 @@ See also the IParentElement and ISubModeledElement section below.
 ## IParentElement and ISubModeledElement
 
 This section tries not to repeat the material in [Model Fundamentals](./model-fundamentals.md) and [Information Hierarchy](../data-organization/information-hierarchy.md).
-If you have questions about how Elements breakdown into Models, you may want to skim those articles.
+If you have questions about how Elements are sub-modeled, you may want to skim those articles.
 
 There are two mixins that declare and define key behaviors of an Element:
 
 - `IParentElement` – this Element can be a parent Element
-- `ISubModeledElement` – this Element can have an associated breakdown Model
+- `ISubModeledElement` – this Element can have an associated sub-Model
 
-The Element class does not include either of these interfaces, so by default no Element can have children or can be broken down into a Model. Many Elements have no need for child Elements or breakdown Models and will therefore use neither of these mixins. A Bolt class is a example of a class that requires neither.
+The Element class does not include either of these interfaces, so by default no Element can have children or can be sub-modeled. Many Elements have no need for child Elements or sub-Models and will therefore use neither of these mixins. A Bolt class is a example of a class that requires neither.
 
-These mixins are expected to be mutually-exclusive. No class that implements `IParentElement` will also implement `ISubModeledElement`. The reason these two mixins are considered mutually-exclusive is that the two concepts (having children and having a model) are both means of breaking down something into more detail; using two different breakdown methods simultaneously could result in confusion and double-counting.
+These mixins are expected to be mutually-exclusive. No class that implements `IParentElement` will also implement `ISubModeledElement`. The reason these two mixins are considered mutually-exclusive is that the two concepts (having children and having a sub-Model) are both means of doing finer-grained modeling and using two techniques for that simultaneously could result in confusion and double-counting.
 
 ## Parent-Child Relationships
 

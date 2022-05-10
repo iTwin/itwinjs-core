@@ -41,7 +41,7 @@ Some `Model` subclasses do not correspond to modeling perspectives. `RepositoryM
 
 As is described in [Top of the World](./top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of a modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
 
-Each `InformationPartitionElement` breaks down into a `Model` that is of the same modeling perspective. That `Model` in turn contains only `Element`s of the same modeling perspective. Some of those `Element`s will have breakdown `Model`s; the breakdown `Model`s must be of the same modeling perspective as the `Element` they break down.
+Each `InformationPartitionElement` has a sub-`Model` that is of the same modeling perspective. That sub-`Model` contains only `Element`s of the same modeling perspective. Some of those `Element`s will have sub-`Model`s of their own, which must be of the same modeling perspective as the `Element` they sub-model.
 
 These modeling perspective rules enforce a minimum level of logical data consistency. For example, they prevent the placement of a physical fire hydrant `Element` into a section drawing `Model`.
 
@@ -143,10 +143,10 @@ See [Organizing Repository-global Definition Elements](./organizing-definition-e
 
 ### Document Partitions
 
-The top of a document hierarchy starts with a `DocumentListModel` that models a `DocumentPartition`.
+The top of a document hierarchy starts with a `DocumentListModel` that sub-models a `DocumentPartition`.
 This allows `Document` elements to be organized by how they relate to the parent `Subject` of the `DocumentPartition`.
 `Drawing` and `Sheet` are 2 example subclasses of `Document`.
-`Drawings` and `Sheets` are further broken down by `DrawingModels` and `SheetModels` which graphically break down the content of the drawing or sheet.
+`Drawings` and `Sheets` are further sub-modeled by `DrawingModels` and `SheetModels` which graphically break down the content of the drawing or sheet.
 
 The following instance diagram depicts that hierarchy for a hypothetical iModel about a Plant building. Two drawing documents are shown as well as associations between 2D graphics from one of them with the Physical elements of the iModel. BIS offers the `DrawingGraphicRepresentsElement` relationship to address the need of associations between elements in a *Drawing* with elements in a different modeling perspective.
 

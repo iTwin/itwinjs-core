@@ -15,9 +15,9 @@ TODO: add figure
 
 ## RepositoryModel
 
-Every BIS repository has exactly one `RepositoryModel` that defines the top of the hierarchy. `Element`s can be inserted into or updated within the `RepositoryModel`, but the `RepositoryModel` itself cannot be deleted. The `RepositoryModel` breaks-down the root `Subject` of a BIS repository.
+Every BIS repository has exactly one `RepositoryModel` that defines the top of the hierarchy. `Element`s can be inserted into or updated within the `RepositoryModel`, but the `RepositoryModel` itself cannot be deleted. The `RepositoryModel` sub-models the root `Subject` of a BIS repository.
 
-*The RepositoryModel is the only Model in a BIS repository whose modeled element - the root `Subject` - is contained within the same model breaking it down.*
+*The RepositoryModel is the only Model in a BIS repository that sub-models an Element contained within itself (the root `Subject`). Due to implementation details, this was easier than the RepositoryModel not sub-modeling any Element.*
 
 ## Subjects
 
@@ -35,7 +35,7 @@ Every BIS repository has exactly one *root* `Subject` that describes what the re
 * The root `Subject` - like all `Subject`s - is contained by the `RepositoryModel`.
 * The root `Subject` has no parent element as it is the top of the `Subject` hierarchy.
 * The root `Subject` can be updated, but it cannot be deleted.
-* the root `Subject` is broken-down by the `RepositoryModel`.
+* the root `Subject` is sub-modeled by the `RepositoryModel`.
 
 Child `Subject`s (optional) can be introduced to further organize the contents of the repository.
 
@@ -46,7 +46,7 @@ Child `Subject`s (optional) can be introduced to further organize the contents o
 
 As discussed in [Modeling Perspectives](./modeling-perspectives.md) `Subject`s can be viewed and modeled from multiple modeling perspectives (physical, functional, analytical, etc.). `InformationPartitionElement`s are used to "partition" a `Subject` into different modeling perspectives.
 
-When it is determined that a `Subject` is to be modeled from a particular modeling perspective, an `InformationPartitionElement` of the appropriate modeling perspective is added as a child of the `Subject`. That InformationPartitionElement is the start of a Model hierarchy representing the modeling perspective. The `InformationPartitionElement` is immediately broken down into a `Model` of the same modeling perspective.
+When it is determined that a `Subject` is to be modeled from a particular modeling perspective, an `InformationPartitionElement` of the appropriate modeling perspective is added as a child of the `Subject`. That InformationPartitionElement is the start of a Model hierarchy representing the modeling perspective. The `InformationPartitionElement` is sub-modeled by a `Model` of the same modeling perspective.
 
 It is usually expected for a `Subject` to have only one `InformationPartitionElement` instance of a given modeling perspective, but it is not enforced. When such need arises, it is typically better addressed via child `Subjects`, each owning a different `InformationPartitionElement` instance of the same modeling perspective.
 

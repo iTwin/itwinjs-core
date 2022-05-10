@@ -11,7 +11,7 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 There are several mechanisms available in BIS that domain authors can take advantage of in order to organize elements into hierarchies:
 
 * A Model can contain Elements.
-* An Element can be *modeled* by (broken down into more detail by) a *SubModel*.
+* An Element can be *sub-modeled* by (broken down into more detail by) a *Sub-Model*.
 * An Element can own child Elements.
 * A *Spatial Organizer* can hold an Element as part of the spatial decomposition of a *Facility*, in light of a specific discipline.
 * A *Physical System* can group a member Element.
@@ -34,7 +34,7 @@ From the Element's perspective, the lower-level Model is knows as the *SubModel*
 The *SubModel* term is just a way to refer to a relative position in the information hierarchy.
 There is no special class for a *SubModel*, only the standard `Model` subclasses.
 
-For example, a `DrawingModel` breaks down a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing.
+For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing.
 
 ![DrawingModel Break-down](../media/drawing-breakdown.png)
 
