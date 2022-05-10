@@ -3098,7 +3098,7 @@ export interface ExtensionManifest {
     readonly version: string;
 }
 
-// @alpha
+// @internal
 export interface ExtensionProps {
     // (undocumented)
     contextId: string;
@@ -3119,12 +3119,10 @@ export interface ExtensionProps {
 }
 
 // @alpha
-export type ExtensionProvider = LocalExtensionProvider | RemoteExtensionProvider | ServiceExtensionProvider;
-
-// @alpha
-export interface ExtensionProviderInterface {
+export interface ExtensionProvider {
     execute: ResolveFunc;
     getManifest: ResolveManifestFunc;
+    readonly hostname?: string;
 }
 
 // @public
@@ -3403,6 +3401,7 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
+    Extensions = "core-frontend.Extensions",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
     IModelConnection = "core-frontend.IModelConnection",
@@ -5183,10 +5182,8 @@ export enum InputSource {
 
 // @alpha
 export interface InstalledExtension {
-    // (undocumented)
+    execute: ResolveFunc;
     manifest: ExtensionManifest;
-    // (undocumented)
-    provider: ExtensionProvider;
 }
 
 // @internal
@@ -5379,16 +5376,8 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @internal (undocumented)
-export interface LoadedExtensionProps {
-    // (undocumented)
-    basePath: string;
-    // (undocumented)
-    props: ExtensionProps;
-}
-
 // @alpha
-export class LocalExtensionProvider implements ExtensionProviderInterface {
+export class LocalExtensionProvider implements ExtensionProvider {
     constructor(_props: LocalExtensionProviderProps);
     execute(): Promise<any>;
     getManifest(): Promise<ExtensionManifest>;
@@ -5397,7 +5386,6 @@ export class LocalExtensionProvider implements ExtensionProviderInterface {
 // @alpha
 export interface LocalExtensionProviderProps {
     main: ResolveFunc;
-    // (undocumented)
     manifestPromise: Promise<any>;
 }
 
@@ -5497,9 +5485,6 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
-
-// @internal (undocumented)
-export const loggerCategory = "imodeljs-frontend.Extension";
 
 // @public
 export class LookAndMoveTool extends ViewManip {
@@ -8486,7 +8471,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
 // @alpha
-export class RemoteExtensionProvider implements ExtensionProviderInterface {
+export class RemoteExtensionProvider implements ExtensionProvider {
     constructor(_props: RemoteExtensionProviderProps);
     execute(): Promise<string>;
     getManifest(): Promise<ExtensionManifest>;
@@ -9622,20 +9607,16 @@ export interface SelectReplaceEvent {
 }
 
 // @alpha
-export class ServiceExtensionProvider implements ExtensionProviderInterface {
+export class ServiceExtensionProvider implements ExtensionProvider {
     constructor(_props: ServiceExtensionProviderProps);
     execute(): Promise<any>;
     getManifest(): Promise<ExtensionManifest>;
-    get name(): string;
     }
 
 // @alpha
 export interface ServiceExtensionProviderProps {
-    // (undocumented)
     contextId: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
     version: string;
 }
 
