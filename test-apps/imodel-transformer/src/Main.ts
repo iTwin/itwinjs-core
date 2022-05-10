@@ -169,6 +169,16 @@ void (async () => {
           desc: "transform filtering all unnecessary element/model trees except for those listed in a comma-separated argument of ids",
           type: "string",
         },
+        loadSourceGeometry: {
+          desc: "load geometry from the source as JSON while transforming, for easier (but not performant) transforming of geometry",
+          type: "boolean",
+          default: false,
+        },
+        cloneUsingJsonGeometry: {
+          desc: "clone using json geometry",
+          type: "boolean",
+          default: false,
+        },
       })
       .parse();
 
@@ -331,6 +341,7 @@ void (async () => {
 
     const transformerOptions: TransformerOptions = {
       ...args,
+      cloneUsingBinaryGeometry: !args.cloneUsingJsonGeometry,
       excludeSubCategories: args.excludeSubCategories?.split(","),
       excludeCategories: args.excludeCategories?.split(","),
     };
