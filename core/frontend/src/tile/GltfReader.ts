@@ -1425,7 +1425,7 @@ export abstract class GltfReader {
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
       displayParams,
-      features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
+      features: featureTable,
       type: primitiveType,
       range: Range3d.createNull(),
       is2d: !this._is3d,

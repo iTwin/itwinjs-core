@@ -169,7 +169,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
         featureTable = meshes.features;
         range = meshes.range;
