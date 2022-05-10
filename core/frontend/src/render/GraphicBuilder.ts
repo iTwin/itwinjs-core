@@ -280,6 +280,9 @@ export abstract class GraphicBuilder {
     this.wantNormals = options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
     this.preserveOrder = options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
 
+    if (this.pickable)
+      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
+
     if (!options.viewport) {
       this._computeChordTolerance = options.computeChordTolerance;
       return;
