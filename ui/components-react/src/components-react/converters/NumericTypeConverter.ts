@@ -43,9 +43,9 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
  * @public
  */
 export class FloatTypeConverter extends NumericTypeConverterBase {
-  private static parseString(value: string): number {
+  private static parseString(value: string): number | undefined {
     const parsedValue = parseFloat(value);
-    return Number.isNaN(parsedValue) ? 0 : parsedValue;
+    return Number.isNaN(parsedValue) ? undefined : parsedValue;
   }
 
   public override convertToString(value?: Primitives.Float) {
@@ -58,7 +58,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
         // handle these semi-valid values as 0
         numericValue = 0;
       } else {
-        numericValue = FloatTypeConverter.parseString(value);
+        numericValue = FloatTypeConverter.parseString(value) ?? 0;
       }
     } else {
       numericValue = value;
@@ -72,7 +72,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public override convertFromString(value: string): number {
+  public override convertFromString(value: string): number | undefined {
     return FloatTypeConverter.parseString(value);
   }
 }
@@ -85,9 +85,9 @@ TypeConverterManager.registerConverter(StandardTypeNames.Number, FloatTypeConver
  * @public
  */
 export class IntTypeConverter extends NumericTypeConverterBase {
-  private static parseString(value: string): number {
+  private static parseString(value: string): number | undefined {
     const parsedValue = parseInt(value, 10);
-    return Number.isNaN(parsedValue) ? 0 : parsedValue;
+    return Number.isNaN(parsedValue) ? undefined : parsedValue;
   }
 
   public override convertToString(value?: Primitives.Int) {
@@ -100,7 +100,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
         // handle these semi-valid values as 0
         numericValue = 0;
       } else {
-        numericValue = IntTypeConverter.parseString(value);
+        numericValue = IntTypeConverter.parseString(value) ?? 0;
       }
     } else {
       numericValue = value;
@@ -108,7 +108,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     return Math.round(numericValue).toString();
   }
 
-  public override convertFromString(value: string): number {
+  public override convertFromString(value: string): number | undefined {
     return IntTypeConverter.parseString(value);
   }
 }
