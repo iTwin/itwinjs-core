@@ -51,7 +51,7 @@ describe("ImageRenderer", () => {
 
       const imgElement = imageRender.container.children[0] as HTMLImageElement;
       expect(imgElement.tagName).to.equal("IMG");
-      expect(imgElement.src).to.equal("http://localhost:3000/some-image.png");
+      expect(imgElement.src).to.equal("some-image.png");
     });
 
     it("renders core-icon", () => {
