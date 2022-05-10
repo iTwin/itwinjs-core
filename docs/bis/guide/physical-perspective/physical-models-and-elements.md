@@ -50,7 +50,7 @@ PhysicalTypes are often used when a particular PhysicalElement can be ordered fr
 PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related.
 Each PhysicalElement can be related to a maximum of one PhysicalType.
 
-See [Type Definitions](../fundamentals/type-definitions.md).
+See [Type Definitions](../fundamentals/type-definitions.md) and [Classifying Elements with Type Definitions](../fundamentals/data-classification.md#type-definitions).
 
 ## PhysicalModels
 
@@ -58,11 +58,11 @@ Each PhysicalElement is contained in exactly one PhysicalModel. A PhysicalModel 
 
 See [Model Fundamentals](../fundamentals/model-fundamentals.md) for more information on Models.
 
-## Physical Breakdown
+## Physical Sub-modeling
 
-Some PhysicalElements have associated "breakdown" PhysicalModels that model the same real world physical entity in finer granularity. For example, a SewerSystem PhysicalElement might be broken down into a SewerSystemModel that contains Pipe PhysicalElements that model the individual pipes in the sewer system.
+PhysicalElements that mixin ISubModeledElement can have associated PhysicalModels as sub-Models. The sub-Model models the same real world physical entity as the ISubModeledElement, but at a finer granularity. For example, a SewerSystem PhysicalElement might be sub-modeled by a PhysicalModel that contains Pipe PhysicalElements that model the individual pipes in the sewer system.
 
-See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on Model breakdown concepts.
+See  [Element Fundamentals](../fundamentals/element-fundamentals.md#elements-and-models) for more information on sub-modeling.
 
 ### Top of the World - PhysicalPartition
 
@@ -70,7 +70,7 @@ At the top of the PhysicalElement-PhysicalModel tree is a PhysicalPartition Elem
 
 ## Aggregate PhysicalElements
 
-As an alternate modeling technique PhysicalElement can have child Elements instead of breakdown Models. Elements with child Elements are essentially aggregates. For example, a SteelConnection might be an aggregate of Bolts, Plates and Welds.
+As an alternate modeling technique PhysicalElement can have child Elements instead of sub-Models. Elements with child Elements are essentially aggregates. For example, a SteelConnection might be an aggregate of Bolts, Plates and Welds.
 
 See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on aggregates and child Elements.
 
@@ -79,7 +79,7 @@ See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more in
 As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), there are many entities (physical, functional, analytical, etc.) for each real-world object that can be modeled in a BIS repository. There is a need to coordinate the Elements that model these entities. The strategy of BIS is to relate each of these Elements with the PhysicalElement that models the real world object. The hierarchy of PhysicalElements and PhysicalElements provides the "backbone" to which Elements representing the other modeling perspectives related.
 
 <!-- Future work:
-1. Explain Physical breakdowns strategy (Site, Facility, System, etc.)...after we lock it down.
+1. Explain Spatial Composition (DONE!).
 2. Provide example hierarchies
 3. Redo outline. Likely strategy:
     ## Introduction

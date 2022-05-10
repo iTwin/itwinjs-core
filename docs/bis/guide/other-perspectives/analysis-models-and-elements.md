@@ -24,7 +24,7 @@ AnalyticalElements must always be contained in AnalyticalModels. AnalyticalEleme
 
 As `AnalyticalModel`s are used to assist in the design or understanding of physical infrastructure, AnalyticalModels are often linked to `PhysicalModel`s. Such link is expressed via `AnalyticalElementSimulatesSpatialElement` relationships between their elements.
 
-At the [Top of the World](../data-organization/information-hierarchy.md), a specialized analysis is introduced via an `AnalyticalPartition` subclass, which is broken down by an AnalyticalModel.
+At the [Top of the World](../data-organization/information-hierarchy.md), a specialized analysis is introduced via an `AnalyticalPartition` subclass, which is sub-modeled by an AnalyticalModel.
 
 ## Typical Analytical Model Workflows
 

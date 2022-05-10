@@ -33,7 +33,7 @@ The Model class hierarchy also largely mirrors the perspective hierarchy, but it
 
 There should be no specializations of bis:PhysicalModel, although a few specializations of bis:PhysicalModel were released before it was determined that bis:PhysicalModel should be “sealed”. We use validation rules to prevent additional specializations.
 
-Any specialization of bis:PhysicalElement should be able to reside in any bis:PhysicalModel, though there is a plan to introduce a “Model Affinity” concept to allow a schema author to provide guidance on where they intend their Elements to be placed.
+Instances of any specialization of bis:PhysicalElement can technically reside in any bis:PhysicalModel, though conventions enforced by applications may be more restrictive.
 
 Use bis:SpatialLocationModel when sub-modeling specializations of bis:SpatialLocationElement, such as a “Grid” or “RealityLocationSet.
 

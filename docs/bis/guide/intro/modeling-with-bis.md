@@ -46,13 +46,13 @@ A [Model](../glossary.md#model) is a collection of Elements, all from a **single
 ![Models are collections of Elements with a common Perspective](../media/bis-modeling-03.png "Models are collections of Elements with a common Perspective")
 &nbsp;
 
-An Element in a different Model (see "P-0" below) models the car-as-a-whole as an "atomic" thing. The Model containing the "car part" Elements has a "breaks-down" relationship to the Element modeling the car-as-a-whole because it "breaks down" the Element (a simple, atomic model) into a finer-grained Model. Thus a BIS repository can cohesively model the car at two different Granularities--**both** as an "atomic" thing **and** as a fine-grained collection of parts.
+An Element in a different Model (see "P-0" below) models the car-as-a-whole as an "atomic" thing. The Model containing the "car part" Elements "sub-models" the Element modeling the car-as-a-whole. In other words, it "breaks down" the Element (a simple, atomic representation) into a finer-grained Model. Thus a BIS repository can cohesively model the car at two different Granularities--**both** as an "atomic" thing **and** as a fine-grained collection of parts.
 
 &nbsp;
-![Models break-down Elements for finer-grained modeling](../media/bis-modeling-04.png "Models break-down Elements for finer-grained modeling")
+![Models sub-model Elements for finer-grained modeling](../media/bis-modeling-04.png "Models sub-model Elements for finer-grained modeling")
 &nbsp;
 
-The Element modeling the car-as-a-whole is also in a Model. What Element is **that** Model breaking down? BIS escapes from infinite regression by defining a special RepositoryModel that is not required to "break down" some other Element. The RepositoryModel acts as the "Table of Contents" of the BIS Repository. It contains a "Subject" Element that textually references the Object that the BIS Repository is about. The RepositoryModel also contains one or more InformationPartitionElements. Each declares a modeling Perspective used to model the Subject. Each Partition will be "broken down" by a Model of the same Perspective, e.g. a PhysicalModel will "break down" a PhysicalPartition.
+The Element modeling the car-as-a-whole is also in a Model. What Element is **that** Model sub-modeling? BIS escapes from infinite regression by defining a special RepositoryModel that is not required to sub-model some other Element. The RepositoryModel acts as the "Table of Contents" of the BIS Repository. It contains a "Subject" Element that textually references the Object that the BIS Repository is about. The RepositoryModel also contains one or more InformationPartitionElements. Each declares a modeling Perspective used to model the Subject. Each Partition will be sub-modeled by a Model of the same Perspective, e.g. a PhysicalModel will sub-model a PhysicalPartition.
 
 &nbsp;
 ![The RepositoryModel acts as the Table of Contents of the BIS Repository](../media/bis-modeling-05.png "The RepositoryModel acts as the Table of Contents of the BIS Repository")
@@ -68,9 +68,9 @@ There can be many different kinds of Relationships among Elements within a Model
 
 Thus, BIS supports two ways of modeling an Object and its parts:
 
-1. The class of Element modeling the Object can be "atomic" (not allowing any child Elements) and be broken-down by as many Elements in a finer-grained "sub-Model". BIS calls this a "sub-modeled Element". The sub-modeled Element is intentionally redundant with the Elements in its sub-Model.
+1. The class of Element modeling the Object can be "atomic" (not allowing any child Elements) and sub-modeled by many Elements contained in a finer-grained "sub-Model". BIS calls this a "sub-modeled Element". The sub-modeled Element is intentionally redundant with the Elements in its sub-Model, i.e. the sub-modeled Element represents the entire Object and the Elements in its sub-Model represent the Object again, at a finer-granularity.
 
-2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be broken-down in a sub-Model. BIS calls this a "parent Element"—essentially modeling an Entity as an aggregate. A parent Element is not redundant with its child Elements.
+2. The class of Element modeling the Object can allow "child" Elements, but then it is not allowed to be sub-modeled. BIS calls this a "parent Element"—essentially modeling an Entity as an aggregate. A parent Element is not redundant with its child Elements, i.e. the parent plus the children "add up" to represent the whole Object, rather than representing it twice, at two different granularities.
 
 At a minimum, a parent Element represents the identity of the aggregate. Optionally, it may model a part of the "substance" of the aggregate, in which case, its part of the "substance" should not be redundant with its child Elements. For example, the physical geometry of the DoorElement should not contain the geometry of the door hardware (assuming it has a DoorHardware child Element that contains that geometry). You can model a "pure" assembly PhysicalElement by giving the parent Element no geometry and add child Elements that hold all of the geometry of the aggregate Entity.
 

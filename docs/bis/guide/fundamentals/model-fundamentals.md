@@ -6,7 +6,7 @@ The Model contents are driven by:
 - The Model subclass
   - Model specializations may limit the types of Elements that can be contained.
 - The granularity or level of detail
-  - The object as a whole vs. a more detailed breakdown of it.
+  - The object as a whole vs. a finer-grained breakdown of it.
 - User preferences
   - Some users may organize by spatial location (east wing vs. west wing) while others may organize by discipline (building vs. civil).
 - Domain rules
