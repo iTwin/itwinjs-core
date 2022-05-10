@@ -8873,11 +8873,11 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
+    createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal (undocumented)
-    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined;
+    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
