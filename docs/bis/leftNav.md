@@ -75,7 +75,7 @@
 
 &nbsp;
 
-### EC (Modeling Language)
+### Engineering Content (EC)
 
 - [Overview](./ec/index.md)
 - [ECSchema](./ec/ec-schema.md)
@@ -99,3 +99,19 @@
 - [Format](./ec/ec-format.md)
 - [ECName](./ec/ec-name.md)
 - [Changes Between ECObjects 2 and 3](./ec/differences-between-ec2-and-ec3.md)
+
+<script>
+$("#guide").append(function () {
+return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-carat'></i>"
+}).on('click', '.collapse-arrow', function (event) {
+var target = $(event.target);
+if (target.is("i")) {
+$('#guide').siblings('ul').slideToggle()
+}
+});
+</script>
+<style>
+.h-bis-naming-guidelines {
+font-size: 15px;
+}
+</style>
