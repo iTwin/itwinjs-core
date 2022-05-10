@@ -11,40 +11,38 @@
  * @internal
  */
 export async function loadScript(jsUrl: string): Promise<any> {
-  try {
-    const module = await import(/* webpackIgnore: true */jsUrl);
-    return execute(module);
-  } catch (e) {
-    return new Promise((resolve, reject) => {
-      const head = document.getElementsByTagName("head")[0];
-      if (!head)
-        reject(new Error("No head element found"));
+  // Warning "Critical dependency: the request of a dependency is an expression"
+  // until that is resolved, leave code commented:
+  // const module = await import(/* webpackIgnore: true */jsUrl);
+  // return execute(module);
+  return new Promise((resolve, reject) => {
+    const head = document.getElementsByTagName("head")[0];
+    if (!head)
+      reject(new Error("No head element found"));
 
-      const scriptElement = document.createElement("script");
-      const tempGlobal: string = `__tempModuleLoadingVariable${Math.random().toString(32).substring(2)}`;
+    const scriptElement = document.createElement("script");
+    const tempGlobal: string = `__tempModuleLoadingVariable${Math.random().toString(32).substring(2)}`;
 
-      function cleanup() {
-        delete (window as any)[tempGlobal];
-        scriptElement.remove();
-      }
+    function cleanup() {
+      delete (window as any)[tempGlobal];
+      scriptElement.remove();
+    }
 
-      // https://github.com/tc39/proposal-dynamic-import fallback
-      (window as any)[tempGlobal] = async function (module: any) {
-        await execute(module);
-        cleanup();
-        resolve(module);
-      };
-      scriptElement.type = "module";
-      scriptElement.textContent = `import * as m from "${jsUrl}";window.${tempGlobal}(m);`;
+    (window as any)[tempGlobal] = async function (module: any) {
+      await execute(module);
+      cleanup();
+      resolve(module);
+    };
+    scriptElement.type = "module";
+    scriptElement.textContent = `import * as m from "${jsUrl}";window.${tempGlobal}(m);`;
 
-      scriptElement.onerror = () => {
-        reject(new Error(`Failed to load extension with URL ${jsUrl}`));
-        cleanup();
-      };
+    scriptElement.onerror = () => {
+      reject(new Error(`Failed to load extension with URL ${jsUrl}`));
+      cleanup();
+    };
 
-      head.insertBefore(scriptElement, head.lastChild);
-    });
-  }
+    head.insertBefore(scriptElement, head.lastChild);
+  });
 }
 
 function execute(m: any) {
