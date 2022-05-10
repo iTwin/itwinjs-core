@@ -8,6 +8,7 @@
 
 import { assert, dispose, using } from "@itwin/core-bentley";
 import { WebGLContext } from "@itwin/webgl-compatibility";
+import { BlurType } from "./CachedGeometry";
 import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
@@ -788,6 +789,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.SkySphereTexture },
   { techniqueId: TechniqueId.AmbientOcclusion },
   { techniqueId: TechniqueId.Blur },
+  { techniqueId: TechniqueId.BlurTestOrder },
   { techniqueId: TechniqueId.CombineTextures },
   { techniqueId: TechniqueId.VolClassCopyZ },
   { techniqueId: TechniqueId.VolClassSetBlend },
@@ -950,7 +952,8 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
     this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
-    this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl));
+    this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl, BlurType.NoTest));
+    this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(createBlurProgram(gl, BlurType.TestOrder));
     this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
     this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
