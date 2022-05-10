@@ -600,6 +600,7 @@ describe("IModelTransformerHub", () => {
       provenanceInitializer.dispose();
 
       // update source (add model2 to model selector)
+      // (it's important that we only change the model selector here to keep the changes isolated)
       const modelSelectorUpdate = sourceDb.elements.getElement<ModelSelector>(modelSelectorId, ModelSelector);
       modelSelectorUpdate.models = [...modelSelectorUpdate.models, physModel2Id];
       modelSelectorUpdate.update();
@@ -617,8 +618,7 @@ describe("IModelTransformerHub", () => {
       const extractedChangedIds = sourceDb.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
       const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
         element: { update: [modelSelectorId] },
-        // TODO: why is this changed
-        model: { update: [IModel.dictionaryId] },
+        model: { update: [IModel.dictionaryId] }, // containing model will also get last modification time updated
       };
       expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
 
