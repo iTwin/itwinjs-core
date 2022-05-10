@@ -57,7 +57,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param sourceCount copy the first sourceCount points; all points if undefined
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    */
-  private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
+  private copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
     // validate inputs and convert from points to entries
     let offset = (undefined !== destOffset) ? destOffset * 2 : 0;
     if (offset < 0)
@@ -75,10 +75,8 @@ export class GrowableXYArray extends IndexedXYCollection {
       return;
     if (count === source.length)
       this._data.set(source, offset);
-    else if (source instanceof Float64Array)
-      this._data.set(source.subarray(0, count), offset);
     else
-      this._data.set(source.slice(0, count), offset);
+      this._data.set(source.subarray(0, count), offset);
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
