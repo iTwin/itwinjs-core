@@ -7,10 +7,8 @@
  */
 
 import {
-  AuthStatus,
   BentleyError,
   BentleyStatus,
-  BriefcaseStatus,
   ChangeSetStatus,
   GeoServiceStatus,
   HttpStatus,
@@ -211,16 +209,6 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.FunctionNotFound: return new NotImplemented();
     case IModelStatus.NoActiveCommand: return new StateViolation();
 
-    case BriefcaseStatus.CannotAcquire: return new OperationFailed();
-    case BriefcaseStatus.CannotDownload: return new OperationFailed();
-    case BriefcaseStatus.CannotUpload: return new OperationFailed();
-    case BriefcaseStatus.CannotCopy: return new OperationFailed();
-    case BriefcaseStatus.CannotDelete: return new OperationFailed();
-    case BriefcaseStatus.VersionNotFound: return new NotFound();
-    case BriefcaseStatus.CannotApplyChanges: return new OperationFailed();
-    case BriefcaseStatus.DownloadCancelled: return new Cancelled();
-    case BriefcaseStatus.ContainsDeletedChangeSets: return new ValidationError();
-
     case RpcInterfaceStatus.Success: return new Success();
     case RpcInterfaceStatus.IncompatibleVersion: return new VersioningViolation();
 
@@ -328,9 +316,6 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelHubStatus.FileHandlerNotSet: return new NotImplemented();
     case IModelHubStatus.FileNotFound: return new NotFound();
     case IModelHubStatus.InitializationTimeout: return new Timeout();
-
-    case AuthStatus.Success: return new Success();
-    case AuthStatus.Error: return new UnknownError();
 
     case GeoServiceStatus.Success: return new Success();
     case GeoServiceStatus.NoGeoLocation: return new ValidationError();
