@@ -17,6 +17,8 @@
     "copy:esm": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/esm\"",
     "cover": "nyc npm -s test",
     "docs": "",
+    "extract-api": "betools extract-api --entry=map-layers-auth && npm run extract-extension-api",
+    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "",
     "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
