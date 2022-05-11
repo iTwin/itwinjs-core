@@ -197,9 +197,9 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
 
     frontstageDef && frontstageDef.setIsApplicationClosing(false);
 
-    window.addEventListener("beforeunload", triggerWidowCloseProcessing);
+    window.addEventListener("unload", triggerWidowCloseProcessing);
     return () => {
-      window.removeEventListener("beforeunload", triggerWidowCloseProcessing);
+      window.removeEventListener("unload", triggerWidowCloseProcessing);
     };
   }, [frontstageDef]);
 
@@ -344,7 +344,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const preferredPosition = widgetDef.defaultFloatingPosition;
       state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
     } else {
-      const widgetPanelSectionId = getWidgetPanelSectionId (side, preferredWidgetIndex);
+      const widgetPanelSectionId = getWidgetPanelSectionId(side, preferredWidgetIndex);
       state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);
     }
   }
@@ -497,82 +497,82 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
   switch (panelZone) {
     case "leftStart": {
       const outArray = [...frontstageDef.centerLeft?.widgetDefs || []];
-      frontstageDef.leftPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.leftPanel?.panelZones.start.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "leftEnd": {
       const outArray = [...frontstageDef.bottomLeft?.widgetDefs || []];
-      frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
-      frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+      frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "rightStart": {
       const outArray = [...frontstageDef.centerRight?.widgetDefs || []];
-      frontstageDef.rightPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.rightPanel?.panelZones.start.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "rightEnd": {
       const outArray = [...frontstageDef.bottomRight?.widgetDefs || []];
-      frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
-      frontstageDef.rightPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+      frontstageDef.rightPanel?.panelWidgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "topStart": {
       const outArray = [...frontstageDef.topPanel?.panelWidgetDefs || []];
-      frontstageDef.topPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.topPanel?.panelZones.start.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "topEnd": {
       const outArray = [...frontstageDef.topMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
-      frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "bottomStart": {
       const outArray = [...frontstageDef.bottomPanel?.panelWidgetDefs || []];
-      frontstageDef.bottomPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.bottomPanel?.panelZones.start.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
     }
     case "bottomEnd": {
       const outArray = [...frontstageDef.bottomMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
-      frontstageDef.bottomPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+      frontstageDef.bottomPanel?.panelZones.end.widgetDefs.forEach((widgetDef) => {
         // istanbul ignore else
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        if (undefined === outArray.find((widget) => widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       return outArray;
@@ -728,9 +728,9 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     if (-1 !== oldLeftMiddleIndex) {
       draft.panels.left.widgets = saved.panels.left.widgets.filter((value) => value !== "leftMiddle");
       if ("leftEnd" in draft.widgets) {
-        draft.widgets.leftMiddle.tabs.forEach((tab)=>draft.widgets.leftEnd.tabs.push(tab));
+        draft.widgets.leftMiddle.tabs.forEach((tab) => draft.widgets.leftEnd.tabs.push(tab));
       } else {
-        draft.widgets.leftEnd = {...draft.widgets.leftMiddle};
+        draft.widgets.leftEnd = { ...draft.widgets.leftMiddle };
         delete draft.widgets.leftMiddle;
       }
     }
@@ -740,9 +740,9 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     if (-1 !== oldRightMiddleIndex) {
       draft.panels.right.widgets = saved.panels.right.widgets.filter((value) => value !== "rightMiddle");
       if ("rightEnd" in draft.widgets) {
-        draft.widgets.rightMiddle.tabs.forEach((tab)=>draft.widgets.rightEnd.tabs.push(tab));
+        draft.widgets.rightMiddle.tabs.forEach((tab) => draft.widgets.rightEnd.tabs.push(tab));
       } else {
-        draft.widgets.rightEnd = {...draft.widgets.rightMiddle};
+        draft.widgets.rightEnd = { ...draft.widgets.rightMiddle };
         delete draft.widgets.rightMiddle;
       }
     }
@@ -895,7 +895,7 @@ export const setWidgetState = produce((
         return;
       widget.minimized = true;
     }
-  }  else if (state === WidgetState.Hidden) {
+  } else if (state === WidgetState.Hidden) {
     hideWidget(nineZone, widgetDef);
   }
 });
