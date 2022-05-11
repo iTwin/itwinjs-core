@@ -26,7 +26,7 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfig
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider,NativeApp, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -324,7 +324,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit }});
+    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -728,7 +728,7 @@ const SampleAppViewer2 = () => {
 };
 
 // If we are using a browser, close the current iModel before leaving
-window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
+window.addEventListener("unload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
