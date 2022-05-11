@@ -7,7 +7,7 @@
 
 import * as fs from "fs";
 import * as glob from "glob";
-import { join } from "path";
+import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
@@ -52,7 +52,7 @@ interface WorkspaceDbOpt extends EditorOpts {
   dbName: WorkspaceDb.DbFullName;
   dbFileName: string;
   version?: string;
-  like?: string;
+  glob?: string;
 }
 
 /** options for copying a WorkspaceDb to a new name */
@@ -379,6 +379,10 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
 /** import a WorkspaceDb to a cloud WorkspaceContainer. */
 async function importWorkspaceDb(args: UploadOptions) {
   const container = getCloudContainer(args);
+  args.localFileName = `${args.localFileName}.${ITwinWorkspaceDb.fileExt}`;
+  if (!IModelJsFs.existsSync(args.localFileName))
+    args.localFileName = join(args.directory ?? IModelHost.appWorkspace.containerDir, args.localFileName);
+
   await CloudSqlite.withWriteLock(args.user, container, async () => {
     await performTransfer(container, "upload", args);
   });
@@ -386,6 +390,13 @@ async function importWorkspaceDb(args: UploadOptions) {
 
 /** export a WorkspaceDb from a cloud WorkspaceContainer. */
 async function exportWorkspaceDb(args: TransferOptions) {
+  if (!extname(args.localFileName))
+    args.localFileName = `${args.localFileName}.${ITwinWorkspaceDb.fileExt}`;
+
+  const dbParts = ITwinWorkspaceContainer.parseDbFileName(args.dbName);
+  if (!dbParts.version)
+    throw new Error("exportDb requires a version");
+
   await performTransfer(getCloudContainer(args), "download", args);
 }
 
@@ -499,13 +510,13 @@ async function clearWriteLock(args: WorkspaceDbOpt) {
 /** query the list of WorkspaceDb in a WorkspaceContainer. */
 async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
   const container = getCloudContainer(args);
-  const writeLockMsg = container.hasWriteLock ? ",  writeLocked" : "";
+  const writeLockMsg = container.hasWriteLock ? ", writeLocked" : "";
   const hasLocalMsg = container.hasLocalChanges ? ", has local changes" : "";
   const nGarbage = container.garbageBlocks;
   const garbageMsg = nGarbage ? `, ${nGarbage} garbage block${nGarbage > 1 ? "s" : ""}` : "";
   showMessage(`WorkspaceDbs in ${sayContainer(args)}${writeLockMsg}${hasLocalMsg}${garbageMsg}`);
 
-  const dbs = container.queryDatabases(args.like);
+  const dbs = container.queryDatabases(args.glob);
   for (const dbName of dbs) {
     const db = container.queryDatabase(dbName);
     if (db) {
@@ -555,10 +566,10 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
   };
 }
 
-const type: Yargs.Options = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], demandOption: true };
+const type: Yargs.Options = { alias: "t", describe: "Type of resource", choices: ["blob", "string", "file"], demandOption: true };
 const addOrReplace = {
-  rscName: { alias: "n", describe: "resource name for file", string: true },
-  root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
+  rscName: { alias: "n", describe: "Resource name for file", string: true },
+  root: { alias: "r", describe: "Root directory. Path parts after this will be saved in resource name", string: true },
   type,
 };
 Yargs.usage("Edits or lists contents of a WorkspaceDb");
@@ -568,16 +579,16 @@ Yargs.config();
 Yargs.help();
 Yargs.version("V2.0");
 Yargs.options({
-  directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
-  nRequests: { describe: "number of simultaneous http requests for cloud operations", number: true },
-  containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, demandOption: true },
-  user: { describe: "user name", string: true, default: "workspace-editor" },
-  accessName: { alias: "a", describe: "cloud storage account name for container", string: true },
-  accessToken: { describe: "token that grants access to the container (either SAS or account key)", string: true, default: "" },
-  storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
-  logging: { describe: "enable log messages", boolean: true, default: false },
-  prefetch: { boolean: true, default: false },
-  curlDiagnostics: { boolean: true, default: false },
+  directory: { alias: "d", describe: "Directory to use for WorkspaceContainers", string: true },
+  nRequests: { describe: "Number of simultaneous http requests for cloud operations", number: true, hidden: true },
+  containerId: { alias: "c", describe: "ContainerId for WorkspaceDb", string: true, demandOption: true },
+  user: { describe: "String shown in cloud container locked message", string: true, default: "workspace-editor" },
+  accessName: { alias: "a", describe: "Cloud storage account name for container", string: true },
+  accessToken: { describe: "Token that grants access to the container (either SAS or account key)", string: true, default: "" },
+  storageType: { describe: "Cloud storage module type", string: true, default: "azure?sas=1" },
+  logging: { describe: "enable log messages", boolean: true, default: false, hidden: true },
+  prefetch: { boolean: true, default: false, hidden: true },
+  curlDiagnostics: { boolean: true, default: false, hidden: true },
 });
 Yargs.command<AddFileOptions>({
   command: "add <dbName> <files>",
@@ -638,12 +649,12 @@ Yargs.command<MakeVersionOpt>({
 });
 Yargs.command<WorkspaceDbOpt>({
   command: "pinDb <dbName>",
-  describe: "pin a WorkspaceDb from a cloud container",
+  describe: false, // "pin a WorkspaceDb from a cloud container",
   handler: runCommand(pinWorkspaceDb),
 });
 Yargs.command<WorkspaceDbOpt>({
   command: "unpinDb <dbName>",
-  describe: "un-pin a WorkspaceDb from a cloud container",
+  describe: false, // "un-pin a WorkspaceDb from a cloud container",
   handler: runCommand(unPinWorkspaceDb),
 });
 Yargs.command<WorkspaceDbOpt>({
@@ -655,7 +666,7 @@ Yargs.command<UploadOptions>({
   command: "importDb <dbName> <localFileName>",
   describe: "import a WorkspaceDb into a cloud container",
   builder: {
-    noVacuum: { describe: "don't vacuum source Db before importing", boolean: true },
+    noVacuum: { describe: "Don't vacuum source Db before importing", boolean: true },
   },
   handler: runCommand(importWorkspaceDb),
 });
@@ -665,7 +676,7 @@ Yargs.command<TransferOptions>({
   handler: runCommand(exportWorkspaceDb),
 });
 Yargs.command<WorkspaceDbOpt>({
-  command: "queryDbs [like]",
+  command: "queryDbs [glob]",
   describe: "query the list of WorkspaceDbs in a cloud container",
   handler: runCommand(queryWorkspaceDbs),
 });
@@ -691,14 +702,14 @@ Yargs.command<EditorOpts>({
 });
 Yargs.command<EditorOpts>({
   command: "detachWorkspace",
-  describe: "detach a WorkspaceContainer from the local cache",
+  describe: false, // "detach a WorkspaceContainer from the local cache",
   handler: runCommand(detachWorkspace),
 });
 Yargs.command<InitializeOpts>({
   command: "initializeWorkspace",
   describe: "initialize a WorkspaceContainer (empties if already initialized)",
   builder: {
-    noPrompt: { describe: "skip prompt", boolean: true, default: false },
+    noPrompt: { describe: "Skip prompt", boolean: true, default: false },
   },
   handler: runCommand(initializeWorkspace),
 });

@@ -777,12 +777,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "listDb",
-        "allEarth",
-        "--config=g:/realAzure.json",
-        "--logging",
-        "--nRequests=30",
-        "--prefetch",
+        "exportDb",
+        "proj",
+        "d:/temp/proj",
+        "--config=r:/cloud.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
