@@ -358,7 +358,7 @@ internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSource
 internal;MapLayerSources
-alpha;MapLayerSourceStatus
+beta;MapLayerSourceStatus
 beta;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
