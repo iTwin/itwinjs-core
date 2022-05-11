@@ -2,17 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { request, RequestOptions } from "../../request/Request";
+import { MapLayerAccessToken } from "@itwin/core-frontend";
 
 /** @packageDocumentation
  * @module Tiles
  */
 
 /** @internal */
-export interface ArcGisToken {
-  // The generated token.
-  token: string;
+export interface ArcGisOAuth2Token extends MapLayerAccessToken {
 
+  // The expiration time of the token in milliseconds (UNIX time)
+  expiresAt: number;
+
+  // This property will show as true if the token must always pass over ssl.
+  ssl: boolean;
+
+  // Username associated with this token
+  userName: string;
+
+  // A Binary value that, if true, implies that the user had checked "Keep me signed in"
+  persist?: boolean;
+}
+
+/** @internal */
+export interface ArcGisToken extends MapLayerAccessToken {
   // The expiration time of the token in milliseconds since January 1, 1970 (UTC).
   expires: number;
 
@@ -64,8 +77,8 @@ export class ArcGisTokenGenerator {
   // Cache info url to avoid fetching/parsing twice for the same base url.
   private static _tokenServiceUrlCache = new Map<string, string>();
 
-  public static async fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined> {
-    const lowerUrl = esriRestServiceUrl.toLowerCase();
+  public static async fetchTokenServiceUrl(arcGisRestServiceUrl: string): Promise<string | undefined> {
+    const lowerUrl = arcGisRestServiceUrl.toLowerCase();
     const restApiIdx = lowerUrl.indexOf(ArcGisTokenGenerator.restApiPath);
     if (restApiIdx === -1)
       return undefined;
@@ -73,8 +86,9 @@ export class ArcGisTokenGenerator {
 
     let tokenServicesUrl: string | undefined;
     try {
-      const response = await request(infoUrl, { method: "GET", responseType: "json" });
-      tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(response?.body);
+      const response = await fetch(infoUrl, { method: "GET" });
+      const json = await response.json();
+      tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(json);
     } catch (_error) {
     }
     return tokenServicesUrl;
@@ -97,8 +111,8 @@ export class ArcGisTokenGenerator {
   }
 
   // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
-  public async generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
-    const tokenServiceUrl = await this.getTokenServiceUrl(esriRestServiceUrl);
+  public async generate(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
+    const tokenServiceUrl = await this.getTokenServiceUrl(arcGisRestServiceUrl);
     if (!tokenServiceUrl)
       return undefined;
 
@@ -132,17 +146,16 @@ export class ArcGisTokenGenerator {
         clientStr = `&client=requestip&ip=`;
       }
 
-      const httpRequestOptions: RequestOptions = {
+      const httpRequestOptions: RequestInit = {
         method: "POST",
         body: `username=${encodedUsername}&password=${encodedPassword}${clientStr}${expirationStr}&f=pjson`,
         headers: { "content-type": "application/x-www-form-urlencoded" },
-        responseType: "json",
       };
 
-      const response = await request(tokenServiceUrl, httpRequestOptions);
+      const response = await fetch(tokenServiceUrl, httpRequestOptions);
 
       // Check a token was really generated (an error could be part of the body)
-      token = response?.body;
+      token = await response.json();
 
     } catch (_error) {
     }
