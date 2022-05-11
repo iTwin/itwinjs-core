@@ -44,7 +44,7 @@ myConfig.json:
   "containerId": "5d385232-a2ec-4f31-b74b-8201c027848d",
   "accessName": "smsblob1",
   "storageType": "azure?sas=1",
-  "user": "Nancy Adams",
+  "user": "workspace editor example",
   "accessToken": "<valid token here>"
 }
 ```
@@ -62,6 +62,7 @@ set WORKSPACE_EDITOR_CONFIG=d:\projData\config.json
 ```
 
 To specify camelCase options, separate the words with an underbar, e.g.:
+
 ```cmd
 set WORKSPACE_EDITOR_ACCESS_TOKEN=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
 ```
@@ -113,6 +114,7 @@ r:\local.json:
   "containerId": "proj112"
 }
 ```
+
 The name of the `WorkspaceDb` is supplied with the `dbName` argument. For cloud-based `WorkspaceContainers`, `dbName` may either include the version number (e.g. `pipe-spec:1.3.2`) or, if no version is supplied, the highest version is used.
 
 ### createDb \<dbName>
@@ -188,7 +190,7 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
 
 ### extract \<dbName> \<rscName> \<fileName>
 
-Extract a `WorkspaceResource` from a `WorkspaceDb` into a local file, leaving the `WorkspaceResource ` unchanged in the `WorkspaceDb`.
+Extract a `WorkspaceResource` from a `WorkspaceDb` into a local file, leaving the `WorkspaceResource` unchanged in the `WorkspaceDb`.
 
 Example:
 
@@ -279,7 +281,6 @@ The normal workflow for changing a `WorkspaceDb` in a cloud `WorkspaceContainer`
 2. Create a new version (major, minor, or patch) of the `WorkspaceDb` using [versionDb](#versiondb-dbname)
 3. Edit the new version using one or more [add](#add-dbname-files), [replace](#replace-dbname-files), or [remove](#remove-dbname-rscname) resource commands.
 4. Release the write lock using [releaselock](#releaselock)
-
 
 ### initializeWorkspace
 
@@ -384,6 +385,11 @@ created new version: [pipe-spec:1.4.0] from [pipe-spec:1.3.2] in container [5d38
 > WorkspaceEditor versionDb pipe-spec --versionType=patch
 created new version: [pipe-spec:1.3.3] from [pipe-spec:1.3.2] in container [5d385232-a2ec-4f31-b74b-8201c027848d]
 
+ - or -
+
+> WorkspaceEditor versionDb pipe-spec
+created new version: [pipe-spec:1.3.3] from [pipe-spec:1.3.2] in container [5d385232-a2ec-4f31-b74b-8201c027848d]
+
 ```
 
 > The examples above are not intended to illustrate sequential commands. Once you make a new version of a WorkspaceDb, you may begin editing it. But you cannot make another version until you release the write lock.
@@ -414,14 +420,14 @@ WorkspaceDbs in container [5d385232-a2ec-4f31-b74b-8201c027848d], writeLocked, h
 
 The output also shows:
 
- - whether the write lock is held
- - whether there are local changes to be uploaded
- - whether there are garbage blocks that can be purged
- - for each `WorkspaceDb`:
-   - its full name with version
-   - its total size
-   - number of bytes downloaded and percentage
-   - whether the database is editable
+- whether the write lock is held
+- whether there are local changes to be uploaded
+- whether there are garbage blocks that can be purged
+- for each `WorkspaceDb`:
+  - its full name with version
+  - its total size
+  - number of bytes downloaded and percentage
+  - whether the database is editable
 
 ### exportDb \<dbName> \<localFileName>
 
@@ -433,6 +439,7 @@ Example:
 > WorkspaceEditor exportDb proj:1.0.1 d:\temp\proj
 export d:\temp\proj.itwin-workspace, container=5d385232-a2ec-4f31-b74b-8201c027848d, dbName=proj:1.0.1 : complete, 0.013 seconds
 ```
+
 > `dbName` must include a version number.
 
 ### deleteDb \<dbName>
@@ -454,9 +461,73 @@ This command is not normally used, since older versions of `WorkspaceDb`s may be
 
 Delete currently unused blocks from a cloud `WorkspaceContainer`. This is only necessary or useful after vacuuming databases.
 
-## "@" scripts
+## @ scripts
 
-It is sometimes necessary to run WorkspaceEditor in "batch" mode, for example during pipeline jobs. If the first argument to WorkspaceEditor begins with an "@", the rest of the argument is a file name from which WorkspaceEditor commands are executed in sequence.
+It is sometimes necessary to run WorkspaceEditor in *batch mode*, for example during pipeline jobs. If the first argument to WorkspaceEditor begins with an "@", the rest of the argument is a file name from which WorkspaceEditor commands are executed in sequence.
 
+The second argument can specify the config file for the script.
 
+For example, to run the examples above:
 
+Assume a file called `importAll.txt` contains:
+
+```sh
+> cat importAll.txt
+createDb proj
+add proj --rscName=equipment-data --type=file r:\data\equip.dat
+add proj --type=string --root=r:\json *
+add proj --type=blob --root=r:\dict **\*.dict
+listDb proj
+```
+
+run `importAll.txt` as an @ script:
+
+```sh
+> WorkspaceEditor @importAll.txt --config=r:\local.json
+created WorkspaceDb r:\workspaces\proj112\proj.itwin-workspace
+WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
+ added "r:/data/equip.dat" as file resource [equipment-data]
+WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
+ added "r:\json\contracts.json" as string resource [contracts.json]
+ added "r:\json\firecode.json" as string resource [firecode.json]
+ added "r:\json\specs.json" as string resource [specs.json]
+ added "r:\json\vendor.json" as string resource [vendor.json]
+WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
+ added "r:\dict\Sparks\KDE05814.dict" as blob resource [Sparks/KDE05814.dict]
+ added "r:\dict\Sparks\KDE05815.dict" as blob resource [Sparks/KDE05815.dict]
+ added "r:\dict\Sparks\KDE05816.dict" as blob resource [Sparks/KDE05816.dict]
+ added "r:\dict\Sparks\KDE05922.dict" as blob resource [Sparks/KDE05922.dict]
+ added "r:\dict\Sparks\KDE05929.dict" as blob resource [Sparks/KDE05929.dict]
+ added "r:\dict\TernKit\TRN02324.dict" as blob resource [TernKit/TRN02324.dict]
+ added "r:\dict\TernKit\TRN05314.dict" as blob resource [TernKit/TRN05314.dict]
+ added "r:\dict\TernKit\TRN05814.dict" as blob resource [TernKit/TRN05814.dict]
+ added "r:\dict\TernKit\TRN09911.dict" as blob resource [TernKit/TRN09911.dict]
+ added "r:\dict\UniSpace\KRT05554.dict" as blob resource [UniSpace/KRT05554.dict]
+ added "r:\dict\UniSpace\KRT05800.dict" as blob resource [UniSpace/KRT05800.dict]
+ added "r:\dict\UniSpace\KRT05814.dict" as blob resource [UniSpace/KRT05814.dict]
+ added "r:\dict\UniSpace\KRT05820.dict" as blob resource [UniSpace/KRT05820.dict]
+ added "r:\dict\UniSpace\KRT06519.dict" as blob resource [UniSpace/KRT06519.dict]
+WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
+ strings:
+  name=contracts.json, size=17399
+  name=firecode.json, size=3287
+  name=specs.json, size=8465
+  name=vendor.json, size=46642
+ blobs:
+  name=Sparks/KDE05814.dict, size=224K
+  name=Sparks/KDE05815.dict, size=307K
+  name=Sparks/KDE05816.dict, size=32K
+  name=Sparks/KDE05922.dict, size=56K
+  name=Sparks/KDE05929.dict, size=15K
+  name=TernKit/TRN02324.dict, size=405
+  name=TernKit/TRN05314.dict, size=67K
+  name=TernKit/TRN05814.dict, size=7K
+  name=TernKit/TRN09911.dict, size=3K
+  name=UniSpace/KRT05554.dict, size=2K
+  name=UniSpace/KRT05800.dict, size=5K
+  name=UniSpace/KRT05814.dict, size=13K
+  name=UniSpace/KRT05820.dict, size=7K
+  name=UniSpace/KRT06519.dict, size=687
+ files:
+  name=equipment-data, size=134K, ext="dat", date=Tue Jul 08 2014 13:55:19 GMT-0400 (Eastern Daylight Time)
+```

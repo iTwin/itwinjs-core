@@ -743,7 +743,7 @@ async function main() {
     if (parsed.config)
       process.env.WORKSPACE_EDITOR_CONFIG = parsed.config as string;
 
-    await runCommand(runScript)({ scriptName: process.argv[2].substring(1) });
+    await runCommand(runScript)({ ...parsed, scriptName: process.argv[2].substring(1) });
     return;
   }
 
