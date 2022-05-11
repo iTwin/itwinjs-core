@@ -3098,26 +3098,6 @@ export interface ExtensionManifest {
     readonly version: string;
 }
 
-// @internal
-export interface ExtensionProps {
-    // (undocumented)
-    contextId: string;
-    // (undocumented)
-    extensionName: string;
-    // (undocumented)
-    files: FileInfo[];
-    // (undocumented)
-    isPublic: boolean;
-    // (undocumented)
-    status: ExtensionUploadStatus;
-    // (undocumented)
-    timestamp: Date;
-    // (undocumented)
-    uploadedBy: string;
-    // (undocumented)
-    version: string;
-}
-
 // @alpha
 export interface ExtensionProvider {
     execute: ResolveFunc;
@@ -5183,12 +5163,6 @@ export enum InputSource {
     Mouse = 1,
     Touch = 2,
     Unknown = 0
-}
-
-// @alpha
-export interface InstalledExtension {
-    execute: ResolveFunc;
-    manifest: ExtensionManifest;
 }
 
 // @internal
@@ -9621,7 +9595,7 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
 // @alpha
 export interface ServiceExtensionProviderProps {
-    contextId: string;
+    iTwinId: string;
     name: string;
     version: string;
 }
