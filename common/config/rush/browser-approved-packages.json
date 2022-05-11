@@ -367,6 +367,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@testing-library/dom",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@testing-library/react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -700,7 +704,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "jsdom-global",
