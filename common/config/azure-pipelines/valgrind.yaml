@@ -41,7 +41,7 @@ jobs:
 
       - script: mkdir $(VALGRIND_RESULTS)
 
-      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
+      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
         displayName: 'Run Valgrind on rush cover'
         failOnStderr: false
 
