@@ -54,6 +54,6 @@ After rebuilding, re-running, and hitting the breakpoint, you can then step into
 
 ### isolating bad elements
 
-You can pass a comma-separated list of element ids to the `--isolateElements` (like `id1,id2`) to transform to the specified target
+You can pass a comma-separated list of element ids to the `--isolateElements` (such as `id1,id2`) to transform to the specified target
 a filtered iModel containing only the path to and child subtrees of the given elements/models specified by the given ids. This can be
 useful to create smaller reproduction iModels with less data that still contain problematic elements.
