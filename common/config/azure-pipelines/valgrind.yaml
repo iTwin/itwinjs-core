@@ -7,7 +7,7 @@ trigger:
 
 jobs:
   - job:
-    timeoutInMinutes: 360
+    timeoutInMinutes: 180
     pool:
       name: iModelTechCI
       demands:
@@ -41,7 +41,7 @@ jobs:
 
       - script: mkdir $(VALGRIND_RESULTS)
 
-      - script: 'valgrind --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
+      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
         displayName: 'Run Valgrind on rush cover'
         failOnStderr: false
 
@@ -56,14 +56,14 @@ jobs:
           scriptSource: 'inline'
           script: |
             import sys, re
-            
+
             # ==6451== ERROR SUMMARY: 667 errors from 26 contexts (suppressed: 451 from 451)
             pattern = re.compile (r"==\d+== ERROR SUMMARY: (\d+) errors from (\d+) contexts \(suppressed: (\d+) from (\d+)\)")
-            
+
             if len(sys.argv) < 2:
                 print ('Syntax: ' + sys.argv[0] + ' logFilePath)')
                 exit(1)
-            
+
             logFilePath = sys.argv[1]
             numberOfErrors = 0
             numberOfSuppressions = 0
@@ -75,7 +75,7 @@ jobs:
                         continue
                     numberOfErrors += int(match.group(1))
                     numberOfSuppressions += int(match.group(3))
-            
+
             msg = 'Found ' + str(numberOfErrors) + ' errors and ' + str(numberOfSuppressions) + ' suppressions.'
             if numberOfErrors >= 1:
                 print('##vso[task.logissue type=error]' + msg)
