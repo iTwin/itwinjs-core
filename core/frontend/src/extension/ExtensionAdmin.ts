@@ -9,7 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import type { ExtensionProvider, InstalledExtension } from "./Extension";
+import type { ExtensionManifest, ExtensionProvider, ResolveFunc } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -20,10 +20,22 @@ import type { ExtensionProvider, InstalledExtension } from "./Extension";
  * 3 ways to load an Extension into the system:
  *
  *  1. Load both the Extension Manifest and import the main module of the extension from a local file/package.
- *  2. A minimum set of properties that provide enough information to get the manifest from a remote server.
+ *  2. A minimum set of properties to get the manifest and javascript from a remote server.
+ *  3. A minimum set of properties to get the manifest and javascript from Bentley's Extension Service.
  *
  * An Extension must be added to ExtensionAdmin before it can be executed during activation events.
  */
+
+/**
+ * A "ready to use" Extension (contains a manifest object and a function to execute).
+ * Will be used as the type for in-memory extensions in the ExtensionAdmin
+ */
+interface InstalledExtension {
+  /** A function that executes the main entry point of the extension */
+  execute: ResolveFunc;
+  /** The manifest (package.json) of the extension */
+  manifest: ExtensionManifest;
+}
 
 /** The Extension Admin controls the list of currently loaded Extensions.
  *
@@ -66,7 +78,7 @@ export class ExtensionAdmin {
       });
       // TODO - temporary fix to execute the missed startup event
       if (manifest.activationEvents.includes("onStartup"))
-        void provider.execute();
+        provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
       throw new Error(`Failed to get manifest from extension: ${e}`);
     }
@@ -100,7 +112,7 @@ export class ExtensionAdmin {
       if (!extension.manifest.activationEvents) continue;
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
-          void this._execute(extension);
+          this._execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises
         }
       }
     }

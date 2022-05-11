@@ -6,11 +6,24 @@ import { rcompare } from "semver";
 
 import { IModelApp } from "../../IModelApp";
 import { loadScript } from "./ExtensionLoadScript";
-import { ExtensionClient } from "./ExtensionServiceClient";
+import { ExtensionClient, ExtensionMetadata } from "./ExtensionServiceClient";
 
 import type {
-  ExtensionManifest, ExtensionProps, ExtensionProvider, ServiceExtensionProviderProps,
+  ExtensionManifest, ExtensionProvider,
 } from "../Extension";
+
+/**
+ * Required props for an extension uploaded to Bentley's Extension Service
+ * @alpha
+ */
+export interface ServiceExtensionProviderProps {
+  /** Name of the uploaded extension */
+  name: string;
+  /** Version number (Semantic Versioning) */
+  version: string;
+  /** iTwin Id */
+  iTwinId: string;
+}
 
 /**
  * Implements a "service" extension via LocalExtensionProps.
@@ -74,11 +87,11 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!accessToken)
       return undefined;
 
-    let extensionProps: ExtensionProps | undefined;
+    let extensionProps: ExtensionMetadata | undefined;
     if (props.version !== undefined)
-      extensionProps = await extensionClient.getExtensionProps(accessToken, props.contextId, props.name, props.version);
+      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.iTwinId, props.name, props.version);
     else {
-      const propsArr = await extensionClient.getExtensions(accessToken, props.contextId, props.name);
+      const propsArr = await extensionClient.getExtensions(accessToken, props.iTwinId, props.name);
       extensionProps = propsArr.sort((ext1, ext2) => rcompare(ext1.version, ext2.version, true))[0];
     }
 

@@ -5,8 +5,19 @@
 import type {
   ExtensionManifest,
   ExtensionProvider,
-  LocalExtensionProviderProps,
+  ResolveFunc,
 } from "../Extension";
+
+/**
+ * Required props for a local extension provider
+ * @alpha
+ */
+export interface LocalExtensionProviderProps {
+  /** A promise that returns the manifest (package.json) of a local extension */
+  manifestPromise: Promise<any>;
+  /** A function that runs the main entry point of the local extension */
+  main: ResolveFunc;
+}
 
 /**
  * Implements a "local" extension via LocalExtensionProps.

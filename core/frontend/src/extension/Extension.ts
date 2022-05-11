@@ -47,91 +47,19 @@ export interface ExtensionManifest {
 }
 
 /**
- * A "ready to use" Extension (contains a manifest object and a function to execute).
- * Will be used as the type for in-memory extensions in the ExtensionAdmin
- * @alpha
- */
-export interface InstalledExtension {
-  /** A function that executes the main entry point of the extension */
-  execute: ResolveFunc;
-  /** The manifest (package.json) of the extension */
-  manifest: ExtensionManifest;
-}
-
-/**
  * An Extension Provider defines how to fetch and execute an extension.
  * An extension can be one of three kinds:
  *   1. A locally installed extension.
  *   2. A remote extension served from a user provided host.
  *   3. A remote extension served from Bentley's Extension Service.
- * All three must have these required properties and methods.
+ * All three must have a way to fetch the manifest (package.json) and main entry point files.
  * @alpha
  */
 export interface ExtensionProvider {
-  /** A function that returns the extension's manifest file */
+  /** A function that returns the extension's manifest (package.json) file */
   getManifest: ResolveManifestFunc;
   /** A function that executes the main entry point of the extension */
   execute: ResolveFunc;
   /** Hostname of a remote extension */
   readonly hostname?: string;
-}
-
-/**
- * Required props for a local extension provider
- * @alpha
- */
-export interface LocalExtensionProviderProps {
-  /** A promise that returns the manifest (package.json) of a local extension */
-  manifestPromise: Promise<any>;
-  /** A function that runs the main entry point of the local extension */
-  main: ResolveFunc;
-}
-
-/**
- * Required props for a remote extension provider
- * @alpha
- */
-export interface RemoteExtensionProviderProps {
-  /** URL where the extension entry point can be loaded from */
-  jsUrl: string;
-  /** URL where the manifest (package.json) can be loaded from */
-  manifestUrl: string;
-}
-
-/**
- * Required props for an extension uploaded to Bentley's Extension Service
- * @alpha
- */
-export interface ServiceExtensionProviderProps {
-  /** Name of the uploaded extension */
-  name: string;
-  /** Version number (Semantic Versioning) */
-  version: string;
-  /** Context Id */
-  contextId: string;
-}
-
-/** Structure of extensions from the ExtensionService
- * @internal
- */
-export interface ExtensionProps {
-  contextId: string;
-  extensionName: string;
-  version: string;
-  files: FileInfo[];
-  uploadedBy: string;
-  timestamp: Date;
-  status: ExtensionUploadStatus;
-  isPublic: boolean;
-}
-
-interface ExtensionUploadStatus {
-  updateTime: Date;
-  status: string;
-}
-
-interface FileInfo {
-  url: string;
-  expires: Date;
-  checksum: string;
 }

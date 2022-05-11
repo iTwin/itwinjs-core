@@ -5,9 +5,19 @@
 import type {
   ExtensionManifest,
   ExtensionProvider,
-  RemoteExtensionProviderProps,
 } from "../Extension";
 import { loadScript } from "./ExtensionLoadScript";
+
+/**
+ * Required props for a remote extension provider
+ * @alpha
+ */
+export interface RemoteExtensionProviderProps {
+  /** URL where the extension entry point can be loaded from */
+  jsUrl: string;
+  /** URL where the manifest (package.json) can be loaded from */
+  manifestUrl: string;
+}
 
 /**
  * Implements a "remote" extension.

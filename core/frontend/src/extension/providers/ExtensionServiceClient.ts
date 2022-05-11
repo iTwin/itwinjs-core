@@ -6,7 +6,30 @@ import { AccessToken } from "@itwin/core-bentley";
 
 import { request, RequestOptions } from "../../request/Request";
 
-import type { ExtensionProps } from "../Extension";
+/** Structure of extensions from the ExtensionService
+ * @internal
+ */
+export interface ExtensionMetadata {
+  contextId: string;
+  extensionName: string;
+  version: string;
+  files: FileInfo[];
+  uploadedBy: string;
+  timestamp: Date;
+  status: ExtensionUploadStatus;
+  isPublic: boolean;
+}
+
+interface ExtensionUploadStatus {
+  updateTime: Date;
+  status: string;
+}
+
+interface FileInfo {
+  url: string;
+  expires: Date;
+  checksum: string;
+}
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions.
@@ -21,7 +44,7 @@ export class ExtensionClient {
     this._baseUrl = "https://api.bentley.com/iModelExtensionService/";
   }
 
-  public get baseUrl(): string {
+  private get _endpoint(): string {
     const prefix = process.env.IMJS_URL_PREFIX;
     const baseUrl = new URL(this._baseUrl);
     if (prefix)
@@ -34,13 +57,13 @@ export class ExtensionClient {
     return baseUrl.toString();
   }
 
-  private parseExtensionPropsArray(json: any): ExtensionProps[] {
+  private parseExtensionMetadataArray(json: any): ExtensionMetadata[] {
     if (!(json instanceof Array))
       return [];
 
-    const ret: ExtensionProps[] = [];
+    const ret: ExtensionMetadata[] = [];
     json.forEach((extensionJson) => {
-      const extension = extensionPropsFromJSON(extensionJson);
+      const extension = extensionMetadataFromJSON(extensionJson);
       if (extension !== undefined)
         ret.push(extension);
     });
@@ -51,35 +74,33 @@ export class ExtensionClient {
   /**
    * Gets information on extensions. If extensionName is undefined, will return all extensions in the context.
    * If it's defined, will return all versions of that extension.
-   * @param contextId Context Id
+   * @param iTwinId Context Id
    * @param extensionName Extension name (optional)
    */
-  public async getExtensions(accessToken: AccessToken, contextId: string, extensionName?: string): Promise<ExtensionProps[]> {
+  public async getExtensions(accessToken: AccessToken, iTwinId: string, extensionName?: string): Promise<ExtensionMetadata[]> {
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
-    const urlBase = this.baseUrl;
-    const response = await request(`${urlBase}${contextId}/IModelExtension/${extensionName ?? ""}`, options);
+    const response = await request(`${this._endpoint}${iTwinId}/IModelExtension/${extensionName ?? ""}`, options);
     if (response.status !== 200)
       throw new Error(`Server returned status: ${response.status}, message: ${response.body.message}`);
 
     if (!(response.body instanceof Array) || response.body.length < 1)
       return [];
 
-    return this.parseExtensionPropsArray(response.body);
+    return this.parseExtensionMetadataArray(response.body);
   }
 
   /**
    * Gets information about an extension's specific version
-   * @param contextId Context Id
+   * @param iTwinId iTwin Id
    * @param extensionName Extension name
    * @param version Extension version
    */
-  public async getExtensionProps(accessToken: AccessToken, contextId: string, extensionName: string, version: string): Promise<ExtensionProps | undefined> {
+  public async getExtensionMetadata(accessToken: AccessToken, iTwinId: string, extensionName: string, version: string): Promise<ExtensionMetadata | undefined> {
 
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
-    const urlBase = this.baseUrl;
-    const response = await request(`${urlBase}${contextId}/IModelExtension/${extensionName}/${version}`, options);
+    const response = await request(`${this._endpoint}${iTwinId}/IModelExtension/${extensionName}/${version}`, options);
     if (response.status !== 200)
       throw new Error(`Server returned status: ${response.status}, message: ${response.body.message}`);
 
@@ -88,14 +109,14 @@ export class ExtensionClient {
     if (response.body.length > 1)
       throw new Error("Server returned too many extensions");
 
-    return extensionPropsFromJSON(response.body[0]);
+    return extensionMetadataFromJSON(response.body[0]);
   }
 }
 
 /**
- * Validates JSON and returns ExtensionProps
+ * Validates JSON and returns ExtensionMetadata
  */
-function extensionPropsFromJSON(jsonObject: any): ExtensionProps | undefined {
+function extensionMetadataFromJSON(jsonObject: any): ExtensionMetadata | undefined {
   if (jsonObject.contextId === undefined || typeof jsonObject.contextId !== "string" ||
     jsonObject.extensionName === undefined || typeof jsonObject.extensionName !== "string" ||
     jsonObject.version === undefined || typeof jsonObject.version !== "string" ||
