@@ -333,7 +333,15 @@ export class MoveElementsTool extends TransformElementsTool {
   }
 }
 
-/** @alpha Create new elements with translation applied to placement. */
+/** Create new elements with translation applied to placement.
+ * This is a brute force implementation strictly for example and testing purposes.
+ * The new elements are Generic:PhysicalObject or BisCore:DrawingGraphic using the model and category of original.
+ * Does not preserve assemblies and geometric elements without geometry are not copied.
+ * Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
+ * Applications that wish to support copy are expected to sub-class TransformElementsTool and register their
+ * own EditCommand that can correctly copy their application elements.
+ * @alpha
+ */
 export class CopyElementsTool extends MoveElementsTool {
   public static override toolId = "CopyElements";
   public static override iconSpec = "icon-move"; // Need better icon...
@@ -362,11 +370,6 @@ export class CopyElementsTool extends MoveElementsTool {
   }
 
   protected async doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
-    // NOTE: Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
-    //       This is a brute force implementation strictly for an example/testing purposes.
-    //       Sub-classes should override to call an EditCommand that can correctly copy their application elements.
-    //       This implementation creates new elements as Generic:PhysicalObject or BisCore:DrawingGraphic using the model and category of original.
-    //       Does not preserve assemblies, geometric elements without geometry are not copied, etc.
     if (numCopies < 1 || 0 === ids.length)
       return undefined;
 
@@ -374,6 +377,7 @@ export class CopyElementsTool extends MoveElementsTool {
     const newIds: Id64Array = [];
 
     for (const id of ids) {
+      // NOTE: For testing only. Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
       const props = await this.iModel.elements.loadProps(id, { wantGeometry: true, wantBRepData: true }) as GeometricElementProps;
       if (undefined === props.placement)
         continue;
