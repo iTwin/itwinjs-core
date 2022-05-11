@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
