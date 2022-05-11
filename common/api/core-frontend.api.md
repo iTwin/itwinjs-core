@@ -5869,7 +5869,7 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidCredentials = 1,
@@ -6298,7 +6298,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
