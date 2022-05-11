@@ -202,7 +202,7 @@ export class ChildWindowManager {
       }, false);
     }
 
-    window.addEventListener("beforeunload", () => {
+    window.addEventListener("unload", () => {
       const frontStageDef = FrontstageManager.activeFrontstageDef;
       if (frontStageDef) {
         this.closeChildWindow(childWindowId, true);

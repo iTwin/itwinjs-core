@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
