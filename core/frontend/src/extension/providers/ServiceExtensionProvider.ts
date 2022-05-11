@@ -26,7 +26,7 @@ export interface ServiceExtensionProviderProps {
 }
 
 /**
- * Implements a "service" extension via LocalExtensionProps.
+ * Implements an Extension from the Extension Service via the ServiceExtensionProviderProps.
  * Service extensions are extensions hosted on Bentley's Extension Service.
  * The execute() and getManifest() methods are used by the ExtensionAdmin to load and execute the extension.
  * @alpha

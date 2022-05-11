@@ -9,7 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import type { ExtensionManifest, ExtensionProvider, ResolveFunc } from "./Extension";
+import type { ExtensionManifest, ExtensionProvider } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -27,12 +27,12 @@ import type { ExtensionManifest, ExtensionProvider, ResolveFunc } from "./Extens
  */
 
 /**
- * A "ready to use" Extension (contains a manifest object and a function to execute).
+ * A "ready to use" Extension (contains a manifest object and an extension provider to help execute).
  * Will be used as the type for in-memory extensions in the ExtensionAdmin
  */
 interface InstalledExtension {
-  /** A function that executes the main entry point of the extension */
-  execute: ResolveFunc;
+  /** An extension provider that has been added to ExtensionAdmin */
+  provider: ExtensionProvider;
   /** The manifest (package.json) of the extension */
   manifest: ExtensionManifest;
 }
@@ -74,7 +74,7 @@ export class ExtensionAdmin {
       const manifest = await provider.getManifest();
       this._extensions.set(manifest.name, {
         manifest,
-        execute: provider.execute,
+        provider,
       });
       // TODO - temporary fix to execute the missed startup event
       if (manifest.activationEvents.includes("onStartup"))
@@ -121,7 +121,7 @@ export class ExtensionAdmin {
   /** Executes the extension. Catches and logs any errors (so that an extension will not crash the main application). */
   private async _execute(extension: InstalledExtension) {
     try {
-      await extension.execute();
+      await extension.provider.execute();
     } catch (e) {
       Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${e}`);
     }
