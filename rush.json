@@ -412,6 +412,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/map-layers-auth",
+      "projectFolder": "extensions/map-layers-auth",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",
