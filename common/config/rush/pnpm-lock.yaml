@@ -1575,7 +1575,7 @@ importers:
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
-      jsdom: ^17.0.0
+      jsdom: ^19.0.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -1598,12 +1598,12 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/itwinui-css': 0.55.0
-      '@itwin/itwinui-react': 1.37.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.37.3_react-dom@17.0.2+react@17.0.2
       '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.44
+      '@types/react': 17.0.45
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       chai: 4.3.6
@@ -1614,8 +1614,8 @@ importers:
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
-      jsdom: 17.0.0
-      jsdom-global: 3.0.2_jsdom@17.0.0
+      jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -3355,6 +3355,7 @@ importers:
       '@itwin/itwinui-icons-react': 1.10.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.37.3_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
+      '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -9002,7 +9003,7 @@ packages:
     resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 17.0.44
+      '@types/react': 17.0.45
       '@types/react-router': 5.1.18
     dev: true
 
@@ -9010,7 +9011,7 @@ packages:
     resolution: {integrity: sha512-YYknwy0D0iOwKQgz9v8nOzt2J6l4gouBmDnWqUUznltOTaon+r8US8ky8HvN0tXvc38U9m6z/t2RsVsnd1zM0g==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 17.0.44
+      '@types/react': 17.0.45
     dev: true
 
   /@types/react-select/3.0.26:
@@ -20189,6 +20190,10 @@ packages:
   /resolve-from/5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
     engines: {node: '>=8'}
+
+  /resolve-pathname/3.0.0:
+    resolution: {integrity: sha512-C7rARubxI8bXFNB/hqcp/4iUeIXJhJZvFPFPiSPRnhU5UPxzMFIl+2E6yY6c4k9giDJAhtV+enfA+G89N6Csng==}
+    dev: false
 
   /resolve-url-loader/3.1.4:
     resolution: {integrity: sha512-D3sQ04o0eeQEySLrcz4DsX3saHfsr8/N6tfhblxgZKXxMT2Louargg12oGNfoTRLV09GXhVUe5/qgA5vdgNigg==}
