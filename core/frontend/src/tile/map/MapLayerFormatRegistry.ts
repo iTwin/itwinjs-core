@@ -13,7 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 import { RequestBasicCredentials } from "../../request/Request";
 
-/** @alpha */
+/** @beta */
 export class MapLayerFormat {
   public static formatId: string;
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
@@ -28,10 +28,10 @@ export class MapLayerFormat {
   public static async validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 }
 
-/** @alpha */
+/** @beta */
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-/** @alpha */
+/** @beta */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
@@ -65,7 +65,7 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** @alpha */
+/** @beta */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
   constructor(opts?: MapLayerOptions) {

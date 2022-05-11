@@ -343,25 +343,25 @@ internal;MapBoxLayerImageryProvider
 internal;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
-alpha;MapLayerAccessClient
-alpha;MapLayerAccessToken
-alpha;MapLayerAccessTokenParams
-alpha;MapLayerAuthenticationInfo
+beta;MapLayerAccessClient
+beta;MapLayerAccessToken
+beta;MapLayerAccessTokenParams
+beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
 alpha;MapLayerFeatureInfo
-alpha;MapLayerFormat
+beta;MapLayerFormat
 internal;MapLayerFormatEntry
-alpha;MapLayerFormatRegistry
-alpha;MapLayerFormatType = typeof MapLayerFormat
+beta;MapLayerFormatRegistry
+beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSource
 internal;MapLayerSources
 alpha;MapLayerSourceStatus
-alpha;MapLayerSourceValidation
+beta;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
-alpha;MapLayerTokenEndpoint
+beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 

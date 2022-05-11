@@ -10,7 +10,7 @@ import { MapLayerAccessToken } from '@itwin/core-frontend';
 import { MapLayerAccessTokenParams } from '@itwin/core-frontend';
 import { MapLayerTokenEndpoint } from '@itwin/core-frontend';
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class ArcGisAccessClient implements MapLayerAccessClient {
     constructor();
     // (undocumented)
@@ -42,7 +42,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     unInitialize(): void;
     }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ArcGisEnterpriseClientId {
     // (undocumented)
     clientId: string;
@@ -92,7 +92,7 @@ export interface ArcGisOAuth2Token extends MapLayerAccessToken {
     userName: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ArcGisOAuthClientIds {
     // (undocumented)
     arcgisOnlineClientId?: string;
@@ -100,7 +100,7 @@ export interface ArcGisOAuthClientIds {
     enterpriseClientIds?: ArcGisEnterpriseClientId[];
 }
 
-// @alpha
+// @beta
 export interface ArcGisOAuthConfig {
     // (undocumented)
     clientIds: ArcGisOAuthClientIds;
@@ -110,7 +110,7 @@ export interface ArcGisOAuthConfig {
     tokenExpiration?: number;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export function ArcGisOauthRedirect(): JSX.Element;
 
 // @internal (undocumented)

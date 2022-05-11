@@ -5,7 +5,7 @@
 import { ProgressRadial } from "@itwin/itwinui-react";
 import * as React from "react";
 
-/** @alpha */
+/** @beta */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ArcGisOauthRedirect() {
 

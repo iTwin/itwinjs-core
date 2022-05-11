@@ -13,7 +13,7 @@ import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2En
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
 import { ArcGisUrl } from "./ArcGisUrl";
 
-/** @alpha */
+/** @beta */
 export interface ArcGisEnterpriseClientId {
   /* Oauth API endpoint base URL (i.e. https://hostname/portal/sharing/oauth2/authorize)
   used to identify uniquely each enterprise server. */
@@ -23,7 +23,7 @@ export interface ArcGisEnterpriseClientId {
   clientId: string;
 }
 
-/** @alpha */
+/** @beta */
 export interface ArcGisOAuthClientIds {
   /* Application's OAuth clientId in ArcGIS online */
   arcgisOnlineClientId?: string;
@@ -32,7 +32,7 @@ export interface ArcGisOAuthClientIds {
   enterpriseClientIds?: ArcGisEnterpriseClientId[];
 }
 
-/** @alpha
+/** @beta
  * ArcGIS OAuth configurations parameters.
  * See https://developers.arcgis.com/documentation/mapping-apis-and-services/security/arcgis-identity/serverless-web-apps/
  * more details.
@@ -50,7 +50,7 @@ export interface ArcGisOAuthConfig {
   clientIds: ArcGisOAuthClientIds;
 }
 
-/** @alpha */
+/** @beta */
 export class ArcGisAccessClient implements MapLayerAccessClient {
   public readonly onOAuthProcessEnd = new BeEvent();
   private _redirectUri: string | undefined;

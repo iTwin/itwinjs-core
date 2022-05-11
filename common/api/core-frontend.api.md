@@ -5616,7 +5616,7 @@ export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerAccessClient {
     // (undocumented)
     getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
@@ -5628,13 +5628,13 @@ export interface MapLayerAccessClient {
     onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerAccessToken {
     // (undocumented)
     token: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerAccessTokenParams {
     // (undocumented)
     mapLayerUrl: URL;
@@ -5644,7 +5644,7 @@ export interface MapLayerAccessTokenParams {
     userName?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
     tokenEndpoint?: MapLayerTokenEndpoint;
@@ -5661,7 +5661,7 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class MapLayerFormat {
     // @internal (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5683,7 +5683,7 @@ export interface MapLayerFormatEntry {
     type: MapLayerFormatType;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
@@ -5702,7 +5702,7 @@ export class MapLayerFormatRegistry {
     validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type MapLayerFormatType = typeof MapLayerFormat;
 
 // @internal
@@ -5885,7 +5885,7 @@ export enum MapLayerSourceStatus {
     Valid = 0
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
@@ -5923,7 +5923,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected get _transparency(): number | undefined;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface MapLayerTokenEndpoint {
     // (undocumented)
     getLoginUrl(stateData?: any): string | undefined;

@@ -8,24 +8,24 @@
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
 
-/** @alpha */
+/** @beta */
 export interface MapLayerTokenEndpoint {
   getLoginUrl(stateData?: any): string|undefined;
   getUrl(): string;
 }
 
-/** @alpha */
+/** @beta */
 export interface MapLayerAuthenticationInfo {
   tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
-/** @alpha */
+/** @beta */
 export interface MapLayerAccessToken {
   // The generated token.
   token: string;
 }
 
-/** @alpha */
+/** @beta */
 export interface MapLayerAccessTokenParams {
   mapLayerUrl: URL;
 
@@ -34,7 +34,7 @@ export interface MapLayerAccessTokenParams {
   password?: string;
 }
 
-/** @alpha */
+/** @beta */
 export interface MapLayerAccessClient {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
