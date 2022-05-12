@@ -6,7 +6,7 @@
 import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
-import { bisectTileRange2d, ChangesetId, ElementProps } from "@itwin/core-common";
+import { ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { IModelImporter } from "../../IModelImporter";
