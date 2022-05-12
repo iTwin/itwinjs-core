@@ -61,8 +61,6 @@ function loadEnv(envFile: string) {
  * @throws If only some env vars are set
  */
 function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined {
-  console.log(`Sanity check: ${process.env.IMJS_OIDC_PASSWORD?.length}`);
-
   const requiredEnvKeys = [
     "IMJS_OIDC_CLIENT_ID",
     "IMJS_OIDC_REDIRECT_URI",
