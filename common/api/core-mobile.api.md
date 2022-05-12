@@ -104,7 +104,11 @@ export class IOSApp {
 }
 
 // @beta (undocumented)
-export type IOSAppOpts = NativeAppOpts;
+export type IOSAppOpts = NativeAppOpts & {
+    iModelApp: {
+        authorizationClient?: never;
+    };
+};
 
 // @beta (undocumented)
 export class IOSHost extends MobileHost {
@@ -135,47 +139,19 @@ export class MobileApp {
 }
 
 // @beta
-export interface MobileAppAuthorizationConfiguration {
-    readonly clientId: string;
-    readonly expiryBuffer?: number;
-    issuerUrl?: string;
-    readonly redirectUri?: string;
-    readonly scope: string;
-}
-
-// @beta
 export interface MobileAppFunctions {
+    // (undocumented)
+    getAccessToken: () => Promise<AccessToken>;
     // (undocumented)
     reconnect: (connection: number) => Promise<void>;
 }
 
 // @beta
 export class MobileAuthorizationBackend implements AuthorizationClient {
-    constructor(config?: MobileAppAuthorizationConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
-    // (undocumented)
-    protected _baseUrl: string;
-    // (undocumented)
-    config?: MobileAppAuthorizationConfiguration;
-    // (undocumented)
-    static defaultRedirectUri: string;
-    // (undocumented)
-    expireSafety: number;
+    protected _accessToken: AccessToken;
     // (undocumented)
     getAccessToken(): Promise<AccessToken>;
-    initialize(config?: MobileAppAuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    issuerUrl?: string;
-    // (undocumented)
-    get redirectUri(): string;
-    refreshToken(): Promise<AccessToken>;
-    // (undocumented)
-    setAccessToken(token?: AccessToken): void;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
-    // (undocumented)
-    protected _url?: string;
 }
 
 // @beta (undocumented)
@@ -188,14 +164,6 @@ export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: st
 export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
-    // (undocumented)
-    authInit(_config: MobileAppAuthorizationConfiguration, callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authSignIn(callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authSignOut(callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authStateChanged(accessToken?: string, err?: string): void;
     // (undocumented)
     abstract cancelDownloadTask(cancelId: number): boolean;
     // (undocumented)
@@ -236,8 +204,6 @@ export class MobileFileHandler {
 
 // @beta (undocumented)
 export class MobileHost {
-    // @internal (undocumented)
-    static get authorization(): import("@itwin/core-common").AuthorizationClient | undefined;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
@@ -265,8 +231,6 @@ export interface MobileHostOpts extends NativeHostOpts {
     mobileHost?: {
         device?: MobileDevice;
         rpcInterfaces?: RpcInterfaceDefinition[];
-        authConfig?: MobileAppAuthorizationConfiguration;
-        noInitializeAuthClient?: boolean;
     };
 }
 
