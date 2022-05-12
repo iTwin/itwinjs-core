@@ -6,9 +6,25 @@ publish: false
 Table of contents:
 
 - [Display](#display)
+  - [Batching of pickable graphics](#batching-of-pickable-graphics)
+  - [Detecting integrated graphics](#detecting-integrated-graphics)
+  - [Improved polyface edges](#improved-polyface-edges)
+  - [ArcGIS OAuth2 support](#arcgis-oauth2-support)
 - [Presentation](#presentation)
+  - [Filtering related property instances](#filtering-related-property-instances)
+  - [ECExpressions for property overrides](#ecexpressions-for-property-overrides)
+  - [Fixed nested hierarchy rules handling](#fixed-nested-hierarchy-rules-handling)
+  - [Fixed inconsistent property grid representation](#fixed-inconsistent-property-grid-representation)
+  - [Fixed relatedProperties specification bug](#fixed-relatedproperties-specification-bug)
+  - [Property override enhancements](#property-override-enhancements)
+  - [Fixed incorrect property field categories](#fixed-incorrect-property-field-categories)
 - [UI](#ui)
+  - [UiItemsManager changes](#uiitemsmanager-changes)
+  - [Widget panel changes](#widget-panel-changes)
+  - [React icons support](#react-icons-support)
 - [iModel transformations](#imodel-transformations)
+  - [Geometry optimization](#geometry-optimization)
+  - [Resuming transformations](#resuming-transformations)
 - [Rpc response compression](#rpc-response-compression)
 - [ColorDef validation](#colordef-validation)
 - [ColorByName changes](#colorbyname-changes)
@@ -70,7 +86,7 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
     alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
 ```
 
-### Polyface edges
+### Improved polyface edges
 
 A [Polyface]($geometry) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
 
@@ -168,7 +184,7 @@ Example:
 
 With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
 
-### Fixed inconsistent property representation in a property grid
+### Fixed inconsistent property grid representation
 
 Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties]($presentation-common) attribute, the properties were loaded differently based on whether parent specification included any properties or not. Now the behavior is consistent.
 
@@ -210,7 +226,7 @@ Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties](
 | `"_none_"`                        | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
 | `["UserLabel"]`                   | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
 
-### Fixed a bug that prevented disabling `relatedProperties` specifications
+### Fixed relatedProperties specification bug
 
 The bug made it impossible to remove related properties if a lower priority rule specified that the property should be included.
 
@@ -259,7 +275,7 @@ For example, the [default BisCore supplemental ruleset](https://github.com/iTwin
 
 It is now possible to override values of [`isReadOnly`](../presentation/Content/PropertySpecification.md#attribute-isreadonly) and [`priority`](../presentation/Content/PropertySpecification.md#attribute-priority) property attributes.
 
-### Fixed incorrect categories of property fields when intermediate classes are different
+### Fixed incorrect property field categories
 
 Previously, nested related properties of different intermediate classes were all categorized under the first intermediate class. Now the properties are categorized under the intermediate classes to which they belong.
 
@@ -300,7 +316,7 @@ Previously, nested related properties of different intermediate classes were all
 
 ## UI
 
-### UiItemsManager Changes
+### UiItemsManager changes
 
 When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
 
@@ -308,7 +324,7 @@ When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it
     UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
 ```
 
-### Widget Panel Changes
+### Widget panel changes
 
 Based on usability testing, the following changes to widget panels have been implemented.
 
@@ -329,7 +345,7 @@ In addition to toolbar buttons, React icons are now supported for use in [Widget
 
 ## iModel transformations
 
-### Optimization of geometry in IModelImporter
+### Geometry optimization
 
 The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows](../learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
 
