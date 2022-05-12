@@ -18,7 +18,6 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
     "test": "mocha"
   },
   "repository": {
@@ -76,8 +75,7 @@
     "semver": "^5.5.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "useSpawnWrap": false
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
