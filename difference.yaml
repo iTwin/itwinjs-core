@@ -1,17 +1,14 @@
 trigger: none
 pr: none
 
-var_prompt:
+parameters:
   - name: repoName
-    prompt: repoName
     type: string
 
   - name: oldSHA
-    prompt: oldSHA
     type: string
   
   - name: newSHA
-    prompt: newSHA
     type: string
 
 pool:
@@ -31,12 +28,12 @@ steps:
 
   # 3. fetch the repository
   - bash: |
-      echo $(repoName)
-      git fetch $(repoName)
+      echo ${{ repoName }}
+      git fetch ${{ repoName }}
     displayName: Fetch
   
   # 4. output the difference
   - bash: |
-      echo "difference between $(oldSHA) and $(newSHA)"
-      git diff $(oldSHA) $(newSHA) 
+      echo "difference between ${{oldSHA}} and ${{newSHA}}"
+      git diff ${{ oldSHA }} ${{ newSHA }} 
     displayName: Difference
