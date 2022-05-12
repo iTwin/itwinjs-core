@@ -14,7 +14,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "",
-    "extract-api": "betools extract-api --entry=map-layers-auth && npm run extract-extension-api",
+    "extract-api": "betools extract-api --entry=map-layers-auth",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
     "rebuild": "npm run -s clean && npm run -s build"
