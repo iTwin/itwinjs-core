@@ -6,7 +6,7 @@
 import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
-import { ChangesetId, ElementProps } from "@itwin/core-common";
+import { bisectTileRange2d, ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { IModelImporter } from "../../IModelImporter";
@@ -298,10 +298,12 @@ describe("test resuming transformations", () => {
     })();
 
     const regularToResumedIdMap = new Map<Id64String, Id64String>();
-    for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId from bis.Element")) {
-      const idInRegular = regularTransformer.context.findTargetElementId(sourceElemId);
-      const idInResumed = resumedTransformer.context.findTargetElementId(sourceElemId);
-      regularToResumedIdMap.set(idInRegular, idInResumed);
+    for (const [className, findMethod] of [["bis.Element", "findTargetElementId"], ["bis.CodeSpec", "findTargetCodeSpecId"]] as const) {
+      for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
+        const idInRegular = regularTransformer.context[findMethod](sourceElemId);
+        const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
+        regularToResumedIdMap.set(idInRegular, idInResumed);
+      }
     }
 
     await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
