@@ -46,6 +46,7 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 alpha;class ErrorCategory 
+beta;ExtractLiterals
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
