@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { ArcGisUrl } from "../ArcGis/ArcGisUrl";
+import { ArcGisUrl } from "../map-layers-auth";
 
 describe("ArcGisUrl", () => {
   const sandbox = sinon.createSandbox();

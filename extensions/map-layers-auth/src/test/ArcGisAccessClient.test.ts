@@ -6,8 +6,7 @@
 import { expect } from "chai";
 
 import * as sinon from "sinon";
-import { ArcGisAccessClient } from "../ArcGis/ArcGisAccessClient";
-import { ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
+import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
