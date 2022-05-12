@@ -62,7 +62,7 @@ export interface CancelRequest {
 }
 
 // @beta (undocumented)
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
 
 // @internal
 export class DownloadFailed extends BentleyError {
@@ -125,6 +125,8 @@ export class MobileApp {
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
+    static onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
+    // (undocumented)
     static onEnterBackground: BeEvent<() => void>;
     // (undocumented)
     static onEnterForeground: BeEvent<() => void>;
@@ -141,17 +143,17 @@ export class MobileApp {
 // @beta
 export interface MobileAppFunctions {
     // (undocumented)
-    getAccessToken: () => Promise<AccessToken>;
+    getAccessToken: () => Promise<[AccessToken, string]>;
     // (undocumented)
     reconnect: (connection: number) => Promise<void>;
 }
 
-// @beta
+// @internal
 export class MobileAuthorizationBackend implements AuthorizationClient {
     // (undocumented)
-    protected _accessToken: AccessToken;
-    // (undocumented)
     getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    setAccessToken(accessToken?: string, expirationDate?: string): void;
 }
 
 // @beta (undocumented)
@@ -163,7 +165,7 @@ export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: st
 // @beta (undocumented)
 export abstract class MobileDevice {
     // (undocumented)
-    abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
+    abstract authGetAccessToken(callback: (accessToken?: string, expirationDate?: string, err?: string) => void): void;
     // (undocumented)
     abstract cancelDownloadTask(cancelId: number): boolean;
     // (undocumented)
@@ -204,12 +206,17 @@ export class MobileFileHandler {
 
 // @beta (undocumented)
 export class MobileHost {
+    // @internal (undocumented)
+    static authGetAccessToken(): Promise<[string, string]>;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
     static downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     // (undocumented)
     static get isValid(): boolean;
+    static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>): void;
+    // (undocumented)
+    static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     // (undocumented)
     static readonly onEnterBackground: BeEvent<import("@itwin/core-bentley").Listener>;
     // (undocumented)
@@ -236,6 +243,8 @@ export interface MobileHostOpts extends NativeHostOpts {
 
 // @beta (undocumented)
 export interface MobileNotifications {
+    // (undocumented)
+    notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
     // (undocumented)
     notifyEnterBackground: () => void;
     // (undocumented)
