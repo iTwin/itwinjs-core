@@ -15,7 +15,7 @@ pool:
   vmImage: "ubuntu-latest"
 
 steps:
-# 1. Checkout the repository
+  # 1. Checkout the repository
   - checkout: self
     persistCredentials: true
     displayName: Checkout repo
@@ -28,12 +28,12 @@ steps:
 
   # 3. fetch the repository
   - bash: |
-      echo ${{ repoName }}
-      git fetch ${{ repoName }}
+      echo ${{ parameters.repoName }}
+      git fetch ${{ parameters.repoName }}
     displayName: Fetch
   
   # 4. output the difference
   - bash: |
-      echo "difference between ${{oldSHA}} and ${{newSHA}}"
-      git diff ${{ oldSHA }} ${{ newSHA }} 
+      echo "difference between ${{ parameters.oldSHA }} and ${{ parameters.newSHA }}"
+      git diff ${{ parameters.oldSHA }} ${{ parameters.newSHA }} 
     displayName: Difference
