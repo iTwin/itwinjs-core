@@ -291,6 +291,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -871,6 +875,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "react-router-dom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-select",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -948,7 +956,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "tools" ]
     },
     {
       "name": "spdy",
