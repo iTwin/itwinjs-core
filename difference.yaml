@@ -1,0 +1,37 @@
+trigger: none
+pr: none
+
+variables:
+  - name: repoName
+    type: string
+
+  - name: oldSHA
+    type: string
+  
+  - name: newSHA
+    type: string
+
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+# 1. Checkout the repository
+  - checkout: self
+    persistCredentials: true
+    displayName: Checkout repo
+
+  # 2. Enable the pipeline to run Git commands
+  - bash: |
+      git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+      git config --local user.name imodeljs-admin
+    displayName: Git setup
+
+  # 3. fetch the repository
+  - bash: |
+      echo $(repoName)
+      git fetch $(repoName)
+  
+  # 4. output the difference
+  - bash: |
+      echo "difference between $(oldSHA) and $(newSHA)"
+      git diff $(oldSHA) $(newSHA) 
