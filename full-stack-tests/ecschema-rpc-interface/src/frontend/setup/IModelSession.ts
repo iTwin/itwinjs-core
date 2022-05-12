@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
+import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
@@ -24,14 +24,14 @@ export class IModelSession {
     this.changesetId = changesetId;
   }
 
-  public static async create(requestContext: AccessToken, iModelData: IModelData): Promise<IModelSession> {
+  public static async create(accessToken: AccessToken, iModelData: IModelData): Promise<IModelSession> {
     let iTwinId;
     let imodelId;
 
     // Turn the iTwin name into an id
     if (iModelData.useITwinName && iModelData.iTwinName) {
       const client = new ProjectsAccessClient();
-      const iTwinList: ITwin[] = await client.getAll(requestContext, {
+      const iTwinList: ITwin[] = await client.getAll(accessToken, {
         search: {
           searchString: iModelData.iTwinName,
           propertyName: ProjectsSearchableProperty.Name,
@@ -51,7 +51,7 @@ export class IModelSession {
     if (iModelData.useName) {
       const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       const iModels = imodelClient.iModels.getRepresentationList({
-        authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelApp.getAccessToken()),
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
         urlParams: {
           projectId: iTwinId,
           name: iModelData.name,

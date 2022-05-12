@@ -212,7 +212,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -287,11 +287,11 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/node-cli-authorization",
+      "name": "@itwin/map-layers-auth",
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/map-layers-auth",
+      "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
     },
     {
