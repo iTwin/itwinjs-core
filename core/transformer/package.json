@@ -76,7 +76,8 @@
     "semver": "^5.5.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
+    "useSpawnWrap": false
   },
   "eslintConfig": {
     "plugins": [
