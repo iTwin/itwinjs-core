@@ -183,14 +183,6 @@ This attribute controls whether the property field is read-only. If the attribut
 | **Is Required**   | No          |
 | **Default Value** | No override |
 
-```ts
-[[include:Presentation.Content.Customization.PropertySpecification.IsReadOnly.Ruleset]]
-```
-
-```ts
-[[include:Presentation.Content.Customization.PropertySpecification.IsReadOnly.Result]]
-```
-
 ### Attribute `priority`
 
 This attribute controls the order in which property fields should be displayed. Property fields with higher priority
@@ -202,10 +194,6 @@ will be the maximum priority of its properties.
 | **Type**          | `number`    |
 | **Is Required**   | No          |
 | **Default Value** | No override |
-
-```ts
-[[include:Presentation.Content.Customization.PropertySpecification.Priority.Ruleset]]
-```
 
 | `priority: 0`                                                                                                       | `priority: 9999`                                                                                                          |
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
