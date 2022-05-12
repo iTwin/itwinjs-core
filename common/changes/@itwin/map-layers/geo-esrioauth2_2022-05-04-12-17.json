@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "maplayers widget has been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process. When process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

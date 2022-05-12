@@ -46,7 +46,6 @@ import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
 import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
-
 function DualColorPickers() {
   const [colorDef, setColorDef] = React.useState(ColorDef.green);
   const onPopupClose = (color: ColorDef) => {

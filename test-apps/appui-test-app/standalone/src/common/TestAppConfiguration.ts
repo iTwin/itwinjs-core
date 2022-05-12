@@ -5,7 +5,6 @@
 /** Parameters for starting appui-test-app with a specified initial configuration */
 export interface TestAppConfiguration {
   snapshotPath?: string;        // Used when run in the browser - a common base path for all snapshot imodels
-  startWithSnapshots?: boolean;
   reactAxeConsole?: boolean;
   useLocalSettings?: boolean;
   bingMapsKey?: string;

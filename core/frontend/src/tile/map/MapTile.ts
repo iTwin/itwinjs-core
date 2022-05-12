@@ -430,7 +430,7 @@ export class MapTile extends RealityTile {
 
     const textures = this.getDrapeTextures();
     const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
-    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers });
+    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers }, true);
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
     if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
@@ -677,7 +677,7 @@ export class UpsampledMapTile extends MapTile {
       const upsample = this.upsampleFromParent();
       const projection = this.loadableTerrainTile.getProjection(this.heightRange);
       if (upsample)
-        this._renderGeometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal);
+        this._renderGeometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal, true);
     }
     return this._renderGeometry;
   }

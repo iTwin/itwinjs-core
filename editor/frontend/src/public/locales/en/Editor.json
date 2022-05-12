@@ -8,6 +8,13 @@
       "keyin": "editor move elements",
       "flyover": "Move Elements"
     },
+    "CopyElements": {
+      "keyin": "editor copy elements",
+      "flyover": "Copy Elements",
+      "Label": {
+        "NumCopies": "Copies"
+      }
+    },
     "RotateElements": {
       "keyin": "editor rotate elements",
       "flyover": "Rotate Elements",

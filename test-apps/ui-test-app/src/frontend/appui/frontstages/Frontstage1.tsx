@@ -301,6 +301,15 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _openPopupWindow() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-sad",
+      label: "Open Popup Window",
+      execute: () => location.href = "pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}",
+      // execute: () => window.open("pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}"),
+    });
+  }
+
   private get _openModal() {
     return new CommandItemDef({
       iconSpec: "icon-smiley-happy",
@@ -314,6 +323,7 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
+          <ActionItemButton actionItem={this._openPopupWindow} />
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />

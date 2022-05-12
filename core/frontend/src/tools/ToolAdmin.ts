@@ -857,6 +857,9 @@ export class ToolAdmin {
 
   /** @internal */
   public onMouseLeave(vp: ScreenViewport): void {
+    if (this._mouseMoveOverTimeout !== undefined)
+      clearTimeout(this._mouseMoveOverTimeout);
+
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
     this.setCanvasDecoration(vp);
@@ -1013,7 +1016,6 @@ export class ToolAdmin {
     // Detect when the motion stops by setting a timeout
     if (this._mouseMoveOverTimeout !== undefined)
       clearTimeout(this._mouseMoveOverTimeout); // If a previous timeout was up, it is cancelled: the movement is not over yet
-    this._mouseMoveOverTimeout = setTimeout(async () => {await this.onMotionEnd(vp, pt2d, inputSource);}, 100);
 
     const ev = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
@@ -1023,8 +1025,13 @@ export class ToolAdmin {
     if (undefined !== overlayHit) {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
+
       return; // we're inside a pickable decoration, don't send event to tool
     }
+
+    this._mouseMoveOverTimeout = setTimeout(async () => {
+      await this.onMotionEnd(vp, pt2d, inputSource);
+    }, 100);
 
     const processMotion = async (): Promise<void> => {
       // Update event to account for AccuSnap adjustments...

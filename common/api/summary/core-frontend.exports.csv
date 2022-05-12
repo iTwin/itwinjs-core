@@ -36,13 +36,8 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
-internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
-internal;ArcGisToken
-internal;ArcGisTokenClientType
-internal;ArcGisTokenGenerator
-internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -348,22 +343,25 @@ internal;MapBoxLayerImageryProvider
 internal;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
-internal;MapLayerAuthenticationInfo
-beta;MapLayerAuthType
+beta;MapLayerAccessClient
+beta;MapLayerAccessToken
+beta;MapLayerAccessTokenParams
+beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
 alpha;MapLayerFeatureInfo
-internal;MapLayerFormat
-internal;MapLayerFormatRegistry
-internal;MapLayerFormatType = typeof MapLayerFormat
+beta;MapLayerFormat
+internal;MapLayerFormatEntry
+beta;MapLayerFormatRegistry
+beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSource
 internal;MapLayerSources
-internal;MapLayerSourceStatus
-internal;MapLayerSourceValidation
+beta;MapLayerSourceStatus
+beta;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
-internal;MapLayerTokenEndpoint
+beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 

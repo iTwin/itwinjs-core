@@ -157,6 +157,7 @@ import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
+import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
@@ -1128,18 +1129,6 @@ export enum ArcGisErrorCode {
 }
 
 // @internal (undocumented)
-export interface ArcGisGenerateTokenOptions {
-    // (undocumented)
-    client: ArcGisTokenClientType;
-    // (undocumented)
-    expiration?: number;
-    // (undocumented)
-    ip?: string;
-    // (undocumented)
-    referer?: string;
-}
-
-// @internal (undocumented)
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
@@ -1196,51 +1185,9 @@ export class ArcGISTileMap {
     }
 
 // @internal (undocumented)
-export interface ArcGisToken {
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    ssl: boolean;
-    // (undocumented)
-    token: string;
-}
-
-// @internal (undocumented)
-export enum ArcGisTokenClientType {
-    // (undocumented)
-    ip = 0,
-    // (undocumented)
-    referer = 1,
-    // (undocumented)
-    requestIp = 2
-}
-
-// @internal (undocumented)
-export class ArcGisTokenGenerator {
-    // (undocumented)
-    static fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static formEncode(str: string): string;
-    // (undocumented)
-    generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static getTokenServiceFromInfoJson(json: any): string | undefined;
-    // (undocumented)
-    getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static rfc1738Encode(str: string): string;
-    }
-
-// @internal (undocumented)
-export class ArcGisTokenManager {
-    // (undocumented)
-    static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
-    }
-
-// @internal (undocumented)
 export class ArcGisUtilities {
+    // (undocumented)
+    static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
@@ -4114,7 +4061,10 @@ export interface GraphicBranchOptions {
 export abstract class GraphicBuilder {
     // @internal
     protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions);
+    activateFeature(feature: Feature): void;
+    protected _activateFeature(_feature: Feature): void;
     abstract activateGraphicParams(graphicParams: GraphicParams): void;
+    activatePickableId(id: Id64String): void;
     abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
     abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
     addCurvePrimitive(curve: AnyCurvePrimitive): void;
@@ -4146,6 +4096,7 @@ export abstract class GraphicBuilder {
     // (undocumented)
     protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
     readonly pickable?: Readonly<PickableGraphicOptions>;
+    // @deprecated
     get pickId(): Id64String | undefined;
     readonly placement: Transform;
     readonly preserveOrder: boolean;
@@ -5665,22 +5616,38 @@ export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
 
-// @internal (undocumented)
-export interface MapLayerAuthenticationInfo {
+// @beta (undocumented)
+export interface MapLayerAccessClient {
     // (undocumented)
-    authMethod: MapLayerAuthType;
+    getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
-    tokenEndpoint?: MapLayerTokenEndpoint;
+    getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+    // (undocumented)
+    invalidateToken?(token: MapLayerAccessToken): boolean;
+    // (undocumented)
+    onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
 // @beta (undocumented)
-export enum MapLayerAuthType {
+export interface MapLayerAccessToken {
     // (undocumented)
-    Basic = 2,
+    token: string;
+}
+
+// @beta (undocumented)
+export interface MapLayerAccessTokenParams {
     // (undocumented)
-    EsriToken = 3,
+    mapLayerUrl: URL;
     // (undocumented)
-    None = 1
+    password?: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @beta (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
 // @internal (undocumented)
@@ -5694,11 +5661,11 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class MapLayerFormat {
-    // (undocumented)
+    // @internal (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
@@ -5709,21 +5676,33 @@ export class MapLayerFormat {
 }
 
 // @internal (undocumented)
+export interface MapLayerFormatEntry {
+    // (undocumented)
+    accessClient?: MapLayerAccessClient;
+    // (undocumented)
+    type: MapLayerFormatType;
+}
+
+// @beta (undocumented)
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // (undocumented)
-    register(formatClass: MapLayerFormatType): void;
+    getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // (undocumented)
+    register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
+    // (undocumented)
+    setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
     // (undocumented)
     validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export type MapLayerFormatType = typeof MapLayerFormat;
 
 // @internal
@@ -5890,7 +5869,7 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidCredentials = 1,
@@ -5906,7 +5885,7 @@ export enum MapLayerSourceStatus {
     Valid = 0
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
@@ -5944,10 +5923,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected get _transparency(): number | undefined;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface MapLayerTokenEndpoint {
     // (undocumented)
-    getLoginUrl(stateData?: string): string | undefined;
+    getLoginUrl(stateData?: any): string | undefined;
     // (undocumented)
     getUrl(): string;
 }
@@ -7623,7 +7602,10 @@ export class PhysicalModelState extends SpatialModelState {
 
 // @public
 export interface PickableGraphicOptions extends BatchOptions {
+    geometryClass?: GeometryClass;
     id: Id64String;
+    modelId?: Id64String;
+    subCategoryId?: Id64String;
 }
 
 // @internal
@@ -7971,9 +7953,7 @@ export interface ReadGltfGraphicsArgs {
     baseUrl?: string;
     gltf: Uint8Array | Object;
     iModel: IModelConnection;
-    pickableOptions?: PickableGraphicOptions & {
-        modelId?: Id64String;
-    };
+    pickableOptions?: PickableGraphicOptions;
 }
 
 // @public
@@ -8868,11 +8848,11 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
+    createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal (undocumented)
-    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined;
+    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
