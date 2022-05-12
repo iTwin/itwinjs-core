@@ -2,6 +2,8 @@
 
 ### Guide
 
+<div id="guide-list">
+
 #### Introduction
 - [Overview](./guide/intro/overview.md)
 - [Federated Digital Twins](./guide/intro/federated-digital-twins.md)
@@ -25,6 +27,7 @@
 - [Information Hierarchy](./guide/data-organization/information-hierarchy.md)
 - [Modeling Perspectives](./guide/data-organization/modeling-perspectives.md)
 - [Top of the World](./guide/data-organization/top-of-the-world.md)
+- [Single Responsible-Party Principle](./guide/data-organization/srpp.md)
 - [Organizing Models and Elements](./guide/data-organization/organizing-models-and-elements.md)
 - [Spatial Composition](./guide/data-organization/spatial-composition.md)
 - [Modeling Systems](./guide/data-organization/modeling-systems.md)
@@ -63,6 +66,8 @@
 - [BIS Schema Validation](./guide/other-topics/bis-schema-validation.md)
 
 #### [BIS Glossary](./guide/glossary.md)
+
+</div>
 
 &nbsp;
 
@@ -106,7 +111,7 @@ return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-car
 }).on('click', '.collapse-arrow', function (event) {
 var target = $(event.target);
 if (target.is("i")) {
-$('#guide').siblings('ul').slideToggle()
+$('#guide-list').slideToggle()
 }
 });
 </script>

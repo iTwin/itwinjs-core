@@ -53,5 +53,5 @@ It is usually expected for a `Subject` to have only one `InformationPartitionEle
 `InformationPartitionElement`s always have a parent `Subject` and are never used outside of the `RepositoryModel`.
 
 ---
-| Next: [Organizing Models and Elements](./organizing-models-and-elements.md)
+| Next: [Single Responsible-Party Principle](./srpp.md)
 |:---
