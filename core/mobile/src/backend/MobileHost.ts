@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
-import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
@@ -170,8 +170,6 @@ export class MobileHost {
     opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } }
 
     const authorizationClient = new MobileAuthorizationBackend();
-    IModelHost.authorizationClient = authorizationClient;
-
     if (!this.isValid) {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       // set global device interface.
@@ -199,8 +197,10 @@ export class MobileHost {
       // following will provide impl for device specific api.
       setupMobileRpc();
     }
+    const iModelHostConfiguration = opt?.iModelHost ?? new IModelHostConfiguration();
+    iModelHostConfiguration.authorizationClient = authorizationClient;
+    await NativeHost.startup({ ...opt, iModelHost: iModelHostConfiguration });
 
-    await NativeHost.startup(opt);
     if (IpcHost.isValid)
       MobileAppHandler.register();
 
