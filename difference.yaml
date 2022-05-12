@@ -30,8 +30,10 @@ steps:
   - bash: |
       echo $(repoName)
       git fetch $(repoName)
+    displayName: Fetch
   
   # 4. output the difference
   - bash: |
       echo "difference between $(oldSHA) and $(newSHA)"
       git diff $(oldSHA) $(newSHA) 
+    displayName: Difference
