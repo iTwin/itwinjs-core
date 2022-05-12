@@ -70,8 +70,6 @@ public;BriefcaseConnection
 alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
-alpha;BuildExtensionManifest 
-alpha;BuiltInExtensionLoaderProps
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -155,9 +153,8 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
-alpha;ExtensionLoader
-alpha;ExtensionLoaderProps
 alpha;ExtensionManifest
+alpha;ExtensionProvider
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -321,7 +318,8 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-alpha;LocalExtensionProps
+alpha;LocalExtensionProvider 
+alpha;LocalExtensionProviderProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -496,6 +494,8 @@ internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
+alpha;RemoteExtensionProvider 
+alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -521,6 +521,7 @@ internal;class RenderTerrainGeometry
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
+alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
@@ -550,6 +551,8 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
+alpha;ServiceExtensionProvider 
+alpha;ServiceExtensionProviderProps
 public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 

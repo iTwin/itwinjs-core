@@ -1721,19 +1721,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @alpha (undocumented)
-export interface BuildExtensionManifest extends ExtensionManifest {
-    readonly module: string;
-}
-
-// @alpha (undocumented)
-export interface BuiltInExtensionLoaderProps {
-    // (undocumented)
-    loader: ResolveFunc;
-    // (undocumented)
-    manifest: Promise<any>;
-}
-
 // @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
@@ -3049,27 +3036,21 @@ export enum EventHandled {
 }
 
 // @alpha
-export interface ExtensionLoader {
-    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
-    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
-}
-
-// @alpha
-export interface ExtensionLoaderProps {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    version: string;
-}
-
-// @alpha
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
     readonly description?: string;
     readonly displayName?: string;
     readonly main: string;
+    readonly module?: string;
     readonly name: string;
     readonly version: string;
+}
+
+// @alpha
+export interface ExtensionProvider {
+    execute: ResolveFunc;
+    getManifest: ResolveManifestFunc;
+    readonly hostname?: string;
 }
 
 // @public
@@ -3348,6 +3329,8 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
+    // @alpha
+    Extensions = "core-frontend.Extensions",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
     IModelConnection = "core-frontend.IModelConnection",
@@ -5321,11 +5304,16 @@ export class LengthDescription extends FormattedQuantityDescription {
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
 // @alpha
-export interface LocalExtensionProps {
-    // (undocumented)
-    readonly mainFunc?: ResolveFunc;
-    // (undocumented)
-    readonly manifest: ExtensionManifest;
+export class LocalExtensionProvider implements ExtensionProvider {
+    constructor(_props: LocalExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface LocalExtensionProviderProps {
+    main: ResolveFunc;
+    manifestPromise: Promise<any>;
 }
 
 // @internal
@@ -8438,6 +8426,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get treeOwner(): TileTreeOwner;
     }
 
+// @alpha
+export class RemoteExtensionProvider implements ExtensionProvider {
+    constructor(_props: RemoteExtensionProviderProps);
+    execute(): Promise<string>;
+    getManifest(): Promise<ExtensionManifest>;
+    readonly hostname: string;
+    }
+
+// @alpha
+export interface RemoteExtensionProviderProps {
+    jsUrl: string;
+    manifestUrl: string;
+}
+
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
@@ -9091,6 +9093,9 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 // @alpha (undocumented)
 export type ResolveFunc = () => Promise<any>;
 
+// @alpha (undocumented)
+export type ResolveManifestFunc = () => Promise<ExtensionManifest>;
+
 // @internal
 export type RootIModelTile = Tile & {
     tileScreenSize: number;
@@ -9555,6 +9560,20 @@ export interface SelectReplaceEvent {
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Replace;
+}
+
+// @alpha
+export class ServiceExtensionProvider implements ExtensionProvider {
+    constructor(_props: ServiceExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface ServiceExtensionProviderProps {
+    iTwinId: string;
+    name: string;
+    version: string;
 }
 
 // @public
