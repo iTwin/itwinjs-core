@@ -10,6 +10,8 @@ Table of contents:
   - [Detecting integrated graphics](#detecting-integrated-graphics)
   - [Improved polyface edges](#improved-polyface-edges)
   - [ArcGIS OAuth2 support](#arcgis-oauth2-support)
+  - [Reality model enhancements](#reality-model-enhancements)
+  - [readPixels enhancements](#readpixels-enhancements)
 - [Presentation](#presentation)
   - [Filtering related property instances](#filtering-related-property-instances)
   - [ECExpressions for property overrides](#ecexpressions-for-property-overrides)
@@ -19,12 +21,14 @@ Table of contents:
   - [Property override enhancements](#property-override-enhancements)
   - [Fixed incorrect property field categories](#fixed-incorrect-property-field-categories)
 - [UI](#ui)
+  - [Default tool for standard frontstage](#default-tool-for-standard-frontstage)
   - [UiItemsManager changes](#uiitemsmanager-changes)
   - [Widget panel changes](#widget-panel-changes)
   - [React icons support](#react-icons-support)
 - [iModel transformations](#imodel-transformations)
   - [Geometry optimization](#geometry-optimization)
   - [Resuming transformations](#resuming-transformations)
+- [Batched mass properties requests](#batched-mass-properties-requests)
 - [Rpc response compression](#rpc-response-compression)
 - [ColorDef validation](#colordef-validation)
 - [ColorByName changes](#colorbyname-changes)
@@ -124,6 +128,16 @@ The hosting application must be registered in either the ArcGIS Online server (c
 The maplayers widget has also been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process with the remote ArcGIS server. When the process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
 
 More details on how to configure the ArcGis Server can be found in the [ESRI documentation](https://developers.arcgis.com/documentation/mapping-apis-and-services/security/tutorials/register-your-application/)
+
+### Reality model enhancements
+
+Displaying a reality model involves streaming a large number of 3d tiles. As the user navigates the view, new tiles are constantly requested to display the model at an appropriate level of detail. Ideally, the highest level of detail tiles will load most quickly in the area of the user's interest. To achieve this, the determination of which tiles to load first was tweaked. If the user is zooming in or out on a particular area of the viewport, tiles closer to that area will be prioritized for loading. Otherwise, tiles closer to the center of the screen are prioritized. Despite the number of tiles downloaded and the time required to do so remaining unchanged, the change in **prioritization** of those tiles produces a user experience that appears more responsive.
+
+### readPixels enhancements
+
+[Viewport.readPixels]($frontend) is a potentially expensive operation that must re-render a portion of the view to determine what elements are currently under the cursor. Previously this function was invoked on every single mouse motion, which could cause up to 60 calls per second. It is not useful to call it so frequently when the mouse cursor is moving so rapidly.
+
+Now, a limit is imposed upon the frequency with which `readPixels` is invoked, improving performance and user experience.
 
 ## Presentation
 
@@ -316,6 +330,10 @@ Previously, nested related properties of different intermediate classes were all
 
 ## UI
 
+### Default tool for standard frontstage
+
+The [StandardFrontstageProvider]($appui-react) gives apps an easy way to create a custom frontstage, but overriding the default [Tool]($frontend) was more complicated. Now, a default tool can easily configured by setting [StandardFrontstageProps.defaultTool]($appui-react).
+
 ### UiItemsManager changes
 
 When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
@@ -374,6 +392,10 @@ target at the same state as it was when the transformer state file was made, to 
 [IModelTransformer.resumeTransformation]($transformer) will create a new transformer instance upon which calling
 [IModelTransformer.processAll]($transformer) or [IModelTransformer.processChanges]($transformer) will start the transformation but not re-export
 already inserted entities. This can be useful in some cases where a transformation is a long running process and may need to be paused and resumed.
+
+## Batched mass properties requests
+
+[IModelConnection.getMassProperties]($frontend) provides useful geometry information about an element, like area, volume, and length. When requesting such information for many elements, however, calling this function repeatedly can be inefficient. Now, [IModelConnection.getMassPropertiesPerCandidate]($frontend) can be used instead to request mass properties for multiple elements simultaneously, producing results more quickly.
 
 ## Rpc response compression
 
