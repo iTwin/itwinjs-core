@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-transformer",
-      "comment": "always close transformer resumption db even on errors",
+      "comment": "always close transformer resumption state db even on errors",
       "type": "none"
     }
   ],
