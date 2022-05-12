@@ -88,11 +88,11 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 ### Polyface edges
 
-A [Polyface]($geometry-core) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry-core) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
+A [Polyface]($geometry) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
 
 Previously, the display system would attempt to infer the visibility of each interior edge based on the angle between its two adjacent faces. For example, an edge between two faces of a cube would be visible, whereas an edge between two nearly-coplanar faces would be invisible. However, this inference does not work well for polyfaces with smoother topology. Now, instead of attempting to infer edge visibility, the display system will simply render the edges of all faces visible.
 
-The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry-core).
+The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry).
 
 | Inferred edges (previous behavior) | All edges (new behavior) |
 | ---------------------------------- | ------------------------ |

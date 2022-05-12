@@ -947,7 +947,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     enableIndexedEdges?: boolean;
 
-    /** If true then if a [Polyface]($geometry-core) lacks edge visibility information, the display system will display the edges of all of its faces.
+    /** If true then if a [Polyface]($geometry) lacks edge visibility information, the display system will display the edges of all of its faces.
      * Otherwise, the display system will attempt to infer the visibility of each interior edge based on the angle between the two adjacent faces.
      * Edge inference can produce less visually useful results.
      *
