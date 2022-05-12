@@ -13,7 +13,7 @@ import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileH
 import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
-import { BatteryState, DeviceEvents, MobileAppFunctions, Orientation, MobileNotifications } from "../common/MobileAppProps";
+import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
@@ -114,7 +114,7 @@ export class MobileHost {
   }
 
   /**  @internal */
-  public static authGetAccessToken() {
+  public static async authGetAccessToken() {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
       MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
@@ -186,7 +186,7 @@ export class MobileHost {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");
       });
       this.onAuthAccessTokenChanged.addListener((accessToken: string | undefined, expirationDate: string | undefined) => {
-        authorizationClient.setAccessToken(accessToken, expirationDate)
+        authorizationClient.setAccessToken(accessToken, expirationDate);
         MobileHost.notifyMobileFrontend("notifyAuthAccessTokenChanged", accessToken, expirationDate);
       });
 

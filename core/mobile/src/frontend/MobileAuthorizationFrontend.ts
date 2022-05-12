@@ -19,7 +19,7 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
   private _expiryBuffer = 60 * 10; // ten minutes
   private _fetchingToken = false;
 
-  private get hasExpired(): boolean {
+  private get _hasExpired(): boolean {
     return this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000;
   }
 
@@ -28,7 +28,7 @@ export class MobileAuthorizationFrontend implements AuthorizationClient {
       return Promise.reject(); // short-circuits any recursive use of this function
     }
 
-    if (this._accessToken && !this.hasExpired) {
+    if (this._accessToken && !this._hasExpired) {
       return this._accessToken;
     } else {
       this._fetchingToken = true;
