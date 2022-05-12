@@ -284,3 +284,28 @@ In addition to toolbar buttons, React icons are now supported for use in [Widget
 The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
 have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
 since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
+
+## ArcGIS OAuth2 support
+
+It's now possible to connect to an ArcGIS MapService protected by OAuth2 authentication.  To enable this feature, the new `@itwin/map-layers-auth` package must be loaded by the hosting application, and an `ArcGgisAccessClient` must be created and configured properly.
+
+For example:
+```ts
+  const enterpriseClientIds = [{
+      serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
+      clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
+    }];
+  const accessClient = new ArcGisAccessClient();
+  const initStatus = accessClient.initialize({
+    redirectUri: "http://localhost:3000/esri-oauth2-callback",
+    clientIds: {
+      arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+      enterpriseClientIds,
+    }});
+  IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+```
+The hosting application must be registered in either the ArcGIS Online server (cloud offering) or an ArcGIS enterprise server (on-premise). The registered application must then provide it's associated clientID and redirectUri to the `ArcGgisAccessClient` object.  The ui-test-app application provides a complete sample configuration. 
+
+The maplayers widget has also been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process with the remote ArcGIS server. When the process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+
+More details on how to configure the ArcGis Server can be found in the [ESRI documentation](https://developers.arcgis.com/documentation/mapping-apis-and-services/security/tutorials/register-your-application/)

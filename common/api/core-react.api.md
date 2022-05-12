@@ -2442,6 +2442,9 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
+// @beta
+export function useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void;
+
 // @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
 
@@ -2450,6 +2453,9 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 
 // @internal
 export function useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void;
+
+// @beta
+export function useInterval(callback: (...args: any[]) => void, delay: number | undefined): void;
 
 // @internal
 export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
