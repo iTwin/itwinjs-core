@@ -5,8 +5,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run -s webpack:frontend",
-    "build:ci": "npm run -s build",
+    "build": "tsc 1>&2",
+    "build:ci": "npm run -s build && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm -s test",
     "docs": "",
@@ -15,7 +15,7 @@
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:electron": "certa -r electron -b ./lib/backend/electron.js",
     "test:direct": "certa -r node -b ./lib/backend/direct.js",
-    "webpack:frontend": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {},
   "dependencies": {

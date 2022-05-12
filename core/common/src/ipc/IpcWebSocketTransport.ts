@@ -6,6 +6,7 @@
  * @module IpcSocket
  */
 
+import { Buffer } from "buffer";
 import { IpcWebSocketMessage } from "./IpcWebSocket";
 
 let parts: any[] = [];
