@@ -40,6 +40,26 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (source: V
   };
 }
 
+export function synchronizeViewportViews(source: Viewport): SynchronizeViewports {
+  return (_source, target) => target.applyViewState(source.view.clone(target.iModel));
+}
+
+export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports {
+  const pose = source.view.savePose();
+  return (_source, target) => {
+    const view = target.view.applyPose(pose);
+    target.applyViewState(view);
+  };
+}
+
+export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void {
+  return connectViewports(viewports, (source) => synchronizeViewportFrusta(source));
+}
+
+export function connectViewportViews(viewports: Iterable<Viewport>): () => void {
+  return connectViewports(viewports, (source) => synchronizeViewportViews(source));
+}
+
 /** Forms a bidirectional connection between two [[Viewport]]s such that the [[ViewState]]s of each are synchronized with one another.
  * For example, panning in one viewport will cause the other viewport to pan by the same distance, and changing the [RenderMode]($common) of one viewport
  * will change it in the other viewport.
