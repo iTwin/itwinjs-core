@@ -2,16 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AsyncMethodsOf, ExtractLiterals, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import { ITwinElectronApi } from "../backend/ElectronPreload";
+import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
-
-/** Exposed main process methods of dialog module in an Electron app.
- * @beta
- */
-export type DialogModuleMethods = ExtractLiterals<AsyncMethodsOf<Electron.Dialog>, "showMessageBox" | "showOpenDialog" | "showSaveDialog">;
 
 /**
  * Frontend Ipc support for Electron apps.
@@ -74,7 +70,7 @@ export class ElectronApp {
    * @param methodName the name of the method to call
    * @param args arguments to method
    */
-  public static async callDialog<T extends DialogModuleMethods>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
+  public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
     return IpcApp.callIpcChannel("electron-safe", "callElectron", "dialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
 }

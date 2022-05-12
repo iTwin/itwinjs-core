@@ -16,6 +16,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
+import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -280,7 +281,7 @@ class ElectronAppHandler extends IpcHandler {
   public async callElectron(member: string, method: string, ...args: any) {
     let allowedMethods: readonly string[] = [];
     if (member === "dialog") {
-      const methods: readonly (keyof Electron.Dialog)[] = ["showMessageBox", "showOpenDialog", "showSaveDialog"];
+      const methods: DialogModuleMethod[] = ["showMessageBox", "showOpenDialog", "showSaveDialog"];
       allowedMethods = methods;
     }
 
