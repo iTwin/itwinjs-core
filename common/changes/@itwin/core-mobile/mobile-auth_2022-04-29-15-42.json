@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Remove auth access and configuration via typescript.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}
