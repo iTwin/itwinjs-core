@@ -386,6 +386,7 @@ async function importWorkspaceDb(args: UploadOptions) {
   await CloudSqlite.withWriteLock(args.user, container, async () => {
     await performTransfer(container, "upload", args);
   });
+  container.checkForChanges(); // so we can see newly imported WorkspaceDb
 }
 
 /** export a WorkspaceDb from a cloud WorkspaceContainer. */

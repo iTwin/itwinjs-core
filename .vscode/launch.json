@@ -777,9 +777,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "exportDb",
-        "proj",
-        "d:/temp/proj",
+        "@r:/createCloud.txt",
         "--config=r:/cloud.json"
       ],
       "outFiles": [
