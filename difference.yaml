@@ -1,14 +1,17 @@
 trigger: none
 pr: none
 
-variables:
+var_prompt:
   - name: repoName
+    prompt: repoName
     type: string
 
   - name: oldSHA
+    prompt: oldSHA
     type: string
   
   - name: newSHA
+    prompt: newSHA
     type: string
 
 pool:
