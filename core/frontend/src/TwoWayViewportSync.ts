@@ -8,6 +8,38 @@
 
 import { Viewport } from "./Viewport";
 
+export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
+
+export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void {
+  const disconnect: VoidFunction[] = [];
+
+  let echo = false;
+  const synchronize = (source: Viewport) => {
+    if (echo)
+      return;
+
+    echo = true;
+    try {
+      const doSync = sync(source);
+      for (const vp of viewports)
+        if (vp !== source)
+          doSync(source, vp);
+    } finally {
+      echo = false;
+    }
+  };
+
+  for (const vp of viewports)
+    disconnect.push(vp.onViewChanged.addListener(() => synchronize(vp)));
+
+  return () => {
+    for (const f of disconnect)
+      f();
+
+    disconnect.length = 0;
+  };
+}
+
 /** Forms a bidirectional connection between two [[Viewport]]s such that the [[ViewState]]s of each are synchronized with one another.
  * For example, panning in one viewport will cause the other viewport to pan by the same distance, and changing the [RenderMode]($common) of one viewport
  * will change it in the other viewport.
@@ -20,16 +52,6 @@ import { Viewport } from "./Viewport";
  */
 export class TwoWayViewportSync {
   protected readonly _disconnect: VoidFunction[] = [];
-  private _isEcho = false;
-
-  private syncView(source: Viewport, target: Viewport) {
-    if (this._isEcho)
-      return;
-
-    this._isEcho = true; // so we don't react to the echo of this sync
-    this.syncViewports(source, target);
-    this._isEcho = false;
-  }
 
   /** Invoked from [[connect]] to set up the initial synchronization between the two viewports.
    * `target` should be modified to match `source`.
@@ -59,9 +81,7 @@ export class TwoWayViewportSync {
 
     this.connectViewports(viewport1, viewport2);
 
-    // listen to the onViewChanged events from both views
-    this._disconnect.push(viewport1.onViewChanged.addListener(() => this.syncView(viewport1, viewport2)));
-    this._disconnect.push(viewport2.onViewChanged.addListener(() => this.syncView(viewport2, viewport1)));
+    this._disconnect.push(connectViewports([viewport1, viewport2], () => (source, target) => this.syncViewports(source, target)));
   }
 
   /** Remove the connection between the two views. */
