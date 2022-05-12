@@ -72,7 +72,7 @@ describe("GeoServices", () => {
             equatorialRadius: 6377563.396,
             id: "EPSG:7001",
             polarRadius: 6356256.909237,
-            source: "EPSG, Version 6 [EPSG]"
+            source: "EPSG, Version 6 [EPSG]",
           },
           ellipsoidId: "EPSG:7001",
           id: "EPSG:6277",
@@ -84,26 +84,26 @@ describe("GeoServices", () => {
                 delta: {
                   x: 446.448,
                   y: -125.157,
-                  z: 542.06
+                  z: 542.06,
                 },
                 rotation: {
                   x: 0.15,
                   y: 0.247,
-                  z: 0.842
+                  z: 0.842,
                 },
-                scalePPM: -20.489
+                scalePPM: -20.489,
               },
               sourceEllipsoid: {
                 equatorialRadius: 6377563.396,
                 id: "EPSG:7001",
-                polarRadius: 6356256.909237
+                polarRadius: 6356256.909237,
               },
               targetEllipsoid: {
                 equatorialRadius: 6378137,
                 id: "WGS84",
-                polarRadius: 6356752.3142
-              }
-            }]
+                polarRadius: 6356752.3142,
+              },
+            }],
         },
         datumId: "EPSG:6277",
         deprecated: true,
@@ -111,12 +111,12 @@ describe("GeoServices", () => {
         extent: {
           northEast: {
             latitude: 60.84,
-            longitude: 1.78
+            longitude: 1.78,
           },
           southWest: {
             latitude: 49.96,
-            longitude: -7.56
-          }
+            longitude: -7.56,
+          },
         },
         id: "EPSG:27700",
         projection: {
@@ -125,14 +125,14 @@ describe("GeoServices", () => {
           falseNorthing: -100000,
           latitudeOfOrigin: 49,
           method: "TransverseMercator",
-          scaleFactor: 0.999601272737422
+          scaleFactor: 0.999601272737422,
         },
         source: "EPSG",
-        unit: "Meter"
+        unit: "Meter",
       },
       verticalCRS: {
-        id: "ELLIPSOID"
-      }
+        id: "ELLIPSOID",
+      },
     };
 
     const EWRGCS: GeographicCRSProps = {
@@ -152,7 +152,7 @@ describe("GeoServices", () => {
             polarRadius: 6356256.909237,
             id: "EPSG:7001",
             description: "Airy 1830",
-            source: "EPSG, Version 6 [EPSG]"
+            source: "EPSG, Version 6 [EPSG]",
           },
           transforms: [
             {
@@ -160,27 +160,27 @@ describe("GeoServices", () => {
               sourceEllipsoid: {
                 equatorialRadius: 6377563.396,
                 polarRadius: 6356256.909237,
-                id: "EPSG:7001"
+                id: "EPSG:7001",
               },
               targetEllipsoid: {
                 equatorialRadius: 6378137,
                 polarRadius: 6356752.3142,
-                id: "WGS84"
+                id: "WGS84",
               },
               positionalVector: {
                 delta: {
                   x: 446.448,
                   y: -125.157,
-                  z: 542.06
+                  z: 542.06,
                 },
                 rotation: {
                   x: 0.15,
                   y: 0.247,
-                  z: 0.842
+                  z: 0.842,
                 },
-                scalePPM: -20.489
-              }
-            }]
+                scalePPM: -20.489,
+              },
+            }],
         },
         unit: "Meter",
         projection: {
@@ -189,21 +189,21 @@ describe("GeoServices", () => {
           falseNorthing: -100000,
           centralMeridian: -2,
           latitudeOfOrigin: 49,
-          scaleFactor: 0.999601272737422
+          scaleFactor: 0.999601272737422,
         },
         extent: {
           southWest: {
             latitude: 49.96,
-            longitude: -7.56
+            longitude: -7.56,
           },
           northEast: {
             latitude: 60.84,
-            longitude: 1.78
-          }
-        }
+            longitude: 1.78,
+          },
+        },
       },
       verticalCRS: {
-        id: "ELLIPSOID"
+        id: "ELLIPSOID",
       },
       additionalTransform: {
         helmert2DWithZOffset: {
@@ -211,9 +211,9 @@ describe("GeoServices", () => {
           translationY: 79859.4651,
           translationZ: 0,
           rotDeg: 0.5263624458992088,
-          scale: 0.9996703340508721
-        }
-      }
+          scale: 0.9996703340508721,
+        },
+      },
     };
 
     const UTM27Z10: GeographicCRSProps = {
@@ -226,7 +226,7 @@ describe("GeoServices", () => {
             equatorialRadius: 6378206.4,
             id: "CLRK66",
             polarRadius: 6356583.8,
-            source: "US Defense Mapping Agency, TR-8350.2-B, December 1987"
+            source: "US Defense Mapping Agency, TR-8350.2-B, December 1987",
           },
           ellipsoidId: "CLRK66",
           epsg: 6267,
@@ -239,51 +239,51 @@ describe("GeoServices", () => {
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/conus.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/alaska.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/prvi.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/hawaii.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/stgeorge.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/stlrnc.l?s",
-                    format: "NADCON"
+                    format: "NADCON",
                   },
                   {
                     direction: "Direct",
                     fileName: "./Usa/Nadcon/stpaul.l?s",
-                    format: "NADCON"
-                  }]
+                    format: "NADCON",
+                  }],
               },
               method: "GridFiles",
               sourceEllipsoid: {
                 equatorialRadius: 6378206.4,
                 id: "CLRK66",
-                polarRadius: 6356583.8
+                polarRadius: 6356583.8,
               },
               targetEllipsoid: {
                 equatorialRadius: 6378137,
                 id: "GRS1980",
-                polarRadius: 6356752.314140348
-              }
-            }]
+                polarRadius: 6356752.314140348,
+              },
+            }],
         },
         datumId: "NAD27",
         description: "UTM with NAD27 datum, Zone 10, Meter; Central Meridian 123d W",
@@ -291,25 +291,25 @@ describe("GeoServices", () => {
         extent: {
           northEast: {
             latitude: 84,
-            longitude: -119.5
+            longitude: -119.5,
           },
           southWest: {
             latitude: -1,
-            longitude: -126.5
-          }
+            longitude: -126.5,
+          },
         },
         id: "UTM27-10",
         projection: {
           hemisphere: "North",
           method: "UniversalTransverseMercator",
-          zoneNumber: 10
+          zoneNumber: 10,
         },
         source: "Snyder, J.P, 1987, Map Projections - A Working Manual",
-        unit: "Meter"
+        unit: "Meter",
       },
       verticalCRS: {
-        id: "NGVD29"
-      }
+        id: "NGVD29",
+      },
     };
 
     const UTM27Z10B: GeographicCRSProps =
