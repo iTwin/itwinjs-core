@@ -7,7 +7,8 @@ There are situations in which both the architect and structural engineer must be
 There may still be cases where we need to temporarily allow the architect and the structural engineer to each have their own `LoadBearingWall` `Element` in their own Model, both modeling the same physical load-bearing wall Entity. The architect can use his/her `Element` to represent a “suggestion” to the structural engineer.
 
 We must maintain clarity on which `Element` is the authoritative `LoadBearingWall` (in this case, the one in the structural Model). The authoritative `LoadBearingWall` may have a non-null FederationGUID and CodeValue, while the non-authoritative one should have NULL for those properties.
-There will also be a `PhysicalElementIsANonAuthoritativeDuplicateOfPhysicalElement` relationship to indicate which `LoadBearingWall` is a Non-Authoritative Duplicate (NAD) of the other.
+
+There is a proposal to have a `PhysicalElementIsANonAuthoritativeDuplicateOfPhysicalElement` relationship to indicate which `LoadBearingWall` is a Non-Authoritative Duplicate (NAD) of the other.
 
 When the collaboration is “done”, and both `Element`s are consistent, the non-authoritative `LoadBearingWall` should be deleted. The `LoadBearingWall` in the structural `Model` would be related to the architectural System via `PhysicalSystemGroupsMembers` and related to a `CompoundWall` via `PhysicalElementAssemblesElements`. Any relationships that were pointing to the non-authoritative `LoadBearingWall` should be re-mapped to the authoritative one.
 

@@ -31,7 +31,7 @@ BIS defines a data model that is shared by a growing set of applications and ser
 
 ### PhysicalModels and Sub-modeling
 
-As described in [Model Hierarchy](../data-organization/information-hierarchy.md), every `Model` " "sub-models" an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
+As described in [Model Hierarchy](../data-organization/information-hierarchy.md), every `Model` "sub-models" an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
 Sub-`Model`s are weakly-typed in BIS. To understand the real-world Entity that a `Model` is modeling, it is necessary to look at the `Element` which the `Model` is sub-modeling.
 
