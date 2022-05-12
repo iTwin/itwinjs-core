@@ -298,10 +298,12 @@ describe("test resuming transformations", () => {
     })();
 
     const regularToResumedIdMap = new Map<Id64String, Id64String>();
-    for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId from bis.Element")) {
-      const idInRegular = regularTransformer.context.findTargetElementId(sourceElemId);
-      const idInResumed = resumedTransformer.context.findTargetElementId(sourceElemId);
-      regularToResumedIdMap.set(idInRegular, idInResumed);
+    for (const [className, findMethod] of [["bis.Element", "findTargetElementId"], ["bis.CodeSpec", "findTargetCodeSpecId"]] as const) {
+      for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
+        const idInRegular = regularTransformer.context[findMethod](sourceElemId);
+        const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
+        regularToResumedIdMap.set(idInRegular, idInResumed);
+      }
     }
 
     await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);

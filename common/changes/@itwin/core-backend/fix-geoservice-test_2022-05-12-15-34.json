@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "changed name of GCS in test dataset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

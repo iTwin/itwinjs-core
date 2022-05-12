@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/index";
 
+$divider-color: $buic-background-toolbutton-stroke;
+$hovered-icon-color: $buic-foreground-primary-tone;
+
 .maplayers-settings-container {
   display: grid;
   align-items: center;
@@ -16,6 +19,10 @@
 
 .map-manager-settings-label {
   text-align: right;
+}
+
+.map-manager-settings-group {
+  margin-top: 1rem;
 }
 
 .map-manager-settings-terrain-container {

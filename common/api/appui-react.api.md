@@ -5905,6 +5905,7 @@ export interface StandardFrontstageProps {
     bottomPanelProps?: WidgetPanelProps;
     contentGroupProps: ContentGroupProps | ContentGroupProvider;
     cornerButton?: React.ReactNode;
+    defaultTool?: ToolItemDef;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
     // (undocumented)

@@ -32,6 +32,48 @@ This enhancement relies on request's `Accept-Encoding` header not gettting strip
 
 ## Display
 
+### Batching of pickable graphics
+
+[Pickable decorations](../learning/frontend/ViewDecorations#pickable-view-graphic-decorations) associate an [Id64String]($bentley) with a [RenderGraphic]($frontend), enabling the graphic to be interacted with using mouse or touch inputs and to have its [appearance overridden](../learning/display/SymbologyOverrides.md). Previously, a [GraphicBuilder]($frontend) accepted only a single pickable Id. [Decorator]($frontend)s that produce many pickable objects were therefore required to create a separate graphic for each pickable Id. This can negatively impact display performance by increasing the number of draw calls.
+
+Now, [GraphicBuilder.activatePickableId]($frontend) and [GraphicBuilder.activateFeature]($frontend) enable any number of pickable objects can be batched together into one graphic, improving performance. The following simple example illustrates how to batch a pickable sphere and a pickable box into one graphic.
+
+```ts
+  class MyDecorator implements Decorator {
+    boxId: Id64String;
+    sphereId: Id64String;
+
+    public constructor(iModel: IModelConnection) {
+      // reserve pickable Ids for each of our features.
+      this.boxId = iModel.transientIds.next;
+      this.sphereId = iModel.transientIds.next;
+    }
+
+    public decorate(context: DecorateContext): void {
+      // We must supply a PickableGraphicOptions when creating the GraphicBuilder.
+      // Any geometry added to the builder will use this.boxId as its pickable Id.
+      const builder = context.createGraphic({
+        type: GraphicType.Scene,
+        pickable: { id: boxId },
+      };
+
+      // Add a box.
+      const box = Box.createRange(new Range3d(0, 0, 0, 1, 1, 1))!;
+      builder.addSolidPrimitive(box);
+
+      // Change the pickable Id. Any subsequently-added geometry will use this.sphereId as its pickable Id.
+      builder.activatePickableId(this.sphereId);
+
+      // Add a sphere.
+      const sphere = Sphere.createCenterRadius(new Point3d(0, 0, 0), 1)!;
+      builder.addSolidPrimitive(sphere);
+
+      // Add the finished graphic to the viewport.
+      context.addDecorationFromBuilder(builder);
+    }
+  }
+```
+
 ### Detecting integrated graphics
 
 Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
@@ -46,11 +88,11 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 ### Polyface edges
 
-A [Polyface]($geometry-core) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry-core) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
+A [Polyface]($geometry) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
 
 Previously, the display system would attempt to infer the visibility of each interior edge based on the angle between its two adjacent faces. For example, an edge between two faces of a cube would be visible, whereas an edge between two nearly-coplanar faces would be invisible. However, this inference does not work well for polyfaces with smoother topology. Now, instead of attempting to infer edge visibility, the display system will simply render the edges of all faces visible.
 
-The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry-core).
+The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry).
 
 | Inferred edges (previous behavior) | All edges (new behavior) |
 | ---------------------------------- | ------------------------ |
@@ -300,6 +342,31 @@ The beta transformer API functions [IModelTransformer.skipElement]($transformer)
 have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
 since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
 
+## ArcGIS OAuth2 support
+
+It's now possible to connect to an ArcGIS MapService protected by OAuth2 authentication.  To enable this feature, the new `@itwin/map-layers-auth` package must be loaded by the hosting application, and an `ArcGgisAccessClient` must be created and configured properly.
+
+For example:
+```ts
+  const enterpriseClientIds = [{
+      serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
+      clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
+    }];
+  const accessClient = new ArcGisAccessClient();
+  const initStatus = accessClient.initialize({
+    redirectUri: "http://localhost:3000/esri-oauth2-callback",
+    clientIds: {
+      arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+      enterpriseClientIds,
+    }});
+  IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+```
+The hosting application must be registered in either the ArcGIS Online server (cloud offering) or an ArcGIS enterprise server (on-premise). The registered application must then provide it's associated clientID and redirectUri to the `ArcGgisAccessClient` object.  The ui-test-app application provides a complete sample configuration. 
+
+The maplayers widget has also been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process with the remote ArcGIS server. When the process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+
+More details on how to configure the ArcGis Server can be found in the [ESRI documentation](https://developers.arcgis.com/documentation/mapping-apis-and-services/security/tutorials/register-your-application/)
+
 ## Resuming transformations
 
 The functions [IModelTransformer.saveStateToFile]($transformer) and [IModelTransformer.resumeTransformation]($transformer) have been
@@ -308,3 +375,4 @@ target at the same state as it was when the transformer state file was made, to 
 [IModelTransformer.resumeTransformation]($transformer) will create a new transformer instance upon which calling
 [IModelTransformer.processAll]($transformer) or [IModelTransformer.processChanges]($transformer) will start the transformation but not re-export
 already inserted entities. This can be useful in some cases where a transformation is a long running process and may need to be paused and resumed.
+
