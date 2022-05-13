@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "3.2.0-dev.63",
+  "version": "3.3.0-dev.0",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -41,11 +41,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.63",
-    "@itwin/core-common": "workspace:^3.2.0-dev.63",
-    "@itwin/core-frontend": "workspace:^3.2.0-dev.63",
-    "@itwin/core-quantity": "workspace:^3.2.0-dev.63",
-    "@itwin/presentation-common": "workspace:^3.2.0-dev.63"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.0",
+    "@itwin/core-common": "workspace:^3.3.0-dev.0",
+    "@itwin/core-frontend": "workspace:^3.3.0-dev.0",
+    "@itwin/core-quantity": "workspace:^3.3.0-dev.0",
+    "@itwin/presentation-common": "workspace:^3.3.0-dev.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -62,7 +62,7 @@
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",
@@ -73,7 +73,7 @@
     "deep-equal": "^1",
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
-    "jsdom": "^17.0.0",
+    "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",

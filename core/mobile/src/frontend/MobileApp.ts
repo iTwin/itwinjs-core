@@ -31,7 +31,7 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
   public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
     MobileApp.onAuthAccessTokenChanged.raiseEvent(accessToken, expirationDate);
-  };
+  }
 }
 
 /** @beta */

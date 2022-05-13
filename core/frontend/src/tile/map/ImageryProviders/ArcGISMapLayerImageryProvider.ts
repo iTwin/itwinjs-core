@@ -11,9 +11,8 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import {
-  ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
-  MapFeatureInfoRecord,
-  MapLayerFeatureInfo,
+  ArcGisErrorCode, ArcGISTileMap, ArcGisUtilities,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -26,9 +25,12 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _querySupported = false;
   private _tileMapSupported = false;
   private _tileMap: ArcGISTileMap|undefined;
+  private _accessClient: MapLayerAccessClient|undefined;
+  private _lastAccessToken: MapLayerAccessToken|undefined;
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
+    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
   }
 
   protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
@@ -66,9 +68,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       // Skip if the layer state was already invalid
       if (ArcGisUtilities.hasTokenError(tileResponse)) {
 
+        if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
+          this._accessClient.invalidateToken(this._lastAccessToken);
+
         // Token might have expired, make a second attempt by forcing new token.
-        if (this._settings.userName && this._settings.userName.length > 0) {
-          ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+        if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken) {
           tileResponse = await this.fetchTile(row, column, zoomLevel);
           if (tileResponse === undefined)
             return undefined;
@@ -133,9 +137,18 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async initialize(): Promise<void> {
+
     const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
+
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Check again layer status, it might have change during await.
+      if (this.status === MapLayerImageryProviderStatus.Valid) {
+        this.status = MapLayerImageryProviderStatus.RequireAuth;
+        this.onStatusChanged.raiseEvent(this);
+      }
+    }
 
     if (json !== undefined) {
       this.serviceJson = json;
@@ -188,14 +201,32 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
     const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
-    const url = await this.appendSecurityToken(tmpUrl);
+    const urlObj = new URL(tmpUrl);
 
-    let json = await getJson(url);
+    if (this._accessClient) {
+      try {
+        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
+        this._lastAccessToken  = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+      } catch {
+      }
+    }
+
+    let json = await getJson(urlObj.toString());
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-    // Token might have expired, make a second attempt by forcing new token.
-      if (this._settings.userName && this._settings.userName.length > 0) {
-        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
-        json = await getJson(url);
+
+      if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
+        this._accessClient.invalidateToken(this._lastAccessToken);
+
+      // Token might have expired, make a second attempt by forcing new token.
+      if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken ) {
+        const urlObj2 = new URL(tmpUrl);
+        if (this._accessClient) {
+          try {
+            await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+          } catch {
+          }
+        }
+        json = await getJson(urlObj2.toString());
       }
 
       // OK at this point, if response still contain a token error, we assume end-user will
@@ -209,7 +240,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
-        return undefined;
+        json =  undefined;
       }
     }
 
@@ -283,6 +314,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
     return `${prefix}: ${layers.join(",")} `;
   }
+
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     let tmpUrl;
@@ -292,24 +324,18 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
       tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
     }
-    return this.appendSecurityToken(tmpUrl);
-  }
-
-  // construct the Url from the desired Tile
-  private async appendSecurityToken(url: string): Promise<string> {
-    // Append security token if required
-    let tokenParam = "";
-    if (this._settings.userName && this._settings.password) {
-      try {
-        const token = await ArcGisTokenManager.getToken(this._settings.url, this._settings.userName, this._settings.password,
-          {
-            client: ArcGisTokenClientType.referer,
-          });
-        if (token?.token)
-          tokenParam = `&token=${token.token}`;
-      } catch {
+    const urlObj = new URL(tmpUrl);
+    try {
+      if (this._accessClient) {
+        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
+        this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
+          mapLayerUrl: new URL(this._settings.url),
+          userName: this._settings.userName,
+          password: this._settings.password });
       }
+
+    } catch {
     }
-    return `${url}${tokenParam}`;
+    return urlObj.toString();
   }
 }

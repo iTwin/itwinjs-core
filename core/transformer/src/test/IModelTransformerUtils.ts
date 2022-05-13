@@ -17,9 +17,9 @@ import {
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
-  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, FontProps,
+  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
   GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
-  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 
@@ -243,6 +243,35 @@ export class IModelTransformerTestUtils {
   }
 }
 
+/** map of properties in class's EC definition to their name in the JS implementation if different */
+const aliasedProperties: Record<string, Record<string, string> | undefined> = new Proxy({
+  // can't use GeometricElement.classFullName at module scope
+  ["BisCore:GeometricElement3d".toLowerCase()]: {
+    geometryStream: "geom",
+  },
+}, {
+  get(target, key: string, receiver) { return Reflect.get(target, key.toLowerCase(), receiver); },
+});
+
+/**
+ * get all properties, including those of bases and mixins from metadata,
+ * and aliases some properties where the name differs in JS land from the ec property
+ */
+function getAllElemMetaDataProperties(elem: Element) {
+  function getAllClassMetaDataProperties(className: string, metadata: EntityMetaData) {
+    const allProperties = { ...metadata?.properties };
+    for (const baseName of metadata?.baseClasses ?? []) {
+      const base = elem.iModel.getMetaData(baseName);
+      Object.assign(allProperties, getAllClassMetaDataProperties(baseName, base));
+    }
+    Object.assign(allProperties, aliasedProperties[className.toLowerCase()]);
+    return allProperties;
+  }
+  const classMetaData = elem.getClassMetaData();
+  if (!classMetaData) return undefined;
+  return getAllClassMetaDataProperties(elem.classFullName, classMetaData);
+}
+
 /**
  * Assert that an identity (no changes) transformation has occurred between two IModelDbs
  * @note If you do not pass a transformer or custom implemention of an id remapping context, it defaults to assuming
@@ -252,22 +281,32 @@ export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
-  remapContainer: IModelTransformer | ((id: Id64String) => Id64String) = (id: Id64String) => id,
+  remapper:
+  | IModelTransformer
+  | ((id: Id64String) => Id64String)
+  | {
+    findTargetCodeSpecId: (id: Id64String) => Id64String;
+    findTargetElementId: (id: Id64String) => Id64String;
+  } = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
     // [IModelTransformerOptions.includeSourceProvenance]$(transformer) is set to true
     classesToIgnoreMissingElemsOfInTarget = IModelTransformer.provenanceElementClasses,
+    compareElemGeom = false,
   }: {
     expectedElemsOnlyInSource?: Partial<ElementProps>[];
     /** before checking elements that are only in the source are correct, filter out elements of these classes */
     classesToIgnoreMissingElemsOfInTarget?: typeof Entity[];
+    compareElemGeom?: boolean;
   } = {}
 ) {
-  const remap =
-    typeof remapContainer === "function"
-      ? remapContainer
-      : remapContainer.context.findTargetElementId.bind(remapContainer.context);
+  const [remapElem, remapCodeSpec] =
+    typeof remapper === "function"
+      ? [remapper, remapper]
+      : remapper instanceof IModelTransformer
+        ? [remapper.context.findTargetElementId.bind(remapper.context), remapper.context.findTargetCodeSpecId.bind(remapper.context)]
+        : [remapper.findTargetElementId, remapper.findTargetCodeSpecId];
 
   expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
   expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
@@ -279,39 +318,43 @@ export async function assertIdentityTransformation(
   for await (const [sourceElemId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
-    const targetElemId = remap(sourceElemId);
-    const sourceElem = sourceDb.elements.getElement(sourceElemId);
-    const targetElem = targetDb.elements.tryGetElement(targetElemId);
+    const targetElemId = remapElem(sourceElemId);
+    const sourceElem = sourceDb.elements.getElement({ id: sourceElemId, wantGeometry: compareElemGeom });
+    const targetElem = targetDb.elements.tryGetElement({ id: targetElemId, wantGeometry: compareElemGeom });
     // expect(targetElem.toExist)
     sourceToTargetElemsMap.set(sourceElem, targetElem);
     if (targetElem) {
       targetElemIds.add(targetElemId);
       targetToSourceElemsMap.set(targetElem, sourceElem);
       for (const [propName, prop] of Object.entries(
-        sourceElem.getClassMetaData()!.properties
-      ) ?? []) {
+        getAllElemMetaDataProperties(sourceElem) ?? {}
+      )) {
+        // known cases for the prop expecting to have been changed by the transformation under normal circumstances
+        // - federation guid will be generated if it didn't exist
+        // - jsonProperties may include remapped ids
+        const propChangesAllowed = sourceElem.federationGuid === undefined || propName === "jsonProperties";
         if (prop.isNavigation) {
-          let relationTargetInSourceId!: Id64String;
-          let relationTargetInTargetId!: Id64String;
           expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
           // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name
           // so we query the prop instead of the checking for the property on the element
-          const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
-          sourceDb.withPreparedStatement(sql, (stmt) => {
+          const sql = `SELECT [${propName}].Id from [${sourceElem.schemaName}].[${sourceElem.className}] WHERE ECInstanceId=:id`;
+          const relationTargetInSourceId = sourceDb.withPreparedStatement(sql, (stmt) => {
             stmt.bindId("id", sourceElemId);
             stmt.step();
-            relationTargetInSourceId = stmt.getValue(0).getId() ?? Id64.invalid;
+            return stmt.getValue(0).getId() ?? Id64.invalid;
           });
-          targetDb.withPreparedStatement(sql, (stmt) => {
+          const relationTargetInTargetId = targetDb.withPreparedStatement(sql, (stmt) => {
             stmt.bindId("id", targetElemId);
             expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-            relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
+            return stmt.getValue(0).getId() ?? Id64.invalid;
           });
-          const mappedRelationTargetInTargetId = remap(relationTargetInSourceId);
+          const mappedRelationTargetInTargetId = (propName === "codeSpec" ? remapCodeSpec : remapElem)(relationTargetInSourceId);
           expect(relationTargetInTargetId).to.equal(
             mappedRelationTargetInTargetId
           );
-        } else {
+        } else if (!propChangesAllowed) {
+          // kept for conditional breakpoints
+          const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
@@ -338,7 +381,7 @@ export async function assertIdentityTransformation(
           if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
           const image = sky.image;
           if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
-          if (image?.texture) image.texture = remap(image.texture);
+          if (image?.texture) image.texture = remapElem(image.texture);
           if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
           if ((sky as any).file === "") delete (sky as any).file;
         }
@@ -347,16 +390,21 @@ export async function assertIdentityTransformation(
           : styles?.excludedElements;
         for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
           const id = excludedElements![i];
-          excludedElements![i] = remap(id);
+          excludedElements![i] = remapElem(id);
         }
         for (const ovr of styles?.subCategoryOvr ?? []) {
           if (ovr.subCategory)
-            ovr.subCategory = remap(ovr.subCategory);
+            ovr.subCategory = remapElem(ovr.subCategory);
         }
       }
+      if (sourceElem instanceof SpatialViewDefinition) {
+        const viewProps = expectedSourceElemJsonProps.viewDetails as ViewDetails3dProps | undefined;
+        if (viewProps && viewProps.acs)
+          viewProps.acs = remapElem(viewProps.acs);
+      }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
+      // kept for conditional breakpoints
       const _eq = deepEqualWithFpTolerance(
-        // kept for conditional breakpoints
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
@@ -416,7 +464,7 @@ export async function assertIdentityTransformation(
   for await (const [sourceModelId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
-    const targetModelId = remap(sourceModelId);
+    const targetModelId = remapElem(sourceModelId);
     const sourceModel = sourceDb.models.getModel(sourceModelId);
     const targetModel = targetDb.models.tryGetModel(targetModelId);
     // expect(targetModel.toExist)
@@ -484,9 +532,9 @@ export async function assertIdentityTransformation(
       onlyInSourceElements.has(relInSource.SourceECInstanceId) &&
       onlyInSourceElements.has(relInSource.TargetECInstanceId);
     if (isOnlyInSource) continue;
-    const relSourceInTarget = remap(relInSource.SourceECInstanceId);
+    const relSourceInTarget = remapElem(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
-    const relTargetInTarget = remap(relInSource.TargetECInstanceId);
+    const relTargetInTarget = remapElem(relInSource.TargetECInstanceId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
     const relInTargetKey = makeRelationKey({
       SourceECInstanceId: relSourceInTarget,

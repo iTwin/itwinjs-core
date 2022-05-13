@@ -1726,7 +1726,7 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
 
     const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
     const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);

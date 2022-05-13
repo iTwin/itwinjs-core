@@ -49,7 +49,7 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapManagerSettings() {
-  const { activeViewport } = useSourceMapContext();
+  const { activeViewport} = useSourceMapContext();
   const backgroundMapSettings = (activeViewport!.view as ViewState3d).getDisplayStyle3d().settings.backgroundMap;
 
   const [transparency, setTransparency] = React.useState(() =>
@@ -233,7 +233,7 @@ export function MapManagerSettings() {
         </>
 
       </div>
-      <div className="map-manager-settings-terrain-container">
+      <div className="map-manager-settings-group">
         <fieldset>
           <legend>{terrainLabel}</legend>
 

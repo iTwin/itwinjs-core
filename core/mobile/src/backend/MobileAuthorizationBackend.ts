@@ -19,7 +19,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
   private _expiryBuffer = 60 * 10; // ten minutes
   private _fetchingToken = false;
 
-  private get hasExpired(): boolean {
+  private get _hasExpired(): boolean {
     return this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000;
   }
 
@@ -29,7 +29,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
     }
 
     return new Promise<AccessToken>((resolve, reject) => {
-      if (this._accessToken && !this.hasExpired) {
+      if (this._accessToken && !this._hasExpired) {
         resolve(this._accessToken);
       } else {
         this._fetchingToken = true;
@@ -41,7 +41,8 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
 
           this._accessToken = tokenString ?? "";
           if (expirationDate !== undefined)
-            this._expirationDate = new Date(expirationDate)
+            this._expirationDate = new Date(expirationDate);
+
           resolve(this._accessToken);
         });
         this._fetchingToken = false;
