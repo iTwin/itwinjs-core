@@ -467,20 +467,25 @@ It is sometimes necessary to run WorkspaceEditor in *batch mode*, for example du
 
 The second argument can specify the config file for the script.
 
+> In @ scripts, anything after an **`#`** is treated as a comment and blank lines are ignored.
+
 For example, to run the examples above:
 
 Assume a file called `importAll.txt` contains:
 
 ```sh
 > cat importAll.txt
-createDb proj
-add proj --rscName=equipment-data --type=file r:\data\equip.dat
-add proj --type=string --root=r:\json *
-add proj --type=blob --root=r:\dict **\*.dict
-listDb proj
+
+# Create a new local WorkspaceDb file and import resources into it
+
+createDb proj # create a new blank WorkspaceDb
+add proj --rscName=equipment-data --type=file r:\data\equip.dat # add file
+add proj --type=string --root=r:\json * # add strings
+add proj --type=blob --root=r:\dict **\*.dict # add blob
+listDb proj # so we can tell it worked
 ```
 
-run `importAll.txt` as an @ script:
+run `importAll.txt` as an @ script using `local.json` as config:
 
 ```sh
 > WorkspaceEditor @importAll.txt --config=r:\local.json
@@ -531,3 +536,26 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  files:
   name=equipment-data, size=134K, ext="dat", date=Tue Jul 08 2014 13:55:19 GMT-0400 (Eastern Daylight Time)
 ```
+
+Then, a separate file called `createCloud.txt` contains:
+
+```sh
+> cat createCloud.txt
+
+# initialize container and import WorkspaceDb from previous step
+
+initializeWorkspace --noPrompt # don't prompt for yes/no
+importDb project proj112\proj # import WorkspaceDb from local directory into cloud container.
+queryDbs # so we can tell it worked
+```
+run `createCloud.txt` as an @ script using `cloud.json` for config:
+
+```sh
+> WorkspaceEditor @r:\createCloud.txt --config=r:\cloud.json
+container "5d385232-a2ec-4f31-b74b-8201c027848d initialized
+Vacuuming r:\workspaces\proj112\proj.itwin-workspace ... done
+import r:\workspaces\proj112\proj.itwin-workspace, container=5d385232-a2ec-4f31-b74b-8201c027848d, dbName=project:1.0.0 : complete, 0.047 seconds
+WorkspaceDbs in container [5d385232-a2ec-4f31-b74b-8201c027848d]
+ "project:1.0.0", size=4M, 0M downloaded (0%)
+ ```
+
