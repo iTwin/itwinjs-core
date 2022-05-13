@@ -10,7 +10,7 @@ import { StandardViewId } from "../StandardView";
 import { Viewport } from "../Viewport";
 import {
   connectViewports, SynchronizeViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
-} from "../TwoWayViewportSync";
+} from "../ViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
 function rotate(vp: Viewport, id: StandardViewId) {
