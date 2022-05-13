@@ -48,7 +48,9 @@ To set the environment variables, either set them directly within the terminal y
 ### Common variables
 
 * IMJS_UITESTAPP_SNAPSHOT_FULLPATH
-  * Option variable used to immediately open the specific snapshot file from local disk as soon as app starts.
+  * Optional variable used to immediately open the specific snapshot file from local disk as soon as app starts.
+* IMJS_UITESTAPP_IMODEL_VIEWID
+  * Optional variable to define the Id of the view to display. If not specified or not found in file, a default view Id is located used.
 * IMJS_TESTAPP_REACT_AXE_CONSOLE
   * If defined, open the AXE console for React.
 * IMJS_MAPBOX_KEY
