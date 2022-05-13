@@ -6,6 +6,7 @@ publish: false
 Table of contents:
 
 - [Display](#display)
+  - [Multi-way viewport sync](#multi-way-viewport-sync)
   - [Batching of pickable graphics](#batching-of-pickable-graphics)
   - [Detecting integrated graphics](#detecting-integrated-graphics)
   - [Improved polyface edges](#improved-polyface-edges)
@@ -35,6 +36,25 @@ Table of contents:
 - [Deprecations](#deprecations)
 
 ## Display
+
+### Multi-way viewport sync
+
+[TwoWayViewportSync]($frontend) is useful for synchronizing the states of two or more [Viewport]($frontend)s such that navigations made in one viewport are reflected in the other viewport. But what if you want to synchronize more than two viewports? iTwin.js 3.2 introduces [connectViewports]($frontend) to establish a connection between any number of viewports. You supply the set of viewports to be connected and a function that implements the logic for synchronizing the viewports when any of their states change. You can sever the connection by invoking the function returned by `connectViewports`. [connectViewportViews]($frontend) and [connectViewportFrusta]($frontend) are supplied as alternatives to [TwoWayViewportSync]($frontend) and [TwoWayViewportFrustumSync]($frontend), respectively, that can operate on any number of viewports.
+
+Here's a simple example that keeps the viewports' [ViewFlags]($common) in sync:
+
+```ts
+  // Establish the connection.
+  const disconnect = connectViewports([viewport1, viewport2, viewport3, (changedViewport: Viewport) => {
+    // Supply a function that will synchronize the state of the other viewports with that of the changed viewport.
+    return (source: Viewport, target: Viewport) => {
+      target.viewFlags = source.viewFlags;
+    };
+  };
+
+  // Some time later, sever the connection.
+  disconnect();
+```
 
 ### Batching of pickable graphics
 
