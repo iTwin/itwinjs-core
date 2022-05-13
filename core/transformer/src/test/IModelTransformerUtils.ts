@@ -99,7 +99,7 @@ Assertion.addMethod(
 );
 
 export class HubWrappers extends BackendTestUtils.HubWrappers {
-  protected static get hubMock() { return HubMock; }
+  protected static override get hubMock() { return HubMock; }
 }
 
 export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils {
@@ -122,9 +122,9 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
     assert.isTrue(Id64.isValidId64(contextSubjectId));
     const definitionModelId = DefinitionModel.insert(teamDb, IModel.rootSubjectId, `Definition${teamName}`);
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const teamSpatialCategoryId = BackendTestUtils.IModelTestUtils.insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+    const teamSpatialCategoryId = this.insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
     assert.isTrue(Id64.isValidId64(teamSpatialCategoryId));
-    const sharedSpatialCategoryId = BackendTestUtils.IModelTestUtils.insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
+    const sharedSpatialCategoryId = this.insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const sharedDrawingCategoryId = DrawingCategory.insert(teamDb, IModel.dictionaryId, "DrawingCategoryShared", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(sharedDrawingCategoryId));
@@ -137,7 +137,7 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
       category: teamSpatialCategoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject${teamName}1`,
-      geom: BackendTestUtils.IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      geom: this.createBox(Point3d.create(1, 1, 1)),
       placement: {
         origin: teamOrigin,
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -152,7 +152,7 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
       category: sharedSpatialCategoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject${teamName}2`,
-      geom: BackendTestUtils.IModelTestUtils.createBox(Point3d.create(2, 2, 2)),
+      geom: this.createBox(Point3d.create(2, 2, 2)),
       placement: {
         origin: teamOrigin,
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -178,32 +178,32 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
   }
 
   public static assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
-    const definitionPartitionId: Id64String = BackendTestUtils.IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const teamSpatialCategoryId = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
-    const sharedSpatialCategoryId = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
-    const physicalPartitionId: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const physicalObjectId1: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+    const definitionPartitionId: Id64String = this.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const teamSpatialCategoryId = this.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const sharedSpatialCategoryId = this.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
+    const physicalPartitionId: Id64String = this.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const physicalObjectId1: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
     const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
     assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
     assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
     assert.isTrue(physicalObject1.code.value === "");
     assert.equal(physicalObject1.category, teamSpatialCategoryId);
-    const physicalObjectId2: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+    const physicalObjectId2: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
     const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
     assert.equal(physicalObject2.category, sharedSpatialCategoryId);
   }
 
   public static assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
-    const sharedSpatialCategoryId = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
+    const sharedSpatialCategoryId = this.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const aspects: ExternalSourceAspect[] = iModelDb.elements.getAspects(sharedSpatialCategoryId, ExternalSourceAspect.classFullName) as ExternalSourceAspect[];
     assert.isAtLeast(teamNames.length, aspects.length, "Should have an ExternalSourceAspect from each source");
     teamNames.forEach((teamName: string) => {
-      const subjectId: Id64String = BackendTestUtils.IModelTestUtils.querySubjectId(iModelDb, teamName);
-      const definitionPartitionId: Id64String = BackendTestUtils.IModelTestUtils.queryDefinitionPartitionId(iModelDb, subjectId, teamName);
-      const teamSpatialCategoryId = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
-      const physicalPartitionId: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalPartitionId(iModelDb, subjectId, teamName);
-      const physicalObjectId1: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+      const subjectId: Id64String = this.querySubjectId(iModelDb, teamName);
+      const definitionPartitionId: Id64String = this.queryDefinitionPartitionId(iModelDb, subjectId, teamName);
+      const teamSpatialCategoryId = this.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+      const physicalPartitionId: Id64String = this.queryPhysicalPartitionId(iModelDb, subjectId, teamName);
+      const physicalObjectId1: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
       const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
       assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
       assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
@@ -211,7 +211,7 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
       assert.equal(physicalObject1.category, teamSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
       assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
-      const physicalObjectId2: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+      const physicalObjectId2: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
       const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
       assert.equal(physicalObject2.category, sharedSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId2, ExternalSourceAspect.classFullName).length);
@@ -235,19 +235,19 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
 
   public static assertConsolidatedIModelContents(iModelDb: IModelDb, consolidatedName: string): void {
     // assert what should exist
-    const definitionModelId: Id64String = BackendTestUtils.IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
+    const definitionModelId: Id64String = this.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const categoryA: Id64String = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "A");
-    const categoryB: Id64String = BackendTestUtils.IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "B");
+    const categoryA: Id64String = this.querySpatialCategoryId(iModelDb, definitionModelId, "A");
+    const categoryB: Id64String = this.querySpatialCategoryId(iModelDb, definitionModelId, "B");
     assert.isTrue(Id64.isValidId64(categoryA));
     assert.isTrue(Id64.isValidId64(categoryB));
-    const physicalModelId: Id64String = BackendTestUtils.IModelTestUtils.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
+    const physicalModelId: Id64String = this.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
     assert.isTrue(Id64.isValidId64(physicalModelId));
-    BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryA, "A1");
-    BackendTestUtils.IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryB, "B1");
+    this.queryPhysicalElementId(iModelDb, physicalModelId, categoryA, "A1");
+    this.queryPhysicalElementId(iModelDb, physicalModelId, categoryB, "B1");
     // assert what should not exist
-    assert.throws(() => BackendTestUtils.IModelTestUtils.querySubjectId(iModelDb, "A"), Error);
-    assert.throws(() => BackendTestUtils.IModelTestUtils.querySubjectId(iModelDb, "B"), Error);
+    assert.throws(() => this.querySubjectId(iModelDb, "A"), Error);
+    assert.throws(() => this.querySubjectId(iModelDb, "B"), Error);
   }
 }
 
@@ -586,7 +586,7 @@ export class TransformerExtensiveTestScenario {
     Subject.insert(targetDb, subjectId, "S2");
     Subject.insert(targetDb, subjectId, "S3");
     Subject.insert(targetDb, subjectId, "S4");
-    const targetPhysicalCategoryId = BackendTestUtils.IModelTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
+    const targetPhysicalCategoryId = IModelTransformerTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
     assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
   }
 
@@ -672,13 +672,13 @@ export class TransformerExtensiveTestScenario {
     const geometryPartId = targetDb.elements.queryElementIdByCode(GeometryPart.createCode(targetDb, definitionModelId, "GeometryPart"))!;
     assert.isTrue(Id64.isValidId64(geometryPartId));
     // PhysicalElement
-    const physicalObjectId1: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
-    const physicalObjectId2: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
-    const physicalObjectId3: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
-    const physicalObjectId4: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
-    const physicalElementId1: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
-    const childObjectId1A: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
-    const childObjectId1B: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
+    const physicalObjectId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    const physicalObjectId2: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
+    const physicalObjectId3: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
+    const physicalObjectId4: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
+    const physicalElementId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
+    const childObjectId1A: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
+    const childObjectId1B: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId1);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId2);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId3);
@@ -801,8 +801,8 @@ export class TransformerExtensiveTestScenario {
     // AuxCoordSystem2d
     assert.equal(undefined, targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
     // DrawingGraphic
-    const drawingGraphicId1: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
-    const drawingGraphicId2: Id64String = BackendTestUtils.IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
+    const drawingGraphicId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId1);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId2);
     // DrawingGraphicRepresentsElement
