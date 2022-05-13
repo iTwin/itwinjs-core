@@ -8,7 +8,6 @@ internal;ArcGisOAuth2EndpointType
 internal;ArcGisOAuth2Token 
 beta;ArcGisOAuthClientIds
 beta;ArcGisOAuthConfig
-beta;ArcGisOauthRedirect(): JSX.Element
 internal;ArcGisToken 
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
