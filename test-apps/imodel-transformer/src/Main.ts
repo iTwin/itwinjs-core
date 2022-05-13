@@ -166,7 +166,11 @@ void (async () => {
           default: false,
         },
         isolateElements: {
-          desc: "transform filtering all unnecessary element/model trees except for those listed in a comma-separated argument of ids",
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids",
+          type: "string",
+        },
+        isolateTrees: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids, or one of their children",
           type: "string",
         },
         loadSourceGeometry: {
@@ -349,8 +353,20 @@ void (async () => {
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(await acquireAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
-    } else if (args.isolateElements !== undefined) {
-      await Transformer.transformIsolated(sourceDb, targetDb, args.isolateElements.split(","), transformerOptions);
+    } else if (args.isolateElements !== undefined || args.isolateTrees !== undefined) {
+      const isolateTrees = args.isolateTrees !== undefined;
+      const isolateArg = args.isolateElements ?? args.isolateTrees;
+      assert(isolateArg !== undefined);
+      const isolateList = isolateArg.split(",");
+      const transformer = await Transformer.transformIsolated(sourceDb, targetDb, isolateList, isolateTrees, transformerOptions);
+      Logger.logInfo(
+        loggerCategory,
+        [
+          "remapped elements:",
+          isolateList.map((id) => `${id}=>${transformer.context.findTargetElementId(id)}`).join(", "),
+        ].join("\n")
+      );
+      transformer.dispose();
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }

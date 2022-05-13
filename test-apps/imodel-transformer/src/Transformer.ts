@@ -66,15 +66,28 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
-  /** attempt to isolate a set of elements by transforming only them from the source to the target */
+  /**
+   * attempt to isolate a set of elements by transforming only them from the source to the target
+   * @note the transformer is returned, not disposed, you must dispose it yourself
+   */
   public static async transformIsolated(
     sourceDb: IModelDb,
     targetDb: IModelDb,
     isolatedElementIds: Id64Array,
+    includeChildren = false,
     options?: TransformerOptions
-  ): Promise<void> {
-    // might need to inject RequestContext for schemaExport.
-    const transformer = new Transformer(sourceDb, targetDb, options);
+  ): Promise<IModelTransformer> {
+    class IsolateElementsTransformer extends Transformer {
+      public override shouldExportElement(sourceElement: Element) {
+        if (!includeChildren
+          && (isolatedElementIds.some((id) => sourceElement.parent?.id === id)
+            || isolatedElementIds.some((id) => sourceElement.model === id))
+        )
+          return false;
+        return super.shouldExportElement(sourceElement);
+      }
+    }
+    const transformer = new IsolateElementsTransformer(sourceDb, targetDb, options);
     transformer.initialize(options);
     await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
@@ -85,8 +98,8 @@ export class Transformer extends IModelTransformer {
       transformer.deleteUnusedGeometryParts();
       await transformer.saveChanges("deleteUnusedGeometryParts");
     }
-    transformer.dispose();
     transformer.logElapsedTime();
+    return transformer;
   }
 
   private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions) {
