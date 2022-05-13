@@ -29,8 +29,16 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (source: V
     }
   };
 
-  for (const vp of viewports)
+  let firstViewport: Viewport | undefined;
+  for (const vp of viewports) {
+    if (!firstViewport)
+      firstViewport = vp;
+
     disconnect.push(vp.onViewChanged.addListener(() => synchronize(vp)));
+  }
+
+  if (firstViewport)
+    synchronize(firstViewport);
 
   return () => {
     for (const f of disconnect)

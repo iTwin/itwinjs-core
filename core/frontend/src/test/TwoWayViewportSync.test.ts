@@ -7,13 +7,20 @@ import { expect } from "chai";
 import { ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
-import { ScreenViewport } from "../Viewport";
-import { TwoWayViewportFrustumSync, TwoWayViewportSync } from "../TwoWayViewportSync";
+import { Viewport } from "../Viewport";
+import {
+  connectViewports, SynchronizeViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
+} from "../TwoWayViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
-describe("TwoWayViewportSync", () => {
-  let vp1: ScreenViewport;
-  let vp2: ScreenViewport;
+function rotate(vp: Viewport, id: StandardViewId) {
+  vp.view.setStandardRotation(id);
+  vp.synchWithView();
+}
+
+describe.only("TwoWayViewportSync", () => {
+  let vp1: Viewport;
+  let vp2: Viewport;
 
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
@@ -30,11 +37,6 @@ describe("TwoWayViewportSync", () => {
 
   function isSameFrustum() {
     return vp1.getFrustum().isSame(vp2.getFrustum());
-  }
-
-  function rotate(vp: ScreenViewport, id: StandardViewId) {
-    vp.view.setStandardRotation(id);
-    vp.synchWithView();
   }
 
   it("synchronizes frusta", () => {
@@ -114,7 +116,7 @@ describe("TwoWayViewportSync", () => {
   });
 
   it("synchronizes selectors", () => {
-    function categories(vp: ScreenViewport): string[] {
+    function categories(vp: Viewport): string[] {
       return Array.from(vp.view.categorySelector.categories).sort();
     }
 
@@ -170,5 +172,76 @@ describe("TwoWayViewportSync", () => {
       expect(isSameFrustum()).to.be.false;
       expect(prevFrust.isSame(vp2.getFrustum())).to.be.true;
     }
+  });
+});
+
+describe.only("connectViewports", () => {
+  const nVps = 4;
+  let vps: Viewport[] = [];
+
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
+  beforeEach(() => {
+    for (let i = 0; i < nVps; i++)
+      vps.push(openBlankViewport());
+  });
+
+  afterEach(() => {
+    for (const vp of vps)
+      vp.dispose();
+
+    vps.length = 0;
+  });
+
+  function getTargets(source: Viewport) {
+    return vps.filter((x) => x !== source);
+  }
+
+  function sameFrusta(source: Viewport) {
+    return getTargets(source).every((x) => x.getFrustum().isSame(source.getFrustum()));
+  }
+
+  function allSameFrustum() {
+    const allSame = vps.every((x) => sameFrusta(x));
+    const anySame = vps.some((x) => sameFrusta(x));
+    expect(allSame).to.equal(anySame);
+    return allSame;
+  }
+
+  function connectFrusta() {
+    return connectViewports(vps, synchronizeViewportFrusta);
+  }
+
+  function connectViews() {
+    return connectViewports(vps, synchronizeViewportViews);
+  }
+
+  it("synchronizes frusta", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      rotate(vps[0], StandardViewId.Top);
+      rotate(vps[1], StandardViewId.Bottom);
+      rotate(vps[2], StandardViewId.Left);
+      rotate(vps[3], StandardViewId.Right);
+
+      expect(allSameFrustum()).to.be.false;
+
+      const disconnect = connect();
+      expect(allSameFrustum()).to.be.true;
+
+      disconnect();
+    }
+  });
+
+  it("synchronizes camera", () => {
+  });
+
+  it("synchronizes display style", () => {
+  });
+
+  it("synchronizes selectors", () => {
+  });
+
+  it("disconnects", () => {
   });
 });
