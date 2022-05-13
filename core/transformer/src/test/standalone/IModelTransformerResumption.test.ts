@@ -225,7 +225,7 @@ describe("test resuming transformations", () => {
   let seedDb: BriefcaseDb;
 
   before(async () => {
-    HubMock.startup("IModelTransformerHub");
+    HubMock.startup("IModelTransformerResumption");
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
     const seedPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
@@ -238,11 +238,13 @@ describe("test resuming transformations", () => {
     await seedDb.pushChanges({accessToken, description: "populated seed db"});
   });
 
-  after(() => HubMock.shutdown());
+  after(async () => {
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, seedDb);
+    HubMock.shutdown();
+  });
 
   it("resume old state after partially committed changes", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.pathName, noLocks: true });
-    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+    const sourceDb = seedDb;
 
     const [regularTransformer, regularTarget] = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
@@ -283,6 +285,7 @@ describe("test resuming transformations", () => {
         interrupted = true;
         // redownload to simulate restarting without any JS state
         expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.true;
+        targetDb.close();
         targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
         expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
         expect(targetDb.changeset.id).to.equal(changesetId!);
@@ -307,8 +310,8 @@ describe("test resuming transformations", () => {
     }
 
     await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
-    resumedTarget.close();
-    regularTarget.close();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, resumedTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
 
   it("simple single crash transform resumption", async () => {
@@ -345,8 +348,9 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
-    crashingTarget.close();
-    regularTarget.close();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
 
   it("should fail to resume from an old target", async () => {
@@ -378,6 +382,7 @@ describe("test resuming transformations", () => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const TransformerClass = transformer.constructor as typeof IModelTransformer;
       // redownload targetDb so that it is reset to the old state
+      targetDb.close();
       targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       expect(
         () => TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
@@ -385,8 +390,9 @@ describe("test resuming transformations", () => {
     }
 
     expect(crashed).to.be.true;
-    targetDb.saveChanges();
     transformer.dispose();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
     return targetDb;
   });
 
@@ -440,7 +446,7 @@ describe("test resuming transformations", () => {
 
       expect(crashed).to.be.true;
       transformer.dispose();
-      targetDb.close();
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
     }
 
     class CrashOn2Transformer extends CountdownToCrashTransformer {
@@ -516,23 +522,20 @@ describe("test resuming transformations", () => {
     transformer.saveStateToFile(dumpPath);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TransformerClass = transformer.constructor as typeof AdditionalStateTransformer;
+    transformer.dispose();
     const resumedTransformer = TransformerClass.resumeTransformation(dumpPath, new AdditionalStateExporter(sourceDb), new AdditionalStateImporter(targetDb));
     expect(resumedTransformer).not.to.equal(transformer);
     expect(resumedTransformer.state1).to.equal(transformer.state1);
     expect(resumedTransformer.state2).to.equal(transformer.state2);
     expect((resumedTransformer.importer as AdditionalStateImporter).state1).to.equal((transformer.importer as AdditionalStateImporter).state1);
     expect((resumedTransformer.exporter as AdditionalStateExporter).state1).to.equal((transformer.exporter as AdditionalStateExporter).state1);
+
+    resumedTransformer.dispose();
+    targetDb.close();
   });
 
   it("should fail to resume from an old target while processing relationships", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
-      iTwinId,
-      iModelName: "sourceDb1",
-      description: "a db called sourceDb1",
-      noLocks: true,
-      version0: seedDb.pathName,
-    });
-    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+    const sourceDb = seedDb;
 
     const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
     let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
@@ -552,7 +555,9 @@ describe("test resuming transformations", () => {
       transformer.saveStateToFile(dumpPath);
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const TransformerClass = transformer.constructor as typeof IModelTransformer;
+      transformer.dispose();
       // redownload targetDb so that it is reset to the old state
+      targetDb.close();
       targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       expect(
         () => TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
@@ -560,25 +565,17 @@ describe("test resuming transformations", () => {
     }
 
     expect(crashed).to.be.true;
-    targetDb.saveChanges();
-    transformer.dispose();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
     return targetDb;
   });
 
   it("should succeed to resume from an up-to-date target while processing relationships", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
-      iTwinId,
-      iModelName: "sourceDb1",
-      description: "a db called sourceDb1",
-      noLocks: true,
-      version0: seedDb.pathName,
-    });
-    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+    const sourceDb = seedDb;
 
     const crashingTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.relationshipExportsUntilCall = 2;
       let crashed = false;
       try {
@@ -593,8 +590,9 @@ describe("test resuming transformations", () => {
         );
         transformer.saveStateToFile(dumpPath);
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const TransformerClass = transformer.constructor as typeof IModelTransformer;
-        TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
+        const TransformerClass = transformer.constructor as typeof CountdownToCrashTransformer;
+        transformer.dispose();
+        transformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
         transformer.relationshipExportsUntilCall = undefined;
         await transformer.processAll();
       }
@@ -616,8 +614,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
-    crashingTarget.close();
-    regularTarget.close();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
 
   it("processChanges crash and resume", async () => {
@@ -688,8 +686,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
-    regularTarget.close();
-    crashingTarget.close();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
 
   // env variables:
@@ -723,8 +721,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
-    regularTarget.close();
-    crashingTarget.close();
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
 
   // replace "skip" with "only" to run several transformations with random native platform and transformer api method errors thrown
@@ -796,8 +794,8 @@ describe("test resuming transformations", () => {
       })();
 
       await assertIdentityTransformation(regularTarget, crashingTarget);
-      regularTarget.close();
-      crashingTarget.close();
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
       return crashingTransformResult;
     }
 
