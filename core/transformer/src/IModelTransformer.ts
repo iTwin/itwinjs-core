@@ -1206,8 +1206,11 @@ export class IModelTransformer extends IModelExportHandler {
     const transformer = new this(...constructorArgs);
     const db = new SQLiteDb();
     db.openDb(statePath, OpenMode.Readonly);
-    transformer.loadStateFromDb(db);
-    db.closeDb();
+    try {
+      transformer.loadStateFromDb(db);
+    } finally {
+      db.closeDb();
+    }
     return transformer as InstanceType<SubClass>;
   }
 
@@ -1285,9 +1288,12 @@ export class IModelTransformer extends IModelExportHandler {
     if (IModelJsFs.existsSync(nativeStatePath))
       IModelJsFs.unlinkSync(nativeStatePath);
     db.createDb(nativeStatePath);
-    this.saveStateToDb(db);
-    db.saveChanges();
-    db.closeDb();
+    try {
+      this.saveStateToDb(db);
+      db.saveChanges();
+    } finally {
+      db.closeDb();
+    }
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
