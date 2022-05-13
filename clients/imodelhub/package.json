@@ -70,7 +70,7 @@
     "@types/superagent": "^4.1.14",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
