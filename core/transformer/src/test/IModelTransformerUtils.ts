@@ -97,7 +97,9 @@ Assertion.addMethod(
   }
 );
 
-export class IModelTransformerTestUtils {
+export class IModelTransformerTestUtils extends IModelTestUtils {
+  protected static override get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
     const teamFile: string = path.join(outputDir, `Team${teamName}.bim`);
     if (IModelJsFs.existsSync(teamFile)) {

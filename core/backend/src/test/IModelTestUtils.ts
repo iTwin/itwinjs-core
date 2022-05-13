@@ -254,6 +254,8 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+  protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
@@ -267,10 +269,10 @@ export class IModelTestUtils {
    * @param fileName Name of output fille
    */
   public static prepareOutputFile(subDirName: string, fileName: string): LocalFileName {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(this.knownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(this.knownTestLocations.outputDir);
 
-    const outputDir = path.join(KnownTestLocations.outputDir, subDirName);
+    const outputDir = path.join(this.knownTestLocations.outputDir, subDirName);
     if (!IModelJsFs.existsSync(outputDir))
       IModelJsFs.mkdirSync(outputDir);
 
@@ -283,7 +285,7 @@ export class IModelTestUtils {
 
   /** Resolve an asset file path from the asset name by looking in the known assets directory */
   public static resolveAssetFile(assetName: string): LocalFileName {
-    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    const assetFile = path.join(this.knownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));
     return assetFile;
   }

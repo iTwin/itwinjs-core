@@ -10,7 +10,7 @@ import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
   IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -19,6 +19,7 @@ import {
   CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
