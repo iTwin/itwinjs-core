@@ -9,7 +9,7 @@ import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
 import { Viewport } from "../Viewport";
 import {
-  connectViewports, SynchronizeViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
+  connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
 } from "../ViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
@@ -177,7 +177,7 @@ describe("TwoWayViewportSync", () => {
 
 describe("connectViewports", () => {
   const nVps = 4;
-  let vps: Viewport[] = [];
+  const vps: Viewport[] = [];
 
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
@@ -232,7 +232,7 @@ describe("connectViewports", () => {
       const disconnect = connect();
       expect(allSameFrustum()).to.be.true;
 
-      let prevFrust = vps[2].getFrustum();
+      const prevFrust = vps[2].getFrustum();
       rotate(vps[2], StandardViewId.Iso);
       expect(prevFrust.isSame(vps[2].getFrustum())).to.be.false;
       expect(allSameFrustum()).to.be.true;
