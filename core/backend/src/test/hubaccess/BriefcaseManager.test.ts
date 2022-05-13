@@ -16,6 +16,9 @@ describe("BriefcaseManager", async () => {
   const managerAccessToken = "manager mock token";
   const accessToken = "access token";
 
+  // contested version0 files can cause errors that cause tests to not call shutdown, so always do it here
+  afterEach(() => HubMock.shutdown());
+
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names");
     let iModelName = "iModel Name With Spaces";
