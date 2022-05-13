@@ -18,7 +18,7 @@ function rotate(vp: Viewport, id: StandardViewId) {
   vp.synchWithView();
 }
 
-describe.only("TwoWayViewportSync", () => {
+describe("TwoWayViewportSync", () => {
   let vp1: Viewport;
   let vp2: Viewport;
 
@@ -175,7 +175,7 @@ describe.only("TwoWayViewportSync", () => {
   });
 });
 
-describe.only("connectViewports", () => {
+describe("connectViewports", () => {
   const nVps = 4;
   let vps: Viewport[] = [];
 
@@ -217,13 +217,16 @@ describe.only("connectViewports", () => {
     return connectViewports(vps, synchronizeViewportViews);
   }
 
+  function makeUniqueFrusta() {
+    rotate(vps[0], StandardViewId.Top);
+    rotate(vps[1], StandardViewId.Bottom);
+    rotate(vps[2], StandardViewId.Left);
+    rotate(vps[3], StandardViewId.Right);
+  }
+
   it("synchronizes frusta", () => {
     for (const connect of [connectFrusta, connectViews]) {
-      rotate(vps[0], StandardViewId.Top);
-      rotate(vps[1], StandardViewId.Bottom);
-      rotate(vps[2], StandardViewId.Left);
-      rotate(vps[3], StandardViewId.Right);
-
+      makeUniqueFrusta();
       expect(allSameFrustum()).to.be.false;
 
       const disconnect = connect();
@@ -239,6 +242,22 @@ describe.only("connectViewports", () => {
   });
 
   it("synchronizes initially to the first viewport", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      const test = (reorder: () => void) => {
+        makeUniqueFrusta();
+        reorder();
+
+        const frust = vps[0].getFrustum();
+        expect(vps.every((x) => x.getFrustum().isSame(frust) === (x === vps[0]))).to.be.true;
+
+        const disconnect = connect();
+        expect(vps.every((x) => x.getFrustum().isSame(frust))).to.be.true;
+        disconnect();
+      };
+
+      test(() => undefined);
+      test(() => { vps.reverse(); });
+    }
   });
 
   it("synchronizes camera", () => {
@@ -288,9 +307,15 @@ describe.only("connectViewports", () => {
     test(connectFrusta, false);
   });
 
-  it("synchronizes selectors", () => {
-  });
-
   it("disconnects", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      makeUniqueFrusta();
+      const disconnect = connect();
+      expect(allSameFrustum()).to.be.true;
+
+      disconnect();
+      makeUniqueFrusta();
+      expect(allSameFrustum()).to.be.false;
+    }
   });
 });
