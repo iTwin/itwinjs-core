@@ -7,6 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -95,25 +96,23 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Sends the response for a web request. */
-  public static sendResponse(
+  public static async sendResponse(
     protocol: WebAppRpcProtocol,
     request: SerializedRpcRequest,
     fulfillment: RpcRequestFulfillment,
     req: HttpServerRequest,
     res: HttpServerResponse,
-  ): void {
+  ): Promise<void> {
     const versionHeader = protocol.protocolVersionHeaderName;
     if (versionHeader && RpcProtocol.protocolVersion) {
       res.set(versionHeader, RpcProtocol.protocolVersion.toString());
     }
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-var-requires
-    const { Readable, Stream } = require("stream");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createGzip } = require("zlib");
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
+    const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
 
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
-    let responseBody: Buffer | typeof Readable | string;
+    let responseBody;
     if (transportType === RpcContentType.Binary) {
       responseBody = WebAppRpcRequest.configureBinary(fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {

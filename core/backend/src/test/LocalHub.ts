@@ -12,7 +12,6 @@ import {
 import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 
@@ -105,7 +104,13 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const version0 = arg.version0 ?? join(IModelHost.cacheDir, "version0.bim");
+    const version0Root =  `${rootDir}_version0`;
+
+    if (!arg.version0) {
+      IModelJsFs.recursiveMkDirSync(version0Root);
+    }
+
+    const version0 = arg.version0 ?? join(version0Root, "version0.bim");
 
     if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
       IModelJsFs.removeSync(version0);

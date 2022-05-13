@@ -212,7 +212,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -284,6 +284,10 @@
     },
     {
       "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-auth",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -871,6 +875,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "react-router-dom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-select",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -948,7 +956,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "tools" ]
     },
     {
       "name": "spdy",

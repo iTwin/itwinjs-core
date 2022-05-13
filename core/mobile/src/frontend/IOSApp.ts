@@ -7,7 +7,7 @@ import { NativeAppOpts } from "@itwin/core-frontend";
 import { MobileApp } from "./MobileApp";
 
 /** @beta */
-export type IOSAppOpts = NativeAppOpts;
+export type IOSAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never } };
 
 /** @beta */
 export class IOSApp {

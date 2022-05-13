@@ -79,6 +79,7 @@ import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
+import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
@@ -157,6 +158,7 @@ import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
+import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
@@ -1128,18 +1130,6 @@ export enum ArcGisErrorCode {
 }
 
 // @internal (undocumented)
-export interface ArcGisGenerateTokenOptions {
-    // (undocumented)
-    client: ArcGisTokenClientType;
-    // (undocumented)
-    expiration?: number;
-    // (undocumented)
-    ip?: string;
-    // (undocumented)
-    referer?: string;
-}
-
-// @internal (undocumented)
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
@@ -1196,51 +1186,9 @@ export class ArcGISTileMap {
     }
 
 // @internal (undocumented)
-export interface ArcGisToken {
-    // (undocumented)
-    expires: number;
-    // (undocumented)
-    ssl: boolean;
-    // (undocumented)
-    token: string;
-}
-
-// @internal (undocumented)
-export enum ArcGisTokenClientType {
-    // (undocumented)
-    ip = 0,
-    // (undocumented)
-    referer = 1,
-    // (undocumented)
-    requestIp = 2
-}
-
-// @internal (undocumented)
-export class ArcGisTokenGenerator {
-    // (undocumented)
-    static fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static formEncode(str: string): string;
-    // (undocumented)
-    generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static getTokenServiceFromInfoJson(json: any): string | undefined;
-    // (undocumented)
-    getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
-    // (undocumented)
-    static rfc1738Encode(str: string): string;
-    }
-
-// @internal (undocumented)
-export class ArcGisTokenManager {
-    // (undocumented)
-    static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
-    // (undocumented)
-    static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
-    }
-
-// @internal (undocumented)
 export class ArcGisUtilities {
+    // (undocumented)
+    static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
@@ -1773,19 +1721,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @alpha (undocumented)
-export interface BuildExtensionManifest extends ExtensionManifest {
-    readonly module: string;
-}
-
-// @alpha (undocumented)
-export interface BuiltInExtensionLoaderProps {
-    // (undocumented)
-    loader: ResolveFunc;
-    // (undocumented)
-    manifest: Promise<any>;
-}
-
 // @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
@@ -1984,6 +1919,15 @@ export interface ComputeChordToleranceArgs {
     readonly computeRange: () => Range3d;
     readonly graphic: GraphicBuilder;
 }
+
+// @public
+export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
+
+// @public
+export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void;
+
+// @public
+export function connectViewportViews(viewports: Iterable<Viewport>): () => void;
 
 // @internal (undocumented)
 export enum ContextMode {
@@ -3101,27 +3045,21 @@ export enum EventHandled {
 }
 
 // @alpha
-export interface ExtensionLoader {
-    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
-    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
-}
-
-// @alpha
-export interface ExtensionLoaderProps {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    version: string;
-}
-
-// @alpha
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
     readonly description?: string;
     readonly displayName?: string;
     readonly main: string;
+    readonly module?: string;
     readonly name: string;
     readonly version: string;
+}
+
+// @alpha
+export interface ExtensionProvider {
+    execute: ResolveFunc;
+    getManifest: ResolveManifestFunc;
+    readonly hostname?: string;
 }
 
 // @public
@@ -3400,6 +3338,8 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
+    // @alpha
+    Extensions = "core-frontend.Extensions",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
     IModelConnection = "core-frontend.IModelConnection",
@@ -5096,11 +5036,11 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    get edgeOptions(): EdgeOptions | false;
+    // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
     getTransformNodeRange(nodeId: number): Range3d | undefined;
-    // (undocumented)
-    get hasEdges(): boolean;
     get hiddenElements(): Id64Array;
     // (undocumented)
     get is3d(): boolean;
@@ -5137,7 +5077,7 @@ export interface IModelTileTreeOptions {
     // (undocumented)
     readonly batchType: BatchType;
     // (undocumented)
-    readonly edgesRequired: boolean;
+    readonly edges: EdgeOptions | false;
     // (undocumented)
     readonly is3d: boolean;
 }
@@ -5373,11 +5313,16 @@ export class LengthDescription extends FormattedQuantityDescription {
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
 // @alpha
-export interface LocalExtensionProps {
-    // (undocumented)
-    readonly mainFunc?: ResolveFunc;
-    // (undocumented)
-    readonly manifest: ExtensionManifest;
+export class LocalExtensionProvider implements ExtensionProvider {
+    constructor(_props: LocalExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface LocalExtensionProviderProps {
+    main: ResolveFunc;
+    manifestPromise: Promise<any>;
 }
 
 // @internal
@@ -5669,22 +5614,38 @@ export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
 
-// @internal (undocumented)
-export interface MapLayerAuthenticationInfo {
+// @beta (undocumented)
+export interface MapLayerAccessClient {
     // (undocumented)
-    authMethod: MapLayerAuthType;
+    getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
-    tokenEndpoint?: MapLayerTokenEndpoint;
+    getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+    // (undocumented)
+    invalidateToken?(token: MapLayerAccessToken): boolean;
+    // (undocumented)
+    onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
 // @beta (undocumented)
-export enum MapLayerAuthType {
+export interface MapLayerAccessToken {
     // (undocumented)
-    Basic = 2,
+    token: string;
+}
+
+// @beta (undocumented)
+export interface MapLayerAccessTokenParams {
     // (undocumented)
-    EsriToken = 3,
+    mapLayerUrl: URL;
     // (undocumented)
-    None = 1
+    password?: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @beta (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
 // @internal (undocumented)
@@ -5698,11 +5659,11 @@ export interface MapLayerFeatureInfo {
     layerName: string;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class MapLayerFormat {
-    // (undocumented)
+    // @internal (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
@@ -5713,21 +5674,33 @@ export class MapLayerFormat {
 }
 
 // @internal (undocumented)
+export interface MapLayerFormatEntry {
+    // (undocumented)
+    accessClient?: MapLayerAccessClient;
+    // (undocumented)
+    type: MapLayerFormatType;
+}
+
+// @beta (undocumented)
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // (undocumented)
-    register(formatClass: MapLayerFormatType): void;
+    getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // (undocumented)
+    register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
+    // (undocumented)
+    setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
     // (undocumented)
     validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export type MapLayerFormatType = typeof MapLayerFormat;
 
 // @internal
@@ -5894,7 +5867,7 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidCredentials = 1,
@@ -5910,7 +5883,7 @@ export enum MapLayerSourceStatus {
     Valid = 0
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
@@ -5948,10 +5921,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected get _transparency(): number | undefined;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface MapLayerTokenEndpoint {
     // (undocumented)
-    getLoginUrl(stateData?: string): string | undefined;
+    getLoginUrl(stateData?: any): string | undefined;
     // (undocumented)
     getUrl(): string;
 }
@@ -8462,6 +8435,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get treeOwner(): TileTreeOwner;
     }
 
+// @alpha
+export class RemoteExtensionProvider implements ExtensionProvider {
+    constructor(_props: RemoteExtensionProviderProps);
+    execute(): Promise<string>;
+    getManifest(): Promise<ExtensionManifest>;
+    readonly hostname: string;
+    }
+
+// @alpha
+export interface RemoteExtensionProviderProps {
+    jsUrl: string;
+    manifestUrl: string;
+}
+
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
@@ -9115,6 +9102,9 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 // @alpha (undocumented)
 export type ResolveFunc = () => Promise<any>;
 
+// @alpha (undocumented)
+export type ResolveManifestFunc = () => Promise<ExtensionManifest>;
+
 // @internal
 export type RootIModelTile = Tile & {
     tileScreenSize: number;
@@ -9579,6 +9569,20 @@ export interface SelectReplaceEvent {
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Replace;
+}
+
+// @alpha
+export class ServiceExtensionProvider implements ExtensionProvider {
+    constructor(_props: ServiceExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface ServiceExtensionProviderProps {
+    iTwinId: string;
+    name: string;
+    version: string;
 }
 
 // @public
@@ -10147,6 +10151,15 @@ export class SuspendedToolState {
     // (undocumented)
     stop(): void;
     }
+
+// @public
+export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports;
+
+// @public
+export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
+
+// @public
+export function synchronizeViewportViews(source: Viewport): SynchronizeViewports;
 
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
@@ -10740,6 +10753,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    get edgeOptions(): EdgeOptions;
+    // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
@@ -10752,6 +10767,9 @@ export class TileAdmin {
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
+    // @internal (undocumented)
+    get generateAllPolyfaceEdges(): boolean;
+    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -10868,6 +10886,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @beta
+        generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal
