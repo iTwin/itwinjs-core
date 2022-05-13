@@ -165,10 +165,6 @@ export class MobileHost {
 
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
-    const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
-    const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
-    opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } }
-
     const authorizationClient = new MobileAuthorizationBackend();
     if (!this.isValid) {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
@@ -197,6 +193,11 @@ export class MobileHost {
       // following will provide impl for device specific api.
       setupMobileRpc();
     }
+
+    const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
+    const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
+    opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } }
+
     const iModelHostConfiguration = opt?.iModelHost ?? new IModelHostConfiguration();
     iModelHostConfiguration.authorizationClient = authorizationClient;
     await NativeHost.startup({ ...opt, iModelHost: iModelHostConfiguration });
