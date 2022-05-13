@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/geonames-extension",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/geonames-extension"
+}

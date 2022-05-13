@@ -79,6 +79,7 @@ import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
+import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
@@ -5035,11 +5036,11 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    get edgeOptions(): EdgeOptions | false;
+    // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
     getTransformNodeRange(nodeId: number): Range3d | undefined;
-    // (undocumented)
-    get hasEdges(): boolean;
     get hiddenElements(): Id64Array;
     // (undocumented)
     get is3d(): boolean;
@@ -5076,7 +5077,7 @@ export interface IModelTileTreeOptions {
     // (undocumented)
     readonly batchType: BatchType;
     // (undocumented)
-    readonly edgesRequired: boolean;
+    readonly edges: EdgeOptions | false;
     // (undocumented)
     readonly is3d: boolean;
 }
@@ -10752,6 +10753,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    get edgeOptions(): EdgeOptions;
+    // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
@@ -10764,6 +10767,9 @@ export class TileAdmin {
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
+    // @internal (undocumented)
+    get generateAllPolyfaceEdges(): boolean;
+    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -10880,6 +10886,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @beta
+        generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal

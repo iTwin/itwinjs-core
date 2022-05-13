@@ -28,7 +28,7 @@ export class GenerateTileContentTool extends Tool {
         stream, iModel, modelId, is3d, containsTransformNodes,
         system: IModelApp.renderSystem,
         type: tree.batchType,
-        loadEdges: tree.hasEdges,
+        loadEdges: false !== tree.edgeOptions,
         options: { tileId: contentId },
       });
 

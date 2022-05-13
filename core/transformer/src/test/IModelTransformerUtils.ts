@@ -330,7 +330,9 @@ export async function assertIdentityTransformation(
         getAllElemMetaDataProperties(sourceElem) ?? {}
       )) {
         // known cases for the prop expecting to have been changed by the transformation under normal circumstances
-        const propExpectedToHaveChangedRandomly = sourceElem.federationGuid === undefined;
+        // - federation guid will be generated if it didn't exist
+        // - jsonProperties may include remapped ids
+        const propChangesAllowed = sourceElem.federationGuid === undefined || propName === "jsonProperties";
         if (prop.isNavigation) {
           expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
           // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name
@@ -350,7 +352,7 @@ export async function assertIdentityTransformation(
           expect(relationTargetInTargetId).to.equal(
             mappedRelationTargetInTargetId
           );
-        } else if (!propExpectedToHaveChangedRandomly) {
+        } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
           const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
@@ -507,8 +509,13 @@ export async function assertIdentityTransformation(
   expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
   expect(onlyInTargetModels).to.have.length(0);
 
-  const makeRelationKey = (rel: any) => `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
-  const query: Parameters<IModelDb["query"]> = ["SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }];
+  const makeRelationKey = (rel: any) =>
+    `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const query: Parameters<IModelDb["query"]> = [
+    "SELECT * FROM bis.ElementRefersToElements",
+    undefined,
+    { rowFormat: QueryRowFormat.UseECSqlPropertyNames },
+  ];
   const sourceRelationships = new Map<string, any>();
   for await (const row of sourceDb.query(...query)) {
     sourceRelationships.set(makeRelationKey(row), row);

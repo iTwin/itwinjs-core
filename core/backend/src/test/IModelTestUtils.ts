@@ -33,6 +33,7 @@ import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefca
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { BackendHubAccess } from "../BackendHubAccess";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
@@ -107,14 +108,14 @@ export class HubWrappers {
   /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
+  public static async recreateIModel(...[arg]: Parameters<BackendHubAccess["createNewIModel"]>): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
     if (undefined !== deleteIModel)
       await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
+    return IModelHost.hubAccess.createNewIModel({ description: `Description for ${arg.iModelName}`, ...arg });
   }
 
   /** Delete an IModel from the hub */
