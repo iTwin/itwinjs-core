@@ -8,7 +8,7 @@
 
 import { Viewport } from "./Viewport";
 
-/** A function used by [[connectViewports]] to obtain another function that can synchronize each target [[Viewport]] with
+/** A function used by [[connectViewports]] that can synchronize the state of a target [[Viewport]] with
  * changes in the state of a source Viewport.
  * The source viewport is the viewport in the connection whose state has changed.
  * The function will be invoked once for each target viewport in the connection.
