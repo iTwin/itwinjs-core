@@ -27,7 +27,7 @@ export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
  * To sever the connection, invoke the function returned by this function. For example:
  * ```ts
  *  // set up the connection.
- *  const disconnect = connectViewports([viewport0, viewport1, viewport2], (source) => synchronizeViewportFrusta(source));
+ *  const disconnect = connectViewports([viewport0, viewport1, viewport2], (changedViewport) => synchronizeViewportFrusta(changedViewport));
  *  // some time later, sever the connection.
  *  disconnect();
  * ```
@@ -46,7 +46,7 @@ export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
  * @public
  * @extensions
  */
-export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void {
+export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void {
   const disconnect: VoidFunction[] = [];
 
   let echo = false;

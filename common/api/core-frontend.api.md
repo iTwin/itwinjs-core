@@ -1924,7 +1924,7 @@ export interface ComputeChordToleranceArgs {
 export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
 
 // @public
-export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void;
+export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void;
 
 // @public
 export function connectViewportViews(viewports: Iterable<Viewport>): () => void;
