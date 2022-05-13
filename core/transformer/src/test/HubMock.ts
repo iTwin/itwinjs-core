@@ -6,5 +6,5 @@ import { HubMock as BackendHubMock } from "@itwin/core-backend/lib/cjs/test/HubM
 import { KnownTestLocations } from "./KnownTestLocations";
 
 export class HubMock extends BackendHubMock {
-  protected static override get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+  protected static override get knownTestLocations() { return KnownTestLocations; }
 }
