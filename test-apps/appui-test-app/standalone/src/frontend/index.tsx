@@ -256,9 +256,7 @@ export class SampleAppIModelApp {
         activeLocale: IModelApp.localization.getLanguageList()[0],
       },
       favorites: {
-        storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
-          ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
-          : DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage),
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
@@ -331,7 +329,7 @@ export class SampleAppIModelApp {
   //     SampleAppIModelApp.setIsIModelLocal(false, true);
   //   }
   //
-  //   await this.openViews(iModelConnection, viewIdsSelected);
+  //   await this.setViewIdAndOpenMainStage(iModelConnection, viewIdsSelected);
   // }
 
   public static async closeCurrentIModel() {
@@ -346,7 +344,7 @@ export class SampleAppIModelApp {
     }
   }
 
-  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
+  public static async setViewIdAndOpenMainStage(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
     const defaultFrontstage = MainFrontstage.stageId;
@@ -357,6 +355,8 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
+
+    // store off the selected viewIds so the content group provider knows what view(s) to show
     if (viewIdsSelected.length) {
       SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
     }
@@ -532,12 +532,12 @@ async function main() {
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
+  SampleAppIModelApp.testAppConfiguration.fullSnapshotPath = process.env.IMJS_UITESTAPP_SNAPSHOT_FULLPATH;
   SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env.IMJS_UITESTAPP_SNAPSHOT_FILEPATH;
   SampleAppIModelApp.testAppConfiguration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
   SampleAppIModelApp.testAppConfiguration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
   SampleAppIModelApp.testAppConfiguration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
-  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   const mapLayerOpts = {

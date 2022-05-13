@@ -14,9 +14,8 @@ import { OpenDialogOptions } from "electron";
 import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
-  BackstageManager,
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools, Frontstage, FrontstageManager,
-  FrontstageProps, FrontstageProvider, StandardFrontstageProps, StandardFrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
+  StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
@@ -24,6 +23,18 @@ import { Button, Headline } from "@itwin/itwinui-react";
 import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
+  const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
+  // try specified viewId first
+  if (requestedViewId) {
+    const queryParams: ViewQueryParams = {};
+    queryParams.from = SpatialViewState.classFullName;
+    queryParams.where = `ECInstanceId=${requestedViewId}`;
+    const vwProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), queryParams);
+    if (vwProps.length !== 0) {
+      return requestedViewId;
+    }
+  }
+
   const viewId = await iModelConnection.views.queryDefaultViewId();
   const params: ViewQueryParams = {};
   params.from = SpatialViewState.classFullName;
@@ -60,7 +71,7 @@ class LocalFileOpenControl extends ContentControl {
 
   private _handleViewsSelected = async (iModelConnection: IModelConnection, views: Id64String[]) => {
     FrontstageManager.closeModalFrontstage();
-    await SampleAppIModelApp.openViews(iModelConnection, views);
+    await SampleAppIModelApp.setViewIdAndOpenMainStage(iModelConnection, views);
   };
 }
 
@@ -68,7 +79,9 @@ export class LocalFileOpenFrontstage {
   public static stageId = "appui-test-app:LocalFileOpen";
 
   public static async open() {
-    if (LocalFileSupport.localFilesSupported()) {
+    let fullBimFileName = LocalFileSupport.getLocalFileSpecification();
+
+    if (LocalFileSupport.localFilesSupported() || fullBimFileName) {
       // if frontstage has not yet been registered register it now
       if (!FrontstageManager.hasFrontstage(LocalFileOpenFrontstage.stageId)) {
         const contentGroupProps: ContentGroupProps = {
@@ -94,8 +107,26 @@ export class LocalFileOpenFrontstage {
 
         ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
         UiItemsManager.register(new LocalFileOpenStageBackstageItemsProvider());
+      } else {
+        // if stage has already been register then this is not the initial startup of the app so don't use the file spec from the environment.
+        fullBimFileName = undefined;
       }
+    }
 
+    // if the full bim file has been specified try to open it now
+    if (fullBimFileName) {
+      const connection = await LocalFileSupport.openLocalFile(fullBimFileName, SampleAppIModelApp.allowWrite, true);
+      if (connection) {
+        SampleAppIModelApp.setIsIModelLocal(true, true);
+        const viewId = await getDefaultViewId(connection);
+        if (undefined !== viewId) {
+          await SampleAppIModelApp.setViewIdAndOpenMainStage(connection, [viewId]);
+          return;
+        }
+      }
+    }
+
+    if (LocalFileSupport.localFilesSupported()) {
       const frontstageDef = await FrontstageManager.getFrontstageDef(LocalFileOpenFrontstage.stageId);
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     }
@@ -133,7 +164,7 @@ function LocalFilePage(props: LocalFilePageProps) {
     if (filePickerElement.current && filePickerElement.current.files && filePickerElement.current.files.length) {
       const file: File = filePickerElement.current.files[0];
       if (file) {
-        const connection = await LocalFileSupport.openLocalFile(file.name, writable);
+        const connection = await LocalFileSupport.openLocalFile(file.name, writable, false);
         // const hasSavedContent = await hasSavedViewLayoutProps(MainFrontstage.stageId, connection);
         if (connection) {
           SampleAppIModelApp.setIsIModelLocal(true, true);
@@ -158,7 +189,7 @@ function LocalFilePage(props: LocalFilePageProps) {
 
     const filePath = val.filePaths[0];
     if (filePath) {
-      const connection = await LocalFileSupport.openLocalFile(filePath, writable);
+      const connection = await LocalFileSupport.openLocalFile(filePath, writable, true);
       if (connection) {
         SampleAppIModelApp.setIsIModelLocal(true, true);
         const viewId = await getDefaultViewId(connection);

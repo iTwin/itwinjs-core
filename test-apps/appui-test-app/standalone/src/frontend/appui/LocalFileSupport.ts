@@ -24,7 +24,11 @@ export class LocalFileSupport {
     return true;
   };
 
-  public static openLocalFile = async (fileSpec: string, writable: boolean): Promise<IModelConnection | undefined> => {
+  public static getLocalFileSpecification = (): string|undefined => {
+    return SampleAppIModelApp.testAppConfiguration?.fullSnapshotPath;
+  };
+
+  public static openLocalFile = async (fileSpec: string, writable: boolean, definesFullPath = false): Promise<IModelConnection | undefined> => {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
@@ -49,7 +53,10 @@ export class LocalFileSupport {
         }
       }
     } else {
-      filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileSpec}`;
+      if (SampleAppIModelApp.testAppConfiguration?.fullSnapshotPath && definesFullPath)
+        filePath = fileSpec;
+      else
+        filePath = `${SampleAppIModelApp.testAppConfiguration?.snapshotPath}/${fileSpec}`;
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening snapshot. path=${filePath}`);
       try {
         iModelConnection = await SnapshotConnection.openFile(filePath);
