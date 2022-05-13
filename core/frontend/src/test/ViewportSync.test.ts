@@ -7,13 +7,20 @@ import { expect } from "chai";
 import { ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
-import { ScreenViewport } from "../Viewport";
-import { TwoWayViewportFrustumSync, TwoWayViewportSync } from "../TwoWayViewportSync";
+import { Viewport } from "../Viewport";
+import {
+  connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
+} from "../ViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
+function rotate(vp: Viewport, id: StandardViewId) {
+  vp.view.setStandardRotation(id);
+  vp.synchWithView();
+}
+
 describe("TwoWayViewportSync", () => {
-  let vp1: ScreenViewport;
-  let vp2: ScreenViewport;
+  let vp1: Viewport;
+  let vp2: Viewport;
 
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
@@ -30,11 +37,6 @@ describe("TwoWayViewportSync", () => {
 
   function isSameFrustum() {
     return vp1.getFrustum().isSame(vp2.getFrustum());
-  }
-
-  function rotate(vp: ScreenViewport, id: StandardViewId) {
-    vp.view.setStandardRotation(id);
-    vp.synchWithView();
   }
 
   it("synchronizes frusta", () => {
@@ -114,7 +116,7 @@ describe("TwoWayViewportSync", () => {
   });
 
   it("synchronizes selectors", () => {
-    function categories(vp: ScreenViewport): string[] {
+    function categories(vp: Viewport): string[] {
       return Array.from(vp.view.categorySelector.categories).sort();
     }
 
@@ -169,6 +171,151 @@ describe("TwoWayViewportSync", () => {
       rotate(vp1, StandardViewId.Right);
       expect(isSameFrustum()).to.be.false;
       expect(prevFrust.isSame(vp2.getFrustum())).to.be.true;
+    }
+  });
+});
+
+describe("connectViewports", () => {
+  const nVps = 4;
+  const vps: Viewport[] = [];
+
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
+  beforeEach(() => {
+    for (let i = 0; i < nVps; i++)
+      vps.push(openBlankViewport());
+  });
+
+  afterEach(() => {
+    for (const vp of vps)
+      vp.dispose();
+
+    vps.length = 0;
+  });
+
+  function getTargets(source: Viewport) {
+    return vps.filter((x) => x !== source);
+  }
+
+  function sameFrusta(source: Viewport) {
+    return getTargets(source).every((x) => x.getFrustum().isSame(source.getFrustum()));
+  }
+
+  function allSameFrustum() {
+    const allSame = vps.every((x) => sameFrusta(x));
+    const anySame = vps.some((x) => sameFrusta(x));
+    expect(allSame).to.equal(anySame);
+    return allSame;
+  }
+
+  function connectFrusta() {
+    return connectViewports(vps, synchronizeViewportFrusta);
+  }
+
+  function connectViews() {
+    return connectViewports(vps, synchronizeViewportViews);
+  }
+
+  function makeUniqueFrusta() {
+    rotate(vps[0], StandardViewId.Top);
+    rotate(vps[1], StandardViewId.Bottom);
+    rotate(vps[2], StandardViewId.Left);
+    rotate(vps[3], StandardViewId.Right);
+  }
+
+  it("synchronizes frusta", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      makeUniqueFrusta();
+      expect(allSameFrustum()).to.be.false;
+
+      const disconnect = connect();
+      expect(allSameFrustum()).to.be.true;
+
+      const prevFrust = vps[2].getFrustum();
+      rotate(vps[2], StandardViewId.Iso);
+      expect(prevFrust.isSame(vps[2].getFrustum())).to.be.false;
+      expect(allSameFrustum()).to.be.true;
+
+      disconnect();
+    }
+  });
+
+  it("synchronizes initially to the first viewport", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      const test = (reorder: () => void) => {
+        makeUniqueFrusta();
+        reorder();
+
+        const frust = vps[0].getFrustum();
+        expect(vps.every((x) => x.getFrustum().isSame(frust) === (x === vps[0]))).to.be.true;
+
+        const disconnect = connect();
+        expect(vps.every((x) => x.getFrustum().isSame(frust))).to.be.true;
+        disconnect();
+      };
+
+      test(() => undefined);
+      test(() => { vps.reverse(); });
+    }
+  });
+
+  it("synchronizes camera", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      expect(vps.every((x) => x.isCameraOn)).to.be.false;
+
+      vps[1].turnCameraOn();
+      expect(vps.every((x) => x.isCameraOn === (x === vps[1]))).to.be.true;
+
+      const disconnect = connect();
+      expect(vps.every((x) => !x.isCameraOn)).to.be.true; // because the first viewport is the one we initially sync the others to.
+      expect(allSameFrustum()).to.be.true;
+
+      vps[2].turnCameraOn();
+      expect(vps.every((x) => x.isCameraOn)).to.be.true;
+      expect(allSameFrustum()).to.be.true;
+
+      vps[3].turnCameraOff();
+      expect(vps.every((x) => x.isCameraOn)).to.be.false;
+      expect(allSameFrustum()).to.be.true;
+
+      disconnect();
+    }
+  });
+
+  it("synchronizes display style", () => {
+    function test(connect: () => VoidFunction, expectSync: boolean) {
+      vps[0].viewFlags = new ViewFlags();
+      vps[3].viewFlags = new ViewFlags();
+      expect(vps[0].viewFlags.grid).to.be.false;
+      vps[0].viewFlags = vps[0].viewFlags.with("grid", true);
+      expect(vps[3].viewFlags.acsTriad).to.be.false;
+      vps[3].viewFlags = vps[3].viewFlags.with("acsTriad", true);
+
+      const disconnect = connect();
+      expect(vps.every((x) => x.viewFlags.grid)).to.equal(expectSync);
+      expect(vps.some((x) => x.viewFlags.acsTriad)).not.to.equal(expectSync);
+
+      vps[1].viewFlags = vps[1].viewFlags.with("acsTriad", true);
+      vps[1].synchWithView();
+      expect(vps.every((x) => x.viewFlags.acsTriad)).to.equal(expectSync);
+
+      disconnect();
+    }
+
+    test(connectViews, true);
+    test(connectFrusta, false);
+  });
+
+  it("disconnects", () => {
+    for (const connect of [connectFrusta, connectViews]) {
+      makeUniqueFrusta();
+      const disconnect = connect();
+      expect(allSameFrustum()).to.be.true;
+
+      disconnect();
+      makeUniqueFrusta();
+      expect(allSameFrustum()).to.be.false;
     }
   });
 });
