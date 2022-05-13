@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import { ExtensiveTestScenario, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
@@ -13,7 +13,7 @@ import { IModelImporter } from "../../IModelImporter";
 import { IModelExporter } from "../../IModelExporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { HubMock } from "../HubMock";
 
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -226,7 +226,7 @@ describe("test resuming transformations", () => {
   let seedDb: BriefcaseDb;
 
   before(async () => {
-    HubMock.startup("IModelTransformerResumption", { knownTestLocations: KnownTestLocations });
+    HubMock.startup("IModelTransformerResumption");
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
     const seedPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");

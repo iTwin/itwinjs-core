@@ -67,22 +67,19 @@ export class HubMock {
     return this._iTwinId;
   }
 
+  protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
   /**
    * Begin mocking IModelHub access. After this call, all access to IModelHub will be directed to a [[LocalHub]].
    * @param mockName a unique name (e.g. "MyTest") for this HubMock to disambiguate tests when more than one is simultaneously active.
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
-  public static startup(
-    mockName: LocalDirName,
-    {
-      knownTestLocations = KnownTestLocations,
-    }: { knownTestLocations?: { outputDir: string } } = {}
-  ) {
+  public static startup(mockName: LocalDirName,) {
     if (this.isValid)
       throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
 
     this.hubs.clear();
-    this.mockRoot = join(knownTestLocations.outputDir, "HubMock", mockName);
+    this.mockRoot = join(this.knownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
     try {

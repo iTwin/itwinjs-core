@@ -10,7 +10,7 @@ import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
   IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import { ExtensiveTestScenario, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -20,6 +20,7 @@ import {
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { HubMock } from "../HubMock";
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -27,7 +28,7 @@ describe("IModelTransformerHub", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    HubMock.startup("IModelTransformerHub", { knownTestLocations: KnownTestLocations });
+    HubMock.startup("IModelTransformerHub");
     iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 
