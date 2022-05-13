@@ -10,13 +10,13 @@ import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
   IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelImporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
+  CountingIModelImporter, HubWrappers, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -32,7 +32,7 @@ describe("IModelTransformerHub", () => {
     iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+    accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
 
     // initialize logging
     if (false) {
@@ -55,7 +55,7 @@ describe("IModelTransformerHub", () => {
 
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await ExtensiveTestScenario.prepareDb(sourceSeedDb);
+    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceSeedDb);
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
@@ -85,12 +85,12 @@ describe("IModelTransformerHub", () => {
       assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec")); // make sure prepareTargetDb changes were saved and pushed to iModelHub
 
       if (true) { // initial import
-        ExtensiveTestScenario.populateDb(sourceDb);
+        BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
         sourceDb.saveChanges();
         await sourceDb.pushChanges({ accessToken, description: "Populate source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
-        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
+        const sourceExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
@@ -124,7 +124,7 @@ describe("IModelTransformerHub", () => {
         TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
-        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
+        const targetExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
@@ -177,12 +177,12 @@ describe("IModelTransformerHub", () => {
       }
 
       if (true) { // update source db, then import again
-        ExtensiveTestScenario.updateDb(sourceDb);
+        BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
         sourceDb.saveChanges();
         await sourceDb.pushChanges({ accessToken, description: "Update source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
-        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
+        const sourceExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
@@ -214,10 +214,10 @@ describe("IModelTransformerHub", () => {
         transformer.dispose();
         targetDb.saveChanges();
         await targetDb.pushChanges({ accessToken, description: "Import #2" });
-        ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+        BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
-        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
+        const targetExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
@@ -264,10 +264,10 @@ describe("IModelTransformerHub", () => {
   });
 
   it("Clone/upgrade test", async () => {
-    const sourceIModelName: string = IModelTestUtils.generateUniqueName("CloneSource");
+    const sourceIModelName: string = IModelTransformerTestUtils.generateUniqueName("CloneSource");
     const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(sourceIModelId));
-    const targetIModelName: string = IModelTestUtils.generateUniqueName("CloneTarget");
+    const targetIModelName: string = IModelTransformerTestUtils.generateUniqueName("CloneTarget");
     const targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(targetIModelId));
 
@@ -744,7 +744,7 @@ describe("IModelTransformerHub", () => {
           category: categoryId,
           code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: n.toString() }),
           userLabel: n.toString(),
-          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+          geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
             origin: Point3d.create(n, n, 0),
             angles: YawPitchRollAngles.createDegrees(0, 0, 0),

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
@@ -12,7 +12,7 @@ import * as sinon from "sinon";
 import { IModelImporter } from "../../IModelImporter";
 import { IModelExporter } from "../../IModelExporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
-import { assertIdentityTransformation } from "../IModelTransformerUtils";
+import { assertIdentityTransformation, HubWrappers, IModelTransformerTestUtils } from "../IModelTransformerUtils";
 import { HubMock } from "../HubMock";
 
 const formatter = new Intl.NumberFormat("en-US", {
@@ -186,7 +186,7 @@ async function transformWithCrashAndRecover<
   } catch (transformerErr) {
     expect((transformerErr as Error).message).to.equal("crash");
     crashed = true;
-    const dumpPath = IModelTestUtils.prepareOutputFile(
+    const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
       "IModelTransformerResumption",
       "transformer-state.db"
     );
@@ -228,13 +228,13 @@ describe("test resuming transformations", () => {
   before(async () => {
     HubMock.startup("IModelTransformerResumption");
     iTwinId = HubMock.iTwinId;
-    accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
-    const seedPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
+    accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
+    const seedPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
     SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" }});
     seedDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "ResumeTestsSeed", description: "seed for resumption tests", version0: seedPath, noLocks: true });
     seedDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: seedDbId });
-    await ExtensiveTestScenario.prepareDb(seedDb);
-    ExtensiveTestScenario.populateDb(seedDb);
+    await BackendTestUtils.ExtensiveTestScenario.prepareDb(seedDb);
+    BackendTestUtils.ExtensiveTestScenario.populateDb(seedDb);
     seedDb.saveChanges();
     await seedDb.pushChanges({accessToken, description: "populated seed db"});
   });
@@ -260,7 +260,7 @@ describe("test resuming transformations", () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
       let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       let changesetId: ChangesetId;
-      const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
+      const dumpPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
       let transformer = new CountdownTransformer(sourceDb, targetDb);
       // after exporting 10 elements, save and push changes
       transformer.elementExportsUntilCall = 10;
@@ -375,7 +375,7 @@ describe("test resuming transformations", () => {
     } catch (transformerErr) {
       expect((transformerErr as Error).message).to.equal("crash");
       crashed = true;
-      const dumpPath = IModelTestUtils.prepareOutputFile(
+      const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
         "IModelTransformerResumption",
         "transformer-state.db"
       );
@@ -417,7 +417,7 @@ describe("test resuming transformations", () => {
       const sourceDb = seedDb;
       const targetDb = SnapshotDb.createFrom(
         seedDb,
-        IModelTestUtils.prepareOutputFile(
+        IModelTransformerTestUtils.prepareOutputFile(
           "IModelTransformerResumption",
           "ResumeDifferentClass.bim"
         )
@@ -431,7 +431,7 @@ describe("test resuming transformations", () => {
       } catch (transformerErr) {
         expect((transformerErr as Error).message).to.equal("crash");
         crashed = true;
-        const dumpPath = IModelTestUtils.prepareOutputFile(
+        const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
           "IModelTransformerResumption",
           "transformer-state.db"
         );
@@ -503,7 +503,7 @@ describe("test resuming transformations", () => {
 
     const sourceDb = seedDb;
     const targetDb = SnapshotDb.createEmpty(
-      IModelTestUtils.prepareOutputFile(
+      IModelTransformerTestUtils.prepareOutputFile(
         "IModelTransformerResumption",
         "CustomAdditionalState.bim"
       ),
@@ -516,7 +516,7 @@ describe("test resuming transformations", () => {
     (transformer.importer as AdditionalStateImporter).state1 = "importer-state-1";
     (transformer.exporter as AdditionalStateExporter).state1 = "exporter-state-1";
 
-    const dumpPath = IModelTestUtils.prepareOutputFile(
+    const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
       "IModelTransformerResumption",
       "transformer-state.db"
     );
@@ -549,7 +549,7 @@ describe("test resuming transformations", () => {
     } catch (transformerErr) {
       expect((transformerErr as Error).message).to.equal("crash");
       crashed = true;
-      const dumpPath = IModelTestUtils.prepareOutputFile(
+      const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
         "IModelTransformerResumption",
         "transformer-state.db"
       );
@@ -585,7 +585,7 @@ describe("test resuming transformations", () => {
       } catch (transformerErr) {
         expect((transformerErr as Error).message).to.equal("crash");
         crashed = true;
-        const dumpPath = IModelTestUtils.prepareOutputFile(
+        const dumpPath = IModelTransformerTestUtils.prepareOutputFile(
           "IModelTransformerResumption",
           "transformer-state.db"
         );
@@ -626,19 +626,19 @@ describe("test resuming transformations", () => {
       noLocks: true,
     });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
-    await ExtensiveTestScenario.prepareDb(sourceDb);
-    ExtensiveTestScenario.populateDb(sourceDb);
+    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
+    BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
     await sourceDb.pushChanges({accessToken, description: "populated source db"});
 
-    const targetDbRev0Path = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
+    const targetDbRev0Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
     const targetDbRev0 = SnapshotDb.createFrom(sourceDb, targetDbRev0Path);
     const provenanceTransformer = new IModelTransformer(sourceDb, targetDbRev0, { wasSourceIModelCopiedToTarget: true });
     await provenanceTransformer.processAll();
     provenanceTransformer.dispose();
     targetDbRev0.saveChanges();
 
-    ExtensiveTestScenario.updateDb(sourceDb);
+    BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
     sourceDb.saveChanges();
     await sourceDb.pushChanges({accessToken, description: "updated source db"});
 
@@ -738,11 +738,11 @@ describe("test resuming transformations", () => {
     // BE_SQLITE_ERROR: Failed to prepare 'select * from (SELECT ECInstanceId FROM bis.Element) limit :sys_ecdb_count offset :sys_ecdb_offset'. The data source ECDb (parameter 'dataSourceECDb') must be a connection to the same ECDb file as the ECSQL parsing ECDb connection (parameter 'ecdb').
     // until that is investigated/fixed, the slow method here is used
     async function runAndCompareWithControl(crashingEnabledForThisTest: boolean) {
-      const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+      const sourceFileName = IModelTransformerTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const sourceDb = SnapshotDb.openFile(sourceFileName);
 
       async function transformWithMultipleCrashesAndRecover() {
-        const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
+        const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         let transformer = new CountingTransformer({ source: sourceDb, target: targetDb });
         const MAX_ITERS = 100;
@@ -760,7 +760,7 @@ describe("test resuming transformations", () => {
             break;
           } catch (transformerErr) {
             crashCount++;
-            const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
+            const dumpPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
             enableCrashes(false);
             transformer.saveStateToFile(dumpPath);
             transformer = CountingTransformer.resumeTransformation(dumpPath, { source: sourceDb, target: targetDb });
@@ -786,7 +786,7 @@ describe("test resuming transformations", () => {
       const { resultDb: crashingTarget, ...crashingTransformResult } = await transformWithMultipleCrashesAndRecover();
 
       const regularTarget = await (async () => {
-        const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
+        const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         const transformer = new IModelTransformer(sourceDb, targetDb);
         enableCrashes(false);
