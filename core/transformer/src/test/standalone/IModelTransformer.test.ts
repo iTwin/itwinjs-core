@@ -17,7 +17,7 @@ import {
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations as BackendKnownTestLocations, ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
@@ -28,9 +28,10 @@ import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
-  const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
+  const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
@@ -308,7 +309,7 @@ describe("IModelTransformer", () => {
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
     // create target iModel
-    const targetDbFile: string = path.join(KnownTestLocations.outputDir, "IModelTransformer", "Clone-Target.bim");
+    const targetDbFile = path.join(KnownTestLocations.outputDir, "IModelTransformer", "Clone-Target.bim");
     if (IModelJsFs.existsSync(targetDbFile)) {
       IModelJsFs.removeSync(targetDbFile);
     }
@@ -676,8 +677,8 @@ describe("IModelTransformer", () => {
 
   it("should clone across schema versions", async () => {
     // NOTE: schema differences between 01.00.00 and 01.00.01 were crafted to reproduce a cloning bug. The goal of this test is to prevent regressions.
-    const cloneTestSchema100: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
-    const cloneTestSchema101: string = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.01.ecschema.xml");
+    const cloneTestSchema100: string = path.join(BackendKnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const cloneTestSchema101: string = path.join(BackendKnownTestLocations.assetsDir, "CloneTest.01.00.01.ecschema.xml");
 
     const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneWithSchemaChanges-Source.bim");
@@ -963,7 +964,7 @@ describe("IModelTransformer", () => {
   });
 
   it("processSchemas should wait for the schema import to finish to delete the export directory", async () => {
-    const cloneTestSchema100 = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const cloneTestSchema100 = path.join(BackendKnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
     await sourceDb.importSchemas([cloneTestSchema100]);

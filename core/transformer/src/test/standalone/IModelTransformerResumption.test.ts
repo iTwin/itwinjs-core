@@ -13,6 +13,7 @@ import { IModelImporter } from "../../IModelImporter";
 import { IModelExporter } from "../../IModelExporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -225,7 +226,7 @@ describe("test resuming transformations", () => {
   let seedDb: BriefcaseDb;
 
   before(async () => {
-    HubMock.startup("IModelTransformerResumption");
+    HubMock.startup("IModelTransformerResumption", { knownTestLocations: KnownTestLocations });
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
     const seedPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");

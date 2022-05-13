@@ -26,7 +26,7 @@ describe("IModelTransformerHub", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    HubMock.startup("IModelTransformerHub");
+    HubMock.startup("IModelTransformerHub", { knownTestLocations: KnownTestLocations });
     iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 

@@ -72,12 +72,17 @@ export class HubMock {
    * @param mockName a unique name (e.g. "MyTest") for this HubMock to disambiguate tests when more than one is simultaneously active.
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
-  public static startup(mockName: LocalDirName) {
+  public static startup(
+    mockName: LocalDirName,
+    {
+      knownTestLocations = KnownTestLocations,
+    }: { knownTestLocations?: { outputDir: string } } = {}
+  ) {
     if (this.isValid)
       throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
 
     this.hubs.clear();
-    this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
+    this.mockRoot = join(knownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
     try {

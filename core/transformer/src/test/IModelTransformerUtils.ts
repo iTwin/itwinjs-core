@@ -22,6 +22,7 @@ import {
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 interface DeepEqualWithFpToleranceOpts {
   tolerance?: number;
@@ -567,7 +568,7 @@ export async function assertIdentityTransformation(
 export class TransformerExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
-    const targetSchemaFileName: string = path.join(__dirname, "assets", "ExtensiveTestScenarioTarget.ecschema.xml");
+    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
     await targetDb.importSchemas([targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
