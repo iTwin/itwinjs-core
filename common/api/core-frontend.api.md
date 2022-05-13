@@ -1919,6 +1919,15 @@ export interface ComputeChordToleranceArgs {
     readonly graphic: GraphicBuilder;
 }
 
+// @public
+export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
+
+// @public
+export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void;
+
+// @public
+export function connectViewportViews(viewports: Iterable<Viewport>): () => void;
+
 // @internal (undocumented)
 export enum ContextMode {
     // (undocumented)
@@ -10141,6 +10150,15 @@ export class SuspendedToolState {
     // (undocumented)
     stop(): void;
     }
+
+// @public
+export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports;
+
+// @public
+export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
+
+// @public
+export function synchronizeViewportViews(source: Viewport): SynchronizeViewports;
 
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
