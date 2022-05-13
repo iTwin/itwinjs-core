@@ -91,6 +91,7 @@ export enum TestUserType {
  * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
  */
 export class HubWrappers {
+  protected static get hubMock() { return HubMock; }
 
   public static async getAccessToken(user: TestUserType) {
     return TestUserType[user];
@@ -98,7 +99,7 @@ export class HubWrappers {
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
   public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     let iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
       iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
@@ -109,7 +110,7 @@ export class HubWrappers {
    * @returns the iModelId of the newly created iModel.
   */
   public static async recreateIModel(...[arg]: Parameters<BackendHubAccess["createNewIModel"]>): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
     if (undefined !== deleteIModel)
       await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
@@ -164,7 +165,7 @@ export class HubWrappers {
       forceDownload: args.deleteFirst,
     };
 
-    assert.isTrue(HubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
+    assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
