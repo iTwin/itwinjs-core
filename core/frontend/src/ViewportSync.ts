@@ -13,6 +13,7 @@ import { Viewport } from "./Viewport";
  * The source viewport is the viewport in the connection whose state has changed.
  * The function will be invoked once for each target viewport in the connection.
  * @public
+ * @extensions
  */
 export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
 
@@ -43,6 +44,7 @@ export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
  * @see [[TwoWayViewportSync]] to synchronize the state of exactly two viewports.
  * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
  * @public
+ * @extensions
  */
 export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void {
   const disconnect: VoidFunction[] = [];
@@ -87,6 +89,7 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (source: V
  * display style, model and category selectors, [Frustum]($common), etc.
  * @see [[connectViewportViews]] to establish a connection between viewports using this synchronization strategy.
  * @public
+ * @extensions
  */
 export function synchronizeViewportViews(source: Viewport): SynchronizeViewports {
   return (_source, target) => target.applyViewState(source.view.clone(target.iModel));
@@ -95,6 +98,7 @@ export function synchronizeViewportViews(source: Viewport): SynchronizeViewports
 /** A function that returns a [[SynchronizeViewports]] function that synchronizes the viewed volumes of each viewport.
  * @see [[connectViewportFrusta]] to establish a connection between viewports using this synchronization strategy.
  * @public
+ * @extensions
  */
 export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports {
   const pose = source.view.savePose();
@@ -108,6 +112,7 @@ export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewport
  * will zoom out by the same distance in all of the other viewports.
  * @see [[connectViewports]] to customize how the viewports are synchronized.
  * @public
+ * @extensions
  */
 export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void {
   return connectViewports(viewports, (source) => synchronizeViewportFrusta(source));
@@ -118,6 +123,7 @@ export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void
  * @see [[connectViewportFrusta]] to synchronize only the [Frustum]($common) of each viewport.
  * @see [[connectViewports]] to customize how the viewports are synchronized.
  * @public
+ * @extensions
  */
 export function connectViewportViews(viewports: Iterable<Viewport>): () => void {
   return connectViewports(viewports, (source) => synchronizeViewportViews(source));
@@ -133,6 +139,7 @@ export function connectViewportViews(viewports: Iterable<Viewport>): () => void 
  * @see [[TwoWayViewportFrustumSync]] to synchronize only the frusta of the viewports.
  * @see [[connectViewportViews]] to synchronize the state of more than two viewports.
  * @public
+ * @extensions
  */
 export class TwoWayViewportSync {
   protected readonly _disconnect: VoidFunction[] = [];
@@ -181,6 +188,7 @@ export class TwoWayViewportSync {
  * @see [[TwoWayViewportSync]] to synchronize all aspects of the viewports.
  * @see [[connectViewportFrusta]] to synchronize the frusta of more than two viewports.
  * @public
+ * @extensions
  */
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
   /** @internal override */
