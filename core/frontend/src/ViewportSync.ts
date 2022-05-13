@@ -8,8 +8,42 @@
 
 import { Viewport } from "./Viewport";
 
+/** A function used by [[connectViewports]] to obtain another function that can synchronize each target [[Viewport]] with
+ * changes in the state of a source Viewport.
+ * The source viewport is the viewport in the connection whose state has changed.
+ * The function will be invoked once for each target viewport in the connection.
+ * @public
+ */
 export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
 
+/** Forms a connection between two or more [[Viewport]]s such that a change in any one of the viewports is reflected in all of the others.
+ * When the connection is first formed, all of the viewports are synchronized to the current state of the **first** viewport in `viewports`.
+ * Thereafter, an event listener registered with each viewport's [[Viewport.onViewChanged]] event is invoked when anything about that viewport's state changes.
+ * Each time such an event occurs, the initating ("source") viewport is passed to `sync` to obtain a function that can be invoked to synchronize each of the other
+ * ("target") viewports with the source viewport's new state. The function returned by `sync` can choose to synchronize any or all aspects of the viewports' states, such as
+ * the viewed volume, display style, viewed categories or models, or anything else.
+ *
+ * To sever the connection, invoke the function returned by this function. For example:
+ * ```ts
+ *  // set up the connection.
+ *  const disconnect = connectViewports([viewport0, viewport1, viewport2], (source) => synchronizeViewportFrusta(source));
+ *  // some time later, sever the connection.
+ *  disconnect();
+ * ```
+ *
+ * @note [[Viewport.onViewChanged]] can be invoked **very** frequently - sometimes multiple times per frame. Try to avoid performing excessive computations within your synchronization functions.
+ *
+ * @param viewports The viewports to be connected. It should contain at least two viewports and no duplicate viewports. The initial state of each viewport will be synchronized with
+ * the state of the first viewport in this iterable.
+ * @param sync A function to be invoked whenever the state of any viewport in `viewports` changes, returning a function that can be used to synchronize the
+ * state of each viewport.
+ * @returns a function that can be invoked to sever the connection between the viewports.
+ * @see [[connectViewportFrusta]] to synchronize the [Frustum]($common) of each viewport.
+ * @see [[connectViewportViews]] to synchronize every aspect of the viewports.
+ * @see [[TwoWayViewportSync]] to synchronize the state of exactly two viewports.
+ * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
+ * @public
+ */
 export function connectViewports(viewports: Iterable<Viewport>, sync: (source: Viewport) => SynchronizeViewports): () => void {
   const disconnect: VoidFunction[] = [];
 
@@ -18,6 +52,7 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (source: V
     if (echo)
       return;
 
+    // Ignore onViewChanged events resulting from synchronization.
     echo = true;
     try {
       const doSync = sync(source);
@@ -48,10 +83,19 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (source: V
   };
 }
 
+/** A function that returns a [[SynchronizeViewports]] function that synchronizes every aspect of the viewports' states, including
+ * display style, model and category selectors, [Frustum]($common), etc.
+ * @see [[connectViewportViews]] to establish a connection between viewports using this synchronization strategy.
+ * @public
+ */
 export function synchronizeViewportViews(source: Viewport): SynchronizeViewports {
   return (_source, target) => target.applyViewState(source.view.clone(target.iModel));
 }
 
+/** A function that returns a [[SynchronizeViewports]] function that synchronizes the viewed volumes of each viewport.
+ * @see [[connectViewportFrusta]] to establish a connection between viewports using this synchronization strategy.
+ * @public
+ */
 export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports {
   const pose = source.view.savePose();
   return (_source, target) => {
@@ -60,10 +104,21 @@ export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewport
   };
 }
 
+/** Form a connection between two or more [[Viewport]]s such that they all view the same volume. For example, zooming out in one viewport
+ * will zoom out by the same distance in all of the other viewports.
+ * @see [[connectViewports]] to customize how the viewports are synchronized.
+ * @public
+ */
 export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void {
   return connectViewports(viewports, (source) => synchronizeViewportFrusta(source));
 }
 
+/** Form a connection between two or more [[Viewport]]s such that every aspect of the viewports are kept in sync. For example, if the set of models
+ * or categories visible in one viewport is changed, the same set of models and categories will be visible in the other viewports.
+ * @see [[connectViewportFrusta]] to synchronize only the [Frustum]($common) of each viewport.
+ * @see [[connectViewports]] to customize how the viewports are synchronized.
+ * @public
+ */
 export function connectViewportViews(viewports: Iterable<Viewport>): () => void {
   return connectViewports(viewports, (source) => synchronizeViewportViews(source));
 }
@@ -76,6 +131,7 @@ export function connectViewportViews(viewports: Iterable<Viewport>): () => void 
  * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
  * for an interactive demonstration.
  * @see [[TwoWayViewportFrustumSync]] to synchronize only the frusta of the viewports.
+ * @see [[connectViewportViews]] to synchronize the state of more than two viewports.
  * @public
  */
 export class TwoWayViewportSync {
@@ -123,6 +179,7 @@ export class TwoWayViewportSync {
  * For example, zooming out in one viewport will zoom out by the same distance in the other viewport.
  * No other aspects of the viewports are synchronized - they may have entirely different display styles, category/model selectors, etc.
  * @see [[TwoWayViewportSync]] to synchronize all aspects of the viewports.
+ * @see [[connectViewportFrusta]] to synchronize the frusta of more than two viewports.
  * @public
  */
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
