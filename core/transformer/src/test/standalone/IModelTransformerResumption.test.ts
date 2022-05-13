@@ -575,7 +575,7 @@ describe("test resuming transformations", () => {
     const crashingTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.relationshipExportsUntilCall = 2;
       let crashed = false;
       try {
@@ -591,8 +591,7 @@ describe("test resuming transformations", () => {
         transformer.saveStateToFile(dumpPath);
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const TransformerClass = transformer.constructor as typeof CountdownToCrashTransformer;
-        transformer.dispose();
-        transformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
+        TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
         transformer.relationshipExportsUntilCall = undefined;
         await transformer.processAll();
       }
