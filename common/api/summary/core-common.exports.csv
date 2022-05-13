@@ -189,7 +189,7 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-alpha;EdgeType
+internal;EdgeOptions
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -484,7 +484,8 @@ public;OverrideModelAppearanceOptions
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
-internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
+internal;ParsedTileTreeIdAndContentId
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
 public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 
