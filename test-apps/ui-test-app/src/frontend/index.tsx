@@ -369,7 +369,7 @@ export class SampleAppIModelApp {
         clientIds: {
           arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
           enterpriseClientIds,
-        }
+        },
       });
 
       IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);

@@ -196,7 +196,7 @@ export class MobileHost {
 
     const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
     const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
-    opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } }
+    opt = { ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } };
 
     const iModelHostConfiguration = opt?.iModelHost ?? new IModelHostConfiguration();
     iModelHostConfiguration.authorizationClient = authorizationClient;
