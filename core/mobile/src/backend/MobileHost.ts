@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,

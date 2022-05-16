@@ -98,6 +98,22 @@ export enum IModelStatus {
   NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
+/** Error status from various briefcase operations
+ * @beta Should these be internal?
+ */
+export enum BriefcaseStatus {
+  BRIEFCASE_STATUS_BASE = 0x20000,
+  CannotAcquire = BRIEFCASE_STATUS_BASE,
+  CannotDownload = BRIEFCASE_STATUS_BASE + 1,
+  CannotUpload = BRIEFCASE_STATUS_BASE + 2,
+  CannotCopy = BRIEFCASE_STATUS_BASE + 3,
+  CannotDelete = BRIEFCASE_STATUS_BASE + 4,
+  VersionNotFound = BRIEFCASE_STATUS_BASE + 5,
+  CannotApplyChanges = BRIEFCASE_STATUS_BASE + 6,
+  DownloadCancelled = BRIEFCASE_STATUS_BASE + 7,
+  ContainsDeletedChangeSets = BRIEFCASE_STATUS_BASE + 8,
+}
+
 /** RpcInterface status codes
  * @beta Should these be internal?
  */
@@ -534,6 +550,13 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_CONSTRAINT_UNIQUE: return "Unique Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_VTAB: return "VTable Constraint Error";
       case BentleyStatus.ERROR: return "Error";
+      case BriefcaseStatus.CannotAcquire: return "CannotAcquire";
+      case BriefcaseStatus.CannotDownload: return "CannotDownload";
+      case BriefcaseStatus.CannotCopy: return "CannotCopy";
+      case BriefcaseStatus.CannotDelete: return "CannotDelete";
+      case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
+      case BriefcaseStatus.DownloadCancelled: return "DownloadCancelled";
+      case BriefcaseStatus.ContainsDeletedChangeSets: return "ContainsDeletedChangeSets";
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
       case ChangeSetStatus.ApplyError: return "Error applying a change set";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";

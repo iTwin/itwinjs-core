@@ -9,6 +9,7 @@
 import {
   BentleyError,
   BentleyStatus,
+  BriefcaseStatus,
   ChangeSetStatus,
   GeoServiceStatus,
   HttpStatus,
@@ -208,6 +209,16 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.NotRegistered: return new NotImplemented();
     case IModelStatus.FunctionNotFound: return new NotImplemented();
     case IModelStatus.NoActiveCommand: return new StateViolation();
+
+    case BriefcaseStatus.CannotAcquire: return new OperationFailed();
+    case BriefcaseStatus.CannotDownload: return new OperationFailed();
+    case BriefcaseStatus.CannotUpload: return new OperationFailed();
+    case BriefcaseStatus.CannotCopy: return new OperationFailed();
+    case BriefcaseStatus.CannotDelete: return new OperationFailed();
+    case BriefcaseStatus.VersionNotFound: return new NotFound();
+    case BriefcaseStatus.CannotApplyChanges: return new OperationFailed();
+    case BriefcaseStatus.DownloadCancelled: return new Cancelled();
+    case BriefcaseStatus.ContainsDeletedChangeSets: return new ValidationError();
 
     case RpcInterfaceStatus.Success: return new Success();
     case RpcInterfaceStatus.IncompatibleVersion: return new VersioningViolation();
