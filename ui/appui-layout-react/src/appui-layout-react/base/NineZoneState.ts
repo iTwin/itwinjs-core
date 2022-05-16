@@ -589,7 +589,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
 
       const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
-      // if widget container was remove because it was empty insert it
+      // if widget container was removed because it was empty insert it
       state.widgets[destinationWidgetContainerName] = {
         activeTabId: widget.tabs[0],
         id: destinationWidgetContainerName,
