@@ -9,9 +9,7 @@ jobs:
   - job:
     timeoutInMinutes: 180
     pool:
-      name: iModelTechCI
-      demands:
-      - Agent.OS -equals Linux
+      vmImage: ubuntu-latest
     variables:
       VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
     workspace:
@@ -31,6 +29,12 @@ jobs:
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: git config
+
+      - script: sudo apt update
+        displayName: apt update
+
+      - script: sudo apt install valgrind
+        displayName: apt install valgrind
 
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
