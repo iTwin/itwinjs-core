@@ -9,10 +9,39 @@
 import "./FloatingTab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
+import { isPanelTarget, isTabTarget, isWidgetTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
 import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
 import { TabTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";
+import { PanelSide } from "../widget-panels/Panel";
+
+function getWidgetId(side: PanelSide, section: "start" | "end") {
+  switch (side) {
+    case "left": {
+      if (section === "start") {
+        return "leftStart";
+      }
+      return "leftEnd";
+    }
+    case "right": {
+      if (section === "start") {
+        return "rightStart";
+      }
+      return "rightEnd";
+    }
+    case "top": {
+      if (section === "start") {
+        return "topStart";
+      }
+      return "topEnd";
+    }
+    case "bottom": {
+      if (section === "start")
+        return "bottomStart";
+      return "bottomEnd";
+    }
+  }
+}
 
 /** Component that displays a floating tab.
  * @internal
@@ -35,9 +64,16 @@ export function FloatingTab() {
         ...dragTarget,
       };
     } else if (dragTarget) {
+      let newWidgetId = getUniqueId();
+      if (isWidgetTarget(dragTarget)) {
+        newWidgetId = getWidgetId(dragTarget.side, !dragTarget.widgetIndex ? "start" : "end");
+      } else if (isPanelTarget(dragTarget)) {
+        newWidgetId = getWidgetId(dragTarget.side, "start");
+      }
+
       target = {
         ...dragTarget,
-        newWidgetId: getUniqueId(),
+        newWidgetId,
       };
     } else {
       target = {
