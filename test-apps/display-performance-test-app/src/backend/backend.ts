@@ -80,7 +80,6 @@ function setupAuthorizationClient(): TestBrowserAuthorizationClient | undefined 
     else
       throw new Error(`Incomplete env vars for OIDC: ${ undefinedEnvKeys.join(" ") }`);
   }
-
   return new TestBrowserAuthorizationClient({
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,

@@ -16,7 +16,7 @@
 
 These options will work for running with electron or for a browser (though specifying a specific browser when running with electron will have no effect). Always use a double backslash when specifying a file path. All of these options can be specified in any order, and you can use any number of these options.  For example, to specify everything, your command could look like this: "npm run start:web chrome D:\\\\develop\\\\testConfig.json D:\\\\performanceOutput\\\\".
 
-* To specify a json config file that you wish to use, add the full file path to the command. For example, run the command "npm run start:web D:\\timingTests.json" or "npm run start:web C:\\\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
+* To specify a json config file that you wish to use, add the full file path to the command. For example, run the command "npm run start:web D:\\\\timingTests.json" or "npm run start:web C:\\\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
 * To specify an output path, simply add the output path to the command. For example, run the command "npm run start:web C:\\\\output\\\\performanceData\\\\" to use this as the base path for where the output will be stored. Keep in mind that any outputPath variable specified in your json config file will be assumed to be a subdirectory of the output path specified when you called your command unless it starts with the name of a drive (i.e. C:\\\\, D:\\\\, etc.).
 * To specify a particular browser that you wish to run in, you can add the option "chrome", "edge", or "firefox" to your command. If you are intending to use a browser for the frontend, this will cause a new browser window to open to `http:\\localhost:3000` and begin running the performance test once the backend has finished getting started. However, this option will have no effect if you are running in electron.
 * To specify running headlessly with chrome, you can add the option "headless" to your command. For example, run the command "npm run test:chrome headless". This will cause chrome to run headlessly, so no chrome window will appear while the test is running. However, this option will have no affect if you are running in electron, edge, or firefox.
@@ -44,6 +44,10 @@ Performance tests on iOS have more restrictions than performance tests run on ot
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* IMJS_OIDC_...
+  * If using models from iModelHub, this is required for auth.
+  * See [backend.ts setupAuthorizationClient()](./src//backend/backend.ts) and [@itwin/oidc-signin-tool](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool) for details
+  * IMJS_URL_PREFIX might be required as well
 
 ## Configuration json file
 
@@ -52,7 +56,6 @@ The default configuration file allows you to specify the following:
 * where you want to output the files created by the test program
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using iModelHub)
-* if you want to force the test to sign in to iModelHub when the tests first start (i.e. set "signIn" to true to force user to sign in)
 * if you want to save a minimized version of the timing data (the minimized version only contains timing data for the 'CPU Total Time', 'GPU Total Time', 'Bound By', 'Effective Total Time', 'Effective FPS', 'Actual Total TIme', & 'Actual FPS'); the 'minimize' flag defaults to false
 * if you want to use the original csv format (the one described in this README) or the new one; 'csvFormat' defaults to "original"
 * what size you want the view screen to be
@@ -70,7 +73,7 @@ The default configuration file allows you to specify the following:
 You can specify filename options that you wish to ignore:
 When you chose to produce images through an 'image' or 'both' test, the program will name them in the following format: modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, SmallTextTest008_Wireframe_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). If you chose to do a 'readPixels' test, the program will save the images produced from this in the following format: depth/elemId/type_readPixelsSelectorOpts_modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, type_+geom+dist_TimingTest01_V0_HiddenLine_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). The read pixels selector options, view flag options, render mode options, and tile properties options will all be an abbreviated string representation of the actual property. For example, the render mode option 'enableInstancing' would be shown as '+inst' in the filename. The 'filenameOptsToIgnore' property allows you to specify either an array of strings or a single space delimited string, where each string item is an abbreviated string representation of a read pixels selector option, view flag option, render mode option, or tile properties option. These options will not be included in the image names.
 
-You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and_viewStatePropsString properties (and optionally the _selectedElements and/or_overrideElements properties) which you can copy from the external saved view file.
+You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and_viewStatePropsString properties (and optionally the_selectedElements and/or_overrideElements properties) which you can copy from the external saved view file.
 
 If you wish to specify multiple iModels in the same folder, you can use a asterisk wildcard instead of a specific iModel name to test multiple iModels matching the given wildcard. This is NOT case-sensitive. For example, to test all iModels, set modelName to "*". To test all iModels with the word 'Edge' in them, set modelName to "*edge*". To test iModels starting with the word edge, use "edge*". If no modelName is specified, it will default to testing all iModels in the given iModelLocation. This currently does NOT work when using an iModelHub location with iModelHubProject instead of a local directory with iModelLocation.
 
@@ -137,7 +140,22 @@ Specifying where the imodels are located:
 If given the option of using a local file path or using iModelHub, the program will first attempt to access the imodel using the local file path; if that fails, the program will then attempt to use the iModelHub location to access the imodel.
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
-* To specify an iModelHub project to use, set the "iModelHubProject" setting in the json configuration file (ex. "iModelHubProject": "DisplayPerformanceTest").
+* To specify an iModelHub project to use, set the `iTwinId` setting in the json configuration file. For every `iModelId` provided in a test set, the required model will be downloaded from the provided `iTwinId` project along with any `extViewName` saved views. Only one iTwin project is supported currently. This requires setting `IMJS_OIDC_...` env variables. For example:
+
+  ```json
+  {
+    "iTwinId": "12345678-1234-1234-1234-123456781234",
+    "testSet": [
+      {
+        "iModelName": "My test model",
+        "iModelId": "87654321-4321-4321-4321-432187654321",
+        "tests": [
+          { "extViewName": "My test view" }
+        ]
+      }
+    ]
+  }
+  ```
 
 The json config file allows you to specify settings for the entire test run, for a specific model, and for a specific test performed on a given model. Priority for settings will be given first to those for a specific test, then for a specific model, and finally for the entire test run. For example: if transparency is set to true for the entire test run, but a specific test changes transparency to false, that specific test will NOT have transparency even though the rest of the tests run WILL have transparency.
 

@@ -60,7 +60,8 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function initializeRemoteIModels(props: TestSetsProps): Promise<void> {
+async function downloadRemoteIModels(props: TestSetsProps): Promise<void> {
+  // Find remote iModels and their external views
   /** iModelId -> savedViewNames */
   const remoteModelsViews = new Map<string, Set<string>>();
   for(const testSet of props.testSet) {
@@ -78,9 +79,9 @@ async function initializeRemoteIModels(props: TestSetsProps): Promise<void> {
     else
       externalViews.forEach((v) => { thisModelViews.add(v); });
   }
+
   if(remoteModelsViews.size < 1)
     return;
-
   const iTwinId = props.iTwinId;
   if(iTwinId === undefined)
     throw new Error("Missing iTwinId in config for remote iModels");
@@ -96,7 +97,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    await initializeRemoteIModels(props);
+    await downloadRemoteIModels(props);
 
     const runner = new TestRunner(props);
     await runner.run();

@@ -1,8 +1,7 @@
 {
   "outputName": "_PerformanceResults.csv",
   "outputPath": ".\\performanceResults\\",
-  "iModelHubProject": "iModel Testing",
-  "signIn": true,
+  "iTwinId": "iModel Testing",
   "view": {
     "width": 2048,
     "height": 1024

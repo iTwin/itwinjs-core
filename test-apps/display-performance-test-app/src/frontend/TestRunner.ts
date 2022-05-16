@@ -243,12 +243,12 @@ export class TestRunner {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
 
-        const context = await this.openIModel();
-        if (context) {
+        try {
+          const context = await this.openIModel();
           await this.runTests(context);
           await context.iModel.close();
-        } else {
-          await this.logError(`Failed to open iModel ${iModelName}`);
+        } catch(e) {
+          await this.logError(`Failed to run tests for iModel ${iModelName}`);
         }
       }
 
@@ -642,10 +642,10 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
-  private async openIModel(): Promise<TestContext | undefined> {
+  private async openIModel(): Promise<TestContext> {
     const rpcClient = DisplayPerfRpcInterface.getClient();
 
-    const filepath = this.curConfig.iModelId !== undefined
+    const filepath = this.curConfig.iModelId !== undefined // Is remote?
       ? await rpcClient.getInitializedRemoteIModelFilepath(this.curConfig.iModelId)
       : path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
     const iModel = await SnapshotConnection.openFile(filepath);
