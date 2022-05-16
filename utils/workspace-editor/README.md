@@ -210,10 +210,10 @@ Examples:
 > WorkspaceEditor list proj
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  strings:
-  name=contracts.json, size=17399
-  name=firecode.json, size=3287
-  name=specs.json, size=8465
-  name=vendor.json, size=46642
+  name=contracts.json, size=17K
+  name=firecode.json, size=3K
+  name=specs.json, size=8K
+  name=vendor.json, size=46K
  blobs:
   name=Sparks/KDE05814.dict, size=224K
   name=Sparks/KDE05815.dict, size=307K
@@ -234,10 +234,10 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
 > WorkspaceEditor list proj --strings
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  strings:
-  name=contracts.json, size=17399
-  name=firecode.json, size=3287
-  name=specs.json, size=8465
-  name=vendor.json, size=46642
+  name=contracts.json, size=17K
+  name=firecode.json, size=3K
+  name=specs.json, size=8K
+  name=vendor.json, size=46K
 ```
 
 ### vacuumDb
@@ -514,10 +514,10 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  added "r:\dict\UniSpace\KRT06519.dict" as blob resource [UniSpace/KRT06519.dict]
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  strings:
-  name=contracts.json, size=17399
-  name=firecode.json, size=3287
-  name=specs.json, size=8465
-  name=vendor.json, size=46642
+  name=contracts.json, size=17K
+  name=firecode.json, size=3K
+  name=specs.json, size=8K
+  name=vendor.json, size=46K
  blobs:
   name=Sparks/KDE05814.dict, size=224K
   name=Sparks/KDE05815.dict, size=307K
@@ -558,4 +558,3 @@ import r:\workspaces\proj112\proj.itwin-workspace, container=5d385232-a2ec-4f31-
 WorkspaceDbs in container [5d385232-a2ec-4f31-b74b-8201c027848d]
  "project:1.0.0", size=4M, 0M downloaded (0%)
  ```
-

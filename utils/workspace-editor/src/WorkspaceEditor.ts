@@ -12,7 +12,7 @@ import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
-  WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
+  SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -215,11 +215,14 @@ async function listWorkspaceDb(args: ListOptions) {
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
 
+    const nameAndSize = (stmt: SqliteStatement, size?: number, info?: string) =>
+      showMessage(`  name=${stmt.getValueString(0)}, size=${friendlyFileSize(size ?? stmt.getValueInteger(1))}${info ?? ""}`);
+
     if (args.strings) {
       showMessage(" strings:");
-      file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueString(1).length}`);
+          nameAndSize(stmt);
       });
     }
 
@@ -227,7 +230,7 @@ async function listWorkspaceDb(args: ListOptions) {
       showMessage(" blobs:");
       file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          showMessage(`  name=${stmt.getValueString(0)}, size=${friendlyFileSize(stmt.getValueInteger(1))}`);
+          nameAndSize(stmt);
       });
 
     }
@@ -240,7 +243,7 @@ async function listWorkspaceDb(args: ListOptions) {
           if (embed) {
             const info = embed.info;
             const date = new Date(info.date);
-            showMessage(`  name=${stmt.getValueString(0)}, size=${friendlyFileSize(info.size)}, ext="${info.fileExt}", date=${date.toString()}`);
+            nameAndSize(stmt, info.size, `, ext="${info.fileExt}", date=${date.toString()}`);
           }
         }
       });
