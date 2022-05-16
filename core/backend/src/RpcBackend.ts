@@ -12,7 +12,7 @@ import * as multiparty from "multiparty";
 import * as FormData from "form-data";
 import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
-import { assert, Logger, SpanKind } from "@itwin/core-bentley";
+import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { IModelHost } from "./IModelHost";
 
 /**
@@ -47,7 +47,7 @@ export class RpcTrace {
 
   /** Start the processing of an RpcActivity inside an OpenTelemetry span */
   public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
-    return Logger.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
+    return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
       attributes: { ...RpcInvocation.sanitizeForLog(activity) },
       kind: SpanKind.SERVER,
     });
@@ -68,7 +68,7 @@ export function initializeRpcBackend() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const api = require("@opentelemetry/api");
     const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
-    Logger.enableOpenTelemetry(tracer, api);
+    Tracing.enableOpenTelemetry(tracer, api);
     RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
   } catch (_e) { }
 

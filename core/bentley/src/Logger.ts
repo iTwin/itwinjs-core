@@ -6,80 +6,9 @@
  * @module Logging
  */
 
-import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
-
-// re-export so that consumers can construct full SpanOptions object without external dependencies
-/**
- * Mirrors the SpanKind enum from `@opentelemetry/api`
- * @alpha
- */
-export declare enum SpanKind {
-  INTERNAL = 0,
-  SERVER = 1,
-  CLIENT = 2,
-  PRODUCER = 3,
-  CONSUMER = 4
-}
-
-function isValidPrimitive(val: unknown): val is SpanAttributeValue {
-  return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
-}
-
-// Only _homogenous_ arrays of strings, numbers, or booleans are supported as OpenTelemetry Attribute values.
-// Per the spec (https://opentelemetry.io/docs/reference/specification/common/common/#attribute), empty arrays and null values are supported too.
-function isValidPrimitiveArray(val: unknown): val is SpanAttributeValue {
-  if (!Array.isArray(val))
-    return false;
-
-  let itemType;
-  for (const x of val) {
-    if (x === undefined || x === null)
-      continue;
-
-    if (!itemType) {
-      itemType = typeof x;
-      if (!isValidPrimitive(x))
-        return false;
-    }
-
-    if (typeof x !== itemType)
-      return false;
-  }
-  return true;
-}
-
-function isPlainObject(obj: unknown): obj is object {
-  return typeof obj === "object" && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
-}
-
-function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttributeValue]> {
-  if (isValidPrimitiveArray(obj)) {
-    yield [path, obj];
-    return;
-  }
-
-  // Prefer JSON serialization over flattening for any non-POJO types.
-  // There's just too many ways trying to flatten those can go wrong (Dates, Buffers, TypedArrays, etc.)
-  if (!isPlainObject(obj) && !Array.isArray(obj)) {
-    yield [path, isValidPrimitive(obj) ? obj : JSON.stringify(obj)];
-    return;
-  }
-
-  // Always serialize empty objects/arrays as empty array values
-  const entries = Object.entries(obj);
-  if (entries.length === 0)
-    yield [path, []];
-
-  for (const [key, val] of entries)
-    yield* getFlatEntries(val, (path === "") ? key : `${path}.${key}`);
-}
-
-function flattenObject(obj: object): SpanAttributes {
-  return Object.fromEntries(getFlatEntries(obj));
-}
 
 /** Defines the *signature* for a log function.
  * @public
@@ -129,8 +58,6 @@ export class Logger {
   protected static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
-  private static _tracer?: Tracer;
-  private static _openTelemetry?: { trace: Pick<TraceAPI, "setSpan" | "setSpanContext" | "getSpan">, context: Pick<ContextAPI, "active" | "with"> };
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -151,69 +78,12 @@ export class Logger {
     Logger.turnOffCategories();
   }
 
-  /**
-   * Enable logging to OpenTelemetry. [[Logger.withSpan]] will be enabled, all log entries will be attached to active span as span events.
-   * [[IModelHost.startup]] will call this automatically if it succeeds in requiring `@opentelemetry/api`.
-   * @note Node.js OpenTelemetry SDK should be initialized by the user.
-   */
-  public static enableOpenTelemetry(tracer: Tracer, api: typeof Logger._openTelemetry) {
-    Logger._tracer = tracer;
-    Logger._openTelemetry = api;
-    Logger.logTrace = Logger.withOpenTelemetry(Logger.logTrace);
-    Logger.logInfo = Logger.withOpenTelemetry(Logger.logInfo);
-    Logger.logWarning = Logger.withOpenTelemetry(Logger.logWarning);
-    Logger.logError = Logger.withOpenTelemetry(Logger.logError);
-  }
-
-  private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
-    return (category, message, metaData) => {
-      Logger._openTelemetry?.trace.getSpan(Logger._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
-      base(category, message, metaData);
-    };
-  }
-
   /** Initialize the logger to output to the console. */
   public static initializeToConsole(): void {
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
       console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
 
     Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
-  }
-
-  /**
-   * If OpenTelemetry tracing is enabled, creates a new span and runs the provided function in it.
-   * If OpenTelemetry tracing is _not_ enabled, runs the provided function.
-   * @param name name of the new span
-   * @param fn function to run inside the new span
-   * @param options span options
-   * @param parentContext optional context used to retrieve parent span id
-   */
-  public static async withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T> {
-    if (Logger._tracer === undefined || Logger._openTelemetry === undefined)
-      return fn();
-
-    // this case is for context propagation - parentContext is typically constructed from HTTP headers
-    const parent = parentContext === undefined
-      ? Logger._openTelemetry.context.active()
-      : Logger._openTelemetry.trace.setSpanContext(Logger._openTelemetry.context.active(), parentContext);
-
-    return Logger._openTelemetry.context.with(
-      Logger._openTelemetry.trace.setSpan(
-        parent,
-        Logger._tracer.startSpan(name, options, Logger._openTelemetry.context.active())
-      ),
-      async () => {
-        try {
-          return await fn();
-        } catch (err) {
-          if (err instanceof Error) // ignore non-Error throws, such as RpcControlResponse
-            Logger._openTelemetry?.trace.getSpan(Logger._openTelemetry.context.active())?.setAttribute("error", true);
-          throw err;
-        } finally {
-          Logger._openTelemetry?.trace.getSpan(Logger._openTelemetry.context.active())?.end();
-        }
-      },
-    );
   }
 
   /** merge the supplied metadata with all static metadata into one object */
@@ -392,13 +262,6 @@ export class Logger {
   public static logTrace(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
-  }
-
-  /** Set attributes on currently active openTelemetry span. Doesn't do anything if openTelemetry logging is not initialized.
-   * @param attributes  The attributes to set
-   */
-  public static setAttributes(attributes: SpanAttributes) {
-    Logger._openTelemetry?.trace.getSpan(Logger._openTelemetry.context.active())?.setAttributes(attributes);
   }
 }
 
