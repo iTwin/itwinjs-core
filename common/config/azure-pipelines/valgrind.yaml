@@ -30,10 +30,10 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: git config
 
-      - script: sudo apt update
+      - script: sudo apt-get update
         displayName: apt update
 
-      - script: sudo apt install valgrind
+      - script: sudo apt-get install valgrind
         displayName: apt install valgrind
 
       - script: node common/scripts/install-run-rush.js install
