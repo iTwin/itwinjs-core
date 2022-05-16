@@ -12,6 +12,7 @@ import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 
@@ -57,6 +58,9 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
   parentKey?: TNodeKey;
+
+  /** @alpha */
+  instanceFilter?: InstanceFilterDefinition | InstanceFilterDefinition[];
 }
 
 /**

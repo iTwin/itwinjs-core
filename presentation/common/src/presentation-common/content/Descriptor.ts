@@ -11,6 +11,7 @@ import {
   ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship,
   RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
+import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
@@ -166,7 +167,7 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  filterExpression?: string;
+  filterExpression?: string | InstanceFilterDefinition | InstanceFilterDefinition[];
 }
 
 /**
@@ -200,7 +201,7 @@ export interface DescriptorOverrides {
   };
 
   /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
-  filterExpression?: string;
+  filterExpression?: string | InstanceFilterDefinition | InstanceFilterDefinition[];
 }
 
 /**
@@ -229,7 +230,7 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
-  readonly filterExpression?: string;
+  readonly filterExpression?: string | InstanceFilterDefinition | InstanceFilterDefinition[];
 }
 
 /**
@@ -262,7 +263,7 @@ export class Descriptor implements DescriptorSource {
   /** Sorting direction */
   public sortDirection?: SortDirection;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
-  public filterExpression?: string;
+  public filterExpression?: string | InstanceFilterDefinition | InstanceFilterDefinition[];
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */
   public constructor(source: DescriptorSource) {
