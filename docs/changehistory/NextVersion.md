@@ -45,7 +45,7 @@ Here's a simple example that keeps the viewports' [ViewFlags]($common) in sync:
 
 ```ts
   // Establish the connection.
-  const disconnect = connectViewports([viewport1, viewport2, viewport3, (changedViewport: Viewport) => {
+  const disconnect = connectViewports([viewport1, viewport2, viewport3], (changedViewport: Viewport) => {
     // Supply a function that will synchronize the state of the other viewports with that of the changed viewport.
     return (source: Viewport, target: Viewport) => {
       target.viewFlags = source.viewFlags;
