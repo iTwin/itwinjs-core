@@ -582,29 +582,29 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
 
       if (homeWidget) {
+        // Add tabs to an existing widget.
         homeWidget.tabs.push(...widget.tabs);
         removeWidget(state, widget.id);
-      } else {
-        const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
-        // if widget container was remove because it was empty insert it
-        state.widgets[destinationWidgetContainerName] = {
-          activeTabId: widget.tabs[0],
-          id: destinationWidgetContainerName,
-          minimized: false,
-          tabs: [...widget.tabs],
-        };
-
-        let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
-        // istanbul ignore next
-        if (0 === panel.widgets.length)
-          insertIndex = 0;
-        panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
-        widget.minimized = false;
-        if (home.widgetId)
-          removeWidget(state, widget.id);
-        else
-          removeFloatingWidget(state, widget.id);
+        return;
       }
+
+      const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
+      // if widget container was removed because it was empty insert it
+      state.widgets[destinationWidgetContainerName] = {
+        activeTabId: widget.tabs[0],
+        id: destinationWidgetContainerName,
+        minimized: false,
+        tabs: [...widget.tabs],
+      };
+
+      let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
+      // istanbul ignore next
+      if (0 === panel.widgets.length)
+        insertIndex = 0;
+      panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
+      widget.minimized = false;
+
+      removeWidget(state, widget.id);
       return;
     }
     case "POPOUT_WIDGET_SEND_BACK": {
