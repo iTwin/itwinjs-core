@@ -102,7 +102,7 @@ function generateJsCode(exportList) {
 // Create the export code for the .ts file
 function generateRuntimeCode(exportListPreview, exportList) {
   const tab = "  "; // two space tab
-  let exportCode = "";
+  let importCode = "";
   let exportsApi = `const extensionExports = {\n${tab}`;
   const _exports = [];
   const exportTrailer = `\n};\n\n`;
@@ -139,12 +139,12 @@ function generateRuntimeCode(exportListPreview, exportList) {
       _exports.push(realExport);
     });
 
-    exportCode += imports + importTrailer;
+    importCode += imports + importTrailer;
   };
 
   exportsApi += _exports.sort().join(`,\n${tab}`) + ",";
 
-  return exportCode + exportsApi + exportTrailer;
+  return importCode + exportsApi + exportTrailer;
 }
 
 // Find the extension linter's output file and convert to a set of useful lists
