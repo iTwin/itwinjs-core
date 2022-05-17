@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { createButton, createCheckBox, createLabeledNumericInput, LabeledNumericInput } from "@itwin/frontend-devtools";
-import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { CheckBox, createButton, createCheckBox, createLabeledNumericInput, LabeledNumericInput } from "@itwin/frontend-devtools";
+import { Vector3d } from "@itwin/core-geometry";
 import {
   AtmosphericScattering,
   AtmosphericScatteringProps,
@@ -26,9 +26,6 @@ export class AtmosphericScatteringEditor {
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _update: (view: ViewState) => void;
 
-  private readonly _sunDirectionX: LabeledNumericInput;
-  private readonly _sunDirectionY: LabeledNumericInput;
-  private readonly _sunDirectionZ: LabeledNumericInput;
   private readonly _earthCenterX: LabeledNumericInput;
   private readonly _earthCenterY: LabeledNumericInput;
   private readonly _earthCenterZ: LabeledNumericInput;
@@ -39,6 +36,9 @@ export class AtmosphericScatteringEditor {
   private readonly _wavelenghtR: LabeledNumericInput;
   private readonly _wavelenghtG: LabeledNumericInput;
   private readonly _wavelenghtB: LabeledNumericInput;
+  private readonly _numInScatteringPoints: LabeledNumericInput;
+  private readonly _numOpticalDepthPoints: LabeledNumericInput;
+  private readonly _isPlanar: CheckBox;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -134,65 +134,6 @@ export class AtmosphericScatteringEditor {
       name: "Z: ",
     });
 
-    const spanSunDir = document.createElement("span");
-    spanSunDir.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanSunDir);
-    this._sunDirectionX = createLabeledNumericInput({
-      id: "atmosphericScattering_sunDirX",
-      parent: spanSunDir,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const sunDir = Point3d.fromJSON(props.sunDirection);
-        sunDir.x = value;
-        props.sunDirection = sunDir.toJSON();
-        return props;
-      }),
-      min: -1.0,
-      max: 1.0,
-      step: 0.1,
-      parseAsFloat: true,
-      name: "Sun Direction X: ",
-    });
-    this._sunDirectionX.div.style.marginRight = "0.5em";
-
-    this._sunDirectionY = createLabeledNumericInput({
-      id: "atmosphericScattering_sunDirY",
-      parent: spanSunDir,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const sunDir = Point3d.fromJSON(props.sunDirection);
-        sunDir.y = value;
-        props.sunDirection = sunDir.toJSON();
-        return props;
-      }),
-      min: -1.0,
-      max: 1.0,
-      step: 0.1,
-      parseAsFloat: true,
-      name: "Y: ",
-    });
-    this._sunDirectionY.div.style.marginRight = "0.5em";
-
-    this._sunDirectionZ = createLabeledNumericInput({
-      id: "atmosphericScattering_sunDirY",
-      parent: spanSunDir,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const sunDir = Point3d.fromJSON(props.sunDirection);
-        sunDir.z = value;
-        props.sunDirection = sunDir.toJSON();
-        return props;
-      }),
-      min: -1.0,
-      max: 1.0,
-      step: 0.1,
-      parseAsFloat: true,
-      name: "Z: ",
-    });
-
     const spanRadius = document.createElement("span");
     spanRadius.style.display = "flex";
     atmosphericScatteringControlsDiv.appendChild(spanRadius);
@@ -241,8 +182,8 @@ export class AtmosphericScatteringEditor {
         return props;
       }),
       min: 0.0,
-      max: 10.0,
-      step: 0.1,
+      max: 1000.0,
+      step: 1.0,
       parseAsFloat: true,
       name: "Scattering Strength: ",
     });
@@ -313,10 +254,55 @@ export class AtmosphericScatteringEditor {
         return props;
       }),
       min: 0.0,
-      max: 20.0,
+      max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
       name: "Density Falloff: ",
+    });
+
+    const spanSamplePoints = document.createElement("span");
+    spanSamplePoints.style.display = "flex";
+    atmosphericScatteringControlsDiv.appendChild(spanSamplePoints);
+
+    this._numInScatteringPoints = createLabeledNumericInput({
+      id: "atmosphericScattering_numInScatteringPoints",
+      parent: spanSamplePoints,
+      value: 10,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.numInScatteringPoints = value;
+        return props;
+      }),
+      min: 1,
+      max: 20,
+      step: 1,
+      name: "InScattering Points: ",
+    });
+
+    this._numOpticalDepthPoints = createLabeledNumericInput({
+      id: "atmosphericScattering_numOpticalDepthPoints",
+      parent: spanSamplePoints,
+      value: 10,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.numOpticalDepthPoints = value;
+        return props;
+      }),
+      min: 1,
+      max: 20,
+      step: 1,
+      name: "Optical Depth Points: ",
+    });
+
+    this._isPlanar = createCheckBox({
+      id: "atmosphericScattering_isPlanar",
+      parent: atmosphericScatteringControlsDiv,
+      handler: (cbx) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.isPlanar = cbx.checked;
+        return props;
+      }),
+      name: "Is Planar:",
     });
 
     this._update = (view) => {
@@ -360,9 +346,6 @@ export class AtmosphericScatteringEditor {
     this._earthCenterX.input.value = settings.earthCenter.x.toString();
     this._earthCenterY.input.value = settings.earthCenter.y.toString();
     this._earthCenterZ.input.value = settings.earthCenter.z.toString();
-    this._sunDirectionX.input.value = settings.sunDirection.x.toString();
-    this._sunDirectionY.input.value = settings.sunDirection.y.toString();
-    this._sunDirectionZ.input.value = settings.sunDirection.z.toString();
     this._atmosphereRadius.input.value = settings.atmosphereRadius.toString();
     this._earthRadius.input.value = settings.earthRadius.toString();
     this._densityFalloff.input.value = settings.densityFalloff.toString();
@@ -370,6 +353,9 @@ export class AtmosphericScatteringEditor {
     this._wavelenghtR.input.value = settings.wavelenghts[0].toString();
     this._wavelenghtG.input.value = settings.wavelenghts[1].toString();
     this._wavelenghtB.input.value = settings.wavelenghts[2].toString();
+    this._numInScatteringPoints.input.value = settings.numInScatteringPoints.toString();
+    this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
+    this._isPlanar.checkbox.checked = settings.isPlanar;
   }
 
   private updateAtmosphericScattering(updateFunction: (view: ViewState) => AtmosphericScatteringProps) {

@@ -17,6 +17,9 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   private _earthRadius = 0.0;
   private _scatteringCoefficients = new Float32Array(3);
   private _densityFalloff = 0.0;
+  private _numInScatteringPoints = 0.0;
+  private _numOpticalDepthPoints = 0.0;
+  private _isPlanar = false;
 
   public syncKey = 0;
 
@@ -39,7 +42,9 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     this._updateEarthRadius(this.atmosphericScattering.earthRadius);
     this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
     this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelenghts);
-
+    this._updateNumInScatteringPoints(this.atmosphericScattering.numInScatteringPoints);
+    this._updateNumOpticalDepthPoints(this.atmosphericScattering.numOpticalDepthPoints);
+    this._updateIsPlanar(this.atmosphericScattering.isPlanar);
   }
 
   private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
@@ -63,8 +68,20 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     this._scatteringCoefficients[2] = ((400.0 / wavelenghts[2]) ** 4.0) * scatteringStrength;
   }
 
-  private _updateDensityFalloff(dentityFalloff: number) {
-    this._densityFalloff = dentityFalloff;
+  private _updateDensityFalloff(densityFalloff: number) {
+    this._densityFalloff = densityFalloff;
+  }
+
+  private _updateNumInScatteringPoints(numInScatteringPoints: number) {
+    this._numInScatteringPoints = numInScatteringPoints;
+  }
+
+  private _updateNumOpticalDepthPoints(numOpticalDepthPoints: number) {
+    this._numOpticalDepthPoints = numOpticalDepthPoints;
+  }
+
+  private _updateIsPlanar(isPlanar: boolean) {
+    this._isPlanar = isPlanar;
   }
 
   public bindEarthCenter(uniform: UniformHandle): void {
@@ -90,6 +107,21 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   public bindScatteringCoefficients(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform3fv(this._scatteringCoefficients);
+  }
+
+  public bindNumInScatteringPoints(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform1i(this._numInScatteringPoints);
+  }
+
+  public bindNumOpticalDepthPoints(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform1i(this._numOpticalDepthPoints);
+  }
+
+  public bindIsPlanar(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform1i(this._isPlanar ? 1 : 0);
   }
 
   public get isDisposed(): boolean {
