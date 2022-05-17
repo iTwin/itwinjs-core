@@ -13,7 +13,6 @@ import { isPanelTarget, isTabTarget, isWidgetTarget, useDragTab, UseDragTabArgs 
 import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
 import { getWidgetPanelSectionId, TabTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";
-import { PanelSide } from "../widget-panels/Panel";
 
 /** Component that displays a floating tab.
  * @internal
