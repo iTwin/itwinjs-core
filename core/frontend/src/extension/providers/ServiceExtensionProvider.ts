@@ -5,6 +5,7 @@
 import { rcompare } from "semver";
 
 import { IModelApp } from "../../IModelApp";
+import { request, RequestOptions } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 import { ExtensionClient, ExtensionMetadata } from "./ExtensionServiceClient";
 
@@ -43,11 +44,9 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!loadedExtensionProps)
       throw new Error(`Error loading manifest for Extension ${this._props.name}.`);
 
-    const doesUrlExist = await this._exists(loadedExtensionProps.manifest.url);
-    if (!doesUrlExist)
-      throw new Error(`Manifest at ${loadedExtensionProps.manifest.url} could not be found.`);
-
-    return (await fetch(loadedExtensionProps.manifest.url)).json();
+    const options: RequestOptions = { method: "GET" };
+    const response = await request(loadedExtensionProps.manifest.url, options);
+    return response.body;
   }
 
   /** Executes the javascript main file (the bundled index.js) of an extension from the Extension Service.
@@ -58,24 +57,7 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!loadedExtensionProps)
       throw new Error(`Error executing Extension ${this._props.name}.`);
 
-    const doesUrlExist = await this._exists(loadedExtensionProps.main.url);
-    if (!doesUrlExist)
-      throw new Error(`Main javascript file at ${loadedExtensionProps.main.url} could not be found.`);
-
     return loadScript(loadedExtensionProps.main.url);
-  }
-
-  /** Checks if url actually exists */
-  private async _exists(url: string): Promise<boolean> {
-    let exists = false;
-    try {
-      const response = await fetch(url, { method: "HEAD" });
-      if (response.status === 200)
-        exists = true;
-    } catch (error) {
-      exists = false;
-    }
-    return exists;
   }
 
   /** Fetches the extension from the ExtensionService.
