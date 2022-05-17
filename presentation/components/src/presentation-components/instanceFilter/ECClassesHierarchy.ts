@@ -3,22 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId } from "@itwin/presentation-common";
 
-export interface ECClassInfo {
-  id: Id64String;
-  name: string;
-  schemaName: string;
-}
-
-export interface ECClassHierarchyInfo extends ECClassInfo {
-  baseClasses: ECClassInfo[];
-  derivedClasses: ECClassInfo[];
-}
-
-export class ECClassSet {
+/** @internal */
+export class ClassHierarchy {
   constructor(
     private _id: Id64String,
     private _baseClassIds: Set<Id64String>,
@@ -40,38 +30,36 @@ export class ECClassSet {
   }
 }
 
-export class ECClassesSet {
-  constructor(private _classSets: ECClassSet[]) {}
+/** @internal */
+export class ClassHierarchiesSet {
+  constructor(private _classSets: ClassHierarchy[]) {}
 
   public has(classId: Id64String, options: {isDerived?: boolean, isBase?: boolean}) {
     return this._classSets.some((idsSet) => idsSet.is(classId, options));
   }
 }
 
-export class ECClassHierarchy {
-  private _classSetCache = new Map<Id64String, ECClassSet>();
+/** @internal */
+export class ECClassHierarchyProvider {
+  private _classHierarchyCache = new Map<Id64String, ClassHierarchy>();
 
-  private constructor(
-    private _imodel: IModelConnection,
-    private _classInfos: Map<Id64String, ECClassInfo>,
+  public constructor(
+    private _classes: Set<Id64String>,
     private _baseClasses: Map<Id64String, Id64String[]>,
     private _derivedClasses: Map<Id64String, Id64String[]>) {
   }
+
+  /* istanbul ignore next */
   public static async create(imodel: IModelConnection) {
-    const classInfosMap = new Map();
+    const classes = new Set<Id64String>();
     const classesQuery =
       `SELECT
         c.ECInstanceId AS ClassId,
-        c.Name AS ClassName,
-        s.Name AS SchemaName
       FROM
         meta.ECClassDef c
-      JOIN
-        meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
       `;
     for await (const row of imodel.query(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const { classId, className, schemaName } = row;
-      classInfosMap.set(classId, { id: classId, name: className, schemaName });
+      classes.add(row.classId);
     }
 
     const baseClassHierarchy = new Map();
@@ -99,71 +87,37 @@ export class ECClassHierarchy {
         derivedClassHierarchy.set(baseClassId, [classId]);
     }
 
-    return new ECClassHierarchy(imodel, classInfosMap, baseClassHierarchy, derivedClassHierarchy);
+    return new ECClassHierarchyProvider(classes, baseClassHierarchy, derivedClassHierarchy);
   }
-  private getAllBaseClassInfos(classId: Id64String) {
+
+  private getAllBaseClassIds(classId: Id64String): Id64String[] {
     const baseClassIds = this._baseClasses.get(classId) ?? [];
-    return baseClassIds.reduce<ECClassInfo[]>((arr, id) => {
-      const info = this._classInfos.get(id);
-      if (info)
-        arr.push(info);
-      arr.push(...this.getAllBaseClassInfos(id));
-      return arr;
-    }, []);
-  }
-  private getAllBaseClassIds(classId: Id64String): ClassId[] {
-    const baseClassIds = this._baseClasses.get(classId) ?? [];
-    return baseClassIds.reduce<ClassId[]>((arr, id) => {
+    return baseClassIds.reduce<Id64String[]>((arr, id) => {
       arr.push(id,...this.getAllBaseClassIds(id));
       return arr;
     }, []);
   }
 
-  private getAllDerivedClassInfos(baseClassId: Id64String, onlyLeaf: boolean) {
-    const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
-    return derivedClassIds.reduce<ECClassInfo[]>((arr, id) => {
-      const thisInfo = this._classInfos.get(id)!;
-      const derivedInfo = this.getAllDerivedClassInfos(id, onlyLeaf);
-      if (onlyLeaf && derivedInfo.length === 0 || !onlyLeaf)
-        arr.push(thisInfo);
-      arr.push(...derivedInfo);
-      return arr;
-    }, []);
-  }
   private getAllDerivedClassIds(baseClassId: Id64String): ClassId[] {
     const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
-    return derivedClassIds.reduce<ClassId[]>((arr, id) => {
+    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
       arr.push(id, ...this.getAllDerivedClassIds(id));
       return arr;
     }, []);
   }
 
-  public getClassInfoById(id: Id64String): ECClassHierarchyInfo {
-    const info = this._classInfos.get(id)!;
-    return {
-      ...info,
-      baseClasses: this.getAllBaseClassInfos(id),
-      derivedClasses: this.getAllDerivedClassInfos(id, false),
-    };
-  }
-
-  public getSingleClassIdsSet(id: Id64String) {
-    let set = this._classSetCache.get(id);
+  public getClassHierarchy(id: Id64String) {
+    let set = this._classHierarchyCache.get(id);
     if (!set) {
-      set = new ECClassSet(id, new Set<Id64String>(this.getAllBaseClassIds(id)), new Set<Id64String>(this.getAllDerivedClassIds(id)));
-      this._classSetCache.set(id, set);
+      set = this._classes.has(id)
+        ? new ClassHierarchy(id, new Set<Id64String>(this.getAllBaseClassIds(id)), new Set<Id64String>(this.getAllDerivedClassIds(id)))
+        : /* istanbul ignore next */ new ClassHierarchy(id, new Set(), new Set());
+      this._classHierarchyCache.set(id, set);
     }
     return set;
   }
 
-  public getMultipleClassIdsSet(ids: Id64String[]) {
-    return new ECClassesSet(ids.map((id) => this.getSingleClassIdsSet(id)));
-  }
-
-  public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
-    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames }).toArray();
-    const { id } = result[0];
-    return this.getClassInfoById(id);
+  public getClassHierarchiesSet(ids: Id64String[]) {
+    return new ClassHierarchiesSet(ids.map((id) => this.getClassHierarchy(id)));
   }
 }

@@ -22,11 +22,10 @@ export function FilterBuilderPropertySelector(props: FilterBuilderPropertySelect
     value: property.name,
   })), [properties]);
 
-  // workaround for combobox using first captured 'onChange' callback
-  const onPropertyChangedRef = useCallbackRef((name: string) => {
+  const onPropertyChanged = React.useCallback((name: string) => {
     const newProperty = properties.find((property) => property.name === name);
     onSelectedPropertyChanged(newProperty);
-  });
+  }, [properties, onSelectedPropertyChanged]);
 
   React.useEffect(() => {
     const currentSelectedProperty = properties.find((property) => property.name === selectedProperty?.name);
@@ -36,16 +35,8 @@ export function FilterBuilderPropertySelector(props: FilterBuilderPropertySelect
 
   return <ComboBox
     options={selectOptions}
-    onChange={(name) => onPropertyChangedRef.current(name)}
+    onChange={onPropertyChanged}
     value={selectedProperty?.name}
     className="filter-property-select"
   />;
-}
-
-function useCallbackRef<T>(callback: (args: T) => void) {
-  const ref = React.useRef<(args: T) => void>(callback);
-  React.useEffect(() => {
-    ref.current = callback;
-  }, [callback]);
-  return ref;
 }

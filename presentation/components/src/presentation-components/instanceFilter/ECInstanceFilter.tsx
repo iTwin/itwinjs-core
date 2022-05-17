@@ -16,10 +16,10 @@ export interface ECInstanceFilterBuilderProps {
   classes: ClassInfo[];
   properties: PropertyDescription[];
   onFilterChanged: (filter?: Filter) => void;
-  onPropertySelected: (property: PropertyDescription) => void;
   onClassSelected: (selectedClass: ClassInfo) => void;
   onClassDeSelected: (selectedClass: ClassInfo) => void;
   onClearClasses: () => void;
+  onPropertySelected?: (property: PropertyDescription) => void;
 }
 
 export function ECInstanceFilterBuilder(props: ECInstanceFilterBuilderProps) {
@@ -49,15 +49,14 @@ export function ECInstanceFilterBuilder(props: ECInstanceFilterBuilderProps) {
       </Label>
       <MultiTagSelect
         id="class-combo-input"
-        isMulti={true}
         options={classes}
         value={selectedClasses}
         onChange={onSelectChange}
         getOptionLabel={(option) => option.label}
         getOptionValue={(option) => option.id}
         hideSelectedOptions={false}
-        isClearable={true}
         closeMenuOnSelect={false}
+        isClearable={true}
       />
     </div>
     <FilterBuilder properties={properties} onFilterChanged={onFilterChanged} onRulePropertySelected={onPropertySelected}/>

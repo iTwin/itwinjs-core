@@ -24,11 +24,6 @@ describe("FilterBuilder", () => {
     TestUtils.terminateUiComponents();
   });
 
-  it("render", () => {
-    const {container} = render(<FilterBuilder properties={[]} onFilterChanged={() => {}}/>);
-    expect(container).to.not.be.null;
-  });
-
   it("call onFilterChanged with empty filter if rule is not setup", () => {
     const spy = sinon.spy();
     render(<FilterBuilder properties={[]} onFilterChanged={spy} />);

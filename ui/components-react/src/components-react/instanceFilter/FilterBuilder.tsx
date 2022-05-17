@@ -52,9 +52,11 @@ export function FilterBuilder(props: FilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
   const [state, dispatch] = useFilterBuilderState();
 
+  const filter = React.useMemo(() => buildFilter(state.rootGroup), [state]);
+
   React.useEffect(() => {
-    onFilterChanged(buildFilter(state.rootGroup));
-  }, [state, onFilterChanged]);
+    onFilterChanged(filter);
+  }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<FilterBuilderContext>(() => ({dispatch, properties, onRulePropertySelected}), [dispatch, properties, onRulePropertySelected]);
   const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
@@ -102,10 +104,7 @@ function buildFilterFromRule(rule: FilterRule): Filter | undefined {
   if (!property || operator === undefined)
     return undefined;
 
-  if (filterRuleOperatorNeedsValue(operator) && !value)
-    return undefined;
-
-  if (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined)
+  if (filterRuleOperatorNeedsValue(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
     return undefined;
 
   return {property, operator, value};

@@ -31,6 +31,7 @@ export function MultiTagSelect<Option>(props: Props<Option, true, GroupBase<Opti
       DropdownIndicator: TagSelectDropdownIndicator,
       ClearIndicator: TagSelectClearIndicator,
     }}
+    isMulti={true}
   />;
 }
 
@@ -97,16 +98,16 @@ function TagRemove<Option>(props: MultiValueRemoveProps<Option, true, GroupBase<
 }
 
 function TagSelectDropdownIndicator<Option>({children: _, ...props}: DropdownIndicatorProps<Option, true, GroupBase<Option>>) {
-  return <components.DropdownIndicator {...props}>
-    <span className="iui-end-icon iui-actionable" style={{padding: 0}}>
+  return <components.DropdownIndicator {...props} >
+    <span data-testid="multi-tag-select-dropdownIndicator" className="iui-end-icon iui-actionable" style={{padding: 0}}>
       <SvgCaretDown />
     </span>
   </components.DropdownIndicator>;
 }
 
 function TagSelectClearIndicator<Option>({children: _, ...props}: ClearIndicatorProps<Option, true, GroupBase<Option>>) {
-  return <components.ClearIndicator {...props}>
-    <span className="iui-end-icon iui-actionable" style={{padding: 0}}>
+  return <components.ClearIndicator {...props} >
+    <span data-testid="multi-tag-select-clearIndicator" className="iui-end-icon iui-actionable" style={{padding: 0}}>
       <SvgCloseSmall aria-hidden/>
     </span>
   </components.ClearIndicator>;

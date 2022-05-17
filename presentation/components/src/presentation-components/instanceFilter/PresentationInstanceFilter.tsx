@@ -8,29 +8,43 @@ import { ECInstanceFilterBuilder } from "./ECInstanceFilter";
 import { IModelConnection } from "@itwin/core-frontend";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
 import { Filter } from "@itwin/components-react";
-import { ECClassesSet, ECClassHierarchy } from "./ECClassesHierarchy";
 import { PresentationInstanceFilter, PropertyInfo } from "./Types";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { Id64String } from "@itwin/core-bentley";
+import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 
 export interface PresentationInstanceFilterBuilderProps {
   imodel: IModelConnection;
   descriptor: Descriptor;
   onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
-  enableClassFilteringBySelectedProperties?: boolean;
+  enableClassFilteringByProperties?: boolean;
 }
 
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
-  const {imodel, descriptor, onInstanceFilterChanged, enableClassFilteringBySelectedProperties} = props;
+  const {imodel, descriptor, onInstanceFilterChanged, enableClassFilteringByProperties} = props;
+  const classHierarchyProvider = useECClassHierarchyProvider(imodel);
+  const filteringProps = usePresentationInstanceFilteringProps(descriptor, classHierarchyProvider, enableClassFilteringByProperties);
+
+  const onFilterChanged = React.useCallback((filter?: Filter) => {
+    const presentationFilter = filter ? createPresentationInstanceFilter(descriptor, filter) : undefined;
+    onInstanceFilterChanged(presentationFilter);
+  }, [descriptor, onInstanceFilterChanged]);
+
+  return <ECInstanceFilterBuilder
+    onFilterChanged={onFilterChanged}
+    {...filteringProps}
+  />;
+}
+
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean) {
   const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>([]);
-  const classHierarchy = useECClassHierarchy(imodel);
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
   const properties = React.useMemo(() => {
-    const matchingClassesSet = getClassesSet(selectedClasses.map((selectedClass) => selectedClass.id), classHierarchy);
+    const matchingClassesSet = getClassesSet(selectedClasses.map((selectedClass) => selectedClass.id), classHierarchyProvider);
     return propertyInfos
       .filter((info) => !matchingClassesSet || info.sourceClassIds.some((id) => matchingClassesSet.has(id, {isDerived: true, isBase: true})))
       .map((info) => info.propertyDescription);
-  }, [propertyInfos, selectedClasses, classHierarchy]);
+  }, [propertyInfos, selectedClasses, classHierarchyProvider]);
 
   const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
 
@@ -51,54 +65,49 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
     setSelectedClasses([...selectedClasses]);
   }, [selectedClasses]);
 
-  const onClearSelectedClasses = React.useCallback(() => {
+  const onClearClasses = React.useCallback(() => {
     setSelectedClasses([]);
   }, []);
 
   const onPropertySelected = React.useCallback((property: PropertyDescription) => {
-    if (!enableClassFilteringBySelectedProperties)
+    if (!enableClassFiltering)
       return;
     const propertyInfo = propertyInfos.find((info) => info.propertyDescription.name === property.name);
     if (!propertyInfo)
       return;
 
-    const selectedClassesByProperty = computeSelectedClassesByProperty(propertyInfo, classes, selectedClasses, classHierarchy);
+    const selectedClassesByProperty = computeSelectedClassesByProperty(propertyInfo, classes, selectedClasses, classHierarchyProvider);
     if (selectedClassesByProperty)
       setSelectedClasses(selectedClassesByProperty);
-  }, [classes, propertyInfos, selectedClasses, classHierarchy, enableClassFilteringBySelectedProperties]);
+  }, [classes, propertyInfos, selectedClasses, classHierarchyProvider, enableClassFiltering]);
 
-  const onFilterChanged = React.useCallback((filter?: Filter) => {
-    const presentationFilter = filter ? createPresentationInstanceFilter(descriptor, filter) : undefined;
-    onInstanceFilterChanged(presentationFilter);
-  }, [descriptor, onInstanceFilterChanged]);
-
-  return <ECInstanceFilterBuilder
-    selectedClasses={selectedClasses}
-    classes={classes}
-    properties={properties}
-    onFilterChanged={onFilterChanged}
-    onPropertySelected={onPropertySelected}
-    onClassSelected={onClassSelected}
-    onClassDeSelected={onClassDeSelected}
-    onClearClasses={onClearSelectedClasses}
-  />;
+  return {
+    onPropertySelected,
+    onClearClasses,
+    onClassDeSelected,
+    onClassSelected,
+    properties,
+    classes,
+    selectedClasses,
+  };
 }
 
-function getClassesSet(classIds: Id64String[], classHierarchy?: ECClassHierarchy): ECClassesSet | undefined {
-  if (!classHierarchy || classIds.length === 0)
+function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassHierarchyProvider): ClassHierarchiesSet | undefined {
+  if (!classHierarchyProvider || classIds.length === 0)
     return undefined;
 
-  return classHierarchy.getMultipleClassIdsSet(classIds);
+  return classHierarchyProvider.getClassHierarchiesSet(classIds);
 }
 
-function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableClasses: ClassInfo[], currentClasses: ClassInfo[], classHierarchy?: ECClassHierarchy) {
+function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableClasses: ClassInfo[], currentClasses: ClassInfo[], classHierarchyProvider?: ECClassHierarchyProvider) {
   // get set of classes that have property
-  const propertyClassesSet = getClassesSet(propertyInfo.sourceClassIds, classHierarchy);
+  const propertyClassesSet = getClassesSet(propertyInfo.sourceClassIds, classHierarchyProvider);
+  /* istanbul ignore if */
   if (!propertyClassesSet)
     return undefined;
 
   // get set of currently selected classes
-  const selectedClassesSet = getClassesSet(currentClasses.map((currentClass) => currentClass.id), classHierarchy);
+  const selectedClassesSet = getClassesSet(currentClasses.map((currentClass) => currentClass.id), classHierarchyProvider);
 
   // find class infos that has property (class info is or is derived from property class) and
   // are derived from selected classes
@@ -106,6 +115,7 @@ function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableC
     return propertyClassesSet.has(classInfo.id, {isDerived: true}) &&
      (!selectedClassesSet || selectedClassesSet.has(classInfo.id, {isDerived: true}));
   });
+  /* istanbul ignore if */
   if (propertyClassInfos.length === 0)
     return undefined;
 
@@ -126,17 +136,28 @@ function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableC
   return selectedClasses;
 }
 
-function useECClassHierarchy(imodel: IModelConnection) {
-  const [classHierarchy, setClassHierarchy] = React.useState<ECClassHierarchy | undefined>();
+function useECClassHierarchyProvider(imodel: IModelConnection) {
+  const [classHierarchyProvider, setClassHierarchyProvider] = React.useState<ECClassHierarchyProvider | undefined>();
   const currentImodel = React.useRef(imodel);
+  /* istanbul ignore if */
   if (currentImodel.current !== imodel)
     currentImodel.current = imodel;
+
+  const isMounted = React.useRef(true);
+  React.useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   React.useEffect(() => {
     void (async () => {
-      const hierarchy = await ECClassHierarchy.create(imodel);
-      if (currentImodel.current === imodel)
-        setClassHierarchy(hierarchy);
+      const hierarchyProvider = await ECClassHierarchyProvider.create(imodel);
+      // ignore setting hierarchy provider if imodel changed while initializing it
+      /* istanbul ignore else */
+      if (currentImodel.current === imodel && isMounted.current)
+        setClassHierarchyProvider(hierarchyProvider);
     })();
   }, [imodel]);
-  return classHierarchy;
+  return classHierarchyProvider;
 }

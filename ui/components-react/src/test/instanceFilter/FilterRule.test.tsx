@@ -12,6 +12,7 @@ import { FilterBuilderRuleValueProps } from "../../components-react/instanceFilt
 import { FilterRuleOperator } from "../../components-react/instanceFilter/Operators";
 import TestUtils from "../TestUtils";
 import { renderWithContext } from "./Common";
+import { FilterBuilderRuleOperatorProps } from "../../components-react/instanceFilter/FilterRuleOperator";
 
 describe("FilterRule", () => {
   const defaultProps: FilterBuilderRuleProps = {
@@ -30,12 +31,6 @@ describe("FilterRule", () => {
 
   after(() => {
     TestUtils.terminateUiComponents();
-  });
-
-  it("renders", () => {
-    const { container } = renderWithContext(<FilterBuilderRule {...defaultProps}/>);
-
-    expect(container).to.be.not.undefined;
   });
 
   describe("rule operator", () => {
@@ -148,6 +143,23 @@ describe("FilterRule", () => {
     expect(button).to.not.be.null;
     fireEvent.click(button!);
     expect(spy).to.be.calledOnceWith({type: "REMOVE_ITEM", path: defaultProps.path});
+  });
+
+  it("dispatches operator change when operator is changed", () => {
+    const dispatchSpy = sinon.spy();
+    const operatorRendererSpy = sinon.spy();
+    renderWithContext(<FilterBuilderRule
+      {...defaultProps}
+      rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
+    />, {dispatch: dispatchSpy}, {ruleOperatorRenderer: operatorRendererSpy});
+
+    dispatchSpy.resetHistory();
+    expect(operatorRendererSpy).to.be.calledOnce;
+    const operatorRendererProps = operatorRendererSpy.firstCall.args[0] as FilterBuilderRuleOperatorProps;
+    const newOperator = FilterRuleOperator.IsNotNull;
+    operatorRendererProps.onChange(newOperator);
+
+    expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_OPERATOR", path: defaultProps.path, operator: newOperator});
   });
 
   it("dispatches value change when value is changed", () => {

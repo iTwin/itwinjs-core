@@ -10,8 +10,8 @@ import { findField } from "../common/Utils";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PropertyInfo } from "./Types";
 
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[] {
-  const rootCategory = findRootCategory(descriptor.categories);
-  return createPropertyInfos(descriptor, {categoryName: rootCategory?.name});
+  const rootCategoryName = findRootCategoryName(descriptor.categories);
+  return createPropertyInfos(descriptor, {categoryName: rootCategoryName});
 }
 
 export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter) {
@@ -26,9 +26,6 @@ function getInstanceFilterFieldName(property: PropertyDescription) {
 }
 
 function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: FilterConditionGroup): PresentationInstanceFilter | undefined {
-  if (group.conditions.length === 0)
-    return undefined;
-
   const conditions = new Array<PresentationInstanceFilter>();
   for (const condition of group.conditions) {
     const newCondition = createPresentationInstanceFilter(descriptor, condition);
@@ -36,6 +33,9 @@ function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, 
       return undefined;
     conditions.push(newCondition);
   }
+
+  if (conditions.length === 0)
+    return undefined;
 
   if (conditions.length === 1)
     return conditions[0];
@@ -57,12 +57,9 @@ function createPresentationInstanceFilterCondition(descriptor: Descriptor, condi
   };
 }
 
-function findRootCategory(categories: CategoryDescription[]) {
-  for (const category of categories) {
-    if (category.parent === undefined)
-      return category;
-  }
-  return undefined;
+function findRootCategoryName(categories: CategoryDescription[]) {
+  /* istanbul ignore next */
+  return categories.find((category) => category.parent === undefined)?.name;
 }
 
 interface ParentInfo {
@@ -75,13 +72,13 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): Pr
   const fields = new Array<PropertyInfo>();
 
   for (const category of descriptor.categories) {
-    if (category?.parent?.name !== parentInfo.categoryName)
+    if (category.parent?.name !== parentInfo.categoryName)
       continue;
 
     fields.push(...createPropertyInfos(descriptor, {
       categoryName: category.name,
-      name: getPrefixedString(`${category.name}/`, parentInfo?.name),
-      label: getPrefixedLabel(`[${category.label}]`, parentInfo?.label),
+      name: getPrefixedString(`${category.name}/`, parentInfo.name),
+      label: getPrefixedLabel(`[${category.label}]`, parentInfo.label),
     }));
   }
 
@@ -99,7 +96,7 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
     return field.nestedFields.flatMap((nestedField) => createPropertyInfosFromContentField(nestedField, parentInfo, sourceClassIds, childPrefix));
   }
 
-  if (field.category.name !== parentInfo?.categoryName || !field.isPropertiesField())
+  if (field.category.name !== parentInfo.categoryName || !field.isPropertiesField())
     return [];
 
   if (field.type.typeName.toLowerCase() === "navigation")
