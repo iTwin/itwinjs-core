@@ -64,18 +64,20 @@ function generateDeclarationCode(exportList) {
 
   // Make real and type exports for each package
   for (const packageName in exportList) {
-    const realExports = "export {\n\t";
-    const typeExports = "export type {\n\t";
+    const realExports = "export {";
+    const typeExports = "export type {";
     const exportTrailer = `\n} from "${packageName}";\n\n`;
 
-    const reals = [...exportList[packageName].enum, ...exportList[packageName].real]
+    let reals = [...exportList[packageName].enum, ...exportList[packageName].real]
       .sort()
       .join(",\n\t");
 
-    const types = [...exportList[packageName].interface, ...exportList[packageName].type]
+    let types = [...exportList[packageName].interface, ...exportList[packageName].type]
       .sort()
       .join(",\n\t");
 
+    reals = reals ? `\n\t${reals}` : '';
+    types = types ? `\n\t${types}` : "";
     exportCode += realExports + reals + exportTrailer + typeExports + types + exportTrailer;
   };
 
