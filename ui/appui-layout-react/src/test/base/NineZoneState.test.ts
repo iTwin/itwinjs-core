@@ -524,12 +524,12 @@ describe("NineZoneStateReducer", () => {
           floatingWidgetId: "fw1",
           target: {
             type: "panel",
-            newWidgetId: "newId",
+            newWidgetId: "leftStart",
             side: "left",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
-        newState.panels.left.widgets[0].should.eq("newId");
+        newState.panels.left.widgets[0].should.eq("leftStart");
       });
     });
   });
