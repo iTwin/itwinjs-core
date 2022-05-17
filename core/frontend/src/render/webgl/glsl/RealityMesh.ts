@@ -17,6 +17,7 @@ import { System } from "../System";
 import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
+import { addAtmosphericScattering } from "./AthmosphericScattering";
 import { addVaryingColor } from "./Color";
 import { addEyeSpace, addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
@@ -334,6 +335,8 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   if (flags.isWiremesh)
     addWiremesh(builder);
+
+  addAtmosphericScattering(builder);
 
   return builder;
 }
