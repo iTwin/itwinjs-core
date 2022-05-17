@@ -80,7 +80,7 @@ export class ExtensionAdmin {
       if (manifest.activationEvents.includes("onStartup"))
         provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
-      throw new Error(`Failed to get manifest from extension: ${e}`);
+      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${(e as any).message}`);
     }
   }
 
@@ -96,13 +96,31 @@ export class ExtensionAdmin {
   }
 
   /**
-   * Register a url (hostname) for extension hosting (i.e. https://localhost:3000, https://www.yourdomain.com, etc.)
-   * @param hostUrl
+   * Registers a hostname for an extension.
+   * Once a hostname has been registered, only remote extensions from registered hosts are permitted to be added.
+   * @param hostUrl (string) Accepts both URLs and hostnames (e.g., http://localhost:3000, yourdomain.com, https://www.yourdomain.com, etc.).
    */
   public registerHost(hostUrl: string) {
-    const url = new URL(hostUrl).hostname.replace("www", "");
-    if (this._hosts.indexOf(url) < 0) {
-      this._hosts.push(url);
+    const hostname = this.getHostName(hostUrl);
+    if (this._hosts.indexOf(hostname) < 0) {
+      this._hosts.push(hostname);
+    }
+  }
+
+  /** Returns the hostname of an input string. Throws an error if input is not a valid hostname (or URL). */
+  private getHostName(inputUrl: string): string {
+    // inputs without a protocol (e.g., http://) will throw an error in URL constructor
+    const inputWithProtocol = /(ftp|http|https):\/\//.test(inputUrl) ?
+      inputUrl :
+      `https://${inputUrl}`;
+    try {
+      const hostname = new URL(inputWithProtocol).hostname.replace("www.", "");
+      return hostname;
+    } catch (e) {
+      if (e instanceof TypeError) {
+        throw new Error("Argument hostUrl should be a valid URL or hostname (i.e. http://localhost:3000, yourdomain.com, etc.).");
+      }
+      throw e;
     }
   }
 
