@@ -1,0 +1,39 @@
+trigger: none
+pr: none
+
+parameters:
+  - name: repoName
+    type: string
+
+  - name: fromSHA
+    type: string
+  
+  - name: toSHA
+    type: string
+
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+  # 1. Checkout the repository
+  - checkout: self
+    persistCredentials: true
+    displayName: Checkout repo
+
+  # 2. Enable the pipeline to run Git commands
+  - bash: |
+      git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+      git config --local user.name imodeljs-admin
+    displayName: Git setup
+
+  # 3. fetch the repository
+  - bash: |
+      echo ${{ parameters.repoName }}
+      git fetch ${{ parameters.repoName }}
+    displayName: Fetch
+  
+  # 4. output the difference
+  - bash: |
+      echo "difference between ${{ parameters.oldSHA }} and ${{ parameters.newSHA }}"
+      git diff ${{ parameters.oldSHA }} ${{ parameters.newSHA }} 
+    displayName: Difference
