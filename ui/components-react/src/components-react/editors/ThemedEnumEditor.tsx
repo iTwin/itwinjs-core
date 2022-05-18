@@ -14,7 +14,7 @@ import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardEditorNa
 import { OptionType, ThemedSelect } from "@itwin/core-react";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { ActionMeta, PropsValue } from "react-select";
+import { ActionMeta, ValueType } from "react-select/src/types";
 
 /** Properties for [[EnumEditor]] component
  * @beta @deprecated
@@ -78,7 +78,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     return containsFocus;
   }
 
-  private _updateSelectValue = (value: PropsValue<OptionType>, action: ActionMeta<OptionType>) => {
+  private _updateSelectValue = (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
     // istanbul ignore else
     if (this._isMounted && action.action === "select-option" && value) {
       let selectValue: string | number;

@@ -10,7 +10,11 @@
 import "./themed-select.scss";
 import classnames from "classnames";
 import * as React from "react";
-import Select, { ActionMeta, components, GetOptionLabel, GetOptionValue, GroupBase, InputActionMeta, MenuProps, PropsValue, SelectComponentsConfig } from "react-select";
+import Component, { components } from "react-select";
+import { formatGroupLabel, getOptionLabel, getOptionValue } from "react-select/src/builtins";
+import { SelectComponentsConfig } from "react-select/src/components/index";
+import { MenuProps } from "react-select/src/components/Menu";
+import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types";
 import { UiCore } from "../UiCore";
 import { getCssVariableAsNumber } from "../utils/getCssVariable";
 import { getParentSelector } from "./modalHelper";
@@ -22,7 +26,7 @@ type FormatOptionLabelContext = "menu" | "value";
 type FormatOptionLabelMeta = {
   context: FormatOptionLabelContext;
   inputValue: string;
-  selectValue: PropsValue<OptionType>;
+  selectValue: ValueType<OptionType>;
 };
 
 /** OptionType for react-select 2.0 and above. which only accepts pairs of value & label strings
@@ -82,13 +86,13 @@ export type ThemedSelectProps = {
     instead. For a list of the components that can be passed in, and the shape
     that will be passed to them, see [the components docs](/components)
   */
-  components?: SelectComponentsConfig<OptionType, false, GroupBase<OptionType>>;
+  components?: SelectComponentsConfig<OptionType>;
   /* Whether the value of the select, e.g. SingleValue, should be displayed in the control. */
   controlShouldRenderValue?: boolean;
   /* Ff true, the menu is open immediately */
   defaultMenuIsOpen?: boolean;
   /* Value set in the control by default */
-  defaultValue?: PropsValue<OptionType>;
+  defaultValue?: ValueType<OptionType>;
   /** Provides ability to return reference to the outer HTMLDivElement */
   divRef?: React.Ref<HTMLDivElement>;
   /* Clear all values when the user presses escape AND the menu is closed */
@@ -103,13 +107,13 @@ export type ThemedSelectProps = {
 
   An example can be found in the [Replacing builtins](/advanced#replacing-builtins) documentation.
 */
-  formatGroupLabel?: (group: GroupBase<OptionType>) => string;
+  formatGroupLabel?: typeof formatGroupLabel;
   /* Formats option labels in the menu and control as React components */
   formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode;
   /* Resolves option data to a string to be displayed as the label by components */
-  getOptionLabel?: GetOptionLabel<OptionType>;
+  getOptionLabel?: typeof getOptionLabel;
   /* Resolves option data to a string to compare options and specify value attributes */
-  getOptionValue?: GetOptionValue<OptionType>;
+  getOptionValue?: typeof getOptionValue;
   /* Hide the selected option from the menu */
   hideSelectedOptions?: boolean;
   /* The id to set on the SelectContainer component. */
@@ -155,15 +159,15 @@ export type ThemedSelectProps = {
   /* Text to display when there are no options */
   noOptionsMessage?: (obj: { inputValue: string }) => string | null;
   /* Handle blur events on the control */
-  onBlur?: React.FocusEventHandler;
+  onBlur?: FocusEventHandler;
   /* Handle change events on the select */
-  onChange?: (value: PropsValue<OptionType>, action: ActionMeta<OptionType>) => void;
+  onChange?: (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => void;
   /* Handle focus events on the control */
-  onFocus?: React.FocusEventHandler;
+  onFocus?: FocusEventHandler;
   /* Handle change events on the input */
   onInputChange?: (newValue: string, actionMeta?: InputActionMeta) => void;
   /* Handle key down events on the select */
-  onKeyDown?: React.KeyboardEventHandler;
+  onKeyDown?: KeyboardEventHandler;
   /* Handle the menu opening */
   onMenuOpen?: () => void;
   /* Handle the menu closing */
@@ -183,7 +187,7 @@ export type ThemedSelectProps = {
   /* Placeholder for the select value */
   placeholder?: string;
   /** Provides ability to return reference to the ThemedSelect */
-  ref?: React.Ref<Select>;
+  ref?: React.Ref<Component>;
   /* Sets additional styling */
   styles?: React.CSSProperties;
   /* Sets the tabIndex attribute on the input */
@@ -191,7 +195,7 @@ export type ThemedSelectProps = {
   /* Select the currently focused option when the user presses tab */
   tabSelectsValue?: boolean;
   /* The value of the select; reflected by the selected option */
-  value?: PropsValue<OptionType>;
+  value?: ValueType<OptionType>;
 };
 
 const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescript-eslint/naming-convention
@@ -231,7 +235,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
   const zIndex = getCssVariableAsNumber("--uicore-z-index-dialog-popup");
   return (
     <div className={selectClassName} ref={divRef}>
-      <Select
+      <Component
         ref={ref}
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}

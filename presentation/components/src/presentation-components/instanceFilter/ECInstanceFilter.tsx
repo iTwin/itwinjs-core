@@ -34,7 +34,7 @@ export function ECInstanceFilterBuilder(props: ECInstanceFilterBuilderProps) {
         action.option && onClassDeSelected(action.option);
         break;
       case "remove-value":
-        onClassDeSelected(action.removedValue);
+        action.removedValue && onClassDeSelected(action.removedValue);
         break;
       case "clear":
         onClearClasses();
