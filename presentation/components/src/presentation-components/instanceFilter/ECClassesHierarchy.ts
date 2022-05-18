@@ -54,7 +54,7 @@ export class ECClassHierarchyProvider {
     const classes = new Set<Id64String>();
     const classesQuery =
       `SELECT
-        c.ECInstanceId AS ClassId,
+        c.ECInstanceId AS ClassId
       FROM
         meta.ECClassDef c
       `;
