@@ -7,7 +7,7 @@ trigger:
 
 jobs:
   - job:
-    timeoutInMinutes: 360
+    timeoutInMinutes: 720
     pool:
       vmImage: ubuntu-latest
     variables:
