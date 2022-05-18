@@ -47,7 +47,7 @@ export class GrowableBlockedArray {
    * @param sourceCount copy the first sourceCount blocks; all blocks if undefined
    * @param destOffset copy to instance array starting at this block index; zero if undefined
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
+  protected copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
     // validate inputs and convert from blocks to entries
     let offset = (undefined !== destOffset) ? destOffset * this.numPerBlock : 0;
     if (offset < 0)
@@ -65,10 +65,8 @@ export class GrowableBlockedArray {
       return;
     if (count === source.length)
       this._data.set(source, offset);
-    else if (source instanceof Float64Array)
-      this._data.set(source.subarray(0, count), offset);
     else
-      this._data.set(source.slice(0, count), offset);
+      this._data.set(source.subarray(0, count), offset);
   }
 
   /** computed property: length (in blocks, not doubles) */
@@ -94,12 +92,10 @@ export class GrowableBlockedArray {
     if (blockCapacity > this.blockCapacity()) {
       if (applyGrowthFactor)
         blockCapacity *= this._growthFactor;
-      const newData = new Float64Array(blockCapacity * this._blockSize);    // START HERE
-      for (let i = 0; i < this._data.length; i++) {
-        newData[i] = this._data[i];
+      const prevData = this._data;
+      this._data = new Float64Array(blockCapacity * this._blockSize);
+      this.copyData(prevData, this._inUse);
       }
-      this._data = newData;
-    }
   }
   /** Add a new block of data.
    * * If newData has fewer than numPerBlock entries, the remaining part of the new block is zeros.
@@ -123,7 +119,7 @@ export class GrowableBlockedArray {
   protected newBlockIndex(): number {
     const index = this._blockSize * this._inUse;
     if ((index + 1) > this._data.length)
-      this.ensureBlockCapacity(1 + 2 * this._inUse);
+      this.ensureBlockCapacity(1 + this._inUse);
     this._inUse++;
     for (let i = index; i < index + this._blockSize; i++)
       this._data[i] = 0.0;
