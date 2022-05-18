@@ -9,7 +9,6 @@
 import { Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
 
 export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringProps> = {
-  sunDirection: {x: 0.0, y: -1.0, z: 0.0},
   earthCenter: {x: 0.0, y: 0.0, z: -6_190_000.0},
   atmosphereRadius: 6_290_100.0,
   earthRadius: 6_190_000.0,
@@ -25,7 +24,6 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
  * @public
  */
 export interface AtmosphericScatteringProps {
-  sunDirection?: XYZProps;
   earthCenter?: XYZProps;
   atmosphereRadius?: number;
   earthRadius?: number;
@@ -41,7 +39,6 @@ export interface AtmosphericScatteringProps {
  * @public
  */
 export class AtmosphericScattering {
-  public readonly sunDirection: Vector3d;
   public readonly earthCenter: Point3d;
   public readonly atmosphereRadius: number;
   public readonly earthRadius: number;
@@ -53,8 +50,6 @@ export class AtmosphericScattering {
   public readonly isPlanar: boolean;
 
   public equals(other: AtmosphericScattering): boolean {
-    if (this.sunDirection !== other.sunDirection)
-      return false;
     if (this.earthCenter !== other.earthCenter)
       return false;
     if (this.atmosphereRadius !== other.atmosphereRadius)
@@ -78,7 +73,6 @@ export class AtmosphericScattering {
 
   private constructor(json?: AtmosphericScatteringProps) {
     if (json === undefined) {
-      this.sunDirection = Vector3d.fromJSON(defaultAtmosphericScatteringProps.sunDirection);
       this.earthCenter = Point3d.fromJSON(defaultAtmosphericScatteringProps.earthCenter);
       this.atmosphereRadius = defaultAtmosphericScatteringProps.atmosphereRadius;
       this.earthRadius = defaultAtmosphericScatteringProps.earthRadius;
@@ -90,7 +84,6 @@ export class AtmosphericScattering {
       this.isPlanar = defaultAtmosphericScatteringProps.isPlanar;
 
     } else {
-      this.sunDirection = json.sunDirection === undefined ? Vector3d.fromJSON(defaultAtmosphericScatteringProps.sunDirection) : Vector3d.fromJSON(json.sunDirection);
       this.earthCenter = json.earthCenter === undefined ? Point3d.fromJSON(defaultAtmosphericScatteringProps.earthCenter) : Point3d.fromJSON(json.earthCenter);
       this.atmosphereRadius = json.atmosphereRadius === undefined ? defaultAtmosphericScatteringProps.atmosphereRadius : json.atmosphereRadius;
       this.earthRadius = json.earthRadius === undefined ? defaultAtmosphericScatteringProps.earthRadius : json.earthRadius;
@@ -109,7 +102,6 @@ export class AtmosphericScattering {
 
   public toJSON(): AtmosphericScatteringProps {
     const json: AtmosphericScatteringProps = {
-      sunDirection: this.sunDirection.toJSON(),
       earthCenter: this.earthCenter.toJSON(),
       atmosphereRadius: this.atmosphereRadius,
       earthRadius: this.earthRadius,
