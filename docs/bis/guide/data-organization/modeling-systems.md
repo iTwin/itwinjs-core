@@ -2,9 +2,17 @@
 
 Physical infrastructure exists to implement one-or-more functions. A campus functions to provide learning to people. A building shelters people for work and play. A lock assembly helps provide security for a space. A landscape system may primarily function to provide pleasing aesthetics. Some functions are modeled explicitly (see [Functional Models and Elements](../other-perspectives/functional-models-and-elements.md)), but even if they are not modeled, the real-world functions are the reason that the physical infrastructure exists.
 
-A “physical system” is a physical Entity (or a set of physical Entities) that implements a function. In this topic, *“System”* refers to a `PhysicalElement` that models a physical Entity that implements a function. *Systems* do not necessarily have “system” in their name, e.g. by this definition a “Facility” is a *System* implementing a high-level function and an “Assembly” is a *System* implementing a smaller function.
+> A “physical system” is a set of physical objects that collectively implement a function.
 
-For a *System* that is sub-modeled, the sub-Model should only contain `PhysicalElement`s that are part of that *System* and that are “owned” by the party responsible for the *System*, satisfying the [SRPP](./srpp.md). A *System* may be split into multiple `Model`s for responsibility or other reasons. `PhysicalElement`s that are part of more than one *System* reside in the `Model` of the *System* that “owns” them and can be “included” in other *Systems* using the `PhysicalSystemGroupsMembers` relationship—allowing a single `PhysicalElement` to be shared by multiple *Systems*.
+The objects may or may not be physically connected. A given object may play a role in multiple systems, such as a pump that has a role in a plumbing system, and electrical system, a safety system, a noise abatement system, etc.  Because this notion of a system is not inherent in physical objects or their organization, but is defined by a modeler's perception of the purposes for the arrangement of the physical objects, BIS models physical systems as "information elements" that logically group `PhysicalElement`s according to their functional purpose.
+
+The `PhysicalSystem` Element is thus not a subclass of `bis:PhysicalElement`, but subclasses `bis:GroupInformationElement`. You can think of it as "information about the physical system" rather than directly modeling the physical objects of the physical system themselves. `PhysicalSystem` thus supports a secondary organization of `PhysicalElements` similar to that of [SpatialComposition](spatial-composition.md).
+
+The `bis:PhysicalSystemGroupsMembers` relationship is used to indicate which elements are part of a given system. It allows a single `PhysicalElement` to be part of multiple `PhysicalSystems`.
+
+We anticipate that it will be common for Models to be organized along natural systems boundaries. If the `PhysicalSystemGroupsMembers` relationship points to a sub-modeled Element, the Elements of its sub-Model are all considered part of the system.
+
+> The BIS Working Group is considering ways for a `PhysicalSystem` to indicate that a `PhysicalPartition` (and all of the Elements in its sub-Model) are part of a physical system.
 
 ## Systems tend to align with responsibilities
 
