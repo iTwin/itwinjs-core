@@ -5,9 +5,9 @@
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElement3dProps, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement3d, Placement3dProps, QueryBinder, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Point2d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
 import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
