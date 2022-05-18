@@ -10,14 +10,19 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 There are several mechanisms available in BIS that domain authors can take advantage of in order to organize elements into hierarchies:
 
+* The Subject hierarchy organizes Models.
 * A Model can contain Elements.
-* An Element can be *sub-modeled* by (broken down into more detail by) a *Sub-Model*.
+* An Element can be sub-modeled by a Model.
 * An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of the spatial decomposition of a *Facility*, in light of a specific discipline.
-* A *Physical System* can group a member Element.
+* A *Spatial Organizer* can hold an Element as part of the spatial structure of a *Facility*, in light of a specific discipline.
+* A *Physical System* can group member Elements.
 * The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
+
+### The Subject Hierarchy Organizes Models
+
+The RepositoryModel contains a hierarchy of `Subject` Elements organized into a parent-child hierarchy. All Models (other than the RepositoryModel itself) are organized under these `Subject`s (via InformationPartition)
 
 ### Model Contains Elements
 
