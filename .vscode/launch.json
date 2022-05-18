@@ -777,8 +777,11 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "@r:/createCloud.txt",
-        "--config=r:/cloud.json"
+        "listDb",
+        "allEarth",
+        "--prefetch",
+        "--logging",
+        "--config=s:/realAzure.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",

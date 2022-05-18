@@ -195,7 +195,7 @@ export interface WorkspaceDb {
    * Until the promise is resolved, the `WorkspaceDb` is not fully downloaded, but it *may* be safely accessed during the download.
    * To determine the progress of the download, use the `localBlocks` and `totalBlocks` values returned by `CloudContainer.queryDatabase`.
    */
-  prefetch(): Promise<void>;
+  prefetch(): void;
 }
 
 /** The properties of the CloudCache used for Workspaces. */
@@ -275,7 +275,7 @@ export interface Workspace {
   loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
 
   /** Close this Workspace. All WorkspaceContainers are dropped. */
-  close(): void;
+  close(): Promise<void>;
 }
 
 /**
@@ -304,7 +304,7 @@ export interface WorkspaceContainer {
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
-  close(): void;
+  close(): Promise<void>;
 }
 
 /** @internal */
@@ -380,10 +380,10 @@ export class ITwinWorkspace implements Workspace {
     this.settings.addJson(`${db.container.id}/${db.dbName}/${settingRsc}`, priority, setting);
   }
 
-  public close() {
+  public async close(): Promise<void> {
     this.settings.close();
     for (const [_id, container] of this._containers)
-      container.close();
+      await container.close();
     this._containers.clear();
     this._cloudCache?.destroy();
     this._cloudCache = undefined;
@@ -586,18 +586,18 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return db;
   }
 
-  public dropWorkspaceDb(toDrop: WorkspaceDb): void {
+  public async dropWorkspaceDb(toDrop: WorkspaceDb) {
     const name = toDrop.dbName;
     const wsDb = this._wsDbs.get(name);
     if (wsDb === toDrop) {
-      wsDb.close();
+      await wsDb.close();
       this._wsDbs.delete(name);
     }
   }
 
-  public close() {
+  public async close() {
     for (const [_name, db] of this._wsDbs)
-      db.close();
+      await db.close();
     this._wsDbs.clear();
     this.cloudContainer?.disconnect();
   }
@@ -626,6 +626,8 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   /** either a local file name or the name of the file in a cloud container, including version identifier */
   public dbFileName: string;
 
+  public prefetchOp?: IModelJsNative.CloudPrefetch;
+
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
   public queryFileResource(rscName: WorkspaceResource.Name) {
@@ -652,8 +654,13 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
-  public close(): void {
+  public async close() {
     if (this.isOpen) {
+      if (this.prefetchOp) {
+        this.prefetchOp.cancel();
+        await this.prefetchOp.promise;
+        this.prefetchOp = undefined;
+      }
       this.onClose.raiseEvent();
       this.sqliteDb.closeDb();
       this.container.dropWorkspaceDb(this);
@@ -712,10 +719,10 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public async prefetch(): Promise<void> {
+  public prefetch(opts?: { nRequests: number }) {
     const cloudContainer = this.container.cloudContainer;
     if (cloudContainer !== undefined)
-      return CloudSqlite.prefetch(cloudContainer, this.dbName);
+      this.prefetchOp = new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 }
 

@@ -189,7 +189,8 @@ export class V2CheckpointManager {
       if (!container.isConnected)
         container.connect(this.cloudCache);
       if (process.env.PREFETCHBEFOREOPEN)
-        void CloudSqlite.prefetch(container, v2props.dbName); // don't await this Promise!
+        new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
+
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Cloud cache connect failed: ${e.message}`;

@@ -479,7 +479,7 @@ export class IModelHost {
     IModelHost.configuration = undefined;
     IModelHost.tileCacheService = undefined;
     IModelHost.tileUploader = undefined;
-    IModelHost.appWorkspace.close();
+    await IModelHost.appWorkspace.close();
     IModelHost._appWorkspace = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }

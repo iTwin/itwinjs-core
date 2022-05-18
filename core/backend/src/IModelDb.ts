@@ -2332,6 +2332,7 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
+  private _prefetch?: IModelJsNative.CloudPrefetch;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
@@ -2449,7 +2450,7 @@ export class SnapshotDb extends IModelDb {
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
     if (process.env.PREFETCHAFTEROPEN)
-      void CloudSqlite.prefetch(container, dbName);
+      snapshot._prefetch = new IModelJsNative.CloudPrefetch(container, dbName);
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {

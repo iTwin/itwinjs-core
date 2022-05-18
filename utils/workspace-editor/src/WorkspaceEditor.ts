@@ -14,7 +14,7 @@ import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
   SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { BeDuration, BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -203,15 +203,15 @@ async function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWo
 
 /** List the contents of a WorkspaceDb */
 async function listWorkspaceDb(args: ListOptions) {
-  let prefetch: Promise<void>;
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
 
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      prefetch = CloudSqlite.prefetch(cloudContainer, file.dbFileName);
+      file.prefetch({ nRequests: 3 });
     }
+
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
 
@@ -250,8 +250,15 @@ async function listWorkspaceDb(args: ListOptions) {
     }
 
     showMessage(`time = ${timer.elapsedSeconds.toString()}`);
-    if (prefetch !== undefined) {
-      await prefetch;
+    await BeDuration.fromSeconds(5).wait();
+    showMessage(`done wait`);
+    file.sqliteDb.withSqliteStatement("SELECT id,value FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        nameAndSize(stmt, stmt.getColumnBytes(1));
+    });
+
+    if (args.prefetch && cloudContainer) {
+      await file.prefetchOp?.promise;
       showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}`);
     }
   });
@@ -469,20 +476,13 @@ async function versionWorkspaceDb(args: MakeVersionOpt) {
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
-async function pinWorkspaceDb(args: WorkspaceDbOpt) {
+async function preFetchWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = getCloudContainer(args);
-  const timer = new StopWatch("pinDb", true);
-  await container.pinDatabase(args.dbFileName, true);
-  showMessage(`pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
-}
-
-/** pin a WorkspaceDb from a WorkspaceContainer. */
-async function unPinWorkspaceDb(args: WorkspaceDbOpt) {
-  fixVersionArg(args);
-  const container = getCloudContainer(args);
-  await container.pinDatabase(args.dbFileName, false);
-  showMessage(`un-pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
+  const timer = new StopWatch("prefetch", true);
+  const prefetch = new IModelHost.platform.CloudPrefetch(container, args.dbFileName);
+  await prefetch.promise;
+  showMessage(`preFetched WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
 }
 
 /** acquire the write lock for a WorkspaceContainer. */
@@ -525,9 +525,8 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
     const db = container.queryDatabase(dbName);
     if (db) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
-      const pinned = db.pinned !== 0 ? ", pinned" : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      showMessage(` "${dbName}", size=${db.totalBlocks * 4}M, ${db.localBlocks * 4}M downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}${pinned}`);
+      showMessage(` "${dbName}", size=${db.totalBlocks * 4}M, ${db.localBlocks * 4}M downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}`);
     }
   }
 }
@@ -566,6 +565,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         flushLog();
         clearInterval(logTimer);
       }
+      await IModelHost.shutdown();
     }
   };
 }
@@ -652,14 +652,9 @@ Yargs.command<MakeVersionOpt>({
   handler: runCommand(versionWorkspaceDb),
 });
 Yargs.command<WorkspaceDbOpt>({
-  command: "pinDb <dbName>",
-  describe: false, // "pin a WorkspaceDb from a cloud container",
-  handler: runCommand(pinWorkspaceDb),
-});
-Yargs.command<WorkspaceDbOpt>({
-  command: "unpinDb <dbName>",
-  describe: false, // "un-pin a WorkspaceDb from a cloud container",
-  handler: runCommand(unPinWorkspaceDb),
+  command: "prefetchDb <dbName>",
+  describe: false, // "prefetch a WorkspaceDb from a cloud container",
+  handler: runCommand(preFetchWorkspaceDb),
 });
 Yargs.command<WorkspaceDbOpt>({
   command: "vacuumDb <dbName>",

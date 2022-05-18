@@ -133,7 +133,6 @@ describe("CloudSqlite", () => {
     assert(dbProps !== undefined);
     expect(dbProps.dirtyBlocks).equals(0);
     expect(dbProps.localBlocks).equals(0);
-    expect(dbProps.pinned).equals(0);
     expect(dbProps.transactions).equals(false);
 
     // open a cloud database for read
@@ -223,24 +222,6 @@ describe("CloudSqlite", () => {
     expect(dbProps.dirtyBlocks).equals(0);
     expect(dbProps.localBlocks).equals(0);
     expect(dbProps.totalBlocks).greaterThan(0);
-    expect(dbProps.pinned).equals(0);
-
-    expect(cont2.queryDatabase("badName")).undefined;
-    await expect(cont2.pinDatabase("badName", true)).eventually.rejectedWith("no such database").property("errorNumber", DbResult.BE_SQLITE_ERROR);
-
-    // now pin it and make sure all its blocks are pinned and local
-    await cont2.pinDatabase("testBim", true);
-    dbProps = cont2.queryDatabase("testBim");
-    assert(dbProps !== undefined);
-    expect(dbProps.pinned).equals(dbProps.totalBlocks);
-    expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
-
-    // unpin it and make sure all its blocks are local but not pinned
-    await cont2.pinDatabase("testBim", false);
-    dbProps = cont2.queryDatabase("testBim");
-    assert(dbProps !== undefined);
-    expect(dbProps.pinned).equals(0);
-    expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
 
     // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock(user, contain1, async () => {

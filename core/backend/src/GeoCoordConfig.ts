@@ -8,7 +8,6 @@
 
 // cspell:ignore customuri
 
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
@@ -49,7 +48,8 @@ export class GeoCoordConfig {
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
-        void CloudSqlite.prefetch(cloudContainer, gcsDbName); // don't await this promise
+        new IModelHost.platform.CloudPrefetch(cloudContainer, gcsDbName);
+
     } catch (e: unknown) {
       Logger.logError(loggerCat, `${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
     }
