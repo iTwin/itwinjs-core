@@ -1459,7 +1459,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Read element data from the iModel as JSON
-     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
