@@ -2370,6 +2370,7 @@ export interface RelatedPropertiesSpecification {
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
+    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     // @beta
     skipIfDuplicate?: boolean;
 }

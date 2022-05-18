@@ -99,4 +99,9 @@ export interface RelatedPropertiesSpecification {
    * List of names or definitions of related class properties that should be included in the content.
    */
   properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+
+  /**
+   * List of names or definitions of relationship class properties that should be included in the content.
+   */
+  relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
 }

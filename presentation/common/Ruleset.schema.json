@@ -2137,6 +2137,31 @@
           ],
           "type": "string"
         },
+        "relationshipProperties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "*",
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names or definitions of relationship class properties that should be included in the content."
+        },
         "skipIfDuplicate": {
           "description": "Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.",
           "type": "boolean"
