@@ -2,27 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { FilterRuleGroupOperator, FilterRuleOperator } from "./Operators";
 
 /** @alpha */
-export type Filter = FilterCondition | FilterConditionGroup;
+export type Filter = FilterRule | FilterRuleGroup;
 
 /** @alpha */
-export interface FilterConditionGroup {
+export interface FilterRuleGroup {
   operator: FilterRuleGroupOperator;
-  conditions: Array<FilterConditionGroup | FilterCondition>;
+  rules: Array<Filter>;
 }
 
 /** @alpha */
-export interface FilterCondition {
+export interface FilterRule {
   property: PropertyDescription;
   operator: FilterRuleOperator;
   value?: PropertyValue;
 }
 
 /** @alpha */
-export function isFilterConditionGroup(filter: Filter): filter is FilterConditionGroup {
-  return (filter as any).conditions !== undefined;
+export function isFilterRuleGroup(filter: Filter): filter is FilterRuleGroup {
+  return (filter as any).rules !== undefined;
 }

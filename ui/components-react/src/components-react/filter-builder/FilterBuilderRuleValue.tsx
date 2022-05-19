@@ -25,10 +25,12 @@ export function FilterBuilderRuleValue(props: FilterBuilderRuleValueProps) {
     onChange(newValue);
   }, [onChange]);
 
-  return <EditorContainer
-    propertyRecord={propertyRecord}
-    onCancel={/* istanbul ignore next */ () => {}}
-    onCommit={onValueChange}
-    setFocus={false}
-  />;
+  return <div className="rule-value">
+    <EditorContainer
+      propertyRecord={propertyRecord}
+      onCancel={/* istanbul ignore next */ () => {}}
+      onCommit={onValueChange}
+      setFocus={false}
+    />
+  </div>;
 }

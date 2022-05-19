@@ -5,7 +5,7 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import sinon from "sinon";
-import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "../../components-react/instanceFilter/FilterBuilder";
+import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "../../components-react/filter-builder/FilterBuilder";
 
 /** @internal */
 export function renderWithContext(

@@ -9,7 +9,7 @@ import { Filter, FilterBuilder } from "@itwin/components-react";
 import { Label } from "@itwin/itwinui-react";
 import { ClassInfo } from "@itwin/presentation-common";
 import { MultiTagSelect } from "./MultiTagSelect";
-import "./ECInstanceFilter.scss";
+import "./ECInstanceFilterBuilder.scss";
 
 export interface ECInstanceFilterBuilderProps {
   selectedClasses: ClassInfo[];

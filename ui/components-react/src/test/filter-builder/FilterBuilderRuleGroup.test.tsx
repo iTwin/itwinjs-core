@@ -6,30 +6,30 @@ import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { FilterRuleGroup } from "../../components-react/instanceFilter/FilterBuilderState";
-import { FilterBuilderRuleGroup, FilterBuilderRuleGroupProps } from "../../components-react/instanceFilter/FilterRuleGroup";
-import { FilterRuleGroupOperator } from "../../components-react/instanceFilter/Operators";
+import { FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
+import { FilterBuilderRuleGroupRenderer, FilterBuilderRuleGroupRendererProps } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
+import { FilterRuleGroupOperator } from "../../components-react/filter-builder/Operators";
 import { renderWithContext } from "./Common";
 
-describe("FilterBuilderRuleGroup", () => {
-  const rootGroup: FilterRuleGroup = {
+describe("<FilterBuilderRuleGroupRenderer", () => {
+  const rootGroup: FilterBuilderRuleGroup = {
     id: "id",
     items: [],
     operator: FilterRuleGroupOperator.And,
   };
-  const defaultProps: FilterBuilderRuleGroupProps = {
+  const defaultProps: FilterBuilderRuleGroupRendererProps = {
     group: rootGroup,
     path: [],
   };
 
   it("does not render remove button for root group", () => {
-    const {queryByTestId} = renderWithContext(<FilterBuilderRuleGroup {...defaultProps} />);
+    const {queryByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer {...defaultProps} />);
 
     expect(queryByTestId("rule-group-remove")).to.be.null;
   });
 
   it("renders remove button for non root group", () => {
-    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
       group={{id: "id", groupId: "parentId", items: [], operator: FilterRuleGroupOperator.And}}
     />);
@@ -38,7 +38,7 @@ describe("FilterBuilderRuleGroup", () => {
 
   it("renders child rule", () => {
     const property: PropertyDescription = {displayLabel: "Prop", name: "prop", typename: "int"};
-    const {getByDisplayValue} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByDisplayValue} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
       group={{
         id: "id",
@@ -55,7 +55,7 @@ describe("FilterBuilderRuleGroup", () => {
   });
 
   it("renders child rule group", () => {
-    const {getByText} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByText} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
       group={{
         id: "id",
@@ -74,7 +74,7 @@ describe("FilterBuilderRuleGroup", () => {
 
   it("dispatches add rule event when button is clicked", () => {
     const dispatchSpy = sinon.spy();
-    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
     />, {dispatch: dispatchSpy});
 
@@ -86,7 +86,7 @@ describe("FilterBuilderRuleGroup", () => {
 
   it("dispatches add rule group event when button is clicked", () => {
     const dispatchSpy = sinon.spy();
-    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
     />, {dispatch: dispatchSpy});
 
@@ -98,7 +98,7 @@ describe("FilterBuilderRuleGroup", () => {
 
   it("dispatches remove item event when button is clicked", () => {
     const dispatchSpy = sinon.spy();
-    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroup
+    const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
       group={{
         id: "id",
@@ -116,7 +116,7 @@ describe("FilterBuilderRuleGroup", () => {
 
   it("dispatches operator change event when operator is selected", () => {
     const dispatchSpy = sinon.spy();
-    const {container, getByText} = renderWithContext(<FilterBuilderRuleGroup
+    const {container, getByText} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
     />, {dispatch: dispatchSpy});
 

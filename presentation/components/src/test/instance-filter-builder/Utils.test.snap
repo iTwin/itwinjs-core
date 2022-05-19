@@ -226,3 +226,71 @@ Array [
   },
 ]
 `;
+
+exports[`createPresentationInstanceFilter finds properties fields for property description 1`] = `
+Object {
+  "conditions": Array [
+    Object {
+      "field": Object {
+        "category": "root",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "propField1",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x1",
+                "label": "Class Label",
+                "name": "SchemaName:ClassName",
+              },
+              "name": "prop1",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+      "operator": "IS NULL",
+      "value": undefined,
+    },
+    Object {
+      "field": Object {
+        "category": "root",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "propField1",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x1",
+                "label": "Class Label",
+                "name": "SchemaName:ClassName",
+              },
+              "name": "prop1",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+      "operator": "IS NULL",
+      "value": undefined,
+    },
+  ],
+  "operator": "AND",
+}
+`;

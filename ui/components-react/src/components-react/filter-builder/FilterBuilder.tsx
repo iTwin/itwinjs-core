@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
+import { FilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
+import { FilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
+import { FilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
-  FilterBuilderAction, FilterRule, FilterRuleGroup, FilterRuleGroupItem, isFilterRuleGroup, useFilterBuilderState,
+  FilterBuilderAction, FilterBuilderRule, FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup, useFilterBuilderState,
 } from "./FilterBuilderState";
-import { FilterBuilderRuleGroup } from "./FilterRuleGroup";
-import { FilterBuilderRuleOperatorProps } from "./FilterRuleOperator";
-import { FilterBuilderRuleValueProps } from "./FilterRuleValue";
 import { filterRuleOperatorNeedsValue } from "./Operators";
 import { Filter } from "./Types";
 import "./FilterBuilder.scss";
@@ -64,7 +64,7 @@ export function FilterBuilder(props: FilterBuilderProps) {
     <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
       <FilterBuilderContext.Provider value={contextValue}>
         <div className="filter-builder">
-          <FilterBuilderRuleGroup path={ROOT_GROUP_PATH} group={state.rootGroup} />
+          <FilterBuilderRuleGroupRenderer path={ROOT_GROUP_PATH} group={state.rootGroup} />
         </div>
       </FilterBuilderContext.Provider>
     </FilterBuilderRuleRenderingContext.Provider>
@@ -72,34 +72,34 @@ export function FilterBuilder(props: FilterBuilderProps) {
 }
 
 /** @internal */
-export function buildFilter(groupItem: FilterRuleGroupItem): Filter | undefined {
-  if (isFilterRuleGroup(groupItem))
+export function buildFilter(groupItem: FilterBuilderRuleGroupItem): Filter | undefined {
+  if (isFilterBuilderRuleGroup(groupItem))
     return buildFilterFromRuleGroup(groupItem);
   return buildFilterFromRule(groupItem);
 }
 
-function buildFilterFromRuleGroup(rootGroup: FilterRuleGroup): Filter | undefined {
+function buildFilterFromRuleGroup(rootGroup: FilterBuilderRuleGroup): Filter | undefined {
   if (rootGroup.items.length === 0)
     return undefined;
 
-  const conditions = new Array<Filter>();
+  const rules = new Array<Filter>();
   for (const item of rootGroup.items) {
-    const condition = buildFilter(item);
-    if (!condition)
+    const rule = buildFilter(item);
+    if (!rule)
       return undefined;
-    conditions.push(condition);
+    rules.push(rule);
   }
 
-  if (conditions.length === 1)
-    return conditions[0];
+  if (rules.length === 1)
+    return rules[0];
 
   return {
     operator: rootGroup.operator,
-    conditions,
+    rules,
   };
 }
 
-function buildFilterFromRule(rule: FilterRule): Filter | undefined {
+function buildFilterFromRule(rule: FilterBuilderRule): Filter | undefined {
   const {property, operator, value} = rule;
   if (!property || operator === undefined)
     return undefined;

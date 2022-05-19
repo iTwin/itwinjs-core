@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { Filter, FilterCondition, FilterConditionGroup, isFilterConditionGroup } from "@itwin/components-react";
+import { Filter, FilterRule, FilterRuleGroup, isFilterRuleGroup } from "@itwin/components-react";
 import { CategoryDescription, ClassId, Descriptor, Field, FIELD_NAMES_SEPARATOR } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
@@ -15,7 +15,7 @@ export function createInstanceFilterPropertyInfos(descriptor: Descriptor): Prope
 }
 
 export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter) {
-  if (isFilterConditionGroup(filter))
+  if (isFilterRuleGroup(filter))
     return createPresentationInstanceFilterConditionGroup(descriptor, filter);
   return createPresentationInstanceFilterCondition(descriptor, filter);
 }
@@ -25,13 +25,13 @@ function getInstanceFilterFieldName(property: PropertyDescription) {
   return fieldName;
 }
 
-function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: FilterConditionGroup): PresentationInstanceFilter | undefined {
+function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: FilterRuleGroup): PresentationInstanceFilter | undefined {
   const conditions = new Array<PresentationInstanceFilter>();
-  for (const condition of group.conditions) {
-    const newCondition = createPresentationInstanceFilter(descriptor, condition);
-    if (!newCondition)
+  for (const rule of group.rules) {
+    const condition = createPresentationInstanceFilter(descriptor, rule);
+    if (!condition)
       return undefined;
-    conditions.push(newCondition);
+    conditions.push(condition);
   }
 
   if (conditions.length === 0)
@@ -46,7 +46,7 @@ function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, 
   };
 }
 
-function createPresentationInstanceFilterCondition(descriptor: Descriptor, condition: FilterCondition): PresentationInstanceFilterCondition | undefined {
+function createPresentationInstanceFilterCondition(descriptor: Descriptor, condition: FilterRule): PresentationInstanceFilterCondition | undefined {
   const field = findField(descriptor, getInstanceFilterFieldName(condition.property));
   if (!field || !field.isPropertiesField())
     return undefined;

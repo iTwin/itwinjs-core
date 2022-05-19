@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
-import { FilterRuleOperator, filterRuleOperatorNeedsValue, getAvailableOperators } from "../../components-react/instanceFilter/Operators";
+import { FilterRuleOperator, filterRuleOperatorNeedsValue, getAvailableOperators } from "../../components-react/filter-builder/Operators";
 
 chai.use(chaiSubset);
 

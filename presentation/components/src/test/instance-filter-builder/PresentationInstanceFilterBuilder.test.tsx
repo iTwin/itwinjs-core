@@ -13,7 +13,7 @@ import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PresentationInstanceFilterBuilder, usePresentationInstanceFilteringProps } from "../../presentation-components";
-import { ECClassHierarchyProvider } from "../../presentation-components/instanceFilter/ECClassesHierarchy";
+import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import { stubRaf } from "./Common";
 
 describe("PresentationInstanceFilter", () => {
@@ -58,7 +58,7 @@ describe("PresentationInstanceFilter", () => {
     spy.resetHistory();
 
     // select property
-    const propertySelector = container.querySelector<HTMLInputElement>(".rule-field-selector .iui-input");
+    const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(propertySelector).to.not.be.null;
     propertySelector?.focus();
     act(() => {

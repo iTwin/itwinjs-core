@@ -6,18 +6,18 @@ import * as React from "react";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
 import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { FilterBuilderContext } from "./FilterBuilder";
-import { FilterRuleGroup, FilterRuleGroupItem, isFilterRuleGroup } from "./FilterBuilderState";
-import { FilterBuilderRule } from "./FilterRule";
+import { FilterBuilderRuleRenderer } from "./FilterBuilderRule";
+import { FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup } from "./FilterBuilderState";
 import { FilterRuleGroupOperator } from "./Operators";
 
 /** @alpha */
-export interface FilterBuilderRuleGroupProps {
+export interface FilterBuilderRuleGroupRendererProps {
   path: string[];
-  group: FilterRuleGroup;
+  group: FilterBuilderRuleGroup;
 }
 
 /** @alpha */
-export function FilterBuilderRuleGroup(props: FilterBuilderRuleGroupProps) {
+export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps) {
   const {path, group} = props;
   const {dispatch} = React.useContext(FilterBuilderContext);
 
@@ -66,15 +66,15 @@ export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOper
 }
 interface FilterBuilderGroupOrRuleProps {
   path: string[];
-  item: FilterRuleGroupItem;
+  item: FilterBuilderRuleGroupItem;
 }
 
 function FilterBuilderGroupOrRule({path, item}: FilterBuilderGroupOrRuleProps) {
   const itemPath = React.useMemo(() => ([...path, item.id]), [path, item]);
 
   return <div className="group-or-rule">
-    {isFilterRuleGroup(item)
-      ? <FilterBuilderRuleGroup path={itemPath} group={item} />
-      :<FilterBuilderRule path={itemPath} rule={item} />}
+    {isFilterBuilderRuleGroup(item)
+      ? <FilterBuilderRuleGroupRenderer path={itemPath} group={item} />
+      :<FilterBuilderRuleRenderer path={itemPath} rule={item} />}
   </div>;
 }

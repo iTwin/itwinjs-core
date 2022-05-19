@@ -10,22 +10,22 @@ import { FilterRuleGroupOperator, FilterRuleOperator, filterRuleOperatorNeedsVal
 
 /** @alpha */
 export interface FilterBuilderState {
-  rootGroup: FilterRuleGroup;
+  rootGroup: FilterBuilderRuleGroup;
 }
 
 /** @alpha */
-export type FilterRuleGroupItem = FilterRuleGroup | FilterRule;
+export type FilterBuilderRuleGroupItem = FilterBuilderRuleGroup | FilterBuilderRule;
 
 /** @alpha */
-export interface FilterRuleGroup {
+export interface FilterBuilderRuleGroup {
   id: string;
   groupId?: string;
   operator: FilterRuleGroupOperator;
-  items: FilterRuleGroupItem[];
+  items: FilterBuilderRuleGroupItem[];
 }
 
 /** @alpha */
-export interface FilterRule {
+export interface FilterBuilderRule {
   id: string;
   groupId: string;
   property?: PropertyDescription;
@@ -147,7 +147,7 @@ export const filterBuilderStateReducer: (state: FilterBuilderState, action: Filt
   });
 
 /** @alpha */
-export function isFilterRuleGroup(item: FilterRuleGroupItem): item is FilterRuleGroup {
+export function isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item is FilterBuilderRuleGroup {
   return (item as any).items !== undefined;
 }
 
@@ -158,14 +158,14 @@ export function useFilterBuilderState() {
   });
 }
 
-function createEmptyRule(groupId: string): FilterRule {
+function createEmptyRule(groupId: string): FilterBuilderRule {
   return {
     id: Guid.createValue(),
     groupId,
   };
 }
 
-function createEmptyRuleGroup(groupId?: string): FilterRuleGroup {
+function createEmptyRuleGroup(groupId?: string): FilterBuilderRuleGroup {
   const id = Guid.createValue();
   return {
     id,
@@ -175,19 +175,19 @@ function createEmptyRuleGroup(groupId?: string): FilterRuleGroup {
   };
 }
 
-function findRuleGroup(rootGroup: FilterRuleGroup, path: string[]): FilterRuleGroup | undefined {
+function findRuleGroup(rootGroup: FilterBuilderRuleGroup, path: string[]): FilterBuilderRuleGroup | undefined {
   if (path.length === 0)
     return rootGroup;
 
   const [currentItemId, ...rest] = path;
   const currentItem = rootGroup.items.find((item) => item.id === currentItemId);
-  if (!currentItem || !isFilterRuleGroup(currentItem))
+  if (!currentItem || !isFilterBuilderRuleGroup(currentItem))
     return undefined;
 
   return findRuleGroup(currentItem, rest);
 }
 
-function findRule(rootGroup: FilterRuleGroup, path: string[]): FilterRule | undefined {
+function findRule(rootGroup: FilterBuilderRuleGroup, path: string[]): FilterBuilderRule | undefined {
   if (path.length === 0)
     return undefined;
 
@@ -196,7 +196,7 @@ function findRule(rootGroup: FilterRuleGroup, path: string[]): FilterRule | unde
   if (!currentItem)
     return undefined;
 
-  if (isFilterRuleGroup(currentItem))
+  if (isFilterBuilderRuleGroup(currentItem))
     return findRule(currentItem, rest);
 
   return currentItem;

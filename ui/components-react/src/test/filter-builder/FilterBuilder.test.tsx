@@ -8,14 +8,14 @@ import chaiSubset from "chai-subset";
 import sinon from "sinon";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
-import { buildFilter, FilterBuilder } from "../../components-react/instanceFilter/FilterBuilder";
-import { FilterRule, FilterRuleGroup } from "../../components-react/instanceFilter/FilterBuilderState";
-import { FilterRuleGroupOperator, FilterRuleOperator } from "../../components-react/instanceFilter/Operators";
+import { buildFilter, FilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
+import { FilterBuilderRule, FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
+import { FilterRuleGroupOperator, FilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 
 chai.use(chaiSubset);
 
-describe("FilterBuilder", () => {
+describe("<FilterBuilder", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
@@ -31,7 +31,7 @@ describe("FilterBuilder", () => {
   });
 
   describe("buildFilter", () => {
-    const defaultRule: FilterRule = {
+    const defaultRule: FilterBuilderRule = {
       id: "rule",
       groupId: "rootGroup",
       property: {name: "prop", displayLabel: "Prop", typename: "string"},
@@ -40,7 +40,7 @@ describe("FilterBuilder", () => {
     };
 
     it("returns undefined when rule does not have property", () => {
-      const rule: FilterRule = {
+      const rule: FilterBuilderRule = {
         ...defaultRule,
         property: undefined,
       };
@@ -48,7 +48,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns undefined when rule does not have operator", () => {
-      const rule: FilterRule = {
+      const rule: FilterBuilderRule = {
         ...defaultRule,
         operator: undefined,
       };
@@ -56,7 +56,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns undefined when rule does not have value and operator requires value", () => {
-      const rule: FilterRule = {
+      const rule: FilterBuilderRule = {
         ...defaultRule,
         value: undefined,
       };
@@ -64,7 +64,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns undefined when rule has non primitive value", () => {
-      const rule: FilterRule = {
+      const rule: FilterBuilderRule = {
         ...defaultRule,
         value: {valueFormat: PropertyValueFormat.Array, items: [], itemsTypeName: "arrayType"},
       };
@@ -72,7 +72,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns undefined when group has no rules", () => {
-      const ruleGroup: FilterRuleGroup = {
+      const ruleGroup: FilterBuilderRuleGroup = {
         id: "rootGroup",
         operator: FilterRuleGroupOperator.And,
         items: [],
@@ -81,7 +81,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns single filter condition when group has one rule", () => {
-      const ruleGroup: FilterRuleGroup = {
+      const ruleGroup: FilterBuilderRuleGroup = {
         id: "rootGroup",
         operator: FilterRuleGroupOperator.And,
         items: [defaultRule],
@@ -94,7 +94,7 @@ describe("FilterBuilder", () => {
     });
 
     it("returns filter conditions group when group has multiple rules", () => {
-      const ruleGroup: FilterRuleGroup = {
+      const ruleGroup: FilterBuilderRuleGroup = {
         id: "rootGroup",
         operator: FilterRuleGroupOperator.Or,
         items: [defaultRule, defaultRule],
@@ -102,7 +102,7 @@ describe("FilterBuilder", () => {
       const filter = buildFilter(ruleGroup);
       const expectedFilter = {
         operator: ruleGroup.operator,
-        conditions: [{
+        rules: [{
           property: defaultRule.property,
           operator: defaultRule.operator,
           value: defaultRule.value,

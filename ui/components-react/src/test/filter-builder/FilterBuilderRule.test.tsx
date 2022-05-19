@@ -7,15 +7,15 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { PropertyDescription, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { fireEvent } from "@testing-library/react";
-import { FilterBuilderRule, FilterBuilderRuleProps } from "../../components-react/instanceFilter/FilterRule";
-import { FilterBuilderRuleValueProps } from "../../components-react/instanceFilter/FilterRuleValue";
-import { FilterRuleOperator } from "../../components-react/instanceFilter/Operators";
+import { FilterBuilderRuleRenderer, FilterBuilderRuleRendererProps } from "../../components-react/filter-builder/FilterBuilderRule";
+import { FilterBuilderRuleValueProps } from "../../components-react/filter-builder/FilterBuilderRuleValue";
+import { FilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 import { renderWithContext } from "./Common";
-import { FilterBuilderRuleOperatorProps } from "../../components-react/instanceFilter/FilterRuleOperator";
+import { FilterBuilderRuleOperatorProps } from "../../components-react/filter-builder/FilterBuilderRuleOperator";
 
-describe("FilterRule", () => {
-  const defaultProps: FilterBuilderRuleProps = {
+describe("<FilterBuilderRuleRenderer", () => {
+  const defaultProps: FilterBuilderRuleRendererProps = {
     path: [],
     rule: { id: "id", groupId: "groupId" },
   };
@@ -35,24 +35,22 @@ describe("FilterRule", () => {
 
   describe("rule operator", () => {
     it("does not renderer operator if rule property is undefined", () => {
-      const {container} = renderWithContext(<FilterBuilderRule {...defaultProps} />);
+      const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
-      expect(operatorContainer).to.not.be.null;
-      expect(operatorContainer!.hasChildNodes()).to.be.false;
+      expect(operatorContainer).to.be.null;
     });
 
     it("renderers operator if rule property is defined", () => {
-      const {container} = renderWithContext(<FilterBuilderRule {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}} />);
+      const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
       expect(operatorContainer).to.not.be.null;
-      expect(operatorContainer!.hasChildNodes()).to.be.true;
     });
 
     it ("renders operator using provided renderer", () => {
       const spy = sinon.spy();
-      renderWithContext(<FilterBuilderRule {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>, {}, {ruleOperatorRenderer: spy});
+      renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>, {}, {ruleOperatorRenderer: spy});
 
       expect(spy).to.be.calledOnce;
     });
@@ -60,23 +58,21 @@ describe("FilterRule", () => {
 
   describe("rule value", () => {
     it("does not renderer value if rule property is undefined", () => {
-      const {container} = renderWithContext(<FilterBuilderRule {...defaultProps} />);
+      const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
-      expect(valueContainer).to.not.be.null;
-      expect(valueContainer!.hasChildNodes()).to.be.false;
+      expect(valueContainer).to.be.null;
     });
 
     it("does not renderer value if rule operator is undefined", () => {
-      const {container} = renderWithContext(<FilterBuilderRule {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>);
+      const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
-      expect(valueContainer).to.not.be.null;
-      expect(valueContainer!.hasChildNodes()).to.be.false;
+      expect(valueContainer).to.be.null;
     });
 
     it("renderers value when value and operator defined", () => {
-      const {container} = renderWithContext(<FilterBuilderRule
+      const {container} = renderWithContext(<FilterBuilderRuleRenderer
         {...defaultProps}
         rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
       />);
@@ -88,7 +84,7 @@ describe("FilterRule", () => {
 
     it ("renders operator using provided renderer", () => {
       const spy = sinon.spy();
-      renderWithContext(<FilterBuilderRule
+      renderWithContext(<FilterBuilderRuleRenderer
         {...defaultProps}
         rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
       />, {}, {ruleValueRenderer: spy});
@@ -99,9 +95,9 @@ describe("FilterRule", () => {
 
   it("dispatches property change when property is selected", () => {
     const spy = sinon.spy();
-    const {container, getByText} = renderWithContext(<FilterBuilderRule {...defaultProps} />, {dispatch: spy, properties: [defaultProperty]});
+    const {container, getByText} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {dispatch: spy, properties: [defaultProperty]});
 
-    const selector = container.querySelector<HTMLInputElement>(".rule-field-selector .iui-input");
+    const selector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(selector).to.not.be.null;
 
     selector?.focus();
@@ -113,7 +109,7 @@ describe("FilterRule", () => {
 
   it("dispatches property change with undefined property when selected property is not in properties list", () => {
     const spy = sinon.spy();
-    renderWithContext(<FilterBuilderRule
+    renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
     />, {dispatch: spy, properties: []});
@@ -123,9 +119,9 @@ describe("FilterRule", () => {
 
   it("invokes onRulePropertySelected callback when property is selected", () => {
     const spy = sinon.spy();
-    const {container, getByText} = renderWithContext(<FilterBuilderRule {...defaultProps} />, {properties: [defaultProperty], onRulePropertySelected: spy});
+    const {container, getByText} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {properties: [defaultProperty], onRulePropertySelected: spy});
 
-    const selector = container.querySelector<HTMLInputElement>(".rule-field-selector .iui-input");
+    const selector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(selector).to.not.be.null;
 
     selector?.focus();
@@ -137,7 +133,7 @@ describe("FilterRule", () => {
 
   it("dispatches remove rule action", () => {
     const spy = sinon.spy();
-    const {container} = renderWithContext(<FilterBuilderRule {...defaultProps} />, {dispatch: spy});
+    const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {dispatch: spy});
 
     const button = container.querySelector(".rule-actions")?.firstElementChild;
     expect(button).to.not.be.null;
@@ -148,7 +144,7 @@ describe("FilterRule", () => {
   it("dispatches operator change when operator is changed", () => {
     const dispatchSpy = sinon.spy();
     const operatorRendererSpy = sinon.spy();
-    renderWithContext(<FilterBuilderRule
+    renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
     />, {dispatch: dispatchSpy}, {ruleOperatorRenderer: operatorRendererSpy});
@@ -165,7 +161,7 @@ describe("FilterRule", () => {
   it("dispatches value change when value is changed", () => {
     const dispatchSpy = sinon.spy();
     const valueRendererSpy = sinon.spy();
-    renderWithContext(<FilterBuilderRule
+    renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
     />, {dispatch: dispatchSpy}, {ruleValueRenderer: valueRendererSpy});

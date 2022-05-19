@@ -33,5 +33,7 @@ export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps)
     label: getFilterRuleOperatorLabel(op),
   })), [availableOperators]);
 
-  return <Select options={availableOptions} value={selectedOperator} onChange={onChange} size="small"/>;
+  return <div className="rule-operator">
+    <Select options={availableOptions} value={selectedOperator} onChange={onChange} size="small"/>
+  </div>;
 }

@@ -101,9 +101,9 @@ export * from "./presentation-components/labels/LabelsProvider";
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 
-export * from "./presentation-components/instanceFilter/ECInstanceFilter";
-export * from "./presentation-components/instanceFilter/PresentationInstanceFilter";
-export * from "./presentation-components/instanceFilter/Types";
+export * from "./presentation-components/instance-filter-builder/ECInstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/Types";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

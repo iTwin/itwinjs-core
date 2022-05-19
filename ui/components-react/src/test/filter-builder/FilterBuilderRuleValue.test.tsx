@@ -7,10 +7,10 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
-import { FilterBuilderRuleValue } from "../../components-react/instanceFilter/FilterRuleValue";
+import { FilterBuilderRuleValue } from "../../components-react/filter-builder/FilterBuilderRuleValue";
 import TestUtils from "../TestUtils";
 
-describe("FilterBuilderRuleValue", () => {
+describe("<FilterBuilderRuleValue", () => {
   const defaultProperty: PropertyDescription = {
     name: "prop",
     displayLabel: "Prop",

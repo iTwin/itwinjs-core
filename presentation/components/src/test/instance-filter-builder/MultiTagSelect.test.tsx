@@ -5,7 +5,7 @@
 import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
-import { MultiTagSelect } from "../../presentation-components/instanceFilter/MultiTagSelect";
+import { MultiTagSelect } from "../../presentation-components/instance-filter-builder/MultiTagSelect";
 
 describe("MultiTagSelect", () => {
   const options = [{

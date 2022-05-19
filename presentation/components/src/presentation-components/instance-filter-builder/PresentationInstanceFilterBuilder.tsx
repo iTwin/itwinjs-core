@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
-import { ECInstanceFilterBuilder } from "./ECInstanceFilter";
+import { ECInstanceFilterBuilder } from "./ECInstanceFilterBuilder";
 import { IModelConnection } from "@itwin/core-frontend";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
 import { Filter } from "@itwin/components-react";

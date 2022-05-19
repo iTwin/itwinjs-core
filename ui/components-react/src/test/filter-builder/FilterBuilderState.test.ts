@@ -6,8 +6,8 @@ import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
 import { PropertyDescription, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { renderHook } from "@testing-library/react-hooks";
-import { FilterRule, FilterRuleGroup, useFilterBuilderState } from "../../components-react/instanceFilter/FilterBuilderState";
-import { FilterRuleGroupOperator, FilterRuleOperator } from "../../components-react/instanceFilter/Operators";
+import { FilterBuilderRule, FilterBuilderRuleGroup, useFilterBuilderState } from "../../components-react/filter-builder/FilterBuilderState";
+import { FilterRuleGroupOperator, FilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 
 chai.use(chaiSubset);
@@ -206,7 +206,7 @@ describe("useFilterBuilderState", () => {
 
     const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
     dispatch({type: "SET_RULE_VALUE", value, path: [state.rootGroup.items[0].id]});
-    const rule = result.current[0].rootGroup.items[0] as FilterRule;
+    const rule = result.current[0].rootGroup.items[0] as FilterBuilderRule;
     expect(rule.value).to.be.deep.eq(value);
 
     dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsNull, path: [state.rootGroup.items[0].id]});
@@ -274,8 +274,8 @@ describe("useFilterBuilderState", () => {
       const {result} = renderHook(() => useFilterBuilderState());
       const [_, dispatch] = result.current;
 
-      const getNestingRule = () => result.current[0].rootGroup.items[1] as FilterRuleGroup;
-      const getNestedRule = () => getNestingRule().items[0] as FilterRule;
+      const getNestingRule = () => result.current[0].rootGroup.items[1] as FilterBuilderRuleGroup;
+      const getNestedRule = () => getNestingRule().items[0] as FilterBuilderRule;
       const getNestedRulePath = () => [getNestingRule().id, getNestedRule().id];
 
       dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
