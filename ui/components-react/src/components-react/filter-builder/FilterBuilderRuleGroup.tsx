@@ -9,6 +9,7 @@ import { FilterBuilderContext } from "./FilterBuilder";
 import { FilterBuilderRuleRenderer } from "./FilterBuilderRule";
 import { FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup } from "./FilterBuilderState";
 import { FilterRuleGroupOperator } from "./Operators";
+import { UiComponents } from "../UiComponents";
 
 /** @alpha */
 export interface FilterBuilderRuleGroupRendererProps {
@@ -33,8 +34,12 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
     <div className="header">
       <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
       <ButtonGroup className="actions">
-        <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule</Button>
-        <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule Group</Button>
+        <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+          {React.useMemo(() => UiComponents.localization.getLocalizedString("UiComponents:filterBuilder.rule"), [])}
+        </Button>
+        <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+          {React.useMemo(() => UiComponents.localization.getLocalizedString("UiComponents:filterBuilder.ruleGroup"), [])}
+        </Button>
         {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
       </ButtonGroup>
     </div>
@@ -54,11 +59,10 @@ export interface FilterBuilderRuleGroupOperatorProps {
 export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps) {
   const {operator, onChange} = props;
 
-  const options = React.useMemo<Array<SelectOption<FilterRuleGroupOperator>>>(() => ([{
-    value: FilterRuleGroupOperator.And, label: "AND",
-  }, {
-    value: FilterRuleGroupOperator.Or, label: "OR",
-  }]), []);
+  const options = React.useMemo<Array<SelectOption<FilterRuleGroupOperator>>>(() => ([
+    { value: FilterRuleGroupOperator.And, label: "And" },
+    { value: FilterRuleGroupOperator.Or, label: "Or" },
+  ]), []);
 
   return <div className="rule-group-operator">
     <Select options={options} value={operator} onChange={onChange} size="small" />

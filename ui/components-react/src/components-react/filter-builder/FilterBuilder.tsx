@@ -41,6 +41,7 @@ export interface FilterBuilderRuleRenderingContext {
   ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
 }
+
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FilterBuilderRuleRenderingContext = React.createContext<FilterBuilderRuleRenderingContext>(undefined!);
@@ -52,11 +53,9 @@ export function FilterBuilder(props: FilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
   const [state, dispatch] = useFilterBuilderState();
 
-  const filter = React.useMemo(() => buildFilter(state.rootGroup), [state]);
-
   React.useEffect(() => {
-    onFilterChanged(filter);
-  }, [filter, onFilterChanged]);
+    onFilterChanged(buildFilter(state.rootGroup));
+  }, [state, onFilterChanged]);
 
   const contextValue = React.useMemo<FilterBuilderContext>(() => ({dispatch, properties, onRulePropertySelected}), [dispatch, properties, onRulePropertySelected]);
   const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);

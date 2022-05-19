@@ -18,11 +18,9 @@ export interface FilterBuilderRuleOperatorProps {
 export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps) {
   const {operator, property, onChange} = props;
 
-  const availableOperators = React.useMemo(() => {
-    return getAvailableOperators(property);
-  }, [property]);
-
+  const availableOperators = React.useMemo(() => getAvailableOperators(property), [property]);
   const selectedOperator = operator ?? availableOperators[0];
+
   React.useEffect(() => {
     if (!operator)
       onChange(selectedOperator);

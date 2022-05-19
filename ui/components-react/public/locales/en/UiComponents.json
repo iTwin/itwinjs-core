@@ -119,5 +119,9 @@
     "enum": "Enum Editor",
     "text": "Text Editor",
     "textarea": "Textarea Editor"
+  },
+  "filterBuilder": {
+    "rule": "Rule",
+    "ruleGroup": "Rule Group"
   }
 }

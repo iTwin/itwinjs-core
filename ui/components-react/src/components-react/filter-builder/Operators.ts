@@ -6,27 +6,27 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 
 /** @alpha */
 export enum FilterRuleGroupOperator {
-  And = "AND",
-  Or = "OR"
+  And,
+  Or,
 }
 
 /** @alpha */
 export enum FilterRuleOperator {
-  IsTrue = "IS TRUE",
-  IsFalse = "IS FALSE",
+  IsTrue,
+  IsFalse,
 
-  IsEqual = "=",
-  IsNotEqual = "<>",
+  IsEqual,
+  IsNotEqual,
 
-  Greater = ">",
-  GreaterOrEqual = ">=",
-  Less = "<",
-  LessOrEqual = "<=",
+  Greater,
+  GreaterOrEqual,
+  Less,
+  LessOrEqual,
 
-  Like = "LIKE",
+  Like,
 
-  IsNull = "IS NULL",
-  IsNotNull = "IS NOT NULL",
+  IsNull,
+  IsNotNull,
 }
 
 /** @alpha */
@@ -74,13 +74,13 @@ export function getAvailableOperators(property: PropertyDescription) {
 export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
   switch(operator) {
     case FilterRuleOperator.IsTrue:
-      return "IS TRUE";
+      return "Is True";
     case FilterRuleOperator.IsFalse:
-      return "IS FALSE";
+      return "Is False";
     case FilterRuleOperator.IsEqual:
-      return "EQUAL";
+      return "Equal";
     case FilterRuleOperator.IsNotEqual:
-      return "NOT EQUAL";
+      return "Not Equal";
     case FilterRuleOperator.Greater:
       return ">";
     case FilterRuleOperator.GreaterOrEqual:
@@ -90,11 +90,11 @@ export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
     case FilterRuleOperator.LessOrEqual:
       return "<=";
     case FilterRuleOperator.Like:
-      return "CONTAINS";
+      return "Contains";
     case FilterRuleOperator.IsNull:
-      return "IS NULL";
+      return "Is Null";
     case FilterRuleOperator.IsNotNull:
-      return "IS NOT NULL";
+      return "Is Not Null";
   }
 }
 

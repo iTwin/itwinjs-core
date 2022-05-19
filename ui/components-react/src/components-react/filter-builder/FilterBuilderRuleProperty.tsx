@@ -23,8 +23,7 @@ export function FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps)
   })), [properties]);
 
   const onPropertyChanged = React.useCallback((name: string) => {
-    const newProperty = properties.find((property) => property.name === name);
-    onSelectedPropertyChanged(newProperty);
+    onSelectedPropertyChanged(properties.find((property) => property.name === name));
   }, [properties, onSelectedPropertyChanged]);
 
   React.useEffect(() => {
