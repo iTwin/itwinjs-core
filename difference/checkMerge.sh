@@ -3,9 +3,8 @@
 ### Script that gets a repo name, and the two commits to output the commit differences if it is linked to PR
 
 # Repo link, and the two commit SHAs to get commits between
-repoName=$1
-fromSHA=$2
-toSHA=$3
+fromSHA=$1
+toSHA=$2
 
 # Store all the commits between the two SHA into an array to check
 commitList=($(git rev-list ${fromSHA}..${toSHA}))

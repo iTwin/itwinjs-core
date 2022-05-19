@@ -36,7 +36,7 @@ steps:
     displayName: Fetch
   
   # 4. output the difference
-  - bash: bash ./difference/check.sh ${{ parameters.repoName }} ${{ parameters.fromSHA }} ${{ parameters.ToSHA }}
+  - bash: bash ./difference/checkMerge.sh ${{ parameters.fromSHA }} ${{ parameters.ToSHA }}
     displayName: List Merged PR
     env:
       GITHUB_TOKEN: $(GH_TOKEN)
