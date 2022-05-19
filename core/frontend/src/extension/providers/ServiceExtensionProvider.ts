@@ -22,8 +22,8 @@ export interface ServiceExtensionProviderProps {
   name: string;
   /** Version number (Semantic Versioning) */
   version: string;
-  /** iTwin Id */
-  iTwinId: string;
+  /** iTwin Id where the extension was published, or undefined if public */
+  iTwinId?: string;
 }
 
 /**
@@ -71,9 +71,9 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
     let extensionProps: ExtensionMetadata | undefined;
     if (props.version !== undefined)
-      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.iTwinId, props.name, props.version);
+      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.name, props.version, props.iTwinId);
     else {
-      const propsArr = await extensionClient.getExtensions(accessToken, props.iTwinId, props.name);
+      const propsArr = await extensionClient.getExtensions(accessToken, props.name, props.iTwinId);
       extensionProps = propsArr.sort((ext1, ext2) => rcompare(ext1.version, ext2.version, true))[0];
     }
 

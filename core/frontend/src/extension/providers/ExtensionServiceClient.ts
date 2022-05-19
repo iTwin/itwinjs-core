@@ -72,12 +72,13 @@ export class ExtensionClient {
   }
 
   /**
-   * Gets information on extensions. If extensionName is undefined, will return all extensions in the context.
+   * Gets information on extensions. If extensionName is undefined, will return all extensions in the iTwinId.
    * If it's defined, will return all versions of that extension.
-   * @param iTwinId Context Id
+   * If iTwinId is undefined, will default to public.
    * @param extensionName Extension name (optional)
+   * @param iTwinId iTwin Id (optional)
    */
-  public async getExtensions(accessToken: AccessToken, iTwinId: string, extensionName?: string): Promise<ExtensionMetadata[]> {
+  public async getExtensions(accessToken: AccessToken, extensionName?: string, iTwinId = "00000000-0000-0000-0000-000000000000"): Promise<ExtensionMetadata[]> {
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
     const response = await request(`${this._endpoint}${iTwinId}/IModelExtension/${extensionName ?? ""}`, options);
@@ -92,11 +93,12 @@ export class ExtensionClient {
 
   /**
    * Gets information about an extension's specific version
-   * @param iTwinId iTwin Id
+   * If iTwinId is undefined, will assume the extension was published publicly.
    * @param extensionName Extension name
    * @param version Extension version
+   * @param iTwinId iTwin Id (optional)
    */
-  public async getExtensionMetadata(accessToken: AccessToken, iTwinId: string, extensionName: string, version: string): Promise<ExtensionMetadata | undefined> {
+  public async getExtensionMetadata(accessToken: AccessToken, extensionName: string, version: string, iTwinId = "00000000-0000-0000-0000-000000000000"): Promise<ExtensionMetadata | undefined> {
 
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
