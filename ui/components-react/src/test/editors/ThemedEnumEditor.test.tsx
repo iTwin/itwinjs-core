@@ -52,12 +52,12 @@ describe("<ThemedEnumEditor />", () => {
     const wrapper = render(<ThemedEnumEditor propertyRecord={record} onCommit={handleCommit} />);
     await TestUtils.flushAsyncOperations();
     // wrapper.debug();
-    const selectNode = wrapper.container.querySelector(".components-enum-editor input");
+    const selectNode = wrapper.container.querySelector(".react-select__input");
 
     expect(selectNode).not.to.be.null;
-    fireEvent.change(selectNode as HTMLElement, { target: { value: "Blue" } });
+    fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Blue" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode as HTMLElement, { key: "Enter" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -72,12 +72,12 @@ describe("<ThemedEnumEditor />", () => {
     const wrapper = render(<ThemedEnumEditor propertyRecord={record} onCommit={handleCommit} />);
     await TestUtils.flushAsyncOperations();
     // wrapper.debug();
-    const selectNode = wrapper.container.querySelector(".components-enum-editor input");
+    const selectNode = wrapper.container.querySelector(".react-select__input");
 
     expect(selectNode).not.to.be.null;
-    fireEvent.change(selectNode as HTMLElement, { target: { value: "Yellow" } });
+    fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Yellow" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode as HTMLElement, { key: "Escape" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Escape" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.called).to.be.false;
   });
@@ -92,12 +92,12 @@ describe("<ThemedEnumEditor />", () => {
     const wrapper = render(<ThemedEnumEditor propertyRecord={record} onCommit={handleCommit} />);
     await TestUtils.flushAsyncOperations();
     // wrapper.debug();
-    const selectNode = wrapper.container.querySelector(".components-enum-editor input");
+    const selectNode = wrapper.container.querySelector(".react-select__input");
 
     expect(selectNode).not.to.be.null;
-    fireEvent.change(selectNode as HTMLElement, { target: { value: "Green" } });
+    fireEvent.change(selectNode!.firstChild as HTMLElement, { target: { value: "Green" } });
     await TestUtils.flushAsyncOperations();
-    fireEvent.keyDown(selectNode as HTMLElement, { key: "Enter" });
+    fireEvent.keyDown(selectNode!.firstChild as HTMLElement, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
