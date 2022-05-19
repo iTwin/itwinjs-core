@@ -80,7 +80,7 @@ export class ExtensionAdmin {
       if (manifest.activationEvents.includes("onStartup"))
         provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
-      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${(e as any).message}`);
+      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${e}`);
     }
   }
 
