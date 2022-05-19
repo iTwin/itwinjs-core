@@ -16,7 +16,7 @@ export class LocalFileSupport {
     if (ElectronApp.isValid)
       return true;
 
-    if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
+    if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath && !SampleAppIModelApp.testAppConfiguration?.fullSnapshotPath) {
       alert("IMJS_UITESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
