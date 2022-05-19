@@ -91,7 +91,7 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor, 
     const stringValue = await this.convertFromStringWithOptions(value, converterOptions);
     const propertyValue: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
-      value: stringValue ? stringValue : "",
+      value: stringValue,
       displayValue: "",
     };
     return propertyValue;
