@@ -14,7 +14,7 @@ import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
   SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BeDuration, BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -146,7 +146,7 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args, args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-  wsFile.close();
+  await wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -156,7 +156,7 @@ async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceD
   try {
     await fn(ws, args);
   } finally {
-    ws.close();
+    await ws.close();
   }
 }
 
@@ -209,7 +209,7 @@ async function listWorkspaceDb(args: ListOptions) {
 
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      file.prefetch({ nRequests: 12 });
+      file.prefetch();
     }
 
     if (!args.strings && !args.blobs && !args.files)

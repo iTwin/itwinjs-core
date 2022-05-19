@@ -626,8 +626,6 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   /** either a local file name or the name of the file in a cloud container, including version identifier */
   public dbFileName: string;
 
-  public prefetchOp?: IModelJsNative.CloudPrefetch;
-
   /** true if this WorkspaceDb is currently open */
   public get isOpen() { return this.sqliteDb.isOpen; }
   public queryFileResource(rscName: WorkspaceResource.Name) {
@@ -656,11 +654,6 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
   public async close() {
     if (this.isOpen) {
-      if (this.prefetchOp) {
-        this.prefetchOp.cancel();
-        await this.prefetchOp.promise;
-        this.prefetchOp = undefined;
-      }
       this.onClose.raiseEvent();
       this.sqliteDb.closeDb();
       this.container.dropWorkspaceDb(this);
@@ -722,7 +715,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public prefetch(opts?: { nRequests: number }) {
     const cloudContainer = this.container.cloudContainer;
     if (cloudContainer !== undefined)
-      this.prefetchOp = new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts);
+      new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 }
 
