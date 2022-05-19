@@ -1,6 +1,9 @@
 trigger: none
 pr: none
 
+variables:
+  - group: general-purpose-imodeljs-backend - Version Bump
+
 parameters:
   - name: repoName
     type: string
@@ -35,3 +38,5 @@ steps:
   # 4. output the difference
   - bash: bash ./difference/check.sh ${{ parameters.repoName }} ${{ parameters.fromSHA }} ${{ parameters.ToSHA }}
     displayName: List Merged PR
+    env:
+      GITHUB_TOKEN: $(GH_TOKEN)
