@@ -603,6 +603,35 @@ describe("applyHierarchyUpdateRecords", () => {
     expect(updatedTree.getNode("root1")?.description).to.be.eq("updated-description");
   });
 
+  it("updates node children count to 'undefined' when it is collapsed and has children", () => {
+    const initialTree = createTreeModel([
+      {
+        root1: [
+          "child1",
+          "child2",
+        ],
+      },
+    ]);
+
+    const updatedTree = applyHierarchyChanges(
+      initialTree,
+      [{
+        parent: undefined,
+        nodesCount: 1,
+        expandedNodes: [{
+          node: { ...createNode("root1"), description: "updated-description", hasChildren: true },
+          position: 0,
+        }],
+      }],
+      [],
+      {}
+    );
+
+    expectTree(updatedTree, ["root1"]);
+    expect(updatedTree.getNode("root1")?.description).to.be.eq("updated-description");
+    expect(updatedTree.getNode("root1")?.numChildren).to.be.undefined;
+  });
+
   it("updates root node and adds reloaded siblings", () => {
     const initialTree = createTreeModel(["root1", "root2", "root3"]);
 
