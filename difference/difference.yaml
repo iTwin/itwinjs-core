@@ -33,7 +33,5 @@ steps:
     displayName: Fetch
   
   # 4. output the difference
-  - bash: |
-      echo "difference between ${{ parameters.oldSHA }} and ${{ parameters.newSHA }}"
-      git diff ${{ parameters.oldSHA }} ${{ parameters.newSHA }} 
-    displayName: Difference
+  - bash: bash ./difference/check.sh ${{ parameters.repoName }} ${{ parameters.fromSHA }} ${{ parameters.ToSHA }}
+    displayName: List Merged PR
