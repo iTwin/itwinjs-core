@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Fix: set correct node's children count after hierarchy update",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
