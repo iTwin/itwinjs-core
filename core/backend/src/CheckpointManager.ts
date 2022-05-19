@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -188,9 +188,15 @@ export class V2CheckpointManager {
       const container = this.getContainer(v2props);
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (process.env.PREFETCHBEFOREOPEN)
-        new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
-
+      if (process.env.PREFETCHBEFOREOPEN) {
+        const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
+        if (process.env.PREFETCH_TIME) {
+          const stopwatch = new StopWatch("prefetch", true);
+          await prefetchObject.promise;
+          stopwatch.stop();
+          Logger.logInfo("V2", `Seconds taken for pin: ${stopwatch.elapsedSeconds}`);
+        }
+      }
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Cloud cache connect failed: ${e.message}`;
