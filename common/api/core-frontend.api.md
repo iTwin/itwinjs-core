@@ -9580,7 +9580,7 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
 // @alpha
 export interface ServiceExtensionProviderProps {
-    iTwinId: string;
+    iTwinId?: string;
     name: string;
     version: string;
 }
