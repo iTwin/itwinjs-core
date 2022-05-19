@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, Guid } from "@itwin/core-bentley";
 
 import { request, RequestOptions } from "../../request/Request";
 
@@ -78,7 +78,7 @@ export class ExtensionClient {
    * @param extensionName Extension name (optional)
    * @param iTwinId iTwin Id (optional)
    */
-  public async getExtensions(accessToken: AccessToken, extensionName?: string, iTwinId = "00000000-0000-0000-0000-000000000000"): Promise<ExtensionMetadata[]> {
+  public async getExtensions(accessToken: AccessToken, extensionName?: string, iTwinId = Guid.empty): Promise<ExtensionMetadata[]> {
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
     const response = await request(`${this._endpoint}${iTwinId}/IModelExtension/${extensionName ?? ""}`, options);
@@ -98,7 +98,7 @@ export class ExtensionClient {
    * @param version Extension version
    * @param iTwinId iTwin Id (optional)
    */
-  public async getExtensionMetadata(accessToken: AccessToken, extensionName: string, version: string, iTwinId = "00000000-0000-0000-0000-000000000000"): Promise<ExtensionMetadata | undefined> {
+  public async getExtensionMetadata(accessToken: AccessToken, extensionName: string, version: string, iTwinId = Guid.empty): Promise<ExtensionMetadata | undefined> {
 
     const options: RequestOptions = { method: "GET" };
     options.headers = { authorization: accessToken };
