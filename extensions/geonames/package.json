@@ -37,7 +37,8 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-geometry": "workspace:*"
+    "@itwin/core-geometry": "workspace:*",
+    "mocha": "~10.0.0"
   },
   "eslintConfig": {
     "plugins": [

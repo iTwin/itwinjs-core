@@ -53,7 +53,8 @@
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/reality-data-client": "0.7.0",
-    "body-parser": "^1.18.2"
+    "body-parser": "^1.18.2",
+    "mocha": "~10.0.0"
   },
   "devDependencies": {
     "@itwin/perf-tools": "workspace:*",

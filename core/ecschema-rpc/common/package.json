@@ -52,5 +52,8 @@
       "@itwin"
     ],
     "extends": "plugin:@itwin/itwinjs-recommended"
+  },
+  "dependencies": {
+    "mocha": "~10.0.0"
   }
 }

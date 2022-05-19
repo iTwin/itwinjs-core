@@ -62,7 +62,7 @@
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
     "immer": "9.0.6",
-    "mocha": "^8.3.2",
+    "mocha": "~10.0.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-test-renderer": "^17.0.0",

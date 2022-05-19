@@ -62,7 +62,8 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/editor-common": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*"
+    "@itwin/appui-abstract": "workspace:*",
+    "mocha": "~10.0.0"
   },
   "eslintConfig": {
     "plugins": [
