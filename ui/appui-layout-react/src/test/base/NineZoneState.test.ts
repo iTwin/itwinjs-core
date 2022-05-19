@@ -645,6 +645,7 @@ describe("NineZoneStateReducer", () => {
       newState.widgets.leftStart.tabs.should.eql(["t1"]);
       newState.widgets.leftEnd.tabs.should.eql(["t2", "t3"]);
       should().not.exist(newState.floatingWidgets.byId.fw1);
+      should().not.exist(newState.widgets.fw1);
       newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
 
@@ -694,6 +695,7 @@ describe("NineZoneStateReducer", () => {
       newState.panels.left.widgets.should.eql(["w1", "w2"]);
       newState.widgets.w1.tabs.should.eql(["t1", "t2"]);
       should().not.exist(newState.floatingWidgets.byId.fw1);
+      should().not.exist(newState.widgets.fw1);
       newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
 

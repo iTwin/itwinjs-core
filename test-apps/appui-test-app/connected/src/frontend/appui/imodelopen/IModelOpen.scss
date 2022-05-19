@@ -7,8 +7,10 @@
 
 $appbar-height: 65px;
 $navbar-width: 72px;
-$itwinpicker-min-width: 250px; /* iTwin picker minimum width */
-$itwinpicker-max-width: 450px; /* iTwin picker maximum width */
+$itwinpicker-min-width: 250px;
+/* iTwin picker minimum width */
+$itwinpicker-max-width: 450px;
+/* iTwin picker maximum width */
 $open-background: #FCFDFD;
 $open-color: #6d6e77;
 $content-background: $uicore-white;
@@ -79,7 +81,7 @@ $border-color: #e7e9ec;
 
 /* left side navigation panel */
 .open-navbar {
-  width: $navbar-width;
+  width: 0;
   top: $appbar-height;
   bottom: 0;
   position: absolute;
@@ -94,7 +96,7 @@ $border-color: #e7e9ec;
 /* right side (content) area */
 .open-content {
   top: $appbar-height;
-  left: $navbar-width;
+  left: 0;
   bottom: 0;
   right: 0;
   overflow: hidden;

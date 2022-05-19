@@ -3,7 +3,7 @@
   "private": false,
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "3.2.0-dev.71",
+  "version": "3.3.0-dev.6",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },

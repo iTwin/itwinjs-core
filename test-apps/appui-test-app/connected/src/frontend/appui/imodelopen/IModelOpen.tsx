@@ -205,18 +205,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
                 <ITwinDropdown currentITwin={this.state.currentITwin} recentITwins={this.state.recentITwins} onITwinClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
-            <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>
+            <Button styleType="cta" className="activity-button" onClick={this._activityTool}>Activity Message</Button>
           </div>
-          <NavigationList defaultTab={0} onExpandChanged={this._onNavigationChanged}>
-            <NavigationItem label="Recent" icon="icon-placeholder" />
-            <NavigationItem label="Offline" icon="icon-placeholder" />
-            <NavigationItem label="Browse History" icon="icon-placeholder" />
-            <NavigationItem label="iModels" icon="icon-placeholder" />
-            <NavigationItem label="Share" icon="icon-placeholder" />
-            <NavigationItem label="Share Point" icon="icon-placeholder" />
-            <NavigationItem label="Reality Data" icon="icon-placeholder" />
-            <NavigationItem label="New iTwin..." icon="icon-placeholder" />
-          </NavigationList>
           <div className={contentStyle}>
             {this.renderIModels()}
           </div>

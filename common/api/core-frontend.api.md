@@ -79,6 +79,7 @@ import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
+import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
@@ -1720,19 +1721,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @alpha (undocumented)
-export interface BuildExtensionManifest extends ExtensionManifest {
-    readonly module: string;
-}
-
-// @alpha (undocumented)
-export interface BuiltInExtensionLoaderProps {
-    // (undocumented)
-    loader: ResolveFunc;
-    // (undocumented)
-    manifest: Promise<any>;
-}
-
 // @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
@@ -1931,6 +1919,15 @@ export interface ComputeChordToleranceArgs {
     readonly computeRange: () => Range3d;
     readonly graphic: GraphicBuilder;
 }
+
+// @public
+export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
+
+// @public
+export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void;
+
+// @public
+export function connectViewportViews(viewports: Iterable<Viewport>): () => void;
 
 // @internal (undocumented)
 export enum ContextMode {
@@ -3048,27 +3045,21 @@ export enum EventHandled {
 }
 
 // @alpha
-export interface ExtensionLoader {
-    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
-    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
-}
-
-// @alpha
-export interface ExtensionLoaderProps {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    version: string;
-}
-
-// @alpha
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
     readonly description?: string;
     readonly displayName?: string;
     readonly main: string;
+    readonly module?: string;
     readonly name: string;
     readonly version: string;
+}
+
+// @alpha
+export interface ExtensionProvider {
+    execute: ResolveFunc;
+    getManifest: ResolveManifestFunc;
+    readonly hostname?: string;
 }
 
 // @public
@@ -3347,6 +3338,8 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
+    // @alpha
+    Extensions = "core-frontend.Extensions",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
     IModelConnection = "core-frontend.IModelConnection",
@@ -5043,11 +5036,11 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
+    get edgeOptions(): EdgeOptions | false;
+    // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
     getTransformNodeRange(nodeId: number): Range3d | undefined;
-    // (undocumented)
-    get hasEdges(): boolean;
     get hiddenElements(): Id64Array;
     // (undocumented)
     get is3d(): boolean;
@@ -5084,7 +5077,7 @@ export interface IModelTileTreeOptions {
     // (undocumented)
     readonly batchType: BatchType;
     // (undocumented)
-    readonly edgesRequired: boolean;
+    readonly edges: EdgeOptions | false;
     // (undocumented)
     readonly is3d: boolean;
 }
@@ -5320,11 +5313,16 @@ export class LengthDescription extends FormattedQuantityDescription {
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
 // @alpha
-export interface LocalExtensionProps {
-    // (undocumented)
-    readonly mainFunc?: ResolveFunc;
-    // (undocumented)
-    readonly manifest: ExtensionManifest;
+export class LocalExtensionProvider implements ExtensionProvider {
+    constructor(_props: LocalExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface LocalExtensionProviderProps {
+    main: ResolveFunc;
+    manifestPromise: Promise<any>;
 }
 
 // @internal
@@ -8437,6 +8435,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get treeOwner(): TileTreeOwner;
     }
 
+// @alpha
+export class RemoteExtensionProvider implements ExtensionProvider {
+    constructor(_props: RemoteExtensionProviderProps);
+    execute(): Promise<string>;
+    getManifest(): Promise<ExtensionManifest>;
+    readonly hostname: string;
+    }
+
+// @alpha
+export interface RemoteExtensionProviderProps {
+    jsUrl: string;
+    manifestUrl: string;
+}
+
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
@@ -9090,6 +9102,9 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 // @alpha (undocumented)
 export type ResolveFunc = () => Promise<any>;
 
+// @alpha (undocumented)
+export type ResolveManifestFunc = () => Promise<ExtensionManifest>;
+
 // @internal
 export type RootIModelTile = Tile & {
     tileScreenSize: number;
@@ -9554,6 +9569,20 @@ export interface SelectReplaceEvent {
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Replace;
+}
+
+// @alpha
+export class ServiceExtensionProvider implements ExtensionProvider {
+    constructor(_props: ServiceExtensionProviderProps);
+    execute(): Promise<any>;
+    getManifest(): Promise<ExtensionManifest>;
+    }
+
+// @alpha
+export interface ServiceExtensionProviderProps {
+    iTwinId: string;
+    name: string;
+    version: string;
 }
 
 // @public
@@ -10122,6 +10151,15 @@ export class SuspendedToolState {
     // (undocumented)
     stop(): void;
     }
+
+// @public
+export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports;
+
+// @public
+export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
+
+// @public
+export function synchronizeViewportViews(source: Viewport): SynchronizeViewports;
 
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
@@ -10715,6 +10753,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    get edgeOptions(): EdgeOptions;
+    // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
@@ -10727,6 +10767,9 @@ export class TileAdmin {
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
+    // @internal (undocumented)
+    get generateAllPolyfaceEdges(): boolean;
+    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -10843,6 +10886,8 @@ export namespace TileAdmin {
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
+        // @beta
+        generateAllPolyfaceEdges?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal
