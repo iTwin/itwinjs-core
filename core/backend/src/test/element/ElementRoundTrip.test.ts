@@ -737,8 +737,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       extraProps: Partial<PhysicalElementProps> = {},
       {
         /**
-         * setting geometry will override the passed placement with a calculated one,
-         * so we can expect a different bounding box than that which is passed in
+         * setting some geometry will override the passed bounding box with a calculated one,
+         * so we need to be able to override parts of the expected placement based on the geometry used
          */
         expectedPlacementOverrides = {},
       }: {
