@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Omit authorization in RPC communication between mobile frontend and backend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
