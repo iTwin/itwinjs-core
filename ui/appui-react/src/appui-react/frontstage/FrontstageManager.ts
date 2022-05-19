@@ -408,8 +408,7 @@ export class FrontstageManager {
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     const key = FrontstageManager.getFrontstageKey(frontstageProvider.id);
-    if (key)
-      FrontstageManager._frontstageDefs.delete(key);
+    key && FrontstageManager._frontstageDefs.delete(key);
     FrontstageManager._frontstageProviders.set(frontstageProvider.id, frontstageProvider);
   }
 
