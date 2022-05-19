@@ -7,9 +7,11 @@ trigger:
 
 jobs:
   - job:
-    timeoutInMinutes: 720
+    timeoutInMinutes: 180
     pool:
-      vmImage: ubuntu-latest
+      name: iModelTechCI
+      demands:
+      - Agent.OS -equals Linux
     variables:
       VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
     workspace:
