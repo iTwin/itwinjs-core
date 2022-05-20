@@ -14,7 +14,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/projects-client': ^0.6.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
       '@types/jsonwebtoken': ^8.5.0
@@ -64,7 +64,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
       '@types/jsonwebtoken': 8.5.8
@@ -98,7 +98,7 @@ importers:
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -148,7 +148,7 @@ importers:
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -177,7 +177,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -191,7 +191,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -209,7 +209,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -236,7 +236,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -259,7 +259,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -285,7 +285,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.1
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -307,7 +307,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
@@ -329,7 +329,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/glob': 5.0.37
       '@types/mocha': 8.2.3
@@ -354,7 +354,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -381,7 +381,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.1
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -488,7 +488,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/body-parser': ^1.17.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
       '@types/mocha': ^8.2.2
@@ -514,7 +514,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/body-parser': 1.19.2
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/express': 4.17.13
       '@types/express-ws': 3.0.1
       '@types/mocha': 8.2.3
@@ -563,7 +563,7 @@ importers:
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
       '@types/lodash': ^4.14.0
@@ -617,7 +617,7 @@ importers:
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/webgl-compatibility': link:../webgl-compatibility
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1
       '@types/lodash': 4.14.180
@@ -676,7 +676,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -695,7 +695,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -718,7 +718,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -741,7 +741,7 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -798,7 +798,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@svgdotjs/svg.js': 3.0.13
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -821,7 +821,7 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -844,7 +844,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
@@ -882,7 +882,7 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../../presentation/common
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.180
@@ -905,7 +905,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -921,7 +921,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -939,7 +939,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
@@ -957,7 +957,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/glob': 5.0.37
       '@types/mocha': 8.2.3
@@ -979,7 +979,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -996,7 +996,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -1016,7 +1016,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1043,7 +1043,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1066,7 +1066,7 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -1083,7 +1083,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -1102,7 +1102,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1123,7 +1123,7 @@ importers:
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
       '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1144,7 +1144,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/linear-referencing-common': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1162,7 +1162,7 @@ importers:
       '@itwin/core-common': link:../../../core/common
       '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
       '@itwin/linear-referencing-common': link:../common
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1180,7 +1180,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
@@ -1194,7 +1194,7 @@ importers:
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
       '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       chai: 4.3.6
@@ -1211,7 +1211,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1227,7 +1227,7 @@ importers:
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
       '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1270,7 +1270,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/semver': ^7.3.9
@@ -1285,7 +1285,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/semver': 7.3.9
@@ -1337,7 +1337,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': ^3.2.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -1359,7 +1359,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': 3.3.0_electron@14.2.8
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -1382,7 +1382,7 @@ importers:
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.1
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1409,7 +1409,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': 3.3.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -1469,7 +1469,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1521,7 +1521,7 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1559,7 +1559,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-react': ^1.32.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1599,7 +1599,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/itwinui-css': 0.53.0
       '@itwin/itwinui-react': 1.34.2_react-dom@17.0.2+react@17.0.2
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1681,7 +1681,7 @@ importers:
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.6.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1747,7 +1747,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -1787,7 +1787,7 @@ importers:
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.7.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1845,7 +1845,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': 3.3.0_electron@14.2.8
       '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -1889,7 +1889,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1941,7 +1941,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/express-server': link:../../core/express-server
       '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1979,7 +1979,7 @@ importers:
       '@itwin/presentation-testing': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2039,7 +2039,7 @@ importers:
       '@itwin/presentation-testing': link:../../presentation/testing
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-subset': 1.3.1
@@ -2096,7 +2096,7 @@ importers:
       '@itwin/core-mobile': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/express': ^4.16.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -2131,7 +2131,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/express': 4.17.13
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -2169,7 +2169,7 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.1
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -2220,7 +2220,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -2245,7 +2245,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2288,7 +2288,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-subset': 1.3.1
@@ -2326,7 +2326,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2361,7 +2361,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-subset': 1.3.1
@@ -2407,7 +2407,7 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2467,7 +2467,7 @@ importers:
       '@itwin/presentation-frontend': link:../frontend
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-subset': 1.3.1
@@ -2514,7 +2514,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/deep-equal': ^1
@@ -2550,7 +2550,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/deep-equal': 1.0.1
@@ -2592,7 +2592,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/faker': ^4.1.0
@@ -2632,7 +2632,7 @@ importers:
       '@itwin/presentation-common': link:../common
       '@itwin/presentation-components': link:../components
       '@itwin/presentation-frontend': link:../frontend
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/faker': 4.1.12
@@ -2888,7 +2888,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/yargs': ^17.0.10
@@ -2908,7 +2908,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/yargs': 17.0.10
@@ -3033,7 +3033,7 @@ importers:
       '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/node-cli-authorization': ~0.9.0
       '@itwin/projects-client': ^0.6.0
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -3065,7 +3065,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -3490,7 +3490,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/detect-port': ~1.1.0
       '@types/express': ^4.16.1
       '@types/lodash': ^4.14.0
@@ -3526,7 +3526,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/detect-port': 1.1.0
       '@types/express': 4.17.13
       '@types/lodash': 4.14.180
@@ -3551,7 +3551,7 @@ importers:
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -3584,7 +3584,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-string': 1.4.2
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -3677,7 +3677,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/fs-extra': ^4.0.7
@@ -3723,7 +3723,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/fs-extra': 4.0.12
@@ -3750,7 +3750,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -3782,7 +3782,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -3820,7 +3820,7 @@ importers:
       '@itwin/itwinui-react': ^1.32.0
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -3875,7 +3875,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -3939,7 +3939,7 @@ importers:
       '@itwin/presentation-testing': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -4022,7 +4022,7 @@ importers:
       '@itwin/presentation-testing': link:../../presentation/testing
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -4083,7 +4083,7 @@ importers:
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -4183,7 +4183,7 @@ importers:
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/user-event': 13.5.0_@testing-library+dom@8.12.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -4247,7 +4247,7 @@ importers:
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -4315,7 +4315,7 @@ importers:
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@testing-library/user-event': 13.5.0_@testing-library+dom@8.12.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -4376,7 +4376,7 @@ importers:
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
@@ -4448,7 +4448,7 @@ importers:
       '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@testing-library/user-event': 13.5.0_@testing-library+dom@8.12.0
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
@@ -4497,7 +4497,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
+      '@types/chai': 4.3.1
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/yargs': ^17.0.10
@@ -4516,7 +4516,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/glob': 5.0.37
       '@types/mocha': 8.2.3
       '@types/yargs': 17.0.10
@@ -7889,33 +7889,33 @@ packages:
   /@types/chai-as-promised/7.1.5:
     resolution: {integrity: sha512-jStwss93SITGBwt/niYrkf2C+/1KTeZCZl1LaeezTlqppAKeoQC7jxyqYuP72sxBGKCIbw7oHgbYssIRzT5FCQ==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
 
   /@types/chai-jest-snapshot/1.3.6:
     resolution: {integrity: sha512-S/VXP6JKgoJVHafH4Z1FWyCXxaHVYNPj7EMYdW1go8hXVeQkmwY0mqyTCN/nL/Zu2tuRb9MkDaLqST7suVnbjw==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
 
   /@types/chai-spies/1.0.3:
     resolution: {integrity: sha512-RBZjhVuK7vrg4rWMt04UF5zHYwfHnpk5mIWu3nQvU3AKGDixXzSjZ6v0zke6pBcaJqMv3IBZ5ibLWPMRDL0sLw==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
     dev: true
 
   /@types/chai-string/1.4.2:
     resolution: {integrity: sha512-ld/1hV5qcPRGuwlPdvRfvM3Ka/iofOk2pH4VkasK4b1JJP1LjNmWWn0LsISf6RRzyhVOvs93rb9tM09e+UuF8Q==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
     dev: true
 
   /@types/chai-subset/1.3.1:
     resolution: {integrity: sha512-Aof+FLfWzBPzDgJ2uuBuPNOBHVx9Siyw4vmOcsMgsuxX1nfUWSlzpq4pdvQiaBgGjGS7vP/Oft5dpJbX4krT1A==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
 
-  /@types/chai/4.3.0:
-    resolution: {integrity: sha512-/ceqdqeRraGolFTcfoXNiqjyQhZzbINDngeoAq9GoHa8PPK1yNzTaxWjA6BFWp5Ua9JpXEMSS4s5i9tS0hOJtw==}
+  /@types/chai/4.3.1:
+    resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
 
   /@types/cheerio/0.22.31:
     resolution: {integrity: sha512-Kt7Cdjjdi2XWSfrZ53v4Of0wG3ZcmaegFXjMmz9tfNrZSkzzo36G0AL1YqSdcIA78Etjt6E609pt5h1xnQkPUw==}
@@ -8380,7 +8380,7 @@ packages:
   /@types/sinon-chai/3.2.8:
     resolution: {integrity: sha512-d4ImIQbT/rKMG8+AXpmcan5T2/PNeSjrYhvkwet6z0p8kzYtfgA32xzOBlbU0yqJfq+/0Ml805iFoODO0LP5/g==}
     dependencies:
-      '@types/chai': 4.3.0
+      '@types/chai': 4.3.1
       '@types/sinon': 9.0.11
 
   /@types/sinon/9.0.11:

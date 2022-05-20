@@ -34,7 +34,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
     "chai": "^4.1.2",

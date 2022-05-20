@@ -5,24 +5,24 @@
 
 import { assert, expect } from "chai";
 import * as path from "path";
-import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
-import { Schema } from "@itwin/ecschema-metadata";
-import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
-  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
-  GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect,
+  FunctionalSchema, GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { deepEqualWithFpTolerance, ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import {
-  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
-  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
+  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps,
+  ElementProps, EntityMetaData, FontProps, GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps,
+  PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance,
+  SubjectProps, ViewDetails3dProps,
 } from "@itwin/core-common";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Schema } from "@itwin/ecschema-metadata";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
-
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
@@ -210,12 +210,12 @@ export async function assertIdentityTransformation(
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
   remapper:
-  | IModelTransformer
-  | ((id: Id64String) => Id64String)
-  | {
-    findTargetCodeSpecId: (id: Id64String) => Id64String;
-    findTargetElementId: (id: Id64String) => Id64String;
-  } = (id: Id64String) => id,
+    | IModelTransformer
+    | ((id: Id64String) => Id64String)
+    | {
+      findTargetCodeSpecId: (id: Id64String) => Id64String;
+      findTargetElementId: (id: Id64String) => Id64String;
+    } = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
@@ -332,7 +332,7 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
+      const _eq = deepEqualWithFpTolerance(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
@@ -471,7 +471,7 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1,relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
