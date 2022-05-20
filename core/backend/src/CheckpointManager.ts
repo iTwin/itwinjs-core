@@ -188,8 +188,9 @@ export class V2CheckpointManager {
       const container = this.getContainer(v2props);
       if (!container.isConnected)
         container.connect(this.cloudCache);
+      const nRequests = process.env.PREFETCH_NREQUESTS ? parseInt(process.env.PREFETCH_NREQUESTS) : 10;
       if (process.env.PREFETCHBEFOREOPEN) {
-        const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
+        const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName, {nRequests});
         if (process.env.PREFETCH_TIME) {
           const stopwatch = new StopWatch("prefetch", true);
           await prefetchObject.promise;
