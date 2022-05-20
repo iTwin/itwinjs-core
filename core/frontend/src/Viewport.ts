@@ -2459,7 +2459,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
-  /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]], the entire view is captured.
+  /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
    * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
    * @param flipVertically If true, the image is flipped along the x-axis.
