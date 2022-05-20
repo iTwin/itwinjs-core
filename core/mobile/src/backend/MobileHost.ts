@@ -116,7 +116,7 @@ export class MobileHost {
   /**  @internal */
   public static async authGetAccessToken() {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+      this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
           reject(error);
         }
