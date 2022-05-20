@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClassInfo } from "@itwin/presentation-common";
-import { act, fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
+import { UiComponents } from "@itwin/components-react";
+import { EmptyLocalization } from "@itwin/core-common";
+import { ClassInfo } from "@itwin/presentation-common";
+import { act, fireEvent, render } from "@testing-library/react";
 import { ECInstanceFilterBuilder } from "../../presentation-components";
 import { stubRaf } from "./Common";
 
@@ -16,6 +18,14 @@ describe("ECInstanceFilter", () => {
     { id: "0x1",name: "Schema:Class1", label: "Class1" },
     { id: "0x2",name: "Schema:Class2", label: "Class2" },
   ];
+
+  before(async () => {
+    await UiComponents.initialize(new EmptyLocalization());
+  });
+
+  after(() => {
+    UiComponents.terminate();
+  });
 
   it("invokes 'onClassSelected' when non selected class is clicked", () => {
     const spy = sinon.spy();

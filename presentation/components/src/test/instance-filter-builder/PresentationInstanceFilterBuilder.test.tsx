@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FilterRuleOperator, getFilterRuleOperatorLabel } from "@itwin/components-react";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Descriptor } from "@itwin/presentation-common";
-import { createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField } from "@itwin/presentation-common/lib/cjs/test";
-import { act, render, waitFor } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { FilterRuleOperator, getFilterRuleOperatorLabel, UiComponents } from "@itwin/components-react";
+import { EmptyLocalization } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Descriptor } from "@itwin/presentation-common";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { act, render, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import { PresentationInstanceFilterBuilder, usePresentationInstanceFilteringProps } from "../../presentation-components";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import { stubRaf } from "./Common";
@@ -32,11 +35,13 @@ describe("PresentationInstanceFilter", () => {
   });
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(() => {
+  before(async () => {
+    await UiComponents.initialize(new EmptyLocalization());
     Element.prototype.scrollIntoView = sinon.stub();
   });
 
   after(() => {
+    UiComponents.terminate();
     sinon.restore();
   });
 

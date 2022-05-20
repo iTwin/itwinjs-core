@@ -257,7 +257,7 @@ Object {
           "valueFormat": "Primitive",
         },
       },
-      "operator": "IS NULL",
+      "operator": 9,
       "value": undefined,
     },
     Object {
@@ -287,10 +287,10 @@ Object {
           "valueFormat": "Primitive",
         },
       },
-      "operator": "IS NULL",
+      "operator": 9,
       "value": undefined,
     },
   ],
-  "operator": "AND",
+  "operator": 0,
 }
 `;

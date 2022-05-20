@@ -53,9 +53,10 @@ export function FilterBuilder(props: FilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
   const [state, dispatch] = useFilterBuilderState();
 
+  const filter = React.useMemo(() => buildFilter(state.rootGroup), [state]);
   React.useEffect(() => {
-    onFilterChanged(buildFilter(state.rootGroup));
-  }, [state, onFilterChanged]);
+    onFilterChanged(filter);
+  }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<FilterBuilderContext>(() => ({dispatch, properties, onRulePropertySelected}), [dispatch, properties, onRulePropertySelected]);
   const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);

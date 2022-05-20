@@ -10,6 +10,7 @@ import { FilterBuilderRuleGroup } from "../../components-react/filter-builder/Fi
 import { FilterBuilderRuleGroupRenderer, FilterBuilderRuleGroupRendererProps } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
 import { FilterRuleGroupOperator } from "../../components-react/filter-builder/Operators";
 import { renderWithContext } from "./Common";
+import TestUtils from "../TestUtils";
 
 describe("<FilterBuilderRuleGroupRenderer", () => {
   const rootGroup: FilterBuilderRuleGroup = {
@@ -21,6 +22,14 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
     group: rootGroup,
     path: [],
   };
+
+  beforeEach(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
+  afterEach(() => {
+    TestUtils.terminateUiComponents();
+  });
 
   it("does not render remove button for root group", () => {
     const {queryByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer {...defaultProps} />);
@@ -69,7 +78,7 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
       }}
     />);
 
-    getByText("OR");
+    getByText("Or");
   });
 
   it("dispatches add rule event when button is clicked", () => {
@@ -125,7 +134,7 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
 
     selector?.click();
 
-    getByText("OR").click();
+    getByText("Or").click();
 
     expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_GROUP_OPERATOR", path: defaultProps.path, operator: FilterRuleGroupOperator.Or});
   });

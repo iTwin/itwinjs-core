@@ -13,34 +13,33 @@
     border-color: t(iui-color-background-border);
   }
 
-  .header {
+  .rule-group-header {
     display: grid;
     grid-template-columns: auto auto;
-    align-items: center;
     padding: 5px 0;
 
     .rule-group-operator {
       margin-right: auto;
     }
 
-    .actions {
+    .rule-group-actions {
       margin-left: auto;
       visibility: hidden;
     }
 
-    &:hover .actions {
+    &:hover .rule-group-actions {
       visibility: visible;
     }
   }
 
-  .items {
+  .rule-group-items {
     padding: 0 0 10px 10px;
 
     &:empty {
       padding-bottom: 0px;
     }
 
-    .group-or-rule {
+    .rule-group-or-rule {
       position: relative;
       padding-left: 10px;
       margin-bottom: 10px;
@@ -77,16 +76,16 @@
       }
     }
 
-    .group-or-rule:first-child::before {
+    .rule-group-or-rule:first-child::before {
       top: -15px;
       height: calc(50% + 15px);
     }
 
-    .group-or-rule:last-child::before {
+    .rule-group-or-rule:last-child::before {
       border-bottom-left-radius: $iui-border-radius;
     }
 
-    .group-or-rule:last-child::after {
+    .rule-group-or-rule:last-child::after {
       display: none;
     }
   }
@@ -95,22 +94,16 @@
 .rule {
   display: grid;
   grid-template-columns: auto auto;
-  align-items: center;
 
   .rule-condition {
     display: grid;
-    grid-template-columns: minmax(auto, 400px) minmax(auto, 150px) minmax(auto, max-content);
-    align-items: center;
+    grid-template-columns: minmax(auto, 400px) 150px auto;
     grid-column-gap: 5px;
 
-    .rule-property {
-      grid-column: 1;
-
-      .iui-input {
-        padding-top: 1.5px;
-        padding-bottom: 1.5px;
-        min-height: 27px;
-      }
+    .rule-property .iui-input {
+      padding-top: 1.5px;
+      padding-bottom: 1.5px;
+      min-height: 27px;
     }
   }
 

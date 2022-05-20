@@ -31,9 +31,9 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
   }, [path, dispatch]);
 
   return <div className="rule-group">
-    <div className="header">
+    <div className="rule-group-header">
       <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
-      <ButtonGroup className="actions">
+      <ButtonGroup className="rule-group-actions">
         <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
           {React.useMemo(() => UiComponents.localization.getLocalizedString("UiComponents:filterBuilder.rule"), [])}
         </Button>
@@ -43,7 +43,7 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
         {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
       </ButtonGroup>
     </div>
-    <div className="items">
+    <div className="rule-group-items">
       {group.items.map((item) => <FilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
     </div>
   </div>;
@@ -76,7 +76,7 @@ interface FilterBuilderGroupOrRuleProps {
 function FilterBuilderGroupOrRule({path, item}: FilterBuilderGroupOrRuleProps) {
   const itemPath = React.useMemo(() => ([...path, item.id]), [path, item]);
 
-  return <div className="group-or-rule">
+  return <div className="rule-group-or-rule">
     {isFilterBuilderRuleGroup(item)
       ? <FilterBuilderRuleGroupRenderer path={itemPath} group={item} />
       :<FilterBuilderRuleRenderer path={itemPath} rule={item} />}
