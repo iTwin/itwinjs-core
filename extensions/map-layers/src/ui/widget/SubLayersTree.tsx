@@ -13,7 +13,7 @@ import {
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
-import { Input } from "@itwin/itwinui-react";
+import { Button, Input } from "@itwin/itwinui-react";
 import * as React from "react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
@@ -151,12 +151,12 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
-          <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
+          <Button size="small"styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
+          </Button>,
+          <Button size="small"styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
       {/* <div ref={ref} className="map-manager-sublayer-tree-content"> */}

@@ -7,9 +7,11 @@ internal;addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs
 internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 internal;addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState
 internal;addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState
+internal;AnimateDockedToolSettingsContext: React.Context
 internal;AppButton 
 internal;AppButtonProps 
 internal;AppContent: React.NamedExoticComponent
+internal;AutoCollapseUnpinnedPanelsContext: React.Context
 internal;BackArrow 
 internal;BackArrowProps 
 internal;BackButton 
@@ -445,6 +447,7 @@ deprecated;TooltipDefaultProps = Pick
 beta;TooltipProps 
 deprecated;TooltipProps 
 internal;TopPanelSide = "top"
+internal;UiIsVisibleContext: React.Context
 internal;UpdateWindowResizeSettings 
 internal;useActiveTab(): TabState | undefined
 internal;useAllowedPanelTarget(): boolean

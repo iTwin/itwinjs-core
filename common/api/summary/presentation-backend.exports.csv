@@ -20,6 +20,7 @@ public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
+public;PresentationPropsBase 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions

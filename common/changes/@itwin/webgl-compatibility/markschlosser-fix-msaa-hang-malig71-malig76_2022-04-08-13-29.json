@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/webgl-compatibility",
+      "comment": "Do not allow buggy GPUs to render MSAA.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility"
+}

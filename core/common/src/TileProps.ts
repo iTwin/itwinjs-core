@@ -64,6 +64,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 /** Metadata describing the version/format of the tiles supplied by the backend.
  * @see [[TileAdmin.queryVersionInfo]].
  * @public
+ * @extensions
  */
 export interface TileVersionInfo {
   /** The exact version of the "iMdl" tile format used by the backend when generating tile content.

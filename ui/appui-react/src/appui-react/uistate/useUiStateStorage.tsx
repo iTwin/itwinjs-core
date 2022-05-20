@@ -35,6 +35,7 @@ export function UiStateStorageHandler(props: UiSettingsProviderProps) {
   const [stateStorage, setStateStorage] = React.useState(UiFramework.getUiStateStorage());
 
   React.useEffect(() => {
+    // istanbul ignore next
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SyncUiEventId.UiStateStorageChanged]))
         setStateStorage(UiFramework.getUiStateStorage());

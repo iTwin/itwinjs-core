@@ -7,12 +7,14 @@
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
+import { Buffer } from "buffer";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
  *
  * @public
+ * @extensions
  */
 export enum QueryRowFormat {
   /** Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql.
@@ -31,6 +33,7 @@ export enum QueryRowFormat {
 /**
  * Specify limit or range of rows to return
  * @public
+ * @extensions
  * */
 export interface QueryLimit {
   /** Number of rows to return */
@@ -59,6 +62,7 @@ export interface DbRuntimeStats {
 /**
  * Quota hint for the query.
  * @public
+ * @extensions
  * */
 export interface QueryQuota {
   /** Max time allowed in seconds. This is hint and may not be honoured but help in prioritize request */
@@ -69,7 +73,8 @@ export interface QueryQuota {
 /**
  * Config for all request made to concurrent query engine.
  * @public
- * */
+ * @extensions
+ */
 export interface BaseReaderOptions {
   /** Determine priority of this query default to 0, used as hint and can be overriden by backend. */
   priority?: number;
@@ -85,6 +90,7 @@ export interface BaseReaderOptions {
 /**
  * ECSql query config
  * @public
+ * @extensions
  * */
 export interface QueryOptions extends BaseReaderOptions {
   /**
@@ -131,7 +137,7 @@ export class QueryOptionsBuilder {
   public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
   public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
   public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
-  public setRowFormat(val: QueryRowFormat){ this._options.rowFormat = val; return this; }
+  public setRowFormat(val: QueryRowFormat) { this._options.rowFormat = val; return this; }
 }
 /** @beta */
 export class BlobOptionsBuilder {

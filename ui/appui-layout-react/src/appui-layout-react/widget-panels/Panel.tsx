@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
+import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
@@ -166,14 +166,14 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   const [transition, setTransition] = React.useState<"init" | "transition" | undefined>();
   const [panelSize, setPanelSize] = React.useState<number | undefined>();
   const [initializing, setInitializing] = React.useState(false);
+  const autoCollapseUnpinnedPanels = React.useContext(AutoCollapseUnpinnedPanelsContext);
+
   const horizontal = isHorizontalPanelSide(panel.side);
   const style = React.useMemo(() => {
-    let size = panel.collapsed ? 0 : panel.size;
+    let size = panel.collapsed ? 0 : panel.size ?? panel.minSize;
     if (panelSize !== undefined)
       size = panelSize;
 
-    if (size === undefined)
-      return undefined;
     if (isHorizontalPanelSide(panel.side))
       return {
         height: `${size}px`,
@@ -181,7 +181,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     return {
       width: `${size}px`,
     };
-  }, [panel.side, panel.size, panel.collapsed, panelSize]);
+  }, [panel.side, panel.size, panel.collapsed,  panel.minSize, panelSize]);
   const contentStyle = React.useMemo(() => {
     if (contentSize === undefined)
       return undefined;
@@ -338,6 +338,26 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     }
     return styleToApply;
   }, [horizontal, panel.splitterPercent]);
+
+  React.useLayoutEffect(() => {
+    if (!ref.current || !autoCollapseUnpinnedPanels)
+      return;
+
+    const panelRef = ref.current;
+    const listener = () => {
+      if (collapsing.current || panel.collapsed || panel.pinned)
+        return;
+      dispatch({
+        type: "PANEL_SET_COLLAPSED",
+        collapsed: true,
+        side: panel.side,
+      });
+    };
+    panelRef.addEventListener("mouseleave", listener);
+    return () => {
+      panelRef.removeEventListener("mouseleave", listener);
+    };
+  }, [dispatch, panel.collapsed, panel.pinned, panel.side, autoCollapseUnpinnedPanels]);
 
   /* istanbul ignore next */
   return (

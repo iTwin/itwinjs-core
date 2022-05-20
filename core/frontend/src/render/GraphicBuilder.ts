@@ -6,11 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -23,6 +23,7 @@ import { GraphicPrimitive } from "./GraphicPrimitive";
  *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
  * @public
+ * @extensions
  */
 export enum GraphicType {
   /**
@@ -81,6 +82,7 @@ export enum GraphicType {
  * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
  * pass `{ noHilite: true }` to [[readElementGraphics]].
  * @public
+ * @extensions
  */
 export interface BatchOptions {
   /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
@@ -99,18 +101,27 @@ export interface BatchOptions {
 
 /** Options used as part of [[GraphicBuilderOptions]] to describe a [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) [[RenderGraphic]].
  * @public
+ * @extensions
  */
 export interface PickableGraphicOptions extends BatchOptions {
-  /** Unique identifier for the graphic.
+  /** A unique identifier for the graphic.
    * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
+   * @see [[GraphicBuilder.activatePickableId]] or [[GraphicBuilder.activateFeature]] to change the pickable object while adding geometry.
    */
   id: Id64String;
+  /** Optional Id of the subcategory with which the graphic should be associated. */
+  subCategoryId?: Id64String;
+  /** Optional geometry class for the graphic - defaults to [GeometryClass.Primary]($common). */
+  geometryClass?: GeometryClass;
+  /** The optional Id of the model with which the graphic should be associated. */
+  modelId?: Id64String;
 }
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
  * @see [[CustomGraphicBuilderOptions]] to create a graphic builder unassociated with any [[Viewport]].
  * @public
+ * @extensions
  */
 export interface GraphicBuilderOptions {
   /** The type of graphic to produce. */
@@ -161,6 +172,7 @@ export interface GraphicBuilderOptions {
  * Default values for [[GraphicBuilderOptions.wantNormals]] and [[GraphicBuilderOptions.generateEdges]] will be determined by the viewport's [ViewFlags]($common).
  * The [[GraphicBuilder.iModel]] will be set to the viewport's [[IModelConnection]].
  * @public
+ * @extensions
  */
 export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
   /** The viewport in which the resultant [[RenderGraphic]] is to be drawn. */
@@ -178,6 +190,7 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
  * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
  * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
  * @public
+ * @extensions
  */
 export interface ComputeChordToleranceArgs {
   /** The graphic builder being used to produce the graphics. */
@@ -191,6 +204,7 @@ export interface ComputeChordToleranceArgs {
  * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
  * independently of each viewport's [Frustum]($common).
  * @public
+ * @extensions
  */
 export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
   /** Optionally, the IModelConnection with which the graphic is associated. */
@@ -215,6 +229,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
  * So, for example, if you pass an array of points to addLineString(), you should not subsequently modify that array.
  *
  * @public
+ * @extensions
  */
 export abstract class GraphicBuilder {
   /** The local coordinate system transform applied to this builder's geometry.
@@ -295,6 +310,7 @@ export abstract class GraphicBuilder {
 
   /** The Id to be associated with the graphic for picking.
    * @see [[GraphicBuilderOptions.pickable]] for more options.
+   * @deprecated This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
    */
   public get pickId(): Id64String | undefined {
     return this.pickable?.id;
@@ -340,6 +356,31 @@ export abstract class GraphicBuilder {
    * @see [[GraphicBuilder.setSymbology]] for a convenient way to set common symbology options.
    */
   public abstract activateGraphicParams(graphicParams: GraphicParams): void;
+
+  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
+   * This default implementation does nothing.
+   */
+  protected _activateFeature(_feature: Feature): void { }
+
+  /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
+   * for more efficient rendering.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
+  public activateFeature(feature: Feature): void {
+    assert(undefined !== this._options.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
+    if (this._options.pickable)
+      this._activateFeature(feature);
+  }
+
+  /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
+   * for more efficient rendering. This method calls [[activateFeature]], using the subcategory Id and [GeometryClass]($common) specified in [[GraphicBuilder.pickable]]
+   * at construction, if any.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
+  public activatePickableId(id: Id64String): void {
+    const pick = this._options.pickable;
+    this.activateFeature(new Feature(id, pick?.subCategoryId, pick?.geometryClass));
+  }
 
   /**
    * Appends a 3d line string to the builder.

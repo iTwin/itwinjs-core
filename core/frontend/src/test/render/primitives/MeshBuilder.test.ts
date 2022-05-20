@@ -103,7 +103,7 @@ describe("Mesh Builder Tests", () => {
 
     // calls addPolyline for each stroke points list in strokes
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addStrokePointLists(strksPrims, false, fillColor);
+    mb.addStrokePointLists(strksPrims, false, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(strksPrims.length);
     const lengthA = mb.mesh.points.length;
     const lengthB = strksPrims[0].points.length;
@@ -113,7 +113,7 @@ describe("Mesh Builder Tests", () => {
     mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(mb.mesh.polylines!.length).to.equal(0);
     expect(mb.mesh.points.length).to.equal(0);
-    mb.addStrokePointLists(strksPrims, true, fillColor);
+    mb.addStrokePointLists(strksPrims, true, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(strksPrims.length);
     expect(mb.mesh.points.length).to.equal(strksPrims[0].points.length);
   });
@@ -137,7 +137,7 @@ describe("Mesh Builder Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     // query polyface list from loopGeom
     const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
@@ -160,7 +160,7 @@ describe("Mesh Builder Tests", () => {
 
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyface(pfPrim.indexedPolyface, { edgeOptions, includeParams, fillColor });
+    mb.addFromPolyface(pfPrim.indexedPolyface, { edgeOptions, includeParams, fillColor }, undefined);
 
     expect(mb.triangleSet.length).to.equal(2);
   });
@@ -185,7 +185,7 @@ describe("Mesh Builder Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     // query polyface list from loopGeom
     const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
@@ -209,7 +209,7 @@ describe("Mesh Builder Tests", () => {
     const visitor = pfPrim.indexedPolyface.createVisitor();
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyfaceVisitor(visitor, { edgeOptions, includeParams, fillColor });
+    mb.addFromPolyfaceVisitor(visitor, { edgeOptions, includeParams, fillColor }, undefined);
 
     expect(mb.triangleSet.length).to.equal(1);
   });
@@ -233,7 +233,7 @@ describe("Mesh Builder Tests", () => {
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     // query polyface list from loopGeom
     const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
@@ -259,7 +259,7 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount });
+    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
 
     expect(vertices!.length).to.equal(3);
   });
@@ -281,7 +281,7 @@ describe("Mesh Builder Tests", () => {
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
     // query polyface list from loopGeom
     const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
     if (pfPrimList === undefined)
@@ -302,7 +302,7 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount });
+    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
 
     expect(triangle).to.not.be.undefined;
   });
@@ -326,7 +326,7 @@ describe("Mesh Builder Tests", () => {
     mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPolyline(points, fillColor);
+    mb.addPolyline(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
@@ -334,7 +334,7 @@ describe("Mesh Builder Tests", () => {
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPolyline(points, fillColor);
+    mb.addPolyline(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(0);
   });
 
@@ -357,7 +357,7 @@ describe("Mesh Builder Tests", () => {
     mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPointString(points, fillColor);
+    mb.addPointString(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
@@ -365,7 +365,7 @@ describe("Mesh Builder Tests", () => {
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
-    mb.addPointString(points, fillColor);
+    mb.addPointString(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(0);
   });
 
@@ -422,7 +422,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(3);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -441,7 +441,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2, 3]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -463,7 +463,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [2, 0, 0, 1]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -484,7 +484,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 1, 0]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
 
       const aux = meshBuilder.mesh.auxChannels![0];
       expect(aux.data[0].values).to.deep.equal([

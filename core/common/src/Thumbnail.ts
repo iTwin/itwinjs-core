@@ -10,6 +10,7 @@
  * outside of the image so it can be obtained without having to decode the image data.
  * @see [[ThumbnailProps]]
  * @public
+ * @extensions
  */
 export interface ThumbnailFormatProps {
   /** X size of the image, in pixels. */
@@ -23,6 +24,7 @@ export interface ThumbnailFormatProps {
 /** Describes a thumbnail image for an [[IModel]] or [ViewDefinition]($backend).
  * @see [IModelDb.Views.getThumbnail]($backend) or [IModelConnection.Views.getThumbnail]($frontend) to obtain a thumbnail for a view.
  * @public
+ * @extensions
  */
 export interface ThumbnailProps extends ThumbnailFormatProps {
   /** The image encoded as specified by [[ThumbnailFormatProps.format]]. */

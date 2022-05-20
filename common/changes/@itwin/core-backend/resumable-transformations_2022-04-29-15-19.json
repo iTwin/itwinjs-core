@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add imodel import context state saving/loading functions for transformer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

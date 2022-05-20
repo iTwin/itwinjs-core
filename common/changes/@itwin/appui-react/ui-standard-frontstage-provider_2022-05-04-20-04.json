@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add default tool prop to StandardFrontstageProps to give apps a simple, typesafe way to specify a default tool for their frontstages.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
