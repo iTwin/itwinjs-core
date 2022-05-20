@@ -571,7 +571,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
 // @internal (undocumented)
 export interface ReloadedHierarchyPart {
     // (undocumented)
-    nodeItems: TreeNodeItem[];
+    nodeItems: DelayLoadedTreeNodeItem[];
     // (undocumented)
     offset: number;
     // (undocumented)
