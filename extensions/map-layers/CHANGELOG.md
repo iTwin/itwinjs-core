@@ -1,6 +1,16 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- maplayers widget has been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process. When process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+- Use iTwinUI-react components to get consistent styling. Alos fixed bug with elevation correction control.
+- Fix a display issue with background color's ColorPicker where part of the dialog was missing.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT
