@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { FilterBuilderRuleGroupRenderer, FilterBuilderRuleGroupRendererProps } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
+import { FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { FilterRuleGroupOperator } from "../../components-react/filter-builder/Operators";
-import { renderWithContext } from "./Common";
 import TestUtils from "../TestUtils";
+import { renderWithContext } from "./Common";
 
 describe("<FilterBuilderRuleGroupRenderer", () => {
   const rootGroup: FilterBuilderRuleGroup = {

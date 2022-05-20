@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
 import sinon from "sinon";
+import { render } from "@testing-library/react";
 import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "../../components-react/filter-builder/FilterBuilder";
 
 /** @internal */

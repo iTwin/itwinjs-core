@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
+import * as React from "react";
 import sinon from "sinon";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";

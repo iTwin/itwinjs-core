@@ -5,11 +5,11 @@
 import * as React from "react";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
 import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
+import { UiComponents } from "../UiComponents";
 import { FilterBuilderContext } from "./FilterBuilder";
 import { FilterBuilderRuleRenderer } from "./FilterBuilderRule";
 import { FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup } from "./FilterBuilderState";
 import { FilterRuleGroupOperator } from "./Operators";
-import { UiComponents } from "../UiComponents";
 
 /** @alpha */
 export interface FilterBuilderRuleGroupRendererProps {

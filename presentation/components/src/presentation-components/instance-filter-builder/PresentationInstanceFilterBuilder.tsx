@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ClassInfo, Descriptor } from "@itwin/presentation-common";
-import { ECInstanceFilterBuilder } from "./ECInstanceFilterBuilder";
-import { IModelConnection } from "@itwin/core-frontend";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
-import { Filter } from "@itwin/components-react";
-import { PresentationInstanceFilter, PropertyInfo } from "./Types";
 import { PropertyDescription } from "@itwin/appui-abstract";
+import { Filter } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
+import { ECInstanceFilterBuilder } from "./ECInstanceFilterBuilder";
+import { PresentationInstanceFilter, PropertyInfo } from "./Types";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
 
 export interface PresentationInstanceFilterBuilderProps {
   imodel: IModelConnection;

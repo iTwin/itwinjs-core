@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { FilterRuleGroup, FilterRuleGroupOperator, FilterRuleOperator } from "@itwin/components-react";
 import { Field, PropertyValueFormat } from "@itwin/presentation-common";
-import { createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField } from "@itwin/presentation-common/lib/cjs/test";
-import { expect } from "chai";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import {
+  createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR,
+} from "../../presentation-components/instance-filter-builder/Utils";
 
 describe("createInstanceFilterPropertyInfos", () => {
 
