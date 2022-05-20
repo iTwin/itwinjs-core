@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module InstancesFilter
+ */
+
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { Filter, FilterRule, FilterRuleGroup, isFilterRuleGroup } from "@itwin/components-react";
 import { CategoryDescription, ClassId, Descriptor, Field, FIELD_NAMES_SEPARATOR } from "@itwin/presentation-common";
@@ -9,11 +13,13 @@ import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder
 import { findField } from "../common/Utils";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PropertyInfo } from "./Types";
 
+/** @alpha */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[] {
   const rootCategoryName = findRootCategoryName(descriptor.categories);
   return createPropertyInfos(descriptor, {categoryName: rootCategoryName});
 }
 
+/** @internal */
 export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter) {
   if (isFilterRuleGroup(filter))
     return createPresentationInstanceFilterConditionGroup(descriptor, filter);
@@ -134,6 +140,8 @@ function getPrefixedLabel(label: string, prefix?: string) {
 function getPrefixedString(value: string, prefix?: string) {
   return `${prefix ?? ""}${value}`;
 }
+
+/** @alpha */
 export const INSTANCE_FILTER_FIELD_SEPARATOR="#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;

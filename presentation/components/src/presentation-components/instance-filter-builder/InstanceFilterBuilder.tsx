@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module InstancesFilter
+ */
+
 import * as React from "react";
 import { ActionMeta } from "react-select";
 import { PropertyDescription } from "@itwin/appui-abstract";
@@ -9,9 +13,10 @@ import { Filter, FilterBuilder } from "@itwin/components-react";
 import { Label } from "@itwin/itwinui-react";
 import { ClassInfo } from "@itwin/presentation-common";
 import { MultiTagSelect } from "./MultiTagSelect";
-import "./ECInstanceFilterBuilder.scss";
+import "./InstanceFilterBuilder.scss";
 
-export interface ECInstanceFilterBuilderProps {
+/** @alpha */
+export interface InstanceFilterBuilderProps {
   selectedClasses: ClassInfo[];
   classes: ClassInfo[];
   properties: PropertyDescription[];
@@ -22,7 +27,8 @@ export interface ECInstanceFilterBuilderProps {
   onPropertySelected?: (property: PropertyDescription) => void;
 }
 
-export function ECInstanceFilterBuilder(props: ECInstanceFilterBuilderProps) {
+/** @alpha */
+export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
   const {selectedClasses, classes, properties, onFilterChanged, onPropertySelected, onClassSelected, onClassDeSelected, onClearClasses} = props;
 
   const onSelectChange = React.useCallback((_, action: ActionMeta<ClassInfo>) => {

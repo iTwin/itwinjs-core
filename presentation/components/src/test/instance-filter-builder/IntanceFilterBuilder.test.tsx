@@ -9,10 +9,10 @@ import { UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { ClassInfo } from "@itwin/presentation-common";
 import { act, fireEvent, render } from "@testing-library/react";
-import { ECInstanceFilterBuilder } from "../../presentation-components";
 import { stubRaf } from "./Common";
+import { InstanceFilterBuilder } from "../../presentation-components/instance-filter-builder/InstanceFilterBuilder";
 
-describe("ECInstanceFilter", () => {
+describe("InstanceFilter", () => {
   stubRaf();
   const classInfos: ClassInfo[] = [
     { id: "0x1",name: "Schema:Class1", label: "Class1" },
@@ -29,7 +29,7 @@ describe("ECInstanceFilter", () => {
 
   it("invokes 'onClassSelected' when non selected class is clicked", () => {
     const spy = sinon.spy();
-    const {container, getByTestId} = render(<ECInstanceFilterBuilder
+    const {container, getByTestId} = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[]}
       properties={[]}
@@ -50,7 +50,7 @@ describe("ECInstanceFilter", () => {
 
   it("invokes 'onClassDeselected' when selected class is clicked", () => {
     const spy = sinon.spy();
-    const {container, getByTestId} = render(<ECInstanceFilterBuilder
+    const {container, getByTestId} = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
@@ -71,7 +71,7 @@ describe("ECInstanceFilter", () => {
 
   it("invokes 'onClassDeselected' when remove tag button is clicked", () => {
     const spy = sinon.spy();
-    const {container} = render(<ECInstanceFilterBuilder
+    const {container} = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
@@ -90,7 +90,7 @@ describe("ECInstanceFilter", () => {
 
   it("invokes 'onClearClasses' when clear indicator is clicked", () => {
     const spy = sinon.spy();
-    const {getByTestId} = render(<ECInstanceFilterBuilder
+    const {getByTestId} = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}

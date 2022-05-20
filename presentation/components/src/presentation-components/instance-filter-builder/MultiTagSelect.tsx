@@ -9,6 +9,7 @@ import Component, {
 } from "react-select";
 import { SvgCaretDown, SvgCheckmarkSmall, SvgCloseSmall } from "@itwin/itwinui-icons-react";
 
+/** @internal */
 export function MultiTagSelect<Option>(props: Props<Option>) {
   return <Component
     {...props}

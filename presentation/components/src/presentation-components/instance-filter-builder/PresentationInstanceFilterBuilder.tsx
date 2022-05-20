@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module InstancesFilter
+ */
+
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { Filter } from "@itwin/components-react";
@@ -9,10 +13,11 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
-import { ECInstanceFilterBuilder } from "./ECInstanceFilterBuilder";
+import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilter, PropertyInfo } from "./Types";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
 
+/** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
   imodel: IModelConnection;
   descriptor: Descriptor;
@@ -20,6 +25,7 @@ export interface PresentationInstanceFilterBuilderProps {
   enableClassFilteringByProperties?: boolean;
 }
 
+/** @alpha */
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
   const {imodel, descriptor, onInstanceFilterChanged, enableClassFilteringByProperties} = props;
   const classHierarchyProvider = useECClassHierarchyProvider(imodel);
@@ -30,12 +36,13 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
     onInstanceFilterChanged(presentationFilter);
   }, [descriptor, onInstanceFilterChanged]);
 
-  return <ECInstanceFilterBuilder
-    onFilterChanged={onFilterChanged}
+  return <InstanceFilterBuilder
     {...filteringProps}
+    onFilterChanged={onFilterChanged}
   />;
 }
 
+/** @alpha */
 export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean) {
   const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>([]);
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);

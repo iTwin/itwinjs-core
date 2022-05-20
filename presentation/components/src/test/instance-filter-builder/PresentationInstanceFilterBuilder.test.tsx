@@ -15,8 +15,10 @@ import {
 } from "@itwin/presentation-common/lib/cjs/test";
 import { act, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { PresentationInstanceFilterBuilder, usePresentationInstanceFilteringProps } from "../../presentation-components";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
+import {
+  PresentationInstanceFilterBuilder, usePresentationInstanceFilteringProps,
+} from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { stubRaf } from "./Common";
 
 describe("PresentationInstanceFilter", () => {
