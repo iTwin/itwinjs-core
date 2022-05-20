@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove cached frontstageDef if associated FrontstageProvider is re-registered.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
