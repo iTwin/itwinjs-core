@@ -34,59 +34,59 @@ export interface FilterBuilderRule {
 }
 
 /** @alpha */
-export interface AddItemAction {
+export interface FilterBuilderAddItemAction {
   type: "ADD_ITEM";
   path: string[];
   itemType: "RULE" | "RULE_GROUP";
 }
 
 /** @alpha */
-export interface RemoveItemAction {
+export interface FilterBuilderRemoveItemAction {
   type: "REMOVE_ITEM";
   path: string[];
 }
 
 /** @alpha */
-export interface SetRuleGroupOperatorAction {
+export interface FilterBuilderSetRuleGroupOperatorAction {
   type: "SET_RULE_GROUP_OPERATOR";
   path: string[];
   operator: FilterRuleGroupOperator;
 }
 
 /** @alpha */
-export interface SetRulePropertyAction {
+export interface FilterBuilderSetRulePropertyAction {
   type: "SET_RULE_PROPERTY";
   path: string[];
   property?: PropertyDescription;
 }
 
 /** @alpha */
-export interface SetRuleOperatorAction {
+export interface FilterBuilderSetRuleOperatorAction {
   type: "SET_RULE_OPERATOR";
   path: string[];
   operator: FilterRuleOperator;
 }
 
 /** @alpha */
-export interface SetRuleValueAction {
+export interface FilterBuilderSetRuleValueAction {
   type: "SET_RULE_VALUE";
   path: string[];
   value: PropertyValue;
 }
 
 /** @alpha */
-export interface ResetPropertiesAction {
+export interface FilterBuilderResetPropertiesAction {
   type: "RESET_PROPERTIES";
 }
 
 /** @alpha */
 export type FilterBuilderAction =
-  AddItemAction |
-  RemoveItemAction |
-  SetRuleGroupOperatorAction |
-  SetRulePropertyAction |
-  SetRuleOperatorAction |
-  SetRuleValueAction;
+  FilterBuilderAddItemAction |
+  FilterBuilderRemoveItemAction |
+  FilterBuilderSetRuleGroupOperatorAction |
+  FilterBuilderSetRulePropertyAction |
+  FilterBuilderSetRuleOperatorAction |
+  FilterBuilderSetRuleValueAction;
 
 /** @alpha */
 export const filterBuilderStateReducer: (state: FilterBuilderState, action: FilterBuilderAction) => FilterBuilderState = produce(
