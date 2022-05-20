@@ -206,10 +206,10 @@ async function listWorkspaceDb(args: ListOptions) {
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
-
+    let prefetch: IModelJsNative.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      file.prefetch();
+      prefetch = file.prefetch();
     }
 
     if (!args.strings && !args.blobs && !args.files)
@@ -260,9 +260,9 @@ async function listWorkspaceDb(args: ListOptions) {
     // });
     // showMessage(`done query, time= ${queryTimer.elapsedSeconds.toString()}`);
 
-    if (args.prefetch && cloudContainer) {
-      // await file.prefetchOp?.promise;
-      showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}`);
+    if (prefetch) {
+      const done = await prefetch.promise;
+      showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}, done=${done}`);
     }
   });
 }
