@@ -128,12 +128,16 @@ alpha;FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps)
 alpha;FilterBuilderRuleGroupOperatorProps
 alpha;FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps): JSX.Element
 alpha;FilterBuilderRuleGroupRendererProps
+alpha;FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps): JSX.Element
+alpha;FilterBuilderRuleOperatorProps
 alpha;FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps): JSX.Element
 alpha;FilterBuilderRulePropertyProps
 alpha;FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps): JSX.Element
 alpha;FilterBuilderRuleRendererProps
 alpha;FilterBuilderRuleRenderingContext
 alpha;FilterBuilderRuleRenderingContext: React.Context
+alpha;FilterBuilderRuleValue(props: FilterBuilderRuleValueProps): JSX.Element
+alpha;FilterBuilderRuleValueProps
 alpha;FilterBuilderSetRuleGroupOperatorAction
 alpha;FilterBuilderSetRuleOperatorAction
 alpha;FilterBuilderSetRulePropertyAction

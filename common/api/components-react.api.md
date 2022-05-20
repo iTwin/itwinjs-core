@@ -1147,6 +1147,19 @@ export interface FilterBuilderRuleGroupRendererProps {
 }
 
 // @alpha (undocumented)
+export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface FilterBuilderRuleOperatorProps {
+    // (undocumented)
+    onChange: (operator: FilterRuleOperator) => void;
+    // (undocumented)
+    operator?: FilterRuleOperator;
+    // (undocumented)
+    property: PropertyDescription;
+}
+
+// @alpha (undocumented)
 export function FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps): JSX.Element;
 
 // @alpha (undocumented)
@@ -1180,6 +1193,19 @@ export interface FilterBuilderRuleRenderingContext {
 
 // @alpha (undocumented)
 export const FilterBuilderRuleRenderingContext: React.Context<FilterBuilderRuleRenderingContext>;
+
+// @alpha (undocumented)
+export function FilterBuilderRuleValue(props: FilterBuilderRuleValueProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface FilterBuilderRuleValueProps {
+    // (undocumented)
+    onChange: (value: PropertyValue) => void;
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
 
 // @alpha (undocumented)
 export interface FilterBuilderSetRuleGroupOperatorAction {

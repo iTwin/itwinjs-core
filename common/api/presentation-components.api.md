@@ -166,6 +166,12 @@ export function createFieldInfo(field: Field, namePrefix?: string): {
     enum: EnumerationInfo | undefined;
 };
 
+// @alpha (undocumented)
+export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[];
+
+// @internal (undocumented)
+export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter): PresentationInstanceFilter | undefined;
+
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
 
@@ -334,6 +340,9 @@ export interface IFilteredPresentationTreeDataProvider extends IPresentationTree
     getActiveMatch(index: number): ActiveMatchInfo | undefined;
     nodeMatchesFilter(node: TreeNodeItem): boolean;
 }
+
+// @alpha (undocumented)
+export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 
 // @alpha (undocumented)
 export function InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.Element;

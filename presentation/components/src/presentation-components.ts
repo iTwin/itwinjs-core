@@ -110,6 +110,7 @@ export * from "./presentation-components/unified-selection/UnifiedSelectionConte
 export * from "./presentation-components/instance-filter-builder/InstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/Types";
+export * from "./presentation-components/instance-filter-builder/Utils";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);
