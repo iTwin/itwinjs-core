@@ -27,6 +27,7 @@ import {
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { PresentationManagerDetail } from "../presentation-backend/PresentationManagerDetail";
 import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
@@ -627,12 +628,15 @@ describe("PresentationRpcImpl", () => {
           displayType: testData.displayType,
           keys,
         };
-        presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
-          .returns(async () => descriptor)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getContentDescriptor: sinon.spy(async () => JSON.stringify(descriptor.toJSON())),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(descriptor.toJSON());
+        expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
+        expect(actualResult.result).to.be.equal(JSON.stringify(descriptor.toJSON()));
       });
 
       it("handles undefined descriptor response", async () => {
@@ -649,10 +653,14 @@ describe("PresentationRpcImpl", () => {
           displayType: testData.displayType,
           keys,
         };
-        presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
-          .returns(async () => undefined)
-          .verifiable();
+        const presentationManagerDetailStub = {
+          getContentDescriptor: sinon.spy(async () => undefined),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+        expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.be.undefined;
       });
