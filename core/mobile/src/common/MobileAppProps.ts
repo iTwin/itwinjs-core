@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AccessToken } from "@itwin/core-bentley";
+
 /** @beta */
 export enum Orientation {
   Unknown = 0,
@@ -29,10 +31,11 @@ export interface MobileNotifications {
   notifyEnterForeground: () => void;
   notifyEnterBackground: () => void;
   notifyWillTerminate: () => void;
+  notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
 }
 
 /** @beta */
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
 
 /**
 * The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.
@@ -40,4 +43,5 @@ export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForegr
 */
 export interface MobileAppFunctions {
   reconnect: (connection: number) => Promise<void>;
+  getAccessToken: () => Promise<[AccessToken, string]>;
 }

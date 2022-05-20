@@ -51,3 +51,10 @@ A common strategy is to run with verbose logging on to find the problem element 
 Once the problem area has been identified, you can employ various strategies to set a conditional breakpoint.
 One possibility is to edit the `onTransformElement` method in `Transformer.ts` to add a `if (sourceElement.getDisplayLabel() === "x")` or `if (sourceElement.id === "x")` conditional (using information from the log output) around a "hit problem area" log function call and then set a breakpoint on that log message.
 After rebuilding, re-running, and hitting the breakpoint, you can then step into the core IModelTransformer methods to see what is really going on.
+
+### isolating bad elements
+
+You can pass a comma-separated list of element ids to the `--isolateElements` (such as `id1,id2`) to transform to the specified target
+a filtered iModel containing only the path to the given elements/models specified by the given ids. This can be
+useful to create smaller reproduction iModels with less data that still contain problematic elements. You can also isolate the entire subtrees
+of these elements by using `--isolateTrees` instead of `--isolateElements`.

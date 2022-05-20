@@ -17,7 +17,7 @@ import { ToggleSwitch } from "@itwin/itwinui-react";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
-import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
+import { MapLayerOptions, StyleMapLayerSettings } from "../Interfaces";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
@@ -34,7 +34,7 @@ export interface SourceMapContextProps {
   readonly activeViewport?: ScreenViewport;
   readonly backgroundLayers?: StyleMapLayerSettings[];
   readonly overlayLayers?: StyleMapLayerSettings[];
-  readonly mapTypesOptions?: MapTypesOptions;
+  readonly mapLayerOptions?: MapLayerOptions;
 }
 
 /** @internal */
@@ -418,7 +418,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       refreshFromStyle: handleRefreshFromStyle,
       backgroundLayers: backgroundMapLayers,
       overlayLayers: overlayMapLayers,
-      mapTypesOptions: mapLayerOptions?.mapTypeOptions,
+      mapLayerOptions,
     }}>
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>

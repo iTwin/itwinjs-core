@@ -143,7 +143,10 @@ export class ImageryMapTileTree extends RealityTileTree {
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
-  public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryLoader.getLogo(vp); }
+  public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    this._imageryLoader.addLogoCards(cards, vp);
+  }
+
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
     return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
   }
@@ -178,7 +181,10 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
-  public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryProvider.getLogo(vp); }
+  public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    this._imageryProvider.addLogoCards(cards, vp);
+  }
+
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
