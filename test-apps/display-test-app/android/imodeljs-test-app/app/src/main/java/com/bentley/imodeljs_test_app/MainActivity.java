@@ -16,11 +16,11 @@ public class MainActivity extends AppCompatActivity {
         WebView.setWebContentsDebuggingEnabled(true);
 
         boolean alwaysExtractAssets = true; // for debugging, otherwise the host will only extract when app version changes
-        m_host = new IModelJsHost(this, alwaysExtractAssets);
+        m_host = new IModelJsHost(this, alwaysExtractAssets, true);
         m_host.startup();
 
         String files = getFilesDir().getPath();
-        MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/plant.ibim");
+        MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/apx.bim");
         m_host.setFrontend(frontend);
         setContentView(frontend);
         frontend.loadEntryPoint();

@@ -7,7 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
@@ -45,7 +45,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       continue;
 
     iModelTileTreeIdToString;
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false as const }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)

@@ -9,7 +9,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator, SphereDecorator } from "../../TestDecorators";
+import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators";
 import { expectColors } from "../../ExpectColors";
 import { ViewRect } from "../../../ViewRect";
 import { ViewState } from "../../../ViewState";
@@ -58,8 +58,7 @@ describe("Decorations", () => {
 
   afterEach(() => {
     viewport.dispose();
-    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof BoxDecorator || x instanceof SphereDecorator))
-      IModelApp.viewManager.dropDecorator(decorator);
+    TestDecorator.dropAll();
   });
 
   after(async () => {

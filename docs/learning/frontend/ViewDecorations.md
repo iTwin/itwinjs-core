@@ -70,6 +70,8 @@ The following example illustrates creating a pickable view graphic decoration in
 [[include:Pickable_View_Graphic_Decoration]]
 ```
 
+If you have many decorations to draw with different pickable Ids, it can be more efficient to produce them using a single [GraphicBuilder]($frontend) than producing one graphic per pickable Id. This can be achieved by calling [GraphicBuilder.activatePickableId]($frontend) or to specify the pickable Id to associate with subsequently-added geometry.
+
 ### Canvas Decorations
 
 A [CanvasDecoration]($frontend) is drawn atop the scene using [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D).

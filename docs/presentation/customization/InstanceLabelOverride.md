@@ -48,7 +48,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `onlyIfNotHandled`
 
-Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+When `true`, the rule takes effect only when all other instance label overrides with higher priority are ruled out. This attribute is most useful for defining fallback rules.
 
 |                   |           |
 | ----------------- | --------- |

@@ -386,7 +386,9 @@ export enum BackendLoggerCategory {
     NativeApp = "core-backend.NativeApp",
     PromiseMemoizer = "core-backend.PromiseMemoizer",
     Relationship = "core-backend.Relationship",
-    Schemas = "core-backend.Schemas"
+    Schemas = "core-backend.Schemas",
+    // @internal
+    ViewStateHydrater = "core-backend.ViewStateHydrater"
 }
 
 // @internal
@@ -2204,10 +2206,14 @@ export class IModelCloneContext {
     importFont(sourceFontNumber: number): void;
     get isBetweenIModels(): boolean;
     isSubCategoryFiltered(subCategoryId: Id64String): boolean;
+    // @internal
+    loadStateFromDb(db: SQLiteDb): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     removeElement(sourceId: Id64String): void;
+    // @internal
+    saveStateToDb(db: SQLiteDb): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
 }

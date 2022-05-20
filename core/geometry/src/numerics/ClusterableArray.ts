@@ -52,13 +52,13 @@ export class ClusterableArray extends GrowableBlockedArray {
     for (let i = 0; i < n; i++)
       this._data[i0 + i] = data[i];
   }
-  /** add a block with directly 2 to 5 listed content parameters.
+  /** add a block directly with 1 to 5 listed content parameters.
    * This assumes numDataPerPoint is sufficient for the parameters provided.
    */
-  public addDirect(x0: number, x1: number, x2?: number, x3?: number, x4?: number) {
+  public addDirect(x0: number, x1?: number, x2?: number, x3?: number, x4?: number) {
     const i0 = this.newBlockIndex();
     this._data[i0 + 1] = x0;
-    this._data[i0 + 2] = x1;
+    if (x1 !== undefined) this._data[i0 + 2] = x1;
     if (x2 !== undefined) this._data[i0 + 3] = x2;
     if (x3 !== undefined) this._data[i0 + 4] = x3;
     if (x4 !== undefined) this._data[i0 + 5] = x4;
@@ -341,6 +341,31 @@ export class ClusterableArray extends GrowableBlockedArray {
   }
 
   /**
+   * Returns number array with indices mapping old to new.
+   * @param data numbers to cluster.
+   */
+  public static clusterNumberArray(data: number[], tolerance: number = Geometry.smallMetricDistance): PackedNumbersWithIndex {
+    const clusterArray = new ClusterableArray(1, 0, data.length);
+    data.forEach((x: number) => {clusterArray.addDirect(x);});
+    const order = clusterArray.clusterIndicesLexical(tolerance);
+    const result = new PackedNumbersWithIndex(data.length);
+    let currentClusterIndex = 0;
+    let numThisCluster = 0;
+    order.forEach((k: number) => {
+      if (ClusterableArray.isClusterTerminator(k)) {
+        currentClusterIndex++;
+        numThisCluster = 0;
+      } else {
+        if (numThisCluster === 0)
+          result.packedNumbers.push(data[k]);
+        result.oldToNew[k] = currentClusterIndex;
+        numThisCluster++;
+      }
+    });
+    return result;
+  }
+
+  /**
    * Returns packed points with indices mapping old to new.
    * @param data points to cluster.
    */
@@ -475,6 +500,38 @@ class PackedPoint2dsWithIndex {
     this.oldToNew = new Uint32Array(numOldIndexEntry);
     for (let i = 0; i < numOldIndexEntry; i++) {
       this.oldToNew[i] = PackedPoint2dsWithIndex.invalidIndex;
+    }
+  }
+  /**
+   * Use the oldToNew array to update an array of "old" indices.
+   * @param indices array of indices into prepacked array.
+   * @returns true if all input indices were valid for the oldToNew array.
+   */
+  public updateIndices(indices: number[]): boolean {
+    return updateIndices(indices, this.oldToNew);
+  }
+}
+
+/**
+ * @internal
+ */
+ class PackedNumbersWithIndex {
+  /** Array of numbers */
+  public packedNumbers: number[];
+  /** mapping from old point index to new point index. */
+  public oldToNew: Uint32Array;
+  /** integer value for unknown index. */
+  public static readonly invalidIndex = 0xFFFFffff;
+
+  /** construct a PackedNumbers object with
+   * * empty packedNumbers array
+   * * oldToNew indices all initialized to PackedNumbers.invalidIndex
+   */
+  constructor(numOldIndexEntry: number) {
+    this.packedNumbers = [];
+    this.oldToNew = new Uint32Array(numOldIndexEntry);
+    for (let i = 0; i < numOldIndexEntry; i++) {
+      this.oldToNew[i] = PackedPointsWithIndex.invalidIndex;
     }
   }
   /**

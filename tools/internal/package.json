@@ -23,5 +23,8 @@
   "dependencies": {
     "yargs": "^17.4.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "mocha": "^8.3.2"
+  }
 }

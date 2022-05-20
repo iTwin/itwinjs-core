@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Do not produce mip-maps for reality tile textures.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -205,6 +205,23 @@
         "${workspaceFolder}/extensions/map-layers/lib/**/*.js"
       ]
     },
+    {
+      "name": "MapLayers Auth Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-auth/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
@@ -1348,7 +1365,18 @@
         "--timeout 50000" // for easier debugging
       ],
       "console": "integratedTerminal",
-    }
+    },
+    {
+      "name": "Extension API Generator",
+      "cwd": "${workspaceFolder}/core/extension/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "generate"
+      ],
+    },
   ],
   "compounds": [
     {

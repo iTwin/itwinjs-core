@@ -22,13 +22,12 @@ import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
+import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
   assertIdentityTransformation,
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { IModelTransformOptions } from "../../IModelTransformer";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1727,7 +1726,7 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
 
     const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
     const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
