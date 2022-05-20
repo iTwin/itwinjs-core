@@ -2,6 +2,27 @@
   "name": "@itwin/appui-abstract",
   "entries": [
     {
+      "version": "3.2.0",
+      "tag": "@itwin/appui-abstract_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement svg icons loading as a web component."
+          },
+          {
+            "comment": "Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items."
+          },
+          {
+            "comment": "Allow React icons to be user on Wedget tabs, backstage, and status bar items."
+          },
+          {
+            "comment": "Add ability to specify default widget size."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.1.3",
       "tag": "@itwin/appui-abstract_v3.1.3",
       "date": "Fri, 15 Apr 2022 13:49:25 GMT",

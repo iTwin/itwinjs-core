@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-testing
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Add a way to reduce raw numeric values' decimal precision to overcome rounding differences across platforms
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT
