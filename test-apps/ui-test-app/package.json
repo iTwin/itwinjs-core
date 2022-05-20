@@ -126,8 +126,7 @@
     "react-select": "3.2.0",
     "react-table": "^7.1.0",
     "redux": "^4.1.0",
-    "semver": "^5.5.0",
-    "mocha": "~10.0.0"
+    "semver": "^5.5.0"
   },
   "browserslist": [
     "last 4 chrome version",

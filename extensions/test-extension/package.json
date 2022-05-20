@@ -40,8 +40,7 @@
   "dependencies": {
     "@itwin/core-extension": "workspace:*",
     "buffer": "^6.0.3",
-    "url": "^0.11.0",
-    "mocha": "~10.0.0"
+    "url": "^0.11.0"
   },
   "eslintConfig": {
     "plugins": [

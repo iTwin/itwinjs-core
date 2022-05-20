@@ -31,8 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0",
-    "mocha": "~10.0.0"
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
