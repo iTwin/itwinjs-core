@@ -197,8 +197,6 @@ export class V2CheckpointManager {
             Logger.logInfo("V2\n\n\n\nAHHHHHHHHHHHHH", `Seconds taken for pin: ${stopwatch.elapsedSeconds}`);
           }
         }
-      }
-        
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Cloud cache connect failed: ${e.message}`;
