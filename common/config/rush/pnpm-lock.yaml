@@ -2660,6 +2660,7 @@ importers:
       '@itwin/express-server': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
+      '@itwin/imodel-browser-react': 0.12.2
       '@itwin/imodel-components-react': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
@@ -2739,6 +2740,7 @@ importers:
       '@itwin/express-server': link:../../../core/express-server
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
+      '@itwin/imodel-browser-react': 0.12.2_react-dom@17.0.2+react@17.0.2
       '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
@@ -7107,6 +7109,20 @@ packages:
       username: 5.1.0
     transitivePeerDependencies:
       - debug
+    dev: false
+
+  /@itwin/imodel-browser-react/0.12.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-iHdwpBsHPQHbl58k2z85UAUoKrF4qbXBsYHVMVZL0lQUeZSA20j3HsBGt++uxlUBT87j7OKXfHtFv4Wwuhj0wA==}
+    peerDependencies:
+      react: ^16.13.0 || ^17.0.2
+      react-dom: ^16.13.0 || ^17.0.2
+    dependencies:
+      '@itwin/itwinui-icons-react': 1.9.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
+      classnames: 2.3.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-intersection-observer: 8.34.0_react@17.0.2
     dev: false
 
   /@itwin/imodels-access-backend/1.0.1:
@@ -19412,6 +19428,14 @@ packages:
       react: ^16.3.0 || ^17.0.0
     dependencies:
       prop-types: 15.8.1
+      react: 17.0.2
+    dev: false
+
+  /react-intersection-observer/8.34.0_react@17.0.2:
+    resolution: {integrity: sha512-TYKh52Zc0Uptp5/b4N91XydfSGKubEhgZRtcg1rhTKABXijc4Sdr1uTp5lJ8TN27jwUsdXxjHXtHa0kPj704sw==}
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0|| ^18.0.0
+    dependencies:
       react: 17.0.2
     dev: false
 

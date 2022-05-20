@@ -16,9 +16,8 @@ import {
   KeyboardShortcutManager,
   KeyboardShortcutProps,
 } from "@itwin/appui-react";
-import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
-import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 
 // cSpell:ignore uitestapp
 
@@ -35,9 +34,8 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
-    ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    IModelOpenFrontstage.register();
   }
 
   public static findLayoutFromContentCount(contentCount: number): ContentLayoutProps | undefined {

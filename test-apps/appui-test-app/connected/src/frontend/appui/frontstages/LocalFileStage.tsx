@@ -14,9 +14,8 @@ import { OpenDialogOptions } from "electron";
 import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
-  BackstageManager,
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools, Frontstage, FrontstageManager,
-  FrontstageProps, FrontstageProvider, StandardFrontstageProps, StandardFrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
+  StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";

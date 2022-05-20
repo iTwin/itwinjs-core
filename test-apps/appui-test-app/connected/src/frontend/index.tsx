@@ -22,12 +22,12 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelVersion, RpcConfiguration, SyncMode, ViewQueryParams } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, SelectionTool, SnapMode, SpatialViewState, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -146,6 +146,42 @@ interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
+}
+
+async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
+  const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
+  // try specified viewId first
+  if (requestedViewId) {
+    const queryParams: ViewQueryParams = {};
+    queryParams.from = SpatialViewState.classFullName;
+    queryParams.where = `ECInstanceId=${requestedViewId}`;
+    const vwProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), queryParams);
+    if (vwProps.length !== 0) {
+      return requestedViewId;
+    }
+  }
+
+  const viewId = await iModelConnection.views.queryDefaultViewId();
+  const params: ViewQueryParams = {};
+  params.from = SpatialViewState.classFullName;
+  params.where = `ECInstanceId=${viewId}`;
+
+  // Check validity of default view
+  const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), params);
+  if (viewProps.length === 0) {
+    // Return the first view we can find
+    const viewList = await iModelConnection.views.getViewList({ wantPrivate: false });
+    if (viewList.length === 0)
+      return undefined;
+
+    const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
+    if (spatialViewList.length === 0)
+      return undefined;
+
+    return spatialViewList[0].id;
+  }
+
+  return viewId;
 }
 
 export class SampleAppIModelApp {
@@ -302,7 +338,7 @@ export class SampleAppIModelApp {
     return category;
   }
 
-  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected?: Id64String[]) {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
@@ -324,7 +360,17 @@ export class SampleAppIModelApp {
       SampleAppIModelApp.setIsIModelLocal(false, true);
     }
 
-    await this.openViews(iModelConnection, viewIdsSelected);
+    let viewIds: Id64String[] = [];
+    if (viewIdsSelected) {
+      viewIds = viewIdsSelected;
+    } else {
+      const viewId = await getDefaultViewId(iModelConnection);
+      if (viewId)
+        viewIds.push(viewId);
+    }
+
+    if (viewIds)
+      await this.openViews(iModelConnection, viewIds);
   }
 
   public static async closeCurrentIModel() {
@@ -350,6 +396,7 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
+
     if (viewIdsSelected.length) {
       SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
     }

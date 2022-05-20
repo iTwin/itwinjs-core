@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/style/colors";
 @import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
 
 $appbar-height: 65px;
 $navbar-width: 72px;
@@ -79,35 +80,30 @@ $border-color: #e7e9ec;
   }
 }
 
-/* left side navigation panel */
-.open-navbar {
-  width: 0;
-  top: $appbar-height;
-  bottom: 0;
-  position: absolute;
-  background: $open-background;
-}
-
-.open-navbar:hover,
-.open-navbar.pinned {
-  width: 220px;
-}
-
-/* right side (content) area */
-.open-content {
-  top: $appbar-height;
-  left: 0;
-  bottom: 0;
-  right: 0;
+.open-content-container {
+  height: 100%;
   overflow: hidden;
-  position: absolute;
-  background: $content-background;
-  -webkit-transition: all .2s linear;
-  -moz-transition: all .2s linear;
-  -o-transition: all .2s linear;
-  transition: all .2s linear;
-}
 
-.open-content.pinned {
-  left: 220px;
+
+  /* right side (content) area */
+  .open-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: hidden;
+    background: $content-background;
+    -webkit-transition: all .2s linear;
+    -moz-transition: all .2s linear;
+    -o-transition: all .2s linear;
+    transition: all .2s linear;
+  }
+
+  .idp-scrolling-content {
+    @include uicore-scrollbar();
+    overflow: auto;
+    flex-basis: 100%;
+  }
 }
