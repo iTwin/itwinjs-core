@@ -393,7 +393,7 @@ describe("Viewport", () => {
           expectNoImage(0, 0, -1, -1);
           expectNoImage(0, 0, 100, 1);
           expectNoImage(0, 0, 1, 100);
-          expectNoImage(-1, -1, 1, 1);
+          expectNoImage(100, 100, 1, 1);
           expectNoImage(1, 1, 1, 1);
         });
       });
