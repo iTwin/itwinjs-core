@@ -46,7 +46,7 @@ describe("Cloud workspace containers", () => {
 
           wsDbEdit.addString("myVersion", wsDbEdit.dbFileName.split(":")[1]);
           wsDbEdit.addString("string 1", "value of string 1");
-          wsDbEdit.close();
+          await wsDbEdit.close();
         } finally {
           wsCont1.dropWorkspaceDb(wsDbEdit);
         }
@@ -82,7 +82,7 @@ describe("Cloud workspace containers", () => {
       const ws3 = new EditableWorkspaceDb({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);
-      ws3.close();
+      await ws3.close();
     });
 
     ws2Cloud.checkForChanges();

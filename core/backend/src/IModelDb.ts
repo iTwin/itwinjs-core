@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,

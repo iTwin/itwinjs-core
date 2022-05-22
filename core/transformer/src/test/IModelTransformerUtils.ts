@@ -25,7 +25,6 @@ import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer 
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubMock } from "./HubMock";
 
-
 export class HubWrappers extends BackendTestUtils.HubWrappers {
   protected static override get hubMock() { return HubMock; }
 }
@@ -218,12 +217,12 @@ export async function assertIdentityTransformation(
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
   remapper:
-  | IModelTransformer
-  | ((id: Id64String) => Id64String)
-  | {
-    findTargetCodeSpecId: (id: Id64String) => Id64String;
-    findTargetElementId: (id: Id64String) => Id64String;
-  } = (id: Id64String) => id,
+    | IModelTransformer
+    | ((id: Id64String) => Id64String)
+    | {
+      findTargetCodeSpecId: (id: Id64String) => Id64String;
+      findTargetElementId: (id: Id64String) => Id64String;
+    } = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
@@ -479,7 +478,7 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1,relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
