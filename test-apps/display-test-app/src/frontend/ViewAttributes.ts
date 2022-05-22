@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -55,6 +55,21 @@ const renderingStyles: RenderingStyle[] = [{
   viewflags: renderingStyleViewFlags,
   lights: {
     solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+  },
+}, {
+  name: "Ambient",
+  backgroundColor: 10921638,
+  environment: {
+    sky: { display: false },
+    ground: { display: false },
+  },
+  viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
+  lights: {
+    solar: { intensity: 0 },
+    portrait: { intensity: 0 },
+    ambient: { intensity: 0.55 },
+    fresnel: { intensity: 0.8, invert: true },
+    specularIntensity: 0,
   },
 }, {
   name: "Illustration",
@@ -720,6 +735,12 @@ export class ViewAttributes {
     });
     slider.div.style.textAlign = "left";
 
+    const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
+      IModelApp.tileAdmin.generateAllPolyfaceEdges = enabled;
+      this._vp.invalidateScene();
+      this.sync();
+    }, edgeDisplayDiv);
+
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
       hidEdgesCb.checkbox.disabled = !enabled;
@@ -755,6 +776,7 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");

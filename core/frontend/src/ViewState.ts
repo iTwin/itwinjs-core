@@ -6,16 +6,17 @@
  * @module Views
  */
 
-import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
-  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
-  ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
+  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
+  ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -27,7 +28,6 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -42,10 +42,12 @@ import { ViewingSpace } from "./ViewingSpace";
 import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
+import { EnvironmentDecorations } from "./EnvironmentDecorations";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
+ * @extensions
  */
 export interface ExtentLimits {
   /** The smallest allowed extent in any dimension. */
@@ -153,6 +155,21 @@ const unitRange2d = Range2d.createXYXY(0, 0, 1, 1);
 const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
 
+/** Arguments to [[ViewState.attachToViewport]].
+ * @internal
+ */
+export interface AttachToViewportArgs {
+  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
+  invalidateDecorations: () => void;
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   */
+  drawingToSheetTransform?: Transform;
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
  * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
@@ -160,6 +177,7 @@ const scratchRange2dIntersect = Range2d.createNull();
  * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
+ * @extensions
  */
 export abstract class ViewState extends ElementState {
   /** @internal */
@@ -314,21 +332,39 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /**
+   * Populates the hydrateRequest object stored on the ViewState with:
+   *  not loaded categoryIds based off of the ViewStates categorySelector.
+   *  Auxiliary coordinate system id if valid.
+   */
+  protected preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValid(acsId))
+      hydrateRequest.acsId = acsId;
+    this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
+  }
+
   /** Asynchronously load any required data for this ViewState from the backend.
+   * FINAL, No subclass should override load. If additional load behavior is needed, see preload and postload.
    * @note callers should await the Promise returned by this method before using this ViewState.
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    const hydrateRequest: HydrateViewStateRequestProps = {};
+    this.preload(hydrateRequest);
     const promises = [
-      this.loadAcs(),
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest),
       this.displayStyle.load(),
     ];
+    const result = await Promise.all<any>(promises);
+    const hydrateResponse = result[0];
+    await this.postload(hydrateResponse);
+  }
 
-    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
-    if (undefined !== subcategories)
-      promises.push(subcategories.promise.then((_) => { }));
-
-    await Promise.all(promises);
+  protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    this.iModel.subcategories.postload(hydrateResponse);
+    if (hydrateResponse.acsElementProps)
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -733,7 +769,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`iModelJs:Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -1218,7 +1254,7 @@ export abstract class ViewState extends ElementState {
    * @see [[detachFromViewport]] from the inverse operation.
    * @internal
    */
-  public attachToViewport(): void {
+  public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
@@ -1271,10 +1307,12 @@ export abstract class ViewState extends ElementState {
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  * @public
+ * @extensions
  */
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
+  private _environmentDecorations?: EnvironmentDecorations;
   /** @internal */
   public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
@@ -1447,7 +1485,7 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
 
-    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
@@ -1982,22 +2020,8 @@ export abstract class ViewState3d extends ViewState {
 
   public override decorate(context: DecorateContext): void {
     super.decorate(context);
-    this.drawSkyBox(context);
-    this.drawGroundPlane(context);
-  }
-
-  /** @internal */
-  protected drawSkyBox(context: DecorateContext): void {
-    const style3d = this.getDisplayStyle3d();
-    if (!style3d.environment.sky.display)
-      return;
-
-    const vp = context.viewport;
-    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
-    if (undefined !== skyBoxParams) {
-      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
-      context.setSkyBox(skyBoxGraphic!);
-    }
+    if (this._environmentDecorations)
+      this._environmentDecorations.decorate(context);
   }
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
@@ -2010,7 +2034,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new Range3d();
-    if (!displayStyle.environment.ground.display)
+    if (!displayStyle.environment.displayGround)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -2042,62 +2066,6 @@ export abstract class ViewState3d extends ViewState {
     extents.high.addScaledInPlace(Vector3d.create(1, 1, 1), radius);
     extents.low.z = extents.high.z = elevation;
     return extents;
-  }
-
-  /** @internal */
-  protected drawGroundPlane(context: DecorateContext): void {
-    const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull)
-      return;
-
-    const ground = this.getDisplayStyle3d().environment.ground;
-    if (!ground.display)
-      return;
-
-    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
-    points[1].x = extents.high.x;
-    points[3].x = extents.low.x;
-
-    const aboveGround = this.isEyePointAbove(extents.low.z);
-    const gradient = ground.getGroundPlaneGradient(aboveGround);
-    const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
-    if (!texture)
-      return;
-
-    const matParams = new RenderMaterial.Params();
-    matParams.diffuseColor = ColorDef.white;
-    matParams.shadows = false;
-    matParams.ambient = 1;
-    matParams.diffuse = 0;
-
-    const mapParams = new TextureMapping.Params();
-    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-    mapParams.textureMatrix = transform;
-    matParams.textureMapping = new TextureMapping(texture, mapParams);
-    const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
-    if (!material)
-      return;
-
-    const params = new GraphicParams();
-    params.lineColor = gradient.keys[0].color;
-    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
-    params.material = material;
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    builder.activateGraphicParams(params);
-
-    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    polyfaceBuilder.toggleReversedFacetFlag();
-    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
-    polyfaceBuilder.addQuadFacet(points, uvParams);
-    const polyface = polyfaceBuilder.claimPolyface(false);
-
-    builder.addPolyface(polyface, true);
-    context.addDecorationFromBuilder(builder);
   }
 
   /** @internal */
@@ -2191,10 +2159,27 @@ export abstract class ViewState3d extends ViewState {
     frustum.multiply(transitionTransform);
     return this.setupFromFrustum(frustum);
   }
+
+  /** @internal */
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
+
+    const removeListener = this.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
+      this._environmentDecorations?.setEnvironment(env);
+    });
+
+    this._environmentDecorations = new EnvironmentDecorations(this, () => args.invalidateDecorations(), () => removeListener());
+  }
+
+  public override detachFromViewport(): void {
+    super.detachFromViewport();
+    this._environmentDecorations = dispose(this._environmentDecorations);
+  }
 }
 
 /** Defines the state of a view of a single 2d model.
  * @public
+ * @extensions
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
@@ -2282,9 +2267,20 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.iModel.models.load(this.baseModelId);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
+      hydrateRequest.baseModelId = this.baseModelId;
+  }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.baseModelProps !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
+    await Promise.all(promises);
   }
 
   /** Provides access to optional detail settings for this view. */

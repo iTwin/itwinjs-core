@@ -56,8 +56,8 @@ export function Toolbar(props: ToolbarProps) {
   const [popupPanelCount, setPopupPanelCount] = React.useState(0);
 
   const handlePopupPanelOpenClose = React.useCallback((isOpening: boolean) => {
-    // use setImmediate to avoid warning about setting state in Toolbar from render method of PopupItem/PopupItemWithDrag
-    setImmediate(() => {
+    // use setTimeout to avoid warning about setting state in Toolbar from render method of PopupItem/PopupItemWithDrag
+    setTimeout(() => {
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
         // eslint-disable-next-line no-console
@@ -67,7 +67,7 @@ export function Toolbar(props: ToolbarProps) {
     });
   }, []);
 
-  const availableNodes = React.useMemo<React.ReactNodeArray>(() => {
+  const availableNodes = React.useMemo<React.ReactNode[]>(() => {
     return props.items.map((item, index) => {
       let addGroupSeparator = false;
       if (index > 0)

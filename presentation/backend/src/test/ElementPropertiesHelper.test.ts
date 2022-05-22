@@ -11,7 +11,7 @@ import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey,
   createTestNestedContentField, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "../presentation-backend/ElementPropertiesHelper";
 
 describe("buildElementsProperties", () => {
 
@@ -483,18 +483,26 @@ describe("getElementsCount", () => {
   });
 
   it("throws if class list contains invalid class name", () => {
-    expect(() => getElementIdsByClass(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
-    expect(() => getElementIdsByClass(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
-    expect(() => getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
   });
 
 });
 
-describe("getElementIdsByClass", () => {
+describe("iterateElementIds", () => {
   const imodelMock = moq.Mock.ofType<IModelDb>();
   beforeEach(() => {
     imodelMock.reset();
   });
+
+  function collectResults<T>(generator: Generator<T>) {
+    const results = [];
+    for (const entry of generator) {
+      results.push(entry);
+    }
+    return results;
+  }
 
   it("returns empty map when statement has no rows", () => {
     imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
@@ -502,7 +510,7 @@ describe("getElementIdsByClass", () => {
       statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
       return cb(statementMock.object);
     });
-    expect(getElementIdsByClass(imodelMock.object)).to.be.deep.eq(new Map<string, string[]>());
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq([new Map<string, string[]>()]);
   });
 
   it("returns ids grouped by class when statement has rows", () => {
@@ -521,11 +529,11 @@ describe("getElementIdsByClass", () => {
       statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
       return cb(statementMock.object);
     });
-    const expectedResult = new Map<string, string[]>([
+    const expectedResult = [new Map<string, string[]>([
       ["TestSchema:TestClass", ["0x1", "0x2", "0x4"]],
       ["TestSchema:TestClass2", ["0x3"]],
-    ]);
-    expect(getElementIdsByClass(imodelMock.object)).to.be.deep.eq(expectedResult);
+    ])];
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
   });
 
   it("skips rows without class name or id", () => {
@@ -543,58 +551,71 @@ describe("getElementIdsByClass", () => {
       statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
       return cb(statementMock.object);
     });
-    const expectedResult = new Map<string, string[]>([
-      ["TestSchema:TestClass", ["0x2"]],
-    ]);
-    expect(getElementIdsByClass(imodelMock.object)).to.be.deep.eq(expectedResult);
+    const expectedResult = [
+      new Map<string, string[]>([
+        ["TestSchema:TestClass", ["0x2"]],
+      ])];
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
   });
 
   it("adds WHERE clause when class list is defined and not empty", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE")), moq.It.isAny()))
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE") && query.includes("IS (TestSchema:TestClass)")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
       .verifiable();
-    getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass"]);
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"]));
+    imodelMock.verifyAll();
+  });
+
+  it("queries ids in pages", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => !query.includes("WHERE")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    collectResults(iterateElementIds(imodelMock.object, undefined, 1));
+    imodelMock.verifyAll();
+  });
+
+  it("queries ids in pages with class filter", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && !query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"], 1));
     imodelMock.verifyAll();
   });
 
   it("throws if class list contains invalid class name", () => {
-    expect(() => getElementIdsByClass(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
-    expect(() => getElementIdsByClass(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
-    expect(() => getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
-  });
-
-  it("does not add LIMIT clause when page options are invalid", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => !query.includes("LIMIT")), moq.It.isAny()))
-      .verifiable();
-    getElementIdsByClass(imodelMock.object, undefined, { size: undefined, start: undefined });
-    imodelMock.verifyAll();
-  });
-
-  it("adds LIMIT clause when page options are valid", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("LIMIT 10 OFFSET 15")), moq.It.isAny()))
-      .verifiable();
-    getElementIdsByClass(imodelMock.object, undefined, { size: 10, start: 15 });
-    imodelMock.verifyAll();
-  });
-
-  it("adds LIMIT clause when page options are valid", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("LIMIT 10 OFFSET 15")), moq.It.isAny()))
-      .verifiable();
-    getElementIdsByClass(imodelMock.object, undefined, { size: 10, start: 15 });
-    imodelMock.verifyAll();
-  });
-
-  it("add correct LIMIT clause when page options does not have size set", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("LIMIT -1 OFFSET 15")), moq.It.isAny()))
-      .verifiable();
-    getElementIdsByClass(imodelMock.object, undefined, { start: 15 });
-    imodelMock.verifyAll();
-  });
-
-  it("add correct LIMIT clause when page options does not have start set", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("LIMIT 10 OFFSET 0")), moq.It.isAny()))
-      .verifiable();
-    getElementIdsByClass(imodelMock.object, undefined, { size: 10 });
-    imodelMock.verifyAll();
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["'TestSchema:TestClass'"]))).to.throw(PresentationError);
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["%TestSchema:TestClass%"]))).to.throw(PresentationError);
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass  "]))).to.throw(PresentationError);
   });
 
 });

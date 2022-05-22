@@ -10,10 +10,10 @@ import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
-  ElementProps, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps,
-  PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse,
-  SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
+  ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
+  GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName,
+  PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager,
+  RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -23,7 +23,7 @@ import {
   AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
-  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
@@ -33,6 +33,7 @@ import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefca
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { BackendHubAccess } from "../BackendHubAccess";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
@@ -57,7 +58,7 @@ export class TestBim extends Schema {
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
-export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+export class TestElementDrivesElement extends ElementDrivesElement {
   public static override get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
@@ -68,7 +69,7 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
 export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
 }
-export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+export class TestPhysicalObject extends PhysicalElement {
   public static override get className(): string { return "TestPhysicalObject"; }
   public intProperty!: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
@@ -90,6 +91,7 @@ export enum TestUserType {
  * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
  */
 export class HubWrappers {
+  protected static get hubMock() { return HubMock; }
 
   public static async getAccessToken(user: TestUserType) {
     return TestUserType[user];
@@ -97,7 +99,7 @@ export class HubWrappers {
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
   public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     let iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
       iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
@@ -107,14 +109,14 @@ export class HubWrappers {
   /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+  public static async recreateIModel(...[arg]: Parameters<BackendHubAccess["createNewIModel"]>): Promise<GuidString> {
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
     if (undefined !== deleteIModel)
       await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
+    return IModelHost.hubAccess.createNewIModel({ description: `Description for ${arg.iModelName}`, ...arg });
   }
 
   /** Delete an IModel from the hub */
@@ -138,7 +140,7 @@ export class HubWrappers {
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, version0: pathname });
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
@@ -163,7 +165,7 @@ export class HubWrappers {
       forceDownload: args.deleteFirst,
     };
 
-    assert.isTrue(HubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
+    assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
@@ -253,6 +255,8 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+  protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
@@ -266,10 +270,10 @@ export class IModelTestUtils {
    * @param fileName Name of output fille
    */
   public static prepareOutputFile(subDirName: string, fileName: string): LocalFileName {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(this.knownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(this.knownTestLocations.outputDir);
 
-    const outputDir = path.join(KnownTestLocations.outputDir, subDirName);
+    const outputDir = path.join(this.knownTestLocations.outputDir, subDirName);
     if (!IModelJsFs.existsSync(outputDir))
       IModelJsFs.mkdirSync(outputDir);
 
@@ -282,7 +286,7 @@ export class IModelTestUtils {
 
   /** Resolve an asset file path from the asset name by looking in the known assets directory */
   public static resolveAssetFile(assetName: string): LocalFileName {
-    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    const assetFile = path.join(this.knownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));
     return assetFile;
   }
@@ -328,7 +332,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return testDb.elements.insertElement(modeledElement);
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
@@ -342,15 +346,15 @@ export class IModelTestUtils {
       model,
       code: newModelCode,
     };
-    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    await testDb.locks.acquireSharedLock(model);
-    return testDb.elements.insertElement(modeledElement);
+    const modeledElement = testDb.elements.createElement(modeledElementProps);
+    await testDb.locks.acquireLocks({ shared: model });
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.id = testDb.models.insertModel(newModel.toJSON());
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -360,7 +364,7 @@ export class IModelTestUtils {
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static async createAndInsertPhysicalModelAsync(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.insert();
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -401,13 +405,13 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return testDb.elements.insertElement(modeledElement);
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a DrawingModel associated with Drawing Partition. */
   public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.insert();
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -698,12 +702,11 @@ export class ExtensiveTestScenario {
   }
 
   public static populateDb(sourceDb: IModelDb): void {
-    // Embed font
-    if (Platform.platformName.startsWith("win")) {
-      sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
-      assert.exists(sourceDb.fontMap.getFont("Arial"));
-      assert.exists(sourceDb.fontMap.getFont(1));
-    }
+
+    // make sure Arial is in the font table
+    sourceDb.addNewFont("Arial");
+    assert.exists(sourceDb.fontMap.getFont("Arial"));
+
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     sourceDb.updateProjectExtents(projectExtents);
@@ -984,14 +987,14 @@ export class ExtensiveTestScenario {
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
     displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
-    displayStyle3d.settings.environment = {
+    displayStyle3d.settings.environment = Environment.fromJSON({
       sky: {
         image: {
           type: SkyBoxImageType.Spherical,
           texture: textureId,
         },
       },
-    };
+    });
     const displayStyle3dId = displayStyle3d.insert();
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
     // Insert ViewDefinitions
@@ -1007,7 +1010,7 @@ export class ExtensiveTestScenario {
       sourceId: spatialCategorySelectorId,
       targetId: drawingCategorySelectorId,
     });
-    const relationshipId1 = sourceDb.relationships.insertInstance(relationship1);
+    const relationshipId1 = sourceDb.relationships.insertInstance(relationship1.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId1));
     // Insert instance of RelWithProps to test relationship property remapping
     const relationship2: Relationship = sourceDb.relationships.createInstance({
@@ -1019,7 +1022,7 @@ export class ExtensiveTestScenario {
       sourceLong: spatialCategoryId,
       sourceGuid: Guid.createValue(),
     } as any);
-    const relationshipId2 = sourceDb.relationships.insertInstance(relationship2);
+    const relationshipId2 = sourceDb.relationships.insertInstance(relationship2.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId2));
   }
 
@@ -1029,7 +1032,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(subjectId));
     const subject = sourceDb.elements.getElement<Subject>(subjectId);
     subject.description = "Subject description (Updated)";
-    sourceDb.elements.updateElement(subject);
+    sourceDb.elements.updateElement(subject.toJSON());
     // Update spatialCategory element
     const definitionModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
@@ -1037,7 +1040,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const spatialCategory: SpatialCategory = sourceDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     spatialCategory.federationGuid = Guid.createValue();
-    sourceDb.elements.updateElement(spatialCategory);
+    sourceDb.elements.updateElement(spatialCategory.toJSON());
     // Update relationship properties
     const spatialCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "SpatialCategories"))!;
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
@@ -1058,12 +1061,12 @@ export class ExtensiveTestScenario {
     assert.equal(sourceUniqueAspects.length, 1);
     sourceUniqueAspects[0].asAny.commonString += "-Updated";
     sourceUniqueAspects[0].asAny.sourceString += "-Updated";
-    sourceDb.elements.updateAspect(sourceUniqueAspects[0]);
+    sourceDb.elements.updateAspect(sourceUniqueAspects[0].toJSON());
     const sourceMultiAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceMultiAspect");
     assert.equal(sourceMultiAspects.length, 2);
     sourceMultiAspects[1].asAny.commonString += "-Updated";
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
-    sourceDb.elements.updateAspect(sourceMultiAspects[1]);
+    sourceDb.elements.updateAspect(sourceMultiAspects[1].toJSON());
     // clear NavigationProperty of PhysicalElement1
     const physicalElementId1 = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalElement1");
     let physicalElement1: PhysicalElement = sourceDb.elements.getElement(physicalElementId1);

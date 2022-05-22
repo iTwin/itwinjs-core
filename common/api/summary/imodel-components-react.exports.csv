@@ -10,19 +10,15 @@ beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
 public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
+deprecated;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
 public;ColorPickerPanelProps
+deprecated;ColorPickerPanelProps
 public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 public;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
-internal;ContextMenu 
-deprecated;ContextMenu 
-internal;ContextMenuItem 
-deprecated;ContextMenuItem 
-internal;ContextMenuProps 
-deprecated;ContextMenuProps 
 public;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -71,8 +67,6 @@ internal;InlineEdit
 public;LineWeightSwatch 
 public;LineWeightSwatchProps 
 internal;MapMode
-internal;MenuItem
-deprecated;MenuItem
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
@@ -118,7 +112,7 @@ public;ViewClassFullNameChangedEvent
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
 public;ViewIdChangedEventArgs
-public;ViewportComponent 
+public;ViewportComponent(props: ViewportProps): JSX.Element
 public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 

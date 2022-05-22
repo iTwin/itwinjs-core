@@ -104,6 +104,7 @@ export class MutableGridCategory extends MutableFlatPropertyGridItem implements 
    */
   public getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[] {
     const descendants: IMutableGridCategoryItem[] = [];
+    // eslint-disable-next-line deprecation/deprecation
     this._childCategories.forEach((value) => descendants.push(...value.getDescendantCategoriesAndSelf()));
 
     return [this, ...descendants];

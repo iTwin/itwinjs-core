@@ -58,10 +58,7 @@ async function tryCopyDirectoryContents(source: string, target: string) {
   }
 }
 
-/** Prefer use of CopyStaticAssetsPlugin instead.
- * @note Will be removed in 3.0
- * @deprecated
- */
+/** Prefer use of CopyStaticAssetsPlugin instead when outside monorepos. */
 export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin {
   private _directoryNames: string[];
   private _useDirectoryName: boolean;
@@ -120,10 +117,16 @@ export class CopyAppAssetsPlugin extends AbstractAsyncStartupPlugin {
 export class CopyStaticAssetsPlugin {
   private _scopes: string[];
   private _fromTo: string;
+  private _useDirectoryName: boolean;
 
-  constructor({ scopes = ["@bentley", "@itwin"], fromTo = "public" }) {
+  constructor({
+    scopes = ["@bentley", "@itwin"],
+    fromTo = "public",
+    useDirectoryName = false,
+  }) {
     this._scopes = scopes;
     this._fromTo = fromTo;
+    this._useDirectoryName = useDirectoryName;
   }
 
   private _getPatterns() {
@@ -131,21 +134,20 @@ export class CopyStaticAssetsPlugin {
       return [];
     }
 
-    const patterns = [];
     const fromTo = this._fromTo;
+    const useDirectoryName = this._useDirectoryName;
 
-    for (const scope of this._scopes) {
-      patterns.push({
+    return this._scopes.map((scope) => {
+      return {
         from: `**/${fromTo}/**/*`,
         context: `node_modules/${scope}`,
         noErrorOnMissing: true,
         to({ absoluteFilename }: { absoluteFilename: string }) {
           const regex = new RegExp(`(${fromTo}(?:\\\\|\/))(.*)`);
-          return regex.exec(absoluteFilename)![2];
+          return regex.exec(absoluteFilename)![useDirectoryName ? 0 : 2];
         },
-      });
-    }
-    return patterns;
+      };
+    });
   }
 
   public apply(compiler: Compiler) {

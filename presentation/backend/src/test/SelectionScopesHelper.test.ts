@@ -398,7 +398,7 @@ describe("SelectionScopesHelper", () => {
           model: model.id!,
           category: createRandomId(),
           code: { scope: faker.random.word(), spec: faker.random.word() },
-        }, imodelMock.object);
+        }, imodelMock.object).toJSON();
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 
@@ -423,7 +423,7 @@ describe("SelectionScopesHelper", () => {
           model: modelId,
           category: createRandomId(),
           code: { scope: faker.random.word(), spec: faker.random.word() },
-        }, imodelMock.object);
+        }, imodelMock.object).toJSON();
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(modelId)).returns(() => undefined);
 
@@ -440,7 +440,7 @@ describe("SelectionScopesHelper", () => {
           model: model.id!,
           category: createRandomId(),
           code: { scope: faker.random.word(), spec: faker.random.word() },
-        }, imodelMock.object);
+        }, imodelMock.object).toJSON();
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 

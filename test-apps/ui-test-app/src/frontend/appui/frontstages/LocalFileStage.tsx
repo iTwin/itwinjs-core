@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps } from "@itwin/core-common";
@@ -21,7 +22,7 @@ import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
+import { hasSavedViewLayoutProps } from "../../tools/ImmediateTools";
 import { ViewsFrontstage } from "./ViewsFrontstage";
 
 class LocalFileOpenControl extends ContentControl {
@@ -43,8 +44,10 @@ class LocalFileOpenControl extends ContentControl {
 
 /** LocalFileOpenFrontstage displays the file picker and view picker. */
 export class LocalFileOpenFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:LocalFileOpen";
+
   public get id(): string {
-    return "LocalFileOpen";
+    return LocalFileOpenFrontstage.stageId;
   }
 
   public static async open() {

@@ -312,6 +312,19 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     return x * this._inwardNormal.x + y * this._inwardNormal.y + z * this._inwardNormal.z - this._distanceFromOrigin;
   }
 
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+  public normalX(): number {return this._inwardNormal.x; }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+   public normalY(): number {return this._inwardNormal.y; }
+  /**
+   * Return the z component of the normal used to evaluate altitude.
+   */
+   public normalZ(): number {return this._inwardNormal.z; }
+
   /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */
   public velocity(vector: Vector3d): number {

@@ -43,7 +43,7 @@ If you can also contribute a fix, we'd absolutely appreciate it!
 
 Check out the contributor guide to get started:
 
-https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md
+https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md
 
 Just let us know you're working on it and we'd be happy to provide advice and feedback.
 

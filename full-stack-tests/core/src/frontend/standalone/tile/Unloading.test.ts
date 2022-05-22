@@ -22,6 +22,7 @@ describe("Tile unloading", async () => {
     tileTreeExpirationTime: expirationSeconds,
     disableMagnification: true,
     useProjectExtents: false,
+    useLargerTiles: false,
   };
 
   before(async () => {
@@ -71,7 +72,7 @@ describe("Tile unloading", async () => {
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.false;
 
-    admin.clearUsageForViewport(vp1);
+    admin.clearUsageForUser(vp1);
     expect(admin.isTileInUse(marker)).to.be.false;
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.true;
@@ -82,12 +83,12 @@ describe("Tile unloading", async () => {
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.false;
 
-    admin.clearUsageForViewport(vp1);
+    admin.clearUsageForUser(vp1);
     expect(admin.isTileInUse(marker)).to.be.true;
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.false;
 
-    admin.clearUsageForViewport(vp2);
+    admin.clearUsageForUser(vp2);
     expect(admin.isTileInUse(marker)).to.be.false;
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.true;
@@ -305,7 +306,7 @@ describe("Tile unloading", async () => {
   }
 
   function getSelectedTiles(vp: Viewport): Tile[] {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)!;
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)!;
     expect(tiles).not.to.be.undefined;
     return Array.from(tiles.selected);
   }

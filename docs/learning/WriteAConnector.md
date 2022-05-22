@@ -4,6 +4,8 @@
 
 - [Write A Connector](#write-a-connector)
   - [Table of Contents](#table-of-contents)
+  - [New Connector Framework](#new-connectorframework)
+    - [Porting a connector to iTwin.js 3.x](#porting-a-connector)
   - [Introduction](#introduction)
     - [Preface](#preface)
       - [What is a Connector](#what-is-a-connector)
@@ -60,6 +62,17 @@
     - [Locks & Codes](#locks--codes)
     - [More information](#more-information)
 
+## New ConnectorFramework
+
+A new ConnectorFramework dependent upon iTwin.js 3.x is forthcoming early in 2022. The old iModelBridge code delivered with old iModel.js mono repo has been deprecated and removed. It was moved to its own repository and will be available in its own npm package.
+
+### Porting a connector
+
+To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
+
+1. Change the dependencies to the [New Connector Framework](#new-connectorframework)
+2. Search and replace "iModelBridge" with "BaseConnector", "BridgeJobDefArgs" with "ConnectorJobDefArgs" and "BridgeRunner" with "ConnectorRunner" and so on.
+
 ## Introduction
 
 ### Preface
@@ -78,11 +91,11 @@ A complete list of available connectors can be found in [iTwin Services Communit
 
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/imodeljs/imodeljs)
+However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/iTwin/itwinjs-core)
 
-The imodel-bridge package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
+The ConnectorFramework package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 
-Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In future versions of the SDK, classes and methods will be renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation will be updated to match the new names when the new version is released.
+Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In 3.x and future versions of the SDK, classes and methods have been renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation has been updated to match the new names.
 
 ### Who should read this guide?
 
@@ -141,7 +154,7 @@ iModel uses BIS schemas to describe the persistence model of the digital twin. A
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSet]($imodelhub-client)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [Changeset](./Glossary.md#changeset)
 
 ## The basics of writing a Connector
 
@@ -311,6 +324,8 @@ A Connector must also relate each physical model that it creates to the source d
     const key = scope + sourceItem.id.toLowerCase();
 ```
 
+Also refer to [Provenence in iModels](./Provenence-in-iModels) for more information about ExternalSource and related classes.
+
 ###### Case 2 : Id mapping
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
@@ -389,7 +404,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
+You'll need Node.js version ">=12.22.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
 The node packages you'll need can be installed using
 
@@ -397,20 +412,15 @@ The node packages you'll need can be installed using
 $npm install  @itwin/core-bentley
 $npm install  @itwin/ecschema-metadata
 $npm install  @itwin/core-geometry
-$npm install  @bentley/imodelhub-client
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @bentley/itwin-client
-$npm install  @bentley/rbac-client
-$npm install  @bentley/telemetry-client
 
 $npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @bentley/config-loader
 $npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
-$npm install  --save-dev cpx
+$npm install  --save-dev cpx2
 $npm install  --save-dev eslint
 $npm install  --save-dev mocha
 $npm install  --save-dev nyc
@@ -420,45 +430,45 @@ $npm install  --save-dev typescript
 
 Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
 
-The Connector SDK exposes its functionality through three main classes: BridgeRunner, Synchronizer, and iModelBridge Interface.
+The ConnectorFramework SDK exposes its functionality through three main classes: ConnectorRunner, Synchronizer, and BaseConnector Interface.
 
-### BridgeRunner
+### ConnectorRunner
 
 Constructor
 
-The BridgeRunner has a constructor which takes a BridgeJobDefArgs as its lone parameter. The BridgeJobDefArgs has properties to describe the significant pieces to the Connector job:
+The ConnectorRunner has a constructor which takes a ConnectorJobDefArgs as its lone parameter. The ConnectorJobDefArgs has properties to describe the significant pieces to the Connector job:
 
 1. sourcePath - your native data (i.e., where the data is coming from) has nothing to do with source code.
 2. outputDir - this is the target for your iModel (i.e., where the data is going to)
-3. BridgeModule - path to your javascript source code. This must extend IModelBridge and implement its methods
+3. ConnectorModule - path to your javascript source code. This must extend BaseConnector and implement its methods
 4. IsSnapshot - write the iModel to the disk
 
 Methods
 
-The BridgeRunner has a Synchronize method that runs your bridge module.
+The ConnectorRunner has a Synchronize method that runs your bridge module.
 
 ```ts
-    const bridgeJobDef = new BridgeJobDefArgs();
-    bridgeJobDef.sourcePath = "c:\tmp\mynativefile.txt";
-    bridgeJobDef.bridgeModule = "./HelloWorldConnector.js";
-    bridgeJobDef.outputDir = "c:\tmp\out\";
-    bridgeJobDef.isSnapshot = true;
+    const conncectorJobDef = new ConnectorJobDefArgs();
+    conncectorJobDef.sourcePath = "c:\tmp\mynativefile.txt";
+    conncectorJobDef.bridgeModule = "./HelloWorldConnector.js";
+    conncectorJobDef.outputDir = "c:\tmp\out\";
+    conncectorJobDef.isSnapshot = true;
 
-    const runner = new BridgeRunner(bridgeJobDef);
+    const runner = new ConnectorRunner(conncectorJobDef);
     const status = await runner.synchronize();
 
 ```
 
 ### Synchronizer
 
-An IModelBridge has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
+An iTwin Connector has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
 
 ### Connector interface methods
 
-The bridgeModule assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
+The bridgeModule assigned to the BridgeJobDefArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
 ```ts
-class HelloWorldConnector extends IModelBridge {
+class HelloWorldConnector extends BaseConnector {
 
 ```
 

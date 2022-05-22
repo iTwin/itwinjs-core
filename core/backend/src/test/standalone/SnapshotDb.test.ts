@@ -16,6 +16,7 @@ describe("SnapshotDb.reattachDaemon", () => {
   const fakeChangeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
   const fakeSnapshotDb: any = {
     isReadonly: () => true,
+    isOpen: () => false,
     getIModelId: () => "fakeIModelId",
     getITwinId: () => "fakeITwinId",
     getCurrentChangeset: () => fakeChangeset,

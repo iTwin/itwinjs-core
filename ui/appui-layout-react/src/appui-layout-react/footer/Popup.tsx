@@ -54,7 +54,7 @@ export class FooterPopup extends React.PureComponent<FooterPopupProps> {
         )}
         position={RelativePosition.Top}
         showArrow
-        showShadow={false}
+        showShadow={true}
         {...props}
       />
     );

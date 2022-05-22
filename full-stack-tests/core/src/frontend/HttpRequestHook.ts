@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { TestRpcInterface } from "../common/RpcInterfaces";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");
@@ -396,8 +395,6 @@ export async function usingBackendOfflineScope<TResult>(func: () => Promise<TRes
   return result;
 }
 export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
-  const timeoutOldValue = { ...RequestGlobalOptions.timeout };
-  const maxRetriesOldValue = RequestGlobalOptions.maxRetries;
   HttpRequestHook.install();
   HttpRequestHook.accept("http://localhost")
     .onRequest(() => undefined)
@@ -406,12 +403,8 @@ export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TRe
     .onRequest((_req) => {
       return new Response(null, { status: 503 });
     });
-  RequestGlobalOptions.timeout = { deadline: 5000, response: 5000 };
-  RequestGlobalOptions.maxRetries = 0;
   const endScope = () => {
     HttpRequestHook.uninstall();
-    Object.assign(RequestGlobalOptions.timeout, timeoutOldValue);
-    RequestGlobalOptions.maxRetries = maxRetriesOldValue;
   };
   const result = func();
   result.then(endScope, endScope);

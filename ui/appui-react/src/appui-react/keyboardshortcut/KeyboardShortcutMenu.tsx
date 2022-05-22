@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { CommonProps, ContextMenuItem, ContextSubMenu, GlobalContextMenu, UiEvent } from "@itwin/core-react";
+import { CommonProps, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "@itwin/core-react";
 import { KeyboardShortcut } from "./KeyboardShortcut";
-import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, UiEvent } from "@itwin/appui-abstract";
 
 /** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component
  * @public

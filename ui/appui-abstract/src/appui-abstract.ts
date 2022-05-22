@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./appui-abstract/BaseUiItemsProvider";
 export * from "./appui-abstract/UiAdmin";
 export * from "./appui-abstract/UiItemsManager";
+export * from "./appui-abstract/UiItemsProvider";
 
 export * from "./appui-abstract/backstage/BackstageItem";
 export * from "./appui-abstract/backstage/BackstageItemsManager";
@@ -58,6 +60,8 @@ export * from "./appui-abstract/utils/isLetter";
 export * from "./appui-abstract/utils/IconSpecUtilities";
 export * from "./appui-abstract/utils/PointProps";
 export * from "./appui-abstract/utils/UiError";
+export * from "./appui-abstract/utils/UiEventDispatcher";
+export * from "./appui-abstract/utils/UiEvent";
 export * from "./appui-abstract/utils/filter/charCode";
 export * from "./appui-abstract/utils/filter/filters";
 export * from "./appui-abstract/utils/filter/strings";
@@ -73,10 +77,6 @@ export * from "./appui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Backstage
  * Abstractions used by appui-react package to create and manage the display Backstage menu items.
- */
-/**
- * @docs-group-description Common
- * Common enums and functions used throughout the UI packages.
  */
 /**
  * @docs-group-description ContentView
@@ -105,10 +105,6 @@ export * from "./appui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Toolbar
  * Classes for creating and managing items in a toolbar.
- */
-/**
- * @docs-group-description StandardContentLayouts
- * Class that contains standard layout definitions for frontstage content/views.
  */
 /**
  * @docs-group-description UiAdmin

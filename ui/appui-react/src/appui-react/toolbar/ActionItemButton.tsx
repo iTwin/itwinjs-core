@@ -8,11 +8,12 @@
 
 import * as React from "react";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/core-react";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
@@ -54,7 +55,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     this.state = getItemStateFromProps(props);
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore if
     if (this._componentUnmounting)
       return;
@@ -132,7 +133,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     const badge = BadgeUtilities.getComponentForBadgeType(actionItem.badgeType);
 
     return (
-      <Item
+      <Item // eslint-disable-line deprecation/deprecation
         {...props}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}

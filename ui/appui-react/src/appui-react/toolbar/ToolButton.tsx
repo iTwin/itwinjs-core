@@ -8,13 +8,13 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
-import { ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
+import { ConditionalStringValue, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
@@ -50,7 +50,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     };
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore if
     if (this._componentUnmounting) return;
 
@@ -97,7 +97,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       this.props.execute();
     } else {
       const thisTool: typeof Tool | undefined = IModelApp.tools.find(this.props.toolId);
-      // istanbul ignore else
+      // istanbul ignore next
       if (thisTool)
         await (new thisTool()).run();
     }
@@ -116,7 +116,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     const badge = BadgeUtilities.getComponentForBadgeType(this.props.badgeType);
 
     return (
-      <Item
+      <Item // eslint-disable-line deprecation/deprecation
         {...toolbarItemProps}
         className={this.props.className}
         style={this.props.style}

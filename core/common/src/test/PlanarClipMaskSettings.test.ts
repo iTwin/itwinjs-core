@@ -19,32 +19,35 @@ describe("PlanarClipMaskSettings", () => {
   });
 
   it("clamps transparency", () => {
-    expect(PlanarClipMaskSettings.createByPriority(1, -0.1).transparency).to.equal(0);
-    expect(PlanarClipMaskSettings.createByPriority(1, 0).transparency).to.equal(0);
-    expect(PlanarClipMaskSettings.createByPriority(1, 0.1).transparency).to.equal(0.1);
-    expect(PlanarClipMaskSettings.createByPriority(1, 0.9).transparency).to.equal(0.9);
-    expect(PlanarClipMaskSettings.createByPriority(1, 1).transparency).to.equal(1);
-    expect(PlanarClipMaskSettings.createByPriority(1, 1.1).transparency).to.equal(1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: -0.1 }).transparency).to.equal(0);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0 }).transparency).to.equal(0);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0.1 }).transparency).to.equal(0.1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 0.9 }).transparency).to.equal(0.9);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 1 }).transparency).to.equal(1);
+    expect(PlanarClipMaskSettings.create({ priority: 1, transparency: 1.1 }).transparency).to.equal(1);
   });
 
   it("creates for models", () => {
-    expectProps(PlanarClipMaskSettings.createForModels(undefined), { mode: PlanarClipMaskMode.Models });
-    expectProps(PlanarClipMaskSettings.createForModels(["0x3", "0x1"]), { mode: PlanarClipMaskMode.Models, modelIds: "+1+2" });
-    expectProps(PlanarClipMaskSettings.createForModels("0xabc", 0.5), { mode: PlanarClipMaskMode.Models, modelIds: "+ABC", transparency: 0.5 });
+    expectProps(PlanarClipMaskSettings.create({ }), { mode: PlanarClipMaskMode.Models });
+    expectProps(PlanarClipMaskSettings.create({ modelIds: undefined }), { mode: PlanarClipMaskMode.Models });
+    expectProps(PlanarClipMaskSettings.create({ modelIds: ["0x3", "0x1"] }), { mode: PlanarClipMaskMode.Models, modelIds: "+1+2" });
+    expectProps(PlanarClipMaskSettings.create({ modelIds: "0xabc", transparency: 0.5 }), { mode: PlanarClipMaskMode.Models, modelIds: "+ABC", transparency: 0.5 });
   });
 
   it("creates for elements or subcategories", () => {
-    expectProps(PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeElements, "0x5"),
+    expectProps(PlanarClipMaskSettings.create({ elementIds: "0x5" }),
       { mode: PlanarClipMaskMode.IncludeElements, subCategoryOrElementIds: "+5"});
-    expectProps(PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.ExcludeElements, ["0x1", "0x5"], "0x2"),
+
+    expectProps(PlanarClipMaskSettings.create({ elementIds: ["0x1", "0x5"], modelIds: "0x2", exclude: true }),
       { mode: PlanarClipMaskMode.ExcludeElements, subCategoryOrElementIds: "+1+4", modelIds: "+2" });
-    expectProps(PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeSubCategories, "0x2", undefined, 0.5),
+
+    expectProps(PlanarClipMaskSettings.create({ subCategoryIds: "0x2", transparency: 0.5 }),
       { mode: PlanarClipMaskMode.IncludeSubCategories, subCategoryOrElementIds: "+2", transparency: 0.5 });
   });
 
   it("creates by priority", () => {
-    expectProps(PlanarClipMaskSettings.createByPriority(1234), { mode: PlanarClipMaskMode.Priority, priority: 1234 });
-    expectProps(PlanarClipMaskSettings.createByPriority(-321, 0.75), { mode: PlanarClipMaskMode.Priority, priority: -321, transparency: 0.75 });
+    expectProps(PlanarClipMaskSettings.create({ priority: 1234 }), { mode: PlanarClipMaskMode.Priority, priority: 1234 });
+    expectProps(PlanarClipMaskSettings.create({ priority: -321, transparency: 0.75 }), { mode: PlanarClipMaskMode.Priority, priority: -321, transparency: 0.75 });
   });
 
   it("clones", () => {

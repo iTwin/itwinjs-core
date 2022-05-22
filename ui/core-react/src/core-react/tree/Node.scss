@@ -26,8 +26,8 @@ $node-font-size: $iui-font-size;
     align-items: center;
     width: 100%;
 
-    > .loader {
-      margin: auto 4px;
+    > .iui-progress-indicator-radial {
+      margin: 0 4px;
     }
 
     > .expansion-toggle {
@@ -50,15 +50,22 @@ $node-font-size: $iui-font-size;
         line-height: unset;
       }
     }
+
+    > .core-image-checkbox {
+      top: -1px;
+    }
   }
 
   &-icon {
     width: 16px;
-    height: 24px;
-    display: inline-block;
-    box-sizing: border-box;
-    padding: 5px 0;
-    margin-right: 5px;
+    margin: 0 5px;
+
+    > .bui-webfont-icon {
+      display: inline-block;
+      width: 16px;
+      text-align: center;
+      vertical-align: middle;
+    }
   }
 
   &.is-focused, &:focus {

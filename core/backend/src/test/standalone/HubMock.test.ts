@@ -19,7 +19,7 @@ import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
-  const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
+  const version0 = IModelTestUtils.resolveAssetFile("test.bim");
   const accessToken: AccessToken = "fake token";
 
   before(async () => {
@@ -30,7 +30,7 @@ describe("HubMock", () => {
   });
 
   it("should be able to create HubMock", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
@@ -39,7 +39,7 @@ describe("HubMock", () => {
     const cp1 = join(tmpDir, "cp-1.bim");
     localHub.downloadCheckpoint({ changeset: { index: 0 }, targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
-    const statRev0 = IModelJsFs.lstatSync(revision0);
+    const statRev0 = IModelJsFs.lstatSync(version0);
     assert.equal(stat1?.size, statRev0?.size);
 
     assert.equal(2, localHub.acquireNewBriefcaseId("user1", "user1 briefcase 1"));
@@ -107,7 +107,7 @@ describe("HubMock", () => {
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangeset().id);
 
-    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: revision0 });
+    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: version0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
@@ -263,7 +263,7 @@ describe("HubMock", () => {
   });
 
   it("use HubMock with BriefcaseManager", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const briefcase = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");

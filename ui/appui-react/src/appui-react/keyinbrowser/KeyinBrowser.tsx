@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Item
  */
@@ -16,7 +17,7 @@ import { UiFramework } from "../UiFramework";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 /** Data for each key-in.
- */
+ @deprecated */
 interface KeyinBrowserData extends AutoSuggestData {
   // AutoSuggestData.value is the toolId
   // AutoSuggestData.label is the keyin
@@ -26,7 +27,7 @@ interface KeyinBrowserData extends AutoSuggestData {
 }
 
 /** State of key-in browser.
- */
+ @deprecated */
 interface KeyinBrowserState {
   keyins: KeyinBrowserData[];
   currentToolId: string | undefined;
@@ -34,7 +35,7 @@ interface KeyinBrowserState {
 }
 
 /** Arguments for [[KeyinBrowserProps]] onExecute callback.
- * @beta
+ * @beta @deprecated
  */
 export interface KeyinBrowserExecuteArgs {
   /** Id of the tool that was run */
@@ -46,7 +47,7 @@ export interface KeyinBrowserExecuteArgs {
 }
 
 /** Properties of the [[KeyinBrowser]] component.
- * @beta
+ * @beta @deprecated
  */
 export interface KeyinBrowserProps extends CommonProps {
   /** Function called after the key-in is executed */
@@ -57,7 +58,7 @@ export interface KeyinBrowserProps extends CommonProps {
 
 /**
  * Component used to allow users to select, provide arguments, and execute a key-in.
- * @beta
+ * @beta @deprecated
  */
 export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
   private _toolIdLabel = UiFramework.translate("keyinbrowser.keyin");
@@ -316,7 +317,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         </InputLabel>
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs}
           data-testid="uif-keyin-arguments" id="uif-keyin-arguments"
-          onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onInputFocus} />
+          onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onInputFocus} size="small" />
         <Button styleType="cta" data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
       </div>
     );

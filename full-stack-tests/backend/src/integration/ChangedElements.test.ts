@@ -188,6 +188,7 @@ describe("ChangedElements", () => {
       endChangesetId: changesetId,
       wantParents: true,
       wantPropertyChecksums: true,
+      wantRelationshipCaching: true,
     };
     // Get file path before processing and rolling since it requires closing the iModelDb
     const iModelFilepath = iModel.pathName;
@@ -222,5 +223,76 @@ describe("ChangedElements", () => {
     cache.cleanCaches();
 
     ChangedElementsManager.cleanUp();
+
+    newIModel.closeIModel();
+  });
+
+  it("Create ChangedElements Cache and process changesets while rolling Db without caching", async () => {
+    const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(testIModelId);
+    if (IModelJsFs.existsSync(cacheFilePath))
+      IModelJsFs.removeSync(cacheFilePath);
+
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    assert.exists(iModel);
+
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
+    if (IModelJsFs.existsSync(filePath))
+      IModelJsFs.removeSync(filePath);
+
+    const cache = ChangedElementsDb.createDb(iModel, filePath);
+    assert.isDefined(cache);
+    // Process single
+    const changesetId = changesets[0].id;
+    // Check that the changesets have not been processed yet
+    assert.isFalse(cache.isProcessed(changesetId));
+
+    // Try getting changed elements, should fail because we haven't processed the changesets
+    assert.throws(() => cache.getChangedElements(changesetId, changesetId), IModelError);
+
+    // Process changesets with "Items" presentation rules
+    const options: ProcessChangesetOptions = {
+      rulesetId: "Items",
+      startChangesetId: changesetId,
+      endChangesetId: changesetId,
+      wantParents: true,
+      wantPropertyChecksums: true,
+      wantRelationshipCaching: false,
+    };
+    // Get file path before processing and rolling since it requires closing the iModelDb
+    const iModelFilepath = iModel.pathName;
+    const result = await cache.processChangesetsAndRoll(accessToken, iModel, options);
+    const newIModel = SnapshotDb.openDgnDb({ path: iModelFilepath }, OpenMode.Readonly);
+    // Ensure that the iModel got rolled as part of the processing operation
+    assert.equal(newIModel.getCurrentChangeset().id, changesetId);
+    assert.equal(result, DbResult.BE_SQLITE_OK);
+    // Check that the changesets should have been processed now
+    assert.isTrue(cache.isProcessed(changesetId));
+    // Try getting changed elements, it should work this time
+    const changes = cache.getChangedElements(changesetId, changesetId);
+    assert.isTrue(changes !== undefined);
+    assert.isTrue(changes!.elements.length !== 0);
+    assert.isTrue(changes!.modelIds !== undefined);
+    assert.isTrue(changes!.parentIds !== undefined);
+    assert.isTrue(changes!.parentClassIds !== undefined);
+    assert.isTrue(changes!.elements.length === changes!.classIds.length);
+    assert.isTrue(changes!.elements.length === changes!.opcodes.length);
+    assert.isTrue(changes!.elements.length === changes!.type.length);
+    assert.isTrue(changes!.elements.length === changes!.modelIds!.length);
+    assert.isTrue(changes!.elements.length === changes!.parentIds!.length);
+    assert.isTrue(changes!.elements.length === changes!.parentClassIds!.length);
+    // Try getting changed models
+    const models = cache.getChangedModels(changesetId, changesetId);
+    assert.isTrue(models !== undefined);
+    assert.isTrue(models!.modelIds.length !== 0);
+    assert.isTrue(models!.modelIds.length === models!.bboxes.length);
+
+    // Destroy the cache
+    cache.closeDb();
+    cache.cleanCaches();
+
+    ChangedElementsManager.cleanUp();
+
+    newIModel.closeIModel();
   });
 });

@@ -7,7 +7,7 @@
  */
 
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { request, RequestOptions } from "@bentley/itwin-client";
+import { request, RequestOptions } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { Base64 } from "js-base64";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";

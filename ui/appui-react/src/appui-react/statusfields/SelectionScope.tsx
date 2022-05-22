@@ -36,9 +36,14 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
   private _label = UiFramework.translate("selectionScopeField.label");
   private _toolTip = UiFramework.translate("selectionScopeField.toolTip");
+  private _scopeOptions: SelectOption<string>[] = [];
 
   constructor(props: SelectionScopeFieldProps) {
     super(props);
+    this._scopeOptions = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
+      const label = UiFramework.translate(`selectionScopeLabels.${scope.id}`);
+      return { value: scope.id, label };
+    });
   }
 
   private _updateSelectValue = (newValue: string) => {
@@ -49,9 +54,6 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
   };
 
   public override render(): React.ReactNode {
-    const scopeOptions: SelectOption<string>[] = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
-      return { value: scope.id, label: scope.label };
-    });
 
     return (
       <FooterIndicator
@@ -67,10 +69,11 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
         <Select
           className="uifw-statusFields-selectionScope-selector"
           value={this.props.activeSelectionScope}
-          options={scopeOptions}
+          options={this._scopeOptions}
           onChange={this._updateSelectValue}
           data-testid="components-selectionScope-selector"
-          title={this._toolTip} />
+          title={this._toolTip}
+          size="small" />
       </FooterIndicator >
     );
   }

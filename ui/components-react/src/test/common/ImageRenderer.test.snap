@@ -1,12 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ImageRenderer render renders svg 1`] = `
-"<div><svg class=\\"core-icons-svgSprite\\" width=\\"100%\\" height=\\"100%\\"><use xmlns:xlink=\\"http://www.w3.org/1999/xlink\\" xlink:href=\\"
-    <?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?>
-    <svg xmlns=&quot;http://www.w3.org/2000/svg&quot; version=&quot;1.0&quot; width=&quot;480&quot; height=&quot;543.03003&quot; viewBox=&quot;0 0 257.002 297.5&quot; xml:space=&quot;preserve&quot;>
-      <g transform=&quot;matrix(0.8526811,0,0,0.8526811,18.930632,21.913299)&quot;>
-        <polygon points=&quot;8.003,218.496 0,222.998 0,74.497 8.003,78.999 8.003,218.496 &quot;/>
-      </g>
-    </svg>
-  \\"></use></svg></div>"
+"<div><i class=\\"icon core-svg-icon\\"><div><svg-loader encoding=\\"UTF-8\\" version=\\"1.0\\" src=\\"<?xml\\">
+    
+  &gt;</svg-loader></div></i></div>"
 `;

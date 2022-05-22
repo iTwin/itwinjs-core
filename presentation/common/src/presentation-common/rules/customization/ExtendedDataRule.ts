@@ -6,43 +6,28 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule used to inject some extended data into presentation data
- * objects (nodes, records).
+ * Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).
  *
- * A couple of typical use cases:
- * - Table is showing models and elements polymorphically and application
- *   wants to handle all models and all elements differently. The rule can be used
- *   to inject some flag that tells whether table row represents a model or an element.
- * - Tree shows a hierarchy of models and elements. Then element node is clicked,
- *   application needs to additionally know element model's ID. The rule can be used
- *   to inject that ID into element's node.
- *
- * @see [More details]($docs/presentation/Customization/ExtendedDataRule.md)
+ * @see [Extended data rule reference documentation page]($docs/presentation/customization/ExtendedDataRule.md)
  * @public
  */
-export interface ExtendedDataRule extends RuleBase, ConditionContainer {
+export interface ExtendedDataRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.ExtendedData;
 
   /**
-   * Defines a condition for the rule, which needs to be met in order for it to be used. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
+   * Defines a condition which needs to be met in order for the rule to be used. The condition
+   * is an [ECExpression]($docs/presentation/customization/ECExpressions.md#rule-condition) which has
+   * to evaluate to a boolean value.
    */
   condition?: string;
 
   /**
-   * A map of items that define the values stored in the extended data structure.
-   *
-   * The key part of the pair should be unique within all keys which are used for specific
-   * presentation object, even if they are applied using different `ExtendedData` definitions.
-   *
-   * The value part of the pair is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition) and whose
-   * evaluated result is used as the value of the extended data item.
+   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md#rule-condition) whose
+   * evaluation results are used as extended data values.
    */
   items: { [key: string]: string };
 }

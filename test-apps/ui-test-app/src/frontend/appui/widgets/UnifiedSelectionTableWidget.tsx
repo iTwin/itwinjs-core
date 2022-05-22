@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 import { Table, TableCellContextMenuArgs } from "@itwin/components-react";
 import { ContextMenuItem, GlobalContextMenu } from "@itwin/core-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
@@ -19,7 +19,7 @@ export class UnifiedSelectionTableWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (options && options.iModelConnection && options.rulesetId)
+    if (options && options.iModelConnection)
       this.reactNode = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} />;
   }
 }
@@ -122,9 +122,9 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
     );
   }
   public override render() {
-    if (this.props.iModelConnection && this.props.rulesetId) {
+    if (this.state.dataProvider) {
       return (
-        <div style={{ height: "100%" }}>
+        <div data-item-id="test-ust-container" style={{ height: "100%" }}>
           <UnifiedSelectionTable dataProvider={this.state.dataProvider} onCellContextMenu={this._onCellContextMenu} />
           {this.renderContextMenu()}
         </div>
@@ -135,6 +135,6 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
 }
 
 const createDataProviderFromProps = (props: UnifiedSelectionTableWidgetProps) =>
-  new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: props.rulesetId! });
+  new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
 
 ConfigurableUiManager.registerControl("UnifiedSelectionTableDemoWidget", UnifiedSelectionTableWidgetControl);

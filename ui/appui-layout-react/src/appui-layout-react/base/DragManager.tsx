@@ -557,6 +557,16 @@ export function isTabTarget(target: DragTarget): target is TabTarget {
   return target.type === "tab";
 }
 
+/** @internal */
+export function isWidgetTarget(target: DragTarget): target is WidgetTarget {
+  return target.type === "widget";
+}
+
+/** @internal */
+export function isPanelTarget(target: DragTarget): target is PanelTarget {
+  return target.type === "panel";
+}
+
 interface BaseDragItemInfo {
   initialPointerPosition: Point;
   lastPointerPosition: Point;

@@ -72,8 +72,9 @@ class TreeOwner implements TileTreeOwner {
  * change.
  * @see [[IModelConnection.tiles]].
  * @public
+ * @extensions
  */
-export class Tiles {
+export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
   private _iModel: IModelConnection;
   private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
   private _disposed = false;
@@ -192,6 +193,14 @@ export class Tiles {
   public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
     for (const dict of this._treesBySupplier.values())
       dict.forEach((_key, value) => func(value));
+  }
+
+  /** Iterate over all of the TileTreeOwners. */
+  public * [Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+    for (const [supplier, dict] of this._treesBySupplier) {
+      for (const entry of dict)
+        yield { supplier, id: entry.key, owner: entry.value };
+    }
   }
 
   /** Obtain the TileTreeOwners supplied by the specified supplier. */

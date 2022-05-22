@@ -7,6 +7,7 @@
 import { BeEvent } from '@itwin/core-bentley';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
+import { ContentInstanceKeysRequestOptions } from '@itwin/presentation-common';
 import { ContentRequestOptions } from '@itwin/presentation-common';
 import { ContentSourcesRequestOptions } from '@itwin/presentation-common';
 import { ContentUpdateInfo } from '@itwin/presentation-common';
@@ -35,7 +36,6 @@ import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
-import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -75,7 +75,7 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
 }
 
 // @internal (undocumented)
-export const buildPagedResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
+export const buildPagedArrayResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
 // @alpha (undocumented)
 export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void;
@@ -93,8 +93,17 @@ export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInf
 export enum DefaultFavoritePropertiesStorageTypes {
     BrowserLocalStorage = 1,
     Noop = 0,
-    UserSettingsServiceStorage = 2
+    UserPreferencesStorage = 2
 }
+
+// @internal (undocumented)
+export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 
 // @public
 export class FavoritePropertiesManager implements IDisposable {
@@ -205,6 +214,9 @@ export interface IModelHierarchyChangeEventArgs {
     updateInfo: HierarchyUpdateInfo;
 }
 
+// @internal (undocumented)
+export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
+
 // @public
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
@@ -295,6 +307,11 @@ export class PresentationManager implements IDisposable {
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined>;
+    // @beta
+    getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{
+        total: number;
+        items: () => AsyncGenerator<InstanceKey>;
+    }>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<number>;
     // @beta
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]>;
@@ -302,8 +319,6 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @beta
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
-    // @alpha
-    getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;
@@ -488,6 +503,8 @@ export class SelectionManager implements ISelectionProvider {
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
+    // @internal (undocumented)
+    getToolSelectionSyncHandler(imodel: IModelConnection): ToolSelectionSyncHandler | undefined;
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;

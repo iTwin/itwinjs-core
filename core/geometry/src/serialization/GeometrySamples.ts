@@ -61,6 +61,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 
 /* eslint-disable no-console */
 /**
@@ -1152,7 +1153,8 @@ export class Sample {
           mesh.addParamUV(i, j);
       }
     }
-    let color = 10; // arbitrarily start at color 10 so colorIndex is different from color.
+    let color = 0xFF5CE51A; // arbitrary color so colorIndex is different from color.
+    const colorDiff = 0x12345;
     // Push elements to index array (vertices are calculated using i and j positioning for each point)
     let thisColorIndex = 0;
     for (let j = 0; j + 1 < numYVertices; j++) {
@@ -1166,7 +1168,7 @@ export class Sample {
           mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, false);
           // make color === faceIndex
           if (createColors) {
-            thisColorIndex = mesh.addColor(color++);
+            thisColorIndex = mesh.addColor(color += colorDiff);
             mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
           }
           // param indexing matches points .  .
@@ -1198,7 +1200,7 @@ export class Sample {
           mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, true); mesh.addPointIndex(vertex01, true);
           // make color === faceIndex
           if (createColors) {
-            thisColorIndex = mesh.addColor(color++);
+            thisColorIndex = mesh.addColor(color += colorDiff);
             mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
           }
           // param indexing matches points .  .
@@ -1934,6 +1936,13 @@ export class Sample {
    * * order 3 bspline
    * * order 4 bspline
    * * alternating lines and arcs
+   * * arc spline with corners
+   * * arc spline with smooth joins
+   * * interpolation curve 2 pts
+   * * interpolation curve 3 pts
+   * * interpolation curve >3 pts
+   * * integrated spiral (bloss)
+   * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
     const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
@@ -1955,6 +1964,47 @@ export class Sample {
         LineSegment3d.create(pointsA[0], pointsA[1]),
         Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
         LineSegment3d.create(pointsA[3], pointsA[4])))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // arc spline with corners
+        Arc3d.createXY(Point3d.create(5, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0))))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // arc spline with smooth joins
+        Arc3d.createXY(Point3d.create(5, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 360)),
+        Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0))))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 2-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 3-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1], pointsA[2]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: pointsA,
+            startTangent: Point3d.create(1,-1),
+            endTangent: Point3d.create(-1,-1)}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(0, 100),
+          AngleSweep.createStartEndDegrees(10, 75),
+          Segment1d.create(0, 1),
+          Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30))),
+          "bloss")!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        DirectSpiral3d.createDirectHalfCosine(
+          Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(110))),
+          50, 350,
+          Segment1d.create(0, 1))!))!);
     return result;
   }
   /**
@@ -2445,4 +2495,5 @@ export class Sample {
       point0.push(point0[0].clone());
     return point0;
   }
+
 }

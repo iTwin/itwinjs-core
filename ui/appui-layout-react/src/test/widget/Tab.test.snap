@@ -76,3 +76,32 @@ exports[`WidgetTab should render overflown 1`] = `
   <span />
 </div>
 `;
+
+exports[`WidgetTab should render tab with icon only 1`] = `
+<div
+  class="nz-widget-tab nz-active nz-last-not-overflown"
+  data-item-id="t1"
+  data-item-type="widget-tab"
+  role="tab"
+  title=""
+>
+  <i
+    class="icon icon-placeholder"
+  />
+</div>
+`;
+
+exports[`WidgetTab should render tab with text and icon 1`] = `
+<div
+  class="nz-widget-tab nz-active nz-last-not-overflown"
+  data-item-id="t1"
+  data-item-type="widget-tab"
+  role="tab"
+  title=""
+>
+  <i
+    class="icon icon-placeholder"
+  />
+  <span />
+</div>
+`;

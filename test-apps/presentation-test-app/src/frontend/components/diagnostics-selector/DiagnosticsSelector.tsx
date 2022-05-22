@@ -69,7 +69,8 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
             { value: "info", label: "Info" },
           ]}
           value={editorSeverity}
-          onChange={(newValue: string) => setEditorSeverity(newValue)} />
+          onChange={(newValue: string) => setEditorSeverity(newValue)}
+          size="small" />
         <LabeledSelect label="Dev severity"
           options={[
             { value: "error", label: "Error" },
@@ -79,7 +80,8 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
             { value: "trace", label: "Trace" },
           ]}
           value={devSeverity}
-          onChange={(newValue: string) => setDevSeverity(newValue)} />
+          onChange={(newValue: string) => setDevSeverity(newValue)}
+          size="small" />
         <ToggleSwitch label="Measure performance" labelPosition="right" checked={shouldMeasurePerformance} onChange={handleMeasurePerformanceChange} />
       </GlobalContextMenu>
     </React.Fragment>

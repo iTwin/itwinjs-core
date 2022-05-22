@@ -11,9 +11,9 @@ import {
 } from "@itwin/core-markup";
 import { ToolItemDef } from "../shared/ToolItemDef";
 
-/** Utility Class that provides definitions of tools provided by imodeljs-markup package. These definitions can be used to populate the UI.
+/** Utility Class that provides definitions of tools provided by @itwin/core-markup package. These definitions can be used to populate the UI.
  *  Note: Application must call 'MarkupApp.initialize()' or 'MarkupApp.start()' before using these definitions.
- * @public
+ * @public @deprecated Use the tools directly from the @itwin/core-markup package.
  */
 // istanbul ignore next
 export class MarkupTools {

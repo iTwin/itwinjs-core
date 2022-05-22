@@ -234,7 +234,7 @@ The required data for a bspline curve is:
             numberOfKnotsWithOverClamping = N + order = numberOfControlPoints + order
 ...
 
-In `imodeljs`
+In `iTwin.js`
 
 - the spline classes (`BsplineCurve3d`, `BSplineCurve3dH` and surface partners) _internally_ do _not_ over-clamp.
 - The API for constructing splines accepts both styles of input.  The order, knot count, and control point counts distinguish which style is being used.

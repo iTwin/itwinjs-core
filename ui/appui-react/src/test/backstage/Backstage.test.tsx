@@ -10,7 +10,7 @@ import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
 } from "../../appui-react";
 import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
-import TestUtils, { mockUserInfo, mount } from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {
 
@@ -46,19 +46,17 @@ describe("Backstage", () => {
       shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
-    it("renders correctly with UserInfo", () => {
-      shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
-    });
-
     it("with child items", () => {
       const commandHandler = () => { };
       shallow(
         // eslint-disable-next-line deprecation/deprecation
         <Backstage isVisible={true}>
+          { /* eslint-disable-next-line deprecation/deprecation */ }
           <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />
-          <SeparatorBackstageItem />
+          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
+          { /* eslint-disable-next-line deprecation/deprecation */ }
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
-          <SeparatorBackstageItem />
+          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
           {/* eslint-disable-next-line deprecation/deprecation */}
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>, // eslint-disable-line deprecation/deprecation

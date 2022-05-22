@@ -9,11 +9,12 @@
 import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { HollowFacesTool, IntersectSolidElementsTool, OffsetFacesTool, SewSheetElementsTool, SubtractSolidElementsTool, UniteSolidElementsTool } from "./ElementGeometryTool";
+import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool, SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
@@ -65,6 +66,9 @@ export class EditTools {
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
 
@@ -99,6 +103,7 @@ export class EditTools {
       const tools = [
         DeleteElementsTool,
         MoveElementsTool,
+        CopyElementsTool,
         RotateElementsTool,
       ];
 
@@ -114,6 +119,9 @@ export class EditTools {
         CreateEllipseTool,
         CreateLineStringTool,
         CreateRectangleTool,
+        BreakCurveTool,
+        ExtendCurveTool,
+        OffsetCurveTool,
       ];
 
       for (const tool of tools)
@@ -122,12 +130,23 @@ export class EditTools {
 
     if (registerAllTools || options?.registerSolidModelingTools) {
       const tools = [
-        OffsetFacesTool,
-        HollowFacesTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,
         SewSheetElementsTool,
+        ThickenSheetElementsTool,
+        CutSolidElementsTool,
+        EmbossSolidElementsTool,
+        ImprintSolidElementsTool,
+        SweepAlongPathTool,
+        LoftProfilesTool,
+        OffsetFacesTool,
+        HollowFacesTool,
+        SweepFacesTool,
+        SpinFacesTool,
+        RoundEdgesTool,
+        ChamferEdgesTool,
+        DeleteSubEntitiesTool,
       ];
 
       for (const tool of tools)
@@ -135,5 +154,9 @@ export class EditTools {
     }
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

@@ -96,11 +96,12 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 
   public override render(): React.ReactNode {
     const tooltip = `${this.state.messageCount} ${this._title}`;
+    const divStyle = { ...this.props.style, height: "100%" };
     const footerMessages = (
       <>
         <div
           className={this.props.className}
-          style={this.props.style}
+          style={divStyle}
           title={tooltip}
           ref={this._handleTargetRef}
         >

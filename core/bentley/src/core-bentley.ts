@@ -8,14 +8,17 @@ export * from "./AsyncMutex";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
+export * from "./StatusCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
+export * from "./ClassUtils";
 export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
 export * from "./IndexMap";
+export * from "./JsonSchema";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
@@ -31,10 +34,7 @@ export * from "./StringUtils";
 export * from "./Time";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
-
-/** @packageDocumentation
- * @module Utils
- */
+export * from "./YieldManager";
 
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
@@ -42,10 +42,6 @@ export * from "./UtilityTypes";
 /**
  * @docs-group-description BeSQLite
  * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
- */
-/**
- * @docs-group-description Configuration
- * Class for easily managing configuration variables for an iModel.js application.
  */
 /**
  * @docs-group-description Errors
@@ -66,6 +62,10 @@ export * from "./UtilityTypes";
 /**
  * @docs-group-description Collections
  * Specialized, customizable collection classes like priority queues.
+ */
+/**
+ * @docs-group-description Json
+ * utilities for dealing with Json strings and files.
  */
 /**
  * @docs-group-description Utils

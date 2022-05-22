@@ -10,19 +10,14 @@ import { assert } from "@itwin/core-bentley";
 import { ColorDef, RgbColor } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 
-function scale(norm: number): number {
-  assert(1.0 >= norm && 0.0 <= norm);
-  return Math.floor(norm * 255 + 0.5);
+function clamp(norm: number): number {
+  assert(() => norm >= 0 && norm <= 1);
+  return Math.max(0, Math.min(1, norm));
 }
 
-function computeTbgr(r: number, g: number, b: number, a: number): number {
-  r = scale(r);
-  g = scale(g);
-  b = scale(b);
-  const t = scale(1.0 - a);
-
-  const tbgr = r | (g << 8) | (b << 16) | (t << 24);
-  return tbgr >>> 0; // triple shift removes sign
+function scale(norm: number): number {
+  assert(() => norm >= 0 && norm <= 1);
+  return Math.floor(norm * 255 + 0.5);
 }
 
 export abstract class FloatColor {
@@ -48,7 +43,7 @@ export abstract class FloatColor {
   }
 
   public setRgbColor(rgb: RgbColor) {
-    this.setTbgr(computeTbgr(rgb.r / 255, rgb.g / 255, rgb.b / 255, 1));
+    this.setTbgr((rgb.r | (rgb.g << 8) | (rgb.b << 16)) >>> 0);
   }
 
   public setTbgr(tbgr: number) {
@@ -68,7 +63,14 @@ export abstract class FloatColor {
   }
 
   protected setRgbaComponents(r: number, g: number, b: number, a: number): void {
-    this._tbgr = this.maskTbgr(computeTbgr(r, g, b, a));
+    assert(() => r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && a >= 0 && a <= 1);
+    r = clamp(r);
+    g = clamp(g);
+    b = clamp(b);
+    a = clamp(a);
+
+    const tbgr = (scale(r) | (scale(g) << 8) | (scale(b) << 16) | (scale(1 - a) << 24)) >>> 0;
+    this._tbgr = this.maskTbgr(tbgr);
     this.setComponents(r, g, b, a);
   }
 }

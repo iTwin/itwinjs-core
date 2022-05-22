@@ -21,17 +21,6 @@ packageClassification:  [
       ]
    },
    {
-     "order":"2",
-     "header": "Client Packages",
-     "packages": [
-       "extension-client",
-       "imodelhub-client",
-       "itwin-client",
-       "product-settings-client",
-       "reality-data-client"
-     ]
-   },
-   {
       "order":"3",
       "header":"UI Packages",
       "packages":[

@@ -48,14 +48,16 @@ exports[`BackstageComposer should render backstage separators 1`] = `
 
 exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
 <BackstageItem
+  groupPriority={100}
   icon={
     <Icon
-      iconSpec={undefined}
+      iconSpec={null}
     />
   }
   isActive={false}
   isDisabled={false}
   itemId="Action"
+  itemPriority={50}
   onClick={[Function]}
 >
   Custom Label
@@ -110,14 +112,16 @@ exports[`BackstageComposerItem BackstageComposerItem should render with badgeTyp
 
 exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
 <BackstageItem
+  groupPriority={100}
   icon={
     <Icon
-      iconSpec={undefined}
+      iconSpec={null}
     />
   }
   isActive={false}
   isDisabled={false}
   itemId="Stage"
+  itemPriority={50}
   onClick={[Function]}
 >
   Custom Label

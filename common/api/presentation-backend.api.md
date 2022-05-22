@@ -67,6 +67,9 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
 // @internal (undocumented)
 export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
+// @internal (undocumented)
+export const getLocalesDirectory: (assetsDirectory: string) => string;
+
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
@@ -96,11 +99,18 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Memory;
 }
 
+// @alpha
+export interface MultiElementPropertiesResponse {
+    // (undocumented)
+    iterator: () => AsyncGenerator<ElementProperties[]>;
+    // (undocumented)
+    total: number;
+}
+
 // @public
-export interface MultiManagerPresentationProps extends PresentationManagerProps {
+export interface MultiManagerPresentationProps extends PresentationPropsBase {
     // @internal
     clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    requestTimeout?: number;
     unusedClientLifetime?: number;
 }
 
@@ -180,7 +190,7 @@ export class PresentationManager {
     // @beta
     getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
     // @alpha
-    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
     getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
@@ -193,6 +203,8 @@ export class PresentationManager {
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
+    // @internal (undocumented)
+    setOnManagerUsedHandler(handler: () => void): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -215,6 +227,7 @@ export interface PresentationManagerProps {
     };
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
+    // @deprecated
     enableSchemasPreload?: boolean;
     // @internal
     id?: string;
@@ -235,6 +248,12 @@ export interface PresentationManagerProps {
 
 // @public
 export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
+
+// @public
+export interface PresentationPropsBase extends PresentationManagerProps {
+    enableSchemasPreload?: boolean;
+    requestTimeout?: number;
+}
 
 // @beta
 export class RulesetEmbedder {
@@ -320,8 +339,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 }
 
 // @public
-export interface SingleManagerPresentationProps extends PresentationManagerProps {
-    requestTimeout?: number;
+export interface SingleManagerPresentationProps extends PresentationPropsBase {
     // @alpha
     useSingleManager?: boolean;
 }

@@ -7,7 +7,7 @@
  */
 
 import { Format } from "./Formatter/Format";
-import { UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
@@ -41,8 +41,8 @@ export class ParserSpec {
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param outUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
-  public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec> {
-    const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit);
+  public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
+    const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
     return new ParserSpec(outUnit, format, conversions);
   }
 

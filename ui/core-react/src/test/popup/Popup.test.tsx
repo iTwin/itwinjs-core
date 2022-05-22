@@ -64,6 +64,11 @@ describe("<Popup />", () => {
     sandbox.restore();
   });
 
+  it("should render popup if closed and keepContentsMounted", () => {
+    const component = render(<Popup keepContentsMounted top={30} left={70} />);
+    expect(component.getByTestId("core-popup")).to.exist;
+  });
+
   it("renders correctly", () => {
     const component = render(<Popup isOpen top={30} left={70} />);
     expect(component.getByTestId("core-popup")).to.exist;
@@ -315,6 +320,21 @@ describe("<Popup />", () => {
     // component.debug();
 
     expect(component.queryByTestId("NestedPopup-Button")).to.be.null;
+  });
+
+  it("should remove animation", () => {
+    const wrapper = mount<PopupProps>(<Popup isOpen />);
+    const popup = wrapper.find(".core-popup");
+    wrapper.state("animationEnded").should.false;
+
+    const element = document.createElement("div");
+    popup.simulate("animationEnd", { target: element });
+    wrapper.state("animationEnded").should.false;
+
+    popup.simulate("animationEnd");
+    wrapper.state("animationEnded").should.true;
+
+    wrapper.unmount();
   });
 
   describe("renders", () => {

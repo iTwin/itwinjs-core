@@ -108,7 +108,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
     testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
     testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
-  });
+  }).timeout(8000); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
 
   it("Should parse quoted arguments with embedded quotes", () => {
     testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);
@@ -117,7 +117,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
     testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
     testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
-  });
+  }).timeout(8000);
 
   it("Should parse command with mismatched quotes", () => {
     expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
@@ -144,7 +144,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
     testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
     testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
-  });
+  }).timeout(8000);
 
   it("Should find the MicroStation inputmanager training command", async () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");

@@ -108,7 +108,7 @@ const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProp
     const classNames = classnames(className, "components-parsed-input", hasBadInput && "components-parsed-input-has-error");
 
     return <Input data-testid="components-parsed-input" ref={ref} style={style} className={classNames} onKeyDown={handleKeyDown} onBlur={handleBlur}
-      onChange={handleChange} value={formattedValue} disabled={readonly} />;
+      onChange={handleChange} value={formattedValue} disabled={readonly} size="small" />;
   }
 );
 

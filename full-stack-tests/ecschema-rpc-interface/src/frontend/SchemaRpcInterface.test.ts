@@ -2,11 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import chai = require("chai");
-import { expect } from "chai";
 
-import chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
+import { expect } from "chai";
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";

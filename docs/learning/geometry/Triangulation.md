@@ -13,9 +13,9 @@
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\topology\InsertAndRetriangulateContext.test.ts
+- source: core\geometry\src\test\topology\InsertAndRetriangulateContext.test.ts
 - test name: "TriangulateInHull"
-- output: imodeljs\core\geometry\src\test\output\InsertAndRetriangulateContext\TriangulateInHull.imjs
+- output: core\geometry\src\test\output\InsertAndRetriangulateContext\TriangulateInHull.imjs
 
 ## Triangulate points "between linestrings"
 
@@ -29,7 +29,7 @@ Unit Test
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\Polyface\GreedyTriangulationBetweenLineStrings.test.ts
+- source: core\geometry\src\test\Polyface\GreedyTriangulationBetweenLineStrings.test.ts
 - test set: `describe("GreedyTriangulationBetweenLineStrings"`
 - test name: `quadStar`
-- output: imodeljs\core\geometry\src\test\output\GreedyTriangulationBetweenLineStrings\quadStar.imjs
+- output: core\geometry\src\test\output\GreedyTriangulationBetweenLineStrings\quadStar.imjs

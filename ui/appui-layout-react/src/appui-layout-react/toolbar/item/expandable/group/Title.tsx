@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Title]] component.
- * @alpha
+ * @internal
  */
 export interface TitleProps extends CommonProps {
   /** Actual title. */
@@ -20,7 +20,7 @@ export interface TitleProps extends CommonProps {
 }
 
 /** Tool group title.
- * @alpha
+ * @internal
  */
 export class Title extends React.PureComponent<TitleProps> {
   public override render() {

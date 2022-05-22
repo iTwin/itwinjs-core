@@ -9,6 +9,7 @@
 import { SnapMode } from "@itwin/core-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { FrameworkVersionId } from "../UiFramework";
 
 // cSpell:ignore configurableui snapmode toolprompt
 
@@ -23,6 +24,11 @@ export enum ConfigurableUiActionId {
   SetWidgetOpacity = "configurableui:set_widget_opacity",
   SetDragInteraction = "configurableui:set-drag-interaction",
   SetFrameworkVersion = "configurableui:set-framework-version",
+  SetShowWidgetIcon = "configurableui:set-show-widget-icon",
+  /** @alpha */
+  AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
+  SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
+  AnimateToolSettings = "configurableui:set-animate-tool-settings",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -34,7 +40,12 @@ export interface ConfigurableUiState {
   theme: string;
   widgetOpacity: number;
   useDragInteraction: boolean;
-  frameworkVersion: string;
+  frameworkVersion: FrameworkVersionId;
+  showWidgetIcon: boolean;
+  /** @alpha */
+  autoCollapseUnpinnedPanels: boolean;
+  viewOverlayDisplay: boolean;
+  animateToolSettings: boolean;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -44,7 +55,11 @@ const initialState: ConfigurableUiState = {
   theme: SYSTEM_PREFERRED_COLOR_THEME,
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
   useDragInteraction: false,
-  frameworkVersion: "1",
+  frameworkVersion: "2",
+  showWidgetIcon: true,
+  autoCollapseUnpinnedPanels: false,
+  viewOverlayDisplay: true,
+  animateToolSettings: false,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -62,7 +77,11 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
     // istanbul ignore next
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
-  setFrameworkVersion: (frameworkVersion: string) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
+  setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
+  setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
+  setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),
+  setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
+  setAnimateToolSettings: (animateToolSettings: boolean) => createAction(ConfigurableUiActionId.AnimateToolSettings, animateToolSettings),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -93,7 +112,20 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
       return { ...state, useDragInteraction: action.payload };
     }
     case ConfigurableUiActionId.SetFrameworkVersion: {
-      return { ...state, frameworkVersion: action.payload };
+      const frameworkVersion = (action.payload);
+      return { ...state, frameworkVersion };
+    }
+    case ConfigurableUiActionId.SetShowWidgetIcon: {
+      return { ...state, showWidgetIcon: action.payload };
+    }
+    case ConfigurableUiActionId.AutoCollapseUnpinnedPanels: {
+      return { ...state, autoCollapseUnpinnedPanels: action.payload };
+    }
+    case ConfigurableUiActionId.SetViewOverlayDisplay: {
+      return { ...state, viewOverlayDisplay: action.payload };
+    }
+    case ConfigurableUiActionId.AnimateToolSettings: {
+      return { ...state, animateToolSettings: action.payload };
     }
   }
   return outState;

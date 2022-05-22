@@ -19,6 +19,8 @@
   }
 
   .core-message-box-content {
+    display: flex;
+    align-items: center;
     flex: 1 1;
   }
 }

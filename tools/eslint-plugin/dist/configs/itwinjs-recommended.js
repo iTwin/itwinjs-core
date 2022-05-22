@@ -243,7 +243,8 @@ module.exports = {
       "multi-line"
     ],
     "deprecation/deprecation": "error",
-    "dot-notation": "error",
+    "dot-notation": "off",
+    "@typescript-eslint/dot-notation": "error",
     "eol-last": "error",
     "eqeqeq": [
       "error",

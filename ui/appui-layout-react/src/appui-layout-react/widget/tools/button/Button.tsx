@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-react";
 
 /** Properties of [[ToolbarButton]] component.
- * @alpha
+ * @internal
  */
 export interface ToolbarButtonProps extends CommonProps {
   /** Button content. */
@@ -31,7 +31,7 @@ export interface ToolbarButtonProps extends CommonProps {
 }
 
 /** Basic toolbar button. Used in [[Toolbar]] component.
- * @alpha
+ * @internal
  */
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
   public override render() {

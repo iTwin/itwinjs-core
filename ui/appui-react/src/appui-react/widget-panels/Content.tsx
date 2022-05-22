@@ -19,7 +19,10 @@ export function WidgetContent() {
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
   return (
-    <ScrollableWidgetContent itemId={itemId}>
+    <ScrollableWidgetContent
+      itemId={itemId}
+      providerId={widget?.initialProps?.providerId}
+    >
       {widget?.reactNode}
     </ScrollableWidgetContent>
   );
@@ -38,10 +41,7 @@ export function useWidgetDef(): WidgetDef | undefined {
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
-    return () => {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
-    };
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

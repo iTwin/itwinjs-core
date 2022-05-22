@@ -100,8 +100,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     if (!this.props.isLoading && this.props.isLeaf)
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
 
-    const loader = this.props.isLoading ? (<div className="loader"><ProgressRadial size="x-small" indeterminate /></div>) : undefined;
-
     let checkbox: React.ReactNode;
     if (this.props.checkboxProps) {
       const props: NodeCheckboxRenderProps = {
@@ -117,8 +115,10 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
         checkbox = (
-          <Checkbox {...props}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")}
+          <Checkbox
+            {...props}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)}
+            data-testid={this.createSubComponentTestId("checkbox")}
           />
         );
       }
@@ -154,7 +154,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
           style={{ marginLeft: offset }}
           data-testid={this.createSubComponentTestId("contents")}
         >
-          {loader}
+          {this.props.isLoading && <ProgressRadial size="x-small" indeterminate />}
           {toggle}
           {checkbox}
           {icon}
@@ -188,7 +188,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (this.props.onClick)
-      this.props.onClick(e);
+    this.props.onClick?.(e);
   };
 }

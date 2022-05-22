@@ -12,6 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Panel]] component.
+ * @deprecated
  * @alpha
  */
 export interface PanelProps extends CommonProps {
@@ -20,6 +21,7 @@ export interface PanelProps extends CommonProps {
 }
 
 /** Basic panel used in [[ExpandableItem]]. Used as base in [[Group]] and [[NestedGroup]] components.
+ * @deprecated
  * @alpha
  */
 export class Panel extends React.PureComponent<PanelProps> {

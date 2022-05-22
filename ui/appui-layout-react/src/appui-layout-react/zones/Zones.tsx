@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Zones]] component.
- * @beta
+ * @internal
  */
 export interface ZonesProps extends CommonProps {
   /** Actual zones. I.e. [[Zone]] */
@@ -22,7 +22,7 @@ export interface ZonesProps extends CommonProps {
 }
 
 /** Zones container component of 9-Zone UI app.
- * @beta
+ * @internal
  */
 export class Zones extends React.PureComponent<ZonesProps> {
   public override render() {

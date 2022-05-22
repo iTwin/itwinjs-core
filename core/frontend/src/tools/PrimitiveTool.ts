@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import {BriefcaseConnection} from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -17,6 +18,7 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  * @public
+ * @extensions
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   /** The viewport within which the tool operates.
@@ -34,6 +36,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public get iModel(): IModelConnection {
     assert(undefined !== this.targetView);
     return this.targetView.view.iModel;
+  }
+
+  /** Get the briefcase on which this tool operates, if the tool has successfully installed and the target [[iModel]] is a briefcase. */
+  public get briefcase(): BriefcaseConnection | undefined {
+    const iModel = this.targetView?.view.iModel;
+    return iModel?.isBriefcaseConnection() ? iModel : undefined;
   }
 
   /**
@@ -134,10 +142,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param _previous The previously active view.
    * @param current The new active view.
    */
-  public override onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+  public override async onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void> {
     if (this.isCompatibleViewport(current, true))
       return;
-    this.onRestartTool();
+    return this.onRestartTool();
   }
 
   /**
@@ -146,11 +154,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
    * ```ts
    *   const tool = new MyPrimitiveTool();
-   *   if (!tool.run())
-   *     this.exitTool(); // Don't leave current instance active if new instance rejects install...
+   *   if (!await tool.run())
+   *     return this.exitTool(); // Don't leave current instance active if new instance rejects install...
    * ```
    */
-  public abstract onRestartTool(): void;
+  public abstract onRestartTool(): Promise<void>;
 
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.

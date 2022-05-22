@@ -64,7 +64,7 @@ export class SampleApp {
         activeUnitSystem: "metric",
       },
       favorites: {
-        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       },
     });
     // __PUBLISH_EXTRACT_END__

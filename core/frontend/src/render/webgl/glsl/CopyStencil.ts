@@ -18,7 +18,6 @@ import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
-import { unquantizeVertexPosition } from "./Vertex";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
@@ -43,9 +42,7 @@ const computePosition = `
   return vec4(rawPos.x, rawPos.y, z, 1.0);
 `;
 
-const unquantizeVertexPosition2d = `
-vec4 unquantizeVertexPosition(vec2 pos, vec3 origin, vec3 scale) { return unquantizePosition(vec3(pos.x, pos.y, 0.0), origin, scale); }
-`;
+const computeQuantizedPosition2d = `return vec3(a_pos.x, a_pos.y, 0.0);`;
 
 const scratchColor = FloatRgba.fromColorDef(ColorDef.white);
 
@@ -139,7 +136,7 @@ export function createVolClassCopyZUsingPointsProgram(context: WebGLContext): Sh
   const builder = new ProgramBuilder(attrMap);
 
   const vert = builder.vert;
-  vert.replaceFunction(unquantizeVertexPosition, unquantizeVertexPosition2d);
+  vert.set(VertexShaderComponent.ComputeQuantizedPosition, computeQuantizedPosition2d);
   vert.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
       const geom = params.geometry as ScreenPointsGeometry;

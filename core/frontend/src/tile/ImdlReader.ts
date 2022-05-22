@@ -6,34 +6,87 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
-  TileReadError, TileReadStatus,
+  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
+  RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { AnimationNodeId, GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import {
-  createSurfaceMaterial, EdgeParams, isValidSurfaceType, MeshParams, PointStringParams, PolylineParams, SegmentEdgeParams, SilhouetteParams,
-  SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
-} from "../render/primitives/VertexTable";
+import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
+import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
+import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
+import { PointStringParams } from "../render/primitives/PointStringParams";
+import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
-import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
+import { IModelTileContent } from "./internal";
+
+/** @internal */
+export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
 
 /* eslint-disable no-restricted-syntax */
 
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;
+}
+
+/** Header preceding "glTF" data in iMdl tile.
+ * @internal
+ */
+export class GltfHeader extends TileHeader {
+  public readonly gltfLength: number;
+  public readonly scenePosition: number = 0;
+  public readonly sceneStrLength: number = 0;
+  public readonly binaryPosition: number = 0;
+  public get isValid(): boolean { return TileFormat.Gltf === this.format; }
+
+  public constructor(stream: ByteStream) {
+    super(stream);
+    this.gltfLength = stream.nextUint32;
+
+    this.sceneStrLength = stream.nextUint32;
+    const value5 = stream.nextUint32;
+
+    // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
+    // validating the chunk type.
+    if (this.version === GltfVersions.Version2 && value5 === GltfVersions.Gltf1SceneFormat)
+      this.version = GltfVersions.Version1;
+
+    if (this.version === GltfVersions.Version1) {
+      const gltfSceneFormat = value5;
+      if (GltfVersions.Gltf1SceneFormat !== gltfSceneFormat) {
+        this.invalidate();
+        return;
+      }
+
+      this.scenePosition = stream.curPos;
+      this.binaryPosition = stream.curPos + this.sceneStrLength;
+    } else if (this.version === GltfVersions.Version2) {
+      const sceneChunkType = value5;
+      this.scenePosition = stream.curPos;
+      stream.curPos = stream.curPos + this.sceneStrLength;
+      const binaryLength = stream.nextUint32;
+      const binaryChunkType = stream.nextUint32;
+      if (GltfV2ChunkTypes.JSON !== sceneChunkType || GltfV2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
+        this.invalidate();
+        return;
+      }
+
+      this.binaryPosition = stream.curPos;
+    } else {
+      this.invalidate();
+    }
+  }
 }
 
 /** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
@@ -43,10 +96,15 @@ export interface ImdlReaderResult extends IModelTileContent {
  * @param is3d True if the graphics are 3d.
  * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized; or false if you don't want to produce a batch.
  * @public
+ * @extensions
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
-  const stream = new ByteStream(bytes.buffer);
-  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
+  const stream = ByteStream.fromUint8Array(bytes);
+  const reader = ImdlReader.create({
+    stream, iModel, modelId, is3d, options,
+    system: IModelApp.renderSystem,
+  });
+
   if (!reader)
     return undefined;
 
@@ -54,30 +112,127 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
   return result.graphic;
 }
 
+const nodeIdRegex = /Node_(.*)/;
+function extractNodeId(nodeName: string): number {
+  const match = nodeName.match(nodeIdRegex);
+  assert(!!match && match.length === 2);
+  if (!match || match.length !== 2)
+    return 0;
+
+  const nodeId = Number.parseInt(match[1], 10);
+  assert(!Number.isNaN(nodeId));
+  return Number.isNaN(nodeId) ? 0 : nodeId;
+}
+
+/** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1]. */
+type ImdlColorDef = number[];
+
+/** Describes a [TextureMapping]($common). */
+interface ImdlTextureMapping {
+  /** Optional name, which may be the Id of a persistent [RenderTexture]($common) or some other name unique among all texture mappings within the tile. */
+  name?: string;
+  /** Describes the [TextureMapping.Params]($common). */
+  params: {
+    /** Describes a [TextureMapping.Trans2x3]($common) as a 2x3 matrix. */
+    transform: number[][];
+    /** @see [TextureMapping.Params.weight]($common). Default: 1.0. */
+    weight?: number;
+    /** Default: [TextureMapping.Mode.Parametric]($common). */
+    mode?: TextureMapping.Mode;
+    /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
+    worldMapping?: boolean;
+  };
+}
+
+/** Describes a [RenderTexture]($common) with its image embedded into the tile data. */
+interface ImdlNamedTexture {
+  /** If true, the image is a texture atlas containing any number of glyphs used for text. */
+  isGlyph?: boolean;
+  /** If true, the texture should not repeat and should not be mip-mapped. */
+  isTileSection?: boolean;
+  /** The Id of the [[ImdlBufferView]] containing the image data. */
+  bufferView: string;
+  /** The format of the image data referenced by [[bufferView]]. */
+  format: ImageSourceFormat;
+  /** The kind of transparency present in the texture image. Default: Mixed. */
+  transparency?: TextureTransparency;
+}
+
+/** Describes a [[DisplayParams]]. */
+interface ImdlDisplayParams {
+  type: DisplayParams.Type;
+  lineColor?: ColorDefProps;
+  fillColor?: ColorDefProps;
+  lineWidth?: number;
+  linePixels?: LinePixels;
+  fillFlags?: FillFlags;
+  ignoreLighting?: boolean;
+  materialId?: string;
+  texture?: ImdlTextureMapping;
+  gradient?: Gradient.SymbProps;
+}
+
+/** Describes a [RenderMaterial]($common). */
+interface ImdlRenderMaterial {
+  diffuseColor?: ImdlColorDef;
+  diffuse?: number;
+  specularColor?: ImdlColorDef;
+  specular?: number;
+  reflectColor?: ImdlColorDef;
+  reflect?: number;
+  specularExponent?: number;
+  /** In [0..1] where 0 is fully opaque. */
+  transparency?: number;
+  refract?: number;
+  shadows?: boolean;
+  ambient?: number;
+  textureMapping?: {
+    texture: ImdlTextureMapping;
+  };
+}
+
+/** Describes a [[SurfaceMaterialAtlas]] embedded into an [[ImdlVertexTable]]. */
 interface ImdlMaterialAtlas {
   readonly numMaterials: number;
   readonly hasTranslucency?: boolean;
   readonly overridesAlpha?: boolean;
 }
 
+/** Describes a [[VertexTable]]. */
 interface ImdlVertexTable {
+  /** Id of the [[ImdlBufferView]] containing the binary vertex table data. */
   readonly bufferView: string;
+  /** The number of vertices in the table. */
   readonly count: number;
+  /** The number of RGBA values in the lookup texture allocated per vertex. */
   readonly numRgbaPerVertex: number;
+  /** The number of colors in the color table embedded into the vertex table, or undefined if [[uniformColor]] is defined. */
   readonly numColors?: number;
+  /** The width of the lookup texture. */
   readonly width: number;
+  /** The height of the lookup texture. */
   readonly height: number;
+  /** True if [[uniformColor]] has transparency or the embedded color table contains transparent colors. */
   readonly hasTranslucency: boolean;
+  /** Describes the number (0, 1, or more than 1) of features contained in the vertex table. */
   readonly featureIndexType: FeatureIndexType;
+  /** If [[featureIndexType]] is [FeatureIndexType.Uniform]($common), the ID of the feature associated with all vertices in the table. */
   readonly featureID?: number;
+  /** If defined, the color associated with all vertices in the table. */
   readonly uniformColor?: ColorDefProps;
+  /** The quantization range of the vertex positions. @see [QParams3d]($common). */
   readonly params: {
     readonly decodedMin: number[];
     readonly decodedMax: number[];
   };
+  /** If the vertex table contains multiple surface materials, describes the embedded material atlas. */
   readonly materialAtlas?: ImdlMaterialAtlas;
+  readonly usesUnquantizedPositions?: boolean;
 }
 
+/** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
+ * @see [[InstancedGraphicParams]].
+ */
 interface ImdlInstances {
   readonly count: number;
   readonly transformCenter: number[];
@@ -86,47 +241,108 @@ interface ImdlInstances {
   readonly symbologyOverrides?: string;
 }
 
+/** Describes a unit of geometry within an [[ImdlMesh]]. */
 interface ImdlPrimitive {
+  /** The Id of the associated [[ImdlDisplayParams]]. */
   readonly material?: string;
+  /** A lookup table containing the primitive's vertices. */
   readonly vertices: ImdlVertexTable;
+  /** If true, all the vertices lie in a single plane. */
   readonly isPlanar?: boolean;
+  /** If defined, a point about which the primitive should rotate when displayed to always face the camera. */
   readonly viewIndependentOrigin?: XYZProps;
+  /** If defined, describes repeated instances of the same primitive. */
   readonly instances?: ImdlInstances;
 }
 
+/** Per-vertex data used to animate and/or resymbolize a mesh.
+ * @see [[AuxChannelTable]].
+ */
 type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & { bufferView: string };
 
+/** Describes the "hard" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
+ * They are always visible regardless of view orientation.
+ * Each segment is represented as a quad such that it can be expanded to a desired width in pixels.
+ */
 interface ImdlSegmentEdges {
+  /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the vertex in the mesh's [[ImdlVertexTable]]. */
   readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the segmnent's other endpoint in the mesh's [[ImdlVertexTable]],
+   * along with a "quad index" in [0..3] identifying which corner of the quad the vertex represents.
+   */
   readonly endPointAndQuadIndices: string;
 }
 
+/** Describes "hidden" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
+ * A given silhouette is visible when only one of the faces associated with the edge is facing the camera, producing view-dependent outlines for curved
+ * geometry like spheres and cones.
+ */
 interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
+  /** The Id of the [[ImdlBufferView]] containing - for each vertex - a pair of [OctEncodedNormal]($common)s for the two faces associated with the edge. */
   readonly normalPairs: string;
 }
 
-interface ImdlMeshEdges {
-  readonly segments?: ImdlSegmentEdges;
-  readonly silhouettes?: ImdlSilhouetteEdges;
-  readonly polylines?: ImdlPolyline;
+/** A compact alternative representation of [[ImdlSegmentEdges]] and [[ImdlSilhouetteEdges]] consisting of a lookup table containing information about each unique
+ * edge, along with indices into that table.
+ * @see [[IndexedEdgeParams]].
+ */
+interface ImdlIndexedEdges {
+  /** Id of the [[ImdlBufferView]] containing the indices - 6 per segment, forming a quad. */
+  readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing the lookup table binary data. */
+  readonly edges: string;
+  /** Width of the lookup texture. */
+  readonly width: number;
+  /** Height of the lookup texture. */
+  readonly height: number;
+  /** The number of simple segments in the lower partition of the lookup table. @see [[IndexedEdgeParams.numSegments]]. */
+  readonly numSegments: number;
+  /** The number of bytes inserted for alignment between the lower and upper partitions of the lookup table. @see [[IndexedEdgeParams.silhouettePadding]]. */
+  readonly silhouettePadding: number;
 }
 
+/** Describes the edges of an [[ImdlMeshPrimitive]]. */
+interface ImdlMeshEdges {
+  /** @see [[ImdlSegmentEdges]]. */
+  readonly segments?: ImdlSegmentEdges;
+  /** @see [[ImdlSilhouetteEdges]]. */
+  readonly silhouettes?: ImdlSilhouetteEdges;
+  /** Line strings with additional joint triangles inserted to produce wide edges with rounded corners.
+   * Typically only produced for 2d views.
+   */
+  readonly polylines?: ImdlPolyline;
+  /** @see [[ImdlIndexedEdges]]. */
+  readonly indexed?: ImdlIndexedEdges;
+}
+
+/** Describes a collection of line strings with additional joint triangles inserted to produce wide line strings with rounded corners.
+ * @see [[TesselatedPolyline]] and [[PolylineParams]].
+ */
 interface ImdlPolyline {
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.indices]]. */
   readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.prevIndices]]. */
   readonly prevIndices: string;
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.nextIndicesAndParams]]. */
   readonly nextIndicesAndParams: string;
 }
 
+/** Describes a planar region in which a pattern symbol is repeated in a regular grid.
+ * @see [[PatternGraphicParams]].
+ */
 interface ImdlAreaPattern {
   readonly type: "areaPattern";
-  /** Used as lookup key into ImdlReader._patternSymbols. */
+  /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
+  /** A [ClipVector]($geometry-core) used to clip symbols to the pattern region's boundary. */
   readonly clip: ClipVectorProps;
+  /** Uniform scale applied to the pattern geometry. */
   readonly scale: number;
+  /** Spacing between each instance of the pattern in meters. */
   readonly spacing: XYProps;
   readonly orgTransform: TransformProps;
   readonly origin: XYProps;
-  /** Lookup key in ImdlReader._bufferViews. */
+  /** Id of the [[ImdlBufferView]] containing the offset of each occurrence of the symbol in pattern-space. */
   readonly xyOffsets: string;
   readonly featureId: number;
   readonly modelTransform: TransformProps;
@@ -135,17 +351,24 @@ interface ImdlAreaPattern {
   readonly viewIndependentOrigin?: XYZProps;
 }
 
+/** Describes the surface of an [[ImdlMeshPrimitive]] as a collection of triangles. */
 interface ImdlSurface {
+  /** The type of surface. */
   readonly type: SurfaceType;
+  /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
   readonly indices: string;
+  /** If true, the [[ImdlTextureMapping]] is applied regardless of [ViewFlags.textures]($common). */
   readonly alwaysDisplayTexture?: boolean;
+  /** The quantization range for the UV coordinates. @see [QParams2d]($common). */
   readonly uvParams?: {
     readonly decodedMin: number[];
     readonly decodedMax: number[];
   };
 }
 
+/** Describes a triangle mesh, optionally including its edges. @see [[MeshParams]]. */
 interface ImdlMeshPrimitive extends ImdlPrimitive {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Mesh;
   readonly surface: ImdlSurface;
   readonly edges?: ImdlMeshEdges;
@@ -153,51 +376,197 @@ interface ImdlMeshPrimitive extends ImdlPrimitive {
   readonly areaPattern?: ImdlAreaPattern;
 }
 
+/** Describes a collection of line strings. @see [[PolylineParams]]. */
 interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Polyline;
 }
 
+/** Describes a collection of individual points. @see [[PointStringParams. */
 interface ImdlPointStringPrimitive extends ImdlPrimitive {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Point;
+  /** The Id of the [[ImdlBufferView]] containing - for each point - the 24-bit index of the corresponding vertex in the [[ImdlVertexTable]]. */
   readonly indices: string;
 }
 
 type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
+/** A collection of primitive geometry to be rendered. */
 interface ImdlMesh {
+  /** The geometry to be rendered. */
   readonly primitives?: Array<AnyImdlPrimitive | ImdlAreaPattern>;
+  /** If this mesh defines a layer, the unique Id of that layer.
+   * @see [[RenderSystem.createGraphicLayer]] for a description of layers.
+   */
   readonly layer?: string;
 }
 
+/** A collection of primitive geometry to be rendered as the pattern symbol for an [[ImdlAreaPattern]]. */
 interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
+}
+
+/** If the tile has an associated [RenderSchedule.Script]($common), an array of Ids of nodes in the script used to group elements. */
+interface ImdlAnimationNodes {
+  /** The number of bytes in each integer Id provided by [[bufferView]] - either 1, 2, or 4. */
+  bytesPerId: number;
+  /** The Id of the [[ImdlBufferView]] containing the tightly-packed array of 1-, 2- or 4-byte unsigned integer node Ids; the number of bytes is specified by [[bytesPerId]]. */
+  bufferView: string;
+}
+
+/** Describes a contiguous array of bytes within the binary portion of the tile. */
+interface ImdlBufferView {
+  /** The number of bytes in the array. */
+  byteLength: number;
+  /** The offset from the beginning of the binary portion of the tile data to the first byte in the array. */
+  byteOffset: number;
+}
+
+/** A top-level dictionary of resources of a particular type contained in an [[Imdl]] tile.
+ * Each resource has a unique name by which it can be referred to by other contents of the tile.
+ */
+interface ImdlDictionary<T> {
+  [key: string]: T | undefined;
+}
+
+/** Describes all of the geometry contained in the tile. */
+interface ImdlScene {
+  /** The Ids of the elements of [[Imdl.nodes]] to be included in the scene. */
+  nodes: string[];
+}
+
+/** Describes the top-level contents of a tile.
+ * @internal
+ */
+export interface Imdl {
+  /** The Id of the ImdlScene in [[scenes]] that describes the tile's geometry. */
+  scene: string;
+  /** The collection of ImdlScenes included in the tile. */
+  scenes: ImdlDictionary<ImdlScene>;
+  /** Maps each node Id to the Id of the corresponding mesh in [[meshes]]. */
+  nodes: ImdlDictionary<string>;
+  meshes: ImdlDictionary<ImdlMesh>;
+  bufferViews: ImdlDictionary<ImdlBufferView>;
+  materials?: ImdlDictionary<ImdlDisplayParams>;
+  patternSymbols?: ImdlDictionary<ImdlAreaPatternSymbol>;
+  animationNodes?: ImdlAnimationNodes;
+  renderMaterials?: ImdlDictionary<ImdlRenderMaterial>;
+  namedTextures?: ImdlDictionary<ImdlNamedTexture>;
+}
+
+/** Arguments supplied to [[ImdlReader.create]]
+ * @internal
+ */
+export interface ImdlReaderCreateArgs {
+  stream: ByteStream;
+  iModel: IModelConnection;
+  modelId: Id64String;
+  is3d: boolean;
+  system: RenderSystem;
+  type?: BatchType; // default Primary
+  loadEdges?: boolean; // default true
+  isCanceled?: ShouldAbortImdlReader;
+  sizeMultiplier?: number;
+  options?: BatchOptions | false;
+  containsTransformNodes?: boolean; // default false
 }
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
-export class ImdlReader extends GltfReader {
+export class ImdlReader {
+  private readonly _buffer: ByteStream;
+  private readonly _bufferViews: ImdlDictionary<ImdlBufferView>;
+  private readonly _meshes: ImdlDictionary<ImdlMesh>;
+  private readonly _nodes: ImdlDictionary<string>;
+  private readonly _materialValues: ImdlDictionary<ImdlDisplayParams>;
+  private readonly _renderMaterials: ImdlDictionary<ImdlRenderMaterial>;
+  private readonly _namedTextures: ImdlDictionary<ImdlNamedTexture & { renderTexture?: RenderTexture }>;
+  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
+  private readonly _animationNodes?: ImdlAnimationNodes;
+  private readonly _binaryData: Uint8Array;
+  private readonly _iModel: IModelConnection;
+  private readonly _is3d: boolean;
+  private readonly _modelId: Id64String;
+  private readonly _system: RenderSystem;
+  private readonly _type: BatchType;
+  private readonly _canceled?: ShouldAbortImdlReader;
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
   private readonly _options: BatchOptions | false;
-  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
+  private readonly _containsTransformNodes: boolean;
+
+  private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
+  private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
-  public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    options?: BatchOptions | false): ImdlReader | undefined {
-    const header = new ImdlHeader(stream);
-    if (!header.isValid || !header.isReadableVersion)
+  public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
+    const imdlHeader = new ImdlHeader(args.stream);
+    if (!imdlHeader.isValid || !imdlHeader.isReadableVersion)
       return undefined;
 
     // The feature table follows the iMdl header
-    if (!this.skipFeatureTable(stream))
+    if (!this.skipFeatureTable(args.stream))
       return undefined;
 
     // A glTF header follows the feature table
-    const props = GltfReaderProps.create(stream, false);
-    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, options) : undefined;
+    const gltfHeader = new GltfHeader(args.stream);
+    if (!gltfHeader.isValid)
+      return undefined;
+
+    args.stream.curPos = gltfHeader.scenePosition;
+    const sceneStrData = args.stream.nextBytes(gltfHeader.sceneStrLength);
+    const sceneStr = utf8ToString(sceneStrData);
+    if (!sceneStr)
+      return undefined;
+
+    try {
+      const sceneValue = JSON.parse(sceneStr);
+      const imdl: Imdl = {
+        scene: JsonUtils.asString(sceneValue.scene),
+        scenes: JsonUtils.asArray(sceneValue.scenes),
+        animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
+        bufferViews: JsonUtils.asObject(sceneValue.bufferViews),
+        meshes: JsonUtils.asObject(sceneValue.meshes),
+        nodes: JsonUtils.asObject(sceneValue.nodes),
+        materials: JsonUtils.asObject(sceneValue.materials),
+        renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials),
+        namedTextures: JsonUtils.asObject(sceneValue.namedTextures),
+        patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols),
+      };
+
+      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args) : undefined;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs) {
+    this._buffer = args.stream;
+    this._binaryData = new Uint8Array(this._buffer.arrayBuffer, binaryPosition);
+
+    this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
+    this._bufferViews = imdl.bufferViews;
+    this._meshes = imdl.meshes;
+    this._nodes = imdl.nodes;
+    this._materialValues = imdl.materials ?? { };
+    this._renderMaterials = imdl.renderMaterials ?? { };
+    this._namedTextures = imdl.namedTextures ?? { };
+    this._patternSymbols = imdl.patternSymbols ?? {};
+
+    this._iModel = args.iModel;
+    this._modelId = args.modelId;
+    this._is3d = args.is3d;
+    this._system = args.system;
+    this._type = args.type ?? BatchType.Primary;
+    this._canceled = args.isCanceled;
+
+    this._sizeMultiplier = args.sizeMultiplier;
+    this._loadEdges = args.loadEdges ?? true;
+    this._options = args.options ?? {};
+    this._containsTransformNodes = args.containsTransformNodes ?? false;
   }
 
   /** Attempt to deserialize the tile data */
@@ -225,10 +594,7 @@ export class ImdlReader extends GltfReader {
   }
 
   /** @internal */
-  protected override extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
-
-  /** @internal */
-  protected override createDisplayParams(json: any): DisplayParams | undefined {
+  protected createDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
     const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
     const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
@@ -249,7 +615,7 @@ export class ImdlReader extends GltfReader {
 
       if (undefined === textureMapping) {
         // Look for a gradient. If defined, create a texture mapping. No reason to pass the Gradient.Symb to the DisplayParams once we have the texture.
-        const gradientProps = json.gradient as Gradient.SymbProps;
+        const gradientProps = json.gradient;
         const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
         if (undefined !== gradient) {
           const texture = this._system.getGradientTexture(gradient, this._iModel);
@@ -265,56 +631,61 @@ export class ImdlReader extends GltfReader {
   }
 
   /** @internal */
-  protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
+  protected colorDefFromMaterialJson(json: ImdlColorDef | undefined): ColorDef | undefined {
     return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
   }
 
   /** @internal */
   protected materialFromJson(key: string): RenderMaterial | undefined {
-    if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
+    const material = this._system.findMaterial(key, this._iModel);
+    if (material)
+      return material;
+
+    if (!this._renderMaterials)
       return undefined;
 
-    let material = this._system.findMaterial(key, this._iModel);
-    if (!material) {
-      const materialJson = this._renderMaterials[key];
+    const materialJson = this._renderMaterials[key];
+    if (!materialJson)
+      return undefined;
 
-      const materialParams = new RenderMaterial.Params(key);
-      materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
-      if (materialJson.diffuse !== undefined)
-        materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
-      materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
-      if (materialJson.specular !== undefined)
-        materialParams.specular = JsonUtils.asDouble(materialJson.specular);
-      materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
-      if (materialJson.reflect !== undefined)
-        materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+    // eslint-disable-next-line deprecation/deprecation
+    const materialParams = new RenderMaterial.Params(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+    if (materialJson.diffuse !== undefined)
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
-      if (materialJson.specularExponent !== undefined)
-        materialParams.specularExponent = materialJson.specularExponent;
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+    if (materialJson.specular !== undefined)
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
 
-      if (undefined !== materialJson.transparency)
-        materialParams.alpha = 1.0 - materialJson.transparency;
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
 
-      materialParams.refract = JsonUtils.asDouble(materialJson.refract);
-      materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
-      materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+    if (materialJson.specularExponent !== undefined)
+      materialParams.specularExponent = materialJson.specularExponent;
 
-      if (undefined !== materialJson.textureMapping)
-        materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
 
-      material = this._system.createMaterial(materialParams, this._iModel);
-    }
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
 
-    return material;
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+
+    // eslint-disable-next-line deprecation/deprecation
+    return this._system.createMaterial(materialParams, this._iModel);
   }
 
-  private textureMappingFromJson(json: any): TextureMapping | undefined {
+  private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
     if (undefined === json)
       return undefined;
 
     const name = JsonUtils.asString(json.name);
     const namedTex = 0 !== name.length ? this._namedTextures[name] : undefined;
-    const texture = undefined !== namedTex ? namedTex.renderTexture as RenderTexture : undefined;
+    const texture = undefined !== namedTex ? namedTex.renderTexture : undefined;
     if (undefined === texture) {
       assert(false, "bad texture mapping json");
       return undefined;
@@ -362,7 +733,7 @@ export class ImdlReader extends GltfReader {
     namedTex.renderTexture = await this.readNamedTexture(namedTex, name);
   }
 
-  private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
+  private async readNamedTexture(namedTex: ImdlNamedTexture, name: string): Promise<RenderTexture | undefined> {
     // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
     // - external textures are disabled
     // - the texture name is not a valid Id64 string
@@ -396,7 +767,7 @@ export class ImdlReader extends GltfReader {
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const source = new ImageSource(texBytes, format);
-      return this._system.createTextureFromSource({ source, ownership, type: textureType });
+      return this._system.createTextureFromSource({ source, ownership, type: textureType, transparency: namedTex.transparency });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
@@ -419,7 +790,7 @@ export class ImdlReader extends GltfReader {
       return undefined;
 
     let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
-    const animationNodes = JsonUtils.asObject(this._scene.animationNodes);
+    const animationNodes = this._animationNodes;
     if (undefined !== animationNodes) {
       const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
       const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
@@ -447,15 +818,6 @@ export class ImdlReader extends GltfReader {
     this._buffer.curPos = startPos + header.length;
 
     return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
-  }
-
-  private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false) {
-    super(props, iModel, modelId, is3d, system, type, isCanceled);
-    this._sizeMultiplier = sizeMultiplier;
-    this._loadEdges = loadEdges;
-    this._options = options ?? {};
-    this._patternSymbols = props.scene.patternSymbols ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -575,6 +937,7 @@ export class ImdlReader extends GltfReader {
       numVertices: json.count,
       numRgbaPerVertex: json.numRgbaPerVertex,
       uvParams,
+      usesUnquantizedPositions: true === json.usesUnquantizedPositions,
     });
   }
 
@@ -729,10 +1092,29 @@ export class ImdlReader extends GltfReader {
     return undefined !== segments && undefined !== normalPairs ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices } : undefined;
   }
 
+  private readIndexedEdges(json: ImdlIndexedEdges): IndexedEdgeParams | undefined {
+    const indices = this.readVertexIndices(json.indices);
+    const edgeTable = this.findBuffer(json.edges);
+    if (!indices || !edgeTable)
+      return undefined;
+
+    return {
+      indices,
+      edges: {
+        data: edgeTable,
+        width: json.width,
+        height: json.height,
+        silhouettePadding: json.silhouettePadding,
+        numSegments: json.numSegments,
+      },
+    };
+  }
+
   private readEdges(json: ImdlMeshEdges, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let polylines: TesselatedPolyline | undefined;
+    let indexed: IndexedEdgeParams | undefined;
 
     let succeeded = false;
     if (undefined !== json.segments && undefined === (segments = this.readSegmentEdges(json.segments)))
@@ -744,13 +1126,17 @@ export class ImdlReader extends GltfReader {
     if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
       return { succeeded };
 
+    if (undefined !== json.indexed && undefined === (indexed = this.readIndexedEdges(json.indexed)))
+      return { succeeded };
+
     succeeded = true;
     let params: EdgeParams | undefined;
-    if (undefined !== segments || undefined !== silhouettes || undefined !== polylines) {
+    if (segments || silhouettes || polylines || indexed) {
       params = {
         segments,
         silhouettes,
         polylines,
+        indexed,
         weight: displayParams.width,
         linePixels: displayParams.linePixels,
       };
@@ -832,7 +1218,7 @@ export class ImdlReader extends GltfReader {
     if (undefined === this._nodes.Node_Root) {
       // Unstructured -- prior to animation support....
       for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey] as ImdlMesh | undefined;
+        const meshValue = this._meshes[meshKey];
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
           continue;
@@ -844,30 +1230,43 @@ export class ImdlReader extends GltfReader {
         }
       }
     } else {
+      const readBranch = (primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined) => {
+        const branch = new GraphicBranch(true);
+        branch.animationId = animationId;
+        branch.animationNodeId = nodeId;
+
+        for (const primitive of primitives) {
+          const graphic = this.readMeshGraphic(primitive);
+          if (graphic)
+            branch.add(graphic);
+        }
+
+        if (!branch.isEmpty)
+          graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+      };
+
       for (const nodeKey of Object.keys(this._nodes)) {
-        const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;
+        const nodeValue = this._nodes[nodeKey];
+        const meshValue = undefined !== nodeValue ? this._meshes[nodeValue] : undefined;
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
           continue;
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              graphics.push(graphic);
+          // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
+          // any node in the schedule script can be grouped together.
+          if (this._containsTransformNodes) {
+            readBranch(primitives, AnimationNodeId.Untransformed, undefined);
+          } else {
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                graphics.push(graphic);
+            }
           }
         } else if (undefined === layerId) {
-          const branch = new GraphicBranch(true);
-          branch.animationId = `${this._modelId}_${nodeKey}`;
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              branch.add(graphic);
-          }
-
-          if (!branch.isEmpty)
-            graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+          readBranch(primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
         } else {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {

@@ -17,7 +17,7 @@ import "./ColorPickerPanel.scss";
 import { NumberInput } from "@itwin/core-react";
 
 /** Properties for the [[ColorPickerPanel]] React component
- * @public
+ * @public @deprecated use `ColorPicker` for itwinui-react
  */
 export interface ColorPickerPanelProps {
   activeColor: ColorDef;
@@ -29,11 +29,10 @@ export interface ColorPickerPanelProps {
 
 /**
  * Color Picker Dialog to use as modal dialog.
- * @public
+ * @public @deprecated use `ColorPicker` for itwinui-react
  */
 // istanbul ignore next
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps) {
-
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps) { // eslint-disable-line deprecation/deprecation
   const handlePresetColorPick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
     if (onColorChange) {

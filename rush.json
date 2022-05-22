@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.51.1",
-  "pnpmVersion": "6.13.0",
+  "rushVersion": "5.58.0",
+  "pnpmVersion": "6.24.4",
   "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
@@ -31,9 +31,22 @@
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/iTwin/itwinjs-core"
   },
   "projects": [
+    {
+      "packageName": "@itwin/core-extension",
+      "projectFolder": "core/extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "extension-prototype",
+      "projectFolder": "extensions/test-extension",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
     {
       "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
@@ -49,36 +62,15 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodelhub-client",
+      "packageName": "@bentley/imodelbank-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-client",
-      "projectFolder": "clients/itwin",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/product-settings-client",
-      "projectFolder": "clients/product-settings",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/reality-data-client",
-      "projectFolder": "clients/reality-data",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/telemetry-client",
-      "projectFolder": "clients/telemetry",
+      "packageName": "@itwin/core-telemetry",
+      "projectFolder": "core/telemetry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -364,6 +356,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/workspace-editor",
+      "projectFolder": "utils/workspace-editor",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/ecschema-rpcinterface-common",
       "projectFolder": "core/ecschema-rpc/common",
       "reviewCategory": "common",
@@ -399,13 +398,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/oidc-signin-tool",
-      "projectFolder": "tools/oidc-signin-tool",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/geonames-extension",
       "projectFolder": "extensions/geonames",
       "reviewCategory": "extensions",
@@ -415,6 +407,13 @@
     {
       "packageName": "@itwin/map-layers",
       "projectFolder": "extensions/map-layers",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "projectFolder": "extensions/map-layers-auth",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -462,8 +461,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@itwin/ui-test-extension",
-      "projectFolder": "test-apps/ui-test-extension",
+      "packageName": "@itwin/ui-items-providers-test",
+      "projectFolder": "test-apps/ui-items-providers-test",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -532,12 +531,6 @@
       "projectFolder": "full-stack-tests/rpc-interface",
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/imodelhub-client-tests",
-      "projectFolder": "full-stack-tests/imodelhub-client",
-      "reviewCategory": "integration-testing",
       "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]

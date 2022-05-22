@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { LocalSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import {
@@ -19,7 +19,7 @@ import {
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 
 describe("ToolAssistanceField", () => {
-  const uiSettingsStorage = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
+  const uiSettingsStorage = new LocalStateStorage({ localStorage: storageMock() } as Window);
 
   before(async () => {
     await uiSettingsStorage.saveSetting("ToolAssistance", "showPromptAtCursor", true);
@@ -36,7 +36,7 @@ describe("ToolAssistanceField", () => {
         <>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}
             includePromptAtCursor={true}
-            uiSettings={uiSettingsStorage} />
+            uiStateStorage={uiSettingsStorage} />
         </>
       );
     }

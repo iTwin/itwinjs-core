@@ -130,9 +130,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     style.backgroundColor = ColorDef.white;
 
     // turn on the skybox in the environment
-    const env = style.environment;
-    env.sky.display = true;
-    style.environment = env; // call to accessor to get the json properties to reflect the changes
+    style.environment = style.environment.withDisplay({ sky: true });
 
     return blankView;
   }

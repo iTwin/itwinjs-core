@@ -1,20 +1,20 @@
-# Creating an IModelApp that supports Extensible UI
+# Creating an iModelApp that supports Extensible UI
 
-The following topics provide information to help ensure the host IModelApp is properly set up to support extensions to augment the basic set of UI component it provides.
+The following topics provide information to help ensure the host iModelApp is properly set up to support packages to augment the basic set of UI component it provides.
 
 ## StateManager and ReducerRegistry
 
-Redux is a common package used for maintaining state data in front-end web applications. To allow extensions and other packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react).  The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state.  It should not typically include reducers from extensions or other library packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
+Redux is a common package used for maintaining state data in front-end web applications. To allow packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react).  The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state.  It should not typically include reducers from packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
 
-See example [StateManager](./framework/State.md/#example-of-defining-initial-set-of-reducers)
+See example [StateManager](./appui-react/State.md#Example-of-Defining-Initial-Set-of-Reducers)
 
-## Adding UI from Extensions and Packages
+## Building UI using Modular Packages
 
-Any extension or package can provide a class that implements the UiItemsProvider interfaces to add UI items to the host application. Items provided at runtime may be inserted into a Toolbar, StatusBar, Backstage or Widget Panel. An extension would instantiate and register its UiItemsProvider class with the UiItemsManager when it is loaded. A package would typically register its UiItemsProvider when it is initialized.
+Any package can provide a class that implements the UiItemsProvider interfaces to add UI items to the host application by registering its UiItemsProvider(s) when it is initialized. Items provided at runtime may be inserted into a Toolbar, StatusBar, Backstage or Widget Panel.
 
-See example [UiItemsProvider](./abstract/uiitemsprovider/#uiitemsprovider-example) implementation.
+See example [UiItemsProvider](./abstract/UiItemsProvider.md#UiItemsProvider-Example) implementation.
 
-UI item definitions for Toolbars, Status Bar, and Backstage specify an item priority value. This value is used to order the items in the parent container. It is suggested that an increment of 10 is used between items in the host application. This provides the opportunity for add-on packages and extensions to insert their items adjacent to host application items.
+UI item definitions for Toolbars, Status Bar, and Backstage specify an item priority value. This value is used to order the items in the parent container. It is suggested that an increment of 10 is used between items in the host application. This provides the opportunity for packages to insert their items adjacent to host application items.
 
 ## Toolbars
 
@@ -41,7 +41,7 @@ Likewise the NavigationWidget should use the NavigationWidgetComposer.
     />
  ```
 
-The ToolbarComposer class used above will automatically provide an overflowing button if specified buttons will not fit in the allowable space. The items passed to ToolbarComposer define properties the satisfy the ToolbarItem interface. This interface supports buttons that initiate an action (ActionButton), buttons that contain a list of child actions (GroupButton), or a CustomButtonDefinition that can be used to specify React specific definitions. The appui-react package contains the [ToolbarHelper]($appui-react) class that will generate items of the proper type given a item definitions used in many toolbars in 1.x of iModeljs.
+The ToolbarComposer class used above will automatically provide an overflow button if specified buttons will not fit in the allowable space. The items passed to ToolbarComposer define properties that satisfy the ToolbarItem interface. This interface supports buttons that initiate an action (ActionButton), buttons that contain a list of child actions (GroupButton), or a CustomButtonDefinition that can be used to specify React specific definitions. The appui-react package contains the [ToolbarHelper]($appui-react) class that will generate items of the proper type given a item definitions used in many toolbars in 1.x of iModeljs.
 
 Both the original item definitions, like ToolItemDef and the newer ToolbarItems definitions support the conditional display of a tool in the toolbar. In fact, the tool button label and icon can also be determined conditionally. There are several examples of specifying conditionals in [CoreTools]($appui-react). Below is one example.  In this case we want to use a different icon based on the viewports current ViewState. If the camera is on in the "active" view then the web-font icon "icon-camera-animation" is to be used else the web-font icon "icon-camera-animation-disabled" is displayed. The [ConditionalStringValue]($appui-abstract) also specifies the SyncUiEventIds that will trigger the conditional function to be re-run.
 
@@ -66,16 +66,17 @@ Both the original item definitions, like ToolItemDef and the newer ToolbarItems 
   }
 ```
 
-The isHidden property above is specified as a [ConditionalBooleanValue]($appui-abstract) where it evaluates to true if the active view does not support camera usage. For more information on SyncUiEvents see [SyncUi](./framework/syncui/).
+The isHidden property above is specified as a [ConditionalBooleanValue]($appui-abstract) where it evaluates to true if the active view does not support camera usage. For more information on SyncUiEvents see [SyncUi](./appui-react/Syncui).
 
 ## StatusBar
 
-To ensure that Extensions can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
-[StatusBarComposer]($appui-react) from the getReactNode method. Here is an [example](./framework/statusbar/) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
+To ensure that packages can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
+[StatusBarComposer]($app
+ui-react) from the getReactNode method. Here is an [example](./appui-react/StatusBar) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
 
 ## Backstage
 
-The Backstage is a menu used to open frontstages and launch commands. It can also open full-screen overlays, or modal stages, presenting application settings and data management to the user. Applications and Extension supply Backstage items definition that are combined by the [BackstageComposer]($appui-react) component to generate the Backstage menu. The Backstage menu is passed as props to the ConfigurableUiContent which is in charge of managing the display of frontstages. Here is an [example](./framework/backstage/#defining-the-backstage) of how applications typically define their backstage.
+The Backstage is a menu used to open frontstages and launch commands. It can also open full-screen overlays, or modal stages, presenting application settings and data management to the user. Applications and packages supply Backstage items definition that are combined by the [BackstageComposer]($appui-react) component to generate the Backstage menu. The Backstage menu is passed as props to the ConfigurableUiContent which is in charge of managing the display of frontstages. Here is an [example](./appui-react/Backstage.md#Defining-the-Backstage) of how applications typically define their backstage.
 
 ## Selection Context Tools
 

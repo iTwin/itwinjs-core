@@ -1,0 +1,950 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PresentationManager getElementProperties returns properties for some elements of class 'PhysicalObject 1`] = `
+Array [
+  Object {
+    "class": "Physical Object",
+    "id": "0x74",
+    "items": Object {
+      "@ECPresentation:CATEGORY_LABEL_SelectedItems@": Object {
+        "items": Object {
+          "Category": Object {
+            "type": "primitive",
+            "value": "Uncategorized",
+          },
+          "Code": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "Model": Object {
+            "type": "primitive",
+            "value": "Properties_60InstancesWithUrl2",
+          },
+          "User Label": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "area": Object {
+            "items": Object {
+              "area": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "Acres": Object {
+                      "type": "primitive",
+                      "value": "150.1235 acres",
+                    },
+                    "cm2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 cm²",
+                    },
+                    "ft ft": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft·ft",
+                    },
+                    "ft mi": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft·mi",
+                    },
+                    "ft2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft²",
+                    },
+                    "ha": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ha",
+                    },
+                    "in ft": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·ft",
+                    },
+                    "in m": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·m",
+                    },
+                    "in mi": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·mi",
+                    },
+                    "in2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in²",
+                    },
+                    "km2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 km²",
+                    },
+                    "m km": Object {
+                      "type": "primitive",
+                      "value": "150.1235 m·km",
+                    },
+                    "m m": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mm·m",
+                    },
+                    "m2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 m²",
+                    },
+                    "mi2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mi²",
+                    },
+                    "mm km": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mm·km",
+                    },
+                    "thousand ft2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 thousand ft²",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "firstTry": Object {
+            "items": Object {
+              "firstTry": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "email": Object {
+                      "type": "primitive",
+                      "value": "justas.lauzadis@bentley.com",
+                    },
+                    "full URL": Object {
+                      "type": "primitive",
+                      "value": "http://www.google.lt",
+                    },
+                    "mailto": Object {
+                      "type": "primitive",
+                      "value": "mailto:justas.lauzadis@bentley.com",
+                    },
+                    "without http": Object {
+                      "type": "primitive",
+                      "value": "www.bbc.co.uk",
+                    },
+                    "without www": Object {
+                      "type": "primitive",
+                      "value": "gmail.com",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "workingUnitsProp": Object {
+            "items": Object {
+              "workingUnitsProp": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "Angle": Object {
+                      "type": "primitive",
+                      "value": "2.62",
+                    },
+                    "Area": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                    "Distance": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                    "Volume": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+        },
+        "type": "category",
+      },
+    },
+    "label": "Physical Object [0-38]",
+  },
+  Object {
+    "class": "Physical Object",
+    "id": "0x75",
+    "items": Object {
+      "@ECPresentation:CATEGORY_LABEL_SelectedItems@": Object {
+        "items": Object {
+          "Category": Object {
+            "type": "primitive",
+            "value": "Uncategorized",
+          },
+          "Code": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "Model": Object {
+            "type": "primitive",
+            "value": "Properties_60InstancesWithUrl2",
+          },
+          "User Label": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "area": Object {
+            "items": Object {
+              "area": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "Acres": Object {
+                      "type": "primitive",
+                      "value": "150.1235 acres",
+                    },
+                    "cm2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 cm²",
+                    },
+                    "ft ft": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft·ft",
+                    },
+                    "ft mi": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft·mi",
+                    },
+                    "ft2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft²",
+                    },
+                    "ha": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ha",
+                    },
+                    "in ft": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·ft",
+                    },
+                    "in m": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·m",
+                    },
+                    "in mi": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in·mi",
+                    },
+                    "in2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 in²",
+                    },
+                    "km2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 km²",
+                    },
+                    "m km": Object {
+                      "type": "primitive",
+                      "value": "150.1235 m·km",
+                    },
+                    "m m": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mm·m",
+                    },
+                    "m2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 m²",
+                    },
+                    "mi2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mi²",
+                    },
+                    "mm km": Object {
+                      "type": "primitive",
+                      "value": "150.1235 mm·km",
+                    },
+                    "thousand ft2": Object {
+                      "type": "primitive",
+                      "value": "150.1235 thousand ft²",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "area per time": Object {
+            "items": Object {
+              "area per time": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "cSt": Object {
+                      "type": "primitive",
+                      "value": "150.1235 cSt",
+                    },
+                    "ft2 s": Object {
+                      "type": "primitive",
+                      "value": "150.1235 ft²/s",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "area per time squared": Object {
+            "items": Object {
+              "Btu/lb [Btu per pound mass]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1475.699 Btu/lb",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "area per time squared temperature": Object {
+            "items": Object {
+              "Btu/(lbm·Δ°R) [btu per pound mass per delta degree rankine]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14759.0 Btu/(lbm·Δ°R)",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "cube root length per time": Object {
+            "items": Object {
+              "ft^(1/3)/s [ft^(1/3)/s]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14758.99",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "dimensionless": Object {
+            "items": Object {
+              "$ [dollar]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "15845.0 $",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "electric current": Object {
+            "items": Object {
+              "KA [kiloampere]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1475.65 KA",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "length": Object {
+            "items": Object {
+              "µin [microinch]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1475.96 µin",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "length per plane angle": Object {
+            "items": Object {
+              "in/deg [inch per degree]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123654.47 in/degree",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "length per time": Object {
+            "items": Object {
+              "ft³/(ft²·min) [Foot cubed per foot squared per minute]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "15896.698 ft³/(ft²·min)",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "length time squared per mass": Object {
+            "items": Object {
+              "length time squared per mass": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "1/Bar [1/Bar]": Object {
+                      "type": "primitive",
+                      "value": "14851.00",
+                    },
+                    "Untitled": Object {
+                      "type": "primitive",
+                      "value": "",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "length to the six power": Object {
+            "items": Object {
+              "mm⁶ [millimeter to the sixth]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14758.964 mm⁶",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "lenic mass": Object {
+            "items": Object {
+              "lb/ft [pound per foot]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "147.158 lb/ft",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "luminous flux": Object {
+            "items": Object {
+              "lm [lumen]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1589.741 lm",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "luminous flux per area": Object {
+            "items": Object {
+              "lm/ft² [lumen per foot squared]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1485.9 lm/ft²",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass": Object {
+            "items": Object {
+              "µg [microgram]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14785.5896 µg",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass area per time cubed electric current": Object {
+            "items": Object {
+              "KV [kilovolt]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1478.5 KV",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass area per time squared plane angle": Object {
+            "items": Object {
+              "N·m/deg [newton meter per degree]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14758.36 N·m/deg",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass area per time squared temperature mole": Object {
+            "items": Object {
+              "Btu/(lb-mol·Δ°R) [btu per pound mole per delta degree rankine]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "14758.5 Btu/(lb-mol·Δ°R)",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass length per time cubed temperature": Object {
+            "items": Object {
+              "(in·lbf)/(s·in·°F) [inch pound force per second inch fahrenheit]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123456799.00",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass per time squared": Object {
+            "items": Object {
+              "lbf/in [pound force per inch]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1232584.897489 lbf/in",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass per volume": Object {
+            "items": Object {
+              "µg/L [micrograms per liter]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "45896318.0 µg/L",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mass volume per time squared": Object {
+            "items": Object {
+              "lbf·ft² [pound force foot squared]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "15789.46",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "molar volume": Object {
+            "items": Object {
+              "ft³/lb-mol [foot cubed per pound mole]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.5689 ft³/lb-mol",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mole per time": Object {
+            "items": Object {
+              "kmol/s [kilomole per second]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123456.78 kmol/s",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "mole per volume": Object {
+            "items": Object {
+              "lb-mol/ft³ [pound mole per foot cubed]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.12",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "plane angle": Object {
+            "items": Object {
+              "quadrants [quadrants]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.01233 quadrants",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "plane angle per time": Object {
+            "items": Object {
+              "cycle/sec [cycle per second]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.02 cycle/sec",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "quartic length": Object {
+            "items": Object {
+              "ft⁴ [foot to the fourth]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123456789.12345 ft⁴",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal area": Object {
+            "items": Object {
+              "p/ft² [person per foot squared]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1234567.89 p/ft²",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal length": Object {
+            "items": Object {
+              "1/mile [1/mile]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "12345.6789 1/mile",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal mass": Object {
+            "items": Object {
+              "1/tn(short) [one per short ton]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123.46",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal temperature": Object {
+            "items": Object {
+              "1/Δ°R [reciprocal delta degree rankine]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.0 1/Δ°R",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal time": Object {
+            "items": Object {
+              "grf/(h·ft²·inHg) [Grain mass per hour per foot squared per inch Mercury conventional]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123456.79",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "reciprocal volume": Object {
+            "items": Object {
+              "1/ million gal": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.23",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "square root length per time": Object {
+            "items": Object {
+              "ft^(1/2)/s [ft^(1/2)/s]": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1234.57",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "square root length to the seventh power per square root mass": Object {
+            "items": Object {
+              "Gallon per minute per square root pounds per inch squared": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.23",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "temperature": Object {
+            "items": Object {
+              "Delta celsius": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "0.0 Δ°C",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "temperature per length": Object {
+            "items": Object {
+              "delta degree Kelvin per meter": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "123.456789 ΔK/m",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "time": Object {
+            "items": Object {
+              "days": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1234.56789 days",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "time cubed per mass area": Object {
+            "items": Object {
+              "one per kilowat": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1234.57",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "time cubed temperature": Object {
+            "items": Object {
+              "foot squared hour delta degree Fahrenheit per Btu": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.2346 ft²·h·Δ°F/Btu",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "time squared per length": Object {
+            "items": Object {
+              "kg/kW h": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.23",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "time squared per mass": Object {
+            "items": Object {
+              "1/Btu": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.23",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "volume": Object {
+            "items": Object {
+              "thousand gal": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.2346 thousand gal",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "volume per Time": Object {
+            "items": Object {
+              "volume per Time": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "L/min": Object {
+                      "type": "primitive",
+                      "value": "123456.789 L/min",
+                    },
+                    "ML/day": Object {
+                      "type": "primitive",
+                      "value": "1234567.89",
+                    },
+                    "acre ft/day": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 acre·ft/day",
+                    },
+                    "acre ft/h": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 acre·ft/h",
+                    },
+                    "acre ft/min": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 acre·ft/min",
+                    },
+                    "acre in/h": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 acre·in/h",
+                    },
+                    "acre in/min": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 acre·in/min",
+                    },
+                    "ft3/day": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 ft³/day",
+                    },
+                    "ft3/min": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 ft³/min",
+                    },
+                    "ft3/s": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 ft³/s",
+                    },
+                    "gal(imp)/day": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 gal (imp)/day",
+                    },
+                    "gal(imp)/s": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 gal (imp)/s",
+                    },
+                    "gal/s": Object {
+                      "type": "primitive",
+                      "value": "123456789.0 gal/s",
+                    },
+                    "gpd/capita": Object {
+                      "type": "primitive",
+                      "value": "123.46",
+                    },
+                    "m3/min": Object {
+                      "type": "primitive",
+                      "value": "12345.6789 m³/min",
+                    },
+                    "million gal(impl)/day": Object {
+                      "type": "primitive",
+                      "value": "123456.79",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "volume per mass": Object {
+            "items": Object {
+              "ft3/lm": Object {
+                "type": "array",
+                "valueType": "primitive",
+                "values": Array [
+                  "1.234568 ft³/lm",
+                ],
+              },
+            },
+            "type": "category",
+          },
+          "workingUnitsProp": Object {
+            "items": Object {
+              "workingUnitsProp": Object {
+                "type": "array",
+                "valueType": "struct",
+                "values": Array [
+                  Object {
+                    "Angle": Object {
+                      "type": "primitive",
+                      "value": "2.62",
+                    },
+                    "Area": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                    "Distance": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                    "Volume": Object {
+                      "type": "primitive",
+                      "value": "150.12",
+                    },
+                  },
+                ],
+              },
+            },
+            "type": "category",
+          },
+        },
+        "type": "category",
+      },
+    },
+    "label": "Physical Object [0-39]",
+  },
+]
+`;

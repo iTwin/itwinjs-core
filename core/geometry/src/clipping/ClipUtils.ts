@@ -27,6 +27,7 @@ import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOff
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { CurveFactory } from "../curve/CurveFactory";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -827,6 +828,39 @@ export class ClipUtilities {
       moveFragments(candidatesIn, acceptedIn, arrayCache);
       moveFragments(candidatesOut, acceptedOut, arrayCache);
     }
+  }
+  /** For each plane of clipper, construct a UnionOfConvexClipPlaneSets for an outer (infinite) convex volume that
+   * abuts the outer volume of the neighbor faces.
+   *
+   */
+  public static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets {
+    const planes = clipper.planes;
+    const interval = Range1d.createNull();
+    const n = planes.length;
+    const newClippers: ConvexClipPlaneSet[] = [];
+    for (const p of planes){
+      const outerSet = ConvexClipPlaneSet.createEmpty();
+      outerSet.addPlaneToConvexSet(p.cloneNegated());
+      newClippers.push(outerSet);
+      }
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const ray = CurveFactory.planePlaneIntersectionRay(planes[i], planes[j]);
+        if (ray) {
+          if (clipper.hasIntersectionWithRay(ray, interval)) {
+            // the normal-to-normal vector is bisector (or close to bisector?)
+            const newNormal = planes[j].inwardNormalRef.minus(planes[i].inwardNormalRef);
+            const plane1 = ClipPlane.createNormalAndPoint(newNormal, ray.origin);
+            if (plane1) {
+              const plane2 = plane1.cloneNegated();
+              newClippers[i].addPlaneToConvexSet(plane1);
+              newClippers[j].addPlaneToConvexSet(plane2);
+            }
+          }
+        }
+      }
+    }
+    return UnionOfConvexClipPlaneSets.createConvexSets(newClippers);
   }
 }
 function moveFragments(

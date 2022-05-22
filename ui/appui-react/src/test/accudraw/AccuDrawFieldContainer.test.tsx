@@ -290,7 +290,7 @@ describe("AccuDrawFieldContainer", () => {
     (KeyboardShortcutManager.setFocusToHome as any).restore();
   });
 
-  describe("FrameworkAccuDraw.uiSettings", () => {
+  describe("FrameworkAccuDraw.uiStateStorage", () => {
     const bgColorTest = ColorByName.red;
     const fgColorTest = ColorByName.black;
     const labelTest = "label-test";
@@ -324,11 +324,11 @@ describe("AccuDrawFieldContainer", () => {
       distanceIcon: iconTest,
     };
 
-    it("should support FrameworkAccuDraw.uiSettings- set after render", async () => {
+    it("should support FrameworkAccuDraw.uiStateStorage- set after render", async () => {
       const emptySettings: AccuDrawUiSettings = {};
 
       const spy = sinon.spy();
-      FrameworkAccuDraw.uiSettings = undefined;
+      FrameworkAccuDraw.uiStateStorage = undefined;
       const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
       const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
 
@@ -347,12 +347,12 @@ describe("AccuDrawFieldContainer", () => {
         const iElements = wrapper.container.querySelectorAll(`i.${iconTest}`);
         expect(iElements.length).to.eq(count);
 
-        FrameworkAccuDraw.uiSettings = emptySettings;
+        FrameworkAccuDraw.uiStateStorage = emptySettings;
         spy.calledTwice.should.true;
         labelElements = wrapper.queryAllByLabelText(labelTest);
         expect(labelElements.length).to.eq(0);
 
-        FrameworkAccuDraw.uiSettings = undefined;
+        FrameworkAccuDraw.uiStateStorage = undefined;
         spy.calledThrice.should.true;
         labelElements = wrapper.queryAllByLabelText(labelTest);
         expect(labelElements.length).to.eq(0);
@@ -360,7 +360,7 @@ describe("AccuDrawFieldContainer", () => {
 
       IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
       expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
-      FrameworkAccuDraw.uiSettings = fullSettings;
+      FrameworkAccuDraw.uiStateStorage = fullSettings;
       await TestUtils.flushAsyncOperations();
       settingsTest(3);
 
@@ -368,16 +368,16 @@ describe("AccuDrawFieldContainer", () => {
 
       IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
       expect(wrapper.queryAllByLabelText(labelTest).length).to.eq(0);
-      FrameworkAccuDraw.uiSettings = fullSettings;
+      FrameworkAccuDraw.uiStateStorage = fullSettings;
       await TestUtils.flushAsyncOperations();
       settingsTest(2);
 
       remove();
     });
 
-    it("should support FrameworkAccuDraw.uiSettings - set before render", async () => {
+    it("should support FrameworkAccuDraw.uiStateStorage - set before render", async () => {
       const spy = sinon.spy();
-      FrameworkAccuDraw.uiSettings = fullSettings;
+      FrameworkAccuDraw.uiStateStorage = fullSettings;
       const remove = FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(spy);
       const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
 
@@ -406,7 +406,7 @@ describe("AccuDrawFieldContainer", () => {
       remove();
     });
 
-    it("should support FrameworkAccuDraw.uiSettings with various color combinations", async () => {
+    it("should support FrameworkAccuDraw.uiStateStorage with various color combinations", async () => {
       const backgroundSettings: AccuDrawUiSettings = {
         xBackgroundColor: ColorDef.create(bgColorTest),
       };
@@ -426,25 +426,25 @@ describe("AccuDrawFieldContainer", () => {
       const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
       IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
 
-      FrameworkAccuDraw.uiSettings = backgroundSettings;
+      FrameworkAccuDraw.uiStateStorage = backgroundSettings;
       await TestUtils.flushAsyncOperations();
       let input = wrapper.queryByTestId("uifw-accudraw-x");
       expect(input).not.to.be.null;
       expect(input!.getAttribute("style")).to.eq("background-color: rgb(255, 0, 0);");
 
-      FrameworkAccuDraw.uiSettings = foregroundSettings;
+      FrameworkAccuDraw.uiStateStorage = foregroundSettings;
       await TestUtils.flushAsyncOperations();
       input = wrapper.queryByTestId("uifw-accudraw-x");
       expect(input).not.to.be.null;
       expect(input!.getAttribute("style")).to.eq("color: rgb(0, 0, 0);");
 
-      FrameworkAccuDraw.uiSettings = bgStringSettings;
+      FrameworkAccuDraw.uiStateStorage = bgStringSettings;
       await TestUtils.flushAsyncOperations();
       input = wrapper.queryByTestId("uifw-accudraw-x");
       expect(input).not.to.be.null;
       expect(input!.getAttribute("style")).to.eq("background-color: rgba(255, 0, 0, 0.5);");
 
-      FrameworkAccuDraw.uiSettings = fgStringSettings;
+      FrameworkAccuDraw.uiStateStorage = fgStringSettings;
       await TestUtils.flushAsyncOperations();
       input = wrapper.queryByTestId("uifw-accudraw-x");
       expect(input).not.to.be.null;

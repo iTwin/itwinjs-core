@@ -45,9 +45,9 @@ export abstract class ItemDefBase {
 
   public badgeType?: BadgeType;
 
-  /** @deprecated - use condition instead */
+  /** @deprecated Use condition instead */
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-  /** @deprecated - use condition instead */
+  /** @deprecated Use condition instead */
   public stateSyncIds: string[] = [];
 
   public iconSpec?: IconSpec;

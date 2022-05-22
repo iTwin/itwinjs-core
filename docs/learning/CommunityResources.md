@@ -6,15 +6,15 @@ Feedback and questions about iTwin.js are welcome and encouraged.
 
 The iTwin.js development team closely monitors our GitHub:
 
-- [Discussion Forums](https://github.com/imodeljs/imodeljs/labels/discussion)
-- [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
-- [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
+- [Discussion Forums](https://github.com/iTwin/itwinjs-core/discussions)
+- [Enhancement Requests](https://github.com/iTwin/itwinjs-core/labels/enhancement)
+- [Bug Reports](https://github.com/iTwin/itwinjs-core/labels/bug)
 
-See the [CONTRIBUTING.md](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md) in the root of the imodeljs repository for additional instructions.
+See the [CONTRIBUTING.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md) in the root of the iTwin.js Core repository for additional instructions.
 
 ### Questions and Advice
 
-Programming questions and requests for programming advice are best asked on [GitHub Discussions](https://github.com/imodeljs/imodeljs/discussions).
+Programming questions and requests for programming advice are best asked on [GitHub Discussions](https://github.com/iTwin/itwinjs-core/discussions).
 
 ### Guidance
 

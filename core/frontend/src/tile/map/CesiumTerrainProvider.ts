@@ -9,7 +9,8 @@
 import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
-import { request, RequestOptions } from "@bentley/itwin-client";
+import { MessageSeverity } from "@itwin/appui-abstract";
+import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -67,32 +68,46 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
   }
 }
 
+let notifiedTerrainError = false;
+
+// Notify - once per session - of failure to obtain Cesium terrain provider.
+function notifyTerrainError(detailedDescription?: string): void {
+  if (notifiedTerrainError)
+    return;
+
+  notifiedTerrainError = true;
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
+}
+
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
-  let layers;
-
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url)
+  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
+    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
+  }
 
+  let layers;
   try {
     const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
-      assert(false);
+      notifyTerrainError();
       return undefined;
     }
-    layers = layerResponse.body;
 
+    layers = layerResponse.body;
   } catch (error) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   if (undefined === layers.tiles || undefined === layers.version) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
   if (undefined !== layers.available) {
@@ -160,7 +175,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
   public override forceTileLoad(tile: Tile): boolean {
     // Force loading of the metadata availability tiles as these are required for determining the availability of descendants.
-    return undefined !== this._metaDataAvailableLevel && tile.depth === 1 + this._metaDataAvailableLevel && !(tile as MapTile).everLoaded;
+    const mapTile = tile as MapTile;
+    return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
   constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
@@ -169,8 +185,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
-  public override getLogo(): HTMLTableRowElement {
-    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (cards.dataset.cesiumIonLogoCard)
+      return;
+
+    cards.dataset.cesiumIonLogoCard = "true";
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    cards.appendChild(card);
   }
 
   public get maxDepth(): number { return this._maxDepth; }
@@ -180,7 +201,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     if (quadId.level > this.maxDepth)
       return false;
 
-    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level - 1, quadId.column, quadId.row) : true;
+    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
   public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
@@ -198,10 +219,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
     const minHeight = this._exaggeration * streamBuffer.nextFloat32;
     const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
@@ -374,11 +395,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override constructUrl(row: number, column: number, zoomLevel: number): string {
-    return this._tileUrlTemplate.replace("{z}", (zoomLevel - 1).toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
+    return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
+    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
   }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will

@@ -99,6 +99,7 @@ function PanelSelect({
         const newLocation = StagePanelLocation[value as keyof typeof StagePanelLocation];
         onChange(newLocation);
       }}
+      size="small"
     />
   );
 }
@@ -133,6 +134,7 @@ function WidgetSelect({
       onChange={(value) => {
         onChange(value);
       }}
+      size="small"
     />
   );
 }
@@ -289,6 +291,7 @@ function PanelStateSelect({
         const newState = StagePanelState[value as keyof typeof StagePanelState];
         onChange(newState);
       }}
+      size="small"
     />
   );
 }
@@ -315,6 +318,7 @@ function WidgetStateSelect({
         const newState = WidgetState[value as keyof typeof WidgetState];
         onChange(newState);
       }}
+      size="small"
     />
   );
 }
@@ -342,6 +346,7 @@ function PanelControls({
         type="number"
         placeholder="Size"
         value={sizeValue}
+        size="small"
         style={{
           display: "inline-block",
           width: "auto",
@@ -515,6 +520,7 @@ function FloatingWidgetSelect({
       onChange={(value) => {
         onChange && onChange(value);
       }}
+      size="small"
     />
   );
 }
@@ -603,7 +609,7 @@ export function FloatingLayoutInfo() {
         <NumberInput containerStyle={{ width: "80px" }} value={bounds.right} step={5} onChange={(value) => handleBoundsChanged("right", value ?? 0)} />
         <span style={{ textAlign: "end" }} >Bottom:</span>
         <NumberInput containerStyle={{ width: "80px" }} value={bounds.bottom} step={5} onChange={(value) => handleBoundsChanged("bottom", value ?? 0)} />
-        <Input placeholder="Enter Widget Id to find" onChange={handleSetWidgetIdToLocate} defaultValue={widgetIdToLocate} />
+        <Input placeholder="Enter Widget Id to find" onChange={handleSetWidgetIdToLocate} defaultValue={widgetIdToLocate} size="small" />
         <Button styleType="high-visibility" style={{ width: "160px" }} disabled={!widgetIdToLocate} onClick={handleLookup} >Lookup ContainerId</Button>
       </div>
     </WidgetContent>

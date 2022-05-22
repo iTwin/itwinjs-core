@@ -43,6 +43,7 @@
     "testFrontstage3": "Table Content",
     "testFrontstage4": "Test Messages & Dialogs",
     "testFrontstageUi20": "Ui-20 Stage",
+    "testFrontstageNoWidgets": "No Widgets Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
@@ -101,6 +102,7 @@
   "buttons": {
     "toolGroup": "Tool Group",
     "anotherGroup": "Another Group",
+    "selectViewToActivate": "Select View to activate",
     "tool1": "Tool 1",
     "tool2": "Tool 2",
     "tool3": "Tool 3",
@@ -226,6 +228,11 @@
         "Pennsylvania": "Pennsylvania",
         "NewYork": "New York"
       }
+    },
+    "MapFeatureInfoTool": {
+      "keyin": "MapFeatureInfo",
+      "description": "Map Feature Info",
+      "flyover": "Map Feature Info"
     },
     "Tool1": {
       "keyin": "Test Tool1",

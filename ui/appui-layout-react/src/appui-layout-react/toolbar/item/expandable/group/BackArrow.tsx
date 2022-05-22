@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps, NoChildrenProps, useTargeted } from "@itwin/core-react";
 
 /** Properties of [[BackArrow]] component.
- * @alpha
+ * @internal
  */
 export interface BackArrowProps extends CommonProps, NoChildrenProps {
   /** Function called when arrow is clicked. */
@@ -43,7 +43,7 @@ function BackArrowComponent(props: BackArrowProps) {
 }
 
 /** Back arrow used in [[NestedGroup]] component.
- * @alpha
+ * @internal
  */
 export class BackArrow extends React.PureComponent<BackArrowProps> {
   public override render() {

@@ -16,9 +16,10 @@ import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
 
-/** Interface for drawing [[Decorations]] into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
+/** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
  * @public
+ * @extensions
  */
 export interface Decorator extends ViewportDecorator {
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
@@ -62,6 +63,7 @@ export interface Decorator extends ViewportDecorator {
 
 /** Argument for [[ViewManager.onSelectedViewportChanged]]
  * @public
+ * @extensions
  */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
@@ -85,6 +87,7 @@ export interface ToolTipProvider {
  *
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
+ * @extensions
  */
 export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
@@ -350,6 +353,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public onSelectionSetChanged(_iModel: IModelConnection) {
     for (const vp of this)
       vp.markSelectionSetDirty();
+
+    IModelApp.requestNextAnimation();
   }
 
   /** @internal */
@@ -555,14 +560,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return undefined;
   }
 
-  public get crossHairCursor(): string { return "url(cursors/crosshair.cur), crosshair"; }
-  public get dynamicsCursor(): string { return "url(cursors/dynamics.cur), move"; }
-  public get grabCursor(): string { return "url(cursors/openHand.cur), auto"; }
-  public get grabbingCursor(): string { return "url(cursors/closedHand.cur), auto"; }
-  public get walkCursor(): string { return "url(cursors/walk.cur), auto"; }
-  public get rotateCursor(): string { return "url(cursors/rotate.cur), auto"; }
-  public get lookCursor(): string { return "url(cursors/look.cur), auto"; }
-  public get zoomCursor(): string { return "url(cursors/zoom.cur), auto"; }
+  public get crossHairCursor(): string { return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`; }
+  public get dynamicsCursor(): string { return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`; }
+  public get grabCursor(): string { return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`; }
+  public get grabbingCursor(): string { return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`; }
+  public get walkCursor(): string { return `url(${IModelApp.publicPath}cursors/walk.cur), auto`; }
+  public get rotateCursor(): string { return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`; }
+  public get lookCursor(): string { return `url(${IModelApp.publicPath}cursors/look.cur), auto`; }
+  public get zoomCursor(): string { return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`; }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.
@@ -585,11 +590,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
       vp.refreshForModifiedModels(modelIds);
   }
 
-  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of all viewports
-   * registered with the ViewManager.
-   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
-   * is also more demanding on the graphics hardware.
-   * This setting will also be applied to subsequently-registered viewports.
+  /** Sets the number of [MSAA]($docs/learning/display/MSAA.md) samples for all currently- and subsequently-opened [[ScreenViewport]]s.
+   * @param numSamples The number of samples as a power of two. Values of 1 or less indicates anti-aliasing should be disabled. Non-power-of-two values are rounded
+   * down to the nearest power of two. The maximum number of samples supported depends upon the client's graphics hardware capabilities. Higher values produce
+   * a higher-quality image but also may also reduce framerate.
+   * @see [[Viewport.antialiasSamples]] to adjust the number of samples for a specific viewport.
    */
   public setAntialiasingAllViews(numSamples: number): void {
     for (const vp of this)

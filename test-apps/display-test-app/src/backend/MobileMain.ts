@@ -9,11 +9,6 @@ import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 const dtaMobileMain = (async () => {
   const opts: MobileHostOpts = {
     mobileHost: {
-      authConfig: {
-        clientId: "imodeljs-electron-test",
-        redirectUri: "imodeljs://app/signin-callback",
-        scope: "openid email profile organization itwinjs",
-      },
       rpcInterfaces: getRpcInterfaces(),
     },
   };

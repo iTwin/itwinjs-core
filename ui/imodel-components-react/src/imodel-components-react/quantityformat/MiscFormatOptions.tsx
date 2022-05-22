@@ -11,7 +11,9 @@ import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
 import { Checkbox } from "@itwin/itwinui-react";
-import { Format, FormatProps, FormatTraits, FormatType, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatTraits, FormatType, getTraitString, parseFormatType, parseScientificType,
+  parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
+} from "@itwin/core-quantity";
 import { SignOptionSelector } from "./misc/SignOption";
 import { ThousandsSeparator } from "./misc/ThousandsSeparator";
 import { DecimalSeparatorSelector } from "./misc/DecimalSeparator";
@@ -47,13 +49,13 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
   }, [formatProps]);
 
   const handleShowSignChange = React.useCallback((option: ShowSignOption) => {
-    const newShowSignOption = Format.showSignOptionToString(option);
+    const newShowSignOption = showSignOptionToString(option);
     const newFormatProps = { ...formatProps, showSignOption: newShowSignOption };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
-    const traitStr = Format.getTraitString(trait);
+    const traitStr = getTraitString(trait);
     let formatTraits: string[] = [traitStr];
     if (setActive) {// setting trait
       // istanbul ignore else
@@ -114,7 +116,7 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
   }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
   const handleScientificTypeChange = React.useCallback((type: ScientificType) => {
-    const newFormatProps = { ...formatProps, scientificType: Format.scientificTypeToString(type) };
+    const newFormatProps = { ...formatProps, scientificType: scientificTypeToString(type) };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
@@ -122,8 +124,8 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
     handleSetFormatProps(newFormatProps);
   }, [handleSetFormatProps]);
 
-  const formatType = React.useMemo(() => Format.parseFormatType(formatProps.type, "format"), [formatProps.type]);
-  const showSignOption = React.useMemo(() => Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format"), [formatProps.showSignOption]);
+  const formatType = React.useMemo(() => parseFormatType(formatProps.type, "format"), [formatProps.type]);
+  const showSignOption = React.useMemo(() => parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format"), [formatProps.showSignOption]);
 
   const handleToggleButtonClick = React.useCallback(() => {
     onShowHideOptions(!showOptions);
@@ -200,7 +202,7 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
           <Checkbox data-testid="fraction-dash" checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
 
           <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>{scientificTypeLabel.current}</span>
-          <ScientificTypeSelector data-testid="scientific-type-selector" type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
+          <ScientificTypeSelector data-testid="scientific-type-selector" type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
             disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
 
           {props.children}

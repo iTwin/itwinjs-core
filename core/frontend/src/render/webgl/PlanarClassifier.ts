@@ -8,10 +8,10 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -45,6 +45,7 @@ function createTexture(handle: TextureHandle): Texture {
     handle,
     ownership: "external",
     type: RenderTexture.Type.TileSection,
+    transparency: TextureTransparency.Opaque,
   });
 }
 
@@ -240,7 +241,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture, transparency: TextureTransparency.Opaque });
     if (!texture)
       return undefined;
 
@@ -330,7 +331,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
   private _planarClipMask?: PlanarClipMaskState;
-  private _classifierTreeRef?: TileTreeReference;
+  private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
 
@@ -355,12 +356,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._batchState = new BatchState(this._branchStack);
     this._renderCommands = new RenderCommands(target, this._branchStack, this._batchState);
   }
+  public get textureImageCount(): number { return this._contentMode; }
 
   public getParams(params: Float32Array): void {
     params[0] = this.insideDisplay;
     params[1] = this.outsideDisplay;
     params[2] = this._contentMode;
+    if (this._planarClipMask?.settings.invert)   // If the mask sense is inverted, negate the contentMode to indicate this to the shader.
+      params[2] = - params[2];
+
     params[3] = (this._planarClipMask?.settings.transparency === undefined) ? -1 : this._planarClipMask.settings.transparency;
+
   }
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }
@@ -417,6 +423,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         return this._classifierAndMaskCombinedBuffer?.texture;
     }
   }
+  public getOrCreateClassifierTexture(): Texture | undefined {
+    if (undefined === this._classifierBuffers)
+      this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
+    if (undefined !== this._classifierBuffers && undefined === this._classifierCombinedBuffer)
+      this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature);
+
+    return this._classifierCombinedBuffer?.texture;
+  }
 
   private pushBatches(batchState: BatchState, graphics: RenderGraphic[]) {
     graphics.forEach((graphic) => {
@@ -427,6 +441,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         this.pushBatches(batchState, graphic.branch.entries);
       }
     });
+  }
+  public get sourceTransparency() {
+    return this._classifierTreeRef?.transparency;
   }
 
   public pushBatchState(batchState: BatchState) {
@@ -450,10 +467,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === viewState)
       return;
 
-    // TBD - Refine resolution calculation -- increase height based on viewing angle.
-    // But make sure that we don't make it larger than the hardware supports, keeping in mind that we will be doubling the height later.
-    const requiredHeight = Math.min(Math.max(context.target.viewRect.width, context.target.viewRect.height), System.instance.capabilities.maxTextureSize / 2);
-    const requiredWidth = requiredHeight;
+    const requiredHeight = context.target.viewRect.height;
+    const requiredWidth = context.target.viewRect.width;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
       this.dispose();
@@ -560,11 +575,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     // Temporarily override the Target's state.
     const system = System.instance;
-    const prevState = system.currentRenderState.clone(scratchPrevRenderState);
-    system.context.viewport(0, 0, this._width, this._height);
-
-    const vf = target.currentViewFlags.copy({
+    const maskViewFlags = {
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
       textures: false,
       lighting: false,
@@ -574,7 +587,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       ambientOcclusion: false,
       visibleEdges: false,
       hiddenEdges: false,
-    });
+    };
+    const prevState = system.currentRenderState.clone(scratchPrevRenderState);
+    system.context.viewport(0, 0, this._width, this._height);
+    const vf = target.currentViewFlags.copy(this._classifierTreeRef ? this._classifierTreeRef.viewFlags : maskViewFlags);
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
@@ -602,6 +618,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
       // NB: We don't strictly require the classifier geometry to be planar, and sometimes (e.g., "planar" polyface/bspsurf) we do not detect planarity.
       cmds.push(...renderCommands.getCommands(RenderPass.OpaqueGeneral));
+      cmds.push(...renderCommands.getCommands(RenderPass.OpaqueLinear));
       this._anyOpaque = cmds.length > 0;
       const transCmds = renderCommands.getCommands(RenderPass.Translucent);
       if (transCmds.length > 0) {

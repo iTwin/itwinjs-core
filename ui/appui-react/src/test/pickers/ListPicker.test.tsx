@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { ReactWrapper, shallow, ShallowWrapper } from "enzyme";
 import * as React from "react";
@@ -9,10 +10,13 @@ import * as sinon from "sinon";
 import { ToolbarItemContext } from "@itwin/components-react";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Group, Item } from "@itwin/appui-layout-react";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+
 import {
-  ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended,
+  ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { Provider } from "react-redux";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -21,6 +25,7 @@ const setEnabled = sinon.spy();
 describe("ListPicker", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
 
     const listItem: ListItem = {
       enabled: true,
@@ -51,28 +56,36 @@ describe("ListPicker", () => {
     listItems.push(emptyContainerItem);
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   describe("v2 rendering", () => {
+    before(async () => {
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
+    });
+
     it("should render correctly", () => {
       shallow(
-        <FrameworkVersion version="2">
-          <ToolbarItemContext.Provider
-            value={{
-              hasOverflow: false,
-              useHeight: false,
-              onResize: () => { },
-            }}
-          >
-            <ListPicker
-              title={title}
-              items={listItems}
-              setEnabled={setEnabled}
-            />
-          </ToolbarItemContext.Provider>
-        </FrameworkVersion>,
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarItemContext.Provider
+              value={{
+                hasOverflow: false,
+                useHeight: false,
+                onResize: () => { },
+              }}
+            >
+              <ListPicker
+                title={title}
+                items={listItems}
+                setEnabled={setEnabled}
+              />
+            </ToolbarItemContext.Provider>
+          </FrameworkVersion>
+        </Provider>
       ).should.matchSnapshot();
     });
 
@@ -82,40 +95,54 @@ describe("ListPicker", () => {
       const invertFunc = () => { };
 
       const component = mount(
-        <FrameworkVersion version="2">
-          <ToolbarItemContext.Provider
-            value={{
-              hasOverflow: false,
-              useHeight: false,
-              onResize: () => { },
-            }}
-          >
-            <ListPicker
-              title={title}
-              items={listItems}
-              setEnabled={setEnabled}
-              enableAllFunc={enableAllFunc}
-              disableAllFunc={disableAllFunc}
-              invertFunc={invertFunc}
-            />
-          </ToolbarItemContext.Provider>
-        </FrameworkVersion>,
-
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarItemContext.Provider
+              value={{
+                hasOverflow: false,
+                useHeight: false,
+                onResize: () => { },
+              }}
+            >
+              <ListPicker
+                title={title}
+                items={listItems}
+                setEnabled={setEnabled}
+                enableAllFunc={enableAllFunc}
+                disableAllFunc={disableAllFunc}
+                invertFunc={invertFunc}
+              />
+            </ToolbarItemContext.Provider>
+          </FrameworkVersion>
+        </Provider>
       );
       component.unmount();
     });
   });
 
   describe("v1 rendering", () => {
+    before(async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+    });
+
+    after(async () => {
+      // restore to default "2" setting
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
+    });
+
     it("should render correctly", () => {
       shallow(
-        <FrameworkVersion version="1">
-          <ListPicker
-            title={title}
-            items={listItems}
-            setEnabled={setEnabled}
-          />
-        </FrameworkVersion>,
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPicker
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+            />
+          </FrameworkVersion>
+        </Provider>
       ).should.matchSnapshot();
     });
 
@@ -125,16 +152,18 @@ describe("ListPicker", () => {
       const invertFunc = () => { };
 
       const component = mount(
-        <FrameworkVersion version="1">
-          <ListPicker
-            title={title}
-            items={listItems}
-            setEnabled={setEnabled}
-            enableAllFunc={enableAllFunc}
-            disableAllFunc={disableAllFunc}
-            invertFunc={invertFunc}
-          />
-        </FrameworkVersion>,
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPicker
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+              enableAllFunc={enableAllFunc}
+              disableAllFunc={disableAllFunc}
+              invertFunc={invertFunc}
+            />
+          </FrameworkVersion>
+        </Provider>
       );
       component.unmount();
     });
@@ -318,7 +347,7 @@ describe("ListPicker", () => {
         />,
       );
 
-      const item = component.find(Item);
+      const item = component.find(Item); // eslint-disable-line deprecation/deprecation
       expect(item).not.to.be.undefined;
       item.prop("onClick")!();
       component.update();
@@ -357,7 +386,7 @@ describe("ListPicker", () => {
     });
   });
 
-  describe("setEnabled", () => {
+  describe("setEnabled V1 only", () => {
     let listPickerWrapper: ReactWrapper<ListPickerPropsExtended>;
     const localSetEnabled = sinon.fake();
     const localListItems = new Array<ListItem>();
@@ -366,6 +395,9 @@ describe("ListPicker", () => {
     const invertSpyMethod = sinon.fake();
 
     before(async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+
       const listItem: ListItem = {
         enabled: true,
         type: ListItemType.Item,
@@ -381,20 +413,30 @@ describe("ListPicker", () => {
       localListItems.push(invalidListItem);
     });
 
+    after(async () => {
+      // restore to default "2" setting
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
+    });
+
     beforeEach(() => {
       listPickerWrapper = mount(
-        <ListPicker
-          title={title}
-          items={localListItems}
-          setEnabled={localSetEnabled}
-          enableAllFunc={allSpyMethod}
-          disableAllFunc={noneSpyMethod}
-          invertFunc={invertSpyMethod}
-          iconSpec={<svg />}
-        />,
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPicker
+              title={title}
+              items={localListItems}
+              setEnabled={localSetEnabled}
+              enableAllFunc={allSpyMethod}
+              disableAllFunc={noneSpyMethod}
+              invertFunc={invertSpyMethod}
+              iconSpec={<svg />}
+            />
+          </FrameworkVersion>
+        </Provider>
       );
 
-      const item = listPickerWrapper.find(Item);
+      const item = listPickerWrapper.find(Item); // eslint-disable-line deprecation/deprecation
       expect(item).not.to.be.undefined;
       item.prop("onClick")!();
       listPickerWrapper.update();
@@ -429,7 +471,7 @@ describe("ListPicker", () => {
     });
   });
 
-  describe("Multiple ListPickers", () => {
+  describe("Multiple ListPickers v1 only", () => {
     const localListItems = new Array<ListItem>();
     const listItem: ListItem = {
       enabled: true,
@@ -437,53 +479,90 @@ describe("ListPicker", () => {
       name: "123456789012345678901234567890",
     };
 
-    before(() => {
+    before(async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+
       localListItems.push(listItem);
+    });
+
+    after(async () => {
+      // restore to default "2" setting
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
     });
 
     it("Close other ListPicker", () => {
       const wrapper1 = mount(
-        <ListPicker
-          title={title}
-          items={localListItems}
-          setEnabled={setEnabled}
-        />);
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPicker
+              title={title}
+              items={localListItems}
+              setEnabled={setEnabled}
+            />
+          </FrameworkVersion>
+        </Provider>
+      );
       const itemComponent1 = wrapper1.find(Item);
       expect(itemComponent1).not.to.be.undefined;
       itemComponent1.simulate("click");
       wrapper1.update();
-      wrapper1.find(Group).should.exist;
+      wrapper1.find(Group).should.exist; // eslint-disable-line deprecation/deprecation
 
       const wrapper2 = mount(
-        <ListPicker
-          title={title}
-          items={listItems}
-          setEnabled={setEnabled}
-        />);
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPicker
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+            />
+          </FrameworkVersion>
+        </Provider>
+      );
       const itemComponent2 = wrapper2.find(Item);
       expect(itemComponent2).not.to.be.undefined;
       itemComponent2.simulate("click");
       wrapper2.update();
-      wrapper2.find(Group).should.exist;
+      wrapper2.find(Group).should.exist; // eslint-disable-line deprecation/deprecation
       wrapper1.update();
-      wrapper1.find(Group).length.should.eq(0);
+      wrapper1.find(Group).length.should.eq(0); // eslint-disable-line deprecation/deprecation
 
       itemComponent2.simulate("click");
       wrapper2.update();
-      wrapper2.find(Group).length.should.eq(0);
+      wrapper2.find(Group).length.should.eq(0); // eslint-disable-line deprecation/deprecation
     });
   });
 
   describe("onOutsideClick", () => {
+    before(async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+    });
+
+    after(async () => {
+      // restore to default "2" setting
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
+    });
+
     it("should minimize on outside click", () => {
       const spy = sinon.spy();
-      const sut = mount<ListPickerBase>(<ListPickerBase
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-        onExpanded={spy}
-      />);
-      sut.setState({ expanded: true });
+      const sut = mount(
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ListPickerBase
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+              onExpanded={spy}
+            />
+          </FrameworkVersion>
+        </Provider>
+      );
+
+      sut.find(ListPickerBase).setState({ expanded: true });
       const containedGroup = sut.findWhere((w) => {
         return w.name() === "WithOnOutsideClick";
       }) as ReactWrapper<WithOnOutsideClickProps>;
@@ -498,13 +577,19 @@ describe("ListPicker", () => {
 
   it("should not minimize on outside click", () => {
     const spy = sinon.spy();
-    const sut = mount<ListPickerBase>(<ListPickerBase
-      title={title}
-      items={listItems}
-      setEnabled={setEnabled}
-      onExpanded={spy}
-    />);
-    sut.setState({ expanded: true });
+    const sut = mount(
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ListPickerBase
+            title={title}
+            items={listItems}
+            setEnabled={setEnabled}
+            onExpanded={spy}
+          />
+        </FrameworkVersion>
+      </Provider>
+    );
+    sut.find(ListPickerBase).setState({ expanded: true });
     const containedGroup = sut.findWhere((w) => {
       return w.name() === "WithOnOutsideClick";
     }) as ReactWrapper<WithOnOutsideClickProps>;

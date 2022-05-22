@@ -66,8 +66,11 @@ describe("FloatRgb", () => {
     expect(rgb.tbgr).to.equal(ColorDef.white.tbgr);
     expectRgb(rgb, 1, 1, 1);
 
-    expect(() => rgb.set(-1, -1, -1)).to.throw("Assert: Programmer Error");
-    expect(() => rgb.set(2, 2, 2)).to.throw("Assert: Programmer Error");
+    rgb.set(-1, -1, -1);
+    expectRgb(rgb, 0, 0, 0);
+
+    rgb.set(2, 2, 2);
+    expectRgb(rgb, 1, 1, 1);
   });
 
   it("should convert to ColorDef", () => {
@@ -119,7 +122,10 @@ describe("FloatRgba", () => {
     expectRgba(rgba, 25 / 255, 192 / 255, 212 / 255, 200 / 255);
     expect(rgba.hasTranslucency).to.be.true;
 
-    expect(() => rgba.set(0.5, 0.5, 0.5, -1)).to.throw("Assert: Programmer Error");
-    expect(() => rgba.set(0.5, 0.5, 0.5, 1.1)).to.throw("Assert: Programmer Error");
+    rgba.set(-0.5, -1, 1.5, -1);
+    expectRgba(rgba, 0, 0, 1, 0);
+
+    rgba.set(0, 0, 0, 1.1);
+    expectRgba(rgba, 0, 0, 0, 1);
   });
 });

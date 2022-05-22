@@ -9,7 +9,7 @@
 import { OrderedComparator } from "./Compare";
 
 /**
- * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes in the iModel.js library.
+ * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes.
  * It is up to the function to decide how deeply or shallowly the value is cloned. For example, [[shallowClone]] simply returns the input.
  * @public
  */

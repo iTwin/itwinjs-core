@@ -14,7 +14,7 @@ import { Dialog } from "../dialog/Dialog";
 import { TitleBar } from "../dialog/TitleBar";
 
 /** Properties of [[ToolAssistanceDialog]] component.
- * @beta
+ * @internal
  */
 export interface ToolAssistanceDialogProps extends CommonProps {
   /** Items and separators of tool assistance. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
@@ -28,7 +28,7 @@ export interface ToolAssistanceDialogProps extends CommonProps {
 /** Tool assistance dialog used with [[ToolAssistance]] component.
  * @note This is a presentational component and should be aligned with [[ToolAssistance]] component.
  * I.e. use [[FooterPopup]] to handle alignment.
- * @beta
+ * @internal
  */
 export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDialogProps> {
   public override render() {

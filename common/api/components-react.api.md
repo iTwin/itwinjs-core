@@ -53,8 +53,7 @@ import { SortDirection } from '@itwin/core-react';
 import { TimeDisplay } from '@itwin/appui-abstract';
 import { TimeFormat } from '@itwin/core-react';
 import { UiEvent } from '@itwin/core-react';
-import { UiSettings } from '@itwin/core-react';
-import { UiSettingsStorage } from '@itwin/core-react';
+import { UiStateStorage } from '@itwin/core-react';
 
 // @public
 export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
@@ -664,9 +663,9 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
 // @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
-    // (undocumented)
+    // @deprecated
     buttonNode?: React.ReactNode;
-    // (undocumented)
+    keepContentsLoaded?: boolean;
     panelContentNode?: React.ReactNode;
 }
 
@@ -1220,10 +1219,10 @@ export enum FlatGridItemType {
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
-}
+    }
 
 // @internal
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
@@ -1247,9 +1246,9 @@ export function getVisibleDescendants(model: TreeModel, parentNode: TreeModelNod
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
     readonly derivedCategory: PropertyCategory;
-    // (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): GridCategoryItem[];
-    // (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): GridCategoryItem[];
     // (undocumented)
     readonly name: string;
@@ -1368,7 +1367,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
     // @internal
     constructor(props: IconPickerProps);
@@ -1378,7 +1377,7 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     disabled?: boolean;
     dropDownTitle?: string;
@@ -1494,9 +1493,9 @@ export interface IMutableFlatPropertyGridItem {
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
     // (undocumented)
     derivedCategory: PropertyCategory;
-    // (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): IMutableGridCategoryItem[];
-    // (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
     // (undocumented)
     isRootCategory: boolean;
@@ -1574,10 +1573,10 @@ export class IntlFormatter implements DateFormatter {
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Int): string;
-}
+    }
 
 // @public
 export interface IPropertyDataFilterer {
@@ -2246,6 +2245,7 @@ export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 // @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
+    keepContentsMounted?: boolean;
     panel?: React.ReactNode;
 }
 
@@ -2912,7 +2912,7 @@ export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     protected getTimeFormat(): TimeFormat;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
     // @internal (undocumented)
@@ -2923,17 +2923,17 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
     readonly state: ShowHideDialogState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
     onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-// @public
+// @public @deprecated
 export type ShowHideID = string | number | symbol;
 
-// @public
+// @public @deprecated
 export interface ShowHideItem<T extends ShowHideID> {
     // (undocumented)
     id: T;
@@ -2941,7 +2941,7 @@ export interface ShowHideItem<T extends ShowHideID> {
     label: string;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
     constructor(props: ShowHideMenuProps<T>);
@@ -2953,7 +2953,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
     readonly state: ShowHideMenuState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
@@ -3389,12 +3389,12 @@ export interface TableProps extends CommonProps {
     scrollToRow?: number;
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
-    settingsStorage?: UiSettingsStorage;
+    settingsStorage?: UiStateStorage;
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
     // @deprecated
-    uiSettings?: UiSettings;
+    uiStateStorage?: UiStateStorage;
 }
 
 // @internal
@@ -3599,11 +3599,14 @@ export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButton
 export interface ToolbarButtonItemProps extends CommonProps {
     addGroupSeparator?: boolean;
     badge?: React.ReactNode;
+    groupPriority?: number;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    itemPriority?: number;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    providerId?: string;
     title: string;
 }
 
@@ -3679,6 +3682,9 @@ export class ToolbarPanelAlignmentHelpers {
     static getCssClassName(panelAlignment: ToolbarPanelAlignment): string;
     static readonly START_CLASS_NAME = "components-panel-alignment-start";
 }
+
+// @public
+export const ToolbarPopupAutoHideContext: React.Context<boolean>;
 
 // @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
@@ -4207,6 +4213,9 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     stringValue?: string;
     element: React.ReactNode;
 };
+
+// @public
+export function useToolbarPopupAutoHideContext(): boolean;
 
 // @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;

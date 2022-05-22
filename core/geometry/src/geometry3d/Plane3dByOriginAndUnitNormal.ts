@@ -213,6 +213,18 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   public altitudeXY(x: number, y: number): number {
     return (x - this._origin.x) * this._normal.x + (y - this._origin.y) * this._normal.y;
   }
+  /**
+   * Return the x component of the normal used to evaluate altitude.
+   */
+   public normalX(): number {return this._normal.x; }
+   /**
+    * Return the x component of the normal used to evaluate altitude.
+    */
+    public normalY(): number {return this._normal.y; }
+   /**
+    * Return the z component of the normal used to evaluate altitude.
+    */
+    public normalZ(): number {return this._normal.z; }
 
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {

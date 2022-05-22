@@ -5,13 +5,13 @@
 
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
-  FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
+  ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";
 import { System } from "../../../render/webgl/System";
 
-describe("Variable declaration tests", () => {
+describe("ShaderBuilder", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -61,9 +61,7 @@ describe("Variable declaration tests", () => {
     const expectedDecls = (System.instance.capabilities.isWebGL2 ? partsWebGL2.join("\n") : parts.join("\n"));
     expect(vars.buildDeclarations(true)).to.equal(expectedDecls);
   });
-});
 
-describe("ShaderVariables tests", () => {
   it("should not allow 2 variables with same name", () => {
     const vars = new ShaderVariables();
     expect(vars.length).to.equal(0);
@@ -80,31 +78,5 @@ describe("ShaderVariables tests", () => {
     const found = vars.find("x");
     assert.isFalse(undefined === found);
     expect(found!.name).to.equal("x");
-  });
-});
-
-describe("Test shader compilation", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
-
-  it.skip("should build and compile a simple shader program", () => {
-    const builder = new ProgramBuilder();
-    builder.vert.set(VertexShaderComponent.ComputePosition, "return vec4(0.0);");
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0);");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
-
-    if (!IModelApp.hasRenderSystem) {
-      return;
-    }
-
-    const prog = builder.buildProgram(System.instance.context);
-    expect(prog.isDisposed).to.equal(false);
-    expect(prog.isUncompiled).to.equal(true);
-    expect(prog.compile()).to.equal(CompileStatus.Success);
-    expect(prog.isUncompiled).to.equal(false);
-
-    prog.dispose();
-    expect(prog.isDisposed).to.equal(true);
-    expect(prog.isUncompiled).to.equal(true);
   });
 });

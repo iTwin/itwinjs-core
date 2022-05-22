@@ -7,3 +7,5 @@ exports[`<NineZone /> renders correctly 1`] = `
 `;
 
 exports[`<NineZoneProvider /> renders correctly 1`] = `9-Zone`;
+
+exports[`<TestNineZoneProvider /> renders correctly 1`] = `9-Zone`;

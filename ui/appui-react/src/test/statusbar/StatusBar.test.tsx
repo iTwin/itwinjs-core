@@ -74,7 +74,7 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(Toast).length).to.eq(1);
+    expect(wrapper.find(Toast).length).to.eq(1); // eslint-disable-line deprecation/deprecation
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageLayout).length).to.eq(1);
     wrapper.unmount();
@@ -87,7 +87,7 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(Toast).length).to.eq(1);
+    expect(wrapper.find(Toast).length).to.eq(1); // eslint-disable-line deprecation/deprecation
 
     const toast = wrapper.find(".nz-toast");
     expect(toast.length).to.eq(1);

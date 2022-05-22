@@ -11,7 +11,7 @@ import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser
 import { BackendOptions } from "i18next-http-backend";
 import XHR from "i18next-xhr-backend";
 import { Logger } from "@itwin/core-bentley";
-import { Localization } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
 
 /** Options for ITwinLocalization
  *  @public
@@ -125,7 +125,7 @@ export class ITwinLocalization implements Localization {
     return value;
   }
 
-  /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
+  /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
@@ -185,7 +185,7 @@ export class ITwinLocalization implements Localization {
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
    * fulfillment of the readPromise Promise property of the returned LocalizationNamespace.
-   * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
+   * @see [Localization in iTwin.js]($docs/learning/frontend/Localization.md)
    * @public
    */
   public async registerNamespace(name: string): Promise<void> {

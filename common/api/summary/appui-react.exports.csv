@@ -52,7 +52,6 @@ public;AppNotificationManager
 public;AppUiSettings 
 beta;areNoFeatureOverridesActive(): boolean
 public;Backstage 
-deprecated;Backstage 
 beta;BackstageActionItem 
 deprecated;BackstageActionItem 
 public;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
@@ -60,8 +59,8 @@ public;BackstageAppButtonProps
 public;BackstageComposer(props: BackstageComposerProps): JSX.Element
 internal;BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element
 internal;BackstageComposerActionItemProps
-beta;BackstageComposerItem({ item }: BackstageComposerItemProps): JSX.Element
-beta;BackstageComposerItemProps
+internal;BackstageComposerItem({ item }: BackstageComposerItemProps): JSX.Element
+internal;BackstageComposerItemProps
 public;BackstageComposerProps 
 internal;BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncherProps): JSX.Element
 internal;BackstageComposerStageLauncherProps
@@ -78,7 +77,6 @@ beta;BackstageItemUtilities
 deprecated;BackstageItemUtilities
 public;BackstageManager
 public;BackstageProps 
-deprecated;BackstageProps 
 beta;BackstageStageLauncher 
 deprecated;BackstageStageLauncher 
 public;BackstageToggledArgs
@@ -88,7 +86,9 @@ public;BasicNavigationWidgetProps
 public;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 public;BasicToolWidgetProps
 public;BooleanListenerProps
+deprecated;BooleanListenerProps
 public;BooleanSyncUiListener 
+deprecated;BooleanSyncUiListener 
 alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
@@ -103,8 +103,11 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
+alpha;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
+alpha;CategoryVisibilityHandler 
+alpha;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
@@ -118,7 +121,9 @@ public;CombineReducersFunction =
 public;CommandItemDef 
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
+deprecated;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
+deprecated;CommandLaunchBackstageItemProps 
 public;ConditionalField 
 public;ConditionalFieldProps 
 public;ConfigurableBase 
@@ -141,6 +146,11 @@ public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
+public;ContentDialog(props: ContentDialogProps): JSX.Element
+public;ContentDialogChangedEvent 
+public;ContentDialogManager
+public;ContentDialogProps 
+public;ContentDialogRenderer 
 public;ContentGroup
 public;ContentGroupProps
 public;class ContentGroupProvider
@@ -154,10 +164,12 @@ public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
 public;ContentViewManager
+internal;ContentWrapper(props: ContentWrapperProps): JSX.Element
 public;CoreTools
 public;createAction
 public;createAction
 internal;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
+deprecated;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
 alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 public;CubeNavigationAidControl 
 public;CursorDirection
@@ -213,6 +225,10 @@ beta;ExpandableSectionProps
 internal;expandWidget: (base:
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
+beta;FloatingContentControl 
+beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
+beta;FloatingViewportContentControl 
+beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
@@ -223,12 +239,12 @@ internal;FrameworkStagePanelProps
 public;FrameworkState
 alpha;FrameworkToolAdmin 
 public;FrameworkUiAdmin 
-alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
-alpha;FrameworkVersion = "1" | "2"
+public;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 internal;FrameworkVersionChangedEvent 
 internal;FrameworkVersionChangedEventArgs
-internal;FrameworkVersionContext: React.Context
-alpha;FrameworkVersionProps
+public;FrameworkVersionContext: React.Context
+public;FrameworkVersionId = "1" | "2"
+public;FrameworkVersionProps
 internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
 internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
@@ -238,12 +254,15 @@ internal;FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings"
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
+deprecated;FrontstageComposer 
 public;FrontstageDeactivatedEvent 
 public;FrontstageDeactivatedEventArgs
 public;FrontstageDef
 internal;FrontstageEventArgs
 public;FrontstageLaunchBackstageItem 
+deprecated;FrontstageLaunchBackstageItem 
 public;FrontstageLaunchBackstageItemProps 
+deprecated;FrontstageLaunchBackstageItemProps 
 public;FrontstageManager
 internal;FrontstageNineZoneStateChangedEventArgs 
 public;FrontstageProps 
@@ -265,12 +284,13 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
-internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
+beta;getListPanel(props: ListPickerProps): React.ReactNode
+internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
-internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
+internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 beta;getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry
 internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton(props: GroupButtonProps): JSX.Element
@@ -285,8 +305,6 @@ public;class HideIsolateEmphasizeActionHandler
 public;HideIsolateEmphasizeManager 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-beta;IModelAppUiSettings 
-deprecated;IModelAppUiSettings 
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 public;IModelConnectedViewport: import("react-redux").ConnectedComponent
@@ -294,20 +312,20 @@ beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
-beta;Indicator 
+beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
 internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
-alpha;InputEditorCommitHandler
+beta;InputEditorCommitHandler
 alpha;InputEditorPopup 
-alpha;InputEditorPopupProps 
+beta;InputEditorPopupProps 
 public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
-internal;isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is
+internal;isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
 internal;isReactContent: (content: PopupContentType) => content is ReactContent
@@ -327,13 +345,16 @@ public;KeyboardShortcutMenuEvent
 public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
 beta;KeyinBrowser 
+deprecated;KeyinBrowser 
 beta;KeyinBrowserExecuteArgs
+deprecated;KeyinBrowserExecuteArgs
 beta;KeyinBrowserProps 
+deprecated;KeyinBrowserProps 
 public;KeyinEntry
 public;KeyinFieldLocalization
 internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
-alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
-alpha;KeyinPalettePopupProps
+public;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
+public;KeyinPalettePopupProps
 beta;ListItem
 beta;ListItemType
 beta;ListPicker 
@@ -342,7 +363,9 @@ beta;ListPickerItem
 beta;ListPickerItemProps 
 beta;ListPickerProps
 beta;ListPickerPropsExtended 
+internal;loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise
 public;MarkupTools
+deprecated;MarkupTools
 alpha;MenuButton 
 alpha;MenuButtonPopup 
 alpha;MenuButtonPopupProps 
@@ -421,23 +444,23 @@ public;PopupButtonChildrenRenderPropArgs
 deprecated;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
 deprecated;PopupButtonProps 
-alpha;PopupContentType = HTMLElement | ReactContent
-alpha;PopupInfo
-alpha;PopupManager
-alpha;PopupPropsBase
-alpha;PopupRenderer 
-alpha;PopupsChangedEvent 
-alpha;PopupsChangedEventArgs
-alpha;PositionPopup 
-alpha;PositionPopupContent(props: CommonDivProps): JSX.Element
-alpha;PositionPopupProps 
+public;PopupContentType = HTMLElement | ReactContent
+public;PopupInfo
+public;PopupManager
+public;PopupPropsBase
+public;PopupRenderer 
+public;PopupsChangedEvent 
+public;PopupsChangedEventArgs
+beta;PositionPopup 
+beta;PositionPopupContent(props: CommonDivProps): JSX.Element
+beta;PositionPopupProps 
 public;PresentationSelectionScope
 public;PromptField: import("react-redux").ConnectedComponent
 deprecated;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
-alpha;ReactContent
+public;ReactContent
 public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
@@ -456,10 +479,6 @@ internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
 public;SafeAreaContext: React.Context
-public;SavedView
-public;SavedViewLayout
-public;SavedViewLayoutProps
-public;SavedViewProps 
 internal;saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise
 public;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
@@ -470,6 +489,7 @@ public;SelectionInfoField: import("react-redux").ConnectedComponent
 public;SelectionScope
 public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
+deprecated;SeparatorBackstageItem 
 public;SessionState
 public;SessionStateActionId
 public;SessionStateActions:
@@ -479,7 +499,6 @@ beta;sessionStateMapDispatchToProps:
 public;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: (base:
 beta;SettingsModalFrontstage 
-internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 internal;setWidgetLabel: (base:
 internal;setWidgetState: (base:
 alpha;SheetCard 
@@ -494,36 +513,43 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
+public;SplitPane(props: SplitPaneProps): JSX.Element
+public;SplitPaneProps
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
+public;StageContentLayout
+public;StageContentLayoutProps
 public;StagePanel 
 public;StagePanelChangeHandler
 public;StagePanelDef 
 public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
+deprecated;StagePanelHeader 
 alpha;StagePanelHeaderProps 
-alpha;StagePanelLocation
-deprecated;StagePanelLocation
+deprecated;StagePanelHeaderProps 
 public;StagePanelMaxSizeSpec = number |
 public;StagePanelProps
 internal;StagePanelRuntimeProps
-alpha;StagePanelSection
-deprecated;StagePanelSection
 public;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
 public;StagePanelZoneProps
+deprecated;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
+deprecated;StagePanelZonesProps
 public;StandardContentToolsProvider 
+beta;StandardContentToolsUiItemsProvider 
 public;StandardFrontstageProps
 public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 public;StandardNavigationToolsProvider 
+beta;StandardNavigationToolsUiItemsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
 public;StandardStatusbarItemsProvider 
+beta;StandardStatusbarUiItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -554,13 +580,16 @@ public;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
-public;SyncUiEvent 
-public;SyncUiEventArgs
+public;SyncUiEvent = UiSyncEvent
+deprecated;SyncUiEvent = UiSyncEvent
+public;SyncUiEventArgs = UiSyncEventArgs
+deprecated;SyncUiEventArgs = UiSyncEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation
 public;TargetChangeHandler
+deprecated;TargetChangeHandler
 internal;Task 
 deprecated;Task 
 internal;TaskActivatedEvent 
@@ -595,10 +624,11 @@ public;ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element
 beta;ToolbarDragInteractionContext: React.Context
 internal;ToolbarGroupItem 
 public;ToolbarHelper
-alpha;ToolbarPopup 
-alpha;ToolbarPopupProps 
+beta;ToolbarPopup 
+beta;ToolbarPopupProps 
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
+deprecated;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
@@ -628,7 +658,7 @@ deprecated;ToolWidgetDef
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
 deprecated;ToolWidgetPropsEx 
-internal;toPanelSide(location: StagePanelLocation_2): PanelSide
+internal;toPanelSide(location: StagePanelLocation): PanelSide
 internal;TrackingTime
 internal;UiActivityEvent 
 internal;UiActivityEventArgs
@@ -637,16 +667,17 @@ public;UiDataProvidedDialogProps
 public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs
-internal;UiSettingsContext: React.Context
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
-public;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
 public;UiSettingsProviderProps
 public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
+internal;UiStateStorageContext: React.Context
+public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
+internal;useActiveContentControlId(): string | undefined
 internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
 public;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
@@ -656,10 +687,11 @@ public;useActiveViewport(): ScreenViewport | undefined
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 public;useBackstageManager: () => BackstageManager
+internal;useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[]
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
-internal;useFrameworkVersion(): FrameworkVersion
+public;useFrameworkVersion(): FrameworkVersionId
 internal;useFrontstageManager(frontstageDef: FrontstageDef): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
@@ -668,20 +700,20 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
-public;UserInfo
 public;UserSettingsProvider
 public;UserSettingsStorage 
+deprecated;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
+public;useSpecificWidgetDef(widgetId: string): WidgetDef | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
-public;useUiSettingsStorageContext(): UiSettingsStorage
+public;useUiStateStorageHandler(): UiStateStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
@@ -691,6 +723,7 @@ alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
 beta;ViewAttributesStatusField 
 public;ViewLayout
+internal;ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): JSX.Element | null
 public;ViewOverlayProps
 public;ViewportContentControl 
 beta;ViewSelector 
@@ -698,6 +731,8 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
+public;ViewStateHelper
+public;ViewStateHelperProps 
 public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
 public;ViewToolWidgetComposerProps
 public;ViewUtilities
@@ -714,6 +749,7 @@ public;Widget
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
 public;WidgetChangeHandler
+deprecated;WidgetChangeHandler
 internal;WidgetContent(): JSX.Element
 public;WidgetControl 
 public;WidgetDef
@@ -765,6 +801,8 @@ public;Zone
 public;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
+deprecated;ZoneLocation
 public;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
+deprecated;ZoneState

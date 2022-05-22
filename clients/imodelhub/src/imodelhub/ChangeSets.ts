@@ -7,7 +7,8 @@
  */
 
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired } from "@bentley/itwin-client";
+import { DownloadFailed, FileHandler, SasUrlExpired } from "../itwin-client/FileHandler";
+import { ProgressCallback, ProgressInfo, RequestQueryOptions } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
@@ -529,7 +530,8 @@ export class ChangeSetHandler {
         const callback: ProgressCallback = (progress: ProgressInfo) => {
           downloadProgress.downloadedSize += (progress.loaded - previouslyDownloaded);
           previouslyDownloaded = progress.loaded;
-          progressCallback!({ loaded: downloadProgress.downloadedSize, total: downloadProgress.totalSize, percent: downloadProgress.downloadedSize / downloadProgress.totalSize });
+          if (progressCallback)
+            progressCallback({ loaded: downloadProgress.downloadedSize, total: downloadProgress.totalSize, percent: downloadProgress.downloadedSize / downloadProgress.totalSize });
         };
 
         if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet)) {

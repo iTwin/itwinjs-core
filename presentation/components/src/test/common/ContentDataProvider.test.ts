@@ -2,21 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, FIELD_NAMES_SEPARATOR, KeySet, Paged, RegisteredRuleset, SelectionInfo,
 } from "@itwin/presentation-common";
 import {
-  createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
+  createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField,
+  createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

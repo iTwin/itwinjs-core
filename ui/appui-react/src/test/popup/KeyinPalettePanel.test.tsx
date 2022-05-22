@@ -11,7 +11,7 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 
 const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
@@ -51,14 +51,14 @@ describe("<KeyinPalettePanel>", () => {
   });
 
   it("test clearKeyinPaletteHistory", async () => {
-    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    const uiSettingsStorage = UiFramework.getUiStateStorage();
     if (uiSettingsStorage) {
       await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["keyin1", "keyin2"]);
       let settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
-      expect(UiSettingsStatus.Success === settingsResult.status);
+      expect(UiStateStorageStatus.Success === settingsResult.status);
       clearKeyinPaletteHistory();
       settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
-      expect(UiSettingsStatus.NotFound === settingsResult.status);
+      expect(UiStateStorageStatus.NotFound === settingsResult.status);
     }
   });
 
@@ -197,7 +197,7 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Renders and filters out bogus history entry", async () => {
-      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      const uiSettingsStorage = UiFramework.getUiStateStorage();
       if (uiSettingsStorage) {
         await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
@@ -212,7 +212,7 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("handles key presses in select input ", async () => {
-      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      const uiSettingsStorage = UiFramework.getUiStateStorage();
       if (uiSettingsStorage) {
         await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
@@ -233,7 +233,7 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("handles ctrl+key presses in select input ", async () => {
-      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      const uiSettingsStorage = UiFramework.getUiStateStorage();
       if (uiSettingsStorage) {
         await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
@@ -272,7 +272,7 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Handles listbox click processing", async () => {
-      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      const uiSettingsStorage = UiFramework.getUiStateStorage();
       if (uiSettingsStorage) {
         await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }
@@ -292,7 +292,7 @@ describe("<KeyinPalettePanel>", () => {
     });
 
     it("Handles listbox CTRL+click processing", async () => {
-      const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+      const uiSettingsStorage = UiFramework.getUiStateStorage();
       if (uiSettingsStorage) {
         await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2", "bogus"]);
       }

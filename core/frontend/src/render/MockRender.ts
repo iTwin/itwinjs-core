@@ -15,7 +15,9 @@ import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./Gr
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { PointStringParams } from "./primitives/PointStringParams";
+import { PolylineParams } from "./primitives/PolylineParams";
+import { MeshParams } from "./primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";

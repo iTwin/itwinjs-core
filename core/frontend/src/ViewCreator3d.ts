@@ -12,23 +12,23 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
-  RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  Camera, CategorySelectorProps, Code, CustomViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
+  QueryRowFormat, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment } from "./DisplayStyleState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
+ * @extensions
 */
 export interface ViewCreator3dOptions {
-  /** Turn [[Camera]] on when generating the view. */
+  /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
   cameraOn?: boolean;
   /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
@@ -48,6 +48,7 @@ export interface ViewCreator3dOptions {
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
  * ```
  * @public
+ * @extensions
  */
 export class ViewCreator3d {
 
@@ -64,8 +65,14 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const models = modelIds ?? await this._getAllModels();
-    const props = await this._createViewStateProps(models, options);
+    const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
+      modelIds === undefined ? {} : {modelIds: CompressedId64Set.sortAndCompress(modelIds)});
+    const props = await this._createViewStateProps(
+      CompressedId64Set.decompressArray(serializedProps.modelIds),
+      CompressedId64Set.decompressArray(serializedProps.categoryIds),
+      Range3d.fromJSON(serializedProps.modelExtents),
+      options);
+
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
@@ -86,18 +93,9 @@ export class ViewCreator3d {
    * @param models Models to put in view props
    * @param options view creation options like camera On and skybox On
    */
-  private async _createViewStateProps(models: Id64String[], options?: ViewCreator3dOptions): Promise<ViewStateProps> {
+  private async _createViewStateProps(models: Id64Array, categories: Id64Array, modelExtents: Range3d, options?: ViewCreator3dOptions): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
-    const categories: Id64Array = await this._getAllCategories();
-
-    // model extents
-    const modelExtents = new Range3d();
-    if (models.length > 0) {
-      const modelProps = await this._imodel.models.queryModelRanges(models);
-      for (const props of modelProps)
-        modelExtents.union(Range3d.fromJSON(props), modelExtents);
-    }
 
     if (modelExtents.isNull)
       modelExtents.setFrom(this._imodel.projectExtents);
@@ -139,7 +137,7 @@ export class ViewCreator3d {
     };
 
     const cameraData = new Camera();
-    const cameraOn = options?.cameraOn ? options.cameraOn : false;
+    const cameraOn = options?.cameraOn !== false;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
@@ -159,7 +157,7 @@ export class ViewCreator3d {
     const displayStyleProps: DisplayStyle3dProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle3d",
       jsonProperties: {
         styles: {
           viewflags: {
@@ -176,7 +174,7 @@ export class ViewCreator3d {
             options !== undefined &&
               options.skyboxOn !== undefined &&
               options.skyboxOn
-              ? new Environment({ sky: { display: true } }).toJSON()
+              ? Environment.defaults.withDisplay({ sky: true }).toJSON()
               : undefined,
         },
       },
@@ -249,41 +247,11 @@ export class ViewCreator3d {
   }
 
   /**
-   * Get all categories containing elements
-   */
-  private async _getAllCategories(): Promise<Id64Array> {
-    // Only use categories with elements in them
-    const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
-    const categories: Id64Array = await this._executeQuery(query);
-
-    return categories;
-  }
-
-  /**
-   * Get all PhysicalModel ids in the connection
-   */
-  private async _getAllModels(): Promise<Id64Array> {
-    // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
-    // If the iModel has an earlier version, the statement will throw because the property does not exist.
-    // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
-    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
-    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
-    let models = [];
-    try {
-      models = await this._executeQuery(`${select} ${spatialCriterion}`);
-    } catch {
-      models = await this._executeQuery(select);
-    }
-
-    return models;
-  }
-
-  /**
    * Helper function to execute ECSql queries.
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

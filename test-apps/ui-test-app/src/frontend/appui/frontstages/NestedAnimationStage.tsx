@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import {
   ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, NestedFrontstage, ToolWidget, Widget, Zone,
@@ -9,8 +10,10 @@ import {
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
+  public static stageId = "ui-test-app:NestedAnimationStage";
+
   public get id(): string {
-    return "NestedAnimationStage";
+    return NestedAnimationStage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

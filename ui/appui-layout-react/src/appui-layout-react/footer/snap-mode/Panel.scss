@@ -8,8 +8,7 @@
 @import "~@itwin/core-react/lib/cjs/core-react/typography";
 
 .nz-footer-snapMode-panel {
-  min-width: $nz-footer-popup-min-width;
-  background-color: $buic-background-panel;
+  background-color: $buic-background-dialog;
   border-radius: 3px;
   overflow: hidden;
   font-size: $text-font-size;

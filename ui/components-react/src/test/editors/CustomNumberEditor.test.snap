@@ -1,15 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<CustomNumberEditor /> renders correctly with style 1`] = `
-<ForwardRef(ForwardRefInput)
+<ForwardRef
   className="components-cell-editor components-customnumber-editor"
   data-testid="components-customnumber-editor"
   disabled={false}
-  nativeKeyHandler={[Function]}
   onChange={[Function]}
   onFocus={[Function]}
+  onKeyDown={[Function]}
   readOnly={false}
   setFocus={false}
+  size="small"
   style={
     Object {
       "color": "red",

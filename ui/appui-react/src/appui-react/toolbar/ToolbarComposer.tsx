@@ -9,14 +9,14 @@
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import {
-  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiSyncEventArgs,
 } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
 import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -27,7 +27,7 @@ import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(uiDataProvider: ToolbarItemsManager, syncIdsOfInterest: string[]) {
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 
@@ -164,23 +164,27 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
   // istanbul ignore else
   if (defaultItems.length) {
     defaultItems.forEach((srcItem: CommonToolbarItem) => {
-      // if the default item is a group that an addon may insert into copy it so we don't mess with original
-      const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
-      if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
-        groupChildren.push(toolbarItem);
-      else
-        items.push(toolbarItem);
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        // if the default item is a group that an addon may insert into copy it so we don't mess with original
+        const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
+        if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
+          groupChildren.push(toolbarItem);
+        else
+          items.push(toolbarItem);
+      }
     });
   }
   // istanbul ignore else
   if (addonItems.length) {
     addonItems.forEach((srcItem: CommonToolbarItem) => {
-      // if the default item is a group that an addon may insert into copy it so we don't mess with original
-      const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
-      if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
-        groupChildren.push(toolbarItem);
-      else
-        items.push(toolbarItem);
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        // if the default item is a group that an addon may insert into copy it so we don't mess with original
+        const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
+        if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
+          groupChildren.push(toolbarItem);
+        else
+          items.push(toolbarItem);
+      }
     });
   }
 
@@ -240,14 +244,10 @@ export interface ExtensibleToolbarProps {
  */
 export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const { usage, orientation } = props;
-  const [defaultItemsManager] = React.useState(() => new ToolbarItemsManager(props.items));
-  const isInitialMount = React.useRef(true);
+
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(() => new ToolbarItemsManager(props.items));
   React.useEffect(() => {
-    if (isInitialMount.current)
-      isInitialMount.current = false;
-    else {
-      defaultItemsManager.items = props.items;
-    }
+    setDefaultItemsManager(new ToolbarItemsManager(props.items));
   }, [props.items]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // process default items
@@ -264,7 +264,9 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const toolbarItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
 
   const toolbarOrientation = orientation === ToolbarOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical;
+  // eslint-disable-next-line deprecation/deprecation
   const expandsTo = toolbarOrientation === Orientation.Horizontal ? Direction.Bottom : usage === ToolbarUsage.ViewNavigation ? Direction.Left : Direction.Right;
+  // eslint-disable-next-line deprecation/deprecation
   const panelAlignment = (toolbarOrientation === Orientation.Horizontal && usage === ToolbarUsage.ViewNavigation) ? ToolbarPanelAlignment.End : ToolbarPanelAlignment.Start;
   const version = useFrameworkVersion();
   const isDragEnabled = React.useContext(ToolbarDragInteractionContext);
@@ -291,8 +293,8 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
 
 interface ToolbarUi1Props {
   items: CommonToolbarItem[];
-  expandsTo: Direction;
-  panelAlignment: ToolbarPanelAlignment;
+  expandsTo: Direction; // eslint-disable-line deprecation/deprecation
+  panelAlignment: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
 }
 
 /** Toolbar rendered in 1.0 mode.
@@ -313,7 +315,7 @@ const ToolbarUi1 = React.memo<ToolbarUi1Props>(function ToolbarUi1({
     return createdNodes;
   };
 
-  return <Toolbar
+  return <Toolbar // eslint-disable-line deprecation/deprecation
     expandsTo={expandsTo}
     panelAlignment={panelAlignment}
     items={

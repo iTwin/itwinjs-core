@@ -123,7 +123,7 @@ export class IModelJsFs {
     for (const childPath of IModelJsFs.readdirSync(rootDir)) {
       const fullPath = path.join(rootDir, childPath);
       const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
-      if (!cb(fullPath, isDir!)) {
+      if (!cb(fullPath, isDir ?? false)) {
         return;
       }
       // Need to check if the directory still exists in case the callback has deleted it.

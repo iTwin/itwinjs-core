@@ -6,75 +6,52 @@
  * @module OIDC
  */
 
-import { AccessToken, assert } from "@itwin/core-bentley";
-import { NativeAppAuthorizationBackend } from "@itwin/core-backend";
-import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
+import { AccessToken } from "@itwin/core-bentley";
+import { AuthorizationClient } from "@itwin/core-common";
 import { MobileHost } from "./MobileHost";
 
-/** Utility to provide OIDC/OAuth tokens from native ios app to frontend
+/** Utility to provide and cache auth tokens from native mobile apps to IModelHost.
  * @internal
  */
-export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
-  public static defaultRedirectUri = "imodeljs://app/signin-callback";
-  public get redirectUri() { return this.config?.redirectUri ?? MobileAuthorizationBackend.defaultRedirectUri; }
+export class MobileAuthorizationBackend implements AuthorizationClient {
+  private _accessToken: AccessToken = "";
+  private _expirationDate: Date | undefined;
+  private _expiryBuffer = 60 * 10; // ten minutes
+  private _fetchingToken = false;
 
-  public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super(config);
+  private get _hasExpired(): boolean {
+    return this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000;
   }
 
-  /** Used to initialize the client - must be awaited before any other methods are called */
-  public override async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(config);
-    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
+  public async getAccessToken(): Promise<AccessToken> {
+    if (this._fetchingToken) {
+      return Promise.reject(); // short-circuits any recursive use of this function
+    }
 
-    MobileHost.device.authStateChanged = (tokenString?: AccessToken) => {
-      this.setAccessToken(tokenString ?? "");
-    };
+    return new Promise<AccessToken>((resolve, reject) => {
+      if (this._accessToken && !this._hasExpired) {
+        resolve(this._accessToken);
+      } else {
+        this._fetchingToken = true;
+        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+          if (error) {
+            this._accessToken = "";
+            reject(error);
+          }
 
-    return new Promise<void>((resolve, reject) => {
-      assert(this.config !== undefined);
-      MobileHost.device.authInit({ ...this.config, issuerUrl: this.issuerUrl }, (err?: string) => {
-        if (!err) {
-          resolve();
-        } else {
-          reject(new Error(err));
-        }
-      });
+          this._accessToken = tokenString ?? "";
+          if (expirationDate !== undefined)
+            this._expirationDate = new Date(expirationDate);
+
+          resolve(this._accessToken);
+        });
+        this._fetchingToken = false;
+      }
     });
   }
 
-  /** Start the sign-in process */
-  public async signIn(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignIn((err?: string) => {
-        if (!err) {
-          resolve();
-        } else {
-          reject(new Error(err));
-        }
-      });
-    });
-  }
-
-  /** Start the sign-out process */
-  public async signOut(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignOut((err?: string) => {
-        if (!err) {
-          resolve();
-        } else {
-          reject(new Error(err));
-        }
-      });
-    });
-  }
-
-  /** return accessToken */
-  public async refreshToken(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve) => {
-      MobileHost.device.authGetAccessToken((tokenStringJson?: AccessToken) => {
-        resolve(tokenStringJson ?? "");
-      });
-    });
+  public setAccessToken(accessToken?: string, expirationDate?: string) {
+    this._accessToken = accessToken ?? "";
+    this._expirationDate = expirationDate ? new Date(expirationDate) : undefined;
   }
 }

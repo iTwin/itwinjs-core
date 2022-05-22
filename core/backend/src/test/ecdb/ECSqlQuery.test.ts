@@ -13,7 +13,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs })) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
     rows.push(row);
   }
   return rows;
@@ -107,7 +107,7 @@ describe("ECSql Query", () => {
             cancelled++;
             resolve();
           } else {
-            reject();
+            reject(new Error("rejected"));
           }
         }
       });
@@ -123,7 +123,70 @@ describe("ECSql Query", () => {
     assert.isAtLeast(successful, 1);
     assert.isAtLeast(rowCount, 1);
   });
-
+  it("concurrent query use primary connection", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 46);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 1000);
+    assert.isTrue(reader.stats.totalTime > 0);
+  });
+  it("concurrent query use idset", async () => {
+    const ids: string[] = [];
+    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids.push(row[0]);
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 23);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 23);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 100);
+  });
+  it("concurrent query get meta data", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 46);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 1000);
+  });
+  it("concurrent query quota", async () => {
+    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+  });
   it("paging results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
@@ -155,7 +218,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
+        const rs = await db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: pageSize, offset: k * pageSize } }).toArray();
         assert.equal(rs.length, rowPerPage[k]);
       }
     }
@@ -163,7 +226,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

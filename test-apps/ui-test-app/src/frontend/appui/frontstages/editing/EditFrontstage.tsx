@@ -24,7 +24,7 @@ import sketchIconSvg from "../../icons/draw.svg?sprite";
 import { InitialIModelContentStageProvider } from "../ViewsFrontstage";
 
 export class EditFrontstage extends FrontstageProvider {
-  private _contentGroupProvider = new InitialIModelContentStageProvider();
+  private _contentGroupProvider = new InitialIModelContentStageProvider(true);
   public static stageId = "EditFrontstage";
   public get id(): string {
     return EditFrontstage.stageId;

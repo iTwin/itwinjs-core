@@ -11,6 +11,8 @@ import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /** Marks a string as either an [Id64String]($core-bentley) or [GuidString]($core-bentley), so
  * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
  * methods of [SqliteStatement]($backend).

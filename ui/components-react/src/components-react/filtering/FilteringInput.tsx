@@ -159,7 +159,8 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
             onChange={this._onInputChanged}
-            aria-label={UiCore.translate("general.search")} />
+            aria-label={UiCore.translate("general.search")}
+            size="small" />
 
           <span className="components-filtering-input-input-components">
             {status === FilteringInputStatus.FilteringFinished && this.props.resultSelectorProps ?

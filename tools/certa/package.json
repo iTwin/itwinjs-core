@@ -1,12 +1,12 @@
 {
   "name": "@itwin/certa",
-  "version": "3.0.0-dev.99",
+  "version": "3.3.0-dev.9",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/certa"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/certa"
   },
   "bin": {
     "certa": "./bin/certa.js"
@@ -23,7 +23,7 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "iModel.js",
+    "iTwin.js",
     "EC"
   ],
   "author": {
@@ -49,7 +49,8 @@
     "@types/express": "^4.16.1",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
+    "@types/puppeteer": "2.0.1",
     "@types/uuid": "^7.0.2",
     "@types/yargs": "^12.0.5",
     "electron": "^14.0.0",

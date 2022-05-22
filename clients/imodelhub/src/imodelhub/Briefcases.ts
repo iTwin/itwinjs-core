@@ -7,7 +7,8 @@
  */
 
 import { AccessToken, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import { ProgressCallback } from "../itwin-client/Request";
 import { IModelClient } from "../IModelClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
@@ -220,7 +221,6 @@ export class BriefcaseHandler {
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcase Briefcase to update.
    * @returns Updated Briefcase instance from iModelHub.
-   * @throws [[IModelHubError]] with [IModelHubStatus.FailedToGetProductSettings]($bentley) if request to get settings to Product Settings service fails.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(accessToken: AccessToken, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase> {

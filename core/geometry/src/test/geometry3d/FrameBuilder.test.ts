@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveChain";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -11,8 +12,11 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { RegionOps } from "../../curve/RegionOps";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { AxisScaleSelect, Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -115,6 +119,52 @@ describe("FrameBuilder", () => {
         ck.testTransform(frameA, frameB, "Frame from linestring versus bspline");
       }
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("InterpolationCurve", () => {
+    const ck = new Checker();
+    const builder = new FrameBuilder();
+    for (const points of [
+      [Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(0, 1, 0)],
+      [Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(2, 1, 0)],
+      [Point3d.create(1, 2, -1),
+      Point3d.create(1, 3, 5),
+      Point3d.create(2, 4, 3),
+      Point3d.create(-2, 1, 7)],
+    ]) {
+      builder.clear();
+      const linestring = LineString3d.create(points);
+      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({fitPoints: points}));
+      builder.clear();
+      builder.announce(linestring);
+      const frameA = builder.getValidatedFrame();
+      builder.clear();
+      builder.announce(curve);
+      const frameB = builder.getValidatedFrame();
+      if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB)
+        ck.testTransform(frameA, frameB, "Frame from linestring versus interpolation curve");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("GenericCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = new FrameBuilder();
+    const localToWorld = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(55)));
+    const spiral = DirectSpiral3d.createCzechCubic(localToWorld, 20, 21);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral);
+    builder.announce(spiral);
+    const frame = builder.getValidatedFrame();
+    if (ck.testDefined(frame) && frame)
+      ck.testTransform(localToWorld, frame, "Frame from spiral ctor versus frenet");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "GenericCurve");
     expect(ck.getNumErrors()).equals(0);
   });
 

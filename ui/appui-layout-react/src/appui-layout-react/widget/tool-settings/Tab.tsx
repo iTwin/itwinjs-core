@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[ToolSettingsTab]] component.
- * @beta
+ * @internal
  */
 export interface ToolSettingsTabProps extends CommonProps {
   /** Tab icon. */
@@ -31,7 +31,7 @@ export interface ToolSettingsTabProps extends CommonProps {
 
 /** Tool settings widget tab is displayed when the [[ToolSettings]] widget is closed.
  * @note Used in [[Zone]] component.
- * @beta
+ * @internal
  */
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
   public override render() {

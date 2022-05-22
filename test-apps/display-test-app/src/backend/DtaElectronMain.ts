@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
@@ -39,24 +39,19 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
 /**
  * This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
- * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
- * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
+ * It runs in the Electron main process and hosts the iTwin.js backend (IModelHost) code. It starts the render (frontend) process
+ * that starts from the file "index.ts". That launches the iTwin.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options
   loadBackendConfig();
 
-  const opts: ElectronHostOptions = {
+  const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
-    authConfig: {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    },
   };
 
   await initializeDtaBackend(opts);

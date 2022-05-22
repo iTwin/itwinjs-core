@@ -6,9 +6,8 @@
  * @module Tiles
  */
 import { IModelStatus } from "@itwin/core-bentley";
+import { Cartographic, ImageMapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
-import { Cartographic, MapLayerSettings, ServerError } from "@itwin/core-common";
-
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
   WmsCapability, WmsUtilities,
@@ -20,14 +19,21 @@ let doToolTips = true;
 const scratchPoint2d = Point2d.createZero();
 
 /** @internal */
+export interface WmsCrsSupport {
+  support3857: boolean;
+  support4326: boolean;
+}
+
+/** @internal */
 export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _capabilities?: WmsCapabilities;
   private _allLayersRange?: MapCartoRectangle;
   private _subLayerRanges = new Map<string, MapCartoRectangle>();
   private _baseUrl: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private _isVersion1_1 = false;
-  constructor(settings: MapLayerSettings) {
+  private _crsSupport: WmsCrsSupport|undefined;
+
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
@@ -37,7 +43,6 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       this._capabilities = await WmsCapabilities.create(this._baseUrl);
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;
-        this._isVersion1_1 = this._capabilities.version !== undefined && 0 === this._capabilities.version.indexOf("1.1");
         if (this._capabilities.layer && Array.isArray(this._capabilities.layer.subLayers)) {
           const mapCartoRanges = ((subLayer: WmsCapability.SubLayer) => {
             if (Array.isArray(subLayer.children))
@@ -60,6 +65,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
         if (!this.cartoRange)
           this.cartoRange = this._allLayersRange;
+
+        this._crsSupport = this.getCrsSupport();
       }
     } catch (error: any) {
       // Don't throw error if unauthorized status:
@@ -74,13 +81,18 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   private getVisibleLayerString() {
-    const layerNames = this.getVisibleLayers();
+    const layerNames = this.getVisibleLayers().map((layer)=>layer.name);
     return layerNames.join("%2C");
   }
-  private getVisibleLayers(): string[] {
-    const layerNames = new Array<string>();
-    this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer) && subLayer.isNamed) layerNames.push(subLayer.name); });
-    return layerNames;
+
+  private getVisibleLayers(): MapSubLayerSettings[] {
+    return this._settings.subLayers.filter((subLayer) =>  this._settings.isSubLayerVisible(subLayer) && subLayer.isNamed);
+  }
+
+  private getVisibleLayersSrs() {
+    const visibleLayers = this.getVisibleLayers();
+    const visibleLayerNames = visibleLayers.map((layer) => layer.name);
+    return this._capabilities?.getSubLayersCrs(visibleLayerNames);
   }
 
   private getQueryableLayers(): string[] {
@@ -100,17 +112,64 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   private getVisibleQueryableLayersString(): string {
     const layers = new Array<string>();
-    const queryables = this.getQueryableLayers();
-    const visibles = this.getVisibleLayers();
-    queryables.forEach((layer: string) => { if (visibles.includes(layer)) layers.push(layer); });
+    const queryable = this.getQueryableLayers();
+    const visibleLayerNames = this.getVisibleLayers().map((layer) => layer.name);
+    queryable.forEach((layer: string) => { if (visibleLayerNames.includes(layer)) layers.push(layer); });
     return layers.join("%2C");
+  }
+
+  public getCrsSupport(): WmsCrsSupport {
+    const layersCrs = this.getVisibleLayersSrs();
+
+    let support3857: boolean|undefined;
+    let support4326: boolean|undefined;
+    if (layersCrs) {
+      for (const [_layerName, crs] of layersCrs) {
+        if (crs.find((layerCrs) => {return layerCrs.includes("3857");}) === undefined ) {
+          support3857 = false;
+        } else if (support3857 === undefined) {
+          support3857 = true;
+        }
+
+        if (crs.find((layerCrs) => {return layerCrs.includes("4326");}) === undefined ) {
+          support4326 = false;
+        } else if (support4326 === undefined) {
+          support4326 = true;
+        }
+      }
+    }
+
+    return {support3857: support3857 ?? false, support4326: support4326 ?? false};
   }
 
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
-    const bboxString = this.getEPSG3857ExtentString(row, column, zoomLevel);
+
+    let bboxString ="";
+    let crsString ="";
+
+    // We support 2 SRS: EPSG:3857 and EPSG:4326, we prefer EPSG:3857.
+    if (this._crsSupport?.support3857) {
+      bboxString = this.getEPSG3857ExtentString(row, column, zoomLevel);
+      crsString= "EPSG%3A3857";
+    } else if (this._crsSupport?.support4326) {
+      // The WMS 1.3.0 specification mandates using the axis ordering as defined in the EPSG database.
+      // For instance, for EPSG:4326 the axis ordering is latitude/longitude, or north/east.
+      // WMS 1.1.0 always requires the axis ordering to be longitude/latitude. *sigh*
+      if (this._capabilities !== undefined) {
+        bboxString = this.getEPSG4326ExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
+        crsString= "EPSG%3A4326";
+      }
+
+    }
+
     const layerString = this.getVisibleLayerString();
-    return `${this._baseUrl}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&STYLES=&BBOX=${bboxString}`;
+
+    if (bboxString.length === 0 || crsString.length === 0 ||layerString.length === 0)
+      return "";
+
+    const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
+    return `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=${crsString}&STYLES=&BBOX=${bboxString}`;
   }
 
   public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
@@ -129,8 +188,9 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const fraction = rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d))!;
     const x = Math.floor(.5 + fraction.x * this.tileSize);
     const y = Math.floor(.5 + (1.0 - fraction.y) * this.tileSize);
-    const coordinateString = (false && this._isVersion1_1) ? `&x=${x}&y=${y}` : `&i=${x}&j=${y}`;
-    const getFeatureUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&BBOX=${bboxString}&QUERY_LAYERS=${layerString}${coordinateString}&info_format=${formatString}`;
+    const coordinateString =  this._capabilities?.isVersion13 ? `&i=${x}&j=${y}` : `&x=${x}&y=${y}`;
+    const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
+    const getFeatureUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetFeatureInfo&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=EPSG%3A3857&BBOX=${bboxString}&QUERY_LAYERS=${layerString}${coordinateString}&info_format=${formatString}`;
     return this.toolTipFromUrl(strings, getFeatureUrl);
   }
 }

@@ -12,6 +12,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point2d} from "../../geometry3d/Point2dVector2d";
 import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
@@ -19,6 +20,10 @@ import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV";
+import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
+import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { OutputManager } from "../clipping/ClipPlanes.test";
 
 function logGraph(graph: HalfEdgeGraph, title: any) {
   console.log(` == begin == ${title}`);
@@ -549,4 +554,197 @@ describe("VUGraph", () => {
     ck.testExactNumber(0.5, HalfEdge.horizontalScanFraction01(edge90, 0.5)!, "scan crossing on simple vertical edge");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("isMaskedAroundFace", () => {
+    const ck = new Checker();
+    const graph = new HalfEdgeGraph();
+    const pointA0 = Point2d.create(1, 2);
+    const pointA1 = Point2d.create(4, 3);
+    const edgeA = graph.addEdgeXY(pointA0.x, pointA0.y, pointA1.x, pointA1.y);
+    const edgeB = graph.addEdgeXY(pointA0.x, pointA0.y, 3, 4);
+    ck.testFalse(edgeA.findAroundFace(edgeB));
+    const pointB0 = edgeA.getPoint2d();
+    const pointB1 = edgeA.faceSuccessor.getPoint2d();
+    ck.testPoint2d(pointA0, pointB0);
+    ck.testPoint2d(pointA1, pointB1);
+    const vectorB01 = edgeA.getVector3dAlongEdge();
+    const vectorA01 = Vector3d.createStartEnd(pointA0, pointA1);
+    ck.testVector3d(vectorA01, vectorB01);
+    HalfEdge.pinch(edgeA, edgeB);
+    ck.testTrue(edgeA.findAroundFace(edgeB.faceSuccessor));
+    // There are 4 edges around the face.
+    ck.testFalse(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, true));
+    ck.testTrue(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, false));
+    edgeA.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    ck.testFalse(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, true));
+    ck.testFalse(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, false));
+    edgeA.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
+    ck.testTrue(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, true));
+    ck.testFalse(edgeA.isMaskedAroundFace(HalfEdgeMask.BOUNDARY_EDGE, false));
+
+    let numNodes = 0;
+    graph.announceNodes(
+      (_g: HalfEdgeGraph, _node: HalfEdge) => {
+        numNodes++; return true;
+  }
+    );
+    ck.testExactNumber(4, numNodes);
+
+    // coverage for early exit from full-graph node, face, and vertex loops
+    numNodes = 0;
+    numNodes = 0;
+    graph.announceNodes((_g: HalfEdgeGraph, node: HalfEdge) => {
+      if (node === edgeA) return false;
+      numNodes++; return true;
+    });
+    ck.testLT (numNodes, 4);
+
+    numNodes = 0;
+    graph.announceVertexLoops(
+      (_g: HalfEdgeGraph, node: HalfEdge) => {
+        return !node.findAroundVertex(edgeB);
+      }
+    );
+    ck.testLT (numNodes, 3);
+
+    numNodes = 0;
+    graph.announceFaceLoops(
+      (_g: HalfEdgeGraph, node: HalfEdge) => {
+        return !node.findAroundFace(edgeB);
+      }
+    );
+    ck.testExactNumber (numNodes, 0, "Graph's only face contains all nodes");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("NodeXYZUV", () => {
+    const ck = new Checker();
+    const graph = new HalfEdgeGraph();
+    const pointA0 = Point3d.create(1, 2);
+    const pointA1 = Point3d.create(4, 3);
+    const edgeA = graph.addEdgeXY(pointA0.x, pointA0.y, pointA1.x, pointA1.y);
+    const _edgeB = graph.addEdgeXY(pointA0.x, pointA0.y, 3, 4);
+    const pointQ = Point3d.create(10, 20, 30);
+    const pointU0 = Point2d.create(5, 12);
+    const markupA = NodeXYZUV.create(edgeA, 10, 20, 30, pointU0.x, pointU0.y);
+    const pointR = markupA.getXYZAsPoint3d();
+    ck.testPoint3d(pointQ, pointR);
+    const pointU1 = markupA.getUVAsPoint2d();
+    ck.testTrue(pointU0.isAlmostEqual(pointU1));
+    ck.testPoint3d(pointQ, pointR);
+    ck.testExactNumber(0, markupA.classifyU(pointU0.x, 0));
+    ck.testExactNumber(1, markupA.classifyU(pointU0.x-3, 0));
+    ck.testExactNumber(-1, markupA.classifyU(pointU0.x + 2, 0));
+    const tol = 1.0e-5;
+    const epsilon = 0.9 * tol;
+    ck.testExactNumber(0, markupA.classifyU(pointU0.x + epsilon, tol));
+    ck.testExactNumber(0, markupA.classifyU(pointU0.x - epsilon, tol));
+    ck.testExactNumber(1, markupA.classifyU(pointU0.x-3 * epsilon, tol));
+    ck.testExactNumber(-1, markupA.classifyU(pointU0.x + 2 * epsilon, tol));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MovingPosition", () => {
+    const ck = new Checker();
+    const outputManager = new OutputManager();
+    const graph = new HalfEdgeGraph();
+    // 5 A              D
+    // 4       Q
+    // 3    P
+    // 2 B     C
+    //   1 2 3 4 5 6 7 8
+    const pointA = Point3d.create(1, 5);
+    const pointB = Point3d.create(1, 2);
+    const pointC = Point3d.create(4, 2);
+    const pointD = Point3d.create(8, 5);
+    const pointP = Point3d.create(2, 3);
+    const pointQ = Point3d.create(4, 4);
+    const edgeA = graph.addEdgeXY(pointA.x, pointA.y, pointB.x, pointB.y);
+    const edgeB = graph.addEdgeXY(pointB.x, pointB.y, pointC.x, pointC.y);
+    const edgeC = graph.addEdgeXY(pointC.x, pointC.y, pointA.x, pointA.y);
+    const edgeCD = graph.addEdgeXY(pointC.x, pointC.y, pointD.x, pointD.y);
+    const edgeDA = graph.addEdgeXY(pointD.x, pointD.y, pointA.x, pointA.y);
+
+    HalfEdge.pinch(edgeA.faceSuccessor, edgeB);
+    HalfEdge.pinch(edgeB.faceSuccessor, edgeC);
+    HalfEdge.pinch(edgeC.faceSuccessor, edgeA);
+    HalfEdge.pinch(edgeCD, edgeC.vertexPredecessor);
+    HalfEdge.pinch(edgeDA.faceSuccessor, edgeA.vertexSuccessor);
+    HalfEdge.pinch(edgeCD.faceSuccessor, edgeDA);
+    outputManager.z0 = -0.001;
+    outputManager.drawGraph(graph);
+    outputManager.z0 = 0.0;
+    ck.testExactNumber(3, graph.countFaceLoops());
+    ck.testExactNumber(4, graph.countVertexLoops());
+    const walker = HalfEdgePositionDetail.createEdgeAtFraction(edgeA, 0.4);
+    const context = InsertAndRetriangulateContext.create(graph);
+    markPosition(outputManager, walker);
+    ck.testTrue(walker.isEdge, "start on edge");
+    moveAndMark(ck, outputManager, context, walker, pointP, HalfEdgeTopo.Face);
+    moveAndMark(ck, outputManager, context, walker, pointQ, HalfEdgeTopo.Face);
+    moveAndMark(ck, outputManager, context, walker, pointA, HalfEdgeTopo.Vertex);
+    {
+      // move sideways along an edge ...
+      const pointE1 = pointA.interpolate(0.4, pointC);
+      const pointE2 = pointA.interpolate(0.6, pointC);
+      moveAndMark(ck, outputManager, context, walker, pointE1, HalfEdgeTopo.Edge);
+      moveAndMark(ck, outputManager, context, walker, pointE2, HalfEdgeTopo.Edge);
+      moveAndMark(ck, outputManager, context, walker, pointA, HalfEdgeTopo.Vertex);
+      moveAndMark(ck, outputManager, context, walker, pointE2, HalfEdgeTopo.Edge);
+      moveAndMark(ck, outputManager, context, walker, pointC, HalfEdgeTopo.Vertex);
+      moveAndMark(ck, outputManager, context, walker, pointE2, HalfEdgeTopo.Edge);
+      const pointAC2 = pointA.interpolate(2.0, pointC);
+      moveAndMark(ck, outputManager, context, walker, pointAC2, HalfEdgeTopo.Vertex);
+      moveAndMark(ck, outputManager, context, walker, pointE2, HalfEdgeTopo.Edge);
+      const pointACNeg = pointA.interpolate(-1.0, pointC);
+      moveAndMark(ck, outputManager, context, walker, pointACNeg, HalfEdgeTopo.Vertex);
+    }
+    moveAndMark(ck, outputManager, context, walker,
+      pointA.interpolate (0.5, pointB), HalfEdgeTopo.Edge);
+
+    // Exterior !!!!
+    // moveTo does not identify this clearly.
+    const pointZ1 = Point3d.create(5, 0, 0);
+    moveAndMark(ck, outputManager, context, walker, pointZ1, undefined);
+    const pointZ2 = Point3d.create(0.5, 0, 0);
+    moveAndMark(ck, outputManager, context, walker, pointZ2, undefined);
+    outputManager.saveToFile("Graph", "MovingPosition");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+const markerSize = 0.04;
+function markPosition(out: OutputManager, p: HalfEdgePositionDetail | undefined) {
+  if (p) {
+    if (p.isFace)
+      out.drawPlus(p.clonePoint(), markerSize);
+    else if (p.isEdge) {
+      const nodeA = p.node!;
+      const edgeVector = nodeA.getVector3dAlongEdge();
+      const perpVector = edgeVector.unitPerpendicularXY();
+      const edgePoint = p.clonePoint();
+      out.drawLines([edgePoint, edgePoint.plusXYZ(markerSize * perpVector.x, markerSize * perpVector.y)]);
+    } else if (p.isVertex) {
+      const nodeA = p.node!;
+      const xyz = p.clonePoint();
+      const edgeVectorA = nodeA.getVector3dAlongEdge();
+      const edgeVectorB = nodeA.facePredecessor.getVector3dAlongEdge();
+      edgeVectorA.normalizeInPlace();
+      edgeVectorB.normalizeInPlace();
+      const xyz1 = xyz.plus2Scaled(edgeVectorA, markerSize, edgeVectorB, -markerSize);
+      out.drawLines([xyz, xyz1]);
+    }
+  }
+}
+function moveAndMark(ck: Checker, out: OutputManager, context: InsertAndRetriangulateContext, position: HalfEdgePositionDetail, targetPoint: Point3d,
+expectedTopo: HalfEdgeTopo | undefined) {
+  const xyz0 = position.clonePoint();
+  context.moveToPoint(position, targetPoint);
+  out.drawLines([xyz0, position.clonePoint()]);
+  markPosition(out, position);
+  if (expectedTopo !== undefined) {
+    ck.testExactNumber(expectedTopo as number, position.getTopo());
+  } else {
+    ck.testTrue(position.isExteriorTarget, "Expect exterior target setting");
+  }
+
+}

@@ -23,6 +23,7 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
+  IndexedEdge,
   RealityMesh,
   PlanarGrid,
 
@@ -46,6 +47,7 @@ export const enum TechniqueId {
   SkySphereTexture,
   AmbientOcclusion,
   Blur,
+  BlurTestOrder,
   CombineTextures,
   Combine3Textures,
   VolClassCopyZ,

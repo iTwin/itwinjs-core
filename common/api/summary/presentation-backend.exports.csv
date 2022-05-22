@@ -4,11 +4,13 @@ public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 internal;getKeysForContentRequest(keys: Readonly
+internal;getLocalesDirectory: (assetsDirectory: string) => string
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
+alpha;MultiElementPropertiesResponse
 public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation
@@ -18,6 +20,7 @@ public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
+public;PresentationPropsBase 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions

@@ -7,10 +7,11 @@
  */
 
 import * as React from "react";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CommonProps, GlobalContextMenu } from "@itwin/core-react"; // ContextSubMenu,
 import { SessionStateActionId } from "../../redux/SessionState";
 import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../../UiFramework";
 import { Logger } from "@itwin/core-bentley";
 
@@ -40,7 +41,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
     items: undefined,
   };
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     /* istanbul ignore next */
     if (this._componentUnmounting)
       return;

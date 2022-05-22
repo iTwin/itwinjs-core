@@ -223,8 +223,9 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[], range: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (!range.isNull) {
+  public static captureRangeEdges(collection: GeometryQuery[],
+    range: Range2d | Range3d | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (range !== undefined && !range.isNull) {
       if (range instanceof Range3d) {
         const corners = range.corners();
         this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);

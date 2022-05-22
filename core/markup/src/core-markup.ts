@@ -11,7 +11,7 @@ export * from "./Undo";
 export * from "./SvgJsExt";
 
 /** @docs-package-description
- * The core-markup package supplies tools for creating, editing, and saving SVG-based markups of iModel.js Viewports.
+ * The core-markup package supplies tools for creating, editing, and saving SVG-based markups of Viewports.
  */
 /**
  * @docs-group-description MarkupApp

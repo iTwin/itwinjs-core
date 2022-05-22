@@ -13,7 +13,7 @@ import { Arrow } from "./Arrow";
 import { ZoneTarget } from "./Zone";
 
 /** Properties of [[MergeTarget]] component.
- * @beta
+ * @internal
  */
 export interface MergeTargetProps extends CommonProps {
   /** Function called when component is targeted or untargeted. */
@@ -21,7 +21,7 @@ export interface MergeTargetProps extends CommonProps {
 }
 
 /** Zone target used to merge widgets.
- * @beta
+ * @internal
  */
 export class MergeTarget extends React.PureComponent<MergeTargetProps> {
   public override render() {

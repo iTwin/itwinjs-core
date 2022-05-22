@@ -6,27 +6,27 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
-  DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  InstanceKey, Item, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents,
-  RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
-  VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
+  ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
+  Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
+  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
-  createRandomRuleset, createRandomTransientId, createTestContentDescriptor,
+  createRandomRuleset, createRandomTransientId, createTestContentDescriptor, createTestECInstanceKey,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
-  buildPagedResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
+  buildPagedArrayResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
@@ -993,62 +993,67 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
-    it("requests multiple elements properties", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const result = {
+  });
+
+  describe("getContentInstanceKeys", () => {
+
+    it("requests content instance keys", async () => {
+      const inputKeys = new KeySet();
+      const displayType = "test display type";
+      const instanceKeys = [createTestECInstanceKey({ id: "0x123" })];
+      const rpcHandlerResult = {
         total: 1,
-        items: [{
-          class: "test class",
-          id: "0x1",
-          label: "test label",
-          items: {},
-        }],
+        items: new KeySet(instanceKeys).toJSON(),
       };
-      const options: MultiElementPropertiesRequestOptions<IModelConnection> = {
+      const managerOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> = {
         imodel: testData.imodelMock.object,
-        elementClasses,
+        rulesetOrId: testData.rulesetId,
+        displayType,
+        keys: inputKeys,
+      };
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        keys: inputKeys.toJSON(),
         paging: { start: 0, size: 0 },
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties(toIModelTokenOptions(options)))
-        .returns(async () => result)
+        .setup(async (x) => x.getContentInstanceKeys(rpcHandlerOptions))
+        .returns(async () => rpcHandlerResult)
         .verifiable();
-      const actualResult = await manager.getElementProperties(options);
-      expect(actualResult).to.deep.eq(result);
+      const actualResult = await manager.getContentInstanceKeys(managerOptions);
       rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult.total).to.eq(1);
+      expect(await generatedValues(actualResult.items())).to.deep.eq(instanceKeys);
     });
 
-    it("requests multiple elements properties through multiple requests when getting partial responses", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const element1: ElementProperties = {
-        class: "test class",
-        id: "0x1",
-        label: "test label",
-        items: {},
-      };
-      const element2: ElementProperties = {
-        class: "test class",
-        id: "0x2",
-        label: "test label 2",
-        items: {},
-      };
-      const managerOptions: MultiElementPropertiesRequestOptions<IModelConnection> = {
+    it("requests instance keys through multiple requests when getting partial responses", async () => {
+      const inputKeys = new KeySet();
+      const displayType = "test display type";
+      const instanceKeys1 = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
+      const instanceKeys2 = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
+      const managerOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> = {
         imodel: testData.imodelMock.object,
-        elementClasses,
+        rulesetOrId: testData.rulesetId,
+        displayType,
+        keys: inputKeys,
         paging: undefined,
       };
-      const rpcHandlerOptions = toIModelTokenOptions(managerOptions);
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        keys: inputKeys.toJSON(),
+      };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
-        .returns(async () => ({ total: 2, items: [element1] }))
+        .setup(async (x) => x.getContentInstanceKeys({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
+        .returns(async () => ({ total: 4, items: new KeySet(instanceKeys1).toJSON() }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
-        .returns(async () => ({ total: 2, items: [element2] }))
+        .setup(async (x) => x.getContentInstanceKeys({ ...rpcHandlerOptions, paging: { start: 2, size: 0 } }))
+        .returns(async () => ({ total: 4, items: new KeySet(instanceKeys2).toJSON() }))
         .verifiable();
-      const actualResult = await manager.getElementProperties(managerOptions);
+      const actualResult = await manager.getContentInstanceKeys(managerOptions);
+      expect(actualResult.total).to.eq(4);
+      expect(await generatedValues(actualResult.items())).to.deep.eq([...instanceKeys1, ...instanceKeys2]);
       rpcRequestsHandlerMock.verifyAll();
-      expect(actualResult).to.deep.eq({ total: 2, items: [element1, element2] });
     });
 
   });
@@ -1276,23 +1281,23 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("buildPagedResponse", () => {
+  describe("buildPagedArrayResponse", () => {
 
     it("calls getter once with 0,0 partial page options when given `undefined` page options", async () => {
       const getter = sinon.stub().resolves({ total: 0, items: [] });
-      await buildPagedResponse(undefined, getter);
+      await buildPagedArrayResponse(undefined, getter);
       expect(getter).to.be.calledOnceWith({ start: 0, size: 0 });
     });
 
     it("calls getter once with 0,0 partial page options when given empty page options", async () => {
       const getter = sinon.stub().resolves({ total: 0, items: [] });
-      await buildPagedResponse({}, getter);
+      await buildPagedArrayResponse({}, getter);
       expect(getter).to.be.calledOnceWith({ start: 0, size: 0 });
     });
 
     it("calls getter once with partial page options equal to given page options", async () => {
       const getter = sinon.stub().resolves({ total: 0, items: [] });
-      await buildPagedResponse({ start: 1, size: 2 }, getter);
+      await buildPagedArrayResponse({ start: 1, size: 2 }, getter);
       expect(getter).to.be.calledOnceWith({ start: 1, size: 2 });
     });
 
@@ -1301,7 +1306,7 @@ describe("PresentationManager", () => {
       getter.onFirstCall().resolves({ total: 5, items: [2] });
       getter.onSecondCall().resolves({ total: 5, items: [3] });
       getter.onThirdCall().resolves({ total: 5, items: [4] });
-      const result = await buildPagedResponse({ start: 1, size: 3 }, getter);
+      const result = await buildPagedArrayResponse({ start: 1, size: 3 }, getter);
       expect(getter).to.be.calledThrice;
       expect(getter.firstCall).to.be.calledWith({ start: 1, size: 3 });
       expect(getter.secondCall).to.be.calledWith({ start: 2, size: 2 });
@@ -1313,35 +1318,49 @@ describe("PresentationManager", () => {
       const getter = sinon.stub();
       getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
       getter.onSecondCall().resolves({ total: 5, items: [4, 5] });
-      const result = await buildPagedResponse({ start: 1 }, getter);
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
       expect(getter).to.be.calledTwice;
       expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
       expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
       expect(result).to.deep.eq({ total: 5, items: [2, 3, 4, 5] });
     });
 
-    it("logs a warning when page start index is larger than total number of items", async () => {
-      const loggerSpy = sinon.spy(Logger, "logWarning");
+    it("returns zero response when page start index is larger than total number of items", async () => {
       const getter = sinon.stub();
       getter.resolves({ total: 5, items: [] });
-      const result = await buildPagedResponse({ start: 9 }, getter);
+      const result = await buildPagedArrayResponse({ start: 9 }, getter);
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 9, size: 0 });
       expect(result).to.deep.eq({ total: 0, items: [] });
-      expect(loggerSpy).to.be.calledOnce;
     });
 
-    it("logs an error when partial request returns no items", async () => {
-      const loggerSpy = sinon.spy(Logger, "logError");
+    it("returns zero response when partial request returns no items", async () => {
       const getter = sinon.stub();
       getter.resolves({ total: 5, items: [] });
-      const result = await buildPagedResponse({ start: 1 }, getter);
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 1, size: 0 });
       expect(result).to.deep.eq({ total: 0, items: [] });
-      expect(loggerSpy).to.be.calledOnce;
+    });
+
+    it("returns zero response when partial request returns less items than requested", async () => {
+      const getter = sinon.stub();
+      getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
+      getter.onSecondCall().resolves({ total: 5, items: [] });
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledTwice;
+      expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
+      expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
   });
 
 });
+
+async function generatedValues<T>(gen: AsyncGenerator<T>) {
+  const arr = new Array<T>();
+  for await (const v of gen)
+    arr.push(v);
+  return arr;
+}

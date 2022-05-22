@@ -13,8 +13,9 @@ import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
 import {
-  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired, UserCancelledError,
-} from "@bentley/itwin-client";
+  CancelRequest, DownloadFailed, FileHandler, SasUrlExpired, UserCancelledError,
+} from "./FileHandler";
+import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { ArgumentCheck } from "../imodelhub/Errors";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
@@ -356,7 +357,8 @@ export class AzureFileHandler implements FileHandler {
       let i = 0;
       const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;
-        progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+        if (progressCallback)
+          progressCallback({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
         await this.uploadChunk(uploadUrlString, file, i, progressCallback ? callback : undefined);

@@ -16,19 +16,7 @@ export async function commonSetup(): Promise<void> {
 
   // Start the backend
   if (ProcessDetector.isElectronAppBackend){
-    const baseOidcScopes = [
-      "openid",
-      "email",
-      "profile",
-      "organization",
-      "itwinjs",
-    ];
-    const authConfig = {
-      clientId: "imodeljs-spa-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: baseOidcScopes.join(" "),
-    };
-    await ElectronHost.startup({ electronHost: { rpcInterfaces, authConfig } });
+    await ElectronHost.startup({ electronHost: { rpcInterfaces } });
   } else
     await IModelHost.startup();
 

@@ -173,7 +173,7 @@ export class Bezier1dNd {
       }
     }
   }
-  //
+
   /**
    * interpolate at `fraction` between poleA and poleB.
    * * Data is left "in place" in poleIndexA
@@ -189,14 +189,13 @@ export class Bezier1dNd {
       data[i0] += fraction * (data[i1] - data[i0]);
     }
   }
-  private static _knotTolerance = 1.0e-8;
+
   /**
    * Compute new control points to "clamp" bspline unsaturated support to saturated form.
    * * At input time, the control points are associated with the input knots (unsaturated)
-   * * At output, they control points are modified by repeated knot insertion to be fully clamped.
+   * * At output, the control points are modified by repeated knot insertion to be fully clamped.
    * @param knots knot values for the current (unsaturated) pole set
    * @param spanIndex index of span whose (unsaturated) poles are in the bezier.
-   * @param optional function for `setInterval (knotA, knotB)` call to announce knot limits.
    */
   public saturateInPlace(knots: KnotVector, spanIndex: number): boolean {
     const degree = knots.degree;
@@ -208,7 +207,7 @@ export class Bezier1dNd {
     const knotA = knotArray[kA];
     const knotB = knotArray[kB];
     this.setInterval(knotA, knotB);
-    if (knotB <= knotA + Bezier1dNd._knotTolerance)
+    if (knotB <= knotA + KnotVector.knotTolerance)
       return false;
     for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
       //  left numInsert poles are pulled forward
@@ -238,12 +237,11 @@ export class Bezier1dNd {
   }
   /**
    * Saturate a univariate bspline coefficient array in place
-   * * On input, the array is the coefficients one span of a bspline, packed in an array of `(knots.order)` values.
+   * * On input, the array is the coefficients of one span of a bspline, packed in an array of `(knots.order)` values.
    * * These are modified in place, and on return are a bezier for the same knot interval.
    * @param coffs input as bspline coefficients, returned as bezier coefficients
    * @param knots knot vector
    * @param spanIndex index of span whose (unsaturated) poles are in the coefficients.
-   * @param optional function for `setInterval (knotA, knotB)` call to announce knot limits.
    */
   public static saturate1dInPlace(coffs: Float64Array, knots: KnotVector, spanIndex: number): boolean {
     const degree = knots.degree;
@@ -254,6 +252,8 @@ export class Bezier1dNd {
     const knotArray = knots.knots;
     const knotA = knotArray[kA];
     const knotB = knotArray[kB];
+    if (knotB <= knotA + KnotVector.knotTolerance)
+      return false;
     for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
       //  left numInsert poles are pulled forward
       let k0 = kA - numInsert;
@@ -273,7 +273,7 @@ export class Bezier1dNd {
       if (knotArray[k2] > knotB) {
         for (let i = 0; i < numInsert; i++ , k2--) {
           const knot2 = knotArray[k2]; // right side of moving window
-          // left side of window ia always the (previously saturated) knotA
+          // left side of window is always the (previously saturated) knotA
           const fraction = (knotB - knot2) / (knotA - knot2);
           k = degree - i;
           coffs[k] += fraction * (coffs[k - 1] - coffs[k]);
@@ -283,9 +283,9 @@ export class Bezier1dNd {
     return true;
   }
   /**
-   * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
+   * Apply deCasteljau interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
    * @param fraction "end" fraction for split.
-   * @returns false if fraction is 0 -- no changes applied.
+   * @returns false if fraction is 0 or 1 -- no changes applied.
    */
   public subdivideInPlaceKeepLeft(fraction: number): boolean {
     if (Geometry.isAlmostEqualNumber(fraction, 1.0))
@@ -303,9 +303,9 @@ export class Bezier1dNd {
   }
 
   /**
-   * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
-   * @param fraction "end" fraction for split.
-   * @returns false if fraction is 0 -- no changes applied.
+   * Apply deCasteljau interpolations to isolate a smaller bezier polygon, representing interval fraction..1 of the original
+   * @param fraction "start" fraction for split.
+   * @returns false if fraction is 0 or 1 -- no changes applied.
    */
   public subdivideInPlaceKeepRight(fraction: number): boolean {
     if (Geometry.isAlmostEqualNumber(fraction, 0.0))
@@ -323,7 +323,7 @@ export class Bezier1dNd {
   /**
    * Saturate a univariate bspline coefficient array in place
    * @param fraction0 fraction for first split.   This is the start of the output polygon
-   * @param fraction1 fraction for first split.   This is the start of the output polygon
+   * @param fraction1 fraction for second split.   This is the end of the output polygon
    * @return false if fractions are (almost) identical.
    */
   public subdivideToIntervalInPlace(fraction0: number, fraction1: number): boolean {

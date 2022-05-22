@@ -8,15 +8,15 @@
 
 // cSpell:ignore configurableui checkmark
 
-import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
+import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg";
 import "./UiSettingsPage.scss";
 import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
-import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
@@ -51,20 +51,30 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const systemPreferredLabel = React.useRef(UiFramework.translate("settings.uiSettingsPage.systemPreferred"));
   const widgetOpacityTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetOpacityTitle"));
   const widgetOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetOpacityDescription"));
+  const widgetIconTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetIconTitle"));
+  const widgetIconDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetIconDescription"));
+  const autoCollapseUnpinnedPanelsTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsTitle"));
+  const autoCollapseUnpinnedPanelsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsDescription"));
+  const animateToolSettingsTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.animateToolSettingsTitle"));
+  const animateToolSettingsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.animateToolSettingsDescription"));
 
   const [theme, setTheme] = React.useState(() => UiFramework.getColorTheme());
   const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion);
   const [useDragInteraction, setUseDragInteraction] = React.useState(() => UiFramework.useDragInteraction);
+  const [showWidgetIcon, setShowWidgetIcon] = React.useState(() => UiFramework.showWidgetIcon);
+  const [autoCollapseUnpinnedPanels, setAutoCollapseUnpinnedPanels] = React.useState(() => UiFramework.autoCollapseUnpinnedPanels);
+  const [animateToolSettings, setAnimateToolSettings] = React.useState(() => UiFramework.animateToolSettings);
   const [widgetOpacity, setWidgetOpacity] = React.useState(() => UiFramework.getWidgetOpacity());
   const [autoHideUi, setAutoHideUi] = React.useState(() => UiShowHideManager.autoHideUi);
   const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiShowHideManager.useProximityOpacity);
   const [snapWidgetOpacity, setSnapWidgetOpacity] = React.useState(() => UiShowHideManager.snapWidgetOpacity);
 
   React.useEffect(() => {
-    const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity",
-      "configurableui:set-drag-interaction", "configurableui:set-framework-version", SyncUiEventId.ShowHideManagerSettingChange];
+    const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity", "configurableui:set-show-widget-icon",
+      "configurableui:set-drag-interaction", "configurableui:set-framework-version",
+      "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings", SyncUiEventId.ShowHideManagerSettingChange];
 
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
         if (UiFramework.getColorTheme() !== theme)
@@ -75,6 +85,10 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setUiVersion(UiFramework.uiVersion);
         if (UiFramework.useDragInteraction !== useDragInteraction)
           setUseDragInteraction(UiFramework.useDragInteraction);
+        if (UiFramework.showWidgetIcon !== showWidgetIcon)
+          setShowWidgetIcon(UiFramework.showWidgetIcon);
+        if (UiFramework.autoCollapseUnpinnedPanels !== autoCollapseUnpinnedPanels)
+          setAutoCollapseUnpinnedPanels(UiFramework.autoCollapseUnpinnedPanels);
         if (UiFramework.getWidgetOpacity() !== widgetOpacity)
           setWidgetOpacity(UiFramework.getWidgetOpacity());
         if (UiShowHideManager.autoHideUi !== autoHideUi)
@@ -83,10 +97,13 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
         if (UiShowHideManager.snapWidgetOpacity !== snapWidgetOpacity)
           setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
+        if (UiFramework.animateToolSettings !== animateToolSettings)
+          setAnimateToolSettings(UiFramework.animateToolSettings);
       }
     };
     return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-  }, [autoHideUi, snapWidgetOpacity, theme, uiVersion, useDragInteraction, useProximityOpacity, widgetOpacity]);
+  }, [autoCollapseUnpinnedPanels, autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion,
+    useDragInteraction, useProximityOpacity, widgetOpacity, animateToolSettings]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: SelectOption<string>[] = [
@@ -100,16 +117,24 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   }, []);
 
   const onAutoHideChange = React.useCallback(async () => {
-    UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
-  }, []);
+    UiShowHideManager.autoHideUi = !autoHideUi;
+  }, [autoHideUi]);
 
   const onUseProximityOpacityChange = React.useCallback(async () => {
-    UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
-  }, []);
+    UiShowHideManager.useProximityOpacity = !useProximityOpacity;
+  }, [useProximityOpacity]);
 
   const onSnapWidgetOpacityChange = React.useCallback(async () => {
-    UiShowHideManager.snapWidgetOpacity = !UiShowHideManager.snapWidgetOpacity;
-  }, []);
+    UiShowHideManager.snapWidgetOpacity = !snapWidgetOpacity;
+  }, [snapWidgetOpacity]);
+
+  const onWidgetIconChange = React.useCallback(async () => {
+    UiFramework.setShowWidgetIcon(!showWidgetIcon);
+  }, [showWidgetIcon]);
+
+  const onAutoCollapseUnpinnedPanelsChange = React.useCallback(async () => {
+    UiFramework.setAutoCollapseUnpinnedPanels(!autoCollapseUnpinnedPanels);
+  }, [autoCollapseUnpinnedPanels]);
 
   const onWidgetOpacityChange = React.useCallback(async (values: readonly number[]) => {
     // istanbul ignore else
@@ -118,13 +143,16 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     }
   }, []);
   const onToggleFrameworkVersion = React.useCallback(async () => {
-    UiFramework.setUiVersion(UiFramework.uiVersion === "2" ? "1" : "2");
-  }, []);
+    UiFramework.setUiVersion(uiVersion === "2" ? "1" : "2");
+  }, [uiVersion]);
 
   const onToggleDragInteraction = React.useCallback(async () => {
-    UiFramework.setUseDragInteraction(!UiFramework.useDragInteraction);
-  }, []);
+    UiFramework.setUseDragInteraction(!useDragInteraction);
+  }, [useDragInteraction]);
 
+  const OnToggleAnimateToolSettings = React.useCallback(async () => {
+    UiFramework.setAnimateToolSettings(!animateToolSettings);
+  }, [animateToolSettings]);
   const currentTheme = UiFramework.getColorTheme();
 
   return (
@@ -137,31 +165,42 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
               onChange={onThemeChange}
               options={themeOptions}
               data-testid="select-theme"
+              size="small"
             />
           </div>
         }
       />
       <SettingsItem title={autoHideTitle.current} description={autoHideDescription.current}
-        settingUi={<ToggleSwitch checked={UiShowHideManager.autoHideUi} onChange={onAutoHideChange} />}
+        settingUi={<ToggleSwitch checked={autoHideUi} onChange={onAutoHideChange} />}
       />
       {allowSettingUiFrameworkVersion && <SettingsItem title={useNewUiTitle.current} description={useNewUiDescription.current}
         settingUi={<ToggleSwitch checked={UiFramework.uiVersion === "2"} onChange={onToggleFrameworkVersion} />}
       />}
       {UiFramework.uiVersion === "2" && <>
         <SettingsItem title={dragInteractionTitle.current} description={dragInteractionDescription.current}
-          settingUi={<ToggleSwitch checked={UiFramework.useDragInteraction} onChange={onToggleDragInteraction} />}
+          settingUi={<ToggleSwitch checked={useDragInteraction} onChange={onToggleDragInteraction} />}
         />
         <SettingsItem title={useProximityOpacityTitle.current} description={useProximityOpacityDescription.current}
-          settingUi={<ToggleSwitch checked={UiShowHideManager.useProximityOpacity} onChange={onUseProximityOpacityChange} />}
+          settingUi={<ToggleSwitch checked={useProximityOpacity} onChange={onUseProximityOpacityChange} />}
         />
         <SettingsItem title={snapWidgetOpacityTitle.current} description={snapWidgetOpacityDescription.current}
-          settingUi={<ToggleSwitch checked={UiShowHideManager.snapWidgetOpacity} onChange={onSnapWidgetOpacityChange} />}
+          settingUi={<ToggleSwitch checked={snapWidgetOpacity} onChange={onSnapWidgetOpacityChange} />}
         />
+        <SettingsItem title={widgetIconTitle.current} description={widgetIconDescription.current}
+          settingUi={<ToggleSwitch checked={showWidgetIcon} onChange={onWidgetIconChange} />}
+        />
+        <SettingsItem title={autoCollapseUnpinnedPanelsTitle.current} description={autoCollapseUnpinnedPanelsDescription.current}
+          settingUi={<ToggleSwitch checked={autoCollapseUnpinnedPanels} onChange={onAutoCollapseUnpinnedPanelsChange} />}
+        />
+        <SettingsItem title={animateToolSettingsTitle.current} description={animateToolSettingsDescription.current}
+          settingUi={<ToggleSwitch checked={animateToolSettings} onChange={OnToggleAnimateToolSettings} />}
+        />
+
       </>
       }
       <SettingsItem title={widgetOpacityTitle.current} description={widgetOpacityDescription.current}
         settingUi={
-          <Slider style={{ flex: "1" }} values={[UiFramework.getWidgetOpacity()]} step={0.05} onChange={onWidgetOpacityChange}
+          <Slider style={{ flex: "1" }} values={[widgetOpacity]} step={0.05} onChange={onWidgetOpacityChange}
             min={0.20} max={1.0} maxLabel="1.0" tickLabels={["", "", "", "", ""]} />
         }
       />
@@ -198,9 +237,9 @@ function SettingsItem(props: SettingsItemProps) {
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {
   return {
-    itemPriority, tabId: "uifw:UiSettings",
+    itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
+    icon: IconSpecUtilities.createWebComponentIconSpec(widowSettingsIconSvg),
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),

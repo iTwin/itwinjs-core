@@ -12,7 +12,7 @@ import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@itwin/appu
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { useUiVisibility } from "./BasicToolWidget";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
@@ -72,6 +72,7 @@ export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
   }, [props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
   const uiIsVisible = useUiVisibility();
+  // istanbul ignore next
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );

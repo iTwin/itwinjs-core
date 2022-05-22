@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, RenderMode } from "@itwin/core-common";
+import { ColorDef, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
+import { DecorateContext } from "../../../ViewContext";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator } from "../../TestDecorators";
+import { BoxDecorator, TestDecorator } from "../../TestDecorators";
 import { expectColors } from "../../ExpectColors";
+import { GraphicType } from "../../../core-frontend";
 
 describe("Pickable graphic", () => {
   let imodel: IModelConnection;
@@ -40,8 +42,7 @@ describe("Pickable graphic", () => {
 
   afterEach(() => {
     viewport.dispose();
-    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof BoxDecorator))
-      IModelApp.viewManager.dropDecorator(decorator);
+    TestDecorator.dropAll();
   });
 
   after(async () => {
@@ -65,16 +66,57 @@ describe("Pickable graphic", () => {
   }
 
   it("is pickable", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.red, { id: "0x123", locateOnly: false });
+    const dec = new BoxDecorator({ viewport, color: ColorDef.red, pickable: { id: "0x123", locateOnly: false } });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
   }).timeout(20000); // macOS is slow.
 
   it("optionally draws only for pick", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.blue, { id: "0x456", locateOnly: true });
+    const dec = new BoxDecorator({ viewport, color: ColorDef.blue, pickable: { id: "0x456", locateOnly: true } });
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
+  }).timeout(20000); // macOS is slow.
+
+  it("can contain multiple features", () => {
+    expect(viewport.viewFlags.constructions).to.be.false;
+    const bgColor = viewport.view.displayStyle.backgroundColor;
+
+    const leftId = "0x1";
+    const rightId = "0x2";
+    const leftColor = ColorDef.red;
+    const rightColor = ColorDef.blue;
+
+    class MultiFeatureDecorator extends TestDecorator {
+      public decorate(context: DecorateContext): void {
+        const builder = context.createGraphic({
+          type: GraphicType.Scene,
+          pickable: { id: leftId },
+        });
+
+        builder.setSymbology(leftColor, leftColor, 1);
+        builder.addShape([new Point3d(0, 0, 0), new Point3d(0, 0.5, 0), new Point3d(0.5, 0.5, 0), new Point3d(0, 0, 0)]);
+
+        builder.setSymbology(rightColor, rightColor, 1);
+        builder.activateFeature(new Feature(rightId, undefined, GeometryClass.Construction));
+        builder.addShape([new Point3d(0, 0, 0), new Point3d(0.5, 0, 0), new Point3d(0.5, 0.5, 0), new Point3d(0, 0, 0)]);
+
+        context.addDecorationFromBuilder(builder);
+      }
+    }
+
+    IModelApp.viewManager.addDecorator(new MultiFeatureDecorator());
+
+    expectColors(viewport, [leftColor, bgColor]);
+    expectIds([leftId]);
+
+    viewport.viewFlags = viewport.viewFlags.with("constructions", true);
+    expectColors(viewport, [leftColor, rightColor, bgColor]);
+    expectIds([leftId, rightId]);
+
+    viewport.setNeverDrawn(new Set<string>([leftId]));
+    expectColors(viewport, [rightColor, bgColor]);
+    expectIds([rightId]);
   }).timeout(20000); // macOS is slow.
 });

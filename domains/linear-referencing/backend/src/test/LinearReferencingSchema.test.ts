@@ -117,7 +117,7 @@ describe("LinearReferencing Domain", () => {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: physicalPartitionId },
     });
-    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel);
+    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel.toJSON());
     assert.isTrue(Id64.isValidId64(physicalModelId));
 
     // Create a Test Feature element

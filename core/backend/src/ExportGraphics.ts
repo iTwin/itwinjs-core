@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 import { GeometryClass } from "@itwin/core-common";
 
@@ -113,7 +113,7 @@ export interface ExportPartInstanceInfo {
   /** The base display properties when the [GeometryPart]($core-backend) was referenced. */
   displayProps: ExportPartDisplayInfo;
   /** A row-major storage 4x3 transform for this instance.
-   *  See export-gltf under test-apps in the iModel.js monorepo for a working reference.
+   *  See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
    */
   transform?: Float64Array;
 }
@@ -139,11 +139,19 @@ export interface ExportGraphicsOptions {
    * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($core-backend)
    */
   partInstanceArray?: ExportPartInstanceInfo[];
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry).
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -222,11 +230,19 @@ export interface ExportPartGraphicsOptions {
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
   onPartLineGraphics?: ExportPartLinesFunction;
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry)
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -278,12 +294,14 @@ export namespace ExportGraphics {
       polyface.data.point.pushXYZ(p[i], p[i + 1], p[i + 2]);
 
     const n: Float32Array = mesh.normals;
+    assert(undefined !== polyface.data.normal);
     for (let i = 0; i < n.length; i += 3)
-      polyface.data.normal!.pushXYZ(n[i], n[i + 1], n[i + 2]);
+      polyface.data.normal.pushXYZ(n[i], n[i + 1], n[i + 2]);
 
     const uv: Float32Array = mesh.params;
+    assert(undefined !== polyface.data.param);
     for (let i = 0; i < uv.length; i += 2)
-      polyface.data.param!.pushXY(uv[i], uv[i + 1]);
+      polyface.data.param.pushXY(uv[i], uv[i + 1]);
 
     const indices = mesh.indices;
     const addIndex = (idx: number) => {

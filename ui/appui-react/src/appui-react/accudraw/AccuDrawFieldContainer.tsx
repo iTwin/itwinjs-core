@@ -12,7 +12,7 @@ import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@itwin/core-react";
+import { CommonProps, IconSpec, Orientation, UiStateStorage } from "@itwin/core-react";
 import { getCSSColorFromDef } from "@itwin/imodel-components-react";
 
 import { AccuDrawInputField } from "./AccuDrawInputField";
@@ -20,16 +20,16 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawSetCompassModeEventArgs, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
-import angleIconSvg from "./angle.svg?sprite";
-import distanceIconSvg from "./distance.svg?sprite";
+import angleIconSvg from "./angle.svg";
+import distanceIconSvg from "./distance.svg";
 
 /** Properties for [[AccuDrawFieldContainer]] component
  * @beta */
 export interface AccuDrawFieldContainerProps extends CommonProps {
   /** Orientation of the fields */
   orientation: Orientation;
-  /** Optional parameter for persistent UI settings. Defaults to LocalSettingsStorage. */
-  uiSettingsStorage?: UiSettingsStorage;
+  /** Optional parameter for persistent UI settings. Defaults to LocalStateStorage. */
+  uiSettingsStorage?: UiStateStorage;
   /** @internal */
   showZOverride?: boolean;
 }
@@ -44,8 +44,8 @@ function determineShowZ(vp?: ScreenViewport): boolean {
 const defaultXLabel = "X";
 const defaultYLabel = "Y";
 const defaultZLabel = "Z";
-const defaultAngleIcon = IconSpecUtilities.createSvgIconSpec(angleIconSvg);
-const defaultDistanceIcon = IconSpecUtilities.createSvgIconSpec(distanceIconSvg);
+const defaultAngleIcon = IconSpecUtilities.createWebComponentIconSpec(angleIconSvg);
+const defaultDistanceIcon = IconSpecUtilities.createWebComponentIconSpec(distanceIconSvg);
 
 /** AccuDraw Ui Field Container displays [[AccuDrawInputField]] for each field
  * @beta */
@@ -231,12 +231,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       setDistanceIcon(settings && settings.distanceIcon !== undefined ? settings.distanceIcon : defaultDistanceIcon);
     };
 
-    if (FrameworkAccuDraw.uiSettings)
-      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+    if (FrameworkAccuDraw.uiStateStorage)
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiStateStorage);
 
     // istanbul ignore next
     const handleAccuDrawUiSettingsChanged = () => {
-      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiStateStorage);
     };
 
     return FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(handleAccuDrawUiSettingsChanged);

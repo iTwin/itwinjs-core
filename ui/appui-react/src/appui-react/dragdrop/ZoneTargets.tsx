@@ -15,9 +15,9 @@ import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
  * @internal
  */
 export interface ZoneTargetsProps extends CommonProps {
-  zoneId: WidgetZoneId;
-  dropTarget: ZoneTargetType | undefined;
-  targetChangeHandler: TargetChangeHandler;
+  zoneId: WidgetZoneId; // eslint-disable-line deprecation/deprecation
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
 }
 
 /** Zone Targets React component.
@@ -26,18 +26,20 @@ export interface ZoneTargetsProps extends CommonProps {
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public override render(): React.ReactNode {
     switch (this.props.dropTarget) {
-      case ZoneTargetType.Merge:
+      case ZoneTargetType.Merge: // eslint-disable-line deprecation/deprecation
         return (
           <MergeTarget
             className={this.props.className}
+            // eslint-disable-next-line deprecation/deprecation
             onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, ZoneTargetType.Merge, isTargeted)}
             style={this.props.style}
           />
         );
-      case ZoneTargetType.Back:
+      case ZoneTargetType.Back: // eslint-disable-line deprecation/deprecation
         return (
           <BackTarget
             className={this.props.className}
+            // eslint-disable-next-line deprecation/deprecation
             onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, ZoneTargetType.Back, isTargeted)}
             style={this.props.style}
             zoneIndex={this.props.zoneId}

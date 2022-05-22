@@ -26,9 +26,9 @@ The arc constructions are full 3D -- each arc is in the plane of its two line se
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/curve/CurveFactory.test.ts
+- source: core/geometry/src/test/curve/CurveFactory.test.ts
 - test name: "FilletsInLinestring"
-- output: imodeljs/core/geometry/src/test/output/CurveFactory/FilletsInLineString.imjs
+- output: core/geometry/src/test/output/CurveFactory/FilletsInLineString.imjs
 
 ## `CurveFactory.createPipeSegments(centerline, radius)`
 
@@ -50,6 +50,6 @@ The pipe creation according to centerline segment is
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/curve/PipePath.test.ts
+- source: core/geometry/src/test/curve/PipePath.test.ts
 - test name: "KeyPointPath"
-- output: imodeljs/core/geometry/src/test/output/PipePath/KeyPointPath.imjs
+- output: core/geometry/src/test/output/PipePath/KeyPointPath.imjs

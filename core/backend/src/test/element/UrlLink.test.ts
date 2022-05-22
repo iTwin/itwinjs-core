@@ -27,12 +27,12 @@ describe("UrlLink tests", () => {
     };
 
     const linkElement = imodel.elements.createElement(linkProps);
-    const id = imodel.elements.insertElement(linkElement);
+    const id = imodel.elements.insertElement(linkElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert worked");
     imodel.saveChanges();
 
     // verify inserted element properties
-    const actualValue = imodel.elements.getElementProps<RepositoryLink>(id);
+    const actualValue = imodel.elements.getElement<RepositoryLink>(id);
     assert.equal(actualValue.url, linkProps.url, "Repository link url not set as expected");
     assert.equal(actualValue.description, linkProps.description, "Repository link description not set as expected");
     assert.equal(actualValue.repositoryGuid, linkProps.repositoryGuid, "Repository link guid not set as expected.");

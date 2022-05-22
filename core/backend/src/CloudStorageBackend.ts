@@ -14,10 +14,10 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
 /** @beta */
-export interface CloudStorageServiceCredentials {
-  service: "azure" | "alicloud" | "external";
+export interface AzureBlobStorageCredentials {
   account: string;
   accessKey: string;
+  baseUrl?: string;
 }
 
 /** @beta */
@@ -45,18 +45,21 @@ export abstract class CloudStorageService {
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
   private _credential: Azure.StorageSharedKeyCredential;
+  private _baseUrl: string;
 
-  public constructor(credentials: CloudStorageServiceCredentials) {
+  public constructor(credentials: AzureBlobStorageCredentials) {
     super();
 
-    if (credentials.service !== "azure" || !credentials.account || !credentials.accessKey) {
+    if (!credentials.account || !credentials.accessKey) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
+
+    this._baseUrl = credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`;
 
     this._credential = new Azure.StorageSharedKeyCredential(credentials.account, credentials.accessKey);
     const options: Azure.StoragePipelineOptions = {};
     const pipeline = Azure.newPipeline(this._credential, options);
-    this._service = new Azure.BlobServiceClient(`https://${credentials.account}.blob.core.windows.net`, pipeline);
+    this._service = new Azure.BlobServiceClient(this._baseUrl, pipeline);
   }
 
   public readonly id = CloudStorageProvider.Azure;
@@ -73,15 +76,18 @@ export class AzureBlobStorage extends CloudStorageService {
     }
 
     const token = Azure.generateBlobSASQueryParameters(policy, this._credential);
+    const url = new URL(this._baseUrl);
+    url.pathname = `${url.pathname.replace(/\/*$/, "")}/${id.name}`;
+    url.search = token.toString();
 
-    const url: CloudStorageContainerUrl = {
+    const urlObject: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
       valid: 0,
       expires: expiry.getTime(),
-      url: `https://${this._credential.accountName}.blob.core.windows.net/${id.name}?${token.toString()}`,
+      url: url.toString(),
     };
 
-    return url;
+    return urlObject;
   }
 
   public async ensureContainer(name: string): Promise<void> {
@@ -130,7 +136,10 @@ export class AzureBlobStorage extends CloudStorageService {
       let source: Readable;
 
       if (options && options.contentEncoding === "gzip") {
-        blobOptions.blobHTTPHeaders!.blobContentEncoding = options.contentEncoding;
+        if (undefined === blobOptions.blobHTTPHeaders)
+          throw new IModelError(BentleyStatus.ERROR, "Blob HTTP headers object is undefined.");
+
+        blobOptions.blobHTTPHeaders.blobContentEncoding = options.contentEncoding;
         const compressor = zlib.createGzip();
         source = dataStream.pipe(compressor);
       } else {
@@ -170,7 +179,7 @@ export class CloudStorageTileUploader {
 
       const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
       const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options, metadata);
+      await IModelHost.tileCacheService?.upload(containerKey, resourceKey, content, options, metadata);
       perfLogger.dispose();
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));

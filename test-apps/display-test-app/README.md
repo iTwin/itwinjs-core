@@ -13,7 +13,7 @@ The application contained within this directory provides a test environment for 
   * Assets (images, icons, fonts)
 * frontend/
   * The main application body of code that runs on initialization of the Electron app, as well setting up event handlers for parts of the UI
-  * Extended API functionality build on top of the imodeljs-core frontend dependency
+  * Extended API functionality build on top of the `@itwin/core-frontend` dependency
 * backend/
   * Specifications for initializing the Electron application, as well as event handlers for Electron events.
 
@@ -105,8 +105,8 @@ For the backend, restart the debugger config to pick up the changes.
 ## Dependencies
 
 * Installed dependencies for display-test-app may be found in the generated node_modules directory. Since display-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
-* Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in display-test-app. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
-* If dependencies have changed after pulling the most recent version of imodeljs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
+* Any changes made to itwinjs-core files outside of this directory will not immediately be reflected in display-test-app. The entire monorepo must be rebuilt in order for changes to take effect.
+* If dependencies have changed after pulling the most recent version of the repo, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
 
 ```cmd
 rush install -c
@@ -124,6 +124,8 @@ You can use these environment variables to alter the default behavior of various
   * The name of a view to open by default within an iModel.
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+* IMJS_STARTUP_MACRO
+  * If defined, run macro from specified path. If the file path contains no periods, a .txt extension will be appended.
 * IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * IMJS_NO_DEV_TOOLS
@@ -135,7 +137,9 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * IMJS_DISABLE_INSTANCING
-  * If defined, instanced geometry will not be generated for tiles.
+  * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_INDEXED_EDGES
+  * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
 * IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
 * IMJS_IGNORE_AREA_PATTERNS
@@ -193,7 +197,7 @@ You can use these environment variables to alter the default behavior of various
 
 ## Key-ins
 
-display-test-app has access to all key-ins defined in the imodeljs-frontend and frontend-devtools packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
+display-test-app has access to all key-ins defined in the `@itwin/core-frontend` and `@itwin/frontend-devtools` packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
 
 * `win resize` width height *windowId* - resize the content area of the specified of focused window to specified width and height.
 * `win focus` windowId - give focus to the specified window.
@@ -202,15 +206,22 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta version compare` - emulate version comparison.
-* `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
 * `dta signin` - sign in to use Bentley services like iModelHub and reality data.
+* `dta macro` - runs the macro file specified in the argument.  If file extension not specified, .txt is assumed.  Each line in the file is executed as a keyin command and run sequentially.
 * `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `c`: compile all shaders – compiles all shaders before output, otherwise only shaders that have been compiled by the time it is run will output.
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
     * `f` or `v`: output only fragment or vertex shaders, respectively.
@@ -218,6 +229,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
     * `u` or `n`: output only used or not-used shaders, respectively.
 * `dta drawing aid points` - start tool for testing AccuSnap.
 * `dta refresh tiles` *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* `dta exit` - Shuts down the backend server and exits the app.
 * `dta shutdown` - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * `dta shadow tiles` - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
 * `dta detach views` - If the selected viewport is displaying a sheet view, remove all view attachments from it.
@@ -231,6 +243,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
 * `dta aspect skew decorator` *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
+* `dta drape terrain` - Start a tool that demonstrates draping a linestring to either a reality mesh model or background map with terrain applied. The model is first selected and subsequent points define the linestring.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.
@@ -238,7 +251,12 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
 * `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
-* `dta viewport sync *viewportId1* *viewportId2* - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
+* `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
+* `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
+* `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+* `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+  * `elementId=Id` The element for which to obtain graphics
+  * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 
 ## Editing
 
@@ -255,9 +273,17 @@ Using an editing scope is optional, but outside of a scope, the viewport's graph
 
 ### Editing key-ins
 
-display-test-app has access to all key-ins defined in the imodeljs-editor-frontend package. It also provides the following additional key-ins.
+display-test-app has access to all key-ins defined in the `@itwin/editor-frontend` package. It also provides the following additional key-ins.
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+
+## Running in iOS
+
+The steps to run the display test app in an iOS app:
+
+1. Run `npm run build:ios`
+2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
+3. Start the XCode Project to an iPad

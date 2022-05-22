@@ -2,14 +2,14 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "3.0.0-dev.99",
+  "version": "3.3.0-dev.9",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
   "main": "bin/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2ts"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/ecschema2ts"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
@@ -27,7 +27,7 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "iModelJs",
+    "iTwin.js",
     "EC",
     "BIS"
   ],
@@ -42,10 +42,10 @@
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
     "chai-string": "^1.5.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",

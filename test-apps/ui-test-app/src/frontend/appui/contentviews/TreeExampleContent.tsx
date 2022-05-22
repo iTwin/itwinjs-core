@@ -69,7 +69,7 @@ function TreeExampleContent() {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
       <div style={{ marginBottom: "4px", width: "200px" }}>
-        <Select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode" options={selectionModes} />
+        <Select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode" options={selectionModes} size="small" />
       </div>
       <div ref={ref} style={{ flex: "1", height: "calc(100% - 22px)", width: "100%" }}>
         {width && height ? <ControlledTree

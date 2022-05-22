@@ -62,6 +62,7 @@ describe("SyncUiEventDispatcher", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventId = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventId = args.eventIds.has("event1");
@@ -80,6 +81,7 @@ describe("SyncUiEventDispatcher", () => {
     let callback1Called = false;
     let callback1HasExpectedEventId = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent1 = (args: SyncUiEventArgs): void => {
       callback1Called = true;
       callback1HasExpectedEventId = args.eventIds.has("event1");
@@ -102,6 +104,7 @@ describe("SyncUiEventDispatcher", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2");
@@ -125,6 +128,7 @@ describe("SyncUiEventDispatcher", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2") && args.eventIds.has("event3");

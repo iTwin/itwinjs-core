@@ -6,12 +6,12 @@
  * @module SyncUi
  */
 
+import { UiEventDispatcher, UiSyncEvent, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@itwin/core-frontend";
 import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
-import { UiEvent } from "@itwin/core-react";
 import { Backstage } from "../backstage/Backstage";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -73,34 +73,27 @@ export enum SyncUiEventId {
   SettingsProvidersChanged = "settingsproviderschanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
-  /** The current object the reads and write UI Settings has changed. */
-  UiSettingsChanged = "uisettingschanged",
+  /** The current object the reads and write UI State has changed. */
+  UiStateStorageChanged = "uistatestoragechanged",
   ShowHideManagerSettingChange = "show-hide-setting-change",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public
+ * @public @deprecated use UiSyncEventArgs in appui-abstract instead
  */
-export interface SyncUiEventArgs {
-  eventIds: Set<string>;
-}
+export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public
+ * @public @deprecated use UiSyncEvent in appui-abstract instead
  */
-export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
+export type SyncUiEvent = UiSyncEvent;
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
  */
 export class SyncUiEventDispatcher {
-  private static _syncEventTimerId: number | undefined;
-  private static _eventIds: Set<string>;
-  private static _eventIdAdded = false;
-  private static _syncUiEvent: SyncUiEvent;
-  private static _timeoutPeriod = 100;
-  private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
+  private static _uiEventDispatcher = new UiEventDispatcher();
   private static _unregisterListenerFunc?: () => void;
   private static _unregisterListenerFuncs: Array<() => void> = [];
   private static initialized = false;
@@ -108,120 +101,51 @@ export class SyncUiEventDispatcher {
   /** @internal - used for testing only */
   /* istanbul ignore next */
   public static setTimeoutPeriod(period: number): void {
-    SyncUiEventDispatcher._timeoutPeriod = period;
-    SyncUiEventDispatcher._secondaryTimeoutPeriod = Math.floor(SyncUiEventDispatcher._timeoutPeriod / 2);
-    if (SyncUiEventDispatcher._secondaryTimeoutPeriod < 1)
-      SyncUiEventDispatcher._secondaryTimeoutPeriod = 1;
-    if (SyncUiEventDispatcher._syncEventTimerId) {
-      window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
-      SyncUiEventDispatcher._syncEventTimerId = undefined;
-    }
-    if (SyncUiEventDispatcher._eventIds)
-      SyncUiEventDispatcher._eventIds.clear();
-
-    SyncUiEventDispatcher._eventIdAdded = false;
+    SyncUiEventDispatcher._uiEventDispatcher.setTimeoutPeriod(period);
   }
 
   /** Return set of event ids that will be sent to listeners/. */
   public static get syncEventIds(): Set<string> {
-    if (!SyncUiEventDispatcher._eventIds)
-      SyncUiEventDispatcher._eventIds = new Set<string>();
-
-    return SyncUiEventDispatcher._eventIds;
+    return SyncUiEventDispatcher._uiEventDispatcher.syncEventIds;
   }
 
   /** Return SyncUiEvent so callers can register an event callback. */
+  // eslint-disable-next-line deprecation/deprecation
   public static get onSyncUiEvent(): SyncUiEvent {
-    if (!SyncUiEventDispatcher._syncUiEvent)
-      SyncUiEventDispatcher._syncUiEvent = new SyncUiEvent();
-
-    return SyncUiEventDispatcher._syncUiEvent;
+    return SyncUiEventDispatcher._uiEventDispatcher.onSyncUiEvent;
   }
 
   /** Immediately trigger sync event processing. */
   public static dispatchImmediateSyncUiEvent(eventId: string): void {
-    const eventIds = new Set<string>();
-    eventIds.add(eventId.toLowerCase());
-    SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchImmediateSyncUiEvent(eventId);
   }
 
   /** Save eventId in Set for processing. */
   public static dispatchSyncUiEvent(eventId: string): void {
-    if (0 === SyncUiEventDispatcher._timeoutPeriod) {
-      Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvent] not processed because _timeoutPeriod=0`);
+    if (0 === SyncUiEventDispatcher._uiEventDispatcher.timeoutPeriod) {
+      Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvent] not processed because timeoutPeriod=0`);
       return;
     }
-
-    SyncUiEventDispatcher.syncEventIds.add(eventId.toLowerCase());
-    if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
-      SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
-    } else {
-      SyncUiEventDispatcher._eventIdAdded = true;
-    }
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(eventId);
   }
 
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
     // istanbul ignore if
-    if (0 === SyncUiEventDispatcher._timeoutPeriod) {
+    if (0 === SyncUiEventDispatcher._uiEventDispatcher.timeoutPeriod) {
       Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvents] not processed because _timeoutPeriod=0`);
-      return;
     }
-
-    eventIds.forEach((id) => SyncUiEventDispatcher.syncEventIds.add(id.toLowerCase()));
-    // istanbul ignore else
-    if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
-      SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
-    } else {
-      SyncUiEventDispatcher._eventIdAdded = true;
-    }
-  }
-
-  /** Trigger registered event processing when timer has expired and no addition eventId are added. */
-  private static checkForAdditionalIds() {
-    /* istanbul ignore else */
-    if (!SyncUiEventDispatcher._eventIdAdded) {
-      // istanbul ignore else
-      if (SyncUiEventDispatcher._syncEventTimerId) {
-        window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
-        SyncUiEventDispatcher._syncEventTimerId = undefined;
-      } else {
-        Logger.logError(UiFramework.loggerCategory(this), "SyncUiEventDispatcher.checkForAdditionalIds - expected _syncEventTimerId to be defined");
-      }
-      SyncUiEventDispatcher._eventIdAdded = false;
-      // istanbul ignore else
-      if (SyncUiEventDispatcher.syncEventIds.size > 0) {
-        const eventIds = new Set<string>();
-        SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));
-        SyncUiEventDispatcher._eventIds.clear();
-        SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
-      }
-      return;
-    }
-
-    // istanbul ignore next
-    if (SyncUiEventDispatcher._syncEventTimerId) {
-      window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
-      SyncUiEventDispatcher._syncEventTimerId = undefined;
-    }
-    // istanbul ignore next
-    SyncUiEventDispatcher._eventIdAdded = false;
-    // if events have been added before the initial timer expired wait half that time to see if events are still being added.
-    // istanbul ignore next
-    SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._secondaryTimeoutPeriod);
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvents(eventIds);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
-    /* istanbul ignore else */
-    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
-      return true;
-    return false;
+    return SyncUiEventDispatcher._uiEventDispatcher.hasEventOfInterest(eventIds, idsOfInterest);
   }
 
   // istanbul ignore next
   private static _dispatchViewChange() {
-    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ViewStateChanged);
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ViewStateChanged);
   }
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
@@ -234,53 +158,53 @@ export class SyncUiEventDispatcher {
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageReadyEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onToolActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
     }));
 
     this._unregisterListenerFuncs.push(FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     }));
 
     this._unregisterListenerFuncs.push(Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     }));
 
     this._unregisterListenerFuncs.push(WorkflowManager.onTaskActivatedEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated); // eslint-disable-line deprecation/deprecation
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated); // eslint-disable-line deprecation/deprecation
     }));
 
     this._unregisterListenerFuncs.push(WorkflowManager.onWorkflowActivatedEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated); // eslint-disable-line deprecation/deprecation
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated); // eslint-disable-line deprecation/deprecation
     }));
 
     this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
+      SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     }));
 
     // istanbul ignore else
     if (IModelApp && IModelApp.viewManager) {
       this._unregisterListenerFuncs.push(IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
-        SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
+        SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
         // if this is the first view being opened up start the default tool so tool admin is happy.
         if (undefined === args.previous) {
@@ -300,7 +224,7 @@ export class SyncUiEventDispatcher {
   }
 
   private static selectionChangedHandler(_ev: SelectionSetEvent) {
-    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SelectionSetChanged);
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SelectionSetChanged);
   }
 
   /** This should be called by IModelApp when the active IModelConnection is closed. */

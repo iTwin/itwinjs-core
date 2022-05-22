@@ -45,7 +45,7 @@ Additional rules follow from them:
 
 - An app must be _in_ a channel before attempting to lock the channel root or modify anything in it.
 - All changes to a given channel must be pushed before another channel can be changed.
-- A [ChangeSet]($imodelhub-client) may contain changes for only a single channel.
+- A [Changeset](../Glossary.md#changeset) may contain changes for only a single channel.
 
 A [ChannelConstraintError]($backend) is thrown when an app breaks one of these rules. That happens most often when an app is "in" one channel and tries to write to another. The error in these cases look like this:
 

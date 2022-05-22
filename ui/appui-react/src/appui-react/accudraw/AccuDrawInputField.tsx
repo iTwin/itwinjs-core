@@ -57,7 +57,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
     const [needValueChanged, setNeedValueChanged] = React.useState(false);
     const [needSelection, setNeedSelection] = React.useState(false);
     const [isFocusField, setIsFocusField] = React.useState(false);
-    const inputElementRef = React.useRef<HTMLInputElement>();
+    const inputElementRef = React.useRef<HTMLInputElement>(null);
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
     React.useEffect(() => {
@@ -167,7 +167,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
         </label>
         <Input {...inputProps} ref={refs} id={id} value={stringValue}
           className={inputClassNames} style={style} autoComplete="off"
-          onChange={handleChange} onKeyDown={handleKeyDown} />
+          onChange={handleChange} onKeyDown={handleKeyDown} size="small" />
         <span className="uifw-accudraw-lock" >
           {isLocked && <Icon iconSpec="icon-lock" />}
         </span>

@@ -49,5 +49,16 @@ button.components-colorpicker-popup-button {
 }
 
 .components-colorpicker-popup-panel-padding {
-  padding: 6px;
+  padding: 3px 6px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  button.core-dialog-close {
+    cursor: pointer;
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--buic-foreground-body);
+  }
 }

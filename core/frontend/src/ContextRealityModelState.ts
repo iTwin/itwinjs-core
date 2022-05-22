@@ -20,6 +20,7 @@ import { createOrbitGtTileTreeReference, createRealityTileTreeReference, Reality
  * @see [[DisplayStyleState.contextRealityModelStates]].
  * @see [[DisplayStyleState.attachRealityModel]].
  * @public
+ * @extensions
  */
 export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
@@ -34,7 +35,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     if (undefined === props.orbitGtBlob) {
-      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl);
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
     } else {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }

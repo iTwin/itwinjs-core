@@ -12,7 +12,7 @@ import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId } from "./Zones";
 
 /** Widget properties used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export interface WidgetManagerProps {
   readonly horizontalAnchor: HorizontalAnchor;
@@ -22,7 +22,7 @@ export interface WidgetManagerProps {
 }
 
 /** Available modes of tool settings widget.
- * @beta
+ * @internal
  */
 export enum ToolSettingsWidgetMode {
   Tab,
@@ -30,14 +30,14 @@ export enum ToolSettingsWidgetMode {
 }
 
 /** Tool settings widget properties used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export interface ToolSettingsWidgetManagerProps extends WidgetManagerProps {
   readonly mode: ToolSettingsWidgetMode;
 }
 
 /** Dragged widget properties used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export interface DraggedWidgetManagerProps {
   readonly id: WidgetZoneId;

@@ -10,14 +10,14 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
-import { BeEvent, IDisposable } from "@itwin/core-bentley";
-import { NodeKey } from "@itwin/presentation-common";
-import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@itwin/presentation-components";
 import {
   CheckBoxInfo, CheckboxStateChange, toRxjsObservable, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@itwin/components-react";
+import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { CheckBoxState, isPromiseLike } from "@itwin/core-react";
+import { NodeKey } from "@itwin/presentation-common";
+import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@itwin/presentation-components";
 
 /**
  * Data structure that describes instance visibility status.
@@ -169,14 +169,12 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     if (affectedNodes.length === 0)
       return nodeStates;
 
-    for (const nodeId of affectedNodes) {
+    await Promise.all(affectedNodes.map(async (nodeId) => {
       const node = this.modelSource.getModel().getNode(nodeId);
-      // istanbul ignore if
-      if (!node)
-        continue;
-
-      nodeStates.set(nodeId, await this.getNodeCheckBoxInfo(node, visibilityStatus));
-    }
+      // istanbul ignore else
+      if (node)
+        nodeStates.set(nodeId, await this.getNodeCheckBoxInfo(node, visibilityStatus));
+    }));
     return nodeStates;
   }
 

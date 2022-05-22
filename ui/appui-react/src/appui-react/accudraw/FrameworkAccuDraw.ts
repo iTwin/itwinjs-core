@@ -12,7 +12,7 @@ import {
   NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
@@ -142,18 +142,19 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
   public static get displayNotifications(): boolean { return FrameworkAccuDraw._displayNotifications; }
   public static set displayNotifications(v: boolean) {
     FrameworkAccuDraw._displayNotifications = v;
-    void UiFramework.getUiSettingsStorage().saveSetting(this._settingsNamespace, this._notificationsKey, v);
+    UiFramework.getUiStateStorage().saveSetting(this._settingsNamespace, this._notificationsKey, v); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  public async loadUserSettings(storage: UiSettings): Promise<void> {
+  /* @internal */
+  public async loadUserSettings(storage: UiStateStorage): Promise<void> {
     const result = await storage.getSetting(FrameworkAccuDraw._settingsNamespace, FrameworkAccuDraw._notificationsKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       FrameworkAccuDraw._displayNotifications = result.setting;
   }
 
   /** AccuDraw User Interface settings */
-  public static get uiSettings(): AccuDrawUiSettings | undefined { return FrameworkAccuDraw._uiSettings; }
-  public static set uiSettings(v: AccuDrawUiSettings | undefined) {
+  public static get uiStateStorage(): AccuDrawUiSettings | undefined { return FrameworkAccuDraw._uiSettings; }
+  public static set uiStateStorage(v: AccuDrawUiSettings | undefined) {
     FrameworkAccuDraw._uiSettings = v;
     FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.emit({});
   }

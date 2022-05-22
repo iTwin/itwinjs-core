@@ -12,7 +12,7 @@ import * as React from "react";
 import { ActionButton, RelativePosition } from "@itwin/appui-abstract";
 import { Popup, useRefState } from "@itwin/core-react";
 import { ToolbarButtonItemProps } from "./Item";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { useToolbarPopupAutoHideContext, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
 
 /** @public */
@@ -49,6 +49,9 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
   hideIndicator?: boolean;
   /** Panel of the toolbar. */
   panel?: React.ReactNode;
+  /** If true the popup panel is mounted once and unmounted when button is unmounted. If false the
+   * content node is unmounted each time the popup is closed. */
+  keepContentsMounted?: boolean;
 }
 
 /** Popup toolbar item that displays a panel
@@ -94,7 +97,10 @@ export function PopupItem(props: PopupItemProps) {
     }}>
       <button
         data-item-id={props.itemId}
-        data-item-type="tool-button"
+        data-item-type="tool-button-popup"
+        data-item-group-priority={props.groupPriority}
+        data-item-priority={props.itemPriority}
+        data-item-provider-id={props.providerId}
         ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={onButtonClick}
@@ -118,6 +124,7 @@ export function PopupItem(props: PopupItemProps) {
         onClose={handleClose}
         position={toToolbarPopupRelativePosition(expandsToDirection, panelAlignment)}
         target={target}
+        keepContentsMounted={props.keepContentsMounted}
       >
         {panel}
       </PopupItemPopup>
@@ -132,12 +139,18 @@ interface PopupItemPopupProps {
   onClose(): void;
   position: RelativePosition;
   target?: HTMLElement;
+  keepContentsMounted?: boolean;
 }
 
 /** @internal */
 export function PopupItemPopup(props: PopupItemPopupProps) {
+  const isHidden = useToolbarPopupAutoHideContext();
+  const className = classnames(
+    "components-toolbar-popupItem_popupItemPopup",
+    isHidden && "nz-hidden");
+
   return <Popup
-    className="components-toolbar-popupItem_popupItemPopup"
+    className={className}
     offset={0}
     showShadow={false}
     {...props}

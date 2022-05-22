@@ -24,6 +24,7 @@ exports[`Calculator renders correctly 1`] = `
   >
     <ForwardRef
       readOnly={true}
+      size="small"
       value="0"
     />
   </div>

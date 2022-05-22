@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Form
  */
@@ -13,7 +14,7 @@ import { FieldDef, FormContext, FormContextState } from "./Form";
 // cSpell:ignore multilinetextbox
 
 /** Properties used to create a [[Field]] in a [[Form]]
- * @public
+ * @public @deprecated
  */
 export interface FieldProps extends FieldDef {
   /* The unique field name */
@@ -23,7 +24,7 @@ export interface FieldProps extends FieldDef {
 type FieldDefOptions = FieldDef["options"];
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
- * @public
+ * @public @deprecated
  */
 export class Field extends React.Component<FieldProps> {
   constructor(props: FieldProps) {
@@ -61,6 +62,7 @@ export class Field extends React.Component<FieldProps> {
                 value={context!.values[this.props.id]}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
                 className="core-form-input"
+                size="small"
               />
             )}
             {this.props.editor!.toLowerCase() === "checkbox" && (
@@ -87,6 +89,7 @@ export class Field extends React.Component<FieldProps> {
                 onChange={(newValue: any) => context!.setValues({ [this.props.id]: newValue })}
                 options={selectOptions}
                 className="core-form-select"
+                size="small"
               />
             )}
           </div>

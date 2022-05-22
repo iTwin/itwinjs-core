@@ -39,6 +39,7 @@ beta;BaseLayerSettings
 beta;BaseMapLayerProps 
 beta;BaseMapLayerSettings 
 public;BaseReaderOptions
+public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 internal;BentleyCloudRpcManager 
@@ -111,15 +112,16 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
-public;ColorByName
+public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
+beta;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -136,6 +138,8 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
+internal;CustomViewState3dCreatorOptions
+internal;CustomViewState3dProps
 public;CutStyle
 public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
@@ -151,7 +155,9 @@ internal;DbResponse
 internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
+internal;DbValueFormat
 internal;DecorationGeometryProps
+beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
@@ -183,11 +189,14 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+internal;EdgeOptions
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 alpha;ElementGeometry
+alpha;ElementGeometryBuilderParams
+alpha;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -195,11 +204,11 @@ alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
 public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
-alpha;ElementGeometryUpdate
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
+public;ElementPlanarClipMaskArgs 
 public;ElementProps 
 public;EmphasizeElementsProps
 public;EmptyLocalization 
@@ -209,6 +218,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+public;Environment
+public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
 public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
@@ -216,7 +227,7 @@ beta;ExternalSourceAttachmentProps
 beta;ExternalSourceAttachmentRole
 beta;ExternalSourceProps 
 public;Feature
-public;FeatureAppearance 
+public;FeatureAppearance
 public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
@@ -232,6 +243,7 @@ public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
 public;FlatBufferGeometryStream
+public;FontId = number
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -255,8 +267,12 @@ public;GeodeticEllipsoid
 public;GeodeticEllipsoidProps
 public;GeodeticTransform 
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformPath 
+public;GeodeticTransformPathProps
 public;GeodeticTransformProps
 public;GeographicCRS 
+beta;GeographicCRSInterpretRequestProps
+beta;GeographicCRSInterpretResponseProps
 public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
@@ -284,14 +300,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
-internal;GltfHeader 
-internal;GltfMeshMode
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -300,11 +311,12 @@ public;GraphicsRequestProps
 public;GridFileDefinition 
 public;GridFileDefinitionProps
 public;GridFileDirection = "Direct" | "Inverse"
-public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN" | "OSTN02" | "OSTN15"
 public;GridFileTransform 
 public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
+public;GroundPlaneProperties = NonFunctionPropertiesOf
 public;GroundPlaneProps
 public;Helmert2DWithZOffset 
 public;Helmert2DWithZOffsetProps
@@ -323,6 +335,8 @@ public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
+internal;HydrateViewStateRequestProps
+internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
 public;ImageBuffer
 public;ImageBufferFormat
@@ -330,6 +344,8 @@ public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
+beta;ImageMapLayerProps 
+beta;ImageMapLayerSettings 
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -370,6 +386,7 @@ internal;class IpcWebSocket
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
 internal;IpcWebSocketMessage
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
@@ -394,14 +411,16 @@ public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
-beta;MapLayerProps
-beta;MapLayerSettings
+beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+beta;class MapLayerSettings
 beta;MapSubLayerProps
 beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 public;MassPropertiesOperation
+public;MassPropertiesPerCandidateRequestProps
+public;MassPropertiesPerCandidateResponseProps 
 public;MassPropertiesRequestProps
 public;MassPropertiesResponseProps
 public;MaterialProps
@@ -417,11 +436,13 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+beta;ModelMapLayerProps 
+beta;ModelMapLayerSettings 
+public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -456,9 +477,15 @@ public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
+public;OverrideElementAppearanceOptions 
+public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions
+public;OverrideFeatureAppearanceOptions
+public;OverrideModelAppearanceOptions 
+public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
-internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
+internal;ParsedTileTreeIdAndContentId
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
 public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 
@@ -488,6 +515,7 @@ public;PositionalVectorTransform
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
+public;PriorityPlanarClipMaskArgs 
 beta;ProfileOptions
 public;Projection 
 public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
@@ -514,14 +542,19 @@ beta;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
 beta;QueryRowProxy
+beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
-alpha;RealityDataFormat
-alpha;RealityDataProvider
-alpha;RealityDataSourceKey
-alpha;RealityDataSourceProps
+beta;RealityData
+beta;RealityDataAccess
+beta;RealityDataFormat
+beta;RealityDataFormat
+beta;RealityDataProvider
+beta;RealityDataSourceKey
+beta;RealityDataSourceKey
+beta;RealityDataSourceProps
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -561,6 +594,7 @@ internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
 internal;RpcInvocation
+internal;RpcManagedStatus
 internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
@@ -576,6 +610,7 @@ public;RpcPendingResponse
 internal;class RpcProtocol
 public;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcProtocolVersion
 internal;RpcPushChannel
 internal;class RpcPushConnection
 internal;RpcPushMessageListener
@@ -617,10 +652,17 @@ beta;SheetBorderTemplateProps
 public;SheetProps 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
-public;SkyBoxImageProps
+public;SkyBox
+public;SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps |
 public;SkyBoxImageType
 public;SkyBoxProps
+public;SkyCube 
+public;SkyCubeImageProps
 public;SkyCubeProps
+public;SkyGradient
+public;SkyGradientProperties = NonFunctionPropertiesOf
+public;SkySphere 
+public;SkySphereImageProps
 internal;SnapRequestProps
 internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
@@ -644,7 +686,9 @@ beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride
+public;SubCategoryPlanarClipMaskArgs 
 public;SubCategoryProps 
+internal;SubCategoryResultRow
 public;SubjectProps 
 beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
@@ -658,12 +702,14 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData
+public;TextureImageSpec = Id64String | string
 public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
 public;TextureMapUnits
 public;TextureProps 
+public;TextureTransparency
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps
@@ -703,6 +749,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void

@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
 
 /** Properties of [[Items]] component.
- * @alpha
+ * @internal
  */
 export interface ItemsProps extends CommonProps {
   /** Toolbar items. */
@@ -23,7 +23,7 @@ export interface ItemsProps extends CommonProps {
 }
 
 /** Toolbar items container. Used in [[Toolbar]] component.
- * @alpha
+ * @internal
  */
 export class Items extends React.PureComponent<ItemsProps> {
   public override render() {

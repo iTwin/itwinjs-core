@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Compiler, DefinePlugin } from "webpack";
 import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
-import { CopyAppAssetsPlugin, CopyBentleyStaticResourcesPlugin } from "./CopyBentleyStaticResourcesPlugin";
+import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
@@ -40,7 +40,7 @@ export class BackendDefaultsPlugin {
     // Add default plugins
     const plugins = [
       new CopyAppAssetsPlugin("assets"),
-      new CopyBentleyStaticResourcesPlugin(["assets"]), // eslint-disable-line deprecation/deprecation
+      new CopyStaticAssetsPlugin({ fromTo: "assets", useDirectoryName: true }),
       new CopyExternalsPlugin(),
       new DefinePlugin({
         "global.GENTLY": false,

@@ -12,7 +12,7 @@ export class TestUtils {
   public static async initialize() {
     if (!TestUtils._uiComponentsInitialized) {
 
-      await MapLayersUI.initialize(true);
+      await MapLayersUI.initialize();
       TestUtils._uiComponentsInitialized = true;
     }
   }

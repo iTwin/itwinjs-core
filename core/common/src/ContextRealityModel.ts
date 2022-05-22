@@ -7,9 +7,9 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -23,21 +23,21 @@ export interface OrbitGtBlobProps {
 }
 
 /** Identify the Reality Data service provider
- * @alpha
+ * @beta
  */
 export enum RealityDataProvider {
   /**
    * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
    * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
    * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * @see [[RealityDataSource.createKeyFromUrl]] that will try to detect provider from an URL
    */
   TilesetUrl = "TilesetUrl",
   /**
    * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
    * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
    * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * @see [[RealityDataSource.createKeyFromOrbitGtBlobProps]] that will try to detect provider from an URL
    */
   OrbitGtBlob = "OrbitGtBlob",
   /**
@@ -53,7 +53,7 @@ export enum RealityDataProvider {
 }
 
 /** Identify the Reality Data storage format
- * @alpha
+ * @beta
  */
 export enum RealityDataFormat {
   /**
@@ -66,10 +66,27 @@ export enum RealityDataFormat {
   OPC = "OPC",
 }
 
+/** Utility function for RealityDataFormat
+ * @beta
+ */
+export namespace RealityDataFormat {
+  /**
+   * Try to extract the RealityDataFormat from the url
+   * @param tilesetUrl the reality data attachment url
+   * @returns the extracted RealityDataFormat or ThreeDTile by default if not found
+   */
+  export function fromUrl(tilesetUrl: string): RealityDataFormat {
+    let format = RealityDataFormat.ThreeDTile;
+    if (tilesetUrl.includes(".opc"))
+      format = RealityDataFormat.OPC;
+    return format;
+  }
+}
+
 /**
- * Key used by RealityDataConnection to identify RealityDataSource and reality data format
- * This key identify one and only one reality data on the provider
- * @alpha
+ * Key used by RealityDataSource to identify provider and reality data format
+ * This key identify one and only one reality data source on the provider
+ * @beta
  */
 export interface RealityDataSourceKey {
   /**
@@ -87,10 +104,29 @@ export interface RealityDataSourceKey {
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
   iTwinId?: string;
 }
+/**
+ * RealityDataSourceKey utility functions
+ * @beta */
+export namespace RealityDataSourceKey {
+  /** Utility function to convert a RealityDataSourceKey into its string representation */
+  export function convertToString(rdSourceKey: RealityDataSourceKey): string {
+    return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
+  }
+  /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
+  export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
+    if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
+      return true; // ignore other properties for CesiumIonAsset, id is hidden
+    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id)) {
+      // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data
+      return true;
+    }
+    return false;
+  }
+}
 
 /** JSON representation of the reality data reference attachment properties.
- * @alpha
- */
+ * @beta
+*/
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
@@ -98,12 +134,11 @@ export interface RealityDataSourceProps {
 
 /** JSON representation of a [[ContextRealityModel]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelProps {
-  /**
-   * The reality data source key identify the reality data provider and storage format.
-   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
-   * @alpha
+  /** @see [[ContextRealityModel.rdSourceKey]].
+   * @beta
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -172,12 +207,14 @@ export namespace ContextRealityModelProps {
  * @public
  */
 export class ContextRealityModel {
+  /** @internal */
   protected readonly _props: ContextRealityModelProps;
   /**
    * The reality data source key identify the reality data provider and storage format.
-   * @alpha
+   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   * @beta
    */
-  public readonly  rdSourceKey?: RealityDataSourceKey;
+  public readonly rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -259,6 +296,7 @@ export class ContextRealityModel {
  * @see [[ContextRealityModels]].
  * @see [[DisplayStyleSettingsProps.contextRealityModels]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */

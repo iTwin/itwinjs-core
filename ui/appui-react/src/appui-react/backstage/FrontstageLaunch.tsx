@@ -26,6 +26,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
+ * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead.
  */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** id of the frontstage */
@@ -34,13 +35,15 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
 
 /** Backstage item that activates a Frontstage
  * @public
+ * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead.
  */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
   /** @internal */
   public override readonly state: Readonly<BackstageItemState>; // eslint-disable-line deprecation/deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
-
+  private _removeSyncUiEventListener?: () => void;
+  private _removeFrontstageActivatedEventListener?: () => void;
   constructor(props: FrontstageLaunchBackstageItemProps) {
     super(props);
 
@@ -56,16 +59,14 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
 
   public override componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
+      this._removeSyncUiEventListener = SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    this._removeFrontstageActivatedEventListener = FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    /* istanbul ignore else */
-    if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
-    FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
+    this._removeSyncUiEventListener && this._removeSyncUiEventListener();
+    this._removeFrontstageActivatedEventListener && this._removeFrontstageActivatedEventListener();
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {

@@ -1,4 +1,4 @@
-# imodeljs-test-app
+# Display Test App
 
 ## Prerequisites
 

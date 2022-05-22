@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 import { AccessToken, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { request, Response } from "@bentley/itwin-client";
+import { request, Response } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";

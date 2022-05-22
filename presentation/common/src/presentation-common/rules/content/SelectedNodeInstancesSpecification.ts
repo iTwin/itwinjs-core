@@ -9,11 +9,9 @@
 import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
- * Creates content for current selection.
+ * Returns content for selected (input) instances.
  *
- * **Note:** No data is returned for selected custom nodes.
- *
- * @see [More details]($docs/presentation/Content/SelectedNodeInstances.md)
+ * @see [Selected node instances specification reference documentation page]($docs/presentation/content/SelectedNodeInstances.md)
  * @public
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
@@ -21,28 +19,19 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
   specType: ContentSpecificationTypes.SelectedNodeInstances;
 
   /**
-   * Filter selected nodes by specified schema name. All schemas are
-   * accepted if not specified.
+   * Specifies ECSchema name which the input instances have to match for the specification to be used.
    *
    * @pattern ^[\w\d]+$
    */
   acceptableSchemaName?: string;
 
   /**
-   * Filter selected nodes by specified class names. All classes are
-   * accepted if not specified.
+   * Specifies a list of class names which the input instances have to match for the specification to be used.
    */
   acceptableClassNames?: string[];
 
   /**
-   * Should [[acceptableClassNames]] property be checked polymorphically. If true, all derived
-   * classes are accepted as well.
+   * Specifies whether derived classes of [[acceptableClassNames]] should be included in the content.
    */
   acceptablePolymorphically?: boolean;
-
-  /**
-   * Identifies whether we should ignore this specification if there is already an existing specification
-   * with higher `priority` that already provides content.
-   */
-  onlyIfNotHandled?: boolean;
 }

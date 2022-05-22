@@ -20,7 +20,7 @@ export class SQLiteDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.SQLiteDb {
-    return this._nativeDb!;
+    return this._nativeDb!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   constructor() {

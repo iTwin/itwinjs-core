@@ -38,7 +38,7 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./IModelSchemaLoader";
@@ -50,6 +50,9 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
+export * from "./workspace/Settings";
+export * from "./workspace/SettingsSpecRegistry";
+export * from "./workspace/Workspace";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -163,4 +166,12 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+/**
+ * @docs-group-description Workspace
+ * APIs for loading and using Settings and Workspace resources
+ */
+/**
+ * @docs-group-description ViewStateHydrater
+ * Class responsible for loading ViewStates.
  */

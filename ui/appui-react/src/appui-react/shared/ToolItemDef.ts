@@ -32,13 +32,13 @@ export class ToolItemDef extends ActionButtonItemDef {
   }
 
   /** Create a ToolItemDef that will run a registered tool. */
-  public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef {
+  public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, ...args: any[]): ToolItemDef {
     return new ToolItemDef({
       toolId: tool.toolId,
       iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : undefined,
       label: () => tool.flyover,
       description: () => tool.description,
-      execute: async () => IModelApp.tools.run(tool.toolId, args),
+      execute: async () => IModelApp.tools.run(tool.toolId, ...args),
     });
   }
 }

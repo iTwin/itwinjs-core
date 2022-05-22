@@ -16,4 +16,5 @@ export enum MessageSeverity {
   Warning = 3,
   Error = 4,
   Fatal = 5,
+  Success = 6,
 }

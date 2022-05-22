@@ -24,6 +24,7 @@ import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ContentDialogRenderer } from "../dialog/ContentDialogManager";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -68,7 +69,9 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       onMouseMove={handleMouseMove}
     >
       {props.appBackstage}
+      {/* eslint-disable-next-line deprecation/deprecation */}
       {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
+      <ContentDialogRenderer />
       <ModelessDialogRenderer />
       <ModalDialogRenderer />
       <ElementTooltip />

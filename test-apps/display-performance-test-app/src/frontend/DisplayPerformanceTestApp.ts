@@ -5,10 +5,11 @@
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -23,14 +24,19 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.tileAdmin = {
-      minimumSpatialTolerance: 0,
-      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
-    };
+    if (iModelApp.tileAdmin === undefined) {
+      iModelApp.tileAdmin = {
+        minimumSpatialTolerance: 0,
+        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+      };
+    } else {
+      iModelApp.tileAdmin.minimumSpatialTolerance = 0;
+      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+    }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
       BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
@@ -56,17 +62,16 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization itwinjs";
-
+async function createOidcClient(): Promise<ElectronRendererAuthorization | BrowserAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new NativeAppAuthorization();
-    await desktopClient.initialize(sessionProps);
+    const desktopClient = new ElectronRendererAuthorization();
     return desktopClient;
   } else {
-    const clientId = "imodeljs-spa-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} imodeljs-router`, responseType: "code" };
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
+    };
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
     return browserClient;
   }
@@ -81,24 +86,11 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient({
-    applicationId: IModelApp.applicationId,
-    applicationVersion: IModelApp.applicationVersion,
-    sessionId: IModelApp.sessionId,
-  });
+  const oidcClient = await createOidcClient();
+  await oidcClient.signIn();
 
   IModelApp.authorizationClient = oidcClient;
-  if ((await oidcClient.getAccessToken()) !== undefined)
-    return true;
-
-  const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onAccessTokenChanged.addListener((token) => {
-      resolve(token !== "");
-    });
-  });
-
-  await oidcClient.signIn();
-  return retPromise;
+  return (await oidcClient.getAccessToken()) !== "";
 }
 
 async function main() {

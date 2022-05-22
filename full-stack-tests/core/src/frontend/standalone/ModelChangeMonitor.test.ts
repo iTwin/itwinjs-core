@@ -10,12 +10,12 @@ import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
-if (ProcessDetector.isElectronAppFrontend) {
+if (!ProcessDetector.isMobileAppFrontend) {
   describe("Model change monitoring", () => {
     let imodel: BriefcaseConnection;
 
     before(async () => {
-      await TestUtility.startFrontend();
+      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 

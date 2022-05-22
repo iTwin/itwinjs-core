@@ -57,6 +57,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
         isExpanded={category.expand}
         onToggle={this._handleToggle}
         title={label}
+        size="small"
         {...props}
       >
         {category.expand && children}

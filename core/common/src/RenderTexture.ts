@@ -6,7 +6,15 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@itwin/core-bentley";
+import { Id64String, IDisposable } from "@itwin/core-bentley";
+
+/** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
+ * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.
+ * Otherwise, it is interpreted as a Url resolving to an HTMLImageElement.
+ * @see [[SkySphereImageProps.texture]] and [[SkyCubeImageProps]].
+ * @public
+ */
+export type TextureImageSpec = Id64String | string;
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].

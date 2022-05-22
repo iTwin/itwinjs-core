@@ -10,19 +10,19 @@ import { StagePanelType } from "../StagePanel";
 import { StagePanelsManager, StagePanelsManagerProps } from "./StagePanels";
 
 /** Properties used by [[NestedStagePanelsManager]].
- * @beta
+ * @internal
  */
 export interface NestedStagePanelsManagerProps {
   readonly panels: { readonly [id: string]: StagePanelsManagerProps };
 }
 
 /** Used to identify stage panels in [[NestedStagePanelsManagerProps]].
- * @beta
+ * @internal
  */
 export type NestedStagePanelsId<TProps extends NestedStagePanelsManagerProps> = Extract<keyof TProps["panels"], string | number>;
 
 /** Key used to identify stage panel in [[NestedStagePanelsManagerProps]].
- * @beta
+ * @internal
  */
 export interface NestedStagePanelKey<TProps extends NestedStagePanelsManagerProps> {
   readonly id: NestedStagePanelsId<TProps>;
@@ -30,7 +30,7 @@ export interface NestedStagePanelKey<TProps extends NestedStagePanelsManagerProp
 }
 
 /** Class used to manage [[NestedStagePanelsManagerProps]].
- * @beta
+ * @internal
  */
 export class NestedStagePanelsManager {
   private _managers?: Map<string | number, StagePanelsManager>;

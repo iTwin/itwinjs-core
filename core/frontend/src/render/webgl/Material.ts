@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
@@ -39,6 +39,7 @@ import { FloatRgb } from "./FloatRGBA";
  * @internal
  */
 export class Material extends RenderMaterial {
+  // eslint-disable-next-line deprecation/deprecation
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
@@ -50,6 +51,7 @@ export class Material extends RenderMaterial {
   public get overridesAlpha() { return this.rgba[3] >= 0; }
   public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
+  // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
     super(params);
 

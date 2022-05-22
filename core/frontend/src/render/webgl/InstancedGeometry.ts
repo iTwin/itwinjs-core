@@ -278,6 +278,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override get asSurface() { return this._repr.asSurface; }
   public override get asEdge() { return this._repr.asEdge; }
   public override get asSilhouette() { return this._repr.asSilhouette; }
+  public override get asIndexedEdge() { return this._repr.asIndexedEdge; }
 
   public get renderOrder() { return this._repr.renderOrder; }
   public override get isLitSurface() { return this._repr.isLitSurface; }
@@ -292,11 +293,12 @@ export class InstancedGeometry extends CachedGeometry {
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
   public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
-  public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
+  public override getPass(target: Target) { return this._repr.getPass(target); }
   public override wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
+  public override wantMixMonochromeColor(target: Target): boolean { return this._repr.wantMixMonochromeColor(target); }
 
   public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;

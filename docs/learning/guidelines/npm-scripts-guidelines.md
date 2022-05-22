@@ -1,10 +1,10 @@
-# Bentley npm Script Guidelines
+# Bentley npm Script Suggestions
 
-This document is intended to provide suggestions for writing your own package's npm scripts for things such as building, running tests, and adding code coverage. The imodeljs-related repositories have moved away from gulp and gulp plugins to favor a more direct approach of running tasks. This allows us to depend directly on various npm packages instead of relying on gulp "middle-man" plugins that may not see the same update frequency as the npm packages themselves. For examples of npm scripts in use, please look at the imodeljs repository.
+This document is intended to provide suggestions for writing your own package's npm scripts for things such as building, running tests, and adding code coverage. The iTwin.js-related repositories directly use [npm scripts](https://docs.npmjs.com/cli/v8/using-npm/scripts) rather than other tools such as gulp. This enables the scripts to be more direct and cut out the "middle-man" that may update more slowly.
 
-npm scripts are used by adding properties to the "scripts" object in a package's package.json file. These properties correspond to names that can be passed to the `npm run` command to execute the properties' values as shell commands. For more information on creating and running scripts with npm, [this article](https://www.keithcirkel.co.uk/how-to-use-npm-as-a-build-tool/) may be helpful to read.
+The build-tools package includes a set of config files for some of the recommended packages to ease the development process. This includes a config for Typescript and nyc. In addition, a custom mocha reporter is provided. More information about these scripts can be found in the build-tools [README](https://www.npmjs.com/package/@itwin/build-tools).
 
-The build-tools package includes a number of preconfigured node.js scripts to ease the development process. This includes scripts for testing, linting, and basic code coverage numbers. More information about these scripts can be found in the build-tools README.
+An ESLint Plugin, [@itwin/eslint-plugin](https://www.npmjs.com/package/@itwin/eslint-plugin), is provided with a recommended configuration.
 
 ## Building
 
@@ -26,9 +26,9 @@ Use rimraf as a cross-platform way to remove output folders (For example: rimraf
 
 Suggested Package:
 
-- [cpx](https://www.npmjs.com/package/cpx)
+- [cpx2](https://www.npmjs.com/package/cpx2)
 
-cpx is a cross-platform copy utility for copying globs of files from a source to a destination directory. Useful for copying around files such as test files or assets.
+cpx2 is a cross-platform copy utility for copying globs of files from a source to a destination directory. Useful for copying around files such as test files or assets.
 
 ## Testing
 

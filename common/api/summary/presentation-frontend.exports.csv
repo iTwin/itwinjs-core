@@ -1,12 +1,15 @@
 sep=;
 Release Tag;API Item
 internal;BrowserLocalFavoritePropertiesStorage 
-internal;buildPagedResponse: 
+internal;buildPagedArrayResponse: 
 alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
 alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
 public;DefaultFavoritePropertiesStorageTypes
+internal;DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties"
+internal;FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo"
+internal;FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties"
 public;FavoritePropertiesManager 
 public;FavoritePropertiesManagerProps
 public;FavoritePropertiesOrderInfo
@@ -21,6 +24,7 @@ public;IFavoritePropertiesStorage
 internal;IModelAppFavoritePropertiesStorage 
 alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
+internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
 public;ISelectionProvider
 internal;NodeIdentifier
 internal;NoopFavoritePropertiesStorage 

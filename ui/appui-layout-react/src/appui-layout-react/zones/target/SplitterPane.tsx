@@ -14,7 +14,7 @@ import { MergeTargetProps } from "./Merge";
 import { ZoneTarget } from "./Zone";
 
 /** Visual target component used to merge widgets in a splitter pane.
- * @beta
+ * @internal
  */
 export class SplitterPaneTarget extends React.PureComponent<MergeTargetProps> {
   public override render() {

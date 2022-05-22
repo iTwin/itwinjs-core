@@ -12,7 +12,6 @@ $example-cube-width: 256px;
   align-items: center;
   width: 100%;
   height: 100%;
-  background: black;
 
   .example-cube {
     perspective: 600px;
@@ -27,27 +26,27 @@ $example-cube-width: 256px;
       box-shadow: 0px 0px .0px 1px #000;
     }
 
-    .top {
+    .cube-top {
       background: blue;
     }
 
-    .front {
+    .cube-front {
       background: red;
     }
 
-    .right {
+    .cube-right {
       background: limegreen;
     }
 
-    .left {
+    .cube-left {
       background: darkviolet;
     }
 
-    .back {
+    .cube-back {
       background: yellow;
     }
 
-    .bottom {
+    .cube-bottom {
       background: orange;
     }
   }

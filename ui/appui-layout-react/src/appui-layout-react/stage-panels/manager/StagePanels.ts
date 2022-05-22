@@ -10,7 +10,7 @@ import { StagePanelType } from "../StagePanel";
 import { getDefaultStagePanelManagerProps, StagePanelManager, StagePanelManagerProps } from "./StagePanel";
 
 /** Properties used to manage stage panels.
- * @beta
+ * @internal
  */
 export interface StagePanelsManagerProps {
   readonly bottom: StagePanelManagerProps;
@@ -20,7 +20,7 @@ export interface StagePanelsManagerProps {
 }
 
 /** Returns default [[StagePanelsManagerProps]] object.
- * @beta
+ * @internal
  */
 export const getDefaultStagePanelsManagerProps = (): StagePanelsManagerProps => ({
   bottom: getDefaultStagePanelManagerProps(),
@@ -49,7 +49,7 @@ type StagePanelPropNameToType =
   MapPropNameToType<StagePanelsManagerProps, "bottom", StagePanelType.Bottom>;
 
 /** Class used to manage [[StagePanelsManagerProps]].
- * @beta
+ * @internal
  */
 export class StagePanelsManager {
   private _managers?: Map<StagePanelType, StagePanelManager>;

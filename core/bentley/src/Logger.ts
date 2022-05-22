@@ -86,8 +86,8 @@ export class Logger {
     Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
   }
 
-  /** stringify the metadata for a log message by merging the supplied metadata with all static metadata into one object that is then `JSON.stringify`ed. */
-  public static stringifyMetaData(metaData?: LoggingMetaData): string {
+  /** merge the supplied metadata with all static metadata into one object */
+  public static getMetaData(metaData?: LoggingMetaData): object {
     const metaObj = {};
     for (const meta of Logger.staticMetaData) {
       const val = BentleyError.getMetaData(meta[1]);
@@ -95,6 +95,12 @@ export class Logger {
         Object.assign(metaObj, val);
     }
     Object.assign(metaObj, BentleyError.getMetaData(metaData)); // do this last so user supplied values take precedence
+    return metaObj;
+  }
+
+  /** stringify the metadata for a log message by merging the supplied metadata with all static metadata into one object that is then `JSON.stringify`ed. */
+  public static stringifyMetaData(metaData?: LoggingMetaData): string {
+    const metaObj = this.getMetaData(metaData);
     return Object.keys(metaObj).length > 0 ? JSON.stringify(metaObj) : "";
   }
 

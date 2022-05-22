@@ -19,6 +19,7 @@ import { Widget } from "../widgets/Widget";
 import { ViewToolWidgetComposer } from "../widgets/ViewToolWidgetComposer";
 import { StatusBarWidgetComposerControl } from "../widgets/StatusBarWidgetComposerControl";
 import { StagePanelState } from "../stagepanels/StagePanelDef";
+import { ToolItemDef } from "../shared/ToolItemDef";
 
 /** Properties of a [[WidgetPanelProps]] component
  * @public
@@ -41,6 +42,12 @@ export interface StandardFrontstageProps {
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
+   * ```
+   * Custom corner button definition
+   * ```
+   * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"}
+   *   label="Toggle Backstage display",
+   *   execute={() => BackstageManager.getBackstageToggleCommand().execute()} />;
    * ```
    */
   cornerButton?: React.ReactNode;
@@ -65,6 +72,11 @@ export interface StandardFrontstageProps {
    * supports. See [[DefaultContentToolsAppData]] for an example.
    */
   applicationData?: any;
+  /** The defaultTool is is started when then frontstage loads and whenever any other tools exit.
+   * Most of the time, this is the Element Selection Tool (CoreTools.selectElementCommand).
+   * Your app can specify its own tool or another core tool as default with this property.
+   */
+  defaultTool?: ToolItemDef;
 }
 
 /**
@@ -88,7 +100,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         key={this.props.id}
         id={this.props.id}
         version={this.props.version ?? 1.0}
-        defaultTool={CoreTools.selectElementCommand}
+        defaultTool={this.props.defaultTool ?? CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={true}
         usage={this.props.usage}

@@ -13,7 +13,7 @@ import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { ToolbarPanelAlignment } from "../toolbar/Toolbar";
 
 /** Properties of [[NavigationArea]] component.
- * @alpha
+ * @internal
  */
 export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
   /**
@@ -33,7 +33,7 @@ export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
 
 /** NavigationArea widget is used in NavigationArea (Zone 1) and Navigation (Zone 3???) zones of 9-Zone UI.
  * @note Should be placed in [[Zone]] component.
- * @alpha
+ * @internal
  */
 export const NavigationArea = React.memo<NavigationAreaProps>(function NavigationArea(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const className = classnames(

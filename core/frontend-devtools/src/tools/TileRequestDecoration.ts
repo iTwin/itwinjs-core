@@ -32,7 +32,7 @@ class TileRequestDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    const tiles = IModelApp.tileAdmin.getRequestsForViewport(this._targetVp);
+    const tiles = IModelApp.tileAdmin.getRequestsForUser(this._targetVp);
     if (undefined === tiles)
       return;
 

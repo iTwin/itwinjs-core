@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[MessageCenterTab]] component.
- * @beta
+ * @internal
  */
 export interface MessageCenterTabProps extends CommonProps {
   /** Tab content. */
@@ -24,7 +24,7 @@ export interface MessageCenterTabProps extends CommonProps {
 }
 
 /** Message center tab used in [[MessageCenterDialog]] component.
- * @beta
+ * @internal
  */
 export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps> {
   public override render() {

@@ -200,11 +200,11 @@ export class DevTools {
     return oldLevel;
   }
 
-  /** Obtains the backend application and iModel.js versions */
+  /** Obtains the backend application and iTwin.js Core versions */
   public static versions() {
     return {
       application: IModelHost.applicationVersion,
-      iModelJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires
+      iTwinJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires
     };
   }
 }

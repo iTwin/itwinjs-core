@@ -17,7 +17,15 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeColor = "return TEXTURE(u_color, v_texCoord);";
 
-const computeColorNoAlpha = "return vec4(TEXTURE(u_color, v_texCoord).rgb, 1.0);";
+// Transparent background color will not have premultiplied alpha - multiply it when copying.
+// Set all other pixels opaque.
+const computeColorNoAlpha = `
+  vec4 color = TEXTURE(u_color, v_texCoord);
+  if (color == u_bgColor)
+    return vec4(color.rgb * color.a, color.a);
+  else
+    return vec4(color.rgb, 1.0);
+`;
 
 /** @internal */
 export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean = true): ShaderProgram {
@@ -32,6 +40,14 @@ export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean
       Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
     });
   });
+
+  if (!copyAlpha) {
+    frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
+      prog.addProgramUniform("u_bgColor", (uniform, params) => {
+        params.target.uniforms.style.bindBackgroundRgba(uniform);
+      });
+    });
+  }
 
   const flagString = (copyAlpha ? "-CopyAlpha" : "-NoAlpha");
   builder.vert.headerComment = `//!V! CopyColor${flagString}`;

@@ -62,9 +62,9 @@ class ModelOverrideProvider implements FeatureOverrideProvider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the model looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureAppearance.fromJSON({});
+    const appearance = FeatureAppearance.fromJSON({});
     this.modelIds.forEach((modelId: string) => {
-      overrides.overrideModel(modelId, emptyAppearance, true);
+      overrides.override({ modelId, appearance, onConflict: "replace" });
     });
   }
 }
@@ -79,9 +79,9 @@ class SubCategoryOverrideProvider implements FeatureOverrideProvider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the category looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureAppearance.fromJSON({});
-    this.subCategoryIds.forEach((id: string) => {
-      overrides.overrideSubCategory(id, emptyAppearance, true);
+    const appearance = FeatureAppearance.fromJSON({});
+    this.subCategoryIds.forEach((subCategoryId: string) => {
+      overrides.override({ subCategoryId, appearance, onConflict: "replace" });
     });
   }
 }
@@ -101,7 +101,7 @@ class SubjectModelIdsCache {
   private async initSubjectsHierarchy() {
     this._subjectsHierarchy = new Map();
     const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-    const result = this._imodel.query(ecsql, undefined, 1000);
+    const result = this._imodel.query(ecsql, undefined, { limit: { count: 1000 } });
     for await (const row of result) {
       let list = this._subjectsHierarchy.get(row.parentId);
       if (!list) {
@@ -115,7 +115,7 @@ class SubjectModelIdsCache {
   private async initSubjectModels() {
     this._subjectModels = new Map();
     const ecsql = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
-    const result = this._imodel.query(ecsql, undefined, 1000);
+    const result = this._imodel.query(ecsql, undefined, { limit: { count: 1000 } });
     for await (const row of result) {
       let list = this._subjectModels.get(row.subjectId);
       if (!list) {

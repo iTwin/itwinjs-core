@@ -1,18 +1,18 @@
 {
   "name": "@itwin/eslint-plugin",
-  "version": "3.0.0-dev.99",
+  "version": "3.3.0-dev.9",
   "description": "ESLint plugin with default configuration and custom rules for iTwin.js projects",
   "license": "MIT",
   "keywords": [
     "eslint",
     "eslintplugin",
     "eslint-plugin",
-    "imodeljs"
+    "iTwin.js"
   ],
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/eslint-plugin"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/eslint-plugin"
   },
   "bin": {
     "no-internal-report": "dist/bin/no-internal-report.js"
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/eslint": "~7.2.13",
     "@types/estree": "~0.0.48",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@typescript-eslint/typescript-estree": "~4.31.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",

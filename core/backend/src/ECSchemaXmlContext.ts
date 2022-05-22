@@ -6,6 +6,7 @@
  * @module Schema
  */
 
+import { assert } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
@@ -24,24 +25,30 @@ export class ECSchemaXmlContext {
     this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
   }
 
+  public get nativeContext(): IModelJsNative.ECSchemaXmlContext {
+    assert(undefined !== this._nativeContext);
+    return this._nativeContext;
+  }
+
   public addSchemaPath(searchPath: string): void {
-    this._nativeContext!.addSchemaPath(searchPath);
+    this.nativeContext.addSchemaPath(searchPath);
   }
 
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    this._nativeContext!.setSchemaLocater(locater);
+    this.nativeContext.setSchemaLocater(locater);
   }
 
   public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    this._nativeContext!.setFirstSchemaLocater(locater);
+    this.nativeContext.setFirstSchemaLocater(locater);
   }
 
   public readSchemaFromXmlFile(filePath: string): any {
-    const response = this._nativeContext!.readSchemaFromXmlFile(filePath);
+    const response = this.nativeContext.readSchemaFromXmlFile(filePath);
     if (response.error) {
       throw new IModelError(response.error.status, response.error.message);
     }
 
-    return JSON.parse(response.result!);
+    assert(undefined !== response.result);
+    return JSON.parse(response.result);
   }
 }

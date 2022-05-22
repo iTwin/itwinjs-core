@@ -3,22 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { join } from "path";
 import * as semver from "semver";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
-  IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
+import { IModelExporter, IModelImporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
+  CountingIModelImporter, HubWrappers, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { HubMock } from "../HubMock";
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -30,7 +32,7 @@ describe("IModelTransformerHub", () => {
     iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+    accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
 
     // initialize logging
     if (false) {
@@ -53,11 +55,11 @@ describe("IModelTransformerHub", () => {
 
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await ExtensiveTestScenario.prepareDb(sourceSeedDb);
+    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceSeedDb);
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
-    const sourceIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: sourceIModelName, description: "source", revision0: sourceSeedFileName, noLocks: true });
+    const sourceIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: sourceIModelName, description: "source", version0: sourceSeedFileName, noLocks: true });
 
     // Create and push seed of target IModel
     const targetIModelName = "TransformerTarget";
@@ -71,7 +73,7 @@ describe("IModelTransformerHub", () => {
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
-    const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", revision0: targetSeedFileName, noLocks: true });
+    const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", version0: targetSeedFileName, noLocks: true });
 
     try {
       const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
@@ -83,12 +85,12 @@ describe("IModelTransformerHub", () => {
       assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec")); // make sure prepareTargetDb changes were saved and pushed to iModelHub
 
       if (true) { // initial import
-        ExtensiveTestScenario.populateDb(sourceDb);
+        BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
         sourceDb.saveChanges();
         await sourceDb.pushChanges({ accessToken, description: "Populate source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
-        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
+        const sourceExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
@@ -122,7 +124,7 @@ describe("IModelTransformerHub", () => {
         TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
-        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
+        const targetExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
@@ -175,12 +177,12 @@ describe("IModelTransformerHub", () => {
       }
 
       if (true) { // update source db, then import again
-        ExtensiveTestScenario.updateDb(sourceDb);
+        BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
         sourceDb.saveChanges();
         await sourceDb.pushChanges({ accessToken, description: "Update source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
-        const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
+        const sourceExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
@@ -212,10 +214,10 @@ describe("IModelTransformerHub", () => {
         transformer.dispose();
         targetDb.saveChanges();
         await targetDb.pushChanges({ accessToken, description: "Import #2" });
-        ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+        BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
-        const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
+        const targetExportFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
@@ -262,10 +264,10 @@ describe("IModelTransformerHub", () => {
   });
 
   it("Clone/upgrade test", async () => {
-    const sourceIModelName: string = IModelTestUtils.generateUniqueName("CloneSource");
+    const sourceIModelName: string = IModelTransformerTestUtils.generateUniqueName("CloneSource");
     const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(sourceIModelId));
-    const targetIModelName: string = IModelTestUtils.generateUniqueName("CloneTarget");
+    const targetIModelName: string = IModelTransformerTestUtils.generateUniqueName("CloneTarget");
     const targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(targetIModelId));
 
@@ -344,7 +346,7 @@ describe("IModelTransformerHub", () => {
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
-    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });
+    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", version0: masterSeedFileName, noLocks: true });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
     const masterDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
@@ -356,7 +358,7 @@ describe("IModelTransformerHub", () => {
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
-    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
 
     const branchDb1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
@@ -366,7 +368,7 @@ describe("IModelTransformerHub", () => {
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
-    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
     const branchDb2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.iTwinId, iTwinId);
@@ -448,7 +450,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch2State2, changesetBranch2State0);
 
       // make changes to Branch2
-      const delta23 = [7, 8];
+      const delta23 = [7, 8]; // insert 7 (without any updates), and 8
       const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
@@ -456,22 +458,33 @@ describe("IModelTransformerHub", () => {
       const changesetBranch2State3 = branchDb2.changeset.id;
       assert.notEqual(changesetBranch2State3, changesetBranch2State2);
 
-      // merge changes made on Branch2 back to Master
+      // make conflicting changes to master
+      const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
+      const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
+      maintainPhysicalObjects(masterDb, delta3Master);
+      assertPhysicalObjects(masterDb, state3Master);
+      await saveAndPushChanges(masterDb, "State2 -> State3M");
+      const changesetMasterState3M = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3M, changesetMasterState2);
+
+      // merge changes made on Branch2 back to Master with a conflict
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
+      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 8, 9];
       await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
-      assertPhysicalObjects(masterDb, state3);
+      assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
+      assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State2 -> State3");
+      await saveAndPushChanges(masterDb, "State3M -> State3");
       const changesetMasterState3 = masterDb.changeset.id;
       assert.notEqual(changesetMasterState3, changesetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
       // make change directly on Master
       const delta34 = [6, -7]; // update 6, delete 7
-      const state4 = [1, 2, -3, 4, 5, 6, -7, 8];
+      const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
@@ -480,7 +493,7 @@ describe("IModelTransformerHub", () => {
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
-      await masterToBranch1.processChanges(accessToken, changesetMasterState3);
+      await masterToBranch1.processChanges(accessToken, changesetMasterState2);
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
@@ -489,7 +502,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State4, changesetBranch1State2);
 
       const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
-      assert.equal(masterDbChangesets.length, 3);
+      assert.equal(masterDbChangesets.length, 4);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeset of masterDbChangesets) {
         assert.isDefined(masterDbChangeset.id);
@@ -497,9 +510,10 @@ describe("IModelTransformerHub", () => {
         const changesetPath = masterDbChangeset.pathname;
         assert.isTrue(IModelJsFs.existsSync(changesetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeset
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
+        const statusOrResult = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
         assert.isUndefined(statusOrResult.error);
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        const result = statusOrResult.result;
+        if (result === undefined) throw Error("expected to be defined");
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => masterDeletedElementIds.add(id));
@@ -535,9 +549,9 @@ describe("IModelTransformerHub", () => {
         const changesetPath = replayedDbChangeset.pathname;
         assert.isTrue(IModelJsFs.existsSync(changesetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeset
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-        assert.isUndefined(statusOrResult.error);
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        const statusOrResult = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
+        const result = statusOrResult.result;
+        if (result === undefined) throw Error("expected to be defined");
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => replayedDeletedElementIds.add(id));
@@ -554,6 +568,103 @@ describe("IModelTransformerHub", () => {
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId1 });
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId2 });
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
+    }
+  });
+
+  it("ModelSelector processChanges", async () => {
+    const sourceIModelName = "ModelSelectorSource";
+    const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
+    let targetIModelId!: GuidString;
+    assert.isTrue(Guid.isGuid(sourceIModelId));
+
+    try {
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
+
+      // setup source
+      const physModel1Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-1");
+      const physModel2Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-2");
+      const modelSelectorInSource = ModelSelector.create(sourceDb, IModelDb.dictionaryId, "model-selector", [physModel1Id]);
+      const modelSelectorCode = modelSelectorInSource.code;
+      const modelSelectorId = modelSelectorInSource.insert();
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges({ accessToken, description: "setup source models and selector" });
+
+      // create target branch
+      const targetIModelName = "ModelSelectorTarget";
+      targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
+      assert.isTrue(Guid.isGuid(targetIModelId));
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+      const provenanceInitializer = new IModelTransformer(sourceDb, targetDb, { wasSourceIModelCopiedToTarget: true });
+      await provenanceInitializer.processSchemas();
+      await provenanceInitializer.processAll();
+      provenanceInitializer.dispose();
+
+      // update source (add model2 to model selector)
+      // (it's important that we only change the model selector here to keep the changes isolated)
+      const modelSelectorUpdate = sourceDb.elements.getElement<ModelSelector>(modelSelectorId, ModelSelector);
+      modelSelectorUpdate.models = [...modelSelectorUpdate.models, physModel2Id];
+      modelSelectorUpdate.update();
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges({ accessToken, description: "add model2 to model selector" });
+
+      // check that the model selector has the expected change in the source
+      const modelSelectorUpdate2 = sourceDb.elements.getElement<ModelSelector>(modelSelectorId, ModelSelector);
+      expect(modelSelectorUpdate2.models).to.have.length(2);
+
+      // test extracted changed ids
+      const sourceDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: sourceIModelId, targetDir: BriefcaseManager.getChangeSetsPath(sourceIModelId) });
+      expect(sourceDbChangesets).to.have.length(2);
+      const latestChangeset = sourceDbChangesets[1];
+      const extractedChangedIds = sourceDb.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
+      const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
+        element: { update: [modelSelectorId] },
+        model: { update: [IModel.dictionaryId] }, // containing model will also get last modification time updated
+      };
+      expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
+
+      // synchronize
+      let didExportModelSelector = false, didImportModelSelector = false;
+      class IModelImporterInjected extends IModelImporter {
+        public override importElement(sourceElement: ElementProps): Id64String {
+          if (sourceElement.id === modelSelectorId)
+            didImportModelSelector = true;
+          return super.importElement(sourceElement);
+        }
+      }
+      class IModelTransformerInjected extends IModelTransformer {
+        public override async onExportElement(sourceElement: Element) {
+          if (sourceElement.id === modelSelectorId)
+            didExportModelSelector = true;
+          return super.onExportElement(sourceElement);
+        }
+      }
+      const synchronizer = new IModelTransformerInjected (sourceDb, new IModelImporterInjected(targetDb));
+      await synchronizer.processChanges(accessToken);
+      expect(didExportModelSelector).to.be.true;
+      expect(didImportModelSelector).to.be.true;
+      provenanceInitializer.dispose();
+      targetDb.saveChanges();
+      await targetDb.pushChanges({ accessToken, description: "synchronize" });
+
+      // check that the model selector has the expected change in the target
+      const modelSelectorInTargetId = targetDb.elements.queryElementIdByCode(modelSelectorCode);
+      if (modelSelectorInTargetId === undefined) throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+      const modelSelectorInTarget = targetDb.elements.getElement<ModelSelector>(modelSelectorInTargetId, ModelSelector);
+      expect(modelSelectorInTarget.models).to.have.length(2);
+
+      // close iModel briefcases
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
+    } finally {
+      try {
+        // delete iModel briefcases
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
+      } catch (err) {
+        assert.fail(err, undefined, "failed to clean up");
+      }
     }
   });
 
@@ -631,9 +742,9 @@ describe("IModelTransformerHub", () => {
           classFullName: PhysicalObject.classFullName,
           model: modelId,
           category: categoryId,
-          code: Code.createEmpty(),
+          code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: n.toString() }),
           userLabel: n.toString(),
-          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+          geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
             origin: Point3d.create(n, n, 0),
             angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -647,5 +758,4 @@ describe("IModelTransformerHub", () => {
       return physicalObjectId;
     }
   }
-
 });

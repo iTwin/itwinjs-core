@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../appui-react";
+import { ConfigurableCreateInfo, ConfigurableUiControlType, UiFramework, WidgetControl, WidgetDef, WidgetProps } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("WidgetControl", () => {
@@ -20,6 +20,8 @@ describe("WidgetControl", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    // need to set to UI 1 so widget state is independent of NineZoneState.
+    UiFramework.setUiVersion("1");
   });
 
   after(() => {

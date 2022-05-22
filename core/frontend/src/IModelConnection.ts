@@ -13,9 +13,9 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -52,6 +52,7 @@ export interface BlankConnectionProps {
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
+ * @extensions
  */
 export abstract class IModelConnection extends IModel {
   /** The [[ModelState]]s in this IModelConnection. */
@@ -265,20 +266,16 @@ export abstract class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
-      builder.setConvertClassIdsToNames(true);
-    }
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
-      yield reader.formatCurrentRow(rowFormat);
+      yield reader.formatCurrentRow();
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -289,7 +286,7 @@ export abstract class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
@@ -312,14 +309,13 @@ export abstract class IModelConnection extends IModel {
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -375,8 +371,15 @@ export abstract class IModelConnection extends IModel {
     return undefined;
   }
 
-  /** Request element mass properties from the backend. */
+  /** Request element mass properties from the backend.
+   * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
+   */
   public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
+
+  /** Request mass properties for multiple elements from the backend. */
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
+  }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
@@ -722,7 +725,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       try {
         const propArray = await this.getProps(notLoaded);
-        for (const props of propArray) {
+        await this.updateLoadedWithModelProps(propArray);
+      } catch (err) {
+        // ignore error, we had nothing to do.
+      }
+    }
+
+    /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
+    public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
+      try {
+        for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
@@ -899,7 +911,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const row of this._iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of this._iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },
@@ -1037,7 +1049,12 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         },
       };
       const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
+      const viewState = await this.convertViewStatePropsToViewState(viewProps);
+      return viewState;
+    }
 
+    /** Return the [[ViewState]] object associated with the [[ViewStateProps]] passed in. */
+    public async convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState> {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
@@ -1053,14 +1070,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Get a thumbnail for a view.
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
-     * @throws Error if invalid thumbnail.
+     * @throws "No content" error if invalid thumbnail.
+     * @deprecated
      */
-    public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), viewId.toString());
+    public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
+      // eslint-disable-next-line deprecation/deprecation
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        throw new Error("Invalid thumbnail");
+        throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }

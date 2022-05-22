@@ -7,6 +7,7 @@ import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, Tile
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";
 import { signIn } from "./signIn";
@@ -16,20 +17,32 @@ import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
-const getFrontendConfig = () => {
+
+const getFrontendConfig = async (useRPC = false) => {
   if (ProcessDetector.isMobileAppFrontend) {
     if (window) {
       const urlParams = new URLSearchParams(window.location.hash);
       urlParams.forEach((val, key) => {
         (configuration as any)[key] = val;
-        Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
       });
     }
-    const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
-    Object.assign(configuration, newConfigurationInfo);
+  } else {
+    const config: DtaConfiguration = useRPC ? await DtaRpcInterface.getClient().getEnvConfig() : getConfig();
+    Object.assign(configuration, config);
   }
 
-  Object.assign(configuration, getConfig());
+  // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
+  // and sometimes that doesn't even work.
+  // If you want to quickly adjust aspects of the configuration on the frontend, you can instead add your overrides below and just hot-reload the app in the browser/electron.
+  // Obviously, don't commit such changes.
+  const configurationOverrides: DtaConfiguration = {
+    /* For example:
+    iModelName: "d:\\bim\\Constructions.bim",
+    disableInstancing: true,
+    */
+  };
+  Object.assign(configuration, configurationOverrides);
+
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
 };
 
@@ -54,15 +67,7 @@ class FakeTileCache extends CloudStorageTileCache {
   }
 }
 
-// main entry point.
-const dtaFrontendMain = async () => {
-  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
-  RpcConfiguration.disableRoutingValidation = true;
-
-  // retrieve, set, and output the global configuration variable
-  getFrontendConfig();
-
-  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
@@ -81,6 +86,7 @@ const dtaFrontendMain = async () => {
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
+    enableIndexedEdges: true !== configuration.disableIndexedEdges,
   };
 
   if (configuration.disableInstancing)
@@ -116,6 +122,21 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
+  return [renderSystemOptions, tileAdminProps];
+}
+
+// main entry point.
+const dtaFrontendMain = async () => {
+  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+  RpcConfiguration.disableRoutingValidation = true;
+
+  // retrieve, set, and output the global configuration variable
+  await getFrontendConfig();
+
+  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+  let tileAdminProps: TileAdmin.Props;
+  let renderSystemOptions: RenderSystem.Options;
+  [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
@@ -123,6 +144,24 @@ const dtaFrontendMain = async () => {
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
+  }
+
+  // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
+  // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
+  // (All that to workaround the fact that we can't call RPC before we start to get the true env first.)
+  if (!ProcessDetector.isMobileAppFrontend) {
+    Object.assign(configuration, await getFrontendConfig(true));
+    // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
+    await IModelApp.shutdown();
+    [renderSystemOptions, tileAdminProps] = setConfigurationResults();
+    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    if (false !== configuration.enableDiagnostics)
+      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+
+    if (!configuration.standalone && !configuration.customOrchestratorUri) {
+      alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
+      return;
+    }
   }
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
@@ -144,6 +183,8 @@ const dtaFrontendMain = async () => {
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
+    if (configuration.startupMacro)
+      await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
     alert(reason);
     return;

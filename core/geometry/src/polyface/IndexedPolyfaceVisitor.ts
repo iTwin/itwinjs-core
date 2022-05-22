@@ -230,7 +230,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * * The activeFacetIndices array indicates all facets to be visited.
    */
   public static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices.slice(), numWrap);
+    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
   }
   /** Advance the iterator to a particular facet in the client polyface */
   public override moveToReadIndex(activeIndex: number): boolean {

@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { TitleBar } from "../dialog/TitleBar";
 
 /** Properties of [[SnapModePanel]] component.
- * @beta
+ * @internal
  */
 export interface SnapModePanelProps extends CommonProps {
   /** Snap rows. I.e. [[Snap]] */
@@ -25,7 +25,7 @@ export interface SnapModePanelProps extends CommonProps {
 /** Snap mode panel used with [[SnapMode]] component.
  * @note This is a presentational component and should be aligned with [[SnapMode]] component.
  * I.e. use [[FooterPopup]] to handle alignment.
- * @beta
+ * @internal
  */
 export class SnapModePanel extends React.PureComponent<SnapModePanelProps> {
   public override render() {

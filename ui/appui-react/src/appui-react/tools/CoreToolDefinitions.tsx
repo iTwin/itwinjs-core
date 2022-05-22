@@ -30,7 +30,7 @@ import { UiFramework } from "../UiFramework";
 
 /* eslint-disable deprecation/deprecation */
 
-/** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
+/** Utility Class that provides definitions of tools provided by the ($core-frontend) core. These definitions can be used to populate the UI.
  * @public
  */
 // istanbul ignore next
@@ -402,16 +402,16 @@ export class CoreTools {
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       isHidden: getIsHiddenIfSelectionNotActive(),
-      execute: () => {
+      execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
         const tool = IModelApp.toolAdmin.primitiveTool;
         if (tool)
-          tool.onRestartTool();
+          await tool.onRestartTool();
         else
-          IModelApp.toolAdmin.startDefaultTool();// eslint-disable-line @typescript-eslint/no-floating-promises
+          await IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }

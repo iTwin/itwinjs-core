@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
-import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -31,10 +31,8 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
-  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
-  private _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
 
   /** only for tests
    * @internal
@@ -92,7 +90,6 @@ export class ECDb implements IDisposable {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
-    this._concurrentQueryStats.dispose();
   }
 
   /** @internal use to test statement caching */
@@ -278,7 +275,8 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    return this._nativeDb!;
+    assert(undefined !== this._nativeDb);
+    return this._nativeDb;
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
@@ -293,7 +291,7 @@ export class ECDb implements IDisposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -309,20 +307,16 @@ export class ECDb implements IDisposable {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
-      builder.setConvertClassIdsToNames(true);
-    }
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
-      yield reader.formatCurrentRow(rowFormat);
+      yield reader.formatCurrentRow();
   }
   /** Compute number of rows that would be returned by the ECSQL.
    *
@@ -332,7 +326,7 @@ export class ECDb implements IDisposable {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
@@ -355,14 +349,13 @@ export class ECDb implements IDisposable {
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }

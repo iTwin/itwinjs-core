@@ -31,11 +31,11 @@ describe("FrontstageManager", () => {
     });
 
     await TestUtils.initializeUiFramework();
-
+    UiFramework.setUiVersion("1");
     await MockRender.App.startup();
 
     FrontstageManager.initialize();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {

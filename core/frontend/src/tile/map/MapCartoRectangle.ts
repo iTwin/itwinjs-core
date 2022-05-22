@@ -19,7 +19,7 @@ const scratchPoint2d = Point2d.createZero();
  */
 export class MapCartoRectangle extends Range2d {
   public constructor(west = 0, south = 0, east = 0, north = 0) {
-    super(west, south, east, north);
+    super(west, Math.min(south, north), east, Math.max(south, north));
   }
   public static create(west = -Angle.piRadians, south = -Angle.piOver2Radians, east = Angle.piRadians, north = Angle.piOver2Radians, result?: MapCartoRectangle): MapCartoRectangle {
     if (!result)

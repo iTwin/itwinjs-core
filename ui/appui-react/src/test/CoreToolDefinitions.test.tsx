@@ -17,13 +17,13 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ActionItemButton actionItem={CoreTools.selectElementCommand} />
@@ -46,7 +46,7 @@ describe("CoreToolDefinitions", () => {
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbarWithOverflow =
       <ToolbarWithOverflow
-        expandsTo={Direction.Bottom}
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={ToolbarHelper.createToolbarItemsFromItemDefs([
           CoreTools.keyinBrowserButtonItemDef,
           CoreTools.selectElementCommand,

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
@@ -140,7 +141,7 @@ describe("ToolSettingsZone", () => {
     // ToolSetting should open by default if a ToolUiProvider is specified for tool.
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
@@ -179,7 +180,7 @@ describe("ToolSettingsZone", () => {
     // ToolSettings should closed by default.
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;

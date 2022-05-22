@@ -1,15 +1,14 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "3.0.0-dev.99",
+  "version": "3.3.0-dev.9",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
   "typings": "lib/cjs/core-bentley",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/bentley"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/bentley"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -39,7 +38,7 @@
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^7.11.0",

@@ -7,47 +7,38 @@
  */
 
 import * as React from "react";
-import { UiFramework } from "../UiFramework";
+import { useSelector } from "react-redux";
+import { FrameworkRootState } from "../redux/StateManager";
+import { FrameworkVersionId, UiFramework } from "../UiFramework";
 
-/** @internal */
-export function useFrameworkVersion(): FrameworkVersion {
+/** @public */
+export function useFrameworkVersion(): FrameworkVersionId {
   return React.useContext(FrameworkVersionContext);
 }
 
-/** @alpha */
-export type FrameworkVersion = "1" | "2";
+/** @public */
+export const FrameworkVersionContext = React.createContext<FrameworkVersionId>("2"); // eslint-disable-line @typescript-eslint/naming-convention
 
-/** @internal */
-export const FrameworkVersionContext = React.createContext<FrameworkVersion>("1"); // eslint-disable-line @typescript-eslint/naming-convention
-
-/** @alpha */
+/** @public */
 export interface FrameworkVersionProps {
   children?: React.ReactNode;
-  version: FrameworkVersion;
 }
 
-/** @alpha */
+/** The FrameworkVersion component provides uiVersion context to react component. The
+ * component uses the property frameworkState.configurableUiState.frameworkVersion from the redux store
+ * to determine the ui version. This version will default to "2" and should only be set to "1" for older
+ * iModelApp applications.
+ * @public
+ */
 export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare
-  const currentVersion = React.useRef("");
-
-  React.useEffect(() => {
-    const version = props.version;
-    // ensure UiFramework.uiVersion matches as non-react extensions may need to know target UI version.
-    UiFramework.setUiVersion(props.version);
-    // istanbul ignore else
-    if (currentVersion.current !== version) {
-      const oldVersion = currentVersion.current;
-      currentVersion.current = version;
-      UiFramework.onFrameworkVersionChangedEvent.emit({ version, oldVersion });
-    }
-  }, [props.version]);
-
-  return (
-    <FrameworkVersionContext.Provider
-      children={props.children} // eslint-disable-line react/no-children-prop
-      value={props.version}
-    />
-  );
+  const uiVersion = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return frameworkState ? frameworkState.configurableUiState.frameworkVersion as FrameworkVersionId : "2";
+  });
+  return <FrameworkVersionContext.Provider
+    children={props.children} // eslint-disable-line react/no-children-prop
+    value={uiVersion}
+  />;
 }
 
 /** @internal */
@@ -60,12 +51,12 @@ export interface FrameworkVersionSwitchProps {
 export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps) {
   const version = useFrameworkVersion();
   switch (version) {
-    case "2": {
-      return <>{props.v2}</>;
-    }
-    case "1":
-    default: {
+    case "1": {
       return <>{props.v1}</>;
+    }
+    case "2":
+    default: {
+      return <>{props.v2}</>;
     }
   }
 }

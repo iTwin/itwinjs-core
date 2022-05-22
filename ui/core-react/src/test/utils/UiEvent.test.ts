@@ -13,6 +13,7 @@ describe("UIEvent", () => {
     testNum: number;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   class TestEvent extends UiEvent<TestEventArgs> { }
 
   it("should call handler", () => {

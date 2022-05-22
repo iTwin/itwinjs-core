@@ -68,6 +68,23 @@ describe("InterpolationCurve3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("BrienCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const points = [
+      Point3d.create(53.44488806143417, -26.616949756940954, 1.0000000000000036),
+      Point3d.create(53.44488806143417, -28.649852653892122, 1.0000000000000036),
+      Point3d.create(52.155105205956495,-31.11087513966227,  1.000000000000007),
+      Point3d.create(51.81089204818833, -31.38045503480483,  1.000000000000007),
+      Point3d.create(51.616695380910535,-31.499726679972767, 1.000000000000007)];
+    const startTan = Vector3d.create(0, -1, 0);
+    const endTan = Vector3d.create(1, 0, 0);
+    const options = InterpolationCurve3dOptions.create({ fitPoints: points, startTangent: startTan, endTangent: endTan, isChordLenKnots: 1, isColinearTangents: 1 });
+    testInterpolationCurveConstruction(ck, allGeometry, options);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "BrienCurve");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("ExercisePointSpacing", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -105,7 +122,7 @@ describe("InterpolationCurve3d", () => {
 
 });
 
-function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number, y0: number, delta: number) {
+function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number=0, y0: number=0, delta: number=0) {
   const curve = InterpolationCurve3d.create(options);
   if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${options}`)) {
     if (ck.testType(curve.options, InterpolationCurve3dOptions)) {

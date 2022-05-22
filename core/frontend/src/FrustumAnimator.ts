@@ -45,7 +45,9 @@ function interpolateSwingingEye(
   };
 }
 /** Animates the transition of a [[Viewport]] from one [Frustum]($common) to another. The viewport will render as many frames as necessary during the supplied duration.
+ * @see [[Viewport.animateFrustumChange]] to conveniently animate a viewport from one frustum to another.
  * @public
+ * @extensions
  */
 export class FrustumAnimator implements Animator {
   private _tweens = new Tweens();

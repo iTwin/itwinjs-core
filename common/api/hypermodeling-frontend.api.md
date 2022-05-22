@@ -199,7 +199,7 @@ export class SectionMarker extends Marker {
 
 // @internal
 export class SectionMarkerCluster extends Marker {
-    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: Promise<MarkerImage>);
+    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined);
     drawFunc(ctx: CanvasRenderingContext2D): void;
     // (undocumented)
     onMouseButton(_ev: BeButtonEvent): boolean;

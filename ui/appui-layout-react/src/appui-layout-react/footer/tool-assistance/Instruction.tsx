@@ -14,7 +14,7 @@ import { ToolAssistanceItem } from "./Item";
 import { NewDot } from "./NewDot";
 
 /** Properties of [[ToolAssistanceInstruction]] component.
- * @beta
+ * @internal
  */
 export interface ToolAssistanceInstructionProps extends CommonProps {
   /** Image for instruction */
@@ -26,7 +26,7 @@ export interface ToolAssistanceInstructionProps extends CommonProps {
 }
 
 /** Tool assistance instruction used in [[ToolAssistanceDialog]] component.
- * @beta
+ * @internal
  */
 export class ToolAssistanceInstruction extends React.PureComponent<ToolAssistanceInstructionProps> {
   public override render() {

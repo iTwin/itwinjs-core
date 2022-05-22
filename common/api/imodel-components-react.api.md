@@ -27,7 +27,7 @@ import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';
@@ -174,8 +174,7 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
-    colorInputType?: "HSL" | "RGB";
-    // (undocumented)
+    colorInputType?: "hsl" | "rgb" | "hex";
     colorPresets?: ColorDef[];
     // (undocumented)
     dialogTitle: string;
@@ -185,10 +184,10 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @public
+// @public @deprecated
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
@@ -206,7 +205,7 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
-    colorInputType?: "HSL" | "RGB";
+    colorInputType?: "hsl" | "rgb" | "hex";
     disabled?: boolean;
     hideCloseButton?: boolean;
     initialColor: ColorDef;
@@ -246,27 +245,6 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
     colorDef: ColorDef;
     onColorPick?: ((color: ColorDef, e: React.MouseEvent) => void) | undefined;
     round?: boolean;
-}
-
-// @internal @deprecated
-export class ContextMenu extends React.Component<ContextMenuProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export class ContextMenuItem extends React.Component<MenuItem> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export interface ContextMenuProps extends CommonProps {
-    isOpened: boolean;
-    items?: MenuItem[];
-    onClickOutside?: () => void;
-    parent: HTMLElement | null;
-    position: RelativePosition;
 }
 
 // @public
@@ -687,16 +665,6 @@ export enum MapMode {
 }
 
 // @internal @deprecated
-export interface MenuItem {
-    checked?: boolean;
-    disabled?: boolean;
-    icon?: string;
-    isSeparator?: boolean;
-    name?: string;
-    onClick?: () => void;
-}
-
-// @internal @deprecated
 export interface Milestone {
     // (undocumented)
     children?: Milestone[];
@@ -1086,17 +1054,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
-    constructor(props: ViewportProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function ViewportComponent(props: ViewportProps): JSX.Element;
 
 // @public
 export class ViewportComponentEvents {

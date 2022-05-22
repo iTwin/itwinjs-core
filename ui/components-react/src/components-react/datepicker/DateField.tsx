@@ -152,5 +152,5 @@ export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, 
   }
   const classNames = classnames(className, "components-date-input", hasBadInput && "components-date-has-error");
   return <Input data-testid="components-date-input" style={style} className={classNames} onKeyDown={onInputKeyDown} onBlur={handleOnBlur}
-    onChange={handleInputChange} value={inputValue} disabled={readOnly || (dateFormatter && !(dateFormatter.parseDate))} />;
+    onChange={handleInputChange} value={inputValue} disabled={readOnly || (dateFormatter && !(dateFormatter.parseDate))} size="small" />;
 }

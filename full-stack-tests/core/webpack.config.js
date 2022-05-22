@@ -52,13 +52,17 @@ function createConfig(shouldInstrument) {
           enforce: "pre"
         },
         {
-          test: /azure-storage|AzureFileHandler|UrlFileHandler/,
+          test: /azure-storage|AzureFileHandler|UrlFileHandler|AzureSdkFileHandler/,
           use: "null-loader"
         },
         {
           test: /ws\/index\.js$/,
           use: "null-loader"
         },
+        {
+          test: /tunnel.js/,
+          use: "null-loader"
+        }
       ]
     },
     stats: "errors-only",

@@ -171,6 +171,7 @@ export class TouchCursor implements CanvasDecoration {
 /** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them.
  * @see [Using AccuSnap]($docs/learning/frontend/primitivetools.md#AccuSnap)
  * @public
+ * @extensions
  */
 export class AccuSnap implements Decorator {
   /** Currently active hit */
@@ -417,7 +418,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.localization.getLocalizedString(this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(`iModelJs:${this.errorKey}`);
     if (!this.explanation)
       return;
 
@@ -445,7 +446,7 @@ export class AccuSnap implements Decorator {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport;
-    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "sprites/SnapCross.png" : "sprites/SnapUnfocused.png");
+    const crossSprite = IconSprites.getSpriteFromUrl(`${IModelApp.publicPath}${snap.isHot ? "sprites/SnapCross.png" : "sprites/SnapUnfocused.png"}`);
 
     this.cross.activate(crossSprite, viewport, crossPt);
 
@@ -471,7 +472,7 @@ export class AccuSnap implements Decorator {
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapAppFiltered.png");
+        errorSprite = IconSprites.getSpriteFromUrl(`${IModelApp.publicPath}sprites/SnapAppFiltered.png`);
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -479,7 +480,7 @@ export class AccuSnap implements Decorator {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapNotSnappable.png");
+        errorSprite = IconSprites.getSpriteFromUrl(`${IModelApp.publicPath}sprites/SnapNotSnappable.png`);
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
     }
@@ -642,7 +643,7 @@ export class AccuSnap implements Decorator {
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
-          out.explanation = IModelApp.localization.getLocalizedString(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+          out.explanation = IModelApp.localization.getLocalizedString(`iModelJs:${ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory")}`);
         }
         return undefined;
       }
@@ -704,64 +705,69 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const result = await thisHit.iModel.requestSnap(requestProps);
+    try {
+      const result = await thisHit.iModel.requestSnap(requestProps);
 
-    if (out) out.snapStatus = result.status;
-    if (result.status !== SnapStatus.Success)
+      if (out) out.snapStatus = result.status;
+      if (result.status !== SnapStatus.Success)
+        return undefined;
+
+      const parseCurve = (json: any): CurvePrimitive | undefined => {
+        const parsed = undefined !== json ? GeomJson.Reader.parse(json) : undefined;
+        return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
+      };
+
+      // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
+      // Likewise, if it is a hit on a model with a display transform, apply the model's transform to the snap point.
+      let snapPoint = result.snapPoint!;
+      const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
+      if (0 !== elevation || undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
+        const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
+        thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
+        adjustedSnapPoint.z += elevation;
+        snapPoint = adjustedSnapPoint;
+      }
+
+      const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
+
+      // Apply model's elevation and display transform to curve for display.
+      let transform;
+      if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
+        transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
+        if (0 !== elevation)
+          transform.origin.set(0, 0, elevation);
+      } else if (0 !== elevation) {
+        transform = Transform.createTranslationXYZ(0, 0, elevation);
+      }
+
+      snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
+      if (undefined !== result.parentGeomType)
+        snap.parentGeomType = result.parentGeomType;
+      if (undefined !== result.hitPoint) {
+        snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
+        thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
+      }
+      if (undefined !== result.normal) {
+        snap.normal = Vector3d.fromJSON(result.normal);
+        thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
+      }
+
+      if (SnapMode.Intersection !== snap.snapMode)
+        return snap;
+
+      if (undefined === result.intersectId)
+        return undefined;
+
+      const otherPrimitive = parseCurve(result.intersectCurve);
+      if (undefined === otherPrimitive)
+        return undefined;
+
+      const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
+      return intersect;
+    } catch (_err) {
+      if (out) out.snapStatus = SnapStatus.Aborted;
       return undefined;
-
-    const parseCurve = (json: any): CurvePrimitive | undefined => {
-      const parsed = undefined !== json ? GeomJson.Reader.parse(json) : undefined;
-      return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
-    };
-
-    // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
-    // Likewise, if it is a hit on a model with a display transform, apply the model's transform to the snap point.
-    let snapPoint = result.snapPoint!;
-    const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
-    if (0 !== elevation || undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
-      const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
-      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
-      adjustedSnapPoint.z += elevation;
-      snapPoint = adjustedSnapPoint;
     }
-
-    const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
-
-    // Apply model's elevation and display transform to curve for display.
-    let transform;
-    if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
-      transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
-      if (0 !== elevation)
-        transform.origin.set(0, 0, elevation);
-    } else if (0 !== elevation) {
-      transform = Transform.createTranslationXYZ(0, 0, elevation);
-    }
-
-    snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
-    if (undefined !== result.parentGeomType)
-      snap.parentGeomType = result.parentGeomType;
-    if (undefined !== result.hitPoint) {
-      snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
-      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
-    }
-    if (undefined !== result.normal) {
-      snap.normal = Vector3d.fromJSON(result.normal);
-      thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
-    }
-
-    if (SnapMode.Intersection !== snap.snapMode)
-      return snap;
-
-    if (undefined === result.intersectId)
-      return undefined;
-
-    const otherPrimitive = parseCurve(result.intersectCurve);
-    if (undefined === otherPrimitive)
-      return undefined;
-
-    const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
-    return intersect;
   }
 
   private async getAccuSnapDetail(hitList: HitList<HitDetail>, out: LocateResponse): Promise<SnapDetail | undefined> {

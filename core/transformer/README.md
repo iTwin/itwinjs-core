@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@bentley/imodeljs-trasnformer__ package contains classes that handle traversing iModels for exporting and importing their parts.
+The __@itwin/core-trasnformer__ package contains classes that handle traversing iModels for exporting and importing their parts.
 
 ## Documentation
 

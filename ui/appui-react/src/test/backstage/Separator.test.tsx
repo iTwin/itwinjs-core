@@ -19,11 +19,11 @@ describe("Backstage", () => {
 
   describe("<SeparatorBackstageItem />", () => {
     it("SeparatorBackstageItem should render", () => {
-      mount(<SeparatorBackstageItem />);
+      mount(<SeparatorBackstageItem />); // eslint-disable-line deprecation/deprecation
     });
 
     it("SeparatorBackstageItem renders correctly", () => {
-      shallow(<SeparatorBackstageItem />).should.matchSnapshot();
+      shallow(<SeparatorBackstageItem />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
   });
 });

@@ -6,20 +6,24 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
-const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
-const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
-const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
-const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+/** @internal */
+export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
+/** @internal */
+export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
+/** @internal */
+export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
+/** @internal */
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
 
 /**
- * Stores user settings for favorite properties.
+ * Stores user preferences for favorite properties.
  * @public
  */
 export interface IFavoritePropertiesStorage {
@@ -58,8 +62,8 @@ export enum DefaultFavoritePropertiesStorageTypes {
   Noop,
   /** A storage that stores favorite properties information in a browser local storage. */
   BrowserLocalStorage,
-  /** A storage that stores favorite properties in a user settings service (see [[IModelApp.settings]]). */
-  UserSettingsServiceStorage,
+  /** A storage that stores favorite properties in a user preferences storage (see [[IModelApp.userPreferences]]). */
+  UserPreferencesStorage,
 }
 
 /**
@@ -70,7 +74,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
   switch (type) {
     case DefaultFavoritePropertiesStorageTypes.Noop: return new NoopFavoritePropertiesStorage();
     case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage: return new BrowserLocalFavoritePropertiesStorage();
-    case DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
+    case DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
   }
 }
 
@@ -79,27 +83,37 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
  */
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private async isSignedIn(): Promise<boolean> {
-    // If the authorization client is provided, it should give a valid response to getAccessToken
-    return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
+  private async ensureIsSignedIn(): Promise<{ accessToken: AccessToken }> {
+    const accessToken = IModelApp.authorizationClient ? await IModelApp.authorizationClient.getAccessToken() : "";
+    if (accessToken)
+      return { accessToken };
+    throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
   }
 
   public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
 
-    const accessToken = await IModelApp.getAccessToken();
-    let settingResult = await IModelApp.settings.getUserSetting(accessToken, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, iTwinId, imodelId);
-    let setting = settingResult.setting;
+    const { accessToken } = await this.ensureIsSignedIn();
+    let setting = await IModelApp.userPreferences.get({
+      accessToken,
+      iTwinId,
+      iModelId: imodelId,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
+    });
 
     if (setting !== undefined)
       return new Set<PropertyFullName>(setting);
 
     // try to check the old namespace
-    settingResult = await IModelApp.settings.getUserSetting(accessToken, DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, iTwinId, imodelId);
-    setting = settingResult.setting;
+    setting = await IModelApp.userPreferences.get({
+      accessToken,
+      iTwinId,
+      iModelId: imodelId,
+      namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
+    });
 
     if (setting !== undefined && setting.hasOwnProperty("nestedContentInfos") && setting.hasOwnProperty("propertyInfos") && setting.hasOwnProperty("baseFieldInfos"))
       return new Set<PropertyFullName>([...setting.nestedContentInfos, ...setting.propertyInfos, ...setting.baseFieldInfos]);
@@ -108,28 +122,48 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
-    await IModelApp.settings.saveUserSetting(accessToken, Array.from(properties), IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, iTwinId, imodelId);
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
+    await IModelApp.userPreferences.save({
+      accessToken,
+      iTwinId,
+      iModelId: imodelId,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
+      content: Array.from(properties),
+    });
   }
 
   public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
-    const settingResult = await IModelApp.settings.getUserSetting(accessToken, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, iTwinId, imodelId);
-    return settingResult.setting as FavoritePropertiesOrderInfo[];
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
+    const setting = await IModelApp.userPreferences.get({
+      accessToken,
+      iTwinId,
+      iModelId: imodelId,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
+    });
+    return setting as FavoritePropertiesOrderInfo[];
   }
 
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string) {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
-    await IModelApp.settings.saveUserSetting(accessToken, orderInfos, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, iTwinId, imodelId);
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
+    await IModelApp.userPreferences.save({
+      accessToken,
+      iTwinId,
+      iModelId: imodelId,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
+      content: orderInfos,
+    });
   }
 }
 

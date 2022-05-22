@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
@@ -15,10 +15,13 @@ import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner } from "./internal";
+import {
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapLayerFeatureInfo, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+} from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public
+ * @extensions
  */
 export enum TileGraphicType {
   /** Rendered behind all other geometry without depth. */
@@ -30,7 +33,7 @@ export enum TileGraphicType {
 }
 
 /** A reference to a [[TileTree]] suitable for drawing within a [[Viewport]]. The reference does not *own* its tile tree - it merely refers to it by
- * way of the tree [[TileTreeOwner]].
+ * way of the tree's [[TileTreeOwner]].
  * The specific [[TileTree]] referenced by this object may change based on the current state of the Viewport in which it is drawn - for example,
  * as a result of changing the RenderMode, or animation settings, or classification settings, etc.
  * A reference to a TileTree is typically associated with a [[ViewState]], a [[DisplayStyleState]], or a [[Viewport]].
@@ -38,6 +41,7 @@ export enum TileGraphicType {
  * differing levels of transparency.
  * @see [[TiledGraphicsProvider]] to supply custom [[TileTreeReference]]s to be drawn within a [[Viewport]].
  * @public
+ * @extensions
  */
 export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed at any time. */
@@ -67,6 +71,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Optionally return a tooltip describing the hit. */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+
+  /** Optionally return a MapLayerFeatureInfo object describing the hit.].
+   * @alpha
+   */
+  public async getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.
@@ -133,7 +142,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       symbologyOverrides: this.getSymbologyOverrides(tree),
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
+      animationTransformNodeId: this.getAnimationTransformNodeId(tree),
     });
+  }
+
+  /** @internal */
+  protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
+    return undefined;
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.
@@ -217,4 +232,49 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+
+  /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
+   * Return `undefined` if geometry collection is not supported.
+   * @see [[createGeometryTreeReference]].
+   * @beta
+   */
+  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+    return undefined;
+  }
+
+  /** If defined, supplies the implementation of [[GeometryTileTreeReference.collectTileGeometry]].
+   * @beta
+   */
+  public collectTileGeometry?: (collector: TileGeometryCollector) => void;
+
+  /** A function that can be assigned to [[collectTileGeometry]] to enable geometry collection for references to tile trees that support geometry collection.
+   * @beta
+   */
+  protected _collectTileGeometry(collector: TileGeometryCollector): void {
+    const tree = this.treeOwner.load();
+    switch (this.treeOwner.loadStatus) {
+      case TileTreeLoadStatus.Loaded:
+        assert(undefined !== tree);
+        tree.collectTileGeometry(collector);
+        break;
+      case TileTreeLoadStatus.Loading:
+        collector.markLoading();
+        break;
+    }
+  }
+
+  /** Obtain a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]], or
+   * undefined if geometry collection is not supported.
+   * Currently, only terrain and reality model tiles support geometry collection.
+   * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
+   * @beta
+   */
+  public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+    if (this.collectTileGeometry) {
+      // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
+      return this as GeometryTileTreeReference;
+    }
+
+    return this._createGeometryTreeReference();
+  }
 }

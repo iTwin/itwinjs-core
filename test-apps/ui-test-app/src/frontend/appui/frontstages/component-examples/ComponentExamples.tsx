@@ -18,6 +18,7 @@ export interface ComponentExampleCategory {
 /** Modal frontstage displaying component examples.
  */
 export class ComponentExamplesModalFrontstage implements ModalFrontstageInfo {
+  public static stageId = "ui-test-app:componentExamplesStage";
   public title: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.examples");
   public categories: ComponentExampleCategory[] = [...ComponentExamplesProvider.categories, ...ITwinUIExamplesProvider.categories];
   public get content(): React.ReactNode {

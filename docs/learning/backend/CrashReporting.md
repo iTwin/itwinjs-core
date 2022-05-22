@@ -13,7 +13,7 @@ See [CrashReportingConfig]($backend) for all of the options.
 
 ## Native-Code Crashes
 
-An unhandled exception in the native-code portion of imodeljs-backend or any addon will cause the backend program to terminate prematurely. The backend can cause a crash dump to be written in such an event. A crash dump contains information about what native code was running at the time of the crash, including native call stacks for all threads, and may also contain a copy of the contents of memory.
+An unhandled exception in the native-code portion of `@itwin/core-backend` or any addon will cause the backend program to terminate prematurely. The backend can cause a crash dump to be written in such an event. A crash dump contains information about what native code was running at the time of the crash, including native call stacks for all threads, and may also contain a copy of the contents of memory.
 
 <!-- WIP On Windows, crash dumps will be in the Microsoft mini-dump format and can be analyzed by a variety of debugging tools.
 On Linux ...?

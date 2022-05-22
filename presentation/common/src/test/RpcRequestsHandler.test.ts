@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -19,15 +19,14 @@ import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  MultiElementPropertiesRequestOptions, SingleElementPropertiesRequestOptions,
+  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
-  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult,
-  DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
+  ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
+  ContentSourcesRpcResult, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -100,13 +99,38 @@ describe("RpcRequestsHandler", () => {
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
 
+      it("removes redundant ruleset properties", async () => {
+        const func = sinon.stub(Logger, "logWarning");
+
+        const options = {
+          rulesetOrId: {
+            property: "abc",
+            $schema: "schema",
+            id: "id",
+            rules: [],
+          },
+          imodel: token,
+        };
+
+        const actualResult = await handler.request(async (_: IModelRpcProps, hierarchyOptions: HierarchyRpcRequestOptions) => {
+          return successResponse(hierarchyOptions.rulesetOrId);
+        }, options);
+
+        expect(actualResult.hasOwnProperty("property")).to.be.true;
+        expect(actualResult.hasOwnProperty("$schema")).to.be.false;
+        expect(actualResult.hasOwnProperty("id")).to.be.true;
+        expect(actualResult.hasOwnProperty("rules")).to.be.true;
+        expect(func.callCount).to.eq(1);
+      });
+
     });
 
     describe("when request throws unknown exception", () => {
 
       it("re-throws exception when request throws unknown exception", async () => {
-        const func = async () => { throw new Error("test"); };
+        const func = sinon.stub().rejects(new Error("test"));
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(Error);
+        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
       });
 
     });
@@ -114,8 +138,9 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns an unexpected status", () => {
 
       it("throws an exception", async () => {
-        const func = async () => errorResponse(PresentationStatus.Error);
+        const func = sinon.stub().resolves(errorResponse(PresentationStatus.Error));
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+        expect(func.callCount).to.eq(1);
       });
 
       it("calls diagnostics handler if provided", async () => {
@@ -123,7 +148,7 @@ describe("RpcRequestsHandler", () => {
           handler: sinon.spy(),
         };
         const diagnosticsResult: DiagnosticsScopeLogs[] = [];
-        const func = async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult);
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
@@ -133,37 +158,20 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns a status of BackendTimeout", () => {
 
       it("returns PresentationError", async () => {
-        const func = async () => errorResponse(PresentationStatus.BackendTimeout);
-        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
+        const func = sinon.stub().resolves(errorResponse(PresentationStatus.BackendTimeout));
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", PresentationStatus.BackendTimeout);
+        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
       });
 
-      it("calls request handler 5 times", async () => {
-        const requestHandlerStub = sinon.stub();
-        requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
-        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
-
-        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
-        expect(requestHandlerSpy.callCount).to.be.equal(5);
-      });
-
-    });
-
-    describe("when request throws", () => {
-
-      it("returns PresentationError", async () => {
-        const err = new Error();
-        const func = async (): PresentationRpcResponse<number> => { throw err; };
-        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
-      });
-
-      it("calls request handler 5 times", async () => {
-        const err = new Error();
-        const requestHandlerStub = sinon.stub();
-        requestHandlerStub.throws(err);
-        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
-
-        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
-        expect(requestHandlerSpy.callCount).to.be.equal(5);
+      it("calls diagnostics handler if provided", async () => {
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        let funcCallCount = 0;
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, [{ scope: `${funcCallCount++}` }]));
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
+        expect(diagnosticsOptions.handler.callCount).to.eq(handler.maxRequestRepeatCount);
+        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith([{ scope: `${callIndex}` }]));
       });
 
     });
@@ -459,7 +467,7 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards getElementProperties call with single element options", async () => {
+    it("forwards getElementProperties call", async () => {
       const elementId = "0x123";
       const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -480,33 +488,31 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards getElementProperties call with multi element options", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const handlerOptions: MultiElementPropertiesRequestOptions<IModelRpcProps> = {
+    it("forwards getContentInstanceKeys call", async () => {
+      const handlerOptions: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        elementClasses,
+        rulesetOrId: faker.random.word(),
+        displayType: "test display type",
+        keys: new KeySet().toJSON(),
       };
-      const rpcOptions: MultiElementPropertiesRpcRequestOptions = {
+      const rpcOptions: ContentInstanceKeysRpcRequestOptions = {
         clientId,
-        elementClasses,
+        rulesetOrId: handlerOptions.rulesetOrId,
+        displayType: handlerOptions.displayType,
+        keys: handlerOptions.keys,
       };
       const result = {
         total: 2,
-        items: [{
-          class: "test class",
+        items: new KeySet([{
+          className: "test class 1",
           id: "0x1",
-          label: "test label",
-          items: {},
-        },
-        {
-          class: "test class",
+        }, {
+          className: "test class 2",
           id: "0x2",
-          label: "test label",
-          items: {},
-        }],
+        }]).toJSON(),
       };
-      rpcInterfaceMock.setup(async (x) => x.getElementProperties(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.getContentInstanceKeys(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getContentInstanceKeys(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

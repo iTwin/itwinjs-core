@@ -127,7 +127,7 @@ export function FormatUnits(props: FormatUnitsProps) {
       {(formatProps.composite?.units && formatProps.composite.units.length > 1) &&
         <>
           <span key={"composite-spacer-label"} className={"uicore-label"}>{compositeSpacer.current}</span>
-          <Input key={"composite-spacer"} data-testid="composite-spacer" value={formatProps.composite.spacer ?? ""} onChange={handleOnSpacerChange} />
+          <Input key={"composite-spacer"} data-testid="composite-spacer" value={formatProps.composite.spacer ?? ""} onChange={handleOnSpacerChange} size="small" />
         </>
       }
     </>

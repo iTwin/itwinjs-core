@@ -8,7 +8,6 @@ import * as os from "os";
 import * as readline from "readline";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { UserCancelledError } from "@bentley/itwin-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
@@ -205,7 +204,7 @@ describe("BriefcaseManager", () => {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
-    await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+    await expect(downloadPromise).to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
 
 });

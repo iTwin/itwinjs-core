@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import {
   classModifierToString, containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseClassModifier, parseCustomAttributeContainerType,
   parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
@@ -195,6 +195,6 @@ describe("ECObjectsError ", () => {
     expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
     expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");
     expect(new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, "msg").toDebugString()).to.equal("ECObjectsStatus.UnableToLocateSchema: msg");
-    assert.throw(() => new ECObjectsError(-9999).toDebugString(), "Programmer Error");
+    expect(new ECObjectsError(-9999).toDebugString()).to.equal("Error -9999");
   });
 });

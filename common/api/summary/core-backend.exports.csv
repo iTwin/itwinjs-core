@@ -2,14 +2,17 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+beta;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -35,12 +38,12 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 beta;class CloudStorageService
-beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+beta;ContainerNameOrId =
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -60,6 +63,7 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
+beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -88,6 +92,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceDb 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -104,7 +109,7 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
-public;Entity 
+public;Entity
 public;EntityClassType
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
@@ -199,6 +204,9 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
+internal;ITwinWorkspace 
+internal;ITwinWorkspaceContainer 
+beta;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -216,7 +224,6 @@ public;LockState
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;class NativeAppAuthorizationBackend 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 
@@ -277,6 +284,17 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
+beta;SettingDictionary = SettingObject
+beta;SettingInspector
+beta;SettingName = string
+beta;SettingObject
+beta;SettingResolver
+beta;Settings
+beta;SettingsGroupSpec
+beta;SettingSpec 
+beta;SettingsPriority
+beta;SettingsSpecRegistry
+beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -335,3 +353,15 @@ public;ViewDefinition2d
 public;class ViewDefinition3d 
 public;VolumeElement 
 public;WebMercatorModel 
+beta;Workspace
+beta;WorkspaceContainer
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerName = string
+beta;WorkspaceContainerProps = ContainerNameOrId &
+beta;WorkspaceDb
+beta;WorkspaceDbName = string
+beta;WorkspaceDbProps = WorkspaceContainerProps &
+beta;WorkspaceDbVersion = string
+beta;WorkspaceOpts
+beta;WorkspaceResourceName = string
+beta;WorkspaceResourceProps = WorkspaceDbProps &

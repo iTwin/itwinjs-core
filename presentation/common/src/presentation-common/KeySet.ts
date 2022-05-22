@@ -13,7 +13,7 @@ import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 
 /**
- * A single key that identifies something in iModel.js application
+ * A single key that identifies something in an iTwin.js application
  * @public
  */
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;

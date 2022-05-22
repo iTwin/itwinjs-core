@@ -164,14 +164,10 @@ exports[`<Node /> renders loader correctly 1`] = `
       }
     }
   >
-    <div
-      className="loader"
-    >
-      <ProgressRadial
-        indeterminate={true}
-        size="x-small"
-      />
-    </div>
+    <ProgressRadial
+      indeterminate={true}
+      size="x-small"
+    />
     a
   </div>
 </div>

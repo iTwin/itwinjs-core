@@ -1,0 +1,17 @@
+{
+  "name": "@itwin/map-layers-auth",
+  "entries": [
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/map-layers-auth_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "New package containing various implementation of authentication methods"
+          }
+        ]
+      }
+    }
+  ]
+}

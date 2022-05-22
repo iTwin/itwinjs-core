@@ -108,8 +108,3 @@ export default function SimpleTreeComponent(props: Props) {
 - [Tree in @itwin/core-react]($core-react:Tree)
 - [Properties in @itwin/components-react]($components-react:Properties)
 - [Properties in @itwin/appui-abstract]($appui-abstract:Properties)
-
-## Samples
-
-- [simple-viewer-app](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app): An example of an interactive application which can display graphical data, browse iModel catalog and view element properties.
-<!-- * [controlled-tree-sample](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/controlled-tree-sample): An example of an application demonstrating the many features of the ControlledTree. -->

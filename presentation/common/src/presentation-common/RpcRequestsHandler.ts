@@ -6,8 +6,9 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Guid, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -21,14 +22,14 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
+  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, Paged, RequestOptions, RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
-  ContentSourcesRpcResult, ElementPropertiesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
+import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PagedResponse } from "./Utils";
@@ -55,7 +56,7 @@ export interface RpcRequestsHandlerProps {
  * @internal
  */
 export class RpcRequestsHandler implements IDisposable {
-  private _maxRequestRepeatCount: number = 5;
+  public readonly maxRequestRepeatCount: number = 5;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
@@ -81,14 +82,14 @@ export class RpcRequestsHandler implements IDisposable {
       if (response.statusCode === PresentationStatus.Success)
         return response.result!;
 
-      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount)
+      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
       else
         error = new PresentationError(response.statusCode, response.errorMessage);
 
     } catch (e) {
       error = e;
-      if (repeatCount < this._maxRequestRepeatCount)
+      if (repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
 
     } finally {
@@ -119,6 +120,8 @@ export class RpcRequestsHandler implements IDisposable {
     ...additionalOptions: TArg[]): Promise<TResult> {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
+    if (isOptionsWithRuleset(optionsNoIModel))
+      optionsNoIModel.rulesetOrId = cleanupRuleset(optionsNoIModel.rulesetOrId);
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,
@@ -173,11 +176,14 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
-  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
-  public async getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementPropertiesRpcResult> {
-    return this.request<ElementPropertiesRpcResult, ElementPropertiesRequestOptions<IModelRpcProps>>(
+  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
+    return this.request<ElementProperties | undefined, SingleElementPropertiesRequestOptions<IModelRpcProps>>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
+  }
+
+  public async getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<{ total: number, items: KeySetJSON }> {
+    return this.request<{ total: number, items: KeySetJSON }, ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>>(
+      this.rpcClient.getContentInstanceKeys.bind(this.rpcClient), options);
   }
 
   public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {
@@ -197,4 +203,36 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
   }
+}
+
+function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset} {
+  return (typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object");
+}
+
+type RulesetWithRequiredProperties = {
+  [key in keyof Ruleset]-?: true;
+};
+
+const RULESET_SUPPORTED_PROPERTIES_OBJ: RulesetWithRequiredProperties = {
+  id: true,
+  rules: true,
+  version: true,
+  requiredSchemas: true,
+  supplementationInfo: true,
+  vars: true,
+};
+
+function cleanupRuleset(ruleset: Ruleset): Ruleset {
+  const cleanedUpRuleset: Ruleset = { ...ruleset };
+
+  for (const propertyKey of Object.keys(cleanedUpRuleset)) {
+    if (!RULESET_SUPPORTED_PROPERTIES_OBJ.hasOwnProperty(propertyKey)) {
+      if (propertyKey === "$schema")
+        delete (cleanedUpRuleset as any)[propertyKey];
+      else
+        Logger.logWarning(PresentationCommonLoggerCategory.Package, `Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
+    }
+  }
+
+  return cleanedUpRuleset;
 }

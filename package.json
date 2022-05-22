@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/iTwin/itwinjs-core"
   },
   "scripts": {
     "build": "echo NOTE: use 'rush build' instead",
@@ -29,7 +29,5 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "dependencies": {},
-  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
-  "devDependencies": {}
+  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package."
 }

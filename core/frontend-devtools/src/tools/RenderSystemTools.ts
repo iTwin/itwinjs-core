@@ -35,16 +35,6 @@ export class LoseWebGLContextTool extends RenderSystemDebugControlTool {
   }
 }
 
-/** Toggles pseudo-wiremesh surface display, for better visualization of mesh faces.
- * @beta
- */
-export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
-  public static override toolId = "ToggleWiremesh";
-  public execute(control: RenderSystemDebugControl): void {
-    control.drawSurfacesAsWiremesh = !control.drawSurfacesAsWiremesh;
-  }
-}
-
 /** Compiles all registered shader programs for which compilation has not already been attempted.
  * This is useful for uncovering/debugging platform-specific shader issues.
  * @beta

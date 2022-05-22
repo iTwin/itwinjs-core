@@ -7,4 +7,14 @@
 .core-svg-icon {
   width:  $uicore-icons-small;
   height: $uicore-icons-small;
+  svg {
+    width:  $uicore-icons-small;
+    height: $uicore-icons-small;
+    fill: currentColor;
+  }
 }
+
+.icon.core-menuitem-icon {
+  font-size: 16px;
+}
+

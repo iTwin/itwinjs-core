@@ -11,7 +11,7 @@ import * as React from "react";
 import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
-import { useUiVisibility } from "./BasicToolWidget";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 /**
  * Props for [[ContentToolWidgetComposer]].
@@ -35,15 +35,24 @@ export interface ContentToolWidgetComposerProps {
  * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
  * <ContentToolWidgetComposer cornerButton={cornerButton} />
  * ```
+ * ToolWidget with custom corner button
+ * ```
+ * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"}
+ *   label="Toggle Backstage display",
+ *   execute={() => BackstageManager.getBackstageToggleCommand().execute()} />;
+ * <ContentToolWidgetComposer cornerButton={cornerButton} />
+ * ```
+ *
+ * BackstageCornerButton,
  * @public
  */
 export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps) {
   const { cornerButton } = props;
   const uiIsVisible = useUiVisibility();
+  // istanbul ignore next
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
-
   return (
     <ToolWidgetComposer className={className}
       cornerItem={cornerButton}

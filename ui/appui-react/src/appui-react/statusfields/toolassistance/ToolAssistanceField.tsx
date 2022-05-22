@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Notification
  */
@@ -16,10 +17,11 @@ import {
 } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
-  FillCentered, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
+  FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
-  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
+  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
+  ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@itwin/appui-layout-react";
 import { HorizontalTabs, ToggleSwitch } from "@itwin/itwinui-react";
@@ -29,24 +31,24 @@ import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/M
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
-import { UiSettingsContext } from "../../uisettings/useUiSettings";
+import { UiStateStorageContext } from "../../uistate/useUiStateStorage";
 
-import acceptPointIcon from "./accept-point.svg?sprite";
-import cursorClickIcon from "./cursor-click.svg?sprite";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import acceptPointIcon from "./accept-point.svg";
+import cursorClickIcon from "./cursor-click.svg";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
+import twoTouchPinchIcon from "./gesture-pinch.svg";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg";
+import clickLeftIcon from "./mouse-click-left.svg";
+import clickRightDragIcon from "./mouse-click-right-drag.svg";
+import clickRightIcon from "./mouse-click-right.svg";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg";
+import touchCursorDragIcon from "./touch-cursor-pan.svg";
+import touchCursorTapIcon from "./touch-cursor-point.svg";
 
 // cSpell:ignore cursorprompt
 
@@ -56,9 +58,9 @@ import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
-  /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
+  /** Optional parameter for persistent UI settings. Defaults to UiStateStorageContext.
    */
-  uiSettings?: UiSettingsStorage;
+  uiStateStorage?: UiStateStorage; // eslint-disable-line deprecation/deprecation
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -71,7 +73,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
  * @internal
  */
 export type ToolAssistanceFieldDefaultProps =
-  Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
+  Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiStateStorage" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
 /** @internal */
 interface ToolAssistanceFieldState {
@@ -92,21 +94,21 @@ interface ToolAssistanceFieldState {
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
-  public static override contextType = UiSettingsContext;
+  public static override contextType = UiStateStorageContext;
   /** @internal */
-  public declare context: React.ContextType<typeof UiSettingsContext>;
+  public declare context: React.ContextType<typeof UiStateStorageContext>;
 
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
-  private _showPromptAtCursorSetting: UiSetting<boolean>;
-  private _mouseTouchTabIndexSetting: UiSetting<number>;
+  private _showPromptAtCursorSetting: UiStateEntry<boolean>;
+  private _mouseTouchTabIndexSetting: UiStateEntry<number>;
   private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
-  private _uiSettingsStorage: UiSettingsStorage;
+  private _uiSettingsStorage: UiStateStorage; // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -138,11 +140,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       isPinned: false,
     };
 
-    this._uiSettingsStorage = new LocalSettingsStorage();
+    this._uiSettingsStorage = new LocalStateStorage();
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
-    this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
+    this._showPromptAtCursorSetting = new UiStateEntry(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
       () => this.state.showPromptAtCursor);
-    this._mouseTouchTabIndexSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
+    this._mouseTouchTabIndexSetting = new UiStateEntry(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
       () => this.state.mouseTouchTabIndex);
   }
 
@@ -153,8 +155,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
     // istanbul ignore else
-    if (this.props.uiSettings)
-      this._uiSettingsStorage = this.props.uiSettings;
+    if (this.props.uiStateStorage)
+      this._uiSettingsStorage = this.props.uiStateStorage;
     else if (this.context)
       this._uiSettingsStorage = this.context;
 
@@ -169,7 +171,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private async restoreSettings() {
-    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    let getShowPromptAtCursor: Promise<UiStateStorageResult> | undefined; // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
       getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettingsStorage);
@@ -181,14 +183,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     ]);
 
     // istanbul ignore else
-    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success) {
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiStateStorageStatus.Success) {
       // istanbul ignore else
       if (this._isMounted)
         this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
     }
 
     // istanbul ignore else
-    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success) {
+    if (mouseTouchTabIndexResult.status === UiStateStorageStatus.Success) {
       // istanbul ignore else
       if (this._isMounted)
         this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });
@@ -377,8 +379,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
     return (
       <>
-        <div ref={this._handleTargetRef}>
-          <ToolAssistance
+        <div style={{ height: "100%" }} ref={this._handleTargetRef}>
+          <ToolAssistance // eslint-disable-line deprecation/deprecation
             icons={
               <>
                 {toolIcon}
@@ -588,12 +590,12 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           className = mediumSize ? /* istanbul ignore next */ "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
-
+      const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgImage);
       image = (
         <div className={className}>
           {svgImage &&
             // istanbul ignore next
-            <SvgSprite src={svgImage} />
+            <Icon iconSpec={iconSpec} />
           }
         </div>
       );

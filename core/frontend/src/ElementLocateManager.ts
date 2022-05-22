@@ -17,6 +17,7 @@ import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
+ * @extensions
  */
 export enum LocateAction {
   Identify = 0,
@@ -26,13 +27,17 @@ export enum LocateAction {
 /** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
  * @public
+ * @extensions
  */
 export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapStatus {
   Success = 0,
   Aborted = 1,
@@ -46,6 +51,7 @@ export enum SnapStatus {
 
 /** Options that customize the way element location (i.e. *picking*) works.
  * @public
+ * @extensions
  */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
@@ -62,6 +68,11 @@ export class LocateOptions {
    * @see [[HitDetail.iModel]] and [[HitDetail.isExternalIModelHit]]
    */
   public allowExternalIModels = false;
+  /** If true, then the world point of a hit on a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  public preserveModelDisplayTransforms = false;
 
   /** Make a copy of this LocateOptions. */
   public clone(): LocateOptions {
@@ -87,7 +98,10 @@ export class LocateOptions {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
@@ -110,12 +124,18 @@ export class LocateResponse {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -227,8 +247,14 @@ export class ElementPicker {
         if (undefined === pixel || undefined === pixel.elementId)
           continue;
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
-        if (undefined === hitPointWorld)
+        const hitPointWorld = vp.getPixelDataWorldPoint({
+          pixels,
+          x: elmPoint.x,
+          y: elmPoint.y,
+          preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
+        });
+
+        if (!hitPointWorld)
           continue;
 
         const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
@@ -253,7 +279,10 @@ export class ElementPicker {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;

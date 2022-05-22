@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { expect } from "chai";
 import produce from "immer";
@@ -175,7 +176,7 @@ describe("StagePanelZonesDef", () => {
   it("should initialize middle", () => {
     const sut = new StagePanelZonesDef();
     sut.initializeFromProps({ middle: { widgets: [<Widget key="w1" id="w1" />] } }, StagePanelLocation.Left);
-    expect(sut.middle.widgetCount).to.eq(1);
+    expect(sut.end.widgetCount).to.eq(1);
   });
 
   it("should initialize end", () => {

@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[MessageButton]] component.
- * @beta
+ * @internal
  */
 export interface MessageButtonProps extends CommonProps {
   /** Button content. */
@@ -22,7 +22,7 @@ export interface MessageButtonProps extends CommonProps {
 }
 
 /** Button component used in [[Message]] component.
- * @beta
+ * @internal
  */
 export class MessageButton extends React.PureComponent<MessageButtonProps> {
   public override render() {

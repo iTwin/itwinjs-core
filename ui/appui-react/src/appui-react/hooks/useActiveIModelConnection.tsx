@@ -7,9 +7,10 @@
  */
 
 import { useEffect, useState } from "react";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelConnection } from "@itwin/core-frontend";
 import { SessionStateActionId } from "../redux/SessionState";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
@@ -20,7 +21,7 @@ import { UiFramework } from "../UiFramework";
 export function useActiveIModelConnection(): IModelConnection | undefined {
   const [activeConnection, setActiveConnection] = useState(UiFramework.getIModelConnection());
   useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       const eventIds = [SessionStateActionId.SetIModelConnection];
       // istanbul ignore else
       if (eventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {

@@ -23,6 +23,7 @@ export interface SceneVolumeClassifier {
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
  * @see [[SceneContext]] for the context in which the scene is created.
  * @public
+ * @extensions
  */
 export class Scene {
   /** Graphics to be drawn as a "normal" part of the scene - that is, with depth. */
@@ -32,7 +33,7 @@ export class Scene {
   /** Graphics to be overlaid atop all other graphics. */
   public readonly overlay: RenderGraphic[] = [];
   /** @internal */
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
+  public readonly planarClassifiers = new Map<string, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   /** @internal */
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   /** @internal */

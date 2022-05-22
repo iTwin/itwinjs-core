@@ -44,3 +44,20 @@ export function getFieldByLabel(fields: Field[], label: string): Field {
     throw new Error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
   return result;
 }
+
+/**
+ * Returns fields by given label.
+ */
+export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
+  const foundFields = new Array<Field>();
+  const handleFields = (fields: Field[]) => {
+    for (const field of fields) {
+      if (field.label === label)
+        foundFields.push(field);
+      if (field.isNestedContentField())
+        handleFields(field.nestedFields);
+    }
+  };
+  handleFields(rootFields);
+  return foundFields;
+}

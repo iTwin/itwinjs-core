@@ -14,7 +14,7 @@ import { Css } from "../../utilities/Css";
 import { Status, StatusHelpers } from "./Status";
 
 /** Properties of [[MessageProgress]] component.
- * @beta
+ * @internal
  */
 export interface ProgressProps extends CommonProps, NoChildrenProps {
   /** Progress of this progress bar. Range from 0 to 100 (percentage). */
@@ -24,7 +24,7 @@ export interface ProgressProps extends CommonProps, NoChildrenProps {
 }
 
 /** Progress bar component used in [[Message]] component.
- * @beta
+ * @internal
  */
 export class MessageProgress extends React.PureComponent<ProgressProps> {
   public override render() {

@@ -16,26 +16,28 @@ export interface LocalHostIpcAppOpts {
 
   localhostIpcApp?: {
     socketPort?: number;
-    socketPath?: string;
+    socketUrl?: URL;
   };
 }
 
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
+  private _next: number;
   private _pending?: IpcWebSocketMessage[] = [];
 
   public constructor(opts: LocalHostIpcAppOpts) {
     super();
 
-    let url = "";
-    if (opts?.localhostIpcApp?.socketPath) {
-      url = opts?.localhostIpcApp?.socketPath;
+    let url: URL;
+    if (opts?.localhostIpcApp?.socketUrl) {
+      url = opts?.localhostIpcApp?.socketUrl;
     } else {
       const port = opts?.localhostIpcApp?.socketPort ?? 3002;
-      url = `ws://localhost:${port}/`;
+      url = new URL(`ws://localhost:${port}/`);
     }
 
     this._client = new WebSocket(url);
+    this._next = -1;
 
     this._client.addEventListener("open", () => {
       const pending = this._pending!;
@@ -44,13 +46,25 @@ class LocalTransport extends IpcWebSocketTransport {
     });
 
     this._client.addEventListener("message", async (event) => {
+      const message = await this.notifyIncoming(event.data, this._client);
+      if (IpcWebSocketMessage.skip(message)) {
+        return;
+      }
+
       for (const listener of IpcWebSocket.receivers)
-        listener({} as Event, JSON.parse(event.data as string));
+        listener({} as Event, message);
     });
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._pending?.push(message) || this._client.send(JSON.stringify(message));
+    if (this._pending) {
+      this._pending.push(message);
+      return;
+    }
+
+    message.sequence = ++this._next;
+    const parts = this.serialize(message);
+    parts.forEach((part) => this._client.send(part));
   }
 }
 
@@ -59,9 +73,23 @@ class LocalTransport extends IpcWebSocketTransport {
  *  @internal
  */
 export class LocalhostIpcApp {
+  private static _initialized = false;
+  private static _ipc: IpcWebSocketFrontend;
+
+  public static buildUrlForSocket(base: URL, path = "ipc"): URL {
+    const url = new URL(base);
+    url.protocol = "ws";
+    url.pathname = [...url.pathname.split("/"), path].filter((v) => v).join("/");
+    return url;
+  }
+
   public static async startup(opts: LocalHostIpcAppOpts) {
-    IpcWebSocket.transport = new LocalTransport(opts);
-    const ipc = new IpcWebSocketFrontend();
-    await IpcApp.startup(ipc, opts);
+    if (!this._initialized) {
+      IpcWebSocket.transport = new LocalTransport(opts);
+      this._ipc = new IpcWebSocketFrontend();
+      this._initialized = true;
+    }
+
+    await IpcApp.startup(this._ipc, opts);
   }
 }

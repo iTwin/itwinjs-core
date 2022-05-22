@@ -120,7 +120,7 @@ export class SectionMarker extends Marker {
  */
 export class SectionMarkerCluster extends Marker {
   /** Create a new cluster marker */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: Promise<MarkerImage>) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
     this.imageOffset = new Point3d(0, 30);
@@ -144,7 +144,8 @@ export class SectionMarkerCluster extends Marker {
     const div = document.createElement("div");
     div.innerHTML = title;
     this.title = div;
-    this.setImage(image);
+    if (image)
+      this.setImage(image);
   }
 
   /** Show the cluster as a white circle with an outline */
@@ -189,7 +190,7 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
 
   /** @internal */
   protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker {
-    return SectionMarkerCluster.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image);
+    return new SectionMarkerCluster(cluster.getClusterLocation(), cluster.markers[0].size, cluster, cluster.markers[0].image);
   }
 
   /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */

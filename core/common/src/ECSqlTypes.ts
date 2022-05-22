@@ -11,6 +11,7 @@ import { assert, Id64String } from "@itwin/core-bentley";
 /** Describes the different data types an ECSQL value can be of.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensions
  */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
@@ -36,6 +37,7 @@ export enum ECSqlValueType {
  * It is returned from ECSQL SELECT statements for navigation properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensions
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -47,6 +49,7 @@ export interface NavigationValue {
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensions
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
@@ -67,6 +70,7 @@ export interface NavigationBindingValue {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
+ * @extensions
  */
 export enum ChangeOpCode {
   Insert = 1,
@@ -81,6 +85,7 @@ export enum ChangeOpCode {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
+ * @extensions
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -92,6 +97,7 @@ export enum ChangedValueState {
 /** Defines the ECSQL system properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensions
  */
 export enum ECSqlSystemProperty {
   ECInstanceId,
@@ -107,13 +113,13 @@ export enum ECSqlSystemProperty {
   PointZ,
 }
 
-/** Utility to format ECProperty names according to the iModel.js formatting rules.
+/** Utility to format ECProperty names according to the iTwin.js formatting rules.
  * See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
  * @public
  */
 export class ECJsNames {
 
-  /** Formats the specified ECProperty name according to the iModel.js formatting rules.
+  /** Formats the specified ECProperty name according to the iTwin.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    *
@@ -190,7 +196,7 @@ export class ECJsNames {
   }
 
   /** Returns the name of the specified ECSQL system property according to the
-   *  iModel.js formatting rules.
+   *  iTwin.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    * @param systemPropertyType System property type

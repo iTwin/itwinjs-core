@@ -36,6 +36,7 @@ interface LocalizationOptions {
 
 /** The interface defining the localization requirements of [IModelApp]($frontend).
  * @public
+ * @extensions
  */
 export interface Localization {
   /** This method must be called and awaited before using an instance of Localization.
@@ -59,7 +60,7 @@ export interface Localization {
    * @throws Error if no keys resolve to a string.
    */
   getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
-  /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
+  /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.

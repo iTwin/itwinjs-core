@@ -6,15 +6,16 @@ import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { ArrayValue, PrimitiveValue, StructValue } from "@itwin/appui-abstract";
 import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
-  PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
+  ArrayTypeDescription, CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet,
+  PrimitiveTypeDescription, PropertyValueFormat, RegisteredRuleset, Ruleset, StructTypeDescription, TypeDescription, Value, ValuesDictionary,
+  ValuesMap,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
-import { QueryRowFormat } from "@itwin/core-common";
 
 use(ChaiAsPromised);
 
@@ -70,9 +71,26 @@ const createCategoryDescription = (): CategoryDescription => ({
   expand: false,
 });
 
-const createStringTypeDescription = (): PrimitiveTypeDescription => ({
+const createPrimitiveTypeDescription = (typeName: string): PrimitiveTypeDescription => ({
   valueFormat: PropertyValueFormat.Primitive,
-  typeName: "string",
+  typeName,
+});
+const createStringTypeDescription = () => createPrimitiveTypeDescription("string");
+const createIntTypeDescription = () => createPrimitiveTypeDescription("int");
+const createDoubleTypeDescription = () => createPrimitiveTypeDescription("double");
+const createPoint2dTypeDescription = () => createPrimitiveTypeDescription("pt2d");
+const createPoint3dTypeDescription = () => createPrimitiveTypeDescription("pt3d");
+
+const createArrayTypeDescription = (itemType: TypeDescription): ArrayTypeDescription => ({
+  valueFormat: PropertyValueFormat.Array,
+  typeName: "array",
+  memberType: itemType,
+});
+
+const createStructTypeDescription = (members: { [name: string]: TypeDescription }): StructTypeDescription => ({
+  valueFormat: PropertyValueFormat.Struct,
+  typeName: "struct",
+  members: Object.keys(members).map((key) => ({ name: key, label: key, type: members[key] })),
 });
 
 const createContentDescriptor = () => {
@@ -209,6 +227,47 @@ describe("ContentBuilder", () => {
       const content = await builder.createContent("1", []);
       expect(content.length).to.equal(dataProvider.values.length * dataProvider.descriptor.fields.length);
     });
+
+    it("rounds raw numeric values to supplied decimal precision", async () => {
+      const testValues = [
+        { name: "not-set", value: undefined, type: createDoubleTypeDescription() },
+        { name: "int", value: 1, type: createIntTypeDescription() },
+        { name: "doubleLowPrecision", value: 1.9, type: createDoubleTypeDescription() },
+        { name: "doubleRoundedDown", value: 1.234, type: createDoubleTypeDescription() },
+        { name: "doubleRoundedUp", value: 4.567, type: createDoubleTypeDescription() },
+        { name: "doublesArray", value: [1.234, 4.567, 7.890], type: createArrayTypeDescription(createDoubleTypeDescription()) },
+        { name: "doublesStruct", value: { a: 1.234 }, type: createStructTypeDescription({ a: createDoubleTypeDescription() }) },
+        { name: "point2d", value: [1.456, 4.789], type: createPoint2dTypeDescription() },
+        { name: "point3d", value: { x: 1.234, y: 4.567, z: 7.890 }, type: createPoint3dTypeDescription() },
+      ];
+      const category = createCategoryDescription();
+      const descriptor = new Descriptor({
+        displayType: "",
+        selectClasses: [],
+        categories: [category],
+        fields: testValues.map((v) => new Field(category, v.name, v.name, v.type, false, 1)),
+        contentFlags: 1,
+      });
+      class TestDataProvider extends EmptyDataProvider {
+        public readonly descriptor = descriptor;
+        public readonly values = [testValues.reduce((map, v) => ({ ...map, [v.name]: v.value }), {} as ValuesMap)];
+        public override getContentSetSize = async () => this.values.length;
+        public override getContent = async () => getContent(this.values, this.descriptor);
+      }
+      const dataProvider = new TestDataProvider();
+      const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider, decimalPrecision: 2 });
+      const content = await builder.createContent("", []);
+      expect(content.length).to.eq(testValues.length);
+      expect((content[0].value as PrimitiveValue).value).to.be.undefined;
+      expect((content[1].value as PrimitiveValue).value).to.eq(1);
+      expect((content[2].value as PrimitiveValue).value).to.eq(1.9);
+      expect((content[3].value as PrimitiveValue).value).to.eq(1.23);
+      expect((content[4].value as PrimitiveValue).value).to.eq(4.57);
+      expect((content[5].value as ArrayValue).items.map((item) => (item.value as PrimitiveValue).value)).to.deep.eq([1.23, 4.57, 7.89]);
+      expect(((content[6].value as StructValue).members.a!.value as PrimitiveValue).value).to.deep.eq(1.23);
+      expect((content[7].value as PrimitiveValue).value).to.deep.eq([1.46, 4.79]);
+      expect((content[8].value as PrimitiveValue).value).to.deep.eq({ x: 1.23, y: 4.57, z: 7.89 });
+    });
   });
 
   describe("createContentForAllClasses", () => {
@@ -228,7 +287,7 @@ describe("ContentBuilder", () => {
     before(() => {
       imodelMock.reset();
       const f = createQueryFunc(testInstances);
-      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), QueryRowFormat.UseJsPropertyNames, moq.It.isAny())).returns(f);
+      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(f);
     });
 
     it("returns all required instances with empty records", async () => {
@@ -270,7 +329,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -294,7 +353,7 @@ describe("ContentBuilder", () => {
 
       it("throws when id query throws an unexpected error", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -312,7 +371,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
       });
 
       it("returns an empty list", async () => {

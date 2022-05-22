@@ -43,6 +43,7 @@ import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
+import { FrontstageWithNoWidgets } from "./frontstages/FrontStageWithNoWidgets";
 
 // cSpell:ignore uitestapp
 
@@ -68,6 +69,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new ScheduleAnimationFrontstage());
+    FrontstageWithNoWidgets.register();
   }
 
   public static command1 = () => {

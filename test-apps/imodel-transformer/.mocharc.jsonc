@@ -1,0 +1,11 @@
+{
+  "colors": true,
+  "check-leaks": true,
+  "spec": [
+    "lib/test/**/*.test.js"
+  ],
+  "require": "source-map-support/register",
+  "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
+  "reporter-options": "mochaFile=lib/test/junit_results.xml",
+  "timeout": 999999
+}

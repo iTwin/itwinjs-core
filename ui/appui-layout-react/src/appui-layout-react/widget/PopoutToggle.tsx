@@ -11,9 +11,7 @@
 import "./PopoutToggle.scss";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-// import { PanelStateContext } from "../widget-panels/Panel";
-// import { assert } from "@itwin/core-bentley";
-import popoutToggleSvg from "./window-popout.svg?sprite";
+import popoutToggleSvg from "./window-popout.svg";
 import { Icon } from "@itwin/core-react";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { ActiveTabIdContext } from "./Widget";
@@ -22,7 +20,7 @@ import { ActiveTabIdContext } from "./Widget";
 export const PopoutToggle = React.memo(function PopoutToggle() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const activeTabId = React.useContext(ActiveTabIdContext);
-  const iconSpec = IconSpecUtilities.createSvgIconSpec(popoutToggleSvg);
+  const iconSpec = IconSpecUtilities.createWebComponentIconSpec(popoutToggleSvg);
   const popoutTitle = useLabel("popoutActiveTab");
   return (
     <button

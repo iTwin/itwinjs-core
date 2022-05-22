@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
-import { Format, FormatProps, FormatTraits } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatTraits, getTraitString } from "@itwin/core-quantity";
 import { Checkbox, Select, SelectOption } from "@itwin/itwinui-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 
@@ -42,7 +42,7 @@ function UomSeparatorSelector(props: UomSeparatorSelectorProps) {
   }, [separator]);
 
   return (
-    <Select options={separatorOptions} value={separator} onChange={handleOnChange} {...otherProps} />
+    <Select options={separatorOptions} value={separator} onChange={handleOnChange} size="small" {...otherProps} />
   );
 }
 
@@ -69,7 +69,7 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
   }, [formatProps]);
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
-    const traitStr = Format.getTraitString(trait);
+    const traitStr = getTraitString(trait);
     let formatTraits: string[] = [traitStr];
     if (setActive) {// setting trait
       // istanbul ignore else

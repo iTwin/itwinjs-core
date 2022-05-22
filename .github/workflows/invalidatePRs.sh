@@ -34,7 +34,7 @@ fi
 prs=$(curl -s \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token $oauth" \
-  https://api.github.com/repos/imodeljs/imodeljs/pulls)
+  https://api.github.com/repos/iTwin/itwinjs-core/pulls)
 
 _jq() {
   echo ${1} | base64 --decode | jq -r ${2}
@@ -52,7 +52,7 @@ declare -A listSha
 masterCommit=$(curl -s \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: token $oauth" \
-  https://api.github.com/repos/imodeljs/imodeljs/commits/master)
+  https://api.github.com/repos/iTwin/itwinjs-core/commits/master)
 
 masterHeadCommit=$(echo ${masterCommit} | jq -r '. | @base64')
 masterSha=$(_jq  ${masterHeadCommit} '.sha')
@@ -81,7 +81,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
     refCommit=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $oauth" \
-              https://api.github.com/repos/imodeljs/imodeljs/commits/${ref})
+              https://api.github.com/repos/iTwin/itwinjs-core/commits/${ref})
     refHeadCommit=$(echo ${refCommit} | jq -r '. | @base64')
     refHeadSha=$(_jq  ${refHeadCommit} '.sha')
     listSha[${ref}]=${refHeadSha}
@@ -102,7 +102,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   branchLatest=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $oauth" \
-              https://api.github.com/repos/imodeljs/imodeljs/branches/${branch})
+              https://api.github.com/repos/iTwin/itwinjs-core/branches/${branch})
   branchLatestCommit=$(echo ${branchLatest} | jq -r '. | @base64')
   lastPushedTime=$(_jq ${branchLatestCommit} '.commit.commit.author.date')
 
@@ -118,7 +118,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
   fi
 
   # Get all statuses of the PR
-  #   e.g. https://api.github.com/repos/imodeljs/imodeljs/statuses/c29a168b6a201052098ea6743041868bfbadaa4f
+  #   e.g. https://api.github.com/repos/iTwin/itwinjs-core/statuses/c29a168b6a201052098ea6743041868bfbadaa4f
   statuses=$(curl -s \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $oauth" \
@@ -139,7 +139,7 @@ for pr in $(echo "${prs}" | jq -r '.[] | @base64'); do
 
     echo "  The PR $(_jq ${pr} '.title') has build $(_jq  ${status} '.context') that is older than 3 hours. Invalidating..."
 
-    updateUrl=https://api.github.com/repos/imodeljs/imodeljs/statuses/$(_jq ${pr} '.head.sha')
+    updateUrl=https://api.github.com/repos/iTwin/itwinjs-core/statuses/$(_jq ${pr} '.head.sha')
     target_url=$(_jq  ${status} '.target_url')
     context=$(_jq  ${status} '.context')
 

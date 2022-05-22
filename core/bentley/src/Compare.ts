@@ -8,7 +8,7 @@
 
 /**
  * A function that returns a numerical value indicating how two objects are ordered in relation to one another.
- * Such functions are used by various collection classes in the iModel.js library.
+ * Such functions are used by various collection classes throughout the library.
  * Given values `lhs` and `rhs`, the function returns:
  *  - Zero if lhs == rhs
  *  - A negative number if lhs < rhs

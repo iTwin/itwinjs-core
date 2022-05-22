@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-transformer",
-  "version": "3.0.0-dev.99",
+  "version": "3.3.0-dev.9",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/cjs/core-transformer.js",
   "typings": "lib/cjs/core-transformer",
@@ -18,12 +18,11 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/transformer"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/transformer"
   },
   "keywords": [
     "Bentley",
@@ -37,35 +36,33 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.99",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.99",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.99",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.99",
-    "@itwin/core-common": "workspace:^3.0.0-dev.99",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.99"
+    "@itwin/core-backend": "workspace:^3.3.0-dev.9",
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9",
+    "@itwin/core-common": "workspace:^3.3.0-dev.9",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.9",
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-backend": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "npm-run-all": "^4.1.5",

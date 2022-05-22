@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module MapLayers
  */
 
-import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../request/Request";
+import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,
@@ -25,6 +25,7 @@ import {
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
+  WmtsCapability,
   WmtsMapLayerImageryProvider,
 } from "../internal";
 
@@ -32,7 +33,7 @@ import {
  * @internal
  */
 export class ImageryMapLayerFormat extends MapLayerFormat {
-  public static override createMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+  public static override createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
     return new ImageryMapLayerTreeReference(layerSettings, layerIndex, iModel);
   }
 }
@@ -40,7 +41,7 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
 class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "WMS";
 
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
   public static override async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -95,7 +96,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       if (err?.status === 401) {
         status = (credentials ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
       }
-      return { status };
+      return { status};
     }
   }
 }
@@ -103,7 +104,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "WMTS";
 
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmtsMapLayerImageryProvider(settings);
   }
 
@@ -114,16 +115,28 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
-      // Only returns layer that can be published in the Google maps aligned tile tree.
+      // Only returns layer that can be published in the Google maps or WGS84 aligned tile trees.
+      let supportedTms: WmtsCapability.TileMatrixSet[]  = [];
       const googleMapsTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
-      if (!googleMapsTms)
+      if (googleMapsTms) {
+        supportedTms = googleMapsTms;
+      }
+      const wsg84Tms = capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
+      if (wsg84Tms) {
+        supportedTms = supportedTms.concat(wsg84Tms);
+      }
+
+      if (supportedTms.length === 0) {
+        // This WMTS server doesn't support either GoogleMaps or WSG84
         return { status: MapLayerSourceStatus.InvalidTileTree };
+      }
 
       let subLayerId = 0;
       capabilities?.contents?.layers.forEach((layer) => {
-        if (googleMapsTms?.some((tms) => {
+        const hasSupportedTms = supportedTms?.some((tms) => {
           return layer.tileMatrixSetLinks.some((tmls) => { return (tmls.tileMatrixSet === tms.identifier); });
-        })) {
+        });
+        if (hasSupportedTms) {
           subLayers.push({
             name: layer.identifier,
             title: layer.title ?? layer.identifier,
@@ -153,7 +166,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return ArcGisUtilities.validateSource(url, credentials, ignoreCache);
   }
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);
   }
 }
@@ -161,26 +174,26 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "AzureMaps";
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new AzureMapsLayerImageryProvider(settings);
   }
 }
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new BingMapsImageryLayerProvider(settings);
   }
 }
 
 class MapBoxImageryMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "MapboxImagery";
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new MapBoxLayerImageryProvider(settings);
   }
 }
 class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "TileURL";
-  public static override createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined { return new TileUrlImageryProvider(settings); }
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new TileUrlImageryProvider(settings); }
 }
 
 /** @internal */

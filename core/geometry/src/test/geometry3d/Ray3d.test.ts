@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -258,6 +259,21 @@ describe("Ray3d", () => {
     const rayQ = Ray3d.createXYZUVW(95.87780347429201, -7.1369473762498234, 14.575798896766187,
       - 1, -4.61132646190051e-31, 4.567684502237405e-15);
     ck.testUndefined(rayQ.intersectionWithPlane(planeQ));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PlanePlaneIntersection", () => {
+    const ck = new Checker();
+    const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(1, 3, 2, 5, 2, 9)!;
+    const planeA = Plane3dByOriginAndUnitNormal.createXYZUVW(5, 9, 3, -2, 4, 1)!;
+    ck.testUndefined(CurveFactory.planePlaneIntersectionRay(planeA, planeA), "Self intersection should fail");
+    const ray = CurveFactory.planePlaneIntersectionRay(planeA, planeB);
+    if (ck.testType(ray, Ray3d, "plane plane intersection")) {
+      for (const f of [0, 1, 125]) {
+        const xyz = ray.fractionToPoint(f);
+        ck.testCoordinate(0, planeA.altitude(xyz), "point on intersection is on planeA");
+        ck.testCoordinate(0, planeB.altitude(xyz), "point on intersection is on planeB");
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -19,7 +19,7 @@ import { PointerMessage } from "./Pointer";
 
 /**
  * The AppNotificationManager class is a subclass of NotificationManager in @itwin/core-frontend.
- * This implementation uses the iModel.js UI library to display alerts, messages, prompts and tooltips.
+ * This implementation uses the iTwin.js UI library to display alerts, messages, prompts and tooltips.
  * @public
  */
 export class AppNotificationManager extends NotificationManager {

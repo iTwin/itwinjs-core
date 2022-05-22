@@ -27,7 +27,7 @@ function computeProgress(vp: Viewport): number {
 }
 
 const statEntries: StatEntry[] = [
-  { getValue: (stats, vp) => stats.numActiveRequests + (IModelApp.tileAdmin.getTilesForViewport(vp)?.external.requested ?? 0), label: "Active" },
+  { getValue: (stats, vp) => stats.numActiveRequests + (IModelApp.tileAdmin.getTilesForUser(vp)?.external.requested ?? 0), label: "Active" },
   { getValue: (stats, _vp) => stats.numPendingRequests, label: "Pending" },
   { getValue: (stats, _vp) => stats.numCanceled, label: "Canceled" },
   { getValue: (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests, label: "Total" },

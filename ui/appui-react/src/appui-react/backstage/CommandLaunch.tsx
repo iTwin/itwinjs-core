@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommandHandler } from "@itwin/appui-abstract";
+import { CommandHandler, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
@@ -25,6 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // eslint-disable-line deprecation/deprecation
   /** Unique Id for this backstage item. */
@@ -33,6 +34,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 
 /** Backstage item that launches a Command
  * @public
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 
@@ -41,7 +43,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
-  constructor(props: CommandLaunchBackstageItemProps) {
+  constructor(props: CommandLaunchBackstageItemProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     if (props.stateSyncIds)
@@ -63,7 +65,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     /* istanbul ignore next */
     if (this._componentUnmounting)
       return;
@@ -94,7 +96,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 
   // deprecated class
   // istanbul ignore next
-  public override componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
+  public override componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) { // eslint-disable-line deprecation/deprecation
     // eslint-disable-next-line deprecation/deprecation
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))

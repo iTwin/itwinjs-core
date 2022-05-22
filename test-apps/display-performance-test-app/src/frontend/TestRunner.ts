@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -16,11 +16,10 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
@@ -130,8 +129,8 @@ class OverrideProvider {
     if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [key, value] of this._elementOvrs)
-      ovrs.overrideElement(key, value);
+    for (const [elementId, appearance] of this._elementOvrs)
+      ovrs.override({ elementId, appearance });
   }
 }
 
@@ -179,10 +178,16 @@ export class TestRunner {
     if (IModelApp.initialized && needRestart)
       await IModelApp.shutdown();
     if (needRestart) {
+      const realityDataClientOptions: RealityDataClientOptions = {
+        /** API Version. v1 by default */
+        // version?: ApiVersion;
+        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+      };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
         tileAdmin: this.curConfig.tileProps,
-        realityDataAccess: new RealityDataAccessClient(),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       });
     }
 
@@ -202,7 +207,12 @@ export class TestRunner {
 
   private async runTestSet(set: TestSetProps): Promise<void> {
     let needRestart = this._config.push(set);
-
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
@@ -222,7 +232,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
-          realityDataAccess: new RealityDataAccessClient(),
+          realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         });
       }
 
@@ -509,7 +519,7 @@ export class TestRunner {
             break;
           }
 
-          const tiles = IModelApp.tileAdmin.getTilesForViewport(vp);
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
           if (tiles && tiles.external.requested > 0) {
             haveNewTiles = true;
             break;
@@ -633,10 +643,10 @@ export class TestRunner {
   }
 
   private async openIModel(): Promise<TestContext | undefined> {
-    const filepath = path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
+    const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
     let iModel;
     try {
-      iModel = await SnapshotConnection.openFile(path.join(filepath));
+      iModel = await SnapshotConnection.openFile(filepath);
     } catch (err: any) {
       await this.logError(`openSnapshot failed: ${err.toString()}`);
       return undefined;
@@ -750,6 +760,7 @@ export class TestRunner {
     testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
+    testName = testName.replace(/[/\\?%*:|"<>]/g, "-");
 
     const renderMode = getRenderMode(test.viewport);
     if (renderMode)
@@ -795,8 +806,7 @@ export class TestRunner {
     const filename = `${this.getTestName(test, prefix, true)}.png`;
     if (ProcessDetector.isMobileAppFrontend)
       return filename; // on mobile we use device's Documents path as determined by mobile backend
-
-    return path.join(this.curConfig.outputPath, filename);
+    return `${this.curConfig.outputPath}${separator}${filename}`;
   }
 
   private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
@@ -918,7 +928,7 @@ export class TestRunner {
     if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
       boundBy += " (vsync)";
     const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
-    const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalCpuTime);
     if (disjointTimerUsed) {
       rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
@@ -1140,6 +1150,12 @@ function getTileProps(props: TileAdmin.Props): string {
       case "disableMagnification":
         if (props[key]) tilePropsStr += "-mag";
         break;
+      case "enableIndexedEdges":
+        if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
+      case "generateAllPolyfaceEdges":
+        if (!props[key]) tilePropsStr += "-pfEdg";
+        break;
     }
   }
 
@@ -1233,6 +1249,7 @@ const viewFlagsPropsStrings = {
   grid: "+grid",
   whiteOnWhiteReversal: "+wow",
   acsTriad: "+acsTriad",
+  wiremesh: "+wm",
 };
 
 function getViewFlagsString(test: TestCase): string {
@@ -1311,7 +1328,7 @@ function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
   const mem = new RenderMemory.Statistics();
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
-    const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+    const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
     if (!selected)
       continue;
 

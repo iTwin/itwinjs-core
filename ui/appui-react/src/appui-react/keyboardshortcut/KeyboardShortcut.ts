@@ -6,14 +6,14 @@
  * @module KeyboardShortcut
  */
 
-import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Properties for a Keyboard Shortcut
  * @public
@@ -312,7 +312,7 @@ export class KeyboardShortcutManager {
   /** Returns the cursor Y position, which is mouseEvent.pageY. */
   public static get cursorY(): number { return CursorInformation.cursorY; }
 
-  private static _handleSyncUiEvent = (args: SyncUiEventArgs) => {
+  private static _handleSyncUiEvent = (args: UiSyncEventArgs) => {
     const updateBooleanValue = (booleanValue: ConditionalBooleanValue) => {
       if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
         booleanValue.refresh();

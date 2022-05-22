@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module IconPicker
  */
@@ -13,7 +14,7 @@ import { RelativePosition } from "@itwin/appui-abstract";
 import { CommonProps, Popup, SvgSprite } from "@itwin/core-react";
 
 /** Properties for the [[IconItem]] React component
- * @alpha
+ * @alpha @deprecated
  */
 interface IconItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** icon specification */
@@ -23,7 +24,7 @@ interface IconItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, C
 }
 
 /** IconItem Functional component
- * @alpha
+ * @alpha @deprecated
  */
 // istanbul ignore next
 class IconItem extends React.PureComponent<IconItemProps> {
@@ -55,7 +56,7 @@ class IconItem extends React.PureComponent<IconItemProps> {
 }
 
 /** Properties for the [[IconPicker]] React component
- * @alpha
+ * @alpha @deprecated
  */
 // istanbul ignore next
 export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -82,7 +83,7 @@ interface IconPickerState {
 }
 
 /** IconPickerButton component
- * @alpha
+ * @alpha @deprecated
  */
 // istanbul ignore next
 export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
