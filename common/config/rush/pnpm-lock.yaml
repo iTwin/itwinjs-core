@@ -1870,7 +1870,7 @@ importers:
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       openid-client: ^4.7.4
-      puppeteer: chrome-86
+      puppeteer: ^9.0.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
@@ -1900,7 +1900,7 @@ importers:
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.9.1
-      puppeteer: 5.3.1
+      puppeteer: 9.1.1
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -2150,7 +2150,7 @@ importers:
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       openid-client: ^4.7.4
-      puppeteer: chrome-86
+      puppeteer: ^9.0.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
@@ -2179,7 +2179,7 @@ importers:
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.9.1
-      puppeteer: 5.3.1
+      puppeteer: 9.1.1
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
@@ -3472,7 +3472,7 @@ importers:
       lodash: ^4.17.10
       mocha: ^8.3.2
       nyc: ^15.1.0
-      puppeteer: chrome-86
+      puppeteer: ^9.0.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~4.4.0
@@ -3484,7 +3484,7 @@ importers:
       jsonc-parser: 2.0.3
       lodash: 4.17.21
       mocha: 8.4.0
-      puppeteer: 5.3.1
+      puppeteer: 9.1.1
       source-map-support: 0.5.21
       uuid: 7.0.3
       yargs: 16.2.0
@@ -7905,7 +7905,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 14.14.31
+      '@types/node': 16.11.7
     dev: false
 
   /@types/debug/4.1.7:
@@ -8150,10 +8150,6 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
-    dev: false
-
-  /@types/node/14.14.31:
-    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.16:
@@ -10143,7 +10139,7 @@ packages:
     dev: true
 
   /buffer-crc32/0.2.13:
-    resolution: {integrity: sha1-DTM+PwDqxQqhRUq9MO+MKl2ackI=}
+    resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
 
   /buffer-equal-constant-time/1.0.1:
     resolution: {integrity: sha1-+OcRMvf/5uAaXJaXpMbz5I1cyBk=}
@@ -11676,6 +11672,10 @@ packages:
 
   /devtools-protocol/0.0.799653:
     resolution: {integrity: sha512-t1CcaZbvm8pOlikqrsIM9GOa7Ipp07+4h/q9u0JXBWjPCjHdBl9KkddX87Vv9vBHoBGtwV79sYQNGnQM6iS5gg==}
+
+  /devtools-protocol/0.0.869402:
+    resolution: {integrity: sha512-VvlVYY+VDJe639yHs5PHISzdWTLL3Aw8rO4cvUtwvoxFd6FHbE4OpHHcde52M6096uYYazAmd4l0o5VuFRO2WA==}
+    dev: false
 
   /devtools-protocol/0.0.981744:
     resolution: {integrity: sha512-0cuGS8+jhR67Fy7qG3i3Pc7Aw494sb9yG9QgpG97SFVWwolgYjlhJg7n+UaHxOQT30d1TYu/EYe9k01ivLErIg==}
@@ -18752,6 +18752,31 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+
+  /puppeteer/9.1.1:
+    resolution: {integrity: sha512-W+nOulP2tYd/ZG99WuZC/I5ljjQQ7EUw/jQGcIb9eu8mDlZxNY2SgcJXTLG9h5gRvqA3uJOe4hZXYsd3EqioMw==}
+    engines: {node: '>=10.18.1'}
+    deprecated: Version no longer supported. Upgrade to @latest
+    requiresBuild: true
+    dependencies:
+      debug: 4.3.4
+      devtools-protocol: 0.0.869402
+      extract-zip: 2.0.1
+      https-proxy-agent: 5.0.1
+      node-fetch: 2.6.7
+      pkg-dir: 4.2.0
+      progress: 2.0.3
+      proxy-from-env: 1.1.0
+      rimraf: 3.0.2
+      tar-fs: 2.1.1
+      unbzip2-stream: 1.4.3
+      ws: 7.5.7
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    dev: false
 
   /q/1.5.1:
     resolution: {integrity: sha1-fjL3W0E4EpHQRhHxvxQQmsAGUdc=}
