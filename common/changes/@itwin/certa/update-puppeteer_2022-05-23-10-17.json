@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Update puppeteer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
