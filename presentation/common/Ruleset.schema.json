@@ -1903,7 +1903,14 @@
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
         "isDisplayed": {
-          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.",
+          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
+          "type": [
+            "string",
+            "boolean"
+          ]
+        },
+        "isReadOnly": {
+          "description": "This attribute controls whether the property field is read-only. If the attribute value is not set, the field is\nread-only when at least one of the properties is read-only.",
           "type": "boolean"
         },
         "labelOverride": {
@@ -1916,6 +1923,10 @@
         },
         "overridesPriority": {
           "description": "There may be multiple property specifications that apply to a single property and there may be conflicts between\ndifferent attributes. The `overridesPriority` attribute is here to help solve the problem - if multiple specifications\nattempt to override the same attribute, the override of specification with highest `overridesPriority` value is used.\nThe order of overrides from specification with the same `overridesPriority` is defined by the order they appear in\nthe overrides list.",
+          "type": "number"
+        },
+        "priority": {
+          "description": "This attribute controls the order in which property fields should be displayed. Property fields with higher priority\nwill appear before property fields with lower priority. If the attribute value is not set, the field's priority\nwill be the maximum priority of its properties.",
           "type": "number"
         },
         "renderer": {
@@ -2067,6 +2078,10 @@
         "handleTargetClassPolymorphically": {
           "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances targeted by the `propertiesSource` attribute.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
         },
         "nestedRelatedProperties": {
           "description": "The attribute allows loading additional related properties that are related to the target instance of this specification.",

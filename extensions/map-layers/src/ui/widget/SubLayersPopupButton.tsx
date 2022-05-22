@@ -9,6 +9,7 @@ import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@itwin
 import { SubLayersPanel } from "./SubLayersTree";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUI } from "../../mapLayers";
+import { Button } from "@itwin/itwinui-react";
 
 // cSpell:ignore droppable Sublayer
 
@@ -44,10 +45,10 @@ export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLa
 
   return (
     <>
-      <button ref={buttonRef} className="map-manager-item-sub-layer-button" title={popupOpen ? hideSubLayersLabel : showSubLayersLabel}
+      <Button size="small" styleType="borderless" ref={buttonRef} className="map-manager-item-sub-layer-button" title={popupOpen ? hideSubLayersLabel : showSubLayersLabel}
         onClick={togglePopup}>
         <WebFontIcon iconName="icon-layers" />
-      </button>
+      </Button>
       <Popup
         isOpen={popupOpen}
         position={RelativePosition.BottomRight}

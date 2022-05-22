@@ -120,7 +120,7 @@ export interface VertexTableProps {
    * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
    */
   readonly usesUnquantizedPositions?: boolean;
-  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
+  /** Quantization parameters for the vertex positions encoded into the array, if the positions are quantized;
    * and for deriving the range of positions in the table, whether quantized or not.
    */
   readonly qparams: QParams3d;

@@ -2,7 +2,7 @@
 
 exports[`FloatingWidget should render 1`] = `
 <div
-  class="nz-widget-widget nz-widget-floatingWidget"
+  class="nz-widget-widget nz-widget-floatingWidget nz-hidden"
   data-widget-id="w1"
   style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
 >
@@ -87,7 +87,7 @@ exports[`FloatingWidget should render 1`] = `
 
 exports[`FloatingWidget should render dragged 1`] = `
 <div
-  class="nz-widget-widget nz-widget-floatingWidget nz-dragged nz-minimized"
+  class="nz-widget-widget nz-widget-floatingWidget nz-dragged nz-minimized nz-hidden"
   data-widget-id="w1"
   style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
 >
@@ -172,7 +172,7 @@ exports[`FloatingWidget should render dragged 1`] = `
 
 exports[`FloatingWidget should render minimized 1`] = `
 <div
-  class="nz-widget-widget nz-widget-floatingWidget nz-minimized"
+  class="nz-widget-widget nz-widget-floatingWidget nz-minimized nz-hidden"
   data-widget-id="w1"
   style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
 >

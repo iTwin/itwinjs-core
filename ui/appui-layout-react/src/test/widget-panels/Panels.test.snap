@@ -37,6 +37,7 @@ exports[`WidgetPanels should render widget content 1`] = `
   />
   <div
     class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+    style="width: 200px;"
   >
     <div
       class="nz-content"

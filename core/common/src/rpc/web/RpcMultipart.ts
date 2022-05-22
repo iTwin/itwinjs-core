@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import { Buffer } from "buffer";
 import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";

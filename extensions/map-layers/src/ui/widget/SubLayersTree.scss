@@ -13,6 +13,9 @@
   .core-tree-node {
     >.contents {
       padding-left: 31px;
+      >.core-image-checkbox {
+        top: 5px;
+      }
     }
   }
 

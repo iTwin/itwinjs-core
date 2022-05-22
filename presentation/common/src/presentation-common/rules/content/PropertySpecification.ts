@@ -42,8 +42,10 @@ export interface PropertyOverrides {
    *   If this behavior is not desirable, set [[doNotHideOtherPropertiesOnDisplayOverride]] attribute to `true`.
    *
    * - `false`: property is made hidden.
+   *
+   * The value can also be set using an ECExpression.
    */
-  isDisplayed?: boolean;
+  isDisplayed?: boolean | string;
 
   /**
    * Custom property [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows assigning a
@@ -63,6 +65,19 @@ export interface PropertyOverrides {
    * all other properties of the same class. When `true`, this behavior is disabled.
    */
   doNotHideOtherPropertiesOnDisplayOverride?: boolean;
+
+  /**
+   * This attribute controls whether the property field is read-only. If the attribute value is not set, the field is
+   * read-only when at least one of the properties is read-only.
+   */
+  isReadOnly?: boolean;
+
+  /**
+   * This attribute controls the order in which property fields should be displayed. Property fields with higher priority
+   * will appear before property fields with lower priority. If the attribute value is not set, the field's priority
+   * will be the maximum priority of its properties.
+   */
+  priority?: number;
 }
 
 /**

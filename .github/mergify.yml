@@ -1,0 +1,12 @@
+# Configuration file for mergify
+
+pull_request_rules:
+  - name: Add reviewers to backports
+    conditions:
+      - and:
+        - base~=release\/[0-9]+.[0-9]+.x
+        - approved-reviews-by!=@iTwin/itwinjs-core-backport-reviewers
+    actions:
+      request_reviews:
+        teams:
+          - "@iTwin/itwinjs-core-backport-reviewers"

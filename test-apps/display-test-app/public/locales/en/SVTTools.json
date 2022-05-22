@@ -148,6 +148,9 @@
     "GenerateTileContent": {
       "keyin": "dta gen tile"
     },
+    "GenerateElementGraphics": {
+      "keyin": "dta gen graphics"
+    },
     "Macro": {
       "keyin": "dta macro"
     },
