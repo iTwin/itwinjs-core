@@ -10,6 +10,7 @@ import { ColorDef } from "./ColorDef";
 
 /** JSON representation of an [[RgbColor]], with each component an integer in the range [0, 255].
  * @public
+ * @extensions
  */
 export interface RgbColorProps {
   r: number;

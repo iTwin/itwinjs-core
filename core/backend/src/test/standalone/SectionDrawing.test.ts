@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { RelatedElement, SectionDrawingProps, SectionType } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
@@ -30,7 +30,7 @@ describe("SectionDrawing", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    const modelId = imodel.models.insertModel(model);
+    const modelId = imodel.models.insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     let drawing = imodel.elements.getElement<SectionDrawing>(drawingId);
@@ -41,14 +41,16 @@ describe("SectionDrawing", () => {
     expect(drawing.sectionType).to.equal(SectionType.Section);
     expect(drawing.jsonProperties.drawingToSpatialTransform).to.be.undefined;
     expect(drawing.jsonProperties.sheetToSpatialTransform).to.be.undefined;
+    expect(drawing.drawingToSpatialTransform).to.be.undefined;
+    expect(drawing.sheetToSpatialTransform).to.be.undefined;
 
     // Modify values
     const drawingToSpatial = Transform.createTranslationXYZ(1, 2, 3);
     const sheetToSpatial = Transform.createTranslationXYZ(4, 5, 6);
     drawing.spatialView = new RelatedElement({ id: "0x123" });
     drawing.sectionType = SectionType.Elevation;
-    drawing.jsonProperties.drawingToSpatialTransform = drawingToSpatial.toJSON();
-    drawing.jsonProperties.sheetToSpatialTransform = sheetToSpatial.toJSON();
+    drawing.drawingToSpatialTransform = drawingToSpatial;
+    drawing.sheetToSpatialTransform = sheetToSpatial;
 
     // Expect updated values
     const expectProps = (json: SectionDrawingProps | SectionDrawing) => {

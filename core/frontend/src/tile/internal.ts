@@ -8,7 +8,7 @@
 
 /* The order of exports below is based on dependencies between the types in each file.
  * For example, IModelTileTree derives from TileTree, so TileTree must be exported first.
- * No file inside imodeljs-frontend should import from *any* file in /tile/ *except* for this one.
+ * No file inside core-frontend should import from *any* file in /tile/ *except* for this one.
  * e.g.:
  *  import { TileTree } from "./tile/TileTree"; // NO...
  *  import { TileTree } from "./tile/internal"; // YES!
@@ -35,17 +35,23 @@ export * from "./RealityTileTree";
 export * from "./TileTreeSupplier";
 export * from "./TileTreeOwner";
 export * from "./TileTreeReference";
+export * from "./TileGeometryCollector";
 export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
 export * from "./TileRequest";
 export * from "./TileRequestChannel";
+export * from "./IModelTileRequestChannels";
+export * from "./TileRequestChannels";
 export * from "./TileUsageMarker";
+export * from "./TileUser";
+export * from "./TileUserSet";
 export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
-export * from "./map/ArcGisTokenGenerator";
-export * from "./map/ArcGisTokenManager";
+export * from "./map/ArcGISTileMap";
+export * from "./map/MapLayerAuthentication";
+export * from "./map/MapFeatureInfo";
 export * from "./map/MapLayerFormatRegistry";
 export * from "./map/ArcGisUtilities";
 export * from "./map/WmsUtilities";
@@ -81,4 +87,8 @@ export * from "./ClassifierTileTree";
 export * from "./OrbitGtTileTree";
 export * from "./map/ImageryTileTree";
 export * from "./map/MapLayerSources";
-export * from "./map/MapLayerSettingsService";
+export * from "./map/MapTiledGraphicsProvider";
+export * from "./CesiumAssetProvider";
+export * from "./ContextShareProvider";
+export * from "./ThreeDTileFormatInterpreter";
+export * from "./OPCFormatInterpreter";

@@ -2,21 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, Editor3dRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelWriteRpcInterface,
-  RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
-
-export interface CloudEnvProps {
-  iModelBank?: {
-    url: string;
-  };
-  iModelHub?: {
-    region: string;
-  };
-}
+  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  WipRpcInterface,
+} from "@itwin/core-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
@@ -28,28 +19,19 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async restartIModelHost(): Promise<void> {
     return this.forward(arguments);
   }
-  public async extractChangeSummaries(_iModelRpcProps: IModelRpcProps, _options: any): Promise<void> {
-    return this.forward(arguments);
-  }
-  public async deleteChangeCache(_iModelRpcProps: IModelRpcProps): Promise<void> {
-    return this.forward(arguments);
-  }
   public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
-  public async reportRequestContext(): Promise<ClientRequestContextProps> {
-    return this.forward(arguments);
-  }
-  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
-    return this.forward(arguments);
-  }
-  public async getCloudEnv(): Promise<CloudEnvProps> {
-    return this.forward(arguments);
-  }
-  public async createIModel(_name: string, _contextId: string, _deleteIfExists: boolean): Promise<string> {
-    return this.forward(arguments);
-  }
   public async purgeCheckpoints(_iModelId: string): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async purgeStorageCache(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async beginOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
 }
@@ -69,11 +51,10 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
 export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  IModelWriteRpcInterface,
-  Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
   SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,
   DevToolsRpcInterface,
   EventsTestRpcInterface,
+  ECSchemaRpcInterface,
 ];

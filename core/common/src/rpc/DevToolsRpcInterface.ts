@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";

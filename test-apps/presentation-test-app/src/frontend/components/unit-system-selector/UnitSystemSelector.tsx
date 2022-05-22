@@ -2,66 +2,45 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "./UnitSystemSelector.css";
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export interface UnitSystemSelectorProps {
-  selectedUnitSystem: PresentationUnitSystem | undefined;
-  onUnitSystemSelected: (unitSystem: PresentationUnitSystem | undefined) => void;
+  selectedUnitSystem: UnitSystemKey | undefined;
+  onUnitSystemSelected: (unitSystem: UnitSystemKey | undefined) => void;
 }
 
-export default function UnitSystemSelector(props: UnitSystemSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
-  const { selectedUnitSystem, onUnitSystemSelected } = props;
-  const memoizedOnUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!onUnitSystemSelected)
-      return;
-    switch (evt.target.value) {
-      case PresentationUnitSystem.BritishImperial:
-        onUnitSystemSelected(PresentationUnitSystem.BritishImperial);
-        break;
-      case PresentationUnitSystem.Metric:
-        onUnitSystemSelected(PresentationUnitSystem.Metric);
-        break;
-      case PresentationUnitSystem.UsCustomary:
-        onUnitSystemSelected(PresentationUnitSystem.UsCustomary);
-        break;
-      case PresentationUnitSystem.UsSurvey:
-        onUnitSystemSelected(PresentationUnitSystem.UsSurvey);
-        break;
-      default:
-        onUnitSystemSelected(undefined);
-    }
-  }, [onUnitSystemSelected]);
+export function UnitSystemSelector(props: UnitSystemSelectorProps) {
+  const { selectedUnitSystem, onUnitSystemSelected: onUnitSystemSelectedProp } = props;
 
   return (
     <div className="UnitSystemSelector">
-      {IModelApp.i18n.translate("Sample:controls.notifications.select-unit-system")}:
-      {/* eslint-disable-next-line jsx-a11y/no-onchange */}
-      <select onChange={memoizedOnUnitSystemSelected} value={selectedUnitSystem}>
-        {availableUnitSystems.map(({ label, value }: { label: string, value: string }) => (
-          <option value={value} key={value}>{label}</option>
-        ))}
-      </select>
+      <Select
+        options={availableUnitSystems}
+        value={selectedUnitSystem}
+        placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-unit-system")}
+        onChange={onUnitSystemSelectedProp}
+        size="small"
+      />
     </div>
   );
 }
 
-const availableUnitSystems = [{
-  value: "",
+const availableUnitSystems: SelectOption<UnitSystemKey | undefined>[] = [{
+  value: undefined,
   label: "",
 }, {
-  value: PresentationUnitSystem.Metric,
+  value: "metric",
   label: "Metric",
 }, {
-  value: PresentationUnitSystem.BritishImperial,
+  value: "imperial",
   label: "British Imperial",
 }, {
-  value: PresentationUnitSystem.UsCustomary,
+  value: "usCustomary",
   label: "US Customary",
 }, {
-  value: PresentationUnitSystem.UsSurvey,
+  value: "usSurvey",
   label: "US Survey",
 }];

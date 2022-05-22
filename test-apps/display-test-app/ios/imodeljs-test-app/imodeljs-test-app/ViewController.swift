@@ -41,7 +41,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
     
         let host = IModelJsHost.sharedInstance();
         
-        // let frontProvider = "http://192.168.1.242:3000";
+//        let frontProvider = "http://192.168.18.38:3000";
 
         let frontProvider = "imodeljs://app";
 
@@ -49,7 +49,6 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         if (bimFile != nil) {
             let encodedPath = bimFile?.path.replacingOccurrences(of: "/", with: "%2F");
             queryParam.append("&standalone=true");
-            queryParam.append("&signInForStandalone=true")
             queryParam.append("&iModelName=" + encodedPath!);
         }
 
@@ -73,7 +72,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         pickSnapshot();
     }
     func pickSnapshot(){
-        let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.app.bim"], in: .open);
+        let picker = UIDocumentPickerViewController(documentTypes: ["public.data"], in: .open);
         picker.modalPresentationStyle = .fullScreen;
         picker.allowsMultipleSelection = false;
         picker.directoryURL = getDocumentsDirectory();

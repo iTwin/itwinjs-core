@@ -39,24 +39,39 @@ For example, a physical valve will have its serial number permanently affixed to
 
 ## CodeSpec
 
-A `CodeSpec` (aka **Code Specification**) captures the rules for encoding and decoding significant business information into and from a Code.
-A `CodeSpec` is associated to an Element subclass via configuration of the system that edits the BIS Repository, such as the iTwin.js library, which can collaborate with a shared service (e.g. by an 'Identification Code Service') to generate and validate Codes.
+A `CodeSpec` (aka **Code Specification**) names and specifies a new *classification* for Codes.
+A `CodeSpec` also captures the rules for encoding and decoding significant business information into and from a Code.
+For example, the Codes for ViewDefinitions and the Codes for Equipment have different *encoding* rules and uniqueness constraints, so would each have a separate `CodeSpec`.
 
+Typically, a `CodeSpec` has a strong correlation with a branch of the Element class hierarchy and is often named after an abstract base class that defines the starting point of that branch.
+It is common for all subclasses (direct or indirect) descending from that base class to share the same `CodeSpec`.
+For example, the standard `CodeSpec` called "bis:ViewDefinition" helps ensure unique names for all subclasses of the `BisCore:ViewDefinition` Element class.
+Configuration can define the association between Element class and CodeSpec so that a shared service (e.g. 'Identification Code Service') can be used to generate and validate Codes.
 The CodeSpec can also dictate that Codes for instances of the Element class should be null. This is appropriate when the modeled real-world entities don’t have a meaningful real-world identifier (e.g. a piece of baseboard, a pile of dirt, an average bolt).
+
+> Note: To ensure unique `CodeSpec` names, a namespace (often the alias of a schema) should be used as demonstrated with the standard "bis:ViewDefinition" `CodeSpec`.
 
 ## CodeSpec Property
 
 Each `Element` has a `CodeSpec` navigation property relating it to a `CodeSpec`  that governs its Code.
-A single BIS Repository (e.g. an iModel) may use many Code Specifications--different classes of Elements can have different coding conventions.
+A single BIS Repository (e.g. an iModel) is expected to use many Code Specifications--different classes of Elements can have different coding conventions.
 
 ## CodeScope Property
 
 Each `Element` has a `CodeScope` navigation property that points to another Element that provides the uniqueness scope for its Code.
 The 'scoping' Element can represent the repository as a whole, a model, an assembly, etc.
-The 'scoping' Element could also represent some entity with a scope that is greater than the current BIS Repository. In this case, uniqueness within that scope can only be enforced by an external 'Identification Code Service'.
+The `CodeSpec` specifies the types of elements that can be used as a `CodeScope`.
+The most common types are:
+
+- `Repository` - CodeValues are unique across an entire repository.
+- `Model` - CodeValues are unique within a Model.
+- `ParentElement` - CodeValues are unique among children with the same parent.
+- `RelatedElement` - CodeValues are unique across the set related to the same element.
 
 For example, a Floor Code (like "1" or "2") must be unique within a Building, but is not unique across Buildings.
 In this example, the Building instance is providing the CodeScope for the Floor.
+
+> Note: The 'scoping' Element could also represent some entity with a scope that is greater than the current BIS Repository. In this case, uniqueness within that scope can only be enforced by an external 'Identification Code Service'.
 
 ## Uniqueness within a BIS Repository
 

@@ -69,7 +69,7 @@ export class RuledSweep extends SolidPrimitive {
   public cloneContours(): CurveCollection[] {
     const result = [];
     for (const sweepable of this._contours) {
-      result.push(sweepable.curves.clone() as CurveCollection);
+      result.push(sweepable.curves.clone());
     }
     return result;
   }
@@ -104,7 +104,7 @@ export class RuledSweep extends SolidPrimitive {
   /** Test if `other` is an instance of a `RuledSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof RuledSweep; }
   /** test same contour geometry and capping. */
-  public isAlmostEqual(other: GeometryQuery): boolean {
+  public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RuledSweep) {
       if (this.capped !== other.capped) return false;
       if (this._contours.length !== other._contours.length) return false;

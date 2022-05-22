@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
-  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
+  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
   ModelSelectorState, OrthographicViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/core-frontend";
+import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestSeqClient } from "./TestSeqClient";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, bindings)) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rows.push(row);
   }
   return rows;
@@ -27,32 +26,30 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    await IModelApp.shutdown();
-    await MockRender.App.startup({
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
-    });
+      hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
+    }, true);
 
     Logger.initializeToConsole();
-    Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
+    Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "ConnectionReadTest";
-
-    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-    IModelApp.authorizationClient = authorizationClient;
+    await TestUtility.initialize(TestUsers.regular);
+    IModelApp.authorizationClient = TestUtility.iTwinPlatformEnv.authClient;
 
     // Setup a model with a large number of change sets
-    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.connectionRead);
 
-    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
@@ -116,6 +113,7 @@ describe("IModelConnection (#integration)", () => {
 
   });
 
+  // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
   it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
@@ -138,53 +136,29 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
-    const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.noVersions);
+    const noVersionsIModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await CheckpointConnection.openRemote(projectId, iModelId);
+    const noVersionsIModel2 = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
-  it("should send a usage log everytime an iModel is opened", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
-
-    // Set a new session id to isolate the usage logs
-    IModelApp.sessionId = Guid.createValue();
-
-    // Open multiple connections
-    let n = 0;
-    const MAX_CONNECTIONS = 12;
-    while (n++ < MAX_CONNECTIONS) {
-      const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
-      assert.isNotNull(noVersionsIModel);
-    }
-
-    const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    await pause(5000); // Give ULAS and SEQ about 5 seconds to catch up
-
-    const filter = `And(And(Equal(ServiceRequest,"FePostClientLog"),has(UsageLogEntry)),Equal(UsageLogEntry.CorrelationId,"${IModelApp.sessionId}"))`;
-    const seqClient = new TestSeqClient(true /* = forUsageLogging */);
-    const results = await seqClient.query(filter, MAX_CONNECTIONS * 2);
-    assert.equal(results.length, MAX_CONNECTIONS);
-  });
-
   it("should be able to open the same IModel many times", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, "ReadOnlyTest");
 
-    const readOnlyTest = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.latest());
+    const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = CheckpointConnection.openRemote(projectId, iModelId)
+      const promise = CheckpointConnection.openRemote(iTwinId, iModelId)
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
@@ -196,9 +170,9 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
+    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, "ConnectionReadTest");
+    iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
@@ -227,8 +201,7 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  // This require new build of Addon
-  it.skip("ECSQL with BLOB", async () => {
+  it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
     let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
@@ -243,6 +216,7 @@ describe("IModelConnection (#integration)", () => {
     rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
+
   // This require new build of Addon
   it.skip("Parameterized ECSQL", async () => {
     assert.exists(iModel);

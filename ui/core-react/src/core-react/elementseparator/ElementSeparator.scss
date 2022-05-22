@@ -1,0 +1,85 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors";
+@import "../z-index";
+
+@function background-line($orientation) {
+  @return linear-gradient(
+    $orientation,
+    transparent calc(50% - 1px),
+    $buic-foreground-primary calc(50%),
+    transparent calc(50% + 1px));
+}
+
+@mixin keyframes($animation-name) {
+  @-webkit-keyframes #{$animation-name} {
+    @content;
+  }
+  @-moz-keyframes #{$animation-name} {
+    @content;
+  }
+  @-ms-keyframes #{$animation-name} {
+    @content;
+  }
+  @-o-keyframes #{$animation-name} {
+    @content;
+  }
+  @keyframes #{$animation-name} {
+    @content;
+  }
+}
+
+@mixin animation($str) {
+  -webkit-animation: #{$str};
+  -moz-animation: #{$str};
+  -ms-animation: #{$str};
+  -o-animation: #{$str};
+  animation: #{$str};
+}
+
+@include keyframes(fade-in) {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@include keyframes(fade-out) {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.core-element-separator {
+  touch-action: none;
+  display: inline-block;
+  border-style: none;
+  padding: 0px;
+  opacity: 0;
+  z-index: 1;
+
+  &--vertical {
+    width: 100%;
+    cursor: row-resize;
+    background: background-line(to bottom);
+  }
+
+  &--horizontal {
+    height: 100%;
+    cursor: col-resize;
+    background: background-line(to right);
+  }
+
+  &.core-element-separator-group-hovered {
+    @include animation('fade-in 0.2s');
+    opacity: 1;
+  }
+
+  &.core-element-separator-group-unhovered {
+    @include animation('fade-out 0.2s');
+    opacity: 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

@@ -1,0 +1,159 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "../inputs/variables";
+@import "../scrollbar";
+@import "../z-index";
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/itwinui-css/scss/style/variables";
+
+//HACK
+// there is an issue in react-select where generated styles have higher
+// priority than the class prefix style solution, which we use. I thought
+// this was the best solution after testing several, the better of which
+// caused an obscure node-sass error
+.uicore-reactSelectTop {
+  $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
+
+  font-size:          $iui-font-size;
+  font-weight:        normal;
+  color:              $buic-text-color;
+  background-image:   none;
+  border-radius:      $iui-border-radius;
+  box-sizing:         border-box;
+  box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
+  transition:         border-color $iui-speed-fast ease-in-out, box-shadow $iui-speed-fast ease-in-out;
+
+  @include firefox-only {
+    padding-top:      $uicore-select-padding-bordered - 1px;
+    padding-bottom:   $uicore-select-padding-bordered - 1px;
+  }
+
+  .react-select {
+    &__control {
+      background-color: $buic-background-control;
+      color: $buic-foreground-body;
+      border: 1px solid $buic-inputs-border;
+      cursor: pointer;
+
+      svg {
+        width: unset;
+        height: unset;
+      }
+
+      &--is-focused {
+        outline: 0px;
+        border-color: $buic-foreground-focus-border;
+        box-shadow: $uicore-inputs-focus-boxshadow;
+
+        &:hover {
+          border-color: $buic-foreground-focus-border;
+        }
+      }
+
+      &--is-disabled {
+        background-color: $buic-background-control-disabled;
+        color: $buic-text-color-disabled;
+        opacity: $uicore-opacity-disabled;
+        cursor: not-allowed;
+      }
+
+      .react-select__placeholder {
+        color: $buic-foreground-disabled;
+      }
+
+      .react-select__value-container {
+        .react-select__multi-value {
+          background: $buic-background-control;
+          color: $buic-foreground-primary;
+
+          .react-select__multi-value__label {
+            color: $buic-foreground-body;
+
+            .react-select__multi-value__remove {
+              background: $buic-background-control;
+            }
+          }
+        }
+
+        .react-select__multi-value__remove {
+          cursor: pointer;
+        }
+      }
+
+    }
+
+    &__single-value {
+      color: $buic-foreground-body;
+    }
+
+    &__indicator {
+      color: $buic-foreground-body;
+
+      &:hover {
+        color: $buic-foreground-activehover;
+        cursor: pointer;
+      }
+
+      &-separator {
+        visibility: hidden;
+      }
+    }
+
+    &__input {
+      input {
+        width: 100% !important;
+        color: $buic-foreground-body !important;
+      }
+    }
+
+    &__option {
+      &:active {
+        background-color: $buic-background-active-overlay;
+      }
+
+      &:hover:not(.react-select__option--is-selected) {
+        background-color: $buic-background-hover-overlay;
+      }
+
+      &--is-focused:not(.react-select__option--is-selected) {
+        background-color: $buic-background-hover-overlay;
+      }
+
+      &--is-selected {
+        color: $buic-foreground-body;
+        background-color: $buic-background-pressed-overlay;
+
+        &:active {
+          background-color: $buic-background-active-overlay;
+        }
+      }
+    }
+
+    &__menu {
+      //HACK: double selector for specificity
+      &#{&} {
+        margin-top: 0;
+        color: $buic-foreground-body;
+        background-color: $buic-background-control;
+        @include uicore-z-index(dialog-popup);
+      }
+
+      .react-select__menu-list {
+        @include uicore-scrollbar();
+      }
+    }
+  }
+
+  // Double .react-select__menu intended to be more specific than the inline style.
+  .react-select__menu.react-select__menu {
+    @include uicore-scrollbar($buic-background-scrollbar, $buic-foreground-body);
+    margin-top: 0;
+    color: $buic-foreground-body;
+    background-color: $buic-background-control;
+    @include uicore-z-index(dialog-popup);
+  }
+}

@@ -3,12 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomId = (): Id64String => {
   return Id64.fromLocalAndBriefcaseIds(faker.random.number(), faker.random.number());
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRgbColor = () => {
   return `rgb(
     ${faker.random.number({ max: 255 })},
@@ -17,6 +23,9 @@ export const createRandomRgbColor = () => {
   )`;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomHexColor = () => {
   const elements = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
   let result = "#";

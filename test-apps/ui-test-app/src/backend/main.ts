@@ -3,39 +3,49 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
-import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
-import { Config, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Presentation } from "@bentley/presentation-backend";
-import { initializeLogging, initializeWeb } from "./web/BackendServer";
+import { IModelHostConfiguration } from "@itwin/core-backend";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
+import { Presentation } from "@itwin/presentation-backend";
+import { getSupportedRpcs } from "../common/rpcs";
+import { loggerCategory } from "../common/TestAppConfiguration";
 import { initializeElectron } from "./electron/ElectronMain";
+import { initializeLogging } from "./logging";
+import { initializeWeb } from "./web/BackendServer";
+import { RpcManager } from "@itwin/core-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
-    // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
+    // Load .env file first
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
         require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
 
-    if (!ProcessDetector.isElectronAppBackend) {
-      initializeLogging();
-    }
+    initializeLogging();
 
-    const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-    if (iModelJsApplicationInsightsKey) {
-      const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion, clientAuthManager: IModelHost.clientAuthIntrospectionManager });
-      IModelHost.telemetry.addClient(applicationInsightsClient);
-    }
+    const iModelHost = new IModelHostConfiguration();
+    const iModelClient = new  IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+
+    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
-      await initializeElectron();
+      await initializeElectron(iModelHost);
+    } else if (ProcessDetector.isIOSAppBackend) {
+      await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
+    } else if (ProcessDetector.isAndroidAppBackend) {
+      await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
-      await initializeWeb();
+      await initializeWeb(iModelHost);
     }
 
     // initialize presentation-backend
@@ -46,8 +56,9 @@ import { initializeElectron } from "./electron/ElectronMain";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
-  } catch (error) {
-    Logger.logError("ui-test-app", error);
+
+  } catch (error: any) {
+    Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }
 })();

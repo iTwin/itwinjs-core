@@ -5,7 +5,7 @@
 const fs = require("fs-extra");
 const webpack = require("webpack");
 const chalk = require("chalk");
-const { PrettyLoggingPlugin } = require("@bentley/webpack-tools-core");
+const { PrettyLoggingPlugin } = require("@itwin/core-webpack-tools");
 
 function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
   try {

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
+import { OpenMode } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 
 export function setTitle(imodel: IModelConnection) {
   let prefix = "";
   if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())
-    prefix = undefined !== InteractiveEditingSession.get(imodel) ? "[ EDIT ] " : "[ R/W ] ";
+    prefix = imodel.editingScope ? "[ EDIT ] " : "[ R/W ] ";
 
   document.title = `${prefix}${imodel.key} - Display Test App`;
 }

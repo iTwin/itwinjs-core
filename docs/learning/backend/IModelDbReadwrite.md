@@ -16,4 +16,3 @@ Use [BriefcaseDb.pushChanges]($backend) to push local changes to iModelHub as a 
 
 > Only a single application can push to iModelHub at a time. IModelDb.pushChanges automatically retries push on appropriate failures. However, it is possible that all retry attempts fail, if there are a lot of other applications pushing at the same time. In that case, push should be attempted again later.
 
-An app that modifies models, elements, or codes must use [ConcurrencyControl](./ConcurrencyControl.md) to coordinate with other users.

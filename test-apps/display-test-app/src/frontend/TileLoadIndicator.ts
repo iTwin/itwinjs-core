@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 export class TileLoadIndicator {
   private readonly _progress: HTMLProgressElement;
@@ -18,10 +18,10 @@ export class TileLoadIndicator {
   private update(): void {
     let ready = 0;
     let total = 0;
-    IModelApp.viewManager.forEachViewport((vp) => {
+    for (const vp of IModelApp.viewManager) {
       ready += vp.numReadyTiles;
       total += vp.numReadyTiles + vp.numRequestedTiles;
-    });
+    }
 
     const pctComplete = (total > 0) ? (ready / total) : 1.0;
     this._progress.value = pctComplete;

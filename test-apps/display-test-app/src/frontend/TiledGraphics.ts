@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { QueryRowFormat } from "@itwin/core-common";
 import {
   FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
@@ -19,13 +20,13 @@ class ExternalTreeRef extends TileTreeReference {
     this._ovrs = ovrs;
   }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return this._ref.castsShadows;
   }
 
   public get treeOwner() { return this._ref.treeOwner; }
 
-  public addToScene(context: SceneContext): void {
+  public override addToScene(context: SceneContext): void {
     const tree = this.treeOwner.load();
     if (undefined === tree)
       return;
@@ -49,8 +50,8 @@ class Provider implements TiledGraphicsProvider {
 
   private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
     this.iModel = iModel;
-    for (const kvp of iModel.models.loaded) {
-      const spatial = kvp[1].asSpatialModel;
+    for (const model of iModel.models) {
+      const spatial = model.asSpatialModel;
       if (undefined !== spatial) {
         const ref = spatial.createTileTreeReference(vp.view);
         this._refs.push(new ExternalTreeRef(ref, ovrs));
@@ -72,7 +73,7 @@ class Provider implements TiledGraphicsProvider {
     // Enable all categories (and subcategories thereof)
     const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const catIds: string[] = [];
-    for await (const catId of iModel.query(ecsql))
+    for await (const catId of iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       catIds.push(catId.categoryId);
 
     const subcatsRequest = iModel.subcategories.load(catIds);
@@ -119,7 +120,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
     return;
   }

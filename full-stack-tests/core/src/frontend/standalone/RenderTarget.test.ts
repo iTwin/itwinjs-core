@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-} from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
+import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import {
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
+  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+} from "@itwin/core-frontend";
+import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+} from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -22,20 +23,19 @@ describe("Vertex buffer objects", () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    await IModelApp.startup({ renderSys: renderSysOpts });
+    await TestUtility.startFrontend({ renderSys: renderSysOpts });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should render correctly", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = true;
+      vp.view.viewFlags = vp.view.viewFlags.with("visibleEdges", true);
 
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);
@@ -91,13 +91,13 @@ describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should have expected view definition", async () => {
@@ -192,9 +192,7 @@ describe("RenderTarget", () => {
 
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
-      const vf = vp.view.viewFlags;
-      vf.lighting = false;
-      vp.invalidateRenderPlan();
+      vp.viewFlags = vp.viewFlags.with("lighting", false);
       await vp.drawFrame();
 
       const white = Color.from(0xffffffff);
@@ -204,8 +202,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(white)).to.be.true;
 
       // In wireframe, same colors, but center pixel will be background color - only edges draw.
-      vf.renderMode = RenderMode.Wireframe;
-      vp.invalidateRenderPlan();
+      vp.viewFlags = vp.viewFlags.withRenderMode(RenderMode.Wireframe);
       await vp.drawFrame();
 
       colors = vp.readUniqueColors();
@@ -224,13 +221,13 @@ describe("RenderTarget", () => {
   });
 
   it("should read image at expected sizes", async () => {
-    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImage is in device pixels. vp.target.viewRect is in device pixels.
+    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImageBuffer is in device pixels. vp.target.viewRect is in device pixels.
     const cssRect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
       const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
-        const img = vp.readImage(readRect, targetSize)!;
+        const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
         expect(img.height).to.equal(Math.floor(expectedHeight));
@@ -240,7 +237,6 @@ describe("RenderTarget", () => {
 
       // Read full image, no resize
       expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), undefined, devRect.width, devRect.height);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image, no resize
@@ -254,7 +250,7 @@ describe("RenderTarget", () => {
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), new Point2d(50, 200), 50, 200);
+      expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
@@ -268,8 +264,7 @@ describe("RenderTarget", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";
       const subcatId = "0x18";
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
 
       type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
@@ -296,7 +291,7 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Specify element is nonLocatable
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ nonLocatable: true }));
+      ovrProvider.ovrFunc = (ovrs) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ nonLocatable: true }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
@@ -307,7 +302,7 @@ describe("RenderTarget", () => {
       expect(pixels.containsElement(elemId)).to.be.true;
 
       // Specify element is drawn blue
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.blue));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -325,7 +320,7 @@ describe("RenderTarget", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.create(0x7f0000)) }); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -335,7 +330,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
 
       // Override by subcategory
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -343,8 +338,8 @@ describe("RenderTarget", () => {
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.blue));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.red));
+        ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -352,7 +347,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromTransparency(1.0));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromTransparency(1.0) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -366,7 +361,7 @@ describe("RenderTarget", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -380,7 +375,7 @@ describe("RenderTarget", () => {
           expect(c.g).to.equal(0);
           expect(c.b).least(0x70);
           expect(c.b).most(0x90);
-          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
+          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
         }
       }
     });
@@ -389,9 +384,7 @@ describe("RenderTarget", () => {
   it("should augment symbology", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
       // Draw unlit surfaces only - a white slab on a black background.
-      const vf = vp.viewFlags.clone();
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
 
       const expectSurfaceColor = async (color: ColorDef) => {
         await vp.waitForAllTilesToRender();
@@ -531,7 +524,7 @@ describe("RenderTarget", () => {
       IModelApp.viewManager.dropDecorator(decorator);
 
       // expect green blended with black background
-      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      const testColor = vp.readColor(0, 0); // top left pixel
       expect(testColor.r).equals(0);
       expect(testColor.g).approximately(128, 3);
       expect(testColor.b).equals(0);
@@ -541,8 +534,7 @@ describe("RenderTarget", () => {
   it("should render hilite", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
       vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
@@ -643,12 +635,10 @@ describe("RenderTarget", () => {
 
     const fullRect = new ViewRect(0, 0, 100, 100);
     await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.backgroundMap = true;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
       await vp.waitForAllTilesToRender();
-      const mapTreeRef = vp.displayStyle.backgroundMap;
+      const mapTreeRef = vp.backgroundMap!;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
     });
@@ -676,8 +666,7 @@ describe("RenderTarget", () => {
   it("should clip using a single plane", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
+      vp.viewFlags = vp.viewFlags.with("visibleEdges", false);
 
       const clip = ClipVector.fromJSON([{
         shape: {
@@ -687,15 +676,15 @@ describe("RenderTarget", () => {
       }]);
       expect(clip).to.not.be.undefined;
       vp.view.setViewClip(clip);
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON({
+        ...vp.displayStyle.settings.clipStyle.toJSON(),
+        outsideColor: { r: 255, g: 0, b: 0 },
+        insideColor: { r: 0, g: 255, b: 0 },
+      });
 
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
-
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
 
       // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
       const colors = vp.readUniqueColors();

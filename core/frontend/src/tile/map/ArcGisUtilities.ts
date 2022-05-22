@@ -2,15 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Angle } from "@bentley/geometry-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../imodeljs-frontend";
-import { MapLayerSourceValidation } from "../internal";
-import { MapCartoRectangle } from "./MapCartoRectangle";
-import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
-import { ArcGisTokenClientType } from "./ArcGisTokenGenerator";
-import { ArcGisTokenManager } from "./ArcGisTokenManager";
+import { Angle } from "@itwin/core-geometry";
+import { MapSubLayerProps } from "@itwin/core-common";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { IModelApp } from "../../IModelApp";
 
 /** @packageDocumentation
  * @module Tiles
@@ -47,13 +43,16 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(new FrontendRequestContext(""), `${url}?f=pjson`);
-
-    return capabilities;
+    const capabilities = await request(`${url}?f=pjson`, {
+      method: "GET",
+      responseType: "json",
+    });
+    return capabilities.body;
   }
+
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
-    const services = await getJson(new FrontendRequestContext(""), "https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
+    const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
 
     if (!Array.isArray(services))
       return sources;
@@ -81,7 +80,7 @@ export class ArcGisUtilities {
     if (undefined === baseUrl)
       baseUrl = url;
     let sources = new Array<MapLayerSource>();
-    const json = await getJson(new FrontendRequestContext(""), `${url}?f=json`);
+    const json = await getJson(`${url}?f=json`);
     if (json !== undefined) {
       if (Array.isArray(json.folders)) {
         for (const folder of json.folders) {
@@ -106,7 +105,7 @@ export class ArcGisUtilities {
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
+      const json = await getJson(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
       if (!json) break;
       start = json.nextStart ? json.nextStart : -1;
       if (json !== undefined && Array.isArray(json.results)) {
@@ -126,10 +125,27 @@ export class ArcGisUtilities {
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
+
+      // If we got a 'Token Required' error, lets check what authentification methods this ESRI service offers
+      // and return information needed to initiate the authentification process... the end-user
+      // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        return { status: MapLayerSourceStatus.RequireAuth };
+        return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials };
+        return { status: MapLayerSourceStatus.InvalidCredentials};
+    }
+
+    // Check this service support map queries
+    let hasMapCapability = false;
+    try {
+      if (json.capabilities
+        && typeof json.capabilities === "string"
+        && json.capabilities.toLowerCase().includes("map")) {
+        hasMapCapability = true;
+      }
+    } catch { }
+    if (!hasMapCapability) {
+      return { status: MapLayerSourceStatus.InvalidFormat};
     }
 
     let subLayers;
@@ -144,9 +160,10 @@ export class ArcGisUtilities {
       }
     }
     return { status: MapLayerSourceStatus.Valid, subLayers };
-
   }
+
   private static _serviceCache = new Map<string, any>();
+
   public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
@@ -159,16 +176,14 @@ export class ArcGisUtilities {
         method: "GET",
         responseType: "json",
       };
-      let tokenParam = "";
-      if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token?.token) {
-          tokenParam = `&token=${token.token}`;
-        } else if (token?.error)
-          return token;   // An error occurred, return immediately
+
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      if (accessClient) {
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
       }
-      const finalUrl = `${url}?f=json${tokenParam}`;
-      const data = await request(new FrontendRequestContext(""), finalUrl, options);
+      const data = await request(tmpUrl.toString(), options);
       const json = data.body ?? undefined;
 
       // Cache the response only if it doesn't contain a token error.
@@ -190,13 +205,16 @@ export class ArcGisUtilities {
       return cached;
 
     try {
-      let tokenParam = "";
-      if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token?.token)
-          tokenParam = `&token=${token.token}`;
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      tmpUrl.searchParams.append("option", "footprints");
+      tmpUrl.searchParams.append("outSR", "4326");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      if (accessClient) {
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
       }
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
+
+      const json = await getJson(tmpUrl.toString());
       ArcGisUtilities._footprintCache.set(url, json);
       return json;
     } catch (_error) {
@@ -204,4 +222,22 @@ export class ArcGisUtilities {
       return undefined;
     }
   }
+
+  // return the appended access token if available.
+  public static async appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
+
+    // Append security token if available
+    let accessToken: MapLayerAccessToken|undefined;
+    try {
+      accessToken = await accessClient.getAccessToken(accessTokenParams);
+    } catch {}
+
+    if (accessToken?.token) {
+      url.searchParams.append("token", accessToken.token);
+      return accessToken;
+    }
+
+    return undefined;
+  }
+
 }

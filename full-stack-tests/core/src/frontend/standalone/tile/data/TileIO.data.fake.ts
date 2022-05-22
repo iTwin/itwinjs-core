@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CurrentImdlVersion } from "@bentley/imodeljs-common";
+import { CurrentImdlVersion } from "@itwin/core-common";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 
 type TestCaseName = "rectangle" | "triangles" | "lineString" | "lineStrings" | "cylinder";

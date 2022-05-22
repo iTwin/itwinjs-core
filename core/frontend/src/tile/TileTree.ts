@@ -6,17 +6,20 @@
  * @module Tiles
  */
 
-import { BeDuration, BeTimePoint, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix4d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
+import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
+import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import { Tile, TileDrawArgs, TileLoadPriority, TileTreeParams } from "./internal";
+import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
- * @beta
+ * @see [[TileTreeOwner]].
+ * @public
+ * @extensions
  */
 export enum TileTreeLoadStatus {
   /** No attempt to load the tile tree has yet been made. */
@@ -35,9 +38,15 @@ export enum TileTreeLoadStatus {
  *  - A [[DisplayStyleState]]'s map settings or reality models;
  *  - [ViewAttachment]($backend)s in a [[SheetModelState]];
  *  - [[TiledGraphicsProvider]]s associated with a viewport.
+ *
  * The same TileTree can be displayed in any number of viewports using multiple [[TileTreeReference]]s.
  * A TileTree's lifetime is managed by a [[TileTreeOwner]].
- * @beta
+ *
+ * @note Some methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be
+ * overridden instead to customize the behavior. For example, [[selectTiles]] should not be overridden; instead, override the[[_selectTiles]] method
+ * that it calls.
+ * @public
+ * @extensions
  */
 export abstract class TileTree {
   private _isDisposed = false;
@@ -50,7 +59,10 @@ export abstract class TileTree {
   public readonly iModelTransform: Transform;
   /** Uniquely identifies this tree among all other tile trees associated with the iModel. */
   public readonly id: string;
-  /** @internal */
+  /** A 64-bit identifier for this tile tree, unique  within the context of its [[IModelConnection]].
+   * For a tile tree associated with a [[GeometricModelState]], this is the Id of the model. Other types of tile trees
+   * typically use a transient Id obtained from [[IModelConnection.transientIds]].
+   */
   public readonly modelId: Id64String;
   /** The length of time after which tiles belonging to this tree are considered elegible for disposal if they are no longer in use. */
   public readonly expirationTime: BeDuration;
@@ -93,9 +105,11 @@ export abstract class TileTree {
 
   /** The volume of space occupied by this tile tree. */
   public get range(): ElementAlignedBox3d { return this.rootTile.range; }
-  /** @internal */
+  /** The most recent time at which tiles [[selectTiles]] was called. */
   public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
-  /** @internal */
+  /** True if a tile and its child tiles should not be drawn simultaneously.
+   * Default: true.
+   */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
   /** Constructor */
@@ -119,7 +133,7 @@ export abstract class TileTree {
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
-    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, tiles, args.readyTiles);
     args.processSelectedTiles(tiles);
     return tiles;
   }
@@ -134,17 +148,14 @@ export abstract class TileTree {
 
     this._isDisposed = true;
     dispose(this.rootTile);
-    dispose(this.clipVolume);
   }
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.rootTile.collectStatistics(stats);
-    if (undefined !== this.clipVolume)
-      this.clipVolume.collectStatistics(stats);
   }
 
-  /** Returns the number of [[Tile]]s currently in memory belonging to this tree. */
+  /** Returns the number of [[Tile]]s currently in memory belonging to this tree, primarily for debugging. */
   public countTiles(): number {
     return 1 + this.rootTile.countDescendants();
   }
@@ -153,4 +164,36 @@ export abstract class TileTree {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void {
     this.rootTile.extendRangeForContent(range, matrix, location, frustumPlanes);
   }
+
+  /**
+   * Return the transform from the tile tree's coordinate space to [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates.
+   * If a geographic coordinate system is present then this transform will be calculated at the tile tree center.
+   * @beta
+   */
+  public async getEcefTransform(): Promise<Transform | undefined> {
+    if (!this.iModel.ecefLocation)
+      return undefined;
+
+    let dbToEcef: Transform | undefined;
+    const range = this.contentRange ? this.contentRange : this.range;
+    const center = range.localXYZToWorld(.5, .5, .5);
+    if (center) {
+      this.iModelTransform.multiplyPoint3d(center, center);
+      const ecefToDb = await calculateEcefToDbTransformAtLocation(center, this.iModel);
+      dbToEcef = ecefToDb?.inverse();
+    }
+    if (!dbToEcef)
+      dbToEcef = this.iModel.ecefLocation.getTransform();
+
+    return dbToEcef.multiplyTransformTransform(this.iModelTransform);
+  }
+
+  /** Populate [[TileGeometryCollector.polyfaces]] with geometry obtained from this tile tree's tiles satisfying the collector's criteria.
+   * The base implementation does nothing.
+   * @see [[TileTreeReference.createGeometryTreeReference]] to attempt to create a TileTree that can collect geometry.
+   * @beta
+   */
+  public collectTileGeometry(_collector: TileGeometryCollector): void {
+  }
 }
+

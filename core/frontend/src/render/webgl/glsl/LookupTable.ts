@@ -33,8 +33,10 @@ const initializerTemplate = `
   {LUTCENTER} = vec2(0.5*{LUTSTEPX}, 0.5*{LUTSTEPY});
 `;
 
-/** @internal */
-export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: string = "1.0") {
+/** Add support for a lookup table to the vertex shader. Returns the code used to initialize the global variables.
+ * @internal
+ */
+export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: string = "1.0", addInitializer = true): string {
   sb.addFunction(computeLUTCoords);
 
   const lutStepX = `g_${lutName}_stepX`;
@@ -50,10 +52,13 @@ export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: s
   initializerSpecific = initializerSpecific.replace(/{LUTSTEPY}/g, lutStepY);
   initializerSpecific = initializerSpecific.replace(/{LUTCENTER}/g, lutCenter);
   initializerSpecific = initializerSpecific.replace(/{LUTPARAMS}/g, lutParams);
-  sb.addInitializer(initializerSpecific);
+  if (addInitializer)
+    sb.addInitializer(initializerSpecific);
 
   let computeCoordsSpecific = computeCoordsTemplate;
   computeCoordsSpecific = computeCoordsSpecific.replace(/{LUTNAME}/g, lutName);
   computeCoordsSpecific = computeCoordsSpecific.replace(/{MULT}/g, mult);
   sb.addFunction(computeCoordsSpecific);
+
+  return initializerSpecific;
 }

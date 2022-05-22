@@ -1,0 +1,63 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
+@import "../variables";
+
+.nz-widget-rectangular-resizeGrip {
+  pointer-events: auto;
+  position: absolute;
+
+  >.nz-grip {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &.nz-direction-ew {
+    cursor: ew-resize;
+    height: 100%;
+    width: $nz-resize-grip-size;
+
+    @include for-tablet-landscape-down {
+      width: $nz-resize-grip-size-large;
+    }
+  }
+
+  &.nz-direction-ns {
+    cursor: ns-resize;
+    height: $nz-resize-grip-size;
+    width: 100%;
+
+    @include for-tablet-landscape-down {
+      height: $nz-resize-grip-size-large;
+    }
+  }
+
+  &.nz-direction-ne-sw {
+    cursor: nesw-resize;
+    height: $nz-resize-grip-size;
+    width: $nz-resize-grip-size;
+
+    @include for-tablet-landscape-down {
+      height: $nz-resize-grip-size-large;
+      width: $nz-resize-grip-size-large;
+    }
+  }
+
+  &.nz-direction-nw-se {
+    cursor: nwse-resize;
+    height: $nz-resize-grip-size;
+    width: $nz-resize-grip-size;
+
+    @include for-tablet-landscape-down {
+      height: $nz-resize-grip-size-large;
+      width: $nz-resize-grip-size-large;
+    }
+  }
+}

@@ -5,4 +5,4 @@
 
 const fs = require("fs");
 const path = require("path");
-fs.copyFileSync(path.join(__dirname, "setup-tests.js"), path.join(process.cwd(), "lib", "test", "setup.js"));
+fs.copyFileSync(path.join(__dirname, "setup-tests.js"), path.join(process.cwd(), "lib", "cjs", "test", "setup.js"));

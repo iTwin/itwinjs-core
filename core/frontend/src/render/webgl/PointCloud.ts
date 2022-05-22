@@ -7,8 +7,8 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -16,7 +16,7 @@ import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -34,8 +34,9 @@ export class PointCloudGeometry extends CachedGeometry {
   public readonly minimumPointSize: number;
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
-  public get asPointCloud(): PointCloudGeometry | undefined { return this; }
-  public get supportsThematicDisplay() { return true; }
+  public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
+  public override get supportsThematicDisplay() { return true; }
+  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   public dispose() {
     dispose(this.buffers);
@@ -72,23 +73,23 @@ export class PointCloudGeometry extends CachedGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target) {
     // Point clouds don't cast shadows.
-    return target.isDrawingShadowMap ? RenderPass.None : RenderPass.OpaqueGeneral;
+    return target.isDrawingShadowMap ? "none" : "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
   public get qOrigin(): Float32Array { return this._vertices.origin; }
   public get qScale(): Float32Array { return this._vertices.scale; }
   public get colors(): BufferHandle | undefined { return this._colorHandle; }
-  public get hasFeatures() { return this._hasFeatures; }
-  public get hasBakedLighting() { return true; }
+  public override get hasFeatures() { return this._hasFeatures; }
+  public override get hasBakedLighting() { return true; }
 
   public draw(): void {
     this.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
     this.buffers.unbind();
   }
-  public getLineWeight(_params: ShaderProgramParams): number {
+  public override getLineWeight(_params: ShaderProgramParams): number {
     // If line weight < 0 it is real size in meters (voxel size).
     return (this._voxelSize > 0) ? - this._voxelSize : 1;
   }

@@ -7,9 +7,9 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64String,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Vector3d } from "@bentley/geometry-core";
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
+} from "@itwin/core-bentley";
+import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
@@ -19,10 +19,7 @@ import { TileReadError, TileReadStatus } from "./TileIO";
 
 // NB: These constants correspond to those defined in Tile.cpp.
 namespace Constants {
-  export const tileScreenSize = 512;
   export const minToleranceRatioMultiplier = 2;
-  export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
-  export const untransformedNodeValue = 0xffffffff;
 }
 
 /** Describes an iModel tile tree.
@@ -32,6 +29,7 @@ export interface TileTreeMetadata {
   readonly modelId: Id64String;
   readonly is2d: boolean;
   readonly contentRange?: Range3d;
+  readonly tileScreenSize: number;
 }
 
 /** Describes the contents of an iModel tile.
@@ -60,8 +58,227 @@ export interface TileOptions {
   readonly ignoreAreaPatterns: boolean;
   readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
+  readonly optimizeBRepProcessing: boolean;
+  readonly useLargerTiles: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
+  readonly enableIndexedEdges: boolean;
+  readonly generateAllPolyfaceEdges: boolean;
+}
+
+/** @internal */
+export namespace TileOptions {
+  /** Given the string representation of an [[IModelTileTreeId]] and the contentId of a [Tile]($frontend) belonging to that [TileTree]($frontend),
+   * compute the [[TileOptions]] that were used to generate the Ids.
+   * @throws Error if `treeId` or `contentId` are not valid Ids.
+   * @note `treeId` and `contentId` are assumed to be valid Ids. They are not fully parsed and validated - only the information required by this function is extracted.
+   * @note `treeId` and `contentId` are assumed to have been produced for version 4 or later of the iMdl tile format.
+   */
+  export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions {
+    const tree = treeFlagsAndFormatVersionFromId(treeId);
+    const contentFlags = contentFlagsFromId(contentId);
+    const edgeOptions = edgeOptionsFromTreeId(treeId);
+
+    return {
+      maximumMajorTileFormatVersion: tree.version,
+      enableInstancing: 0 !== (contentFlags & ContentFlags.AllowInstancing),
+      enableImprovedElision: 0 !== (contentFlags & ContentFlags.ImprovedElision),
+      ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
+      enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
+      useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
+      optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
+      useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
+      disableMagnification: false,
+      alwaysSubdivideIncompleteTiles: false,
+      enableIndexedEdges: edgeOptions && edgeOptions.indexed,
+      generateAllPolyfaceEdges: edgeOptions && edgeOptions.smooth,
+    };
+  }
+}
+
+type ParsedPrimary = Omit<PrimaryTileTreeId, "type" | "animationId" | "enforceDisplayPriority">;
+interface ParsedClassifier {
+  type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+  expansion: number;
+}
+
+/** The result of [[parseTileTreeIdAndContentId]].
+ * @internal
+ */
+export interface ParsedTileTreeIdAndContentId {
+  modelId: Id64String;
+  treeId: IModelTileTreeId;
+  contentId: ContentIdSpec;
+  options: TileOptions;
+}
+
+class Parser {
+  public readonly input: string;
+  public curPos = 0;
+
+  public constructor(input: string) {
+    this.input = input;
+  }
+
+  public parse(contentId: string): ParsedTileTreeIdAndContentId {
+    this.require(this.input.length > 0);
+
+    // Skip version and flags, they're handled by TileOptions.fromTreeIdAndContentId
+    while (this.curPos < this.input.length && this.cur() !== "-")
+      this.advance();
+
+    this.eat("-");
+    this.require(this.curPos < this.input.length);
+
+    const classifier = this.cur() === "C" ? this.parseClassifier() : undefined;
+    const animationId = this.parseAnimation();
+
+    const primary = classifier ? undefined : this.parsePrimary();
+    this.require((undefined === classifier) !== (undefined === primary));
+
+    const modelId = this.input.substr(this.curPos);
+    this.require(Id64.isId64(modelId));
+
+    const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(this.input);
+    const options = TileOptions.fromTreeIdAndContentId(this.input, contentId);
+
+    let parsedContentId: ContentIdSpec;
+    try {
+      parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
+    } catch (e) {
+      this.reject("Invalid content Id");
+    }
+
+    if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+      throw new Error("Invalid content Id");
+
+    let treeId: IModelTileTreeId;
+    if (classifier) {
+      treeId = { ...classifier, animationId };
+    } else {
+      assert(undefined !== primary);
+      const enforceDisplayPriority = (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
+      treeId = { ...primary, animationId, type: BatchType.Primary, enforceDisplayPriority };
+    }
+
+    return {
+      contentId: parsedContentId,
+      modelId,
+      options,
+      treeId,
+    };
+  }
+
+  private cur(): string {
+    this.require(this.curPos < this.input.length);
+    return this.input[this.curPos];
+  }
+
+  private advance(): void {
+    this.require(this.curPos < this.input.length);
+    ++this.curPos;
+  }
+
+  private eat(expectedChar: string): void {
+    this.require(this.cur() === expectedChar);
+    this.advance();
+  }
+
+  private reject(message = "Invalid tree Id"): never {
+    throw new Error(message);
+  }
+
+  private require(condition: boolean, message = "Invalid tree Id"): asserts condition {
+    if (!condition)
+      this.reject(message);
+  }
+
+  private parseClassifier(): ParsedClassifier | undefined {
+    this.eat("C");
+    let type = BatchType.VolumeClassifier;
+    if (this.cur() === "P") {
+      type = BatchType.PlanarClassifier;
+      this.advance();
+    }
+
+    this.eat(":");
+
+    // C: or CP: is always folowed by expansion then an underscore.
+    let expansionStr = "";
+    while (this.curPos < this.input.length && (this.cur() >= "0" && this.cur() <= "9" || this.cur() === ".")) {
+      expansionStr += this.cur();
+      this.advance();
+    }
+
+    this.eat("_");
+
+    const expansion = Number.parseFloat(expansionStr);
+    this.require(!Number.isNaN(expansion));
+
+    return { type, expansion };
+  }
+
+  private parseAnimation(): Id64String | undefined {
+    if (this.cur() !== "A")
+      return undefined;
+
+    this.eat("A");
+    this.eat(":");
+
+    const termPos = this.input.indexOf("_", this.curPos);
+    this.require(termPos > this.curPos);
+
+    const animationId = this.input.substring(this.curPos, termPos);
+    this.require(Id64.isId64(animationId));
+
+    this.curPos = termPos + 1; // Skip "_"
+    return animationId;
+  }
+
+  private parsePrimary(): ParsedPrimary {
+    const edges = this.parseEdges();
+    const sectionCut = this.parseSectionCut();
+    return { edges, sectionCut };
+  }
+
+  private parseEdges(): EdgeOptions | false {
+    if ("E" !== this.cur())
+      return { indexed: false, smooth: false };
+
+    this.eat("E");
+    this.eat(":");
+
+    const typeStr = this.cur();
+    this.eat(typeStr);
+    this.eat("_");
+
+    switch (typeStr) {
+      case "0": return false;
+      case "2": return { indexed: true, smooth: false };
+      case "3": return { indexed: false, smooth: true };
+      case "4": return { indexed: true, smooth: true };
+      default: this.reject();
+    }
+  }
+
+  private parseSectionCut(): string | undefined {
+    if ("S" !== this.cur())
+      return undefined;
+
+    this.eat("S");
+    const termPos = this.input.indexOf("s", this.curPos);
+    this.require(termPos > this.curPos);
+
+    const sectionCut = this.input.substring(this.curPos, termPos);
+    this.curPos = termPos + 1; // Skip "_";
+    return sectionCut;
+  }
+}
+
+/** @internal */
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId {
+  const parser = new Parser(treeId);
+  return parser.parse(contentId);
 }
 
 /** @internal */
@@ -70,11 +287,63 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   enableInstancing: true,
   enableImprovedElision: true,
   ignoreAreaPatterns: false,
-  enableExternalTextures: false,
+  enableExternalTextures: true,
   useProjectExtents: true,
+  optimizeBRepProcessing: true,
+  useLargerTiles: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
+  enableIndexedEdges: true,
+  generateAllPolyfaceEdges: true,
 });
+
+function contentFlagsFromId(id: string): ContentFlags {
+  if (0 === id.length || "-" !== id[0])
+    throw new Error("Invalid content Id");
+
+  // V4: -flags-d-i-j-k-m - version in tree Id
+  const end = id.indexOf("-", 1);
+  if (-1 !== end) {
+    const flags = Number.parseInt(id.substring(1, end), 16);
+    if (!Number.isNaN(flags))
+      return flags;
+  }
+
+  throw new Error("Invalid content Id");
+}
+
+function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, version: number } {
+  if (0 === id.length)
+    throw new Error("Invalid tree Id");
+
+  let parts = id.split("-");
+  if (parts.length > 0) {
+    parts = parts[0].split("_");
+    if (parts.length === 2) {
+      const version = Number.parseInt(parts[0], 16);
+      const flags = Number.parseInt(parts[1], 16);
+      if (!Number.isNaN(version) || !Number.isNaN(flags))
+        return { version, flags };
+    }
+  }
+
+  throw new Error("Invalid tree Id");
+}
+
+function edgeOptionsFromTreeId(id: string): EdgeOptions {
+  const pos = id.indexOf("E:");
+  if (pos <= 0)
+    return { indexed: false, smooth: false };
+
+  switch (id[pos + 2]) {
+    case "0": return { indexed: defaultTileOptions.enableIndexedEdges, smooth: defaultTileOptions.generateAllPolyfaceEdges };
+    case "2": return { indexed: true, smooth: false };
+    case "3": return { indexed: false, smooth: true };
+    case "4": return { indexed: true, smooth: true };
+  }
+
+  throw new Error("Invalid tree Id");
+}
 
 /** @internal */
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {
@@ -96,12 +365,43 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 }
 
 /** Flags controlling the structure of a tile tree. The flags are part of the tile tree's Id.
- * @internal
+ * @alpha
  */
 export enum TreeFlags {
   None = 0,
   UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
+  OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
+  UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
+}
+
+/** Describes how edges should be produced for tiles in a tile tree.
+ * @internal
+ */
+export interface EdgeOptions {
+  /** Generate indexed edges. These use less memory and draw more efficiently than non-indexed edges, but require WebGL 2.
+   * Generally the display system will determine which to use based on the device's capabilities and application configuration.
+   */
+  indexed: boolean;
+  /** For polyfaces that lack edge visibility information, generate edges for all faces; otherwise, infer edges from mesh topology. */
+  smooth: boolean;
+}
+
+function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): number {
+  if (typeof a !== typeof b)
+    return a ? 1 : -1;
+
+  if (typeof a === "boolean") {
+    assert(typeof b === "boolean");
+    return compareBooleans(a, b);
+  }
+
+  assert(typeof b === "object");
+  let cmp = compareBooleans(a.indexed, b.indexed);
+  if (0 === cmp)
+    cmp = compareBooleans(a.smooth, b.smooth);
+
+  return cmp;
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -110,19 +410,17 @@ export enum TreeFlags {
 export interface PrimaryTileTreeId {
   /** Describes the type of tile tree. */
   type: BatchType.Primary;
-  /** Whether to include edges in tile content. */
-  edgesRequired: boolean;
-  /** Id of the [DisplayStyle]($backend) holding the [[RenderSchedule]] script to be applied to the tiles. */
+  /** The type of edges to include in tile content. */
+  edges: EdgeOptions | false;
+  /** Id of the [DisplayStyle]($backend) or [RenderTimeline]($backend) element holding the [[RenderSchedule]] script to be applied to the tiles. */
   animationId?: Id64String;
-  /** Id of the transform node within the [[RenderSchedule]] script to be applied to the tiles. */
-  animationTransformNodeId?: number;
   /** If true, meshes within the tiles will be grouped into nodes based on the display priority associated with their subcategories,
    * for ensuring the graphics display with correct priority.
    */
   enforceDisplayPriority?: boolean;
   /** If defined, the compact string representation of a clip vector applied to the tiles to produce cut geometry at the intersections with the clip planes.
    * Any geometry *not* intersecting the clip planes is omitted from the tiles.
-   * @see [ClipVector.toCompactString[($geometry-core).
+   * @see [ClipVector.toCompactString[($core-geometry).
    */
   sectionCut?: string;
 }
@@ -134,14 +432,10 @@ export interface ClassifierTileTreeId {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
   animationId?: Id64String;
-  animationTransformNodeId?: number;
 }
 
-function animationIdToString(animationId: Id64String, nodeId: number | undefined): string {
-  if (undefined === nodeId)
-    nodeId = Constants.untransformedNodeValue;
-
-  return `A:${animationId}_#${nodeId.toString(16)}_`;
+function animationIdToString(animationId: Id64String): string {
+  return `A:${animationId}_`;
 }
 
 /** Describes the Id of an iModel tile tree.
@@ -155,14 +449,28 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string {
   let idStr = "";
   let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
+  if (options.optimizeBRepProcessing)
+    flags |= TreeFlags.OptimizeBRepProcessing;
+
+  if (options.useLargerTiles)
+    flags |= TreeFlags.UseLargerTiles;
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
-      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
+      idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
-    const edges = treeId.edgesRequired ? "" : "E:0_";
+    let edges;
+    if (!treeId.edges) {
+      edges = "E:0_";
+    } else {
+      if (!treeId.edges.smooth)
+        edges = treeId.edges.indexed ? "E:2_" : "";
+      else
+        edges = treeId.edges.indexed ? "E:4_" : "E:3_";
+    }
+
     const sectionCut = treeId.sectionCut ? `S${treeId.sectionCut}s` : "";
     idStr = `${idStr}${edges}${sectionCut}`;
   } else {
@@ -173,7 +481,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
       flags |= TreeFlags.UseProjectExtents;
 
     if (undefined !== treeId.animationId)
-      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
+      idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
   }
 
   const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
@@ -190,11 +498,8 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
  */
 export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number {
   let cmp = compareNumbers(lhs.type, rhs.type);
-  if (0 === cmp) {
+  if (0 === cmp)
     cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
-    if (0 === cmp)
-      cmp = compareNumbersOrUndefined(lhs.animationTransformNodeId, rhs.animationTransformNodeId);
-  }
 
   if (0 !== cmp)
     return cmp;
@@ -202,7 +507,7 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
   // NB: The redundant checks on BatchType below are to satisfy compiler.
   assert(lhs.type === rhs.type);
   if (BatchType.Primary === lhs.type && BatchType.Primary === rhs.type) {
-    cmp = compareBooleans(lhs.edgesRequired, rhs.edgesRequired);
+    cmp = compareEdgeOptions(lhs.edges, rhs.edges);
     if (0 === cmp) {
       cmp = compareBooleansOrUndefined(lhs.enforceDisplayPriority, rhs.enforceDisplayPriority);
       if (0 === cmp)
@@ -216,7 +521,7 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
 }
 
 /** Flags controlling how tile content is produced. The flags are part of the ContentId.
- * @internal
+ * @alpha
  */
 export enum ContentFlags {
   None = 0,
@@ -449,7 +754,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
       contentRange: parent.contentRange,
       sizeMultiplier,
       isLeaf: false,
-      maximumSize: Constants.tileScreenSize,
+      maximumSize: root.tileScreenSize,
     });
 
     return { children, numEmpty };
@@ -501,7 +806,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         childSpec.k = parentSpec.k * 2 + k;
 
         const childId = idProvider.idFromSpec(childSpec);
-        children.push({ contentId: childId, range, maximumSize: Constants.tileScreenSize });
+        children.push({ contentId: childId, range, maximumSize: root.tileScreenSize });
       }
     }
   }
@@ -578,7 +883,7 @@ const scratchRangeDiagonal = new Vector3d();
 /** Compute the chord tolerance for the specified tile of the given range with the specified size multiplier.
  * @internal
  */
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number {
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number {
   if (tile.range.isNull)
     return 0;
 
@@ -586,7 +891,7 @@ export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): nu
   const diagDist = is3d ? diagonal.magnitude() : diagonal.magnitudeXY();
 
   const mult = Math.max(tile.sizeMultiplier ?? 1, 1);
-  return diagDist / (Constants.minToleranceRatio * Math.max(1, mult));
+  return diagDist / (tileScreenSize * Constants.minToleranceRatioMultiplier * Math.max(1, mult));
 }
 
 /** Deserializes tile metadata.

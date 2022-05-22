@@ -1,15 +1,1047 @@
 {
-  "name": "@bentley/imodeljs-backend",
+  "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.2.0",
+      "tag": "@itwin/core-backend_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new additionalTransformPath property to GeodeticDatums and tests"
+          },
+          {
+            "comment": "changed name of GCS in test dataset"
+          },
+          {
+            "comment": "Create an ios test project to run webpacked core tests."
+          },
+          {
+            "comment": "Added \"getMassPropertiesPerCandidate\" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately."
+          },
+          {
+            "comment": "Add two new rpcimpls, hydrateViewState and getCustomViewState3dData"
+          },
+          {
+            "comment": "add imodel import context state saving/loading functions for transformer"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-backend_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-backend_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-backend_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-backend_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate IModelReadRpcInterface.getViewThumbnail"
+          },
+          {
+            "comment": "generated element classes now have a default implementation of collectPredecessors returning all set navigation properties"
+          },
+          {
+            "comment": "Correct return status for processGeometryStream and createBRepGeometry."
+          },
+          {
+            "comment": "Remove IModelDb.elementGeometryUpdate."
+          },
+          {
+            "comment": "You may specify an element's geometry in terms of an ElementGeometryDataEntry array"
+          },
+          {
+            "comment": "Web IPC fix (when reloading frontend)."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-backend_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-backend_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-backend_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add briefcaseAlias argument to acquireNewBriefcaseId"
+          },
+          {
+            "comment": "make one method to acquire both shared and exclusive locks"
+          },
+          {
+            "comment": "Add GeometryClass to ExportGraphics"
+          },
+          {
+            "comment": "Update SQLiteDb to public release tag"
+          },
+          {
+            "comment": "initial support for cloud-based WorkspaceContainers"
+          },
+          {
+            "comment": "added IModelDb.workspace"
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "Skip full schema load that cause OOM error on node backend"
+          },
+          {
+            "comment": "Do not reopen connection on schema change"
+          },
+          {
+            "comment": "Remove usage-logging-client"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Entity no longer implements EntityProps."
+          },
+          {
+            "comment": "suppress error logging during test that expect errors"
+          },
+          {
+            "comment": "add test and improved concurrent query support"
+          },
+          {
+            "comment": "fix flaky test"
+          },
+          {
+            "comment": "Update BackendHubAccess api to use ChangesetIndexAndId"
+          },
+          {
+            "comment": "Add new GeoServices class and first method to interpret WKT or complete GCS JSON.\""
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Fix an exception when attempting to pull changes into a briefcase that already has all the changes."
+          },
+          {
+            "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Tests for solid kernel severe error exceptions."
+          },
+          {
+            "comment": "throw rather than returning status from IModelDb.saveFileProperty and IModelDb.deleteFileProperty"
+          },
+          {
+            "comment": "use db.locks to release all locks"
+          },
+          {
+            "comment": "rename to @itwin/core-backend"
+          },
+          {
+            "comment": "export blobdaemon, blobdaemoncommandargs from imodeljs-native"
+          },
+          {
+            "comment": "Log the error that we catch when v2 checkpoint fails to open"
+          },
+          {
+            "comment": "use BentleyError.getErrorProps(e) instead of just logging e"
+          },
+          {
+            "comment": "Introduce no-non-null-assertion lint rule."
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed config.app usage"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "allow apps to set safety interval for reattaching deamon"
+          },
+          {
+            "comment": "removed several previously-deprecated apis"
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Renamed all occurrences of the term revision0 to version0."
+          },
+          {
+            "comment": "rework locks"
+          },
+          {
+            "comment": "Removed NativeAppAuthorizationBackend"
+          },
+          {
+            "comment": "Removed two unit tests for reproj and added one"
+          },
+          {
+            "comment": "added RpcTrace"
+          },
+          {
+            "comment": "Bumped dotenv and removed deprecated @types/dotenv"
+          },
+          {
+            "comment": "Replaced ContextRegistry with generalized ITwinAccess interface"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed references to the deleted config-loader package"
+          },
+          {
+            "comment": "split imodel-transformer out of imodel-backend package"
+          },
+          {
+            "comment": "remove use of \"any\" types in SqliteStatement"
+          },
+          {
+            "comment": "IModelDb.getTextureImage is async."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          },
+          {
+            "comment": "Improved log message when v2 checkpoint downloaded is not for the changeset requested"
+          },
+          {
+            "comment": "caching options for changed elements processing"
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)"
+          },
+          {
+            "comment": "add persistent iModel-based settings"
+          },
+          {
+            "comment": "initial implementation of Workspace and Settings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.28",
+      "tag": "@itwin/core-backend_v2.19.28",
+      "date": "Wed, 12 Jan 2022 14:52:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.27",
+      "tag": "@itwin/core-backend_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.26",
+      "tag": "@itwin/core-backend_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.25",
+      "tag": "@itwin/core-backend_v2.19.25",
+      "date": "Fri, 03 Dec 2021 20:05:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.24",
+      "tag": "@itwin/core-backend_v2.19.24",
+      "date": "Mon, 29 Nov 2021 18:44:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.23",
+      "tag": "@itwin/core-backend_v2.19.23",
+      "date": "Mon, 22 Nov 2021 20:41:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.22",
+      "tag": "@itwin/core-backend_v2.19.22",
+      "date": "Wed, 17 Nov 2021 01:23:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Avoid unnecessarily loading schemas that in extreme cases may exhaust JavaScript heap."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.21",
+      "tag": "@itwin/core-backend_v2.19.21",
+      "date": "Wed, 10 Nov 2021 10:58:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.20",
+      "tag": "@itwin/core-backend_v2.19.20",
+      "date": "Fri, 29 Oct 2021 16:14:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Additional test for GCS reprojection"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.19",
+      "tag": "@itwin/core-backend_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.18",
+      "tag": "@itwin/core-backend_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Backport from PR#2451 enable reprojection and merge"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.17",
+      "tag": "@itwin/core-backend_v2.19.17",
+      "date": "Thu, 14 Oct 2021 21:19:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.16",
+      "tag": "@itwin/core-backend_v2.19.16",
+      "date": "Mon, 11 Oct 2021 17:37:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.15",
+      "tag": "@itwin/core-backend_v2.19.15",
+      "date": "Fri, 08 Oct 2021 16:44:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.14",
+      "tag": "@itwin/core-backend_v2.19.14",
+      "date": "Fri, 01 Oct 2021 13:07:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.13",
+      "tag": "@itwin/core-backend_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/core-backend_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/core-backend_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/core-backend_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/core-backend_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "throw better exception if IModelHost.startup has not been called"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/core-backend_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/core-backend_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add queryV2Checkpoint to BackendHubAccess"
+          },
+          {
+            "comment": "use native serializer for processing schemas in transformer"
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/core-backend_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/core-backend_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/core-backend_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "clear statement cache before applying schema changesets"
+          },
+          {
+            "comment": "Tests for solid kernel severe error exceptions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/core-backend_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/core-backend_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/core-backend_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Refresh access token when setting up V1 Checkpoints if possible"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/core-backend_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Reactivated test that stopped working when a previous PR for ecef dependency to geographicCRS was reverted"
+          },
+          {
+            "comment": "store changesetIndex on IModelDb"
+          },
+          {
+            "comment": "Better error checks when creating SpatialViewDefinition-s. "
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "throw exception when attempting to download a briefcase on top of an existing file"
+          },
+          {
+            "comment": "Add case for InterpolationCurve3d"
+          },
+          {
+            "comment": "Use worker thread for mass properties calculations."
+          },
+          {
+            "comment": "Add offset body operation for IFC connector."
+          },
+          {
+            "comment": "Correctly handle case where subtract operation consumes target body."
+          },
+          {
+            "comment": "await returned promise to ensure finally block doesn't intercept it"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/core-backend_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/core-backend_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/core-backend_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/core-backend_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/core-backend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "TemplateModelCloner now assigns a new FederationGuid for cloned element instances."
+          },
+          {
+            "comment": "Accomodated the inability to reverse Changesets when creating change summaries. "
+          },
+          {
+            "comment": "fix lint issue"
+          },
+          {
+            "comment": "begin api transition to changeset index rather than changeset Id"
+          },
+          {
+            "comment": "Use ecef location calculated for projected iModels"
+          },
+          {
+            "comment": "Push refreshes access token if necessary. "
+          },
+          {
+            "comment": "Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)"
+          },
+          {
+            "comment": "Add missing SectionDrawing properties."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/core-backend_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/core-backend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@itwin/core-backend_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.17.10 "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@itwin/core-backend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote APIs to public."
+          },
+          {
+            "comment": "Include ECClass Ids in TxnChangedEntities."
+          },
+          {
+            "comment": "Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset"
+          },
+          {
+            "comment": "download V2 checkpoints asynchronously"
+          },
+          {
+            "comment": "Deprecate IModelExporter.excludeElementCategory in favor of excludeElementsInCategory"
+          },
+          {
+            "comment": "make IModelExporter.onExportSchema async"
+          },
+          {
+            "comment": "Notify frontend via Ipc when IModelDb properties change."
+          },
+          {
+            "comment": "added IModelHost.hubAccess api for mocking IModelHub for tests"
+          },
+          {
+            "comment": "all Element.onInsert and Element.onUpdate methods to modify properties"
+          },
+          {
+            "comment": "Add \"first synchronization\" optimizations to IModelTransformer"
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "promote BriefcaseManager to public"
+          },
+          {
+            "comment": "make IpcHost and NativeHost @public"
+          },
+          {
+            "comment": "Deprecate useless Texture properties."
+          },
+          {
+            "comment": "added TxnManager.restartSession"
+          },
+          {
+            "comment": "Fixed removal of schema locks if upgrading schemas is a no-op."
+          },
+          {
+            "comment": "Tests for iModel.UpdateIModelProps()"
+          },
+          {
+            "comment": "fix schema-import occurring potentially out of order"
+          },
+          {
+            "comment": "dont reimport schemas that already exist by default during transformations"
+          },
+          {
+            "comment": "Use ecef location calculated for projected iModels"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@itwin/core-backend_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@itwin/core-backend_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@itwin/core-backend_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@itwin/core-backend_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@itwin/core-backend_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@itwin/core-backend_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@itwin/core-backend_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@itwin/core-backend_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@itwin/core-backend_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to @bentley/imodeljs-native@2.16.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@itwin/core-backend_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@itwin/core-backend_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Dispatch events when changes are pulled or pushed."
+          },
+          {
+            "comment": "added IModelDb.withStatement for executing ECSQL without statement caching"
+          },
+          {
+            "comment": "Allow RenderGraphic to be created from flatbuffers format geometry as well as json."
+          },
+          {
+            "comment": "Improve exclusion handling in IModelTransformer"
+          },
+          {
+            "comment": "Fix `IModelDb.queryEntityIds` when used with `orderBy` and `limit` params."
+          },
+          {
+            "comment": "IModelExportHandler.onProgress is now async"
+          },
+          {
+            "comment": "Add includeSourceProvenance option to IModelTransformer"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          },
+          {
+            "comment": "return changesetId from pullAndMergeChanges"
+          },
+          {
+            "comment": "Add RenderTimeline element."
+          },
+          {
+            "comment": "Invoke dependency callbacks only when inputs change"
+          },
+          {
+            "comment": "only add listener for shutdown once for IModelDb"
+          },
+          {
+            "comment": "change arguments to protected static methods of Element, Model, ElementAspect. Only affects schema writers."
+          },
+          {
+            "comment": "Update version compare classes for property path support and briefcase rolling"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@itwin/core-backend_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@itwin/core-backend_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@itwin/core-backend_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@itwin/core-backend_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@itwin/core-backend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@itwin/core-backend_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@itwin/core-backend_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update test for AzCopyFileHandler"
+          },
+          {
+            "comment": "Fix tests for changed elements processing"
+          },
+          {
+            "comment": "Properly declare changeSetId variables as string."
+          },
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "IModelDb.generateElementGraphics can generate graphics for a non-persistent geometry stream."
+          },
+          {
+            "comment": "Add TypeScript wrappers for ExternalSource and related classes and relationships."
+          },
+          {
+            "comment": "Fixes to desktop and iOS apps."
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion"
+          },
+          {
+            "comment": "Add onModelsChanged and onModelGeometryChanged events to TxnManager."
+          },
+          {
+            "comment": "Saving & restoring Electron main window size, position & maximized state"
+          },
+          {
+            "comment": "add NativeHost.settingsStore"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@itwin/core-backend_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@itwin/core-backend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@itwin/core-backend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@itwin/core-backend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.6"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@itwin/core-backend_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "move BriefcaseIdValue to imodeljs-common"
+          },
+          {
+            "comment": "Cherry-pick logout fix"
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "Detect provenance scope conflicts in IModelTransformer"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.0"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.14.4"
+          },
+          {
+            "comment": "Add new exportGraphics options"
+          },
+          {
+            "comment": "add `bindings` member to EntityQueryParams"
+          },
+          {
+            "comment": "Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command."
+          },
+          {
+            "comment": "Basic proxy support for web backends and electron applications (WIP)"
+          },
+          {
+            "comment": "Add IpcHost.queryConcurrency."
+          },
+          {
+            "comment": "Removed hard coded test values in tile upload integration test"
+          },
+          {
+            "comment": "Add additional metadata to tile upload on cache"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@itwin/core-backend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Ensure elements passed to native code are in proper JSON format."
+          },
+          {
+            "comment": "refactor Ipc layers to use IpcHost/IpcApp"
+          },
+          {
+            "comment": "The export methods of IModelExporter and the process methods of IModelTransformer are now async."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Add docs and test for CTE support"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.1"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.13.3"
+          },
+          {
+            "comment": "Support Node 14"
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@itwin/core-backend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@itwin/core-backend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.12.6"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
-      "tag": "@bentley/imodeljs-backend_v2.12.1",
+      "tag": "@itwin/core-backend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
       "comments": {}
     },
     {
       "version": "2.12.0",
-      "tag": "@bentley/imodeljs-backend_v2.12.0",
+      "tag": "@itwin/core-backend_v2.12.0",
       "date": "Thu, 18 Feb 2021 22:10:13 GMT",
       "comments": {
         "none": [
@@ -59,8 +1091,26 @@
       }
     },
     {
+      "version": "2.11.2",
+      "tag": "@itwin/core-backend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download cancellation fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@itwin/core-backend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.0",
-      "tag": "@bentley/imodeljs-backend_v2.11.0",
+      "tag": "@itwin/core-backend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
       "comments": {
         "none": [
@@ -102,9 +1152,7 @@
           },
           {
             "comment": "Version compare property checksums"
-          }
-        ],
-        "undefined": [
+          },
           {
             "comment": "return LocalBriefcaseProps from BriefcaseManager.downloadBriefcase"
           }
@@ -113,13 +1161,13 @@
     },
     {
       "version": "2.10.3",
-      "tag": "@bentley/imodeljs-backend_v2.10.3",
+      "tag": "@itwin/core-backend_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
       "comments": {}
     },
     {
       "version": "2.10.2",
-      "tag": "@bentley/imodeljs-backend_v2.10.2",
+      "tag": "@itwin/core-backend_v2.10.2",
       "date": "Fri, 08 Jan 2021 14:52:02 GMT",
       "comments": {
         "none": [
@@ -131,7 +1179,7 @@
     },
     {
       "version": "2.10.1",
-      "tag": "@bentley/imodeljs-backend_v2.10.1",
+      "tag": "@itwin/core-backend_v2.10.1",
       "date": "Tue, 22 Dec 2020 00:53:38 GMT",
       "comments": {
         "none": [
@@ -143,7 +1191,7 @@
     },
     {
       "version": "2.10.0",
-      "tag": "@bentley/imodeljs-backend_v2.10.0",
+      "tag": "@itwin/core-backend_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
       "comments": {
         "none": [
@@ -191,7 +1239,7 @@
     },
     {
       "version": "2.9.9",
-      "tag": "@bentley/imodeljs-backend_v2.9.9",
+      "tag": "@itwin/core-backend_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
       "comments": {
         "none": [
@@ -203,7 +1251,7 @@
     },
     {
       "version": "2.9.8",
-      "tag": "@bentley/imodeljs-backend_v2.9.8",
+      "tag": "@itwin/core-backend_v2.9.8",
       "date": "Fri, 11 Dec 2020 02:57:36 GMT",
       "comments": {
         "none": [
@@ -215,13 +1263,13 @@
     },
     {
       "version": "2.9.7",
-      "tag": "@bentley/imodeljs-backend_v2.9.7",
+      "tag": "@itwin/core-backend_v2.9.7",
       "date": "Wed, 09 Dec 2020 20:58:23 GMT",
       "comments": {}
     },
     {
       "version": "2.9.6",
-      "tag": "@bentley/imodeljs-backend_v2.9.6",
+      "tag": "@itwin/core-backend_v2.9.6",
       "date": "Mon, 07 Dec 2020 18:40:48 GMT",
       "comments": {
         "none": [
@@ -233,7 +1281,7 @@
     },
     {
       "version": "2.9.5",
-      "tag": "@bentley/imodeljs-backend_v2.9.5",
+      "tag": "@itwin/core-backend_v2.9.5",
       "date": "Sat, 05 Dec 2020 01:55:56 GMT",
       "comments": {
         "none": [
@@ -245,7 +1293,7 @@
     },
     {
       "version": "2.9.4",
-      "tag": "@bentley/imodeljs-backend_v2.9.4",
+      "tag": "@itwin/core-backend_v2.9.4",
       "date": "Wed, 02 Dec 2020 20:55:40 GMT",
       "comments": {
         "none": [
@@ -257,13 +1305,13 @@
     },
     {
       "version": "2.9.3",
-      "tag": "@bentley/imodeljs-backend_v2.9.3",
+      "tag": "@itwin/core-backend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",
       "comments": {}
     },
     {
       "version": "2.9.2",
-      "tag": "@bentley/imodeljs-backend_v2.9.2",
+      "tag": "@itwin/core-backend_v2.9.2",
       "date": "Mon, 23 Nov 2020 15:33:50 GMT",
       "comments": {
         "none": [
@@ -275,13 +1323,13 @@
     },
     {
       "version": "2.9.1",
-      "tag": "@bentley/imodeljs-backend_v2.9.1",
+      "tag": "@itwin/core-backend_v2.9.1",
       "date": "Thu, 19 Nov 2020 17:03:42 GMT",
       "comments": {}
     },
     {
       "version": "2.9.0",
-      "tag": "@bentley/imodeljs-backend_v2.9.0",
+      "tag": "@itwin/core-backend_v2.9.0",
       "date": "Wed, 18 Nov 2020 16:01:50 GMT",
       "comments": {
         "none": [
@@ -323,7 +1371,7 @@
     },
     {
       "version": "2.8.1",
-      "tag": "@bentley/imodeljs-backend_v2.8.1",
+      "tag": "@itwin/core-backend_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",
       "comments": {
         "none": [
@@ -341,7 +1389,7 @@
     },
     {
       "version": "2.8.0",
-      "tag": "@bentley/imodeljs-backend_v2.8.0",
+      "tag": "@itwin/core-backend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
       "comments": {
         "none": [
@@ -371,7 +1419,7 @@
     },
     {
       "version": "2.7.6",
-      "tag": "@bentley/imodeljs-backend_v2.7.6",
+      "tag": "@itwin/core-backend_v2.7.6",
       "date": "Wed, 11 Nov 2020 16:28:23 GMT",
       "comments": {
         "none": [
@@ -383,13 +1431,13 @@
     },
     {
       "version": "2.7.5",
-      "tag": "@bentley/imodeljs-backend_v2.7.5",
+      "tag": "@itwin/core-backend_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:50 GMT",
       "comments": {}
     },
     {
       "version": "2.7.4",
-      "tag": "@bentley/imodeljs-backend_v2.7.4",
+      "tag": "@itwin/core-backend_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:01 GMT",
       "comments": {
         "none": [
@@ -401,13 +1449,13 @@
     },
     {
       "version": "2.7.3",
-      "tag": "@bentley/imodeljs-backend_v2.7.3",
+      "tag": "@itwin/core-backend_v2.7.3",
       "date": "Wed, 14 Oct 2020 17:00:59 GMT",
       "comments": {}
     },
     {
       "version": "2.7.2",
-      "tag": "@bentley/imodeljs-backend_v2.7.2",
+      "tag": "@itwin/core-backend_v2.7.2",
       "date": "Tue, 13 Oct 2020 18:20:38 GMT",
       "comments": {
         "none": [
@@ -419,7 +1467,7 @@
     },
     {
       "version": "2.7.1",
-      "tag": "@bentley/imodeljs-backend_v2.7.1",
+      "tag": "@itwin/core-backend_v2.7.1",
       "date": "Thu, 08 Oct 2020 13:04:35 GMT",
       "comments": {
         "none": [
@@ -431,7 +1479,7 @@
     },
     {
       "version": "2.7.0",
-      "tag": "@bentley/imodeljs-backend_v2.7.0",
+      "tag": "@itwin/core-backend_v2.7.0",
       "date": "Fri, 02 Oct 2020 18:03:32 GMT",
       "comments": {
         "none": [
@@ -464,7 +1512,7 @@
     },
     {
       "version": "2.6.5",
-      "tag": "@bentley/imodeljs-backend_v2.6.5",
+      "tag": "@itwin/core-backend_v2.6.5",
       "date": "Sat, 26 Sep 2020 16:06:34 GMT",
       "comments": {
         "none": [
@@ -479,7 +1527,7 @@
     },
     {
       "version": "2.6.4",
-      "tag": "@bentley/imodeljs-backend_v2.6.4",
+      "tag": "@itwin/core-backend_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",
       "comments": {
         "none": [
@@ -491,19 +1539,19 @@
     },
     {
       "version": "2.6.3",
-      "tag": "@bentley/imodeljs-backend_v2.6.3",
+      "tag": "@itwin/core-backend_v2.6.3",
       "date": "Mon, 21 Sep 2020 14:47:09 GMT",
       "comments": {}
     },
     {
       "version": "2.6.2",
-      "tag": "@bentley/imodeljs-backend_v2.6.2",
+      "tag": "@itwin/core-backend_v2.6.2",
       "date": "Mon, 21 Sep 2020 13:07:44 GMT",
       "comments": {}
     },
     {
       "version": "2.6.1",
-      "tag": "@bentley/imodeljs-backend_v2.6.1",
+      "tag": "@itwin/core-backend_v2.6.1",
       "date": "Fri, 18 Sep 2020 13:15:09 GMT",
       "comments": {
         "none": [
@@ -515,7 +1563,7 @@
     },
     {
       "version": "2.6.0",
-      "tag": "@bentley/imodeljs-backend_v2.6.0",
+      "tag": "@itwin/core-backend_v2.6.0",
       "date": "Thu, 17 Sep 2020 13:16:12 GMT",
       "comments": {
         "none": [
@@ -551,13 +1599,13 @@
     },
     {
       "version": "2.5.5",
-      "tag": "@bentley/imodeljs-backend_v2.5.5",
+      "tag": "@itwin/core-backend_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",
       "comments": {}
     },
     {
       "version": "2.5.4",
-      "tag": "@bentley/imodeljs-backend_v2.5.4",
+      "tag": "@itwin/core-backend_v2.5.4",
       "date": "Fri, 28 Aug 2020 15:34:15 GMT",
       "comments": {
         "none": [
@@ -569,13 +1617,13 @@
     },
     {
       "version": "2.5.3",
-      "tag": "@bentley/imodeljs-backend_v2.5.3",
+      "tag": "@itwin/core-backend_v2.5.3",
       "date": "Wed, 26 Aug 2020 11:46:00 GMT",
       "comments": {}
     },
     {
       "version": "2.5.2",
-      "tag": "@bentley/imodeljs-backend_v2.5.2",
+      "tag": "@itwin/core-backend_v2.5.2",
       "date": "Tue, 25 Aug 2020 22:09:08 GMT",
       "comments": {
         "none": [
@@ -587,7 +1635,7 @@
     },
     {
       "version": "2.5.1",
-      "tag": "@bentley/imodeljs-backend_v2.5.1",
+      "tag": "@itwin/core-backend_v2.5.1",
       "date": "Mon, 24 Aug 2020 18:13:04 GMT",
       "comments": {
         "none": [
@@ -599,7 +1647,7 @@
     },
     {
       "version": "2.5.0",
-      "tag": "@bentley/imodeljs-backend_v2.5.0",
+      "tag": "@itwin/core-backend_v2.5.0",
       "date": "Thu, 20 Aug 2020 20:57:09 GMT",
       "comments": {
         "none": [
@@ -629,7 +1677,7 @@
     },
     {
       "version": "2.4.2",
-      "tag": "@bentley/imodeljs-backend_v2.4.2",
+      "tag": "@itwin/core-backend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",
       "comments": {
         "none": [
@@ -644,7 +1692,7 @@
     },
     {
       "version": "2.4.1",
-      "tag": "@bentley/imodeljs-backend_v2.4.1",
+      "tag": "@itwin/core-backend_v2.4.1",
       "date": "Fri, 07 Aug 2020 19:57:43 GMT",
       "comments": {
         "none": [
@@ -662,7 +1710,7 @@
     },
     {
       "version": "2.4.0",
-      "tag": "@bentley/imodeljs-backend_v2.4.0",
+      "tag": "@itwin/core-backend_v2.4.0",
       "date": "Tue, 28 Jul 2020 16:26:24 GMT",
       "comments": {
         "none": [
@@ -689,25 +1737,25 @@
     },
     {
       "version": "2.3.3",
-      "tag": "@bentley/imodeljs-backend_v2.3.3",
+      "tag": "@itwin/core-backend_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",
       "comments": {}
     },
     {
       "version": "2.3.2",
-      "tag": "@bentley/imodeljs-backend_v2.3.2",
+      "tag": "@itwin/core-backend_v2.3.2",
       "date": "Tue, 14 Jul 2020 23:50:36 GMT",
       "comments": {}
     },
     {
       "version": "2.3.1",
-      "tag": "@bentley/imodeljs-backend_v2.3.1",
+      "tag": "@itwin/core-backend_v2.3.1",
       "date": "Mon, 13 Jul 2020 18:50:14 GMT",
       "comments": {}
     },
     {
       "version": "2.3.0",
-      "tag": "@bentley/imodeljs-backend_v2.3.0",
+      "tag": "@itwin/core-backend_v2.3.0",
       "date": "Fri, 10 Jul 2020 17:23:14 GMT",
       "comments": {
         "none": [
@@ -746,7 +1794,7 @@
     },
     {
       "version": "2.2.1",
-      "tag": "@bentley/imodeljs-backend_v2.2.1",
+      "tag": "@itwin/core-backend_v2.2.1",
       "date": "Tue, 07 Jul 2020 14:44:52 GMT",
       "comments": {
         "none": [
@@ -758,7 +1806,7 @@
     },
     {
       "version": "2.2.0",
-      "tag": "@bentley/imodeljs-backend_v2.2.0",
+      "tag": "@itwin/core-backend_v2.2.0",
       "date": "Fri, 19 Jun 2020 14:10:03 GMT",
       "comments": {
         "none": [
@@ -784,7 +1832,7 @@
             "comment": "Add IModelExporter.wantGeometry to optimize cases where geometry is not required"
           },
           {
-            "comment": "Move linear referencing domain types out to new @bentley/linear-referencing-backend package."
+            "comment": "Move linear referencing domain types out to new @itwin/linear-referencing-backend package."
           },
           {
             "comment": "Added test for null string access via ECSqlStatement"
@@ -815,7 +1863,7 @@
     },
     {
       "version": "2.1.0",
-      "tag": "@bentley/imodeljs-backend_v2.1.0",
+      "tag": "@itwin/core-backend_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",
       "comments": {
         "none": [
@@ -872,7 +1920,7 @@
     },
     {
       "version": "2.0.0",
-      "tag": "@bentley/imodeljs-backend_v2.0.0",
+      "tag": "@itwin/core-backend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",
       "comments": {
         "none": [
@@ -1154,7 +2202,7 @@
     },
     {
       "version": "1.14.1",
-      "tag": "@bentley/imodeljs-backend_v1.14.1",
+      "tag": "@itwin/core-backend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
       "comments": {
         "none": [
@@ -1166,7 +2214,7 @@
     },
     {
       "version": "1.14.0",
-      "tag": "@bentley/imodeljs-backend_v1.14.0",
+      "tag": "@itwin/core-backend_v1.14.0",
       "date": "Tue, 31 Mar 2020 15:44:19 GMT",
       "comments": {
         "none": [
@@ -1187,13 +2235,13 @@
     },
     {
       "version": "1.13.0",
-      "tag": "@bentley/imodeljs-backend_v1.13.0",
+      "tag": "@itwin/core-backend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
       "comments": {}
     },
     {
       "version": "1.12.0",
-      "tag": "@bentley/imodeljs-backend_v1.12.0",
+      "tag": "@itwin/core-backend_v1.12.0",
       "date": "Wed, 12 Feb 2020 17:45:50 GMT",
       "comments": {
         "none": [
@@ -1256,7 +2304,7 @@
     },
     {
       "version": "1.11.0",
-      "tag": "@bentley/imodeljs-backend_v1.11.0",
+      "tag": "@itwin/core-backend_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",
       "comments": {
         "none": [
@@ -1280,7 +2328,7 @@
     },
     {
       "version": "1.10.0",
-      "tag": "@bentley/imodeljs-backend_v1.10.0",
+      "tag": "@itwin/core-backend_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",
       "comments": {
         "none": [
@@ -1328,7 +2376,7 @@
     },
     {
       "version": "1.9.0",
-      "tag": "@bentley/imodeljs-backend_v1.9.0",
+      "tag": "@itwin/core-backend_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",
       "comments": {
         "none": [
@@ -1361,7 +2409,7 @@
     },
     {
       "version": "1.8.0",
-      "tag": "@bentley/imodeljs-backend_v1.8.0",
+      "tag": "@itwin/core-backend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",
       "comments": {
         "none": [
@@ -1391,7 +2439,7 @@
     },
     {
       "version": "1.7.0",
-      "tag": "@bentley/imodeljs-backend_v1.7.0",
+      "tag": "@itwin/core-backend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",
       "comments": {
         "none": [
@@ -1433,7 +2481,7 @@
     },
     {
       "version": "1.6.0",
-      "tag": "@bentley/imodeljs-backend_v1.6.0",
+      "tag": "@itwin/core-backend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",
       "comments": {
         "none": [
@@ -1466,7 +2514,7 @@
     },
     {
       "version": "1.5.0",
-      "tag": "@bentley/imodeljs-backend_v1.5.0",
+      "tag": "@itwin/core-backend_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",
       "comments": {
         "none": [
@@ -1511,7 +2559,7 @@
     },
     {
       "version": "1.4.0",
-      "tag": "@bentley/imodeljs-backend_v1.4.0",
+      "tag": "@itwin/core-backend_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",
       "comments": {
         "none": [
@@ -1550,7 +2598,7 @@
     },
     {
       "version": "1.3.0",
-      "tag": "@bentley/imodeljs-backend_v1.3.0",
+      "tag": "@itwin/core-backend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",
       "comments": {
         "none": [
@@ -1598,7 +2646,7 @@
     },
     {
       "version": "1.2.0",
-      "tag": "@bentley/imodeljs-backend_v1.2.0",
+      "tag": "@itwin/core-backend_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",
       "comments": {
         "none": [
@@ -1646,7 +2694,7 @@
     },
     {
       "version": "1.1.0",
-      "tag": "@bentley/imodeljs-backend_v1.1.0",
+      "tag": "@itwin/core-backend_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",
       "comments": {
         "none": [
@@ -1706,7 +2754,7 @@
     },
     {
       "version": "1.0.0",
-      "tag": "@bentley/imodeljs-backend_v1.0.0",
+      "tag": "@itwin/core-backend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",
       "comments": {
         "none": [
@@ -1778,7 +2826,7 @@
     },
     {
       "version": "0.191.0",
-      "tag": "@bentley/imodeljs-backend_v0.191.0",
+      "tag": "@itwin/core-backend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",
       "comments": {
         "none": [
@@ -1897,7 +2945,7 @@
             "comment": "Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone"
           },
           {
-            "comment": "Moved IModelJsExpressServer class into a new package (@bentley/express-server)."
+            "comment": "Moved IModelJsExpressServer class into a new package (@itwin/express-server)."
           },
           {
             "comment": "Simplified tile caching IModelHost config and removed dev flags. Allow"
@@ -1925,7 +2973,7 @@
     },
     {
       "version": "0.190.0",
-      "tag": "@bentley/imodeljs-backend_v0.190.0",
+      "tag": "@itwin/core-backend_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
       "comments": {
         "none": [
@@ -1940,7 +2988,7 @@
     },
     {
       "version": "0.189.0",
-      "tag": "@bentley/imodeljs-backend_v0.189.0",
+      "tag": "@itwin/core-backend_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",
       "comments": {
         "none": [
@@ -2039,7 +3087,7 @@
     },
     {
       "version": "0.188.0",
-      "tag": "@bentley/imodeljs-backend_v0.188.0",
+      "tag": "@itwin/core-backend_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",
       "comments": {
         "none": [
@@ -2051,13 +3099,13 @@
     },
     {
       "version": "0.187.0",
-      "tag": "@bentley/imodeljs-backend_v0.187.0",
+      "tag": "@itwin/core-backend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",
       "comments": {}
     },
     {
       "version": "0.186.0",
-      "tag": "@bentley/imodeljs-backend_v0.186.0",
+      "tag": "@itwin/core-backend_v0.186.0",
       "date": "Mon, 14 Jan 2019 23:09:10 GMT",
       "comments": {
         "none": [
@@ -2078,13 +3126,13 @@
     },
     {
       "version": "0.185.0",
-      "tag": "@bentley/imodeljs-backend_v0.185.0",
+      "tag": "@itwin/core-backend_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",
       "comments": {}
     },
     {
       "version": "0.184.0",
-      "tag": "@bentley/imodeljs-backend_v0.184.0",
+      "tag": "@itwin/core-backend_v0.184.0",
       "date": "Thu, 10 Jan 2019 22:46:17 GMT",
       "comments": {
         "none": [
@@ -2099,19 +3147,19 @@
     },
     {
       "version": "0.183.0",
-      "tag": "@bentley/imodeljs-backend_v0.183.0",
+      "tag": "@itwin/core-backend_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Moved electron utilities into a separate \"@bentley/electron-manager\" package."
+            "comment": "Moved electron utilities into a separate \"@itwin/core-electron\" package."
           }
         ]
       }
     },
     {
       "version": "0.182.0",
-      "tag": "@bentley/imodeljs-backend_v0.182.0",
+      "tag": "@itwin/core-backend_v0.182.0",
       "date": "Mon, 07 Jan 2019 13:31:34 GMT",
       "comments": {
         "none": [
@@ -2126,7 +3174,7 @@
     },
     {
       "version": "0.181.0",
-      "tag": "@bentley/imodeljs-backend_v0.181.0",
+      "tag": "@itwin/core-backend_v0.181.0",
       "date": "Fri, 04 Jan 2019 13:02:40 GMT",
       "comments": {
         "none": [
@@ -2138,13 +3186,13 @@
     },
     {
       "version": "0.180.0",
-      "tag": "@bentley/imodeljs-backend_v0.180.0",
+      "tag": "@itwin/core-backend_v0.180.0",
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
       "comments": {}
     },
     {
       "version": "0.179.0",
-      "tag": "@bentley/imodeljs-backend_v0.179.0",
+      "tag": "@itwin/core-backend_v0.179.0",
       "date": "Wed, 19 Dec 2018 18:26:14 GMT",
       "comments": {
         "none": [
@@ -2159,7 +3207,7 @@
     },
     {
       "version": "0.178.0",
-      "tag": "@bentley/imodeljs-backend_v0.178.0",
+      "tag": "@itwin/core-backend_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",
       "comments": {
         "none": [
@@ -2171,13 +3219,13 @@
     },
     {
       "version": "0.177.0",
-      "tag": "@bentley/imodeljs-backend_v0.177.0",
+      "tag": "@itwin/core-backend_v0.177.0",
       "date": "Wed, 12 Dec 2018 17:21:31 GMT",
       "comments": {}
     },
     {
       "version": "0.176.0",
-      "tag": "@bentley/imodeljs-backend_v0.176.0",
+      "tag": "@itwin/core-backend_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",
       "comments": {
         "none": [
@@ -2192,13 +3240,13 @@
     },
     {
       "version": "0.175.0",
-      "tag": "@bentley/imodeljs-backend_v0.175.0",
+      "tag": "@itwin/core-backend_v0.175.0",
       "date": "Mon, 10 Dec 2018 17:08:55 GMT",
       "comments": {}
     },
     {
       "version": "0.174.0",
-      "tag": "@bentley/imodeljs-backend_v0.174.0",
+      "tag": "@itwin/core-backend_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",
       "comments": {
         "none": [
@@ -2210,7 +3258,7 @@
     },
     {
       "version": "0.173.0",
-      "tag": "@bentley/imodeljs-backend_v0.173.0",
+      "tag": "@itwin/core-backend_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",
       "comments": {
         "none": [
@@ -2228,7 +3276,7 @@
     },
     {
       "version": "0.172.0",
-      "tag": "@bentley/imodeljs-backend_v0.172.0",
+      "tag": "@itwin/core-backend_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",
       "comments": {
         "none": [
@@ -2240,7 +3288,7 @@
     },
     {
       "version": "0.171.0",
-      "tag": "@bentley/imodeljs-backend_v0.171.0",
+      "tag": "@itwin/core-backend_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",
       "comments": {
         "none": [
@@ -2282,7 +3330,7 @@
     },
     {
       "version": "0.170.0",
-      "tag": "@bentley/imodeljs-backend_v0.170.0",
+      "tag": "@itwin/core-backend_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",
       "comments": {
         "none": [
@@ -2300,19 +3348,19 @@
     },
     {
       "version": "0.169.0",
-      "tag": "@bentley/imodeljs-backend_v0.169.0",
+      "tag": "@itwin/core-backend_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",
       "comments": {}
     },
     {
       "version": "0.168.0",
-      "tag": "@bentley/imodeljs-backend_v0.168.0",
+      "tag": "@itwin/core-backend_v0.168.0",
       "date": "Sat, 17 Nov 2018 14:20:11 GMT",
       "comments": {}
     },
     {
       "version": "0.167.0",
-      "tag": "@bentley/imodeljs-backend_v0.167.0",
+      "tag": "@itwin/core-backend_v0.167.0",
       "date": "Fri, 16 Nov 2018 21:45:44 GMT",
       "comments": {
         "none": [
@@ -2342,7 +3390,7 @@
     },
     {
       "version": "0.166.0",
-      "tag": "@bentley/imodeljs-backend_v0.166.0",
+      "tag": "@itwin/core-backend_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",
       "comments": {
         "none": [
@@ -2354,7 +3402,7 @@
     },
     {
       "version": "0.165.0",
-      "tag": "@bentley/imodeljs-backend_v0.165.0",
+      "tag": "@itwin/core-backend_v0.165.0",
       "date": "Mon, 12 Nov 2018 15:47:00 GMT",
       "comments": {
         "none": [
@@ -2378,7 +3426,7 @@
     },
     {
       "version": "0.164.0",
-      "tag": "@bentley/imodeljs-backend_v0.164.0",
+      "tag": "@itwin/core-backend_v0.164.0",
       "date": "Thu, 08 Nov 2018 17:59:20 GMT",
       "comments": {
         "none": [
@@ -2414,7 +3462,7 @@
     },
     {
       "version": "0.163.0",
-      "tag": "@bentley/imodeljs-backend_v0.163.0",
+      "tag": "@itwin/core-backend_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",
       "comments": {
         "none": [
@@ -2432,7 +3480,7 @@
     },
     {
       "version": "0.162.0",
-      "tag": "@bentley/imodeljs-backend_v0.162.0",
+      "tag": "@itwin/core-backend_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:06 GMT",
       "comments": {
         "none": [
@@ -2456,7 +3504,7 @@
     },
     {
       "version": "0.161.0",
-      "tag": "@bentley/imodeljs-backend_v0.161.0",
+      "tag": "@itwin/core-backend_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",
       "comments": {
         "none": [
@@ -2471,7 +3519,7 @@
     },
     {
       "version": "0.160.0",
-      "tag": "@bentley/imodeljs-backend_v0.160.0",
+      "tag": "@itwin/core-backend_v0.160.0",
       "date": "Wed, 17 Oct 2018 18:18:38 GMT",
       "comments": {
         "none": [
@@ -2483,7 +3531,7 @@
     },
     {
       "version": "0.159.0",
-      "tag": "@bentley/imodeljs-backend_v0.159.0",
+      "tag": "@itwin/core-backend_v0.159.0",
       "date": "Tue, 16 Oct 2018 14:09:09 GMT",
       "comments": {
         "none": [
@@ -2498,13 +3546,13 @@
     },
     {
       "version": "0.158.0",
-      "tag": "@bentley/imodeljs-backend_v0.158.0",
+      "tag": "@itwin/core-backend_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",
       "comments": {}
     },
     {
       "version": "0.157.0",
-      "tag": "@bentley/imodeljs-backend_v0.157.0",
+      "tag": "@itwin/core-backend_v0.157.0",
       "date": "Sun, 14 Oct 2018 17:20:06 GMT",
       "comments": {
         "none": [
@@ -2516,7 +3564,7 @@
     },
     {
       "version": "0.156.0",
-      "tag": "@bentley/imodeljs-backend_v0.156.0",
+      "tag": "@itwin/core-backend_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "none": [

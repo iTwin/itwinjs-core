@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { IModelJsFs } from "@itwin/core-backend";
 
 export class KnownTestLocations {
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */

@@ -4,20 +4,70 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
-import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStyleSettings, MonochromeMode } from "../DisplayStyleSettings";
+import {
+  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
+} from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
-import { SpatialClassificationProps } from "../SpatialClassificationProps";
+import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
-
-/* eslint-disable deprecation/deprecation */
-//  - for DisplayStyleSettings.excludedElements.
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
+import { SkyGradient } from "../SkyBox";
+import { GroundPlane } from "../GroundPlane";
 
 describe("DisplayStyleSettings", () => {
+  describe("whiteOnWhiteReversal", () => {
+    it("round-trips through JSON", () => {
+      function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
+        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : {} };
+        const style = new DisplayStyle3dSettings(styleProps);
+        style.whiteOnWhiteReversal = newSettings;
+        const result = style.toJSON();
+        expect(result.whiteOnWhiteReversal).to.deep.equal(expected === "input" ? props : expected);
+      }
+
+      const ignore = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+      const defaults = WhiteOnWhiteReversalSettings.fromJSON();
+
+      test(undefined, defaults, "input");
+      test({ ignoreBackgroundColor: false }, defaults, "input");
+      test(undefined, ignore, { ignoreBackgroundColor: true });
+      test({ ignoreBackgroundColor: true }, ignore, "input");
+      test({ ignoreBackgroundColor: true }, defaults, undefined);
+    });
+
+    it("raises event", () => {
+      const style = new DisplayStyle3dSettings({ styles: {} });
+      function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
+        let eventRaised = false;
+        const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
+          expect(eventRaised).to.be.false;
+          eventRaised = true;
+          expect(s).to.equal(newSettings);
+        });
+
+        style.whiteOnWhiteReversal = newSettings;
+        remove();
+
+        expect(style.whiteOnWhiteReversal).to.equal(newSettings);
+        expect(eventRaised).to.equal(expectEvent);
+      }
+
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON());
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: false }));
+    });
+  });
+
   describe("plan projection settings", () => {
     interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
@@ -116,8 +166,8 @@ describe("DisplayStyleSettings", () => {
         expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
         const excludedIds = Array.from(settings.excludedElementIds);
-        expect(settings.excludedElements.size).to.equal(excludedIds.length);
-        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
+        expect(new Set<string>(settings.excludedElementIds).size).to.equal(excludedIds.length);
+        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElementIds));
         expect(set).to.deep.equal(excludedIds);
       };
 
@@ -130,15 +180,119 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
-      test("+3", (settings) => settings.excludedElements.add("0x3"));
-      test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
-      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
+      test("+3", (settings) => settings.addExcludedElements("0x3"));
+      test(undefined, (settings) => { settings.addExcludedElements("0x2"); settings.dropExcludedElement("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements("0x2"); settings.dropExcludedElements("0x1"); });
+      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.dropExcludedElements("0x1"); });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.clearExcludedElements(); });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.addExcludedElements("0x3"); settings.clearExcludedElements(); });
+    });
+  });
+
+  describe("planarClipMasks", () => {
+    function makeSettings(priority: number) {
+      return PlanarClipMaskSettings.create({ priority });
+    }
+
+    function makeProps(priority: number, modelId: Id64String) {
+      return {
+        ...makeSettings(priority).toJSON(),
+        modelId,
+      };
+    }
+
+    it("initializes from JSON", () => {
+      function expectMasks(json: DisplayStylePlanarClipMaskProps[] | undefined, expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>): void {
+        const styleProps = json ? { styles: { planarClipOvr: json } } : {};
+        const style = new DisplayStyleSettings(styleProps);
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+      }
+
+      expectMasks(undefined, []);
+      expectMasks([], []);
+
+      expectMasks([makeProps(1, "0")], []);
+      expectMasks([makeProps(1, "NotAnId")], []);
+
+      expectMasks([{ modelId: "0x1", mode: PlanarClipMaskMode.None }], []);
+
+      expectMasks([makeProps(123, "0x456")], [["0x456", makeSettings(123)]]);
+      expectMasks([makeProps(5, "0x1"), makeProps(1, "0x5"), makeProps(3, "0x3")], [["0x1", makeSettings(5)], ["0x5", makeSettings(1)], ["0x3", makeSettings(3)]]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x1")], [["0x1", makeSettings(2)]]);
+    });
+
+    it("synchronizes JSON and in-memory representations", () => {
+      function expectMasks(initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
+        func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
+        expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
+        expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : {};
+        const style = new DisplayStyleSettings(styleProps);
+
+        func(style.planarClipMasks, style);
+
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+        expect(style.toJSON().planarClipOvr).to.deep.equal(expectedProps);
+      }
+
+      expectMasks(undefined, (map) => {
+        map.set("0x2", makeSettings(2));
+        map.set("0x1", makeSettings(1));
+        map.set("0x3", makeSettings(3));
+      }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
+        [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")], (map) => {
+        map.delete("0x2");
+        map.delete("0x4");
+      }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
+        style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
+        expect(typeof (map as any).populate).to.equal("function");
+        (map as any).populate();
+      }, [["0x4", makeSettings(4)]], [makeProps(4, "0x4")]);
+    });
+
+    it("dispatches events", () => {
+      const events: Array<[Id64String, boolean]> = [];
+      const style = new DisplayStyleSettings({});
+      style.onPlanarClipMaskChanged.addListener((id, newMask) => {
+        events.push([id, undefined !== newMask]);
+      });
+
+      const map = style.planarClipMasks;
+      function expectEvents(expected: Array<[Id64String, boolean]>): void {
+        expect(events).to.deep.equal(expected);
+        events.length = 0;
+      }
+
+      const mask = makeSettings(1);
+      map.set("0x1", mask);
+      expectEvents([["0x1", true]]);
+
+      map.delete("0x1");
+      expectEvents([["0x1", false]]);
+
+      map.set("0x1", mask);
+      map.set("0x2", mask);
+      expectEvents([["0x1", true], ["0x2", true]]);
+
+      map.clear();
+      expectEvents([["0x1", false], ["0x2", false]]);
+
+      map.clear();
+      expectEvents([]);
     });
   });
 });
@@ -155,13 +309,16 @@ describe("DisplayStyleSettings overrides", () => {
     backgroundColor: ColorByName.aquamarine,
     monochromeColor: ColorByName.cyan,
     monochromeMode: MonochromeMode.Scaled,
+    whiteOnWhiteReversal: { ignoreBackgroundColor: false },
     environment: {
       sky: {
+        ...SkyGradient.defaults.toJSON(),
         display: true,
         twoColor: true,
         skyExponent: 22,
       },
       ground: {
+        ...GroundPlane.defaults.toJSON(),
         display: false,
       },
     },
@@ -208,12 +365,8 @@ describe("DisplayStyleSettings overrides", () => {
       sensorSettings: undefined,
       sunDirection: [1, 0, -1],
       gradientSettings: {
-        mode: 0,
-        colorScheme: 0,
-        customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorMix: 0,
       },
     },
   };
@@ -230,13 +383,26 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // eslint-disable-line deprecation/deprecation
+        nonLocatable: true,
         heightOriginMode: 0,
+      },
+    },
+    mapImagery: {
+      backgroundBase: {
+        formatId: "BingMaps",
+        name: "Bing Maps: Aerial Imagery",
+        provider: {
+          name: "BingProvider",
+          type: 2,
+        },
+        transparentBackground: false,
+        url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+        visible: true,
       },
     },
   };
 
-  const projectProps: DisplayStyle3dSettingsProps = {
+  const iTwinProps: DisplayStyle3dSettingsProps = {
     timePoint: 12345,
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -247,14 +413,9 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      inputName: "channel1",
-      inputRange: undefined,
-      displacementChannelName: "channel2",
-      displacementScale: undefined,
-      normalChannelName: undefined,
-      scalarChannelName: undefined,
-      scalarThematicSettings: undefined,
-      scalarRange: [1, 5],
+      displacement: {
+        channelName: "channel2",
+      },
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -291,10 +452,9 @@ describe("DisplayStyleSettings overrides", () => {
         modelId: "0x123",
         expand: 0.5,
         flags: {
-          inside: SpatialClassificationProps.Display.Off,
-          outside: SpatialClassificationProps.Display.Dimmed,
+          inside: SpatialClassifierInsideDisplay.Off,
+          outside: SpatialClassifierOutsideDisplay.Dimmed,
           isVolumeClassifier: true,
-          type: 0,
         },
         name: "classifier",
         isActive: true,
@@ -303,12 +463,8 @@ describe("DisplayStyleSettings overrides", () => {
     thematic: {
       displayMode: ThematicDisplayMode.Height,
       gradientSettings: {
-        mode: 0,
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorScheme: 0,
-        customKeys: [],
-        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -326,7 +482,7 @@ describe("DisplayStyleSettings overrides", () => {
   };
 
   it("creates selective overrides", () => {
-    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
 
     const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
@@ -349,14 +505,14 @@ describe("DisplayStyleSettings overrides", () => {
     roundTrip({ includeDrawingAids: true }, { ...baseProps, viewflags: vfNoMap });
     roundTrip({ includeBackgroundMap: true, includeDrawingAids: true }, { ...baseProps, ...mapProps, viewflags });
 
-    roundTrip({ includeProjectSpecific: true }, { ...baseProps, ...projectProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...projectProps, ...iModelProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...projectProps, ...iModelProps, viewflags });
+    roundTrip({ includeITwinSpecific: true }, { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...iTwinProps, ...iModelProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps, viewflags });
   });
 
   it("overrides selected settings", () => {
     const test = (overrides: DisplayStyle3dSettingsProps) => {
-      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
       const originalSettings = { ...settings.toJSON() };
       settings.applyOverrides(overrides);
       const output = settings.toJSON();
@@ -377,14 +533,15 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        inputName: undefined,
-        inputRange: [2, 4],
-        displacementChannelName: "displacement",
-        displacementScale: 2.5,
+        displacement: {
+          channelName: "displacement",
+          scale: 2.5,
+        },
         normalChannelName: "normal",
-        scalarChannelName: undefined,
-        scalarThematicSettings: undefined,
-        scalarRange: undefined,
+        scalar: {
+          channelName: "scalar",
+          range: [-1, 2],
+        },
       },
       analysisFraction: 0.8,
     });
@@ -447,10 +604,9 @@ describe("DisplayStyleSettings overrides", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "bing",
           isActive: true,
@@ -463,8 +619,8 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       environment: {
-        sky: { display: false },
-        ground: { display: true, elevation: 17, aboveColor: ColorByName.snow },
+        sky: { ...SkyGradient.defaults.toJSON(), display: false },
+        ground: { ...GroundPlane.defaults.toJSON(), display: true, elevation: 17, aboveColor: ColorByName.snow },
       },
     });
 
@@ -478,7 +634,7 @@ describe("DisplayStyleSettings overrides", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
+          customKeys: [{ value: 0.5, color: 1234 }],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.5,
@@ -536,5 +692,7 @@ describe("DisplayStyleSettings overrides", () => {
         "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true },
       },
     });
+
+    test({ viewflags, whiteOnWhiteReversal: { ignoreBackgroundColor: true } });
   });
 });

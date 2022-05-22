@@ -1,11 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.34.2",
-  "pnpmVersion": "4.12.5",
-  "nodeSupportedVersionRange": ">=10.17.0 <15.0.0",
+  "rushVersion": "5.58.0",
+  "pnpmVersion": "6.24.4",
+  "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
+  "pnpmOptions": {
+    "useWorkspaces": true
+  },
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
@@ -27,451 +30,390 @@
     ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
+  "repository": {
+    "url": "https://github.com/iTwin/itwinjs-core"
+  },
   "projects": [
     {
-      "packageName": "@bentley/backend-application-insights-client",
-      "projectFolder": "clients/backend-application-insights",
-      "reviewCategory": "backend",
+      "packageName": "@itwin/core-extension",
+      "projectFolder": "core/extension",
+      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/build-tools",
+      "packageName": "extension-prototype",
+      "projectFolder": "extensions/test-extension",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/eslint-plugin",
+      "packageName": "@itwin/eslint-plugin",
       "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/context-registry-client",
-      "projectFolder": "clients/context-registry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/extension-client",
-      "projectFolder": "clients/extension",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/forms-data-management-client",
-      "projectFolder": "clients/forms-data-management",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/frontend-authorization-client",
-      "projectFolder": "clients/frontend-authorization",
-      "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/frontend-application-insights-client",
-      "projectFolder": "clients/frontend-application-insights",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodelhub-client",
+      "packageName": "@bentley/imodelbank-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-client",
-      "projectFolder": "clients/itwin",
+      "packageName": "@itwin/core-telemetry",
+      "projectFolder": "core/telemetry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/product-settings-client",
-      "projectFolder": "clients/product-settings",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/projectshare-client",
-      "projectFolder": "clients/projectshare",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/rbac-client",
-      "projectFolder": "clients/rbac",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/reality-data-client",
-      "projectFolder": "clients/reality-data",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/telemetry-client",
-      "projectFolder": "clients/telemetry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/usage-logging-client",
-      "projectFolder": "clients/usage-logging",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/extension-cli",
-      "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/config-loader",
-      "projectFolder": "tools/config-loader",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/bentleyjs-core",
+      "packageName": "@itwin/core-bentley",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geometry-core",
+      "packageName": "@itwin/core-geometry",
       "projectFolder": "core/geometry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/orbitgt-core",
+      "packageName": "@itwin/core-orbitgt",
       "projectFolder": "core/orbitgt",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-common",
+      "packageName": "@itwin/core-common",
       "projectFolder": "core/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-backend",
+      "packageName": "@itwin/core-backend",
       "projectFolder": "core/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-common",
+      "packageName": "@itwin/core-transformer",
+      "projectFolder": "core/transformer",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/editor-common",
       "projectFolder": "editor/common",
       "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-backend",
+      "packageName": "@itwin/editor-backend",
       "projectFolder": "editor/backend",
       "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-frontend",
+      "packageName": "@itwin/editor-frontend",
       "projectFolder": "editor/frontend",
       "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/backend-itwin-client",
-      "projectFolder": "core/backend-itwin-client",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-quantity",
+      "packageName": "@itwin/core-quantity",
       "projectFolder": "core/quantity",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodel-bridge",
-      "projectFolder": "core/imodel-bridge",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-frontend",
+      "packageName": "@itwin/core-frontend",
       "projectFolder": "core/frontend",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/frontend-devtools",
+      "packageName": "@itwin/frontend-devtools",
       "projectFolder": "core/frontend-devtools",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/webgl-compatibility",
+      "packageName": "@itwin/webgl-compatibility",
       "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-i18n",
+      "packageName": "@itwin/core-i18n",
       "projectFolder": "core/i18n",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/logger-config",
-      "projectFolder": "core/logger-config",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/analytical-backend",
+      "packageName": "@itwin/analytical-backend",
       "projectFolder": "domains/analytical/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/linear-referencing-backend",
+      "packageName": "@itwin/linear-referencing-backend",
       "projectFolder": "domains/linear-referencing/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/linear-referencing-common",
+      "packageName": "@itwin/linear-referencing-common",
       "projectFolder": "domains/linear-referencing/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/physical-material-backend",
+      "packageName": "@itwin/physical-material-backend",
       "projectFolder": "domains/physical-material/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-common",
+      "packageName": "@itwin/presentation-common",
       "projectFolder": "presentation/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-backend",
+      "packageName": "@itwin/presentation-backend",
       "projectFolder": "presentation/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-frontend",
+      "packageName": "@itwin/presentation-frontend",
       "projectFolder": "presentation/frontend",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-components",
+      "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-testing",
+      "packageName": "@itwin/presentation-testing",
       "projectFolder": "presentation/testing",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ui-abstract",
-      "projectFolder": "ui/abstract",
+      "packageName": "@itwin/appui-abstract",
+      "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ui-core",
-      "projectFolder": "ui/core",
+      "packageName": "@itwin/core-react",
+      "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ui-components",
-      "projectFolder": "ui/components",
+      "packageName": "@itwin/components-react",
+      "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ui-ninezone",
-      "projectFolder": "ui/ninezone",
+      "packageName": "@itwin/imodel-components-react",
+      "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ui-framework",
-      "projectFolder": "ui/framework",
+      "packageName": "@itwin/appui-layout-react",
+      "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-metadata",
+      "packageName": "@itwin/appui-react",
+      "projectFolder": "ui/appui-react",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/ecschema-metadata",
       "projectFolder": "core/ecschema-metadata",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-locaters",
+      "packageName": "@itwin/ecschema-locaters",
       "projectFolder": "core/ecschema-locaters",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema2ts",
+      "packageName": "@itwin/ecschema2ts",
       "projectFolder": "tools/ecschema2ts",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/webpack-tools-core",
+      "packageName": "@itwin/ecschema-editing",
+      "projectFolder": "core/ecschema-editing",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/core-webpack-tools",
       "projectFolder": "tools/webpack-core",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/backend-webpack-tools",
+      "packageName": "@itwin/backend-webpack-tools",
       "projectFolder": "tools/backend-webpack",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/extension-webpack-tools",
-      "projectFolder": "tools/extension-webpack",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-markup",
+      "packageName": "@itwin/core-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/hypermodeling-frontend",
+      "packageName": "@itwin/hypermodeling-frontend",
       "projectFolder": "core/hypermodeling",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/electron-manager",
-      "projectFolder": "core/electron-manager",
+      "packageName": "@itwin/core-electron",
+      "projectFolder": "core/electron",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/mobile-manager",
-      "projectFolder": "core/mobile-manager",
+      "packageName": "@itwin/core-mobile",
+      "projectFolder": "core/mobile",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/express-server",
+      "packageName": "@itwin/express-server",
       "projectFolder": "core/express-server",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/certa",
+      "packageName": "@itwin/workspace-editor",
+      "projectFolder": "utils/workspace-editor",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-common",
+      "projectFolder": "core/ecschema-rpc/common",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-impl",
+      "projectFolder": "core/ecschema-rpc/impl",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-tests",
+      "projectFolder": "full-stack-tests/ecschema-rpc-interface",
+      "reviewCategory": "integration-testing",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/certa",
       "projectFolder": "tools/certa",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/perf-tools",
+      "packageName": "@itwin/perf-tools",
       "projectFolder": "tools/perf-tools",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/oidc-signin-tool",
-      "projectFolder": "tools/oidc-signin-tool",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/geonames-extension",
+      "packageName": "@itwin/geonames-extension",
       "projectFolder": "extensions/geonames",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/map-layers",
+      "packageName": "@itwin/map-layers",
       "projectFolder": "extensions/map-layers",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "projectFolder": "extensions/map-layers-auth",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -495,26 +437,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "test-apps-analysis-importer",
-      "projectFolder": "test-apps/analysis-importer",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "test-apps-synchro-schedule-importer",
-      "projectFolder": "test-apps/synchro-schedule-importer",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "export-gltf",
       "projectFolder": "test-apps/export-gltf",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "export-obj",
-      "projectFolder": "test-apps/export-obj",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -537,14 +461,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/ui-test-extension",
-      "projectFolder": "test-apps/ui-test-extension",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "iot-demo",
-      "projectFolder": "extensions/iot-demo",
+      "packageName": "@itwin/ui-items-providers-test",
+      "projectFolder": "test-apps/ui-items-providers-test",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -573,12 +491,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "ninezone-test-app",
-      "projectFolder": "test-apps/ninezone-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "presentation-test-app",
       "projectFolder": "test-apps/presentation-test-app",
       "reviewCategory": "internal",
@@ -597,14 +509,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "core-full-stack-tests",
-      "projectFolder": "full-stack-tests/core",
+      "packageName": "backend-integration-tests",
+      "projectFolder": "full-stack-tests/backend",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "native-app-full-stack-tests",
-      "projectFolder": "full-stack-tests/native-app",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -615,15 +527,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc-interface",
-      "reviewCategory": "integration-testing",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodelhub-client-tests",
-      "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

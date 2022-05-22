@@ -6,12 +6,12 @@
  * @module Analytical
  */
 
-import { GeometricModel3d } from "@bentley/imodeljs-backend";
+import { GeometricModel3d } from "@itwin/core-backend";
 
 /** A container for persisting AnalyticalElement instances used to model a specialized analytical perspective.
  * @beta
  */
 export abstract class AnalyticalModel extends GeometricModel3d {
   /** @internal */
-  public static get className(): string { return "AnalyticalModel"; }
+  public static override get className(): string { return "AnalyticalModel"; }
 }

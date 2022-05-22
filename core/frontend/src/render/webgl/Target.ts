@@ -6,18 +6,21 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
-import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
+import {
+  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
+import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { AnimationBranchStates } from "../GraphicBranch";
+import { AnimationBranchStates, AnimationNodeId } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -27,9 +30,9 @@ import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
 import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
+import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../VisibleFeature";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -52,10 +55,12 @@ import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
-import { TextureHandle } from "./Texture";
+import { Texture2DHandle, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
+import { VisibleTileFeatures } from "./VisibleTileFeatures";
+import { FrameStatsCollector } from "../FrameStats";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -82,6 +87,11 @@ class EmptyHiliteSet {
   }
 }
 
+interface ReadPixelResources {
+  readonly texture: Texture2DHandle;
+  readonly fbo: FrameBuffer;
+}
+
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   public readonly graphics = new TargetGraphics();
@@ -96,7 +106,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _fbo?: FrameBuffer;
+  protected _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -111,6 +121,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
+  private _readPixelReusableResources?: ReadPixelResources;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
@@ -120,10 +131,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _screenSpaceEffects: string[] = [];
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
-  public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
+  public activeVolumeClassifierProps?: SpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
-  public terrainTransparency = 0.0;
-  public nonLocatableTerrain = false;
+  private _currentAnimationTransformNodeId?: number;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -141,7 +151,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return map.isEnabled && map.isReady ? map.frustum : undefined;
   }
 
-  public get debugControl(): RenderTargetDebugControl { return this; }
+  public override get debugControl(): RenderTargetDebugControl { return this; }
 
   public get viewRect(): ViewRect {
     return this.renderRect;
@@ -179,47 +189,43 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get analysisFraction(): number { return this._analysisFraction; }
   public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
-  public get animationBranches(): AnimationBranchStates | undefined {
+  public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
   }
-  public set animationBranches(branches: AnimationBranchStates | undefined) {
+  public override set animationBranches(branches: AnimationBranchStates | undefined) {
     this.disposeAnimationBranches();
     this._animationBranches = branches;
   }
 
   private disposeAnimationBranches(): void {
-    if (this._animationBranches)
-      for (const branch of this._animationBranches.values())
-        branch.dispose();
-
     this._animationBranches = undefined;
   }
 
-  public get antialiasSamples(): number { return this._antialiasSamples; }
-  public set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
+  public override get antialiasSamples(): number { return this._antialiasSamples; }
+  public override set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
 
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
-  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
+  public override getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public createPlanarClassifier(properties?: SpatialClassificationProps.Classifier): PlanarClassifier {
+  public override createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
-  public getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
+  public override getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
     return undefined !== this._textureDrapes ? this._textureDrapes.get(id) : undefined;
   }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
-      const vf = new ViewFlags();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.clipVolume = false;
-      vf.whiteOnWhiteReversal = false;
-
-      vf.lighting = !this.is2d;
-      vf.shadows = false; // don't want shadows applied to these
+      const vf = new ViewFlags({
+        renderMode: RenderMode.SmoothShade,
+        clipVolume: false,
+        whiteOnWhiteReversal: false,
+        lighting: !this.is2d,
+        shadows: false,
+      });
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -231,7 +237,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentBranch(): BranchState { return this.uniforms.branch.top; }
   public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
   public get currentTransform(): Transform { return this.currentBranch.transform; }
-  public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
   public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
@@ -275,9 +280,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined === color)
       return undefined;
 
-    this._fbo = FrameBuffer.create([color]);
+    const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
+    if (undefined === depth) {
+      color.dispose();
+      return undefined;
+    }
+
+    this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
       color.dispose();
+      depth.dispose();
       return undefined;
     }
 
@@ -289,15 +301,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     const tx = this._fbo.getColor(0);
+    const db = this._fbo.depthBuffer;
     this._fbo = dispose(this._fbo);
     this._dcAssigned = false;
 
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
+    dispose(db);
   }
 
-  public dispose() {
+  public override dispose() {
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
@@ -324,48 +340,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.branch.popViewClip();
   }
 
-  private _scratchRangeCorners: Point3d[] = [
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-  ];
-
-  private _getRangeCorners(r: Range3d): Point3d[] {
-    const p = this._scratchRangeCorners;
-    p[0].setFromPoint3d(r.low);
-    p[1].set(r.high.x, r.low.y, r.low.z);
-    p[2].set(r.low.x, r.high.y, r.low.z);
-    p[3].set(r.high.x, r.high.y, r.low.z);
-    p[4].set(r.low.x, r.low.y, r.high.z);
-    p[5].set(r.high.x, r.low.y, r.high.z);
-    p[6].set(r.low.x, r.high.y, r.high.z);
-    p[7].setFromPoint3d(r.high);
-    return p;
-  }
-
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    const clip = this.uniforms.branch.clipVolume;
-    if (!clip || clip.hasOutsideClipColor)
-      return false;
-
-    range = this.currentTransform.multiplyRange(range, range);
-
-    const testIntersection = false;
-    if (testIntersection) {
-      // ###TODO: Avoid allocation of Range3d inside called function...
-      // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip.clipVector, range);
-      return clippedRange.isNull;
-    } else {
-      // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
-      return ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(this._getRangeCorners(range));
-    }
+    return this.uniforms.branch.clipStack.isRangeClipped(range, this.currentTransform);
   }
 
   private readonly _scratchRange = new Range3d();
+
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (!this.uniforms.branch.clipVolume)
+    if (!this.uniforms.branch.clipStack.hasClip || this.uniforms.branch.clipStack.hasOutsideColor)
       return false;
 
     const range = geom.computeRange(this._scratchRange);
@@ -403,7 +387,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode && thematic.sensorSettings.sensors.length > 0;
   }
 
-  public updateSolarShadows(context: SceneContext | undefined): void {
+  public override updateSolarShadows(context: SceneContext | undefined): void {
     this.compositor.updateSolarShadows(context);
   }
 
@@ -431,7 +415,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
   }
 
-  public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+  public override onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
     this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
@@ -440,7 +424,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
@@ -462,20 +446,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
-
   }
 
   public changeDynamics(dynamics?: GraphicList) {
     this.graphics.dynamics = dynamics;
   }
-  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
-  public setHiliteSet(hilite: HiliteSet): void {
+  public override setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
     desync(this._hiliteSyncTarget);
   }
-  public setFlashed(id: Id64String, intensity: number) {
+  public override setFlashed(id: Id64String, intensity: number) {
     if (id !== this._flashedId) {
       this._flashedId = id;
       this._flashed = Id64.getUint32Pair(id);
@@ -488,7 +471,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.frustum.changeFrustum(newFrustum, newFraction, is3d);
   }
 
-  private readonly _scratchViewFlags = new ViewFlags();
   public changeRenderPlan(plan: RenderPlan): void {
     this.plan = plan;
 
@@ -508,24 +490,22 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (!this.assignDC())
       return;
 
-    this.terrainTransparency = plan.terrainTransparency;
-    this.nonLocatableTerrain = !plan.locatableTerrain;
-
     this.isFadeOutActive = plan.isFadeOutActive;
-    this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
+    this.analysisStyle = plan.analysisStyle;
     this.analysisTexture = plan.analysisTexture;
 
-    this.uniforms.branch.updateViewClip(plan.activeClipSettings);
+    this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
 
-    const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
+    let vf = plan.viewFlags;
     if (!plan.is3d)
-      vf.renderMode = RenderMode.Wireframe;
+      vf = vf.withRenderMode(RenderMode.Wireframe);
 
     if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
       this._wantAmbientOcclusion = true;
       this.ambientOcclusionSettings = plan.ao;
     } else {
-      this._wantAmbientOcclusion = vf.ambientOcclusion = false;
+      this._wantAmbientOcclusion = false;
+      vf = vf.with("ambientOcclusion", false);
     }
 
     this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
@@ -550,12 +530,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected drawOverlayDecorations(): void { }
 
-  /*
+  /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public reset(): void {
+  public override reset(): void {
     this.graphics.dispose();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
@@ -632,10 +612,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
   }
 
+  private _frameStatsCollector = new FrameStatsCollector();
+
+  public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
+
+  public override assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
+
   private paintScene(sceneMilSecElapsed?: number): void {
     if (!this._dcAssigned)
       return;
 
+    this._frameStatsCollector.beginTime("totalFrameTime");
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     assert(undefined !== this._fbo);
@@ -648,28 +635,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     if (this.drawForReadPixels) {
-      this._isReadPixelsInProgress = true;
-      this._readPixelsSelector = Pixel.Selector.Feature;
-
-      const vf = this.getViewFlagsForReadPixels();
-      const top = this.currentBranch;
-      const state = new BranchState({
-        viewFlags: vf,
-        symbologyOverrides: top.symbologyOverrides,
-        is3d: top.is3d,
-        edgeSettings: top.edgeSettings,
-        transform: Transform.createIdentity(),
-        clipVolume: top.clipVolume,
-      });
-
-      this.pushState(state);
-
-      this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
-      this._renderCommands.initForReadPixels(this.graphics);
-      this.endPerfMetricRecord(this.drawForReadPixels);
-
+      this.beginReadPixels(Pixel.Selector.Feature);
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
-      this.uniforms.branch.pop();
+      this.endReadPixels();
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -677,13 +645,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // before then. So do it now.
       this.compositor.preDraw();
 
+      this._frameStatsCollector.beginTime("classifiersTime");
       this.beginPerfMetricRecord("Planar Classifiers");
       this.drawPlanarClassifiers();
       this.endPerfMetricRecord();
+      this._frameStatsCollector.endTime("classifiersTime");
 
+      this._frameStatsCollector.beginTime("shadowsTime");
       this.beginPerfMetricRecord("Shadow Maps");
       this.drawSolarShadowMap();
       this.endPerfMetricRecord();
+      this._frameStatsCollector.endTime("shadowsTime");
 
       this.beginPerfMetricRecord("Texture Drapes");
       this.drawTextureDrapes();
@@ -695,6 +667,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
+      this._frameStatsCollector.beginTime("overlaysTime");
       this.beginPerfMetricRecord("Overlay Draws");
 
       this.beginPerfMetricRecord("World Overlays");
@@ -706,14 +679,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord();
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
+      this._frameStatsCollector.endTime("overlaysTime");
     }
 
     // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
     // during readPixels() if the effect shifts pixels from their original locations.
+    this._frameStatsCollector.beginTime("screenspaceEffectsTime");
     this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
     this.renderSystem.screenSpaceEffects.apply(this);
-    this._isReadPixelsInProgress = false;
     this.endPerfMetricRecord(this.drawForReadPixels);
+    this._frameStatsCollector.endTime("screenspaceEffectsTime");
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -723,6 +698,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     this.endPerfMetricFrame(this.drawForReadPixels);
+    this._frameStatsCollector.endTime("totalFrameTime");
   }
 
   private drawPass(pass: RenderPass): void {
@@ -769,25 +745,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
-    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture) {
+    const resources = this.createOrReuseReadPixelResources(rect);
+    if (resources === undefined) {
       receiver(undefined);
       return;
     }
 
     let result: Pixel.Buffer | undefined;
-    const fbo = FrameBuffer.create([texture]);
-    if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
-        this._drawNonLocatable = !excludeNonLocatable;
-        result = this.readPixelsFromFbo(rect, selector);
-        this._drawNonLocatable = true;
-      });
 
-      dispose(fbo);
-    }
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      this._drawNonLocatable = !excludeNonLocatable;
+      result = this.readPixelsFromFbo(rect, selector);
+      this._drawNonLocatable = true;
+    });
 
-    dispose(texture);
+    this.disposeOrReuseReadPixelResources(resources);
 
     receiver(result);
 
@@ -795,20 +767,59 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.batch.resetBatchState();
   }
 
-  private getViewFlagsForReadPixels(): ViewFlags {
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    if (!this.uniforms.thematic.wantIsoLines)
-      vf.thematicDisplay = false;
-    vf.noGeometryMap = true;
-    return vf;
+  private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
+    if (this._readPixelReusableResources !== undefined) {
+
+      // To reuse a texture, we need it to be the same size or bigger than what we need
+      if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
+        const resources = this._readPixelReusableResources;
+        this._readPixelReusableResources = undefined;
+
+        return resources;
+      }
+    }
+
+    // Create a new texture/fbo
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (texture === undefined)
+      return undefined;
+
+    const fbo = FrameBuffer.create([texture]);
+    if (fbo === undefined) {
+      dispose(texture);
+      return undefined;
+    }
+
+    return { texture, fbo };
   }
 
-  private readonly _scratchTmpFrustum = new Frustum();
-  private readonly _scratchRectFrustum = new Frustum();
-  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    // const collectReadPixelsTimings = this.performanceMetrics !== undefined && !this.performanceMetrics.gatherCurPerformanceMetrics; // Only collect data here if in display-perf-test-app
-    // if (collectReadPixelsTimings) this.beginPerfMetricRecord("Init Commands");
+  private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
+    const maxReusableTextureSize = 256;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
+
+    let reuseResources = !isTooBigToReuse;
+
+    if (reuseResources && this._readPixelReusableResources !== undefined) {
+
+      // Keep the biggest texture
+      if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
+        reuseResources = false; // The current resources being reused are better
+      } else {
+        // Free memory of the current reusable resources before replacing them
+        dispose(this._readPixelReusableResources.fbo);
+        dispose(this._readPixelReusableResources.texture);
+      }
+    }
+
+    if (reuseResources) {
+      this._readPixelReusableResources = {texture, fbo};
+    } else {
+      dispose(fbo);
+      dispose(texture);
+    }
+  }
+
+  private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
     this.beginPerfMetricRecord("Init Commands", true);
 
     this._isReadPixelsInProgress = true;
@@ -816,7 +827,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.getViewFlagsForReadPixels();
+    const vf = this.currentViewFlags.copy({
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      acsTriad: false,
+      grid: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      thematicDisplay: this.currentViewFlags.thematicDisplay && this.uniforms.thematic.wantIsoLines,
+    });
+
     const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
@@ -829,7 +851,29 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
+    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
+    if (cullingFrustum)
+      this._renderCommands.setCheckRange(cullingFrustum);
+
+    this._renderCommands.initForReadPixels(this.graphics);
+    this._renderCommands.clearCheckRange();
+    this.endPerfMetricRecord(true);
+  }
+
+  private endReadPixels(preserveBatchState = false): void {
+    // Pop the BranchState pushed by beginReadPixels.
+    this.uniforms.branch.pop();
+    if (!preserveBatchState)
+      this.uniforms.batch.resetBatchState();
+
+    this._isReadPixelsInProgress = false;
+  }
+
+  private readonly _scratchTmpFrustum = new Frustum();
+  private readonly _scratchRectFrustum = new Frustum();
+  private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    let rectFrust;
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
       const viewRect = this.viewRect;
       const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
@@ -848,7 +892,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
       interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-      const rectFrust = this._scratchRectFrustum;
+      rectFrust = this._scratchRectFrustum;
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
@@ -857,22 +901,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
       interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
-
-      this._renderCommands.setCheckRange(rectFrust);
-
-      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-      //     return undefined;
     }
 
-    // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
-    this._renderCommands.clear();
-    this._renderCommands.initForReadPixels(this.graphics);
-    this._renderCommands.clearCheckRange();
-
-    this.endPerfMetricRecord(true); // End "Init Commands"
+    this.beginReadPixels(selector, rectFrust);
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
@@ -896,8 +927,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.screenSpaceEffects.apply(this);
     this.endPerfMetricRecord(true); // End "Screenspace Effects"
 
-    // Restore the state
-    this.uniforms.branch.pop();
+    this.endReadPixels(true);
 
     this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
@@ -910,8 +940,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.endFrame();
     }
 
-    this._isReadPixelsInProgress = false;
     return result;
+  }
+
+  public override queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+    this.beginReadPixels(Pixel.Selector.Feature);
+    callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
+    this.endReadPixels();
   }
 
   protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
@@ -935,7 +970,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
    * curSize adjusted so that it fits fully within maxSize in one dimension, maintaining its original aspect ratio.
    */
-  private static _applyAspectRatioCorrection(curSize: Point2d, maxSize: Point2d): Point2d {
+  private static _applyAspectRatioCorrection(curSize: XAndY, maxSize: XAndY): Point2d {
     const widthRatio = maxSize.x / curSize.x;
     const heightRatio = maxSize.y / curSize.y;
     const bestRatio = Math.min(widthRatio, heightRatio);
@@ -943,15 +978,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   * If wantRect is null, that means "read the entire image".
    */
-  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
+  public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
       return undefined;
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
@@ -993,6 +1028,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       if (isEmptyImage)
         return undefined;
     } else {
+      // Need to scale image.
       const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
@@ -1025,8 +1061,82 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
+  public override readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    if (!this.assignDC())
+      return undefined;
+
+    // Determine and validate capture rect.
+    const viewRect = this.renderRect; // already has device pixel ratio applied
+    const captureRect = args?.rect ? this.cssViewRectToDeviceViewRect(args.rect) : viewRect;
+    if (captureRect.isNull)
+      return undefined;
+
+    const topLeft = Point3d.create(captureRect.left, captureRect.top);
+    const bottomRight = Point2d.create(captureRect.right - 1, captureRect.bottom - 1);
+    if (!viewRect.containsPoint(topLeft) || !viewRect.containsPoint(bottomRight))
+      return undefined;
+
+    // ViewRect origin is at top-left. GL origin is at bottom-left.
+    const bottom = viewRect.height - captureRect.bottom;
+    const imageData = new Uint8Array(4 * captureRect.width * captureRect.height);
+    if (!this.readImagePixels(imageData, captureRect.left, bottom, captureRect.width, captureRect.height))
+      return undefined;
+
+    // Alpha has already been blended. Make all pixels opaque, *except* for background pixels if background color is fully transparent.
+    const preserveBGAlpha = 0 === this.uniforms.style.backgroundAlpha;
+    let isEmptyImage = true;
+    for (let i = 3; i < imageData.length; i += 4) {
+      const a = imageData[i];
+      if (!preserveBGAlpha || a > 0) {
+        imageData[i] = 0xff;
+        isEmptyImage = false;
+      }
+    }
+
+    // Optimization for view attachments: if image consists entirely of transparent background pixels, don't bother producing an image.
+    let image = !isEmptyImage ? ImageBuffer.create(imageData, ImageBufferFormat.Rgba, captureRect.width) : undefined;
+    if (!image)
+      return undefined;
+
+    // Scale image.
+    if (args?.size && (args.size.x !== captureRect.width || args.size.y !== captureRect.height)) {
+      if (args.size.x <= 0 || args.size.y <= 0)
+        return undefined;
+
+      let canvas = imageBufferToCanvas(image, true);
+      if (!canvas)
+        return undefined;
+
+      const adjustedSize = Target._applyAspectRatioCorrection({ x: captureRect.width, y: captureRect.height }, args.size);
+      canvas = canvasToResizedCanvasWithBars(canvas, adjustedSize, new Point2d(args.size.x - adjustedSize.x, args.size.y - adjustedSize.y), this.uniforms.style.backgroundHexString);
+      image = canvasToImageBuffer(canvas);
+      if (!image)
+        return undefined;
+    }
+
+    // Our image is upside-down by default. Flip it unless otherwise specified.
+    if (!args?.upsideDown) {
+      const halfHeight = Math.floor(image.height / 2);
+      const numBytesPerRow = image.width * 4;
+      for (let loY = 0; loY < halfHeight; loY++) {
+        for (let x = 0; x < image.width; x++) {
+          const hiY = (image.height - 1) - loY;
+          const loIdx = loY * numBytesPerRow + x * 4;
+          const hiIdx = hiY * numBytesPerRow + x * 4;
+
+          swapImageByte(image, loIdx, hiIdx);
+          swapImageByte(image, loIdx + 1, hiIdx + 1);
+          swapImageByte(image, loIdx + 2, hiIdx + 2);
+          swapImageByte(image, loIdx + 3, hiIdx + 3);
+        }
+      }
+    }
+
+    return image;
+  }
+
   public copyImageToCanvas(): HTMLCanvasElement {
-    const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
+    const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;
@@ -1065,15 +1175,37 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return { viewport: this._viewport };
   }
 
+  public get currentAnimationTransformNodeId(): number | undefined {
+    return this._currentAnimationTransformNodeId;
+  }
+  public set currentAnimationTransformNodeId(id: number | undefined) {
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
+    this._currentAnimationTransformNodeId = id;
+  }
+
+  /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
+   * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
+   */
+  public getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined {
+    if (undefined === this.animationBranches || undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+      return undefined;
+
+    return this.animationBranches.transformNodeIds.has(animationNodeId) ? animationNodeId : AnimationNodeId.Untransformed;
+  }
+
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
     const thematicBytes = this.uniforms.thematic.bytesUsed;
     if (0 < thematicBytes)
       stats.addThematicTexture(thematicBytes);
+
+    const clipBytes = this.uniforms.branch.clipStack.bytesUsed;
+    if (clipBytes)
+      stats.addClipVolume(clipBytes);
   }
 
   protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {
@@ -1084,6 +1216,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.top * ratio),
       Math.floor(rect.right * ratio),
       Math.floor(rect.bottom * ratio));
+  }
+
+  public getRenderCommands(): Array<{ name: string, count: number }> {
+    return this._renderCommands.dump();
   }
 }
 
@@ -1103,7 +1239,11 @@ class CanvasState {
   public updateDimensions(pixelRatio: number): boolean {
     const w = Math.floor(this.canvas.clientWidth * pixelRatio);
     const h = Math.floor(this.canvas.clientHeight * pixelRatio);
-    if (w === this._width && h === this._height)
+
+    // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
+    // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
+    // to the view manager. See ViewManager.test.ts for more details.
+    if (w === this._width && h === this._height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
@@ -1143,21 +1283,21 @@ export class OnScreenTarget extends Target {
     this._webglCanvas = new CanvasState(this.renderSystem.canvas);
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return undefined === this._blitGeom
       && undefined === this._scratchProgParams
       && undefined === this._scratchDrawParams
       && super.isDisposed;
   }
 
-  public dispose() {
+  public override dispose() {
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
     super.dispose();
   }
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     super.collectStatistics(stats);
     if (undefined !== this._blitGeom)
       this._blitGeom.collectStatistics(stats);
@@ -1165,7 +1305,7 @@ export class OnScreenTarget extends Target {
 
   public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
   public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
-  public get devicePixelRatio(): number {
+  public override get devicePixelRatio(): number {
     if (undefined !== this.devicePixelRatioOverride)
       return this.devicePixelRatioOverride;
 
@@ -1180,6 +1320,16 @@ export class OnScreenTarget extends Target {
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void {
     assert(false);
+  }
+
+  /** Internal-only function for testing. Returns true if the FBO dimensions match the canvas dimensions */
+  public checkFboDimensions(): boolean {
+    if (undefined !== this._fbo) {
+      const tx = this._fbo.getColor(0);
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
+        return false;
+    }
+    return true;
   }
 
   protected _assignDC(): boolean {
@@ -1255,13 +1405,19 @@ export class OnScreenTarget extends Target {
       const w = this.viewRect.width, h = this.viewRect.height;
       const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
       onscreenContext.save();
+
+      if (this.uniforms.style.backgroundAlpha < 1) {
+        // If background is transparent, we aren't guaranteed that every pixel will be overwritten - clear it.
+        onscreenContext.clearRect(0, 0, w, h);
+      }
+
       onscreenContext.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for drawImage() call below.
       onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
       onscreenContext.restore();
     }
   }
 
-  protected drawOverlayDecorations(): void {
+  protected override drawOverlayDecorations(): void {
     const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
     if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
       ctx.save();
@@ -1285,7 +1441,7 @@ export class OnScreenTarget extends Target {
     }
   }
 
-  public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
+  public override pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
     const overlays = this.graphics.canvasDecorations;
     if (undefined === overlays)
       return undefined;
@@ -1299,11 +1455,11 @@ export class OnScreenTarget extends Target {
     return undefined;
   }
 
-  public onResized(): void {
+  public override onResized(): void {
     this.disposeFbo();
   }
 
-  public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
+  public override setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
     if (toScreen === this._usingWebGLCanvas)
       return;
 
@@ -1311,7 +1467,7 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public readImageToCanvas(): HTMLCanvasElement {
+  public override readImageToCanvas(): HTMLCanvasElement {
     return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 }
@@ -1322,7 +1478,7 @@ export class OffScreenTarget extends Target {
     super(rect);
   }
 
-  public onResized(): void {
+  public override onResized(): void {
     assert(false); // offscreen viewport's dimensions are set once, in constructor.
   }
 
@@ -1355,7 +1511,7 @@ export class OffScreenTarget extends Target {
     this.renderSystem.frameBufferStack.pop();
   }
 
-  public readImageToCanvas(): HTMLCanvasElement {
+  public override readImageToCanvas(): HTMLCanvasElement {
     return this.copyImageToCanvas();
   }
 }

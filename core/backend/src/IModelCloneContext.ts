@@ -5,12 +5,14 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { SQLiteDb } from "./SQLiteDb";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -90,9 +92,15 @@ export class IModelCloneContext {
     return this._nativeContext.findElementId(sourceElementId);
   }
 
-  /** Filter out the specified SubCategory from GeometryStreams in the target iModel. */
+  /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
+   * @note It is not possible to filter out a *default* SubCategory. A request to do so will be ignored.
+   * @see [SubCategory.isDefaultSubCategory]($backend)
+   */
   public filterSubCategory(sourceSubCategoryId: Id64String): void {
-    this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
+    const sourceSubCategory = this.sourceDb.elements.tryGetElement<SubCategory>(sourceSubCategoryId, SubCategory);
+    if (sourceSubCategory && !sourceSubCategory.isDefaultSubCategory) {
+      this._nativeContext.filterSubCategoryId(sourceSubCategoryId);
+    }
   }
 
   /** Returns `true` if there are any SubCategories being filtered. */
@@ -109,6 +117,7 @@ export class IModelCloneContext {
    * @internal
    */
   public importFont(sourceFontNumber: number): void {
+    this.targetDb.clearFontMap(); // so it will be reloaded with new font info
     this._nativeContext.importFont(sourceFontNumber);
   }
 
@@ -137,8 +146,30 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    const jsClass: any = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName); // declared as "any" so we can call the protected onCloned method
-    jsClass.onCloned(this, sourceElement, targetElementProps);
+    // unlike other references, code cannot be null. If it is null, use an empty code instead
+    if (targetElementProps.code.scope === Id64.invalid || targetElementProps.code.spec === Id64.invalid) {
+      targetElementProps.code = Code.createEmpty();
+    }
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
+  }
+
+  /**
+   * serialize state to a sqlite database at a given path
+   * assumes the database has not already had any context state serialized to it
+   * @internal
+   */
+  public saveStateToDb(db: SQLiteDb): void {
+    this._nativeContext.saveStateToDb(db.nativeDb);
+  }
+
+  /**
+   * load state from a sqlite database at a given path
+   * @internal
+   */
+  public loadStateFromDb(db: SQLiteDb): void {
+    this._nativeContext.loadStateFromDb(db.nativeDb);
   }
 }

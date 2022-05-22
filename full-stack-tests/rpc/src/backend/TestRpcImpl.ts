@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, Id64String } from "@itwin/core-bentley";
 import {
   IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
-  TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode,
+  TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
 export async function testInterfaceResource() {
@@ -124,19 +124,14 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op15(): Promise<void> {
-    if (ClientRequestContext.current.applicationVersion !== "testbed1") {
-      throw new Error("Wrong app version code.");
-    }
-
     return;
   }
 
   public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
     return token.key === values.key &&
-      token.contextId === values.contextId &&
+      token.iTwinId === values.iTwinId &&
       token.iModelId === values.iModelId &&
-      token.changeSetId === values.changeSetId &&
-      token.openMode === values.openMode;
+      token.changeset?.id === values.changeset?.id;
   }
 
   public async op17() {
@@ -225,8 +220,40 @@ export class AttachedInterfaceImpl extends RpcInterface implements AttachedInter
   }
 }
 
+export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface {
+  public static register() {
+    RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl);
+  }
+
+  public async ping502(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 2000;
+  }
+
+  public async ping503(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 1000;
+  }
+
+  public async ping504(sent: number): Promise<boolean> {
+    return (Date.now() - sent) >= 2000;
+  }
+}
+
+export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface {
+  public static register() {
+    RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl);
+  }
+
+  public async multipart(a: number, b: Uint8Array): Promise<number> {
+    let s = a;
+    b.forEach((v) => s += v);
+    return s;
+  }
+}
+
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();
 RpcTransportTestImpl.register();
 MultipleClientsImpl.register();
+WebRoutingInterfaceImpl.register();
+MobileTestInterfaceImpl.register();

@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { XYZProps } from "@bentley/geometry-core";
+// cspell:ignore GCRS
+import { XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelReadRpcInterface, PointWithStatus,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** Response to a request to obtain imodel coordinates from cache.
@@ -25,12 +26,12 @@ class GCtoIMCResultCache {
   //     lookup (faster than Map), and JSON.stringify is the fastest serializer.
   private _cache: any;
   private _iModel: IModelConnection;
-  private _sourceDatum: string;
+  private _source: string;
 
-  constructor(iModel: IModelConnection, sourceDatum: string) {
+  constructor(iModel: IModelConnection, source: string) {
     this._iModel = iModel;
     this._cache = {};
-    this._sourceDatum = sourceDatum;
+    this._source = source;
   }
 
   /** @internal */
@@ -104,8 +105,8 @@ class GCtoIMCResultCache {
       const maxPointsPerRequest = 300;
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
-        const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
-        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
+        const remainingRequest = { source: this._source, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
+        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), remainingRequest).then((remainingResponse) => {
           // put the responses into the cache, and fill in the output response for each
           for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
             const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
@@ -143,12 +144,12 @@ class IMCtoGCResultCache {
   //     lookup (faster than Map), and JSON.stringify is the fastest serializer.
   private _cache: any;
   private _iModel: IModelConnection;
-  private _targetDatum: string;
+  private _target: string;
 
-  constructor(iModel: IModelConnection, targetDatum: string) {
+  constructor(iModel: IModelConnection, target: string) {
     this._iModel = iModel;
     this._cache = {};
-    this._targetDatum = targetDatum;
+    this._target = target;
   }
 
   public async findInCacheOrRequest(request: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
@@ -157,18 +158,18 @@ class IMCtoGCResultCache {
     let remainingRequest: GeoCoordinatesRequestProps | undefined;
     const originalPositions: number[] = [];
 
-    for (let iPoint: number = 0; iPoint < request.iModelCoords.length; ++iPoint) {
-      const thisIModelCoord: XYZProps = request.iModelCoords[iPoint];
+    for (let iPoint = 0; iPoint < request.iModelCoords.length; ++iPoint) {
+      const thisIModelCoord = request.iModelCoords[iPoint];
 
       // we use the JSON string as the key into our cache of previously returned results.
-      const thisCacheKey: string = JSON.stringify(thisIModelCoord);
+      const thisCacheKey = JSON.stringify(thisIModelCoord);
 
       // put something in each output that corresponds to the input.
       if (this._cache[thisCacheKey]) {
         response.geoCoords.push(this._cache[thisCacheKey]);
       } else {
         if (!remainingRequest)
-          remainingRequest = { targetDatum: this._targetDatum, iModelCoords: [] };
+          remainingRequest = { target: this._target, iModelCoords: [] };
 
         // add this geoCoord to the request we are going to send.
         remainingRequest.iModelCoords.push(thisIModelCoord);
@@ -189,9 +190,9 @@ class IMCtoGCResultCache {
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest));
+      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), remainingRequest!);
       // put the responses into the cache, and fill in the output response for each
-      for (let iResponse: number = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
+      for (let iResponse = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
         const thisPoint: PointWithStatus = remainingResponse.geoCoords[iResponse];
 
         // transfer the answer stored in remainingResponse to the correct position in the overall response.
@@ -199,8 +200,8 @@ class IMCtoGCResultCache {
         response.geoCoords[responseIndex] = thisPoint;
 
         // put the answer in the cache.
-        const thisIModelCoord: XYZProps = remainingRequest!.iModelCoords[iResponse];
-        const thisCacheKey: string = JSON.stringify(thisIModelCoord);
+        const thisIModelCoord = remainingRequest!.iModelCoords[iResponse];
+        const thisCacheKey = JSON.stringify(thisIModelCoord);
         this._cache[thisCacheKey] = thisPoint;
       }
       return response;
@@ -212,17 +213,20 @@ class IMCtoGCResultCache {
  * @internal
  */
 export class GeoConverter {
-  private _datum: string;
+  private _datumOrGCRS: string;
   private _gCtoIMCResultCache: GCtoIMCResultCache;
   private _iMCtoGCResultCache: IMCtoGCResultCache;
-  constructor(iModel: IModelConnection, datum: string) {
-    this._datum = datum;
-    this._gCtoIMCResultCache = new GCtoIMCResultCache(iModel, datum);
-    this._iMCtoGCResultCache = new IMCtoGCResultCache(iModel, datum);
+  constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
+    if (typeof (datumOrGCRS) === "object")
+      this._datumOrGCRS = JSON.stringify(datumOrGCRS);
+    else
+      this._datumOrGCRS = datumOrGCRS;
+    this._gCtoIMCResultCache = new GCtoIMCResultCache(iModel, this._datumOrGCRS);
+    this._iMCtoGCResultCache = new IMCtoGCResultCache(iModel, this._datumOrGCRS);
   }
 
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
-    const requestProps: IModelCoordinatesRequestProps = { sourceDatum: this._datum, geoCoords: geoPoints };
+    const requestProps: IModelCoordinatesRequestProps = { source: this._datumOrGCRS, geoCoords: geoPoints };
     return this._gCtoIMCResultCache.findInCacheOrRequest(requestProps);
   }
 
@@ -231,7 +235,7 @@ export class GeoConverter {
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
-    const requestProps: GeoCoordinatesRequestProps = { targetDatum: this._datum, iModelCoords: iModelPoints };
+    const requestProps: GeoCoordinatesRequestProps = { target: this._datumOrGCRS, iModelCoords: iModelPoints };
     return this._iMCtoGCResultCache.findInCacheOrRequest(requestProps);
   }
 }
@@ -246,7 +250,7 @@ export class GeoServices {
     this._iModel = iModel;
   }
 
-  public getConverter(datum?: string): GeoConverter | undefined {
-    return this._iModel.isOpen ? new GeoConverter(this._iModel, datum ? datum : "") : undefined;
+  public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
+    return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
   }
 }

@@ -18,14 +18,14 @@ Since Txns are created by an application's call to `SaveChanges`, they can be us
 
 While Txns themselves hold net changes for a single transaction, they are stored in the briefcase in the order they were made. This forms a *timeline of the session*, and provides the ordering for undo. Only the most recent Txn in the session may be undone. Once a Txn is undone, and unless it is immediately redone (i.e. any other changes are made to the briefcase), it is abandoned. Txns persist across sessions even if the program crashes. Applications may, but generally don't, permit undo/redo across sessions,
 
-## TxnManager
+## Monitoring Txns
 
-Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is used for operations on Txns. `TxnManager` emits events with information about "what happened" as changes are made to the database, permitting applications to keep in-memory (on the backend) or on-screen (on the frontend) state in sync.
+Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is used for operations on Txns. Likewise, every [BriefcaseConnection]($frontend) has a [BriefcaseTxns]($frontend). `TxnManager` and `BriefcaseTxns` emit events with information about "what happened" as changes are made to the database, permitting applications to remain synchronized with the persistent state of the iModel by, for example, updating in-memory state or (on the frontend) refreshing the contents of [Viewport]($frontend)s and UI components.
 
-## Pushing ChangeSets to IModelHub
+## Pushing Changesets to IModelHub
 
-Txns hold local changes to a single briefcase. When users are ready to send the result of all their local changes to IModelHub, the local Txns must be merged together to form a ChangeSet. Changesets hold the *net changes* made during the session. As above, if an element is added in one Txn and then deleted in a subsequent Txn, the result is no change in the ChangeSet.
+Txns hold local changes to a single briefcase. When users are ready to send the result of all their local changes to IModelHub, the local Txns must be merged together to form a Changeset. Changesets hold the *net changes* made during the session. As above, if an element is added in one Txn and then deleted in a subsequent Txn, the result is no change in the Changeset.
 
-> Conceptually, there is no difference between a Txn and a ChangeSet - they both describe the net result of a set of changes to the briefcase. They are merely given different names to distinguish their roles in the workflow. If it helps, you can think of a Txn as a *micro ChangeSet*. Txns are created and named by `SaveChanges` and held in a *session timeline* inside a briefcase. ChangeSet are created by merging Txns, and are given a name when they are pushed to the *iModel timeline* in IModelHub. A ChangeSet represents the result of a single session from a single briefcase.
+> Conceptually, there is no difference between a Txn and a Changeset - they both describe the net result of a set of changes to the briefcase. They are merely given different names to distinguish their roles in the workflow. If it helps, you can think of a Txn as a *micro Changeset*. Txns are created and named by `SaveChanges` and held in a *session timeline* inside a briefcase. Changeset are created by merging Txns, and are given a name when they are pushed to the *iModel timeline* in IModelHub. A Changeset represents the result of a single session from a single briefcase.
 
-Once a session is ended by successfully pushing its ChangeSet to IModelHub, all Txns are deleted and the Txn timeline is cleared.
+Once a session is ended by successfully pushing its Changeset to IModelHub, all Txns are deleted and the Txn timeline is cleared.

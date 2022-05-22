@@ -1,0 +1,183 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$desktop-tool-stripe-width: 2px;
+$desktop-tool-stripe-height: 22px;
+
+$icon-size: 16px;
+$icon-color: $buic-icon-color;
+$hovered-icon-color: $buic-foreground-primary-tone;
+$pressed-icon-color: $buic-icon-color-reverse;
+$active-icon-color: $buic-foreground-primary;
+$disabled-icon-color: $buic-icon-color-disabled;
+$icon-shadow-color: $buic-icon-color-reverse;
+$icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);
+$no-shadow: drop-shadow(0 0 0 transparent);
+
+$components-enumbuttongroup-editor-item-width: 32px;
+$components-enumbuttongroup-editor-item-height: 32px;
+
+$components-enumbuttongroup-editor-item-border-width: 1px;
+$components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
+
+.components-enumbuttongroup-editor {
+  font-family: $iui-font-family;
+  font-size: $iui-font-size;
+  background: $buic-background-control;
+  width: fit-content;
+
+  $divider-color: $buic-background-toolbutton-stroke;
+  $border-color: $buic-background-toolbutton-stroke;
+  $border-radius: 3px;
+
+  border-color: $border-color;
+  border-width: $components-enumbuttongroup-editor-item-border-width;
+  border-radius: $border-radius;
+  border-style: solid;
+  overflow: hidden;
+  display: flex;
+  vertical-align: bottom;
+  box-sizing: border-box;
+
+  height: $components-enumbuttongroup-editor-item-height;
+
+  >* {
+    display: inline-block;
+    height: 100%;
+    width: $components-enumbuttongroup-editor-item-width;
+
+    &:not(:first-child) {
+      margin-left: $components-enumbuttongroup-editor-space-between-toolbar-items;
+
+      &:before {
+        content: '';
+        background-color: $divider-color;
+        display: block;
+        position: absolute;
+        pointer-events: none;
+        width: $components-enumbuttongroup-editor-space-between-toolbar-items;
+        height: 100%;
+        left: -$components-enumbuttongroup-editor-space-between-toolbar-items;
+        top: 0;
+      }
+    }
+  }
+
+}
+
+.components-enumbuttongroup-button {
+  border-width: 0;
+  background: $buic-background-control;
+  background-origin: border-box;
+  border-color: $buic-background-control-stroke;
+  border-style: solid;
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
+  position: relative;
+  background: $buic-background-control
+    /* linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2) */
+  ;
+  height: $components-enumbuttongroup-editor-item-height;
+  width: $components-enumbuttongroup-editor-item-width;
+
+  >i {
+    font-size: $icon-size;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    margin: 0;
+    color: $icon-color;
+    filter: $icon-shadow;
+    transition: all 500ms ease;
+
+    svg {
+      filter: $icon-shadow;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &:hover {
+    >i {
+      color: $hovered-icon-color;
+      transition-duration: 150ms;
+    }
+  }
+
+  &:active {
+    >i {
+      color: $pressed-icon-color;
+      filter: $no-shadow;
+
+      svg {
+        filter: $no-shadow;
+      }
+    }
+  }
+
+  &:active:not(.nz-is-disabled) {
+    background: $buic-foreground-primary-tone;
+    color: $buic-foreground-body-reverse;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+  }
+
+  &.nz-is-active {
+    background: $buic-background-control;
+
+    &:not(:active):not(.nz-is-disabled) {
+      transition-duration: 0s;
+
+      >i {
+        color: $buic-foreground-primary;
+        filter: $no-shadow;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+
+        svg {
+          filter: $no-shadow;
+        }
+      }
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        background: $buic-foreground-primary;
+        left: 3px;
+        top: ($components-enumbuttongroup-editor-item-height - $desktop-tool-stripe-height) * .5;
+        border-radius: 2px;
+        width: $desktop-tool-stripe-width;
+        height: $desktop-tool-stripe-height;
+      }
+    }
+  }
+
+  &.nz-is-disabled {
+    pointer-events: none;
+
+    >i {
+      color: $disabled-icon-color;
+    }
+
+    &:hover {
+      cursor: auto;
+    }
+
+    &:active {
+      pointer-events: none;
+    }
+  }
+
+}

@@ -7,9 +7,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Matrix4d } from "@bentley/geometry-core";
-import { SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Matrix4d } from "@itwin/core-geometry";
+import { SpatialClassifierInsideDisplay } from "@itwin/core-common";
 import { Matrix4 } from "../Matrix";
 import { PlanarClassifierContent } from "../PlanarClassifier";
 import { TextureUnit } from "../RenderFlags";
@@ -38,7 +38,7 @@ vec4 volClassColor(vec4 baseColor, float depth) {
 const applyPlanarClassificationPrelude = `
 const float dimScale = .7;
 
-vec2 classPos = v_pClassPos / v_pClassPosW;
+vec2 classPos = v_pClassPos.xy / v_pClassPosW;
 bool isOutside = classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0;
 if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
   if (u_pClassColorParams.x > kTextureDrape) {
@@ -51,6 +51,12 @@ if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain dra
   return vec4(rgb, baseColor.a);
 }
 float imageCount = u_pClassColorParams.z;
+// If imageCount is less than zero - the mask sense is inverted - inside rather than outside.  (masks only)
+bool doInvert = false;
+if (imageCount < 0.0) {
+  imageCount = - imageCount;
+  doInvert = true;
+}
 
 vec4 colorTexel = vec4(0);
 vec4 maskTexel = vec4(0);
@@ -77,7 +83,10 @@ if (!isOutside) {
   }
 }
 if (doMask) {
-  if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
+  bool masked = !isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a) > 0.0;
+  if (doInvert)
+    masked = !masked;
+  if (masked) {
     float   maskTransparency = u_pClassColorParams.w < 0.0 ? (1.0 - maskTexel.a) : u_pClassColorParams.w;
     if (maskTransparency <= 0.0) {
       discard;
@@ -217,12 +226,12 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
 }
 
 function addPlanarClassifierConstants(builder: ShaderBuilder) {
-  builder.addDefine("kClassifierDisplay_Off", SpatialClassificationProps.Display.Off.toFixed(1));
-  builder.addDefine("kClassifierDisplay_On", SpatialClassificationProps.Display.On.toFixed(1));
-  builder.addDefine("kClassifierDisplay_Dimmed", SpatialClassificationProps.Display.Dimmed.toFixed(1));
-  builder.addDefine("kClassifierDisplay_Hilite", SpatialClassificationProps.Display.Hilite.toFixed(1));
-  builder.addDefine("kClassifierDisplay_Element", SpatialClassificationProps.Display.ElementColor.toFixed(1));
-  const td = SpatialClassificationProps.Display.ElementColor + 1;
+  builder.addDefine("kClassifierDisplay_Off", SpatialClassifierInsideDisplay.Off.toFixed(1));
+  builder.addDefine("kClassifierDisplay_On", SpatialClassifierInsideDisplay.On.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Dimmed", SpatialClassifierInsideDisplay.Dimmed.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Hilite", SpatialClassifierInsideDisplay.Hilite.toFixed(1));
+  builder.addDefine("kClassifierDisplay_Element", SpatialClassifierInsideDisplay.ElementColor.toFixed(1));
+  const td = SpatialClassifierInsideDisplay.ElementColor + 1;
   builder.addDefine("kTextureDrape", td.toFixed(1));
   builder.addDefine("kTextureContentClassifierOnly", PlanarClassifierContent.ClassifierOnly.toFixed(1));
   builder.addDefine("kTextureContentMaskOnly", PlanarClassifierContent.MaskOnly.toFixed(1));

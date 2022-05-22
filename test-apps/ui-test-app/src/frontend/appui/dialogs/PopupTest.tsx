@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PopupTest.scss";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Dialog, DialogButtonType, Popup, Toggle } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { DialogButtonType, RelativePosition } from "@itwin/appui-abstract";
+import { Dialog, Popup } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 
 interface PopupTestProps {
   opened: boolean;
@@ -31,15 +32,15 @@ interface PopupTestState {
  * @internal
  */
 export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestState> {
-  public readonly state: Readonly<PopupTestState>;
-  private _targetTop: HTMLElement | null = null;
-  private _targetBottom: HTMLElement | null = null;
-  private _targetLeft: HTMLElement | null = null;
-  private _targetRight: HTMLElement | null = null;
-  private _targetTopLeft: HTMLElement | null = null;
-  private _targetTopRight: HTMLElement | null = null;
-  private _targetBottomLeft: HTMLElement | null = null;
-  private _targetBottomRight: HTMLElement | null = null;
+  public override readonly state: Readonly<PopupTestState>;
+  private _targetTop = React.createRef<HTMLButtonElement>();
+  private _targetBottom = React.createRef<HTMLButtonElement>();
+  private _targetLeft = React.createRef<HTMLButtonElement>();
+  private _targetRight = React.createRef<HTMLButtonElement>();
+  private _targetTopLeft = React.createRef<HTMLButtonElement>();
+  private _targetTopRight = React.createRef<HTMLButtonElement>();
+  private _targetBottomLeft = React.createRef<HTMLButtonElement>();
+  private _targetBottomRight = React.createRef<HTMLButtonElement>();
 
   constructor(props?: any, context?: any) {
     super(props, context);
@@ -153,7 +154,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
       </div>
     );
   }
-  public render() {
+  public override render() {
     return (
       <Dialog
         title={"Test Popups"}
@@ -170,28 +171,28 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
           <div className="popup-content">
             <div className="buttons">
               <div>
-                <button onClick={this._toggleTopLeft} ref={(element) => { this._targetTopLeft = element; }}>
+                <Button onClick={this._toggleTopLeft} ref={this._targetTopLeft}>
                   Top Left
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showTopLeft} position={RelativePosition.TopLeft} onClose={this._closeTopLeft} target={this._targetTopLeft}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showTopLeft} position={RelativePosition.TopLeft} onClose={this._closeTopLeft} target={this._targetTopLeft.current}
                   showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Left", this._closeTopLeft)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleTop} ref={(element) => { this._targetTop = element; }}>
+                <Button onClick={this._toggleTop} ref={this._targetTop}>
                   Top
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showTop} position={RelativePosition.Top} onClose={this._closeTop} target={this._targetTop}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showTop} position={RelativePosition.Top} onClose={this._closeTop} target={this._targetTop.current}
                   showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Center", this._closeTop)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleTopRight} ref={(element) => { this._targetTopRight = element; }}>
+                <Button onClick={this._toggleTopRight} ref={this._targetTopRight}>
                   Top Right
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showTopRight} position={RelativePosition.TopRight} target={this._targetTopRight}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showTopRight} position={RelativePosition.TopRight} target={this._targetTopRight.current}
                   onClose={this._onCloseTopRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Right", this._onCloseTopRight)}
                 </Popup>
@@ -199,19 +200,19 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
             </div>
             <div className="buttons">
               <div>
-                <button onClick={this._toggleLeft} ref={(element) => { this._targetLeft = element; }}>
+                <Button onClick={this._toggleLeft} ref={this._targetLeft}>
                   Left
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showLeft} position={RelativePosition.Left} target={this._targetLeft}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showLeft} position={RelativePosition.Left} target={this._targetLeft.current}
                   onClose={this._onCloseLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Left Center", this._onCloseLeft)}
                 </Popup>
               </div>
               <div style={{ marginLeft: "auto" }}>
-                <button onClick={this._toggleRight} ref={(element) => { this._targetRight = element; }}>
+                <Button onClick={this._toggleRight} ref={this._targetRight}>
                   Right
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showRight} position={RelativePosition.Right} target={this._targetRight}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showRight} position={RelativePosition.Right} target={this._targetRight.current}
                   onClose={this._onCloseRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Right Center", this._onCloseRight)}
                 </Popup>
@@ -219,28 +220,28 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
             </div>
             <div className="buttons">
               <div>
-                <button onClick={this._toggleBottomLeft} ref={(element) => { this._targetBottomLeft = element; }}>
+                <Button onClick={this._toggleBottomLeft} ref={this._targetBottomLeft}>
                   Bottom Left
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showBottomLeft} position={RelativePosition.BottomLeft} target={this._targetBottomLeft}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showBottomLeft} position={RelativePosition.BottomLeft} target={this._targetBottomLeft.current}
                   onClose={this._onCloseBottomLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Left", this._onCloseBottomLeft)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleBottom} ref={(element) => { this._targetBottom = element; }}>
+                <Button onClick={this._toggleBottom} ref={this._targetBottom}>
                   Bottom
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showBottom} position={RelativePosition.Bottom} target={this._targetBottom}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showBottom} position={RelativePosition.Bottom} target={this._targetBottom.current}
                   onClose={this._onCloseBottom} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Center", this._onCloseBottom)}
                 </Popup>
               </div>
               <div>
-                <button onClick={this._toggleBottomRight} ref={(element) => { this._targetBottomRight = element; }}>
+                <Button onClick={this._toggleBottomRight} ref={this._targetBottomRight}>
                   Bottom Right
-                </button>
-                <Popup className="popup-colors" isOpen={this.state.showBottomRight} position={RelativePosition.BottomRight} target={this._targetBottomRight}
+                </Button>
+                <Popup className="popup-colors" isOpen={this.state.showBottomRight} position={RelativePosition.BottomRight} target={this._targetBottomRight.current}
                   onClose={this._onCloseBottomRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Bottom Right", this._onCloseBottomRight)}
                 </Popup>
@@ -250,11 +251,11 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
           <div className="options">
             <div>
               <label>Arrow</label>
-              <Toggle className="popup-toggle" onChange={this._onArrowChange} isOn={this.state.showArrow} />
+              <ToggleSwitch className="popup-toggle" onChange={this._onArrowChange} checked={this.state.showArrow} />
             </div>
             <div>
               <label>Shadow</label>
-              <Toggle className="popup-toggle" onChange={this._onShadowChange} isOn={this.state.showShadow} />
+              <ToggleSwitch className="popup-toggle" onChange={this._onShadowChange} checked={this.state.showShadow} />
             </div>
           </div>
         </div>

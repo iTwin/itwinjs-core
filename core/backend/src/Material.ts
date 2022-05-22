@@ -6,8 +6,8 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -19,7 +19,7 @@ import { IModelDb } from "./IModelDb";
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "PhysicalMaterial"; }
+  public static override get className(): string { return "PhysicalMaterial"; }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
@@ -50,10 +50,13 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @note See [[PhysicalMaterial]] for the DefinitionElement used to define the matter that makes up physical elements.
  * @public
  */
-export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
+export class RenderMaterialElement extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "RenderMaterial"; }
+  public static override get className(): string { return "RenderMaterial"; }
+
+  /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
+  /** An optional description of the material. */
   public description?: string;
   /** @internal */
   constructor(props: RenderMaterialProps, iModel: IModelDb) {
@@ -62,7 +65,7 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
     this.description = props.description;
   }
   /** @internal */
-  public toJSON(): RenderMaterialProps {
+  public override toJSON(): RenderMaterialProps {
     const val = super.toJSON() as RenderMaterialProps;
     val.paletteName = this.paletteName;
     val.description = this.description;
@@ -132,7 +135,7 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial);
+    return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 }
 

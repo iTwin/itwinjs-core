@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Views
  */
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
-import { CategorySelectorProps } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { CategorySelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
@@ -18,10 +18,11 @@ import { IModelConnection } from "./IModelConnection";
  * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
  * @public
+ * @extensions
  */
 export class CategorySelectorState extends ElementState {
   /** @internal */
-  public static get className() { return "CategorySelector"; }
+  public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();
 
@@ -46,7 +47,7 @@ export class CategorySelectorState extends ElementState {
     return this._categories;
   }
 
-  public toJSON(): CategorySelectorProps {
+  public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = [];
     this.categories.forEach((cat) => val.categories.push(cat));
@@ -71,19 +72,21 @@ export class CategorySelectorState extends ElementState {
   public get name(): string { return this.code.value; }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: Id64String): boolean { return this.categories.has(id.toString()); }
+  public has(id: Id64String): boolean { return this.categories.has(id); }
 
   /** Determine whether this CategorySelector includes the specified category */
   public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
 
   /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.categories.add(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.add(id);
   }
 
   /** Remove one or more categories from this CategorySelector */
   public dropCategories(arg: Id64Arg) {
-    Id64.forEach(arg, (id) => this.categories.delete(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.delete(id);
   }
 
   /** Add or remove categories from this CategorySelector.

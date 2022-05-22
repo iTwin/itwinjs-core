@@ -20,7 +20,6 @@
     "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
-  "typescript.tsdk": "node_modules\\typescript\\lib",
   "files.associations": {
     "*.snap": "javascript",
     ".nycrc": "json",
@@ -75,7 +74,7 @@
   "eslint.options": {
     "configFile": "./package.json",
     "useEslintrc": false,
-    "resolvePluginsRelativeTo": "./node_modules/@bentley/eslint-plugin"
+    "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin"
   },
   "importSorter.importStringConfiguration.quoteMark": "double",
   "importSorter.generalConfiguration.sortImportsInDirectory": false,
@@ -112,5 +111,5 @@
     "source.fixAll.markdownlint": true, // first run the markdown linter
     "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
     "source.fixAll.eslint": true // then run ESLint auto-fix
-  }
+  },
 }

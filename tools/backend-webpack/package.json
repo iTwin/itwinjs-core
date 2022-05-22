@@ -1,19 +1,19 @@
 {
-  "name": "@bentley/backend-webpack-tools",
-  "version": "2.14.0-dev.9",
-  "description": "Configuration and scripts for iModel.js agents and backends.",
+  "name": "@itwin/backend-webpack-tools",
+  "version": "3.3.0-dev.9",
+  "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/backend-webpack"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/backend-webpack"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run build",
     "build": "",
+    "build:ci": "",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",
@@ -24,7 +24,7 @@
     "backend-webpack-tools": "./bin/backend-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/webpack-tools-core": "2.14.0-dev.9",
+    "@itwin/core-webpack-tools": "workspace:*",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "chalk": "^3.0.0",
     "concurrently": "^3.6.1",

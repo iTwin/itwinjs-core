@@ -7,21 +7,21 @@
  */
 import * as rimraf from "rimraf";
 // common includes
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 // backend includes
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 // frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@bentley/presentation-backend";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
-    public interfaces: any = () => interfaces;
+    public override interfaces: any = () => interfaces;
   };
 
   for (const definition of interfaces)
@@ -68,6 +68,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props)
     props = {};
 
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   props.backendProps = props.backendProps ?? {};
@@ -76,15 +79,14 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   await IModelHost.startup();
   PresentationBackend.initialize(props.backendProps);
 
-  // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
-
   // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
-    activeLocale: IModelApp.i18n.languageList()[0],
+    presentation: {
+      activeLocale: IModelApp.localization.getLanguageList()[0],
+    },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
 
@@ -104,18 +106,18 @@ export const terminate = async (frontendApp = IModelApp) => {
     return;
 
   // store directory that needs to be cleaned-up
-  let cacheDirectory: string | undefined;
-  const cacheConfig = PresentationBackend.initProps?.cacheConfig;
-  if (cacheConfig?.mode === HierarchyCacheMode.Disk)
-    cacheDirectory = cacheConfig?.directory;
-  else if (cacheConfig?.mode === HierarchyCacheMode.Hybrid)
-    cacheDirectory = cacheConfig?.disk?.directory;
+  let hierarchiesCacheDirectory: string | undefined;
+  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
+  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
+  else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
 
   // terminate backend
   PresentationBackend.terminate();
   await IModelHost.shutdown();
-  if (cacheDirectory)
-    rimraf.sync(cacheDirectory);
+  if (hierarchiesCacheDirectory)
+    rimraf.sync(hierarchiesCacheDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();

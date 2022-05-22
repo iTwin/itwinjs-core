@@ -1,0 +1,45 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../../prefix";
+
+.nz-zones-target-arrow {
+  color: $buic-text-color-reverse;
+  display: flex;
+  align-items: center;
+
+  @include nz-backface-visibility(hidden);
+
+  &:before {
+    content: "";
+    background-color: currentColor;
+    width: 20px;
+    height: 15px;
+  }
+
+  &:after {
+    content: "";
+    position: relative;
+    left: -1px;
+
+    @include triangle-right(25px, 15px);
+  }
+
+  @mixin nz-arrow($zone, $rotation) {
+    &.nz-zone-#{$zone} {
+      transform: rotateZ($rotation * 1deg) translate3d(0, 0, 1px);
+    }
+  }
+
+  @include nz-arrow(6, 45 * 0);
+  @include nz-arrow(9, 45 * 1);
+  @include nz-arrow(8, 45 * 2);
+  @include nz-arrow(7, 45 * 3);
+  @include nz-arrow(4, 45 * 4);
+  @include nz-arrow(1, 45 * 5);
+  @include nz-arrow(2, 45 * 6);
+  @include nz-arrow(3, 45 * 7);
+}

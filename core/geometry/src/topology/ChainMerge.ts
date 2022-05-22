@@ -18,6 +18,7 @@ import { HalfEdgeGraphOps } from "./Merging";
 
 /**
  * interface containing various options appropriate to merging lines segments into chains.
+ * @internal
  */
 export interface ChainMergeContextOptions {
   /**

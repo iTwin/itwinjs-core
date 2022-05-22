@@ -10,7 +10,7 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { PolyfaceData } from "./PolyfaceData";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { Geometry } from "../Geometry";
-/* eslint-disable @bentley/prefer-get */
+/* eslint-disable @itwin/prefer-get */
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
  * * The visitor extends a `PolyfaceData ` class, so it can at any time hold all the data of a single facet.
@@ -230,10 +230,10 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * * The activeFacetIndices array indicates all facets to be visited.
    */
   public static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices.slice(), numWrap);
+    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
   }
   /** Advance the iterator to a particular facet in the client polyface */
-  public moveToReadIndex(activeIndex: number): boolean {
+  public override moveToReadIndex(activeIndex: number): boolean {
     if (activeIndex >= 0 && activeIndex <= this._parentFacetIndices.length) {
       this._nextActiveIndex = activeIndex;
       return super.moveToReadIndex(this._parentFacetIndices[activeIndex++]);
@@ -241,7 +241,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     return false;
   }
   /** Advance the iterator to a the 'next' facet in the client polyface */
-  public moveToNextFacet(): boolean {
+  public override moveToNextFacet(): boolean {
     if (this._nextActiveIndex < this._parentFacetIndices.length) {
       const result = this.moveToReadIndex(this._nextActiveIndex);
       if (result) {
@@ -252,7 +252,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     return false;
   }
   /** Reset the iterator to start at the first facet of the polyface. */
-  public reset(): void {
+  public override reset(): void {
     this._nextActiveIndex = 0;
   }
   /** return the parent facet index of the indicated index within the active facets */

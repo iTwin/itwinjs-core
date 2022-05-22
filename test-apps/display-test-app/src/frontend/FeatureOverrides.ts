@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
-} from "@bentley/frontend-devtools";
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@bentley/imodeljs-common";
-import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/frontend-devtools";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class Provider implements FeatureOverrideProvider {
@@ -19,7 +19,7 @@ export class Provider implements FeatureOverrideProvider {
   private constructor(vp: Viewport) { this._vp = vp; }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
-    this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
+    this._elementOvrs.forEach((appearance, elementId) => ovrs.override({ elementId, appearance }));
     if (undefined !== this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
   }
@@ -137,6 +137,13 @@ export class Settings implements IDisposable {
       handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
     });
 
+    createCheckBox({
+      parent: this._element,
+      name: "View-dependent transparency",
+      id: "ovr_viewDep",
+      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
+    });
+
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
     createButton({
@@ -175,7 +182,7 @@ export class Settings implements IDisposable {
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized", value: any): void {
+  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureAppearance.fromJSON(props);
@@ -324,7 +331,7 @@ export class FeatureOverridesPanel extends ToolBarDropDown {
     this.open();
   }
 
-  public get onViewChanged(): Promise<void> {
+  public override get onViewChanged(): Promise<void> {
     Provider.remove(this._vp);
     return Promise.resolve();
   }

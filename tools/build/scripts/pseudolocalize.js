@@ -6,7 +6,6 @@
 
 /** Generates pseudo localization files from the en localization JSON files.
 */
-
 function pseudoLocalizeObject(objIn) {
   let objOut = {};
   for (let prop in objIn) {

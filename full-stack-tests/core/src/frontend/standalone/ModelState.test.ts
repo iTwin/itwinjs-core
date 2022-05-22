@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
-} from "@bentley/imodeljs-frontend";
+  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
@@ -24,7 +25,7 @@ describe("ModelState", () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
     if (imodel3) await imodel3.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("ModelSelectors should hold models", () => {
@@ -127,6 +128,7 @@ describe("ModelState", () => {
   });
 
   it("view thumbnails", async () => {
+    // eslint-disable-next-line deprecation/deprecation
     let thumbnail = await imodel3.views.getThumbnail("0x34");
     assert.equal(thumbnail.format, "png", "thumbnail format");
     assert.equal(thumbnail.height, 768, "thumbnail height");
@@ -142,6 +144,7 @@ describe("ModelState", () => {
     assert.equal(image[6], 0x1A);
     assert.equal(image[7], 0x0A);
 
+    // eslint-disable-next-line deprecation/deprecation
     thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
@@ -150,21 +153,8 @@ describe("ModelState", () => {
     assert.equal(thumbnail.image[3], 224);
     assert.equal(thumbnail.image[18061], 217);
 
-    // thumbnail.format = "png";
-    // thumbnail.height = 100;
-    // thumbnail.width = 200;
-    // thumbnail.image = new Uint8Array(301); // try with odd number of bytes
-    // thumbnail.image.fill(33);
-
-    // await imodel2.views.saveThumbnail("0x24", thumbnail);
-    // const thumbnail2 = await imodel2.views.getThumbnail("0x24");
-    // assert.equal(thumbnail2.format, "png");
-    // assert.equal(thumbnail2.height, 100);
-    // assert.equal(thumbnail2.width, 200);
-    // assert.equal(thumbnail2.image.length, 301);
-    // assert.equal(thumbnail2.image[3], 33);
-
     try {
+      // eslint-disable-next-line deprecation/deprecation
       await imodel2.views.getThumbnail("0x25");
     } catch (_err) {
       return;

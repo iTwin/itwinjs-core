@@ -24,6 +24,12 @@ export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
 }
 
 /** @internal */
+export interface UnsetRulesetVariableParams extends CommonIpcParams {
+  rulesetId: string;
+  variableId: string;
+}
+
+/** @internal */
 export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
   rulesetId: string;
   imodelKey: string;
@@ -35,6 +41,9 @@ export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
 export interface PresentationIpcInterface {
   /** Sets ruleset variable value. */
   setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
+
+  /** Unsets ruleset variable value. */
+  unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
 
   /** Updates hierarchy state saved on the backend. Hierarchy state is used when performing updates after iModel data changes */
   updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;

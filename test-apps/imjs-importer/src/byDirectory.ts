@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
 import * as path from "path";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
@@ -32,6 +32,7 @@ IModelHost.startup().then(async () => {
   console.log(`input from${directoryTail}`);
   if (directoryTail) {
     const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : `d:\\bfiles\\importIMJS\\${directoryTail}.bim`;
+    console.log({ outputFile: fullBimName});
     const importer = ImportIMJS.create(fullBimName,
       "testSubject");
 

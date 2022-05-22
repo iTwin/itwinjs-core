@@ -34,7 +34,10 @@ export class GeometryCoreTestIO {
       if (!fs.existsSync(path))
         fs.mkdirSync(path);
     }
-    const fullPath = `${path}/${fileName}.imjs`;
+    let fullPath = `${path}/${fileName}`;
+    if (fileName.search("\.imjs$") === 0)
+        fullPath = `${fullPath}.imjs`;
+
     console.log(`saveGeometry:: ${fullPath}`);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
@@ -54,6 +57,7 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
+  /** Create and capture a loop object for a (single) sequence of points . */
   public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!points || points.length === 0)
       return;
@@ -64,6 +68,7 @@ export class GeometryCoreTestIO {
     }
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
+  /** Create and capture a loop object for an array of point sequences. */
   public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (points instanceof IndexedXYZCollection) {
       this.createAndCaptureLoop(collection, points, dx, dy, dz);
@@ -75,7 +80,7 @@ export class GeometryCoreTestIO {
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
 
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][]| undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {
@@ -218,8 +223,9 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[], range: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (!range.isNull) {
+  public static captureRangeEdges(collection: GeometryQuery[],
+    range: Range2d | Range3d | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (range !== undefined && !range.isNull) {
       if (range instanceof Range3d) {
         const corners = range.corners();
         this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);

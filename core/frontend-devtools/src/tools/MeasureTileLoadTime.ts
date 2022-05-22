@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { StopWatch } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { StopWatch } from "@itwin/core-bentley";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;
@@ -44,7 +44,7 @@ class TileLoadTimer {
 
   private onRender(): void {
     // ###TODO: May be intermediate frames during which children props have been asynchronously requested but no outstanding tile requests.
-    if (!this._vp.view.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles)
+    if (!this._vp.areAllTileTreesLoaded || 0 < this._vp.numRequestedTiles)
       return;
 
     this._stopwatch.stop();
@@ -56,12 +56,15 @@ class TileLoadTimer {
 
 /** Unloads all tile trees, then starts a timer that stops when all tile trees and tiles required for the view are ready.
  * Outputs the elapsed time to notifications manager.
- * @alpha
+ * @beta
  */
 export class MeasureTileLoadTimeTool extends Tool {
-  public static toolId = "MeasureTileLoadTime";
+  public static override toolId = "MeasureTileLoadTime";
 
-  public run(_args: any[]): boolean {
+  /** This method runs the tool, unloading all tile trees, then starts a timer that stops when all tile trees and tiles required for the view are ready. It will then output the elapsed time to notifications manager.
+   * @param _args this parameter is unused
+   */
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       new TileLoadTimer(vp);

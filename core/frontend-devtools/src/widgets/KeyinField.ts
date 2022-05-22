@@ -7,7 +7,7 @@
  * @module Widgets
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
 import { createButton } from "../ui/Button";
 import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
@@ -180,7 +180,7 @@ export class KeyinField {
 
     let message: string | undefined;
     try {
-      switch (IModelApp.tools.parseAndRun(input)) {
+      switch (await IModelApp.tools.parseAndRun(input)) {
         case ParseAndRunResult.ToolNotFound:
           message = `Cannot find a key-in that matches: ${input}`;
           break;

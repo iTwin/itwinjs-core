@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { RenderGraphicOwner } from "./render/RenderGraphic";
 import { GraphicType } from "./render/GraphicBuilder";
 import { ViewportDecorator } from "./Viewport";

@@ -5,7 +5,7 @@
 
 import {
   XAndY,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AbstractToolbarProps,
   ActionButton,
@@ -14,10 +14,10 @@ import {
   OnItemExecutedFunc,
   RelativePosition,
   UiAdmin,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import {
   IModelApp,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   Window,
   WindowProps,
@@ -30,7 +30,7 @@ interface ToolbarWindowProps extends WindowProps {
 }
 
 class ToolbarWindow extends Window {
-  public get isCloseable() { return false; }
+  public override get isCloseable() { return false; }
   public get windowId() { return "toolbar"; }
 
   public constructor(surface: Surface, props: ToolbarWindowProps) {
@@ -77,11 +77,11 @@ class ToolbarWindow extends Window {
 }
 
 export class UiManager extends UiAdmin {
-  public get cursorPosition(): XAndY {
+  public override get cursorPosition(): XAndY {
     return super.cursorPosition;
   }
 
-  public showToolbar(tbProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relPos?: RelativePosition, _elem?: HTMLElement): boolean {
+  public override showToolbar(tbProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relPos?: RelativePosition, _elem?: HTMLElement): boolean {
     const surface = Surface.instance;
     if (undefined !== surface.findWindowById("toolbar"))
       return false;
@@ -102,7 +102,7 @@ export class UiManager extends UiAdmin {
     return true;
   }
 
-  public hideToolbar(): boolean {
+  public override hideToolbar(): boolean {
     const window = Surface.instance.findWindowById("toolbar");
     if (undefined === window)
       return false;

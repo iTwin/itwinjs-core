@@ -7,36 +7,40 @@
 // the following quiet warning caused by react-beautiful-dnd package
 /* eslint-disable @typescript-eslint/unbound-method */
 
+import { assert, BentleyError } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import {
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ScreenViewport, TileTreeOwner, Viewport,
+} from "@itwin/core-frontend";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
-import {
-  DisplayStyleState, ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource,
-  MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
-} from "@bentley/imodeljs-frontend";
-import { Toggle } from "@bentley/ui-core";
+import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
+import { MapLayerOptions, StyleMapLayerSettings } from "../Interfaces";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
-import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
-import "./MapLayerManager.scss";
 import { MapLayerDroppable } from "./MapLayerDroppable";
+import "./MapLayerManager.scss";
+import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
+import { MapLayersUI } from "../../mapLayers";
 
 /** @internal */
 export interface SourceMapContextProps {
   readonly sources: MapLayerSource[];
+  readonly loadingSources: boolean;
   readonly bases: MapLayerSource[];
   readonly refreshFromStyle: () => void;
   readonly activeViewport?: ScreenViewport;
   readonly backgroundLayers?: StyleMapLayerSettings[];
   readonly overlayLayers?: StyleMapLayerSettings[];
-  readonly mapTypesOptions?: MapTypesOptions;
+  readonly mapLayerOptions?: MapLayerOptions;
 }
 
 /** @internal */
 export const SourceMapContext = React.createContext<SourceMapContextProps>({ // eslint-disable-line @typescript-eslint/naming-convention
   sources: [],
+  loadingSources: false,
   bases: [],
   refreshFromStyle: () => { },
 });
@@ -50,7 +54,8 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefined, getBackgroundMap: boolean, populateSubLayers = true): StyleMapLayerSettings[] | undefined {
+function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: boolean, populateSubLayers = true): StyleMapLayerSettings[] | undefined {
+  const displayStyle = viewport.displayStyle;
   if (!displayStyle)
     return undefined;
 
@@ -60,14 +65,15 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
   for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
     const layerSettings = displayStyleLayers[layerIdx];
     const isOverlay = !getBackgroundMap;
-    const layerProvider = displayStyle.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
       name: layerSettings.name,
-      url: layerSettings.url,
+      source: layerSettings.source,
       transparency: layerSettings.transparency,
       transparentBackground: layerSettings.transparentBackground,
-      subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
+      subLayers: popSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
       showSubLayers: false,
       isOverlay,
       provider: layerProvider,
@@ -87,20 +93,21 @@ interface MapLayerManagerProps {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerManager(props: MapLayerManagerProps) {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
+  const [loadingSources, setLoadingSources] = React.useState(false);
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
-  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));
-  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.BackgroundLayers"));
+  const [overlaysLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.OverlayLayers"));
+  const [underlaysLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.BackgroundLayers"));
   const { activeViewport, mapLayerOptions } = props;
   const hideExternalMapLayersSection = mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false;
   const fetchPublicMapLayerSources = mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false;
 
   // map layer settings from display style
-  const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, true));
-  const [overlayMapLayers, setOverlayMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, false));
+  const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromViewport(activeViewport, true));
+  const [overlayMapLayers, setOverlayMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromViewport(activeViewport, false));
 
-  const loadMapLayerSettingsFromStyle = React.useCallback((displayStyle: DisplayStyleState) => {
-    setBackgroundMapLayers(getMapLayerSettingsFromStyle(displayStyle, true));
-    setOverlayMapLayers(getMapLayerSettingsFromStyle(displayStyle, false));
+  const loadMapLayerSettingsFromViewport = React.useCallback((viewport: Viewport) => {
+    setBackgroundMapLayers(getMapLayerSettingsFromViewport(viewport, true));
+    setOverlayMapLayers(getMapLayerSettingsFromViewport(viewport, false));
   }, [setBackgroundMapLayers, setOverlayMapLayers]);
 
   const [backgroundMapVisible, setBackgroundMapVisible] = React.useState(() => {
@@ -110,7 +117,15 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     return false;
   });
 
+  // 'isMounted' is used to prevent any async operation once the hook has been
+  // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
   const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  });
 
   // Setup onTileTreeLoad events listening.
   // This is needed because we need to know when the imagery provider
@@ -120,7 +135,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
       // Ignore non-map tile trees
       if (args.tileTree instanceof ImageryMapTileTree) {
-        loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+        loadMapLayerSettingsFromViewport(activeViewport);
       }
     };
 
@@ -130,7 +145,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       IModelApp.tileAdmin.onTileTreeLoad.removeListener(handleTileTreeLoad);
     };
 
-  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
   // Setup onMapImageryChanged events listening.
 
@@ -139,7 +154,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
       if (args.backgroundLayers.length !== (backgroundMapLayers ? backgroundMapLayers.length : 0)
         || args.overlayLayers.length !== (overlayMapLayers ? overlayMapLayers.length : 0)) {
-        loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+        loadMapLayerSettingsFromViewport(activeViewport);
       }
     };
     activeViewport?.displayStyle.settings.onMapImageryChanged.addListener(handleMapImageryChanged);
@@ -147,11 +162,11 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     return () => {
       activeViewport?.displayStyle.settings.onMapImageryChanged.removeListener(handleMapImageryChanged);
     };
-  }, [activeViewport.displayStyle, backgroundMapLayers, loadMapLayerSettingsFromStyle, overlayMapLayers]);
+  }, [activeViewport, backgroundMapLayers, loadMapLayerSettingsFromViewport, overlayMapLayers]);
 
   const handleProviderStatusChanged = React.useCallback((_args: MapLayerImageryProvider) => {
-    loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
-  }, [loadMapLayerSettingsFromStyle, activeViewport]);
+    loadMapLayerSettingsFromViewport(activeViewport);
+  }, [loadMapLayerSettingsFromViewport, activeViewport]);
 
   // Triggered whenever a provider status change
   React.useEffect(() => {
@@ -163,72 +178,112 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       overlayMapLayers?.forEach((layer) => { layer.provider?.onStatusChanged.removeListener(handleProviderStatusChanged); });
     };
 
-  }, [backgroundMapLayers, overlayMapLayers, activeViewport, loadMapLayerSettingsFromStyle, handleProviderStatusChanged]);
+  }, [backgroundMapLayers, overlayMapLayers, activeViewport, loadMapLayerSettingsFromViewport, handleProviderStatusChanged]);
 
   React.useEffect(() => {
-    isMounted.current = true;
     async function fetchWmsMapData() {
       const sources: MapLayerSource[] = [];
       const bases: MapLayerSource[] = [];
       const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
-      if (isMounted.current) {
-        sourceLayers?.layers.forEach((source: MapLayerSource) => {
-          sources.push(source);
-        });
-        setMapSources(sources); // This is where the list of layers first gets populated.. I need to update it
-        // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
-        // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
-        //
-        sourceLayers?.bases.forEach((source: MapLayerSource) => {
-          bases.push(source);
-        });
-        setBaseSources(bases);
+
+      const iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
+      try {
+        const preferenceSources = ( iModel?.iTwinId === undefined
+          ? []
+          : await MapLayerPreferences.getSources(iModel?.iTwinId, iModel?.iModelId)
+        );
+        for (const source of preferenceSources)
+          await MapLayerSources.addSourceToMapLayerSources(source);
+      } catch (err) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }
-    }
-    fetchWmsMapData(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [setMapSources, fetchPublicMapLayerSources, hideExternalMapLayersSection]);
 
-  // runs returned function only when component is unmounted.
-  React.useEffect(() => {
-    return (() => {
-      isMounted.current = false;
-    });
-  }, []);
-
-  React.useEffect(() => {
-    const handleNewCustomLayer = async (source: MapLayerSource) => {
-      const sources = await MapLayerSources.addSourceToMapLayerSources(source);
-      if (!sources) {
+      if (!isMounted.current) {
         return;
       }
-      const newSources: MapLayerSource[] = [];
-      sources.layers.forEach((sourceLayer: MapLayerSource) => {
-        newSources.push(sourceLayer);
-      });
-      setMapSources(newSources);
-    };
-    MapLayerSettingsService.onNewCustomLayerSource.addListener(handleNewCustomLayer);
-    return (() => {
-      MapLayerSettingsService.onNewCustomLayerSource.removeListener(handleNewCustomLayer);
+
+      // This is where the list of layers first gets populated... I need to update it
+      // MapUrlDialog gets around knowing MapLayerManager exists and vice versa by affecting the viewports displayStyle which MapLayerManager is listening for
+      // We know when displayStyle changes we've added a layer, this layer may not be a custom layer
+      sourceLayers?.layers.forEach((source: MapLayerSource) => { sources.push(source); });
+      setMapSources(sources);
+      sourceLayers?.bases.forEach((source: MapLayerSource) => { bases.push(source); });
+      setBaseSources(bases);
+    }
+
+    setLoadingSources(true);
+    fetchWmsMapData().then(() => {
+      if (isMounted.current) {
+        setLoadingSources(false);
+      }
+
+    }).catch(() => {
+      if (isMounted.current) {
+        setLoadingSources(false);
+      }
     });
+  }, [setMapSources, fetchPublicMapLayerSources, hideExternalMapLayersSection]);
+
+  const updateMapSources = React.useCallback(() => {
+    const newSources: MapLayerSource[] = [];
+    MapLayerSources.getInstance()?.layers?.forEach((sourceLayer: MapLayerSource) => { newSources.push(sourceLayer); });
+    setMapSources(newSources);
   }, [setMapSources]);
+
+  /**
+  * Handle change events in the MapLayerPreferences
+  */
+  React.useEffect(() => {
+    const handleLayerSourceChange = async (changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource, newSource?: MapLayerSource) => {
+      const removeSourceOnly = (changeType === MapLayerSourceChangeType.Removed);
+      const removeSource = (changeType === MapLayerSourceChangeType.Replaced || changeType === MapLayerSourceChangeType.Removed);
+      const addSource = (changeType === MapLayerSourceChangeType.Replaced || changeType === MapLayerSourceChangeType.Added);
+
+      if (removeSource) {
+        if (oldSource) {
+          const succeeded = MapLayerSources.removeLayerByName(oldSource.name);
+          assert(succeeded);
+          if (!succeeded) {
+            return;
+          }
+
+          if (removeSourceOnly) {
+            updateMapSources();
+            return;
+          }
+        }
+      }
+
+      if (addSource) {
+        const sources = await MapLayerSources.addSourceToMapLayerSources(newSource);
+        assert(sources !== undefined);
+        if (sources) {
+          updateMapSources();
+        }
+      }
+    };
+    MapLayerPreferences.onLayerSourceChanged.addListener(handleLayerSourceChange);
+    return (() => {
+      MapLayerPreferences.onLayerSourceChanged.removeListener(handleLayerSourceChange);
+    });
+  }, [updateMapSources]);
 
   // update when a different display style is loaded.
   React.useEffect(() => {
     const handleDisplayStyleChange = (vp: Viewport) => {
-      loadMapLayerSettingsFromStyle(vp.displayStyle);
+      loadMapLayerSettingsFromViewport(vp);
     };
     activeViewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
     return () => {
       activeViewport?.onDisplayStyleChanged.removeListener(handleDisplayStyleChange);
     };
-  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
   const handleOnMenuItemSelection = React.useCallback((action: string, mapLayerSettings: StyleMapLayerSettings) => {
     if (!activeViewport || !activeViewport.displayStyle)
       return;
 
-    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
     if (indexInDisplayStyle < 0)
       return;
 
@@ -239,7 +294,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       case "zoom-to-layer":
         activeViewport.displayStyle.viewMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay, activeViewport).then((status) => {
           if (!status) {
-            const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NoRangeDefined");
+            const msg = MapLayersUI.localization.getLocalizedString("mapLayers:Messages.NoRangeDefined");
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} [${mapLayerSettings.name}]`));
           }
         }).catch((_error) => { });
@@ -248,33 +303,30 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     activeViewport.invalidateRenderPlan();
 
     // force UI to update
-    loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
-  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+    loadMapLayerSettingsFromViewport(activeViewport);
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
   const handleLayerVisibilityChange = React.useCallback((mapLayerSettings: StyleMapLayerSettings) => {
     if (activeViewport) {
       const isVisible = !mapLayerSettings.visible;
 
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         // update the display style
         displayStyle.changeMapLayerProps({ visible: isVisible }, indexInDisplayStyle, mapLayerSettings.isOverlay);
         activeViewport.invalidateRenderPlan();
 
         // force UI to update
-        loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+        loadMapLayerSettingsFromViewport(activeViewport);
       }
     }
-  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
   const handleMapLayersToggle = React.useCallback(() => {
     if (activeViewport) {
       const newState = !backgroundMapVisible;
-      const vf = activeViewport.viewFlags.clone();
-      vf.backgroundMap = newState; // Or any other modifications
-      activeViewport.viewFlags = vf;
-      activeViewport.invalidateRenderPlan();
+      activeViewport.viewFlags = activeViewport.viewFlags.with("backgroundMap", newState);
       setBackgroundMapVisible(newState);
     }
   }, [backgroundMapVisible, setBackgroundMapVisible, activeViewport]);
@@ -310,10 +362,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       else if (destination.droppableId === "backgroundMapLayers" && backgroundMapLayers)
         toMapLayer = backgroundMapLayers[destination.index];
       if (toMapLayer)
-        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(toMapLayer.name, toMapLayer.url, toMapLayer.isOverlay);
+        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(toMapLayer.name, toMapLayer.source, toMapLayer.isOverlay);
     }
 
-    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(fromMapLayer.name, fromMapLayer.url, fromMapLayer.isOverlay);
+    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(fromMapLayer.name, fromMapLayer.source, fromMapLayer.isOverlay);
     if (fromIndexInDisplayStyle < 0)
       return;
 
@@ -347,30 +399,31 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     activeViewport.invalidateRenderPlan();
 
     // force UI to update
-    loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
-  }, [loadMapLayerSettingsFromStyle, activeViewport, overlayMapLayers, backgroundMapLayers]);
+    loadMapLayerSettingsFromViewport(activeViewport);
+  }, [loadMapLayerSettingsFromViewport, activeViewport, overlayMapLayers, backgroundMapLayers]);
 
   const handleRefreshFromStyle = React.useCallback(() => {
     if (activeViewport)
-      loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
-  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+      loadMapLayerSettingsFromViewport(activeViewport);
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
-  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
+  const [baseMapPanelLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Basemap.BaseMapPanelTitle"));
 
   return (
     <SourceMapContext.Provider value={{
       activeViewport,
+      loadingSources,
       sources: mapSources ? mapSources : [],
       bases: baseSources ? baseSources : [],
       refreshFromStyle: handleRefreshFromStyle,
       backgroundLayers: backgroundMapLayers,
       overlayLayers: overlayMapLayers,
-      mapTypesOptions: mapLayerOptions?.mapTypeOptions,
+      mapLayerOptions,
     }}>
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>
         <div className="map-manager-header-buttons-group">
-          <Toggle className="map-manager-toggle" isOn={backgroundMapVisible} onChange={handleMapLayersToggle} />
+          <ToggleSwitch className="map-manager-toggle" checked={backgroundMapVisible} onChange={handleMapLayersToggle} />
           <MapLayerSettingsPopupButton />
         </div>
       </div>

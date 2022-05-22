@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -44,11 +44,11 @@ export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: b
 const scratchWorldFrustum = new Frustum();
 const scratchRootFrustum = new Frustum();
 const scratchWorldSphere = new BoundingSphere();
-const scratchRootSphere = new BoundingSphere();
 const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
 /** A 3d tile within a [[TileTree]].
+ *
  * A tile represents the contents of some sub-volume of the tile tree's volume. It may produce graphics representing those contents, or may have no graphics.
  * A tile can have child tiles that further sub-divide its own volume, providing higher-resolution representations of its contents. A tile that has no children is
  * referred to as a "leaf" of the tile tree. A non-leaf tile's children are produced when they are needed, and discarded when no longer needed.
@@ -56,8 +56,9 @@ const scratchFrustum = new Frustum();
  * [[Tile.dispose]].
  *
  * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
- * For example, [[collectStatistics]] should not be overridden, but it calls [[_collectStatistics]], which should be overridden if the tile owns WebGL resources besides its [[RenderGraphic]].
- * @beta
+ * For example, [[loadChildren]] should not be overridden, but it calls [[_loadChildren]], which must be overridden because it is abstract.
+ * @public
+ * @extensions
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;
@@ -68,15 +69,17 @@ export abstract class Tile {
   protected _graphic?: RenderGraphic;
   /** True if this tile ever had graphics loaded. Used to determine when a tile's graphics were later freed to conserve memory. */
   protected _hadGraphics = false;
-  /** Uniquely identifies this tile's content. */
+  /** Uniquely identifies this tile's content in the context of its tree. */
   protected _contentId: string;
-  /** Child tiles are loaded on-demand, potentially asynchronously. This tracks their current loading state. */
+  /** The current loading state of this tile's children. Child tiles are loaded on-demand, potentially asynchronously. */
   protected _childrenLoadStatus: TileTreeLoadStatus;
   /** @internal */
   protected _request?: TileRequest;
   /** @internal */
   protected _isLeaf: boolean;
-  /** @internal */
+  /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents, used for more accurate culling.
+   * [[contentRange]] uses this range if defined; otherwise it uses [[range]].
+   */
   protected _contentRange?: ElementAlignedBox3d;
   /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
   protected _maximumSize: number;
@@ -88,10 +91,12 @@ export abstract class Tile {
   public readonly parent: Tile | undefined;
   /** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
   public readonly depth: number;
+  /** The bounding sphere for this tile. */
+  public readonly boundingSphere: BoundingSphere;
   /** The point at the center of this tile's volume. */
-  public readonly center: Point3d;
+  public get center(): Point3d { return this.boundingSphere.center; }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
-  public readonly radius: number;
+  public get radius(): number { return this.boundingSphere.radius; }
   /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
@@ -102,7 +107,7 @@ export abstract class Tile {
   /** Exclusively for use by LRUTileList. @internal */
   public bytesUsed = 0;
   /** Exclusively for use by LRUTileList. @internal */
-  public viewportIds?: ViewportIdSet;
+  public tileUserIds?: TileUserIdSet;
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
@@ -111,7 +116,7 @@ export abstract class Tile {
    * @note The channel *must* be registered with `IModelApp.tileAdmin.channels`.
    * @see [[TileRequestChannels.getForHttp]] to create a channel that requests content over HTTP.
    * @see [[TileAdmin.channels]].
-   * @beta
+   * @public
    */
   public abstract get channel(): TileRequestChannel;
 
@@ -131,8 +136,9 @@ export abstract class Tile {
     this._contentRange = params.contentRange;
     this._contentId = params.contentId;
 
-    this.center = this.range.low.interpolate(0.5, this.range.high);
-    this.radius = 0.5 * this.range.low.distance(this.range.high);
+    const center = this.range.low.interpolate(0.5, this.range.high);
+    const radius = 0.5 * this.range.low.distance(this.range.high);
+    this.boundingSphere = new BoundingSphere(center, radius);
 
     if (params.maximumSize <= 0)
       this.setIsReady();
@@ -184,12 +190,12 @@ export abstract class Tile {
   /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
-  /** @internal */
+  /** @public */
   public setNotFound(): void {
     this._state = TileState.NotFound;
   }
 
-  /** @internal */
+  /** @public */
   public setIsReady(): void {
     if (this.hasGraphics)
       this._hadGraphics = true;
@@ -198,7 +204,7 @@ export abstract class Tile {
     IModelApp.tileAdmin.onTileContentLoaded(this);
   }
 
-  /** @internal */
+  /** @public */
   public setLeaf(): void {
     // Don't potentially re-request the children later.
     this.disposeChildren();
@@ -226,8 +232,13 @@ export abstract class Tile {
     this._request = request;
   }
 
-  /** @internal */
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  /** Compute the load priority of this tile. This determines which tiles' contents are requested first.
+   * @param _viewports The subset of `users` that are [[Viewport]]s - typically, these viewports want to display the tile's content.
+   * @param users The [[TileUser]]s that are currently using the tile for some purpose, such as displaying its content.
+   * @returns The priority.
+   * @see [[TileLoadPriority]] for suggested priority values.
+   */
+  public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
   }
 
@@ -235,7 +246,7 @@ export abstract class Tile {
   public get hasGraphics(): boolean { return undefined !== this._graphic; }
   /** True if this tile has a known volume tightly encompassing its graphics. */
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
-  /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents. Used for more accurate culling. */
+  /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents, used for more accurate culling. */
   public get contentRange(): ElementAlignedBox3d {
     if (undefined !== this._contentRange)
       return this._contentRange;
@@ -301,7 +312,7 @@ export abstract class Tile {
     this.setIsReady();
   }
 
-  /** Disclose any additional resources owned by this tile.
+  /** Disclose any resources owned by this tile, other than its [[RenderGraphic]].
    * @internal
    */
   protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
@@ -367,8 +378,7 @@ export abstract class Tile {
 
   /** Returns true if this tile's bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isRegionCulled(args: TileDrawArgs): boolean {
-    scratchRootSphere.init(this.center, this.radius);
-    return this.isCulled(this.range, args, true, scratchRootSphere);
+    return this.isCulled(this.range, args, true, this.boundingSphere);
   }
 
   /** Returns true if this tile's content bounding volume is culled by the frustum or clip volumes specified by `args`. */
@@ -378,6 +388,10 @@ export abstract class Tile {
 
   private isCulled(range: ElementAlignedBox3d, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const box = Frustum.fromRange(range, scratchRootFrustum);
+    return this.isFrustumCulled(box, args, testClipIntersection, sphere);
+  }
+
+  protected isFrustumCulled(box: Frustum, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const worldBox = box.transformBy(args.location, scratchWorldFrustum);
     const worldSphere = sphere?.transformBy(args.location, scratchWorldSphere);
 
@@ -402,9 +416,15 @@ export abstract class Tile {
 
   /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
+    if (this.isEmpty)
+      return TileVisibility.OutsideFrustum;
+
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
+      return TileVisibility.OutsideFrustum;
+
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
-    if (this.isEmpty || this.isRegionCulled(args))
+    if (this.isRegionCulled(args))
       return TileVisibility.OutsideFrustum;
 
     // some nodes are merely for structure and don't have any geometry
@@ -418,7 +438,7 @@ export abstract class Tile {
         return TileVisibility.Visible;
     }
 
-    const pixelSize = args.getPixelSize(this);
+    const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
     const maxSize = this.maximumSize * args.tileSizeModifier;
 
     return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
@@ -448,7 +468,7 @@ export abstract class Tile {
     }
   }
 
-  /** @internal */
+  /** Primarily for debugging purposes, compute the number of tiles below this one in the [[TileTree]]. */
   public countDescendants(): number {
     const children = this.children;
     if (undefined === children || 0 === children.length)
@@ -522,15 +542,17 @@ export abstract class Tile {
       addRangeGraphic(builder, range, this.tree.is2d);
     }
   }
-  /** If size projection corners are used to compute the screen size of the tile.   These are are used for reality tiles
-   * with OBB to produce more accurate size calculation.
-   * @internal */
+
+  /** Optional corners used to compute the screen size of the tile. These are used, e.g., by reality tiles with oriented bounding boxes to
+   * produce more accurate size calculation.
+   */
   public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
 }
 
-/**
- * Describes the current status of a Tile's content. Tile content is loaded via an asynchronous [[TileRequest]].
- * @beta
+/** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
+ * @see [[Tile.loadStatus]].
+ * @public
+ * @extensions
  */
 export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
@@ -549,7 +571,8 @@ export enum TileLoadStatus {
 
 /**
  * Describes the visibility of a tile based on its size and a view frustum.
- * @beta
+ * @public
+ * @extensions
  */
 export enum TileVisibility {
   /** The tile is entirely outside of the viewing frustum. */
@@ -561,9 +584,10 @@ export enum TileVisibility {
 }
 
 /**
- * Loosely describes the "importance" of a tile. Requests for tiles of more "importance" are prioritized for loading.
- * @note A lower LoadPriority value indicates higher importance.
- * @beta
+ * Loosely describes the "importance" of a [[Tile]]. Requests for tiles of greater "importance" are prioritized for loading.
+ * @note A lower priority value indicates higher importance.
+ * @public
+ * @extensions
  */
 export enum TileLoadPriority {
   /** Contents of geometric models that are being interactively edited. */
@@ -588,7 +612,8 @@ export enum TileLoadPriority {
  *  - Green: An ordinary tile (sub-divides into 4 or 8 child tiles).
  *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
  * @see [[Viewport.debugBoundingBoxes]]
- * @internal
+ * @public
+ * @extensions
  */
 export enum TileBoundingBoxes {
   /** Display no bounding boxes */

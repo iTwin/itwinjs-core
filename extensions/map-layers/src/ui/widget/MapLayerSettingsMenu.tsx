@@ -3,25 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ContextMenu, ContextMenuItem, Slider } from "@bentley/ui-core";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { ScreenViewport } from "@itwin/core-frontend";
+import { ContextMenu, ContextMenuItem } from "@itwin/core-react";
+import { Button, Slider } from "@itwin/itwinui-react";
 import "./MapLayerManager.scss";
 import { StyleMapLayerSettings } from "../Interfaces";
+import { MapLayersUI } from "../../mapLayers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
-  const [labelDetach] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.Detach"));
-  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.ZoomToLayer"));
+  const [labelDetach] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
+  const [labelZoomToLayer] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
   const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
   const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
 
   React.useEffect(() => {
     async function fetchRangeData() {
       let hasRange = false;
-      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (undefined !== indexInDisplayStyle) {
         hasRange = (undefined !== await activeViewport.displayStyle.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
       }
@@ -52,7 +53,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
     if (activeViewport) {
       const newTransparency = value;
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         const styleTransparency = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayerSettings.isOverlay)?.transparency;
         const styleTransparencyValue = styleTransparency ? styleTransparency : 0;
@@ -80,13 +81,15 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
 
   return (
     <>
-      <button data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></button>
+      <Button size="small" styleType="borderless" data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></Button>
       <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
-        <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
-        <ContextMenuItem hideIconContainer={true} key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
-        <ContextMenuItem hideIconContainer={true} key={2} >
-          <Slider min={0} max={100} values={[transparency * 100]} step={1} showTooltip showMinMax onChange={handleTransparencyChange} />
-        </ContextMenuItem>
+        <div className="map-manager-item-menu" >
+          <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
+          <ContextMenuItem hideIconContainer={true} key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
+          <ContextMenuItem hideIconContainer={true} key={2} >
+            <Slider min={0} max={100} values={[transparency * 100]} step={1} onChange={handleTransparencyChange} />
+          </ContextMenuItem>
+        </div>
       </ContextMenu>
     </>
   );

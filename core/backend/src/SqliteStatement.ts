@@ -6,12 +6,14 @@
  * @module SQLite
  */
 
-import { Config, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
-import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
+import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
-/** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+/** Marks a string as either an [Id64String]($core-bentley) or [GuidString]($core-bentley), so
  * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
  * methods of [SqliteStatement]($backend).
  * @internal
@@ -20,6 +22,11 @@ export interface StringParam {
   id?: Id64String;
   guid?: GuidString;
 }
+
+/** parameter Index (1-based), or name of the parameter (including the initial ':', '@' or '$')
+ * @public
+ */
+export type BindParameter = number | string;
 
 /** Executes SQLite SQL statements.
  *
@@ -40,19 +47,14 @@ export interface StringParam {
  * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
  * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
- * @internal
+ * @public
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
-  private _isShared: boolean = false;
 
+  public constructor(private _sql: string) { }
   public get stmt() { return this._stmt; }
-
-  /** used by statement cache */
-  public setIsShared(b: boolean) { this._isShared = b; }
-
-  /**  used by statement cache */
-  public get isShared(): boolean { return this._isShared; }
+  public get sql() { return this._sql; }
 
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return undefined !== this._stmt; }
@@ -60,48 +62,36 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
-   * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
+   * @param logErrors Determine if errors are logged or not
+   * @throws if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors = true): void {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._stmt = new IModelHost.platform.SqliteStatement();
-    const stat: StatusCodeWithMessage<DbResult> = this._stmt.prepare(db, sql);
-    if (stat.status !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat.status, stat.message);
+    this._stmt.prepare(db, this._sql, logErrors);
   }
 
   /** Indicates whether the prepared statement makes no **direct* changes to the content of the file
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    */
   public get isReadonly(): boolean {
-    if (!this.isPrepared)
-      throw new Error("SqliteStatement is not prepared.");
-
     return this._stmt!.isReadonly();
   }
 
   /** Reset this statement so that the next call to step will return the first row, if any.
    */
   public reset(): void {
-    if (!this._stmt)
-      throw new Error("SqliteStatement is not prepared");
-
-    this._stmt.reset();
+    this._stmt!.reset();
   }
 
-  /** Call this function when finished with this statement. This releases the native resources held by the statement.
-   *
-   * > Do not call this method directly on a statement that is being managed by a statement cache.
-   */
+  /** Call this function when finished with this statement. This releases the native resources held by the statement. */
   public dispose(): void {
-    if (this.isShared)
-      throw new Error("Can't dispose a shared SqliteStatement");
-    if (!this.isPrepared)
-      return;
-    this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
-    this._stmt = undefined; // discard the peer JS object as garbage
+    if (this._stmt) {
+      this._stmt.dispose(); // free native statement
+      this._stmt = undefined;
+    }
   }
 
   /** Binds a value to the specified SQL parameter.
@@ -121,7 +111,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @throws [IModelError]($common) if the value is of an unsupported type or in
    *  case of other binding errors.
    */
-  public bindValue(parameter: number | string, value: any): void {
+  public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
     if (value === undefined || value === null) {
       stat = this._stmt!.bindNull(parameter);
@@ -145,6 +135,53 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in bindValue");
+  }
+
+  private checkBind(stat: DbResult) {
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat, "SQLite Bind error");
+  }
+  /** Bind an integer parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val integer to bind.
+   */
+  public bindInteger(parameter: BindParameter, val: number) {
+    this.checkBind(this._stmt!.bindInteger(parameter, val));
+  }
+  /** Bind a double parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val double to bind.
+   */
+  public bindDouble(parameter: BindParameter, val: number) {
+    this.checkBind(this._stmt!.bindDouble(parameter, val));
+  }
+  /** Bind a string parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val string to bind.
+   */
+  public bindString(parameter: BindParameter, val: string) {
+    this.checkBind(this._stmt!.bindString(parameter, val));
+  }
+  /** Bind an Id64String parameter as a 64-bit integer
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val Id to bind.
+   */
+  public bindId(parameter: BindParameter, id: Id64String) {
+    this.checkBind(this._stmt!.bindId(parameter, id));
+  }
+  /** Bind a Guid parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val Guid to bind.
+   */
+  public bindGuid(parameter: BindParameter, guid: GuidString) {
+    this.checkBind(this._stmt!.bindGuid(parameter, guid));
+  }
+  /** Bind a blob parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val blob to bind.
+   */
+  public bindBlob(parameter: BindParameter, blob: Uint8Array) {
+    this.checkBind(this._stmt!.bindBlob(parameter, blob));
   }
 
   /** Bind values to all parameters in the statement.
@@ -181,7 +218,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat: DbResult = this._stmt!.clearBindings();
+    const stat = this._stmt!.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in clearBindings");
   }
@@ -189,12 +226,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Step this statement to the next row.
    *
    *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - [DbResult.BE_SQLITE_ROW]($core-bentley) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has no more rows.
    *  - Error status in case of errors.
    *
    *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
   public step(): DbResult { return this._stmt!.step(); }
@@ -206,6 +243,31 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param columnIx Index of SQL column in query result (0-based)
    */
   public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
+
+  /** Get a value as a blob
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueBlob(colIndex: number): Uint8Array { return this._stmt!.getValueBlob(colIndex); }
+  /** Get a value as a double
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueDouble(colIndex: number): number { return this._stmt!.getValueDouble(colIndex); }
+  /** Get a value as a integer
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueInteger(colIndex: number): number { return this._stmt!.getValueInteger(colIndex); }
+  /** Get a value as a string
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueString(colIndex: number): string { return this._stmt!.getValueString(colIndex); }
+  /** Get a value as an Id
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueId(colIndex: number): Id64String { return this._stmt!.getValueId(colIndex); }
+  /** Get a value as a Guid
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueGuid(colIndex: number): GuidString { return this._stmt!.getValueGuid(colIndex); }
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
@@ -221,11 +283,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
   public getRow(): any {
-    const colCount: number = this.getColumnCount();
+    const colCount = this.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      const sqliteValue: SqliteValue = this.getValue(i);
+      const sqliteValue = this.getValue(i);
       if (!sqliteValue.isNull) {
         const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
         let val: any;
@@ -254,10 +316,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
 
   private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, sqliteValue: SqliteValue): string {
-    let jsName: string = ECJsNames.toJsName(sqliteValue.columnName);
+    let jsName = ECJsNames.toJsName(sqliteValue.columnName);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(jsName);
+    let suffix = duplicatePropNames.get(jsName);
     if (suffix === undefined)
       duplicatePropNames.set(jsName, 0);
     else {
@@ -272,17 +334,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Calls step when called as an iterator.
    */
   public next(): IteratorResult<any> {
-    if (DbResult.BE_SQLITE_ROW === this.step()) {
-      return {
-        done: false,
-        value: this.getRow(),
-      };
-    } else {
-      return {
-        done: true,
-        value: undefined,
-      };
-    }
+    return DbResult.BE_SQLITE_ROW === this.step() ? { done: false, value: this.getRow() } : { done: true, value: undefined };
   }
 
   /** The iterator that will step through the results of this statement. */
@@ -294,7 +346,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
  * - [SqliteValue]($backend)
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
- * @internal
+ * @public
  */
 export enum SqliteValueType {
   // do not change the values of that enum. It must correspond to the respective
@@ -310,7 +362,7 @@ export enum SqliteValueType {
  * See also:
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
- * @internal
+ * @public
  */
 export class SqliteValue {
   private readonly _stmt: IModelJsNative.SqliteStatement;
@@ -371,108 +423,50 @@ export class SqliteValue {
   public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
 }
 
-/** A cached SqliteStatement. See [SqliteStatementCache]($backend) for details.
- * @internal
- */
-export class CachedSqliteStatement {
-  public statement: SqliteStatement;
-  public useCount: number;
-
-  /** @internal - used by statement cache */
-  public constructor(stmt: SqliteStatement) {
-    this.statement = stmt;
-    this.useCount = 1;
-  }
+interface Statement {
+  isPrepared: boolean;
+  sql: string;
+  dispose(): void;
+  reset(): void;
+  clearBindings(): void;
 }
 
-/** A cache for SqliteStatements. Preparing [SqliteStatement]($backend)s can be costly.
- * This class provides a way to save previously prepared SqliteStatements for reuse.
+/** A cache for previously prepared SqliteStatements.
+ * It only holds Statements after they are no longer in use, resetting and clearing their bindings before saving them.
+ * When a request to use a statement from the cache is made, it is first removed from the cache.
  * @internal
  */
-export class SqliteStatementCache {
-  private readonly _statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();
-  public readonly maxCount: number;
+export class StatementCache<Stmt extends Statement> {
+  private _cache: LRUMap<string, Stmt>;
 
-  public constructor(maxCount = Config.App.getNumber("imjs_sqlite_cache_size", 40)) { this.maxCount = maxCount; }
+  public constructor(maxCount = 40) {
+    this._cache = new LRUMap<string, Stmt>(maxCount);
+  }
 
-  public add(str: string, stmt: SqliteStatement): void {
-    const existing = this._statements.get(str);
+  public get size() { return this._cache.size; }
+  public addOrDispose(stmt: Stmt): void {
+    assert(stmt.isPrepared);
+
+    const existing = this._cache.get(stmt.sql);
     if (existing !== undefined) {
-      throw new Error("you should only add a statement if all existing copies of it are in use.");
-    }
-    const cs = new CachedSqliteStatement(stmt);
-    cs.statement.setIsShared(true);
-    this._statements.set(str, cs);
-  }
-
-  public getCount(): number { return this._statements.size; }
-
-  public find(str: string): CachedSqliteStatement | undefined {
-    return this._statements.get(str);
-  }
-
-  public release(stmt: SqliteStatement): void {
-    for (const cs of this._statements) {
-      const css = cs[1];
-      if (css.statement === stmt) {
-        if (css.useCount > 0) {
-          css.useCount--;
-          if (css.useCount === 0) {
-            css.statement.reset();
-            css.statement.clearBindings();
-          }
-        } else {
-          throw new Error("double-release of cached SqliteStatement");
-        }
-        // leave the statement in the cache, even if its use count goes to zero. See removeUnusedStatements and clearOnClose.
-        // *** TODO: we should remove it if it is a duplicate of another unused statement in the cache. The trouble is that we don't have the sql for the statement,
-        //           so we can't check for other equivalent statements.
-        break;
-      }
-    }
-  }
-  public replace(str: string, stmt: SqliteStatement) {
-    if (stmt.isShared) {
-      throw new Error("expecting a unshared statement");
-    }
-    const existingCS = this.find(str);
-    if (existingCS) {
-      existingCS.statement.setIsShared(false);
-      this._statements.delete(str);
-    }
-    const newCS = new CachedSqliteStatement(stmt);
-    newCS.statement.setIsShared(true);
-    this._statements.set(str, newCS);
-  }
-
-  public removeUnusedStatementsIfNecessary(): void {
-    if (this.getCount() <= this.maxCount)
+      stmt.dispose(); // we already have a statement with this sql cached, we can't save another one so just dispose it
       return;
+    }
+    if (this._cache.size >= this._cache.limit) {
+      const oldest = this._cache.shift()!;
+      oldest[1].dispose();
+    }
+    stmt.reset();
+    stmt.clearBindings();
+    this._cache.set(stmt.sql, stmt);
+  }
 
-    const keysToRemove = [];
-    for (const cs of this._statements) {
-      const css = cs[1];
-      if (css.useCount === 0) {
-        css.statement.setIsShared(false);
-        css.statement.dispose();
-        keysToRemove.push(cs[0]);
-        if (keysToRemove.length >= this.maxCount)
-          break;
-      }
-    }
-    for (const k of keysToRemove) {
-      this._statements.delete(k);
-    }
+  public findAndRemove(sql: string): Stmt | undefined {
+    return this._cache.delete(sql);
   }
 
   public clear() {
-    for (const cs of this._statements) {
-      const stmt = cs[1].statement;
-      if (stmt !== undefined) {
-        stmt.setIsShared(false);
-        stmt.dispose();
-      }
-    }
-    this._statements.clear();
+    this._cache.forEach((stmt) => stmt.dispose());
+    this._cache.clear();
   }
 }

@@ -6,9 +6,7 @@
  * @module WebGL
  */
 
-import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { AnimationBranchState } from "../GraphicBranch";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -16,11 +14,11 @@ import { isFeatureHilited } from "./FeatureOverrides";
 import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./UniformHandle";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
+import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -87,6 +85,8 @@ export enum DrawOpCode {
   PushBatch = "pushBatch",
   PopBatch = "popBatch",
   PushState = "pushState",
+  PushClip = "pushClip",
+  PopClip = "popClip",
 }
 
 /** @internal */
@@ -125,50 +125,12 @@ export class PushStateCommand {
 }
 
 /** @internal */
-export function getAnimationBranchState(branch: Branch, target: Target): AnimationBranchState | undefined {
-  const animId = branch.branch.animationId;
-  if (undefined === animId || undefined === target.animationBranches)
-    return undefined;
-
-  return target.animationBranches.get(animId);
-}
-
-/** @internal */
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
-  private static _viewFlagOverrides?: ViewFlagOverrides;
-
   public constructor(public readonly branch: Branch) { }
 
-  private applyAnimation(target: Target): void {
-    const anim = getAnimationBranchState(this.branch, target);
-    if (undefined === anim)
-      return;
-
-    if (undefined !== anim.transform) {
-      let transform = anim.transform;
-      const prevLocalToWorld = target.currentTransform;
-      const prevWorldToLocal = prevLocalToWorld.inverse();
-      if (prevLocalToWorld && prevWorldToLocal)
-        transform = prevWorldToLocal.multiplyTransformTransform(transform.multiplyTransformTransform(prevLocalToWorld));
-
-      this.branch.localToWorldTransform = transform;
-    }
-
-    if (anim.clip !== undefined) {
-      this.branch.clips = anim.clip as ClipVolume;
-      if (undefined === PushBranchCommand._viewFlagOverrides) {
-        PushBranchCommand._viewFlagOverrides = new ViewFlagOverrides();
-        PushBranchCommand._viewFlagOverrides.setShowClipVolume(true);
-      }
-
-      this.branch.branch.setViewFlagOverrides(PushBranchCommand._viewFlagOverrides);
-    }
-  }
-
   public execute(exec: ShaderProgramExecutor): void {
-    this.applyAnimation(exec.target);
     exec.pushBranch(this.branch);
   }
 }
@@ -183,6 +145,30 @@ export class PopBranchCommand {
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.popBranch();
+  }
+}
+
+/** @internal */
+export class PushClipCommand {
+  public readonly opcode = "pushClip";
+
+  public constructor(public readonly clip: ClipVolume) { }
+
+  public execute(exec: ShaderProgramExecutor): void {
+    exec.target.uniforms.branch.clipStack.push(this.clip);
+  }
+}
+
+/** @internal */
+export class PopClipCommand {
+  public readonly opcode = "popClip";
+
+  private constructor() { }
+
+  public static instance = new PopClipCommand();
+
+  public execute(exec: ShaderProgramExecutor): void {
+    exec.target.uniforms.branch.clipStack.pop();
   }
 }
 
@@ -204,7 +190,7 @@ export class PrimitiveCommand {
 
     const target = exec.target;
     const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
-    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
+    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     let isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
@@ -215,28 +201,31 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
+    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
+    const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
 
     if (exec.setProgram(program))
-      this.primitive.draw(exec);
+      exec.target.compositor.drawPrimitive(this.primitive, exec, program.outputsToPick);
   }
 
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
   public get renderOrder(): RenderOrder { return this.primitive.renderOrder; }
 
-  public getRenderPass(target: Target): RenderPass {
-    return this.primitive.getRenderPass(target);
+  public getPass(target: Target): Pass {
+    return this.primitive.getPass(target);
   }
 }
 
 /** @internal */
-export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand;
+export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand | PushClipCommand;
 /** @internal */
-export type PopCommand = PopBranchCommand | PopBatchCommand;
+export type PopCommand = PopBranchCommand | PopBatchCommand | PopClipCommand;
 /** @internal */
 export type DrawCommand = PushCommand | PopCommand | PrimitiveCommand;
 

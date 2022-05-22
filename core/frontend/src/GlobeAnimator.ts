@@ -6,37 +6,40 @@
  * @module Views
  */
 
-import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@bentley/geometry-core";
-import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@bentley/imodeljs-common";
+import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
+import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
 import {
   areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants,
 } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
 import { Animator } from "./ViewAnimation";
 
-/** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
- * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
- * @internal
+/** Animates the transition of a [[Viewport]] to view a location on the Earth. The animation traces a flight path from the viewport's current [Frustum]($common) to the destination.
+ * The duration of the animation varies based on the distance traversed.
+ * @see [[Viewport.animateFlyoverToGlobalLocation]].
+ * @public
+ * @extensions
  */
 export class GlobeAnimator implements Animator {
-  private _flightTweens = new Tweens();
-  private _viewport: ScreenViewport;
-  private _startCartographic?: Cartographic;
-  private _ellipsoidArc?: Arc3d;
-  private _columbusLine: Point3d[] = [];
-  private _flightLength = 0;
-  private _endLocation: GlobalLocation;
-  private _endHeight?: number;
-  private _midHeight?: number;
-  private _startHeight?: number;
-  private _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
-  private _fixTakeoffFraction?: number;
-  private _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
-  private _afterLanding: Frustum;
-  private readonly _fixLandingFraction: number = 0.9;
-  private readonly _scratchFrustum = new Frustum();
+  protected _flightTweens = new Tweens();
+  protected _viewport: ScreenViewport;
+  protected _startCartographic?: Cartographic;
+  protected _ellipsoidArc?: Arc3d;
+  protected _columbusLine: Point3d[] = [];
+  protected _flightLength = 0;
+  protected _endLocation: GlobalLocation;
+  protected _endHeight?: number;
+  protected _midHeight?: number;
+  protected _startHeight?: number;
+  protected _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
+  protected _fixTakeoffFraction?: number;
+  protected _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+  protected _afterLanding: Frustum;
+  protected _afterFocusDistance: number;
+  protected readonly _fixLandingFraction: number = 0.9;
+  protected readonly _scratchFrustum = new Frustum();
 
-  private _moveFlightToFraction(fraction: number): boolean {
+  protected _moveFlightToFraction(fraction: number): boolean {
     const vp = this._viewport;
     const view = vp.view;
 
@@ -45,6 +48,8 @@ export class GlobeAnimator implements Animator {
 
     // If we're done, set the final state directly
     if (fraction >= 1.0) {
+      if (vp.view.is3d())  // Need to reset focus as well -- setupViewFromFustum does not set this and it will remain at flight distance.
+        vp.view.camera.setFocusDistance(this._afterFocusDistance);
       vp.setupViewFromFrustum(this._afterLanding);
       vp.synchWithView();
       return true;
@@ -79,8 +84,8 @@ export class GlobeAnimator implements Animator {
     return false;
   }
 
-  // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
-  private _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
+  /** Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction. */
+  protected _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
     let done = false;
 
     if (fract >= 1.0) {
@@ -93,11 +98,16 @@ export class GlobeAnimator implements Animator {
     return done;
   }
 
+  /** Create an animator to transition to the specified destination.
+   * @param viewport The viewport to animate.
+   * @param destination The destination to travel to.
+   * @returns An animator, or undefined if the viewport's iModel is not geolocated or its view is not 3d.
+   */
   public static async create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined> {
     const view = viewport.view;
 
     if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
-      return;
+      return undefined;
 
     const endHeight = destination.area !== undefined ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
@@ -105,15 +115,17 @@ export class GlobeAnimator implements Animator {
     await view.lookAtGlobalLocationFromGcs(endHeight, ViewGlobalLocationConstants.birdPitchAngleRadians, destination);
     viewport.setupFromView();
     const afterLanding = viewport.getWorldFrustum();
+    const afterFocus = view.camera.focusDist;
     viewport.setupViewFromFrustum(beforeFrustum); // revert old frustum
 
-    return new GlobeAnimator(viewport, destination, afterLanding);
+    return new GlobeAnimator(viewport, destination, afterLanding, afterFocus);
   }
 
-  private constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum) {
+  protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum, afterFocus: number) {
     this._viewport = viewport;
     this._endLocation = destination;
     this._afterLanding = afterLanding;
+    this._afterFocusDistance = afterFocus;
     const view = viewport.view;
 
     if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
@@ -131,7 +143,7 @@ export class GlobeAnimator implements Animator {
     // Starting cartographic position is the eye projected onto the globe.
     let startCartographic = eyeToCartographicOnGlobe(viewport);
     if (startCartographic === undefined) {
-      startCartographic = Cartographic.fromDegrees(0, 0, 0);
+      startCartographic = Cartographic.createZero();
     }
     this._startCartographic = startCartographic;
 
@@ -194,6 +206,7 @@ export class GlobeAnimator implements Animator {
     });
   }
 
+  /** @internal */
   public animate() {
     if (this._flightLength <= 0) {
       this._moveFlightToFraction(1.0); // Skip to final frustum
@@ -202,6 +215,7 @@ export class GlobeAnimator implements Animator {
     return !this._flightTweens.update();
   }
 
+  /** @internal */
   public interrupt() {
     this._moveFlightToFraction(1.0); // Skip to final frustum
   }

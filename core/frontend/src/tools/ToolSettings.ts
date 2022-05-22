@@ -6,11 +6,12 @@
  * @module Tools
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Angle, Constant } from "@bentley/geometry-core";
+import { BeDuration } from "@itwin/core-bentley";
+import { Angle, Constant } from "@itwin/core-geometry";
 
 /** Settings that control the behavior of built-in tools. Applications may modify these values.
  * @public
+ * @extensions
  */
 export class ToolSettings {
   /** Two tap must be within this period to be a double tap. */
@@ -19,6 +20,8 @@ export class ToolSettings {
   public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
   /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
   public static doubleClickToleranceInches = 0.05;
+  /** @beta Use virtual cursor to help with locating elements using touch input. By default it's only enabled for snapping. */
+  public static enableVirtualCursorForLocate = false;
   /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
   public static preserveWorldUp = true;
   /** Delay with a touch on the surface before a move operation begins. */
@@ -72,4 +75,6 @@ export class ToolSettings {
     /** Maximum duration of the inertia operation. Important when frame rates are low. */
     duration: BeDuration.fromMilliseconds(500),
   };
+  /** Maximum number of times in a second the accuSnap tool's onMotion function is called. */
+  public static maxOnMotionSnapCallPerSecond = 15;
 }

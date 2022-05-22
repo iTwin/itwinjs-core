@@ -3,38 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { Config } from "@bentley/bentleyjs-core";
+} from "@itwin/core-common";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
  * Returns a list of RPCs supported by this application
  */
 export function getSupportedRpcs(): RpcInterfaceDefinition[] {
 
-  if (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1")) {
-    // eslint-disable-next-line no-console
-    console.log("Using ReadWrite RPC Interfaces");
-    return [
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-      IModelWriteRpcInterface,
-      Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
-    ];
-  }
-
-  // eslint-disable-next-line no-console
-  console.log("Using Readonly RPC Interfaces");
-
   return [
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     SnapshotIModelRpcInterface,
     PresentationRpcInterface,
+    ECSchemaRpcInterface,
   ];
 
 }

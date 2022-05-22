@@ -1,37 +1,43 @@
-# iModel.js Regression Testing Build
+# iTwin.js Core Regression Testing Build
 #
-# Tests all supported versions of iModel.js on 3 main supported platforms; Windows 10, Ubuntu 10.04, and MacOS.
+# Tests all supported versions of iTwin.js on 3 main supported platforms; Windows 10, Ubuntu 20.04, and MacOS .
 #
-# Starts with the minimum version (currently 10.16.0) and then follows the tip of each subsequent minor version
+# Starts with the minimum version (currently 12.20.0) and then follows the tip of each subsequent minor version.
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
 trigger: none
-
+pr: none
 schedules:
-- cron: "0 5 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - master
-    - release/*
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
+        - release/*
 
 jobs:
-- template: ci-core.yaml
-  parameters:
-    name: Node_14_x
-    nodeVersion: 14.x
-    pool:
-      demands: Agent.OS -equals $(platform)
-- template: ci-core.yaml
-  parameters:
-    name: Node_10_17
-    nodeVersion: 10.17.0
-    pool:
-      demands: Agent.OS -equals $(platform)
-- template: ci-core.yaml
-  parameters:
-    name: Node_10
-    nodeVersion: 10.x
-    pool:
-      demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_16
+      nodeVersion: 16.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_14_x
+      nodeVersion: 14.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_12
+      nodeVersion: 12.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_12_22
+      nodeVersion: 12.22.0
+      pool:
+        demands: Agent.OS -equals $(platform)

@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState,
   StandardViewId,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -19,7 +20,7 @@ describe("EmphasizeElements tests", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -27,7 +28,7 @@ describe("EmphasizeElements tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("Emphasize add/replace/clear", async () => {
@@ -257,9 +258,7 @@ describe("EmphasizeElements tests", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
 
-    const vf = vp.viewFlags.clone();
-    vf.weights = true;
-    vp.viewFlags = vf;
+    vp.viewFlags = vp.viewFlags.with("weights", true);
 
     const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureAppearanceProps) => {
       const emph = EmphasizeElements.getOrCreate(vp);
@@ -310,7 +309,7 @@ describe("EmphasizeElements tests", () => {
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
       assert(undefined !== key);
-      const { overrideType, color } = { ...emph.getOverrideFromKey(key!) };
+      const { overrideType, color } = { ...emph.getOverrideFromKey(key) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:
@@ -355,15 +354,14 @@ describe("EmphasizeElements tests", () => {
       const aApp = after.defaultAppearance;
       const bApp = before.defaultAppearance;
       expect(undefined === aApp).to.equal(undefined === bApp);
-      if (undefined !== aApp && undefined !== bApp) {
-        expect(undefined !== aApp.rgb).to.equal(undefined !== bApp.rgb);
-        expect(aApp.weight).to.equal(bApp.weight);
-        expect(aApp.transparency).to.equal(bApp.transparency);
-        expect(aApp.linePixels).to.equal(bApp.linePixels);
-        expect(aApp.ignoresMaterial).to.equal(bApp.ignoresMaterial);
-        expect(aApp.nonLocatable).to.equal(bApp.nonLocatable);
-        expect(aApp.emphasized).to.equal(bApp.emphasized);
-      }
+      if (undefined !== aApp && undefined !== bApp)
+        expect(aApp.equals(bApp)).to.be.true;
+
+      const aUnanimated = after.unanimatedAppearance;
+      const bUnanimated = before.unanimatedAppearance;
+      expect(undefined === aUnanimated).to.equal(undefined === bUnanimated);
+      if (aUnanimated && bUnanimated)
+        expect(aUnanimated.equals(bUnanimated)).to.be.true;
 
       expectEqualSets(after.getHiddenElements(vp2), before.getHiddenElements(vp1));
       expectEqualSets(after.getEmphasizedElements(vp2), before.getEmphasizedElements(vp1));
@@ -458,6 +456,39 @@ describe("EmphasizeElements tests", () => {
       expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).to.be.true;
       const currBlueIds = emph.getOverriddenElementsByKey(blueKey);
       assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    });
+
+    roundTrip((emph, vp) => {
+      const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+      emph.unanimatedAppearance = blue;
+      expect(emph.unanimatedAppearance).not.to.be.undefined;
+      expect(JSON.stringify(emph.unanimatedAppearance.toJSON())).to.equal(JSON.stringify(blue.toJSON()));
+
+      const ovrs = new FeatureSymbology.Overrides();
+      const feature = new Feature("0x123");
+      let app = ovrs.getFeatureAppearance(feature, "0x456")!;
+      expect(app).not.to.be.undefined;
+      expect(app.matchesDefaults).to.be.true;
+
+      emph.addFeatureOverrides(ovrs, vp);
+      app = ovrs.getFeatureAppearance(feature, "0x456")!;
+      expect(app).not.to.be.undefined;
+      expect(app.matchesDefaults).to.be.false;
+      expect(app.equals(blue)).to.be.true;
+    });
+
+    roundTrip((emph, vp) => {
+      const transp = FeatureAppearance.fromTransparency(1.0);
+      emph.unanimatedAppearance = transp;
+
+      const ovrs = new FeatureSymbology.Overrides();
+      const feature = new Feature("0x123");
+      const app = ovrs.getFeatureAppearance(feature, "0x456");
+      expect(app).not.to.be.undefined;
+      expect(app!.matchesDefaults).to.be.true;
+
+      emph.addFeatureOverrides(ovrs, vp);
+      expect(ovrs.getFeatureAppearance(feature, "0x456")).to.be.undefined;
     });
   });
 });

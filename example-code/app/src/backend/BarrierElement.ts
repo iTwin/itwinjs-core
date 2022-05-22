@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LineSegment3d, Point3d } from "@bentley/geometry-core";
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@bentley/imodeljs-backend";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { LineSegment3d, Point3d } from "@itwin/core-geometry";
+import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**
@@ -15,7 +15,7 @@ import { RobotWorld } from "./RobotWorldSchema";
  */
 export class Barrier extends SpatialLocationElement {
   /** @internal */
-  public static get className(): string { return "Barrier"; }
+  public static override get className(): string { return "Barrier"; }
   //  Define the properties added by this subclass
   public length: number = 1.0;                    // The length of the barrier
   public angle: number = 0.0;                     // The orientation angle of the barrier

@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { ColorDef, LinePixels } from "@itwin/core-common";
+import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TileRequestDecoration {
@@ -32,7 +32,7 @@ class TileRequestDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    const tiles = IModelApp.tileAdmin.getRequestsForViewport(this._targetVp);
+    const tiles = IModelApp.tileAdmin.getRequestsForUser(this._targetVp);
     if (undefined === tiles)
       return;
 
@@ -77,11 +77,11 @@ class TileRequestDecoration {
  * @beta
  */
 export class ToggleTileRequestDecorationTool extends Tool {
-  public static toolId = "ToggleTileRequestDecoration";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ToggleTileRequestDecoration";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       TileRequestDecoration.toggle(vp, enable);
@@ -89,10 +89,10 @@ export class ToggleTileRequestDecorationTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

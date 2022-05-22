@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SquareButton renders correctly 1`] = `
+<ForwardRef
+  className="uifw-square-button"
+  size="small"
+  style={Object {}}
+>
+  xyz
+</ForwardRef>
+`;

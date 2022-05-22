@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="SIUnits" alias="SIU" version="01.00.05" description="Subset of Unit definitions for SI and International UnitSystems" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <UnitSystem typeName="SI" />
+    <UnitSystem typeName="INTERNATIONAL" />
+
+    <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+    <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+    <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+    <Phenomenon typeName="LENGTH_RATIO" definition="LENGTH*LENGTH(-1)" />
+    <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
+    <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+
+    <Constant typeName="DECI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-1" displayLabel="deci"/>
+    <Constant typeName="CENTI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-2" displayLabel="centi"/>
+    <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
+    <Constant typeName="MICRO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-6" displayLabel="micro"/>
+    <Constant typeName="NANO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-9" displayLabel="nano"/>
+    <Constant typeName="PICO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-12" displayLabel="pico"/>
+    <Constant typeName="FEMTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-15" displayLabel="femto"/>
+    <Constant typeName="ATTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-18" displayLabel="atto"/>
+    <Constant typeName="ZEPTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-21" displayLabel="zepto"/>
+    <Constant typeName="YOCTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e-24" displayLabel="yocto"/>
+    <Constant typeName="DECA" phenomenon="NUMBER" definition="ONE" numerator="1.0e1"/>
+    <Constant typeName="HECTO" phenomenon="NUMBER" definition="ONE" numerator="1.0e2" displayLabel="hecto"/>
+    <Constant typeName="KILO" phenomenon="NUMBER" definition="ONE" numerator="1.0e3" displayLabel="kilo"/>
+    <Constant typeName="MEGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e6" displayLabel="mega"/>
+    <Constant typeName="GIGA" phenomenon="NUMBER" definition="ONE" numerator="1.0e9" displayLabel="giga"/>
+    <Constant typeName="TERA" phenomenon="NUMBER" definition="ONE" numerator="1.0e12" displayLabel="tera"/>
+    <Constant typeName="PETA" phenomenon="NUMBER" definition="ONE" numerator="1.0e15" displayLabel="peta"/>
+    <Constant typeName="EXA" phenomenon="NUMBER" definition="ONE" numerator="1.0e18" displayLabel="exa"/>
+    <Constant typeName="ZETTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e21" displayLabel="zetta"/>
+    <Constant typeName="YOTTA" phenomenon="NUMBER" definition="ONE" numerator="1.0e24" displayLabel="yotta"/>
+
+    <Constant typeName="PI" phenomenon="LENGTH_RATIO" definition="ONE" numerator="3.1415926535897932384626433832795" displayLabel="Pi"/>
+    <Constant typeName="QUARTER_PI" phenomenon="LENGTH_RATIO" definition="SIUnits:PI" numerator="1.0" denominator="4.0" displayLabel="Pi/4"/>
+    <Constant typeName="HALF_PI" phenomenon="LENGTH_RATIO" definition="PI" numerator="1.0" denominator="2.0" displayLabel="Pi/2"/>
+    <Constant typeName="TWO_PI" phenomenon="LENGTH_RATIO" definition="SIU:PI" numerator="2" displayLabel="2Pi"/>
+
+    <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+    <Unit typeName="SQ_M" phenomenon="AREA" unitSystem="SI" definition="M(2)" displayLabel="m²" />
+    <Unit typeName="M_PER_M" phenomenon="SLOPE" unitSystem="SI" definition="M*M(-1)" displayLabel="m/m" />
+    <Unit typeName="K" phenomenon="TEMPERATURE" unitSystem="SI" definition="K" />
+
+    <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+</ECSchema>

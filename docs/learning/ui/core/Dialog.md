@@ -1,10 +1,10 @@
 # Dialog
 
-The [Dialog]($ui-core) React component displays a floating dialog with optional resizing and dragging functionality.
+The [Dialog]($core-react) React component displays a floating dialog with optional resizing and dragging functionality.
 
 ## Properties
 
-The many Dialog properties, as defined in [DialogProps]($ui-core), control resize and move capabilities, header, footer, placement, sizing, event handlers and custom styling.
+The many Dialog properties, as defined in [DialogProps]($core-react), control resize and move capabilities, header, footer, placement, sizing, event handlers and custom styling.
 
 The `opened` prop, which is the only mandatory prop, indicates whether to show the dialog.
 
@@ -78,4 +78,4 @@ The `contentStyle` prop specifies CSS properties for the content area.
 
 ## API Reference
 
-- [Dialog]($ui-core:Dialog)
+- [Dialog]($core-react:Dialog)

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="USUnits" alias="USU" version="01.00.05" description="Subset of Unit definitions for USSURVEY and USCUSTOM UnitSystems" displayLabel="Units" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="MetricUnits" version="01.00.05" alias="MU"/>
+    <ECSchemaReference name="SIUnits" version="01.00.05" alias="SIU"/>
+    <UnitSystem typeName="USSURVEY" />
+    <UnitSystem typeName="USCUSTOM" />
+
+    <Unit typeName="MILLIINCH" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MILLI]*IN" displayLabel="mil" />
+    <Unit typeName="MICROINCH" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MICRO]*IN" displayLabel="µin" />
+    <Unit typeName="MILLIFOOT" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="[SIUnits:MILLI]*FT" displayLabel="mft" />
+    <Unit typeName="IN" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="MetricUnits:MM" numerator="25.4" displayLabel="in" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix B. Section 3.1, Page B-10" />
+    <Unit typeName="FT" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="YRD" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="3.0" displayLabel="yd" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="CHAIN" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="66.0" displayLabel="chain" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="MILE" phenomenon="SIU:LENGTH" unitSystem="USCUSTOM" definition="YRD" numerator="1760.0" displayLabel="mi" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="US_SURVEY_IN" phenomenon="SIU:LENGTH" unitSystem="USSURVEY" definition="SIUnits:M" numerator="100.0" denominator="3937.0" displayLabel="in (US Survey)" description="100/3937 Derived from the definition of us survey foot in terms of meters.  Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+    <Unit typeName="US_SURVEY_FT" phenomenon="SIU:LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_IN" numerator="12.0" displayLabel="ft (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="US_SURVEY_YRD" phenomenon="SIU:LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_FT" numerator="3.0" displayLabel="yrd (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 2, Page C-4" />
+    <Unit typeName="US_SURVEY_CHAIN" phenomenon="SIU:LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_FT" numerator="66.0" displayLabel="chain (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+    <Unit typeName="US_SURVEY_MILE" phenomenon="SIU:LENGTH" unitSystem="USSURVEY" definition="US_SURVEY_YRD" numerator="1760.0" displayLabel="mi (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8" />
+
+    <Unit typeName="SQ_IN" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USUnits:IN(2)" displayLabel="in²" />
+    <Unit typeName="SQ_FT" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USUnits:FT(2)" displayLabel="ft²" />
+    <Unit typeName="THOUSAND_SQ_FT" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="[SIU:KILO]*USUnits:FT(2)" displayLabel="thousand ft²" />
+    <Unit typeName="SQ_YRD" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USU:YRD(2)" displayLabel="yd²" />
+    <Unit typeName="SQ_MILE" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USU:MILE(2)" displayLabel="mi²" />
+    <Unit typeName="SQ_CHAIN" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USU:CHAIN(2)" displayLabel="chain²" />
+    <Unit typeName="ACRE" phenomenon="SIU:AREA" unitSystem="USCUSTOM" definition="USU:CHAIN(2)" numerator="10.0" displayLabel="acres" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+    <Unit typeName="SQ_US_SURVEY_IN" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_IN(2)" displayLabel="in² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_FT" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_FT(2)" displayLabel="ft² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_YRD" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_YRD(2)" displayLabel="yrd² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_MILE" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_MILE(2)" displayLabel="mile² (US Survey)" />
+    <Unit typeName="SQ_US_SURVEY_CHAIN" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" displayLabel="chain² (US Survey)" />
+    <Unit typeName="US_SURVEY_ACRE" phenomenon="SIU:AREA" unitSystem="USSURVEY" definition="US_SURVEY_CHAIN(2)" numerator="10.0" displayLabel="acre (US Survey)" description="Exact, http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-9" />
+
+    <Unit typeName="FT_PER_THOUSAND_FOOT" phenomenon="SIU:SLOPE" unitSystem="USCUSTOM" definition="USUnits:FT*[SIU:KILO](-1)*FT(-1)" displayLabel="ft/1000ft" />
+    <Unit typeName="FT_PER_FT" phenomenon="SIU:SLOPE" unitSystem="USCUSTOM" definition="USUnits:FT*FT(-1)" displayLabel="ft/ft" />
+    <Unit typeName="IN_PER_FT" phenomenon="SIU:SLOPE" unitSystem="USCUSTOM" definition="USU:IN*FT(-1)" displayLabel="in/ft" />
+    <Unit typeName="FT_PER_IN" phenomenon="SIU:SLOPE" unitSystem="USCUSTOM" definition="USU:FT*IN(-1)" displayLabel="ft/in" />
+    <Unit typeName="FT_PER_MILE" phenomenon="SIU:SLOPE" unitSystem="USCUSTOM" definition="FT*MILE(-1)" displayLabel="ft/mi" />
+
+    <Unit typeName="FAHRENHEIT" phenomenon="SIU:TEMPERATURE" unitSystem="USCUSTOM" definition="MU:CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
+    <Unit typeName="RANKINE" phenomenon="SIU:TEMPERATURE" unitSystem="USCUSTOM" definition="SIU:K" numerator="5.0" denominator="9.0" displayLabel="°R" description="Factor is 5/9" />
+</ECSchema>

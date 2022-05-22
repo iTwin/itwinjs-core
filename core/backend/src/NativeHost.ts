@@ -6,17 +6,16 @@
  * @module NativeApp
  */
 
-import * as path from "path";
-import { BeEvent, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
+import { join } from "path";
+import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
+} from "@itwin/core-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
-import { IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
+import { IModelHost } from "./IModelHost";
+import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
@@ -24,44 +23,46 @@ import { NativeAppStorage } from "./NativeAppStorage";
  */
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
+
+  public async getAccessToken(): Promise<AccessToken | undefined> {
+    return IModelHost.authorizationClient?.getAccessToken();
+  }
+
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
   }
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeHost.overrideInternetConnectivity(by, status);
   }
-
-  public async getConfig(): Promise<any> {
-    return Config.App.getContainer();
-  }
-
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return BriefcaseManager.acquireNewBriefcaseId(requestContext, iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId({ iModelId });
   }
-
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
-
-  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-
+  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean, progressInterval?: number): Promise<LocalBriefcaseProps> {
     const args = {
       ...request,
       onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
     if (reportProgress) {
+      const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
+      let nextTime = Date.now() + interval;
       args.onProgress = (loaded, total) => {
-        IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        const now = Date.now();
+        if (loaded >= total || now >= nextTime) {
+          nextTime = now + interval;
+          IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        }
         return checkAbort();
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
-      const job = Downloads.isInProgress(args.fileName!);
+      assert(undefined !== args.fileName);
+      const job = Downloads.isInProgress(args.fileName);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
     };
     return downloadPromise;
@@ -75,13 +76,10 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    const context = ClientRequestContext.current instanceof AuthorizedClientRequestContext ? ClientRequestContext.current : undefined;
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, context);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAccessToken());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    const requestContext: ClientRequestContext = ClientRequestContext.current;
-    requestContext.enter();
     return BriefcaseManager.getCachedBriefcases(iModelId);
   }
 
@@ -90,103 +88,119 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async storageMgrClose(storageId: string, deleteIt: boolean): Promise<void> {
-    NativeAppStorage.find(storageId)?.close(deleteIt);
+    NativeAppStorage.find(storageId).close(deleteIt);
   }
 
   public async storageMgrNames(): Promise<string[]> {
     return NativeAppStorage.getStorageNames();
   }
 
+  public async storageGetValueType(storageId: string, key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeAppStorage.find(storageId).getValueType(key);
+  }
+
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {
-    return NativeAppStorage.find(storageId)?.getData(key);
+    return NativeAppStorage.find(storageId).getData(key);
   }
 
   public async storageSet(storageId: string, key: string, value: StorageValue): Promise<void> {
-    NativeAppStorage.find(storageId)?.setData(key, value);
+    NativeAppStorage.find(storageId).setData(key, value);
   }
 
   public async storageRemove(storageId: string, key: string): Promise<void> {
-    NativeAppStorage.find(storageId)?.removeData(key);
+    NativeAppStorage.find(storageId).removeData(key);
   }
 
   public async storageKeys(storageId: string): Promise<string[]> {
-    const storage = NativeAppStorage.find(storageId)!;
-    return storage.getKeys();
+    return NativeAppStorage.find(storageId).getKeys();
   }
 
   public async storageRemoveAll(storageId: string): Promise<void> {
-    const storage = NativeAppStorage.find(storageId)!;
-    storage.removeAll();
+    NativeAppStorage.find(storageId).removeAll();
   }
 }
 
+/** Options for [[NativeHost.startup]]
+ * @public
+ */
+export interface NativeHostOpts extends IpcHostOpts {
+  nativeHost?: {
+    /** Application name. Used, for example, to name the settings file. If not supplied, defaults to "iTwinApp". */
+    applicationName?: string;
+  };
+}
+
 /**
- * Used by desktop/mobile native applications
- * @beta
+ * Backend for desktop/mobile native applications
+ * @public
  */
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
-  private constructor() { }
+  private static _applicationName: string;
+  private constructor() { } // no instances - static methods only
 
-  public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
+  /** Event called when the internet connectivity changes, if known. */
+  public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
   private static _appSettingsCacheDir?: string;
 
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
-    if (this._appSettingsCacheDir === undefined) {
-      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
-    }
+    if (this._appSettingsCacheDir === undefined)
+      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
+  /** Send a notification to the NativeApp connected to this NativeHost. */
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
     return IpcHost.send(nativeAppNotify, methodName, ...args);
   }
 
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
-
-  /**
-   * Start the backend of a native app.
-   * @param configuration
-   * @note this method calls [[IModelHost.startup]] internally.
-   */
-  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
-    if (!this.isValid) {
-      this._isValid = true;
-      this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-    }
-    await IpcHost.startup(opt);
-    if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
-      NativeAppHandler.register();
+  public static get applicationName() { return this._applicationName; }
+  /** Get the settings store for this NativeHost. */
+  public static get settingsStore() {
+    return NativeAppStorage.open(this.applicationName);
   }
 
   /**
-   * Shutdown native app backend. Also calls IpcAppHost.shutdown()
+   * Start the backend of a native app.
+   * @note this method calls [[IpcHost.startup]] internally.
    */
+  public static async startup(opt?: NativeHostOpts): Promise<void> {
+    if (!this.isValid) {
+      this._isValid = true;
+      this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
+        NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+      this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
+    }
+
+    await IpcHost.startup(opt);
+    if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
+      NativeAppHandler.register();
+  }
+
+  /** Shutdown native app backend. Also calls [[IpcHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
     await IpcHost.shutdown();
   }
 
-  /**
-   * Checks internet connectivity
-   * @returns return current value of internet connectivity from backend.
-   */
+  /** get current value of internet connectivity */
   public static checkInternetConnectivity(): InternetConnectivityStatus {
     return this._reachability ?? InternetConnectivityStatus.Online;
   }
 
   /**
-   * Overrides internet connectivity value at backend.
+   * Override internet connectivity state
    * @param _overridenBy who overrode the value.
+   * @internal
    */
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
     if (this._reachability !== status) {
       this._reachability = status;
-      RequestGlobalOptions.online = this._reachability === InternetConnectivityStatus.Online;
       this.onInternetConnectivityChanged.raiseEvent(status);
     }
   }

@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/variables";
+
+.components-slider-editor {
+  min-width: 100%;
+}
+
+.components-slider-editor-slider {
+  min-width: 100px;
+  min-height: $uicore-component-height-small;
+}

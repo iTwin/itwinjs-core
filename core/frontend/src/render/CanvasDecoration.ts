@@ -6,13 +6,14 @@
  * @module Rendering
  */
 
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations) that is drawn onto the
  * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
  * @public
+ * @extensions
  */
 export interface CanvasDecoration {
   /**
@@ -58,5 +59,6 @@ export interface CanvasDecoration {
 
 /** An array of [[CanvasDecoration]]s.
  * @public
+ * @extensions
  */
 export type CanvasDecorationList = CanvasDecoration[];

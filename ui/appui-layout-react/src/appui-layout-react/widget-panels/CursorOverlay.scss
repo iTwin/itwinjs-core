@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+$nz-cursors: (nwse-resize,
+  nesw-resize,
+  ew-resize,
+  ns-resize,
+  grabbing,
+);
+
+body {
+  @each $cursor in $nz-cursors {
+    &.nz-#{$cursor} {
+      * {
+        cursor: $cursor !important;
+      }
+    }
+  }
+}
+
+.nz-widgetPanels-cursorOverlay_cursor {
+  @each $cursor in $nz-cursors {
+    &.nz-#{$cursor} {
+      cursor: $cursor;
+    }
+  }
+}

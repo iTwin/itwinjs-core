@@ -10,6 +10,7 @@ import { CertaConfig } from "../../CertaConfig";
 
 export class ElectronTestRunner {
   public static readonly supportsCoverage = false;
+  public static readonly supportsCleanup = false;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Restart under electron if we're running in node
     if (!("electron" in process.versions))
@@ -31,7 +32,9 @@ export class ElectronTestRunner {
       show: config.debug,
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true,
+        contextIsolation: false,
+        nativeWindowOpen: true,
+        sandbox: false,
       },
     });
 
@@ -42,6 +45,11 @@ export class ElectronTestRunner {
         process.send({ exitCode });
       app.exit(exitCode);
     };
+
+    ipcMain.on("certa-console", async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
+      console[op](...args);
+      e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
+    });
 
     ipcMain.on("certa-done", (_e: any, count: number) => {
       rendererWindow.webContents.once("destroyed", () => {
@@ -69,14 +77,6 @@ export class ElectronTestRunner {
         var _CERTA_CONFIG = ${JSON.stringify(config)};
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);
-
-      if (config.debug) {
-        // For some reason, the VS Code chrome debugger doesn't work correctly unless we reload the window before running tests.
-        await rendererWindow.webContents.executeJavaScript(`window.location.reload();`);
-        // Note that we'll have to wait for the did-finish-load event again since we just reloaded.
-        rendererWindow.webContents.once("did-finish-load", startTests);
-        return;
-      }
 
       await startTests();
     });

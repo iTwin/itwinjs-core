@@ -2,19 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodePathElement } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { AbstractTreeNodeLoaderWithProvider, TreeModelSource } from "@bentley/ui-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodePathElement } from "@itwin/presentation-common";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
-import { ControlledTreeFilteringProps, IPresentationTreeDataProvider, useControlledTreeFiltering } from "../../../presentation-components";
+import {
+  ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider, useControlledPresentationTreeFiltering,
+} from "../../../presentation-components";
 import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
+import { createRandomPropertyRecord, createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 
-describe("useControlledTreeFiltering", () => {
+describe("useControlledPresentationTreeFiltering", () => {
   const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
@@ -34,7 +36,7 @@ describe("useControlledTreeFiltering", () => {
 
   it("does not start filtering if filter is not provided", () => {
     const { result } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps: { nodeLoader: nodeLoaderMock.object } },
     );
     expect(result.current).to.not.be.undefined;
@@ -46,7 +48,7 @@ describe("useControlledTreeFiltering", () => {
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
 
     const { result } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps: { nodeLoader: nodeLoaderMock.object, filter: "test", activeMatchIndex: 0 } },
     );
     expect(result.current).to.not.be.undefined;
@@ -66,12 +68,12 @@ describe("useControlledTreeFiltering", () => {
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult1);
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths("last")).returns(async () => pathsResult2);
 
-    const initialProps: ControlledTreeFilteringProps = {
+    const initialProps: ControlledPresentationTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
       filter: "test",
     };
     const { result, rerender } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps },
     );
 
@@ -124,12 +126,12 @@ describe("useControlledTreeFiltering", () => {
     const pathsResult = new ResolvablePromise<NodePathElement[]>();
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths("test")).returns(async () => pathsResult);
 
-    const initialProps: ControlledTreeFilteringProps = {
+    const initialProps: ControlledPresentationTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
       filter: "test",
     };
     const { result, rerender } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps },
     );
 
@@ -163,12 +165,12 @@ describe("useControlledTreeFiltering", () => {
     const filter = "test";
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths(filter)).returns(async () => pathsResult);
 
-    const initialProps: ControlledTreeFilteringProps = {
+    const initialProps: ControlledPresentationTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
       filter,
     };
     const { result, rerender } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps },
     );
 
@@ -197,12 +199,12 @@ describe("useControlledTreeFiltering", () => {
     const pathsResult = new ResolvablePromise<NodePathElement[]>();
     dataProviderMock.setup(async (x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => pathsResult);
 
-    const initialProps: ControlledTreeFilteringProps = {
+    const initialProps: ControlledPresentationTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
       filter: "test",
     };
     const { result, rerender } = renderHook(
-      useControlledTreeFiltering,
+      useControlledPresentationTreeFiltering,
       { initialProps },
     );
 
@@ -225,4 +227,40 @@ describe("useControlledTreeFiltering", () => {
     expect((provider as FilteredPresentationTreeDataProvider).parentDataProvider).to.not.be.instanceOf(FilteredPresentationTreeDataProvider);
   });
 
+  it("returns `filteredNodeLoader` with model whose root node's `numRootNodes` is undefined and `loadNode` method returns result with an empty `loadedNodes` array when filtering", (done) => {
+    const testModelNode: TreeModelNode = {
+      id: "test",
+      checkbox: {
+        isDisabled: false,
+        isVisible: true,
+        state: 0,
+      },
+      depth: 0,
+      description: "",
+      isExpanded: false,
+      isSelected: false,
+      item: createRandomTreeNodeItem(),
+      label: createRandomPropertyRecord(),
+      numChildren: 3,
+      parentId: "parentId",
+    };
+    const initialProps: ControlledPresentationTreeFilteringProps = {
+      nodeLoader: nodeLoaderMock.object,
+      filter: "test",
+    };
+    const { result } = renderHook(
+      useControlledPresentationTreeFiltering,
+      { initialProps },
+    );
+
+    const nodeLoader = result.current.filteredNodeLoader;
+    expect(result.current.isFiltering).to.be.true;
+    expect(nodeLoader.modelSource.getModel().getRootNode().numChildren).to.be.undefined;
+    nodeLoader.loadNode(testModelNode, 0).subscribe((res) => {
+      expect(res).to.deep.eq({
+        loadedNodes: [],
+      });
+      done();
+    });
+  });
 });

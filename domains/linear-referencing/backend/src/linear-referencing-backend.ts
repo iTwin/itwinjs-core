@@ -9,7 +9,7 @@ export * from "./LinearReferencingRelationships";
 export * from "./LinearReferencingSchema";
 
 /** @docs-package-description
- * The `@bentley/linear-referencing-backend` package contains classes for working with the LinearReferencing schema on the backend.
+ * The `@itwin/linear-referencing-backend` package contains classes for working with the LinearReferencing schema on the backend.
  */
 
 /** @docs-group-description LinearReferencing

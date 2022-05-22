@@ -6,44 +6,57 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
-} from "@bentley/imodeljs-common";
-import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
+  RequestNewBriefcaseProps, StorageValue, SyncMode,
+} from "@itwin/core-common";
+import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
-import { IModelAppOptions } from "./imodeljs-frontend";
-import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
+import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
-/**
- * Options to download a briefcase
- * @alpha
+/** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
+ * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.
+ * @public
  */
-export interface DownloadBriefcaseOptions {
-  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
-  syncMode: SyncMode;
-  fileName?: string;
-}
+export type DownloadBriefcaseId =
+  { syncMode?: SyncMode, briefcaseId?: never } |
+  { briefcaseId: number, syncMode?: never };
 
-/** receive notifications from backend */
+/**
+* Options to download a briefcase
+* @public
+*/
+export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
+  /** the full path for the briefcase file */
+  fileName?: string;
+  /** interval for calling progress function, in milliseconds */
+  progressInterval?: number;
+};
+
+/** NativeApp notifications from backend */
 class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
   public get channelName() { return nativeAppNotify; }
   public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(arg: { accessToken: any, err?: string }) {
-    NativeApp.onUserStateChanged.raiseEvent(arg);
-  }
+}
+
+/**
+ * Options for [[NativeApp.startup]]
+ * @public
+ */
+export interface NativeAppOpts extends IpcAppOptions {
+  nativeApp?: {};
 }
 
 /**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)
- * @alpha
+ * @public
  */
 export class NativeApp {
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
@@ -73,12 +86,14 @@ export class NativeApp {
       window.removeEventListener("offline", this._onOffline);
     }
   }
+  /** event called when internet connectivity changes, if known */
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
-  public static onUserStateChanged = new BeEvent<(_arg: { accessToken: any, err?: string }) => void>();
 
+  /** determine whether the app currently has internet connectivity, if known */
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return this.callNativeHost("checkInternetConnectivity");
   }
+  /** @internal */
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
     return this.callNativeHost("overrideInternetConnectivity", OverriddenBy.User, status);
   }
@@ -89,15 +104,13 @@ export class NativeApp {
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(opts: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
-    await IpcApp.startup(opts);
+  public static async startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts) {
+    await IpcApp.startup(ipc, opts);
     if (this._isValid)
       return;
     this._isValid = true;
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
-
-    Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
@@ -107,6 +120,7 @@ export class NativeApp {
     }
   }
 
+  /** @internal */
   public static async shutdown() {
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
@@ -114,11 +128,8 @@ export class NativeApp {
     this._isValid = false;
   }
 
-  public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
 
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
@@ -127,19 +138,15 @@ export class NativeApp {
       });
     }
 
-    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId);
-    requestContext.enter();
+    const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
+      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
 
-    const fileName = downloadOptions.fileName ?? await this.callNativeHost("getBriefcaseFileName", { briefcaseId, iModelId });
-    requestContext.enter();
-
-    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
+    const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
+    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
-      const locRequestContext = new FrontendRequestContext();
-      locRequestContext.enter();
       try {
-        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined);
+        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined, downloadOptions.progressInterval);
       } finally {
         stopProgressEvents();
       }
@@ -155,6 +162,7 @@ export class NativeApp {
     return { briefcaseId, fileName, downloadPromise: doDownload(), requestCancel };
   }
 
+  /** Get the full path filename for a briefcase within the briefcase cache */
   public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return this.callNativeHost("getBriefcaseFileName", props);
   }
@@ -163,139 +171,85 @@ export class NativeApp {
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
     await this.callNativeHost("deleteBriefcaseFiles", fileName);
   }
 
-  /**
-   * Gets briefcases
-   * @returns list of BriefcaseProps in cache
-   */
+  /**  Get a list of all briefcase files held in the local briefcase cache directory */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
     return this.callNativeHost("getCachedBriefcases", iModelId);
   }
 
   /**
-   * Opens storage. This automatically create the storage with that name if it does not exist
-   * @param name Should confirm to a filename rules without extension.
-   * @returns storage object that represent the [[Storage]] object.
+   * Open a [[Storage]]. Creates a new Storage with that name if it does not already exist.
+   * @param name Should be a local filename without an extension.
+   * @returns a Promise for the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
-    if (this._storages.has(name)) {
+    if (this._storages.has(name))
       return this._storages.get(name)!;
-    }
+
     const storage = new Storage(await this.callNativeHost("storageMgrOpen", name));
     this._storages.set(storage.id, storage);
     return storage;
   }
 
   /**
-   * Closes storage cache
+   * Close a Storage and optionally delete it.
    * @param storage normally not call directly instead use Storage.close()
-   * @param deleteId if set attempt is made to delete the storage from disk permanently.
+   * @param deleteStorage if true, delete the storage from disk after closing it.
    */
-  public static async closeStorage(storage: Storage, deleteId: boolean): Promise<void> {
-    if (!this._storages.has(storage.id)) {
-      throw new Error(`Storage [Id=${storage.id}] not found`);
-    }
-    await this.callNativeHost("storageMgrClose", storage.id, deleteId);
-    (storage as any)._isOpen = false;
+  public static async closeStorage(storage: Storage, deleteStorage: boolean = false): Promise<void> {
+    if (!this._storages.has(storage.id))
+      throw new Error(`Storage [Id=${storage.id}] not open`);
+
+    await this.callNativeHost("storageMgrClose", storage.id, deleteStorage);
     this._storages.delete(storage.id);
   }
 
-  /**
-   * Gets storage names
-   * @returns return list of storage available on disk.
-   */
+  /** Get the list of existing Storages on the local disk. */
   public static async getStorageNames(): Promise<string[]> {
     return NativeApp.callNativeHost("storageMgrNames");
   }
 }
 
 /**
- *  A local disk-based cache for key value pairs available for NativeApps.
+ *  A local disk-based cache for key value pairs for NativeApps.
  * @note This should be used only for local caching, since its not guaranteed to exist permanently.
- * @alpha
+ * @public
  */
 export class Storage {
-  constructor(public readonly id: string, private _isOpen: boolean = true) { }
+  constructor(public readonly id: string) { }
 
-  /**
-   * Gets data against a key
-   * @param key a string that represent a key.
-   * @returns data return value against the key
-   * @internal
-   */
-  public async getData(key: string): Promise<StorageValue | undefined> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
+  /** get the type of a value for a key, or undefined if not present. */
+  public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+  }
+
+  /** Get the value for a key */
+  public async getData(key: string): Promise<StorageValue> {
     return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 
-  /**
-   * Sets data against a key
-   * @param key a string that represent a key
-   * @param value a value that need to be persisted
-   * @internal
-   */
+  /** Set value for a key */
   public async setData(key: string, value: StorageValue): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageSet", this.id, key, value);
   }
 
   /**
-   * Return all keys.
-   * @note This could be expensive and may block backend depending on size and number of keys
-   * @returns keys a string array of all the keys in storage
+   * Return an array of all keys in this Storage.
+   * @note This can be expensive, depending on the number of keys present.
    */
   public async getKeys(): Promise<string[]> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageKeys", this.id);
   }
 
-  /**
-   * Remove all keys
-   * @note Delete all keys and data.
-   */
+  /** Remove a key and its data. */
   public async removeData(key: string): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageRemove", this.id, key);
   }
 
-  /**
-   * Remove all keys
-   * @note Delete all keys and data.
-   */
+  /** Remove all keys and their data. */
   public async removeAll(): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
     return NativeApp.callNativeHost("storageRemoveAll", this.id);
-  }
-
-  /**
-   * Closes storage and optionally delete it permanently
-   * @param [deleteIt] if set a attempt is made to delete the storage from disk.
-   */
-  public async close(deleteIt: boolean = false): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error(`Storage [Id=${this.id}] is not open`);
-    }
-    return NativeApp.closeStorage(this, deleteIt);
-  }
-
-  /**
-   * Can be check to see if the storage is still open
-   */
-  public get isOpen(): boolean {
-    return this._isOpen;
   }
 }

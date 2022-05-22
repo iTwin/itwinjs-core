@@ -1,0 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+$uifw-popup-border-color: $buic-background-panel-stroke;
+$uifw-popup-border-width: 1px;
+$uifw-popup-border-radius: 3px;
+$uifw-popup-content-padding: 5px;
+$uifw-popup-title-bar-min-height: 24px;
+$uifw-popup-opacity: 0.80;

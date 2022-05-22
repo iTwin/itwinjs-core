@@ -49,6 +49,10 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
+import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -84,6 +88,8 @@ export namespace IModelJson {
     transitionSpiral?: TransitionSpiralProps;
     /** `{arc:...}` */
     arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
+    /** `{interpolationCurve:...}~ */
+    interpolationCurve?: InterpolationCurve3dProps;
   }
 
   /**
@@ -111,6 +117,10 @@ export namespace IModelJson {
     uKnots: [number];
     /** Array of knots for the v direction bspline */
     vKnots: [number];
+    /** optional flag for periodic data in the u parameter direction */
+    closedU?: boolean;
+    /** optional flag for periodic data in the v parameter direction */
+    closedV?: boolean;
   }
 
   /**
@@ -324,29 +334,13 @@ export namespace IModelJson {
     /** Radius at end  (0 for straight line) */
     endRadius?: number;
     /** length along curve.
-     * REMARK: "length" is preferred.  "curveLength" is deprecated.
      */
     length?: number;
-    /**
-     * Deprecated synonym for `length` property.
-     * @deprecated
-     */
-    curveLength?: number;
     /** Fractional part of active interval.
      * * There has been name confusion between native and typescript .... accept any variant ..
      * * native (July 2020) emits activeFractionInterval
      */
     activeFractionInterval?: number[];
-    /**
-     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
-     * @deprecated
-     */
-    fractionInterval?: number[];
-    /**
-     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
-     * @deprecated
-     */
-    intervalFractions?: [number, number];
     /** TransitionSpiral type.
      * * expected names are given in `IntegratedSpiralTypeName` and `DirectSpiralTypeName`
      */
@@ -482,7 +476,21 @@ export namespace IModelJson {
     /** optional capping flag. */
     capped?: boolean;
   }
-
+  /**
+   * Interface for extra data attached to an indexed mesh.
+   * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
+   * @public
+   */
+  export interface TaggedNumericDataProps {
+    /** integer tag identifying the meaning of this tag.  */
+    tagA: number;
+    /** Second integer tag.  */
+    tagB: number;
+    /** application specific integer data */
+    intData?: number[];
+    /** application specific doubles */
+    doubleData?: number[];
+  }
   /**
    * Interface for an indexed mesh.
    * * IMPORTANT: All indices are one-based.
@@ -511,6 +519,8 @@ export namespace IModelJson {
     normalIndex?: [number];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
+    /** optional array of tagged geometry (such as to request subdivision surface) */
+    taggedNumericData?: TaggedNumericDataProps;
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -561,22 +571,38 @@ export namespace IModelJson {
       }
       return defaultValue;
     }
-    /* ==============
-        private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number, defaultValue?: number[] | undefined): number[] | undefined {
-          if (json.hasOwnProperty(propertyName)) {
-            const value = json[propertyName];
-            if (Array.isArray(value)
-              && value.length >= minValues && value.length <= maxValues) {
-              const result = [];
-              for (const a of value) {
-                result.push(a);
-              }
-              return result;
-            }
+    /**
+     * @internal
+     */
+    public static parseTaggedNumericProps(json: any): TaggedNumericData | undefined {
+      const tagA = this.parseNumberProperty(json, "tagA");
+      const tagB = this.parseNumberProperty(json, "tagB", 0);
+      if (tagA !== undefined) {
+        const result = new TaggedNumericData(tagA, tagB);
+        if (json.hasOwnProperty("intData"))
+          result.intData = this.parseNumberArrayProperty(json, "intData", 0, undefined);
+        if (json.hasOwnProperty("doubleData"))
+          result.doubleData = this.parseNumberArrayProperty(json, "doubleData", 0, undefined);
+        return result;
+      }
+      return undefined;
+    }
+
+    private static parseNumberArrayProperty(json: any, propertyName: string, minValues: number, maxValues: number | undefined, defaultValue?: number[] | undefined): number[] | undefined {
+      if (json.hasOwnProperty(propertyName)) {
+        const value = json[propertyName];
+        if (Array.isArray(value)
+          && value.length >= minValues && (undefined === maxValues || value.length <= maxValues)) {
+          const result = [];
+          for (const a of value) {
+            result.push(a);
           }
-          return defaultValue;
+          return result;
         }
-    */
+      }
+      return defaultValue;
+    }
+
     private static parseAngleProperty(json: any, propertyName: string, defaultValue?: Angle | undefined): Angle | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
@@ -846,6 +872,20 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
+    public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
+      if (data === undefined)
+        return undefined;
+      return InterpolationCurve3d.create(data);
+    }
+
+    /** Parse `bcurve` content (right side)to an Akima curve object. */
+    public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
+      if (data === undefined)
+        return undefined;
+      return AkimaCurve3d.create(data);
+    }
+
     /** Parse array of json objects to array of instances. */
     public static parseArray(data?: any): any[] | undefined {
       if (Array.isArray(data)) {
@@ -862,16 +902,24 @@ export namespace IModelJson {
     }
 
     // For each nonzero index, Announce Math.abs (value) -1
-    private static addZeroBasedIndicesFromSignedOneBased(data: any, f: (x: number) => any): void {
+    private static addZeroBasedIndicesFromSignedOneBased(data: any, numPerFace: number, f: (x: number) => any): void {
       if (data && Geometry.isNumberArray(data)) {
-        for (const value of data) {
-          if (value !== 0)
+        if (numPerFace > 1) {
+          // all indices are used ...
+          for (const value of data) {
             f(Math.abs(value) - 1);
+          }
+        } else {
+          // ignore separator zeros ...
+          for (const value of data) {
+            if (value !== 0)
+              f(Math.abs(value) - 1);
+          }
         }
       }
     }
     /** parse polyface aux data content to PolyfaceAuxData instance */
-    public static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined {
+    public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
 
       if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
         return undefined;
@@ -889,7 +937,7 @@ export namespace IModelJson {
       }
 
       const auxData = new PolyfaceAuxData(outChannels, []);
-      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, (x: number) => { auxData.indices.push(x); });
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, numPerFace, (x: number) => { auxData.indices.push(x); });
 
       return auxData;
     }
@@ -916,9 +964,10 @@ export namespace IModelJson {
             polyface.twoSided = q;
           }
         }
+        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
-          if (Number.isFinite (q)) {
+          if (Number.isFinite(q)) {
             polyface.expectedClosure = q;
           }
         }
@@ -936,30 +985,45 @@ export namespace IModelJson {
 
         for (const p of data.point) polyface.addPointXYZ(p[0], p[1], p[2]);
 
-        for (const p of data.pointIndex) {
-          if (p === 0)
-            polyface.terminateFacet(false); // we are responsible for index checking !!!
-          else {
+        if (numPerFace > 1) {
+          for (let i = 0; i < data.pointIndex.length; i++) {
+            const p = data.pointIndex[i];
             const p0 = Math.abs(p) - 1;
             polyface.addPointIndex(p0, p > 0);
+            if ((i + 1) % numPerFace === 0)
+              polyface.terminateFacet(false);
+          }
+
+        } else {
+          for (const p of data.pointIndex) {
+            if (p === 0)
+              polyface.terminateFacet(false); // we are responsible for index checking !!!
+            else {
+              const p0 = Math.abs(p) - 1;
+              polyface.addPointIndex(p0, p > 0);
+            }
           }
         }
 
         if (data.hasOwnProperty("normalIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex, numPerFace,
             (x: number) => { polyface.addNormalIndex(x); });
         }
         if (data.hasOwnProperty("paramIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex, numPerFace,
             (x: number) => { polyface.addParamIndex(x); });
         }
 
         if (data.hasOwnProperty("colorIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex, numPerFace,
             (x: number) => { polyface.addColorIndex(x); });
         }
         if (data.hasOwnProperty("auxData"))
-          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
+          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
+
+        if (data.hasOwnProperty("tags")) {
+          polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
+        }
 
         return polyface;
       }
@@ -1205,6 +1269,10 @@ export namespace IModelJson {
 
         } else if (json.hasOwnProperty("bcurve")) {
           return Reader.parseBcurve(json.bcurve);
+        } else if (json.hasOwnProperty("interpolationCurve")) {
+          return Reader.parseInterpolationCurve(json.interpolationCurve);
+        } else if (json.hasOwnProperty("akimaCurve")) {
+          return Reader.parseAkimaCurve3d(json.akimaCurve);
         } else if (json.hasOwnProperty("path")) {
           return Reader.parseCurveCollectionMembers(new Path(), json.path);
         } else if (json.hasOwnProperty("loop")) {
@@ -1255,6 +1323,15 @@ export namespace IModelJson {
    * @public
    */
   export class Writer extends GeometryHandler {
+
+    public handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps {
+      const result: TaggedNumericDataProps = { tagA: data.tagA, tagB: data.tagB };
+      if (data.intData !== undefined && data.intData.length > 0)
+        result.intData = data.intData.slice();
+      if (data.doubleData !== undefined && data.doubleData.length > 0)
+        result.doubleData = data.doubleData.slice();
+      return result;
+    }
     /** Convert strongly typed instance to tagged json */
     public handleLineSegment3d(data: LineSegment3d): any {
       return { lineSegment: [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
@@ -1509,26 +1586,26 @@ export namespace IModelJson {
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handlePath(data: Path): any {
+    public override handlePath(data: Path): any {
       return { path: this.collectChildren(data) };
     }
     /** Convert strongly typed instance to tagged json */
-    public handleLoop(data: Loop): any {
+    public override handleLoop(data: Loop): any {
       return { loop: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleParityRegion(data: ParityRegion): any {
+    public override handleParityRegion(data: ParityRegion): any {
       return { parityRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleUnionRegion(data: UnionRegion): any {
+    public override handleUnionRegion(data: UnionRegion): any {
       return { unionRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleBagOfCurves(data: BagOfCurves): any {
+    public override handleBagOfCurves(data: BagOfCurves): any {
       return { bagOfCurves: this.collectChildren(data) };
     }
 
@@ -1716,9 +1793,13 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
+      let taggedNumericData;
+      if (pf.data.taggedNumericData) {
+        taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
+      }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
-      if (pf.expectedClosure  !== 0)
+      if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided)
         contents.twoSided = true;
@@ -1737,6 +1818,8 @@ export namespace IModelJson {
       contents.point = points;
       contents.pointIndex = pointIndex;
 
+      if (taggedNumericData)
+        contents.tags = taggedNumericData;
       return { indexedMesh: contents };
     }
 
@@ -1801,6 +1884,18 @@ export namespace IModelJson {
           },
         };
       }
+    }
+
+    /** Convert strongly typed instance to tagged json */
+    public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
+      const props = curve.cloneProps();
+      BSplineCurveOps.C2CubicFit.convertToJsonKnots(props);
+      return { interpolationCurve: props };
+    }
+
+    /** Convert strongly typed instance to tagged json */
+    public handleAkimaCurve3d(curve: AkimaCurve3d): any {
+      return { akimaCurve: curve.cloneProps() };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1945,6 +2040,8 @@ export namespace IModelJson {
 
       if (data instanceof GeometryQuery) {
         return data.dispatchToGeometryHandler(this);
+      } else if (data instanceof TaggedNumericData) {
+        return this.handleTaggedNumericData(data);
       }
       return undefined;
     }

@@ -464,6 +464,11 @@ describe("Matrix4d", () => {
     const ck = new bsiChecker.Checker();
 
     for (const matrixA of [
+      Matrix4d.createRowValues(
+        -0.7180980534975014, 0, 0, 513359.37226204335,
+        0, -1.267092311832453, 0, 6221930.288732969,
+        0, 0, 0.02752494718615039, 0.00028901194545457914,
+        0, 0, 0, 1),  // from RBB, failed to invert with matrix.maxAbs() scaling logic
       Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
       Matrix4d.createRowValues(
         1, 0, 0, 0,
@@ -686,7 +691,7 @@ describe("Map4d", () => {
     ck.testUndefined(Map4d.createTransform(scaleTransform, scaleTransform),
       "confirm Map4d constructor rejects mismatch");
     const scaleMap = Map4d.createTransform(scaleTransform, scaleTransform1);
-    if (ck.testPointer(scaleMap) && scaleMap) {
+    if (ck.testPointer(scaleMap)) {
       ck.testFalse(mapI.isAlmostEqual(scaleMap));
       const scaleMap1 = Map4d.createRefs(scaleMap.transform1.clone(), scaleMap.transform0.clone());
       const reverseMap = scaleMap.clone();
@@ -764,7 +769,7 @@ describe("Map4d", () => {
     const fraction = 0.0048728640349349457;
     const frustum = Map4d.createVectorFrustum(origin, uVector, vVector, wVector, fraction);
     // console.log (prettyPrint (frustum!));
-    if (ck.testPointer(frustum) && frustum) {
+    if (ck.testPointer(frustum)) {
       const product = frustum.transform0.multiplyMatrixMatrix(frustum.transform1);
       ck.testTrue(product.isIdentity(), "vector frustum inverts");
     }

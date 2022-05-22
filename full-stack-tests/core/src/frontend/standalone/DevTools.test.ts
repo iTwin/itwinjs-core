@@ -3,26 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
-import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
+import { LogLevel } from "@itwin/core-bentley";
+import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
+import { DevTools, PingTestResult } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
-describe("DevTools", () => {
+describe.skip("DevTools", () => {
   let devTools: DevTools;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
 
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",
-      changeSetId: "test",
+      changeset: { id: "test" },
       key: "__globalEvents__",
     }; // Supply a real token in an integration test
     devTools = DevTools.connectToBackendInstance(iModelRpcProps);
   });
 
   after(async () => {
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("can fetch stats from backend", async () => {

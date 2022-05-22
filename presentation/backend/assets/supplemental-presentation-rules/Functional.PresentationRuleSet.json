@@ -4,13 +4,59 @@
   "supplementationInfo": {
     "supplementationPurpose": "Functional specific customization rules"
   },
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore",
-      "Functional"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    },
+    {
+      "name": "Functional"
+    }
+  ],
   "rules": [
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "Functional",
+        "className": "FunctionalElement"
+      },
+      "relatedProperties": [
+        {
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "Functional",
+              "className": "FunctionalElementIsOfType"
+            },
+            "direction": "Forward"
+          },
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "RelatedInstance",
+          "nestedRelatedProperties": [
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsUniqueAspect"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            },
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsMultiAspects"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            }
+          ]
+        }
+      ]
+    },
     {
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"FunctionalElement\", \"Functional\")",

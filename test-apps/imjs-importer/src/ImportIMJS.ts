@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
   SpatialCategory, SpatialModel,
-} from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-
+} from "@itwin/core-backend";
+import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@itwin/core-common";
+/* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
     g.extendRange(rangeToExtend);
@@ -75,12 +75,10 @@ export class ImportIMJS {
 
   public constructor(db: IModelDb) {
     this.iModelDb = db;
-    this._viewFlags = new ViewFlags();
-    this._viewFlags.renderMode = RenderMode.SmoothShade;
-    this._viewFlags.lighting = true;
+    this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: true });
   }
   public static create(databasePath: string, rootSubject: string): ImportIMJS | undefined {
-    fs.unlink(databasePath, (_err: NodeJS.ErrnoException) => { });
+    fs.unlink(databasePath, (_err) => { });
     const db = SnapshotDb.createEmpty(databasePath, { rootSubject: { name: rootSubject } });
     if (db)
       return new ImportIMJS(db);
@@ -103,12 +101,15 @@ export class ImportIMJS {
       const globalRange = Range3d.createNull();
       for (const fileName of fileList) {
         const fullPath = directoryPath + fileName;
+        console.log("File: ", fullPath);
         const fileString = fs.readFileSync(fullPath, "utf8");
         stats.numFile++;
         const json = JSON.parse(fileString);
         const g = IModelJson.Reader.parse(json);
         // numTotal++;
-        if (g) {
+        if (Array.isArray(g) && g.length === 0) {
+          // skip this one?
+        } else if (g) {
           // numGeometry++;
           const range = Range3d.createNull();
           // skip files with large footprint
@@ -132,6 +133,7 @@ export class ImportIMJS {
             };
             const g1 = IModelJson.Writer.toIModelJson(g);
             featureProps.geom = Array.isArray(g1) ? g1 : [g1];
+            // console.log(g1);
             this.iModelDb.elements.insertElement(featureProps);
             const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId);
             const featureModelExtents = featureModel.queryExtents();

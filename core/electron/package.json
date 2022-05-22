@@ -1,0 +1,66 @@
+{
+  "name": "@itwin/core-electron",
+  "version": "3.3.0-dev.9",
+  "description": "iTwin.js ElectronHost and ElectronApp",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+  },
+  "scripts": {
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-electron"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@itwin/core-backend": "workspace:^3.3.0-dev.9",
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9",
+    "@itwin/core-common": "workspace:^3.3.0-dev.9",
+    "@itwin/core-frontend": "workspace:^3.3.0-dev.9",
+    "@itwin/presentation-common": "workspace:^3.3.0-dev.9",
+    "electron": "^14.0.0"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@types/node": "16.11.7",
+    "electron": "^14.0.0",
+    "eslint": "^7.11.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "dependencies": {
+    "@openid/appauth": "^1.2.6",
+    "open": "^7.0.0",
+    "username": "^5.1.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  }
+}

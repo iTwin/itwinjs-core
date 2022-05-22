@@ -1,10 +1,10 @@
-# @bentley/imodeljs-i18n
+# @itwin/core-i18n
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/imodeljs-i18n__ package contains classes related to internationalization and localization.
+The __@itwin/core-i18n__ package contains classes related to internationalization and localization.
 
 ## Documentation
 

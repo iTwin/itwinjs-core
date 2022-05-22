@@ -1,0 +1,197 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/icons/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/text/block";
+@import "~@itwin/itwinui-css/scss/inputs/input";
+@import "~@itwin/itwinui-css/scss/style/variables";
+
+$breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
+
+.components-breadcrumb {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+
+  >.components-breadcrumb-head {
+    position: relative;
+
+    .components-breadcrumb-input-root {
+      >.components-breadcrumb-input {
+        @include iui-input;
+        min-height: $uicore-component-height-normal;
+        padding: $uicore-iui-input-padding;
+
+        width: calc(100% - #{$breadcrumb-edge});
+        height: $uicore-line-height;
+      }
+
+      >.components-breadcrumb-close {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        padding: $uicore-inputs-padding-bordered - 1px;
+        margin: $uicore-inputs-margin 0;
+        height: $uicore-line-height;
+        width: $uicore-line-height;
+        font-size: $uicore-icons-small;
+        line-height: $uicore-line-height;
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+          color: $buic-foreground-primary;
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      >.context-menu .context-menu-item {
+        padding: $uicore-bordered-padding;
+        transform: rotate(180deg);
+
+        >.context-menu-icon {
+          display: none;
+        }
+
+        >.context-menu-content {
+          transform: rotate(-180deg);
+        }
+      }
+    }
+
+    .components-breadcrumb-dropdown {
+      @include iui-input;
+      min-height: $uicore-component-height-normal;
+      padding: $uicore-iui-input-padding;
+
+      display: flex;
+      width: calc(100% - #{$breadcrumb-edge});
+      background-color: $buic-background-control;
+
+      >.components-breadcrumb-up-dir {
+        height: $uicore-line-height;
+        width: $uicore-line-height;
+        flex-shrink: 0;
+        flex-grow: 0;
+        font-size: $uicore-icons-small;
+        border-right: 1px solid $buic-background-control-stroke;
+        margin-right: $uicore-bordered-padding;
+        cursor: pointer;
+
+        &:hover {
+          color: $buic-foreground-primary;
+        }
+
+        &.root {
+          color: $buic-foreground-muted;
+          cursor: default;
+
+          &:hover {
+            color: $buic-foreground-muted;
+          }
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      .components-breadcrumb-crumb-list {
+        display: flex;
+
+        .components-breadcrumb-split-button {
+          padding: 0;
+          display: flex;
+
+          .split-button-arrow-icon {
+            font-size: 10px;
+            line-height: $uicore-line-height;
+            transform: rotate(-90deg);
+          }
+
+          .split-button-label {
+            min-width: $uicore-line-height;
+            text-align: center;
+          }
+
+          &.expanded .split-button-arrow-icon {
+            transform: rotate(0deg);
+          }
+
+          >.static-arrow-icon {
+            text-align: center;
+            font-size: 10px;
+            line-height: $uicore-line-height;
+            width: $uicore-line-height;
+            height: $uicore-line-height;
+            margin-left: 4px;
+          }
+        }
+      }
+
+      .components-breadcrumb-drop-target {
+        border-radius: $iui-border-radius;
+
+        &.hover {
+          background-color: $buic-row-hover;
+        }
+
+        &.dragging {
+          color: $buic-foreground-disabled;
+        }
+      }
+
+      .components-breadcrumb-end-node {
+        @include uicore-text-block;
+
+        margin: 0;
+        min-width: $uicore-line-height;
+        text-align: center;
+        border-radius: $iui-border-radius;
+
+        &:not(.static) {
+          user-select: none;
+          cursor: pointer;
+
+          &:hover {
+            color: $buic-foreground-primary;
+          }
+        }
+      }
+    }
+
+    .components-breadcrumb-selected {
+      font-weight: bold;
+    }
+  }
+}
+
+.components-breadcrumb:not(.background) {
+  .components-breadcrumb-dropdown {
+    border: initial;
+    box-shadow: initial;
+    background-color: initial;
+
+    .split-button {
+      background-color: initial;
+    }
+  }
+}
+
+.components-breadcrumb-details {
+  &:focus {
+    outline: 0;
+  }
+
+  height: calc(100% - (#{2 * $uicore-inputs-margin + $uicore-inputs-height}));
+  overflow: auto;
+  background-color: $buic-background-control;
+  border: 1px solid $buic-background-control-stroke;
+
+}

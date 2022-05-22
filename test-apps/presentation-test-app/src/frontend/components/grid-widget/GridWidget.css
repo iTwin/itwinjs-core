@@ -5,13 +5,21 @@
 
 .gridwidget {
   height: 100%;
+  display: grid;
+  grid-template-columns: auto 100px;
+  grid-template-rows: 32px auto;
 }
 
-.gridwidget h3 {
-  margin: 0;
-  height: 25px;
+.gridwidget > h3 {
+  margin: 4px;
+}
+
+.gridwidget > button {
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .gridwidget-content {
-  height: calc(100% - 25px);
+  grid-column-start: 1;
+  grid-column-end: span 2;
 }

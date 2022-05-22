@@ -6,12 +6,16 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { PresentationError } from "@bentley/presentation-common";
-import { Presentation, PresentationPropsDeprecated } from "../presentation-backend/Presentation";
+import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { assert } from "@itwin/core-bentley";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError } from "@itwin/presentation-common";
+import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 
 describe("Presentation", () => {
 
@@ -46,34 +50,29 @@ describe("Presentation", () => {
       expect(Presentation.getManager()).to.be.instanceof(PresentationManager);
     });
 
+    it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      Presentation.initialize({enableSchemasPreload: false});
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
+      Presentation.terminate();
+      Presentation.initialize({enableSchemasPreload: true});
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
+    });
+
     describe("props handling", () => {
 
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as PresentationPropsDeprecated).unusedClientLifetime); // eslint-disable-line deprecation/deprecation
+        expect(storage.props.unusedValueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
       });
 
-      describe("getRequestTimeout", () => {
-        it("should throw PresentationError if initialize is not called", () => {
-          expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
-        });
-
-        it("creates a requestTimeout property with default value", () => {
-          Presentation.initialize();
-          expect(Presentation.getRequestTimeout()).to.equal(90000);
-        });
-
-        it("should use value from initialize method parameters", () => {
-          const randomRequestTimeout = faker.random.number({ min: 1, max: 90000 });
-          Presentation.initialize({ requestTimeout: randomRequestTimeout });
-          expect(Presentation.getRequestTimeout()).to.equal(randomRequestTimeout);
-        });
-
-        it("should use 0 as requestTimeout if value passed to initialize method is 0", () => {
-          Presentation.initialize({ requestTimeout: 0 });
-          expect(Presentation.getRequestTimeout()).to.equal(0);
-        });
+      it("sets request timeout to `PresentationRpcImpl`", () => {
+        const supplyImplSpy = sinon.spy(RpcManager, "supplyImplInstance");
+        Presentation.initialize({ requestTimeout: 123 });
+        const impl = supplyImplSpy.args[0][1];
+        assert(impl instanceof PresentationRpcImpl);
+        expect(impl.requestTimeout).to.eq(123);
+        expect(Presentation.getRequestTimeout()).to.eq(123);
       });
 
       it("uses client manager factory provided through props", () => {
@@ -94,6 +93,14 @@ describe("Presentation", () => {
 
   });
 
+  describe("getRequestTimeout", () => {
+
+    it("should throw PresentationError if initialize is not called", () => {
+      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+    });
+
+  });
+
   describe("terminate", () => {
 
     it("resets manager instance", () => {
@@ -103,11 +110,44 @@ describe("Presentation", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
     });
 
-    it("resets RequestTimeout property", () => {
+    it("unregisters PresentationRpcInterface impl", () => {
       Presentation.initialize();
-      expect(Presentation.getRequestTimeout()).to.be.not.null;
+      const unregisterSpy = sinon.stub(RpcManager, "unregisterImpl");
       Presentation.terminate();
-      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+      expect(unregisterSpy).to.be.calledOnce;
+    });
+
+    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      const unregisterSpy = sinon.spy();
+      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
+      Presentation.initialize();
+      expect(unregisterSpy).to.not.be.called;
+      Presentation.terminate();
+      expect(unregisterSpy).to.be.calledOnce;
+    });
+
+    it("unsubscribes from `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      Presentation.initialize({enableSchemasPreload: true});
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
+      Presentation.terminate();
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
+    });
+
+  });
+
+  describe("preloading schemas", () => {
+
+    it("calls addon's `forceLoadSchemas` on `BriefcaseDb.onOpened` events", () => {
+      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const managerMock = moq.Mock.ofType<PresentationManager>();
+      managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
+      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+
+      Presentation.initialize({enableSchemasPreload: true, clientManagerFactory: () => managerMock.object});
+      BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
+      nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });
 
   });

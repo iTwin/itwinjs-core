@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../ImageUtil";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
@@ -91,10 +91,10 @@ describe("Texture tests", () => {
     const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
     const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);
-    const imageTexture = TextureHandle.createForImage(image, true, RenderTexture.Type.Normal);
+    const imageTexture = TextureHandle.createForImage(image, RenderTexture.Type.Normal);
     assert(undefined !== imageTexture);
-    expect(imageTexture!.width).to.equal(4);
-    expect(imageTexture!.height).to.equal(4);
+    expect(imageTexture.width).to.equal(4);
+    expect(imageTexture.height).to.equal(4);
   });
 });
 

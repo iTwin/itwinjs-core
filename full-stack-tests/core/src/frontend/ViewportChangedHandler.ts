@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import {
-  ChangeFlag, ChangeFlags, Viewport,
-} from "@bentley/imodeljs-frontend";
+  ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
+} from "@itwin/core-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
 export enum ViewportState {
@@ -25,7 +25,7 @@ export class ViewportChangedHandler {
   protected readonly _vp: Viewport;
   protected readonly _removals: Array<() => void> = [];
   // Flags set by individual event callbacks
-  protected readonly _eventFlags = new ChangeFlags(ChangeFlag.None);
+  protected readonly _eventFlags = new MutableChangeFlags(ChangeFlag.None);
   // Flags received by onViewportChanged callback
   protected _changeFlags?: ChangeFlags;
   protected _featureOverridesDirty = false;

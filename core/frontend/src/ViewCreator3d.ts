@@ -12,63 +12,76 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
+import {
+  Camera, CategorySelectorProps, Code, CustomViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
+  QueryRowFormat, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+} from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment, loggerCategory } from "./imodeljs-frontend";
 
-/** @beta Options for creating a 3d [[ViewState]] via [[ViewCreator3d]] */
+/** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
+ *  @public
+ * @extensions
+*/
 export interface ViewCreator3dOptions {
-  /** Turn camera on when generating view */
+  /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
   cameraOn?: boolean;
-  /** Turn skybox on when generating view */
+  /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
-  /** Standard view id for the view state */
+  /** [[StandardViewId]] for the view state. */
   standardViewId?: StandardViewId;
-  /** Merge in Props from seed view (default spatial view) in iModel  */
+  /** Merge in props from the seed view (default spatial view) of the iModel.  */
   useSeedView?: boolean;
-  /** vpAspect aspect ratio of vp to create fit view. */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
   vpAspect?: number;
 }
 
-/** @beta API for creating a 3D default [[ViewState]]  for an iModel.
+/**
+ * API for creating a 3D default [[ViewState3d]] for an iModel. @see [[ViewCreator2d]] to create a view for a 2d model.
+ * Example usage:
  * ```ts
  * const viewCreator = new ViewCreator3d(imodel);
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
  * ```
+ * @public
+ * @extensions
  */
 export class ViewCreator3d {
 
   /**
-   * Constructs ViewCreator3d with [[iModelConnection]].
-   * @param _imodel [[IModelConnection]] to query for categories and/or models
+   * Constructs a ViewCreator3d using an [[IModelConnection]].
+   * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
   constructor(private _imodel: IModelConnection) { }
 
   /**
-   * Creates a default [[ViewState]] based on the given model ids. Uses all 3D models if no modelIds passed in.
-   * @param options for view creation
-   * @param modelIds [optional] Model Ids to use in the view
-   * @throws [IModelError]($common) if no physical models are found.
+   * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
+   * @param [options] Options for creating the view.
+   * @param [modelIds] Ids of models to display in the view.
+   * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
-  public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState> {
+  public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
+    const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
+      modelIds === undefined ? {} : {modelIds: CompressedId64Set.sortAndCompress(modelIds)});
+    const props = await this._createViewStateProps(
+      CompressedId64Set.decompressArray(serializedProps.modelIds),
+      CompressedId64Set.decompressArray(serializedProps.categoryIds),
+      Range3d.fromJSON(serializedProps.modelExtents),
+      options);
 
-    const models = modelIds ? modelIds : await this._getAllModels();
-    if (models === undefined || models.length === 0)
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no physical models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
-
-    const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
-    } catch { }
+    } catch {
+    }
 
     if (options?.standardViewId)
       viewState.setStandardRotation(options.standardViewId);
+
     const range = viewState.computeFitRange();
     viewState.lookAtVolume(range, options?.vpAspect);
 
@@ -80,14 +93,13 @@ export class ViewCreator3d {
    * @param models Models to put in view props
    * @param options view creation options like camera On and skybox On
    */
-  private async _createViewStateProps(models: Id64String[], options?: ViewCreator3dOptions): Promise<ViewStateProps> {
+  private async _createViewStateProps(models: Id64Array, categories: Id64Array, modelExtents: Range3d, options?: ViewCreator3dOptions): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
-    const categories: Id64Array = await this._getAllCategories();
 
-    // model extents
-    const modelProps = await this._imodel.models.queryModelRanges(models);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+    if (modelExtents.isNull)
+      modelExtents.setFrom(this._imodel.projectExtents);
+
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     const originZ = modelExtents.low.z;
@@ -125,7 +137,7 @@ export class ViewCreator3d {
     };
 
     const cameraData = new Camera();
-    const cameraOn = options?.cameraOn ? options.cameraOn : false;
+    const cameraOn = options?.cameraOn !== false;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
@@ -145,7 +157,7 @@ export class ViewCreator3d {
     const displayStyleProps: DisplayStyle3dProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle3d",
       jsonProperties: {
         styles: {
           viewflags: {
@@ -162,7 +174,7 @@ export class ViewCreator3d {
             options !== undefined &&
               options.skyboxOn !== undefined &&
               options.skyboxOn
-              ? new Environment({ sky: { display: true } }).toJSON()
+              ? Environment.defaults.withDisplay({ sky: true }).toJSON()
               : undefined,
         },
       },
@@ -235,33 +247,11 @@ export class ViewCreator3d {
   }
 
   /**
-   * Get all categories containing elements
-   */
-  private async _getAllCategories(): Promise<Id64Array> {
-    // Only use categories with elements in them
-    const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
-    const categories: Id64Array = await this._executeQuery(query);
-
-    return categories;
-  }
-
-  /**
-   * Get all PhysicalModel ids in the connection
-   */
-  private async _getAllModels(): Promise<Id64Array> {
-
-    const query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
-    const models: Id64Array = await this._executeQuery(query);
-
-    return models;
-  }
-
-  /**
    * Helper function to execute ECSql queries.
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query))
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

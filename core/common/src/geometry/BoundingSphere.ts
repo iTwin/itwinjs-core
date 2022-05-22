@@ -6,10 +6,10 @@
  * @module Geometry
  */
 
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@itwin/core-geometry";
 
 /** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
- * @internal
+ * @public
  */
 export class BoundingSphere {
   public center: Point3d;

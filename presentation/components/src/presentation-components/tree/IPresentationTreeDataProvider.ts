@@ -6,8 +6,8 @@
  * @module Tree
  */
 
-import { NodeKey, NodePathElement } from "@bentley/presentation-common";
-import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components";
+import { NodeKey, NodePathElement } from "@itwin/presentation-common";
+import { ITreeDataProvider, TreeNodeItem } from "@itwin/components-react";
 import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
 
 /**
@@ -24,10 +24,4 @@ export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPrese
    * Returns filtered node paths.
    */
   getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
-
-  /**
-   * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
-   */
-  loadHierarchy?(): Promise<void>;
 }

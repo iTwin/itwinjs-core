@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../variables";
+
+.nz-footer-toolAssistance-indicator {
+  $triangle-width: 5px;
+  $padding: 2px;
+  $top-bottom-padding: 1px;
+
+  >.nz-indicator {
+    height: 32px;
+    min-width: 20px;
+    position: relative;
+
+    padding: {
+      top: $top-bottom-padding;
+      right: $padding * 2 + $triangle-width;
+      bottom: $top-bottom-padding;
+      left: $padding;
+    }
+
+    ;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    >.nz-icons {
+      font-size: $icon-size;
+      filter: $icon-shadow;
+      display: flex;
+      align-items: center;
+    }
+
+    >.nz-content {
+      margin-left: 8px;
+      font-size: $text-font-size;
+      line-height: 1;
+
+      /* Medium devices */
+      @include for-tablet-portrait-down {
+        font-size: $text-font-size-medium;
+      }
+
+      /* Small devices */
+      @include for-phone-only {
+        font-size: $text-font-size-small;
+      }
+    }
+
+    >.nz-triangle {
+      position: absolute;
+      right: $padding;
+      bottom: $padding;
+      filter: $icon-shadow;
+
+      @include triangle-bottom-right($triangle-width, $color: $buic-foreground-body);
+    }
+
+    &:hover {
+      color: $buic-foreground-primary;
+
+      >.nz-triangle {
+        @include triangle-bottom-right($triangle-width, $color: $buic-foreground-primary);
+      }
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}

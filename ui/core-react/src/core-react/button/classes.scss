@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./index";
+
+.uicore-buttons-blue { @include uicore-buttons-blue; }
+.uicore-buttons-blue-large { @include uicore-buttons-blue-large; }
+.uicore-buttons-disabled { @include uicore-buttons-disabled; }
+.uicore-buttons-disabled-large { @include uicore-buttons-disabled-large; }
+.uicore-buttons-hollow { @include uicore-buttons-hollow; }
+.uicore-buttons-hollow-large { @include uicore-buttons-hollow-large; }
+.uicore-buttons-primary { @include uicore-buttons-primary; }
+.uicore-buttons-primary-large { @include uicore-buttons-primary-large; }

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool,
   ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem,
   EnumerationChoice,
   PropertyDescription,
-} from "@bentley/ui-abstract";
-import { ToolItemDef } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { ToolItemDef } from "@itwin/appui-react";
 
 interface MajorCities {
   state: number;
@@ -38,16 +38,16 @@ const cities: MajorCities[] = [
 ];
 
 export class ToolWithDynamicSettings extends PrimitiveTool {
-  public static toolId = "ToolWithDynamicSettings";
+  public static override toolId = "ToolWithDynamicSettings";
   public points: Point3d[] = [];
 
   // ------------- State List ---------------
   private static _statePropertyName = "state";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
+  private static enumAsPicklistMessage(str: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
   private static getStateDescription(): PropertyDescription {
     return {
       name: this._statePropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
       typename: "enum",
       enum: {
         choices: [
@@ -77,7 +77,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
     return {
       name: this._cityPropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
       typename: "enum",
       enum: {
         choices: availableCitiesChoices,
@@ -96,13 +96,13 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
   // -------- end of ToolSettings ----------
 
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() {
-    super.onPostInstall();
+  public override requireWriteableTarget(): boolean { return false; }
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
     this.points = [];
   }
-  public onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -125,31 +125,31 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
     const instructions = ToolAssistance.createInstructions(mainInstruction);
 
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
     this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new ToolWithDynamicSettings();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
-  public supplyToolSettingsProperties(): DialogItem[] | undefined {
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._stateValue, property: ToolWithDynamicSettings.getStateDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
     if (this.state > 0 && this.state < cities.length) {
@@ -160,7 +160,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
   }
 
   /** Called from UI to update properties in tool */
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === ToolWithDynamicSettings._statePropertyName) {
       const newStateValue = updatedValue.value.value as number;
       if (this.state !== newStateValue) {
@@ -181,7 +181,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
       labelKey: "SampleApp:tools.ToolWithDynamicSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithDynamicSettings.description",
       execute: async () => {
-        IModelApp.tools.run(ToolWithDynamicSettings.toolId);
+        return IModelApp.tools.run(ToolWithDynamicSettings.toolId);
       },
     });
   }

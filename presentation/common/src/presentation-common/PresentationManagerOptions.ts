@@ -6,36 +6,17 @@
  * @module Core
  */
 
-import { DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { Id64String } from "@itwin/core-bentley";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
+import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
+import { InstanceKey } from "./EC";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 
 /**
- * Enumeration of standard request priorities.
- * @public
- */
-export enum RequestPriority {
-  /** Priority for pre-loading requests */
-  Preload = 0,
-
-  /** Priority for general requests */
-  Normal = 1000,
-
-  /** Max possible priority */
-  Max = Number.MAX_SAFE_INTEGER,
-}
-
-/** @alpha */
-export enum PresentationUnitSystem {
-  Metric = "metric",
-  BritishImperial = "british-imperial",
-  UsCustomary = "us-customary",
-  UsSurvey = "us-survey",
-}
-
-/**
- * A generic request options type used for both hierarchy and content requests
+ * A generic request options type used for both hierarchy and content requests.
  * @public
  */
 export interface RequestOptions<TIModel> {
@@ -46,10 +27,13 @@ export interface RequestOptions<TIModel> {
   locale?: string;
 
   /**
-   * Optional request priority. Higher priority requests are handled first.
-   * Defaults to [[RequestPriority.Normal]]
+   * Unit system to use when formatting property values with units. Default presentation
+   * unit is used if unit system is not specified.
    */
-  priority?: number;
+  unitSystem?: UnitSystemKey;
+
+  /** @alpha */
+  diagnostics?: DiagnosticsOptionsWithHandler;
 }
 
 /**
@@ -58,53 +42,61 @@ export interface RequestOptions<TIModel> {
  *
  * @public
  */
-export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
+export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptions<TIModel> {
   /** Ruleset or id of the ruleset to use when requesting data */
   rulesetOrId: Ruleset | string;
 
   /** Ruleset variables to use when requesting data */
-  rulesetVariables?: RulesetVariable[];
+  rulesetVariables?: TRulesetVariable[];
 }
 
 /**
- * Base request type for hierarchy requests
+ * Request type for hierarchy requests.
  * @public
  */
-export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { // eslint-disable-line @typescript-eslint/no-empty-interface
-}
-
-/**
- * Request type for hierarchy requests
- * @beta
- */
-export interface ExtendedHierarchyRequestOptions<TIModel, TNodeKey> extends HierarchyRequestOptions<TIModel> {
+export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
   parentKey?: TNodeKey;
 }
-/** @internal */
-export const isExtendedHierarchyRequestOptions = <TIModel, TNodeKey>(opts: HierarchyRequestOptions<TIModel> | ExtendedHierarchyRequestOptions<TIModel, TNodeKey>): opts is ExtendedHierarchyRequestOptions<TIModel, TNodeKey> => {
-  return !!(opts as ExtendedHierarchyRequestOptions<TIModel, TNodeKey>).parentKey;
-};
 
 /**
- * Request type for content requests
+ * Request type of filtering hierarchies by given ECInstance paths.
  * @public
  */
-export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+  /** A list of paths from root ECInstance to target ECInstance. */
+  instancePaths: InstanceKey[][];
+
   /**
-   * Unit system to use when formatting property values with units. Default presentation
-   * unit is used if unit system is not specified.
-   *
-   * @alpha
+   * An optional index (`0 <= markedIndex < instancePaths.length`) to mark one of the instance paths. The
+   * path is marked using `NodePathElement.isMarked` flag in the result.
    */
-  unitSystem?: PresentationUnitSystem;
+  markedIndex?: number;
 }
 
 /**
- * Request type for content descriptor requests
+ * Request type of filtering hierarchies by given text.
+ * @public
+ */
+export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+  /** Text to filter the hierarchy by. */
+  filterText: string;
+}
+
+/**
+ * Request type for content sources requests.
  * @beta
  */
-export interface ContentDescriptorRequestOptions<TIModel, TKeySet> extends ContentRequestOptions<TIModel> {
+export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** Full names of classes to get content sources for. */
+  classes: string[];
+}
+
+/**
+ * Request type for content descriptor requests.
+ * @public
+ */
+export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /**
    * Content display type.
    * @see [[DefaultContentDisplayTypes]]
@@ -115,34 +107,25 @@ export interface ContentDescriptorRequestOptions<TIModel, TKeySet> extends Conte
   /** Information about the selection event that was the cause of this content request */
   selection?: SelectionInfo;
 }
-/** @internal */
-export const isContentDescriptorRequestOptions = <TIModel, TKeySet>(opts: ContentRequestOptions<TIModel> | ContentDescriptorRequestOptions<TIModel, TKeySet>): opts is ContentDescriptorRequestOptions<TIModel, TKeySet> => {
-  return !!(opts as ContentDescriptorRequestOptions<TIModel, TKeySet>).keys;
-};
 
 /**
- * Request type for content requests
- * @beta
+ * Request type for content requests.
+ * @public
  */
-export interface ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet> extends ContentRequestOptions<TIModel> {
-  /** Content descriptor or overrides for customizing the returned content */
-  descriptor: TDescriptor | DescriptorOverrides;
+export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+  /** Content descriptor for customizing the returned content */
+  descriptor: TDescriptor;
   /** Input keys for getting the content */
   keys: TKeySet;
 }
-/** @internal */
-export const isExtendedContentRequestOptions = <TIModel, TDescriptor, TKeySet>(opts: ContentRequestOptions<TIModel> | ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>): opts is ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet> => {
-  return !!(opts as ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>).descriptor
-    && !!(opts as ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>).keys;
-};
 
 /**
- * Request type for distinct values' requests
- * @alpha
+ * Request type for distinct values' requests.
+ * @public
  */
-export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> extends Paged<ContentRequestOptions<TIModel>> {
-  /** Content descriptor for content we're requesting distinct values for or overrides for customizing the returned content */
-  descriptor: TDescriptor | DescriptorOverrides;
+export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+  /** Content descriptor for customizing the returned content */
+  descriptor: TDescriptor;
   /** Input keys for getting the content */
   keys: TKeySet;
   /** Descriptor for a field distinct values are requested for */
@@ -150,36 +133,63 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> ext
 }
 
 /**
- * Request type for label requests
- * @public
+ * Request type for element properties requests
+ * @beta
  */
-export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
+
+/**
+ * Request type for single element properties requests.
+ * @beta
+ */
+export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** ID of the element to get properties for. */
+  elementId: Id64String;
+}
+
+/**
+ * Request type for multiple elements properties requests.
+ * @beta
+ */
+export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>",
+   * "<schema name or alias>:<class_name>".
+   */
+  elementClasses?: string[];
+}
+
+/**
+ * Request type for content instance keys' requests.
+ * @beta
+ */
+export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+  /**
+   * Content display type.
+   * @see [[DefaultContentDisplayTypes]]
+   */
+  displayType?: string;
+  /** Input keys for getting the content. */
+  keys: TKeySet;
+}
 
 /**
  * Request type for label requests
- * @beta
+ * @public
  */
 export interface DisplayLabelRequestOptions<TIModel, TInstanceKey> extends RequestOptions<TIModel> {
   /** Key of ECInstance to get label for */
   key: TInstanceKey;
 }
-/** @internal */
-export const isDisplayLabelRequestOptions = <TIModel, TInstanceKey>(opts: LabelRequestOptions<TIModel> | DisplayLabelRequestOptions<TIModel, TInstanceKey>): opts is DisplayLabelRequestOptions<TIModel, TInstanceKey> => {
-  return !!(opts as DisplayLabelRequestOptions<TIModel, TInstanceKey>).key;
-};
 
 /**
  * Request type for labels requests
- * @beta
+ * @public
  */
 export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends RequestOptions<TIModel> {
   /** Keys of ECInstances to get labels for */
   keys: TInstanceKey[];
 }
-/** @internal */
-export const isDisplayLabelsRequestOptions = <TIModel, TInstanceKey>(opts: LabelRequestOptions<TIModel> | DisplayLabelsRequestOptions<TIModel, TInstanceKey>): opts is DisplayLabelsRequestOptions<TIModel, TInstanceKey> => {
-  return !!(opts as DisplayLabelsRequestOptions<TIModel, TInstanceKey>).keys;
-};
 
 /**
  * Request options used for selection scope related requests
@@ -188,13 +198,13 @@ export const isDisplayLabelsRequestOptions = <TIModel, TInstanceKey>(opts: Label
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
- * Data structure for comparing presentation data after ruleset or ruleset variable changes.
- * @alpha
+ * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
+ * @public
  */
-export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
+export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   prev: {
     rulesetOrId?: Ruleset | string;
-    rulesetVariables?: RulesetVariable[];
+    rulesetVariables?: TRulesetVariable[];
   };
   expandedNodeKeys?: TNodeKey[];
   continuationToken?: {
@@ -223,3 +233,20 @@ export type Paged<TOptions extends {}> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
+
+/**
+ * A wrapper type that injects priority into supplied type.
+ * @public
+ */
+export type Prioritized<TOptions extends {}> = TOptions & {
+  /** Optional priority */
+  priority?: number;
+};
+
+/**
+ * Checks if supplied request options are for single or multiple element properties.
+ * @beta
+ */
+export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
+  return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, InputStatus, ValidationTextbox, WidgetControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, InputStatus, ValidationTextbox, WidgetControl } from "@itwin/appui-react";
 
 /** Feedback Demo Widget */
 export class FeedbackDemoWidget extends WidgetControl {
@@ -22,7 +22,7 @@ export class FeedbackDemoWidget extends WidgetControl {
 export class FeedbackWidget extends React.Component {
   /** hidden */
 
-  public render() {
+  public override render() {
     return (
       <div>
         <table>

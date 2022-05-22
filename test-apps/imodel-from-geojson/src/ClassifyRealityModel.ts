@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as requestPromise from "request-promise-native";
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
-import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, BackgroundMapProps, Cartographic, IModel, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
+import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
+import {
+  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+} from "@itwin/core-common";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
@@ -48,56 +49,57 @@ class RealityModelTileUtils {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
         throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      const ecefLow = (new Cartographic(region[0], region[1], region[4])).toEcef();
-      const ecefHigh = (new Cartographic(region[2], region[3], region[5])).toEcef();
+      const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
+      const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
       return Range3d.create(ecefLow, ecefHigh);
-    } else {
-      let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-      const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
-      if (undefined === rootTransform)
-        rootTransform = Transform.createIdentity();
-
-      return rootTransform.multiplyRange(range);
     }
-    return Range3d.createNull();
+
+    let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+    if (undefined === rootTransform)
+      rootTransform = Transform.createIdentity();
+
+    return rootTransform.multiplyRange(range);
   }
+
   public static async rangeFromUrl(url: string): Promise<AxisAlignedBox3d> {
-    const json = await requestPromise(url, { json: true });   // eslint-disable-line
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+    const json = res.json();
     return RealityModelTileUtils.rangeFromJson(json);
   }
 }
 
-function parseDisplayMode(defaultDisplay: SpatialClassificationProps.Display, option?: string) {
+function parseDisplayMode(defaultDisplay: number, option?: string) {
   switch (option) {
     case "off":
-      return SpatialClassificationProps.Display.Off;
-
+      return SpatialClassifierInsideDisplay.Off;
     case "on":
-      return SpatialClassificationProps.Display.On;
-
+      return SpatialClassifierInsideDisplay.On;
     case "dimmed":
-      return SpatialClassificationProps.Display.Dimmed;
-
+      return SpatialClassifierInsideDisplay.Dimmed;
     case "hilite":
-      return SpatialClassificationProps.Display.Hilite;
-
+      return SpatialClassifierInsideDisplay.Hilite;
     case "color":
-      return SpatialClassificationProps.Display.ElementColor;
-
+      return SpatialClassifierInsideDisplay.ElementColor;
     default:
       return defaultDisplay;
   }
 }
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: BackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
 
+export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: PersistentBackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
   const name = inputName ? inputName : url;
-  const classificationFlags = new SpatialClassificationProps.Flags();
-  classificationFlags.inside = parseDisplayMode(SpatialClassificationProps.Display.ElementColor, inside);
-  classificationFlags.outside = parseDisplayMode(SpatialClassificationProps.Display.Dimmed, outside);
-  classificationFlags.isVolumeClassifier = !isPlanar;
+  const classificationFlags = {
+    inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),
+    outside: parseDisplayMode(SpatialClassifierOutsideDisplay.Dimmed, outside),
+    isVolumeClassifier: !isPlanar,
+  };
 
   const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
-
   const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
   const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
 

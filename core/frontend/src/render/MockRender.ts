@@ -3,24 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { dispose } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicType } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { PointStringParams } from "./primitives/PointStringParams";
+import { PolylineParams } from "./primitives/PolylineParams";
+import { MeshParams } from "./primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import { RenderSystem } from "./RenderSystem";
+import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
@@ -73,8 +74,8 @@ export namespace MockRender {
 
   /** @internal */
   export class Builder extends PrimitiveBuilder {
-    public constructor(system: System, placement: Transform = Transform.identity, type: GraphicType, viewport: Viewport, pickId?: Id64String) {
-      super(system, type, viewport, placement, pickId);
+    public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
+      super(system, options);
     }
   }
 
@@ -90,7 +91,7 @@ export namespace MockRender {
   export class List extends Graphic {
     public constructor(public readonly graphics: RenderGraphic[]) { super(); }
 
-    public dispose() {
+    public override dispose() {
       for (const graphic of this.graphics)
         dispose(graphic);
 
@@ -102,23 +103,35 @@ export namespace MockRender {
   export class Branch extends Graphic {
     public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly options?: GraphicBranchOptions) { super(); }
 
-    public dispose() { this.branch.dispose(); }
+    public override dispose() { this.branch.dispose(); }
   }
 
   /** @internal */
   export class Batch extends Graphic {
     public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
 
-    public dispose() {
+    public override dispose() {
       dispose(this.graphic);
     }
+  }
+
+  /** @internal */
+  export class Geometry implements RenderGeometry {
+    public dispose(): void { }
+    public collectStatistics(): void { }
+  }
+
+  /** @internal */
+  export class AreaPattern implements RenderAreaPattern {
+    public dispose(): void { }
+    public collectStatistics(): void { }
   }
 
   /** @internal */
   export class System extends RenderSystem {
     public get isValid() { return true; }
     public dispose(): void { }
-    public get maxTextureSize() { return 4096; }
+    public override get maxTextureSize() { return 4096; }
 
     public constructor() { super(); }
 
@@ -127,15 +140,24 @@ export namespace MockRender {
     public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
-    public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }
+    public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
+      return new Builder(this, options);
+    }
+
     public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
     public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
     public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
 
-    public createMesh(_params: MeshParams) { return new Graphic(); }
-    public createPolyline(_params: PolylineParams) { return new Graphic(); }
-    public createPointString(_params: PointStringParams) { return new Graphic(); }
-    public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+    public override createMesh(_params: MeshParams) { return new Graphic(); }
+    public override createPolyline(_params: PolylineParams) { return new Graphic(); }
+    public override createPointString(_params: PointStringParams) { return new Graphic(); }
+    public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+    public override createRenderGraphic() { return new Graphic(); }
+
+    public override createMeshGeometry() { return new Geometry(); }
+    public override createPolylineGeometry() { return new Geometry(); }
+    public override createPointStringGeometry() { return new Geometry(); }
+    public override createAreaPattern() { return new AreaPattern(); }
   }
 
   /** @internal */

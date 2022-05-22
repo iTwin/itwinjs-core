@@ -1,0 +1,186 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LoadingPrompt /> renders correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  />
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with indeterminate ProgressBar 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  />
+  <ProgressLinear
+    indeterminate={true}
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text and message correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text and message, and determinate 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={0}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text and message, and determinate and percent 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text and message, and determinate and showCancel 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+  <ForwardRef
+    className="loading-prompt-cancel"
+  >
+    Cancel
+  </ForwardRef>
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text and message, and determinate and showStatus 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <span
+    className="message"
+  >
+    description
+  </span>
+  <LoadingBar
+    barHeight={4}
+    percent={50}
+    showPercentage={false}
+    style={
+      Object {
+        "width": "100%",
+      }
+    }
+  />
+  <LoadingStatus
+    message="updating"
+    percent={50}
+    style={
+      Object {
+        "fontSize": ".75em",
+        "marginTop": ".5em",
+        "width": "100%",
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<LoadingPrompt /> renders with text correctly 1`] = `
+<div
+  className="core-loadingprompt"
+>
+  <span
+    className="title"
+  >
+    title
+  </span>
+  <LoadingSpinner
+    messageOnTop={false}
+  />
+</div>
+`;

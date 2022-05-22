@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/space";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $border-color: #eeeeee;
 
@@ -14,9 +13,9 @@ $border-color: #eeeeee;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-bottom: $uicore-m;
+  padding-bottom: $iui-m;
   box-sizing: border-box;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   background: $uicore-gray-c;
   position: relative;
   overflow: hidden;
@@ -26,28 +25,21 @@ $border-color: #eeeeee;
     box-sizing: border-box;
     width: 100%;
     flex: 1;
-    padding-left: $uicore-m;
-    padding-top: $uicore-m;
-    padding-bottom: $uicore-m;
+    padding-left: $iui-m;
+    padding-top: $iui-m;
+    padding-bottom: $iui-m;
     border-bottom: 1px solid $uicore-gray-a;
   }
 
   /* container - flat list of models */
   .models-list-container {
     flex: 1;
-    margin-top: $uicore-s;
-    margin-left: $uicore-s;
-    margin-right: $uicore-s;
+    margin-top: $iui-s;
+    margin-left: $iui-s;
+    margin-right: $iui-s;
     border: 1px solid $uicore-gray-a;
     background: $uicore-white;
     overflow-y: auto;
-
-    .showtree-button {
-      @include uicore-buttons-blue;
-      padding-top: $uicore-xs;
-      padding-bottom: $uicore-xs;
-      margin: $uicore-s;
-    }
   }
 
   /* container - document codes */
@@ -58,19 +50,19 @@ $border-color: #eeeeee;
     overflow-x: auto;
     box-sizing: border-box;
     width: 100%;
-    padding: $uicore-m;
+    padding: $iui-m;
 
     .dc-table {
       flex: 1 1 225px;
       display: flex;
       flex-direction: column;
       min-width: 175px;
-      margin: $uicore-sm $uicore-s;
+      margin: $iui-sm $iui-s;
       background: $uicore-white;
       position: relative;
 
       .dc-table-header {
-        padding: 10px $uicore-s;
+        padding: 10px $iui-s;
         border: 1px solid $uicore-gray-a;
         color: rgba($uicore-text-color, 0.85);
         display: flex;
@@ -94,7 +86,7 @@ $border-color: #eeeeee;
       .dc-table-content {
         flex: 1;
         border-width: 0px 1px 1px 1px;
-        border-color: #dce0e3 ;
+        border-color: #dce0e3;
         border-style: solid;
         overflow-y: auto;
       }
@@ -103,8 +95,7 @@ $border-color: #eeeeee;
 
   /* enter iModel button */
   .open-button {
-    margin: $uicore-l $uicore-m 0 auto !important;
-    @include uicore-buttons-blue;
+    margin: $iui-l $iui-m 0 auto !important;
   }
 
   /* toast displayed for 3d Models */
@@ -136,23 +127,23 @@ $border-color: #eeeeee;
       display: flex;
       justify-content: center;
       flex-direction: column;
-      padding: 0 $uicore-m;
+      padding: 0 $iui-m;
 
-      > span:first-child {
+      >span:first-child {
         font-size: 14px;
-        color: rgba($uicore-text-color,.85);
+        color: rgba($uicore-text-color, .85);
       }
 
-      > span:last-child {
+      >span:last-child {
         margin-top: 3px;
         font-size: 12px;
         color: $uicore-gray;
       }
     }
 
-    > a {
+    >a {
       margin-left: auto;
-      margin-right: $uicore-xs;
+      margin-right: $iui-xs;
       font-size: 12px;
       text-decoration: underline;
       color: $uicore-blue;
@@ -161,13 +152,13 @@ $border-color: #eeeeee;
 
     .close {
       font-size: 2em;
-      margin-left: $uicore-m;
-      margin-right: $uicore-sm;
-      color: rgba(0,0,0,.85);
+      margin-left: $iui-m;
+      margin-right: $iui-sm;
+      color: rgba(0, 0, 0, .85);
       cursor: pointer;
 
       &:hover {
-        color: rgba(0,0,0,1);
+        color: rgba(0, 0, 0, 1);
       }
     }
   }
@@ -194,9 +185,13 @@ $border-color: #eeeeee;
 }
 
 @-webkit-keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px
+  }
 }
 
 @keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px
+  }
 }

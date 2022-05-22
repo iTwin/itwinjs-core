@@ -1,0 +1,144 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../../safearea";
+@import "../../target";
+@import "../variables";
+
+.nz-zones-target-stagePanel {
+  @mixin background($direction) {
+    &:after {
+      background-image: linear-gradient($direction, transparent, 25%, rgba(#000, 0.6));
+    }
+
+    @include nz-internal-targeted {
+      &:after {
+        background-image: linear-gradient($direction, transparent, 25%, $nz-outline-color);
+      }
+    }
+  }
+
+  $size: 22px;
+  $gradient-size: 8px;
+  $hovered-gradient-size: 12px;
+
+  position: absolute;
+  pointer-events: all;
+  cursor: pointer;
+
+  @include uicore-z-index(zone-target);
+
+  &.nz-panel-bottom {
+    bottom: 0;
+
+    @include background(to bottom);
+
+    &:after {
+      bottom: 0;
+    }
+  }
+
+  &.nz-panel-left {
+    left: 0;
+
+    @include background(to left);
+
+    &:after {
+      width: $gradient-size;
+    }
+  }
+
+  &.nz-panel-right {
+    right: 0;
+
+    @include background(to right);
+
+    &:after {
+      right: 0;
+    }
+  }
+
+  &.nz-panel-top {
+    top: 0;
+
+    @include background(to top);
+
+    &:after {
+      top: 0;
+    }
+  }
+
+  &.nz-panel-bottom,
+  &.nz-panel-top {
+    height: $size;
+    width: 100%;
+
+    &:after {
+      height: $gradient-size;
+      width: 100%;
+    }
+
+    @include nz-internal-targeted {
+      &:after {
+        height: $hovered-gradient-size;
+      }
+    }
+  }
+
+  &.nz-panel-left,
+  &.nz-panel-right {
+    height: 100%;
+    width: $size;
+
+    &:after {
+      height: 100%;
+      width: $gradient-size;
+    }
+
+    @include nz-internal-targeted {
+      &:after {
+        width: $hovered-gradient-size;
+      }
+    }
+  }
+
+  &:after {
+    content: '';
+    transition: all 0.2s linear;
+    position: absolute;
+  }
+
+  &.nz-safe-area-left {
+    &.nz-panel-left {
+      &:after {
+        @include nz-safe-area-left;
+      }
+    }
+  }
+
+  &.nz-safe-area-top {
+    &.nz-panel-top {
+      &:after {
+        @include nz-safe-area-top;
+      }
+    }
+  }
+
+  &.nz-safe-area-right {
+    &.nz-panel-right {
+      &:after {
+        @include nz-safe-area-right;
+      }
+    }
+  }
+
+  &.nz-safe-area-bottom {
+    &.nz-panel-bottom {
+      &:after {
+        @include nz-safe-area-bottom;
+      }
+    }
+  }
+}

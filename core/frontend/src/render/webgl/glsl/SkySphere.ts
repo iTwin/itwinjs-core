@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
-import { Npc } from "@bentley/imodeljs-common";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Npc } from "@itwin/core-common";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
@@ -185,7 +185,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         if (plan.backgroundMapOn) {
           let clr = geom.skyColor;
           if (-1 === geom.typeAndExponents[0]) // 2-color gradient
-            clr = geom.zenithColor;
+            clr =  geom.nadirColor;
           if (plan.isGlobeMode3D) {
             modulateColor(clr, plan.globalViewTransition, scratch3Floats);
             uniform.setUniform3fv(scratch3Floats);

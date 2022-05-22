@@ -6,13 +6,13 @@
  * @module MarkupApp
  */
 
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove
 
-/** @beta */
+/** @public */
 export interface MarkupColor {
   fill: any;
   stroke: any;
@@ -234,12 +234,12 @@ extend(Matrix, {
  */
 export class Title extends MarkupElement {
   constructor(node: any) { super(nodeOrNew("title", node)); }
-  public scale() { return this; }
-  public size() { return this; }
-  public move() { return this; }
-  public dmove() { return this; }
-  public bbox() { return new Box(); }
-  public screenCTM() { return new Matrix(); }
+  public override scale() { return this; }
+  public override size() { return this; }
+  public override move() { return this; }
+  public override dmove() { return this; }
+  public override bbox() { return new Box(); }
+  public override screenCTM() { return new Matrix(); }
 
 }
 register(Title, "Title");

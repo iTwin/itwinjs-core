@@ -9,17 +9,19 @@
 
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
-import { MapLayerImageryProviderStatus, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Button, Icon } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { assert } from "@itwin/core-bentley";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
 import { MapUrlDialog } from "./MapUrlDialog";
-import { ModalDialogManager } from "@bentley/ui-framework";
 import "./MapLayerManager.scss";
+import { MapLayersUI } from "../../mapLayers";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 
 /** @internal */
 interface MapLayerDroppableProps {
@@ -38,11 +40,11 @@ interface MapLayerDroppableProps {
 export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const containsLayer = props.layersList && props.layersList.length > 0;
   const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
-  const [requireAuthTooltip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.RequireAuthTooltip"));
-  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
-  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
-  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.DropLayerLabel"));
+  const [toggleVisibility] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
+  const [requireAuthTooltip] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.RequireAuthTooltip"));
+  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
+  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
+  const [dropLayerLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
 
   const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
     assert(props.layersList !== undefined);
@@ -52,8 +54,9 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
       <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
         {...dragProvided.draggableProps}
         ref={dragProvided.innerRef} >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
-          <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
+        <Button size="small" styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
+          <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} />
+        </Button>
         <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
         <div className="map-manager-item-sub-layer-container">
           {activeLayer.subLayers && activeLayer.subLayers.length > 1 &&
@@ -62,18 +65,19 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
         </div>
         {activeLayer.provider?.status === MapLayerImageryProviderStatus.RequireAuth &&
           <Button
-            className="map-manager-item-requireAuth"
+            size="small"
+            styleType="borderless"
             onClick={() => {
-              const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(activeLayer.name, activeLayer.url, activeLayer.isOverlay);
+              const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(activeLayer.name, activeLayer.source, activeLayer.isOverlay);
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
                 const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
-
-                ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
-                  isOverlay={props.isOverlay}
-                  layerToEdit={layerSettings?.toJSON()}
-                  onOkResult={props.onItemEdited}
-                  mapTypesOptions={props.mapTypesOptions}
-                  askForCredentialsOnly={true} />);
+                if (layerSettings instanceof ImageMapLayerSettings) {
+                  ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
+                    isOverlay={props.isOverlay}
+                    layerRequiringCredentials={layerSettings?.toJSON()}
+                    onOkResult={props.onItemEdited}
+                    mapTypesOptions={props.mapTypesOptions}></MapUrlDialog>);
+                }
               }
 
             }}

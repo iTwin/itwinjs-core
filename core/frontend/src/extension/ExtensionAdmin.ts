@@ -6,159 +6,124 @@
  * @module Extensions
  */
 
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { Extension, ExtensionLoader, loggerCategory, PendingExtension } from "./Extension";
-import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
+import { Logger } from "@itwin/core-bentley";
+
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import type { ExtensionManifest, ExtensionProvider } from "./Extension";
+
+/** The Extensions loading system has the following goals:
+ *   1. Only fetch what is needed when it is required
+ *      1. Load a manifest file
+ *      2. Load the the main module when necessary (usually at an activation event)
+ *   2. Download the extension's files
+ *
+ * 3 ways to load an Extension into the system:
+ *
+ *  1. Load both the Extension Manifest and import the main module of the extension from a local file/package.
+ *  2. A minimum set of properties to get the manifest and javascript from a remote server.
+ *  3. A minimum set of properties to get the manifest and javascript from Bentley's Extension Service.
+ *
+ * An Extension must be added to ExtensionAdmin before it can be executed during activation events.
+ */
 
 /**
- * Describes configuration options to the ExtensionAdmin
- * @beta
+ * A "ready to use" Extension (contains a manifest object and an extension provider to help execute).
+ * Will be used as the type for in-memory extensions in the ExtensionAdmin
  */
-export interface ExtensionAdminProps {
-  /** Whether or not to configure Extension Service by default.
-   *
-   * Requires the `imodel-extension-service-api` OIDC scope.
-   *
-   * @beta
-   */
-  configureExtensionServiceLoader?: boolean;
+interface InstalledExtension {
+  /** An extension provider that has been added to ExtensionAdmin */
+  provider: ExtensionProvider;
+  /** The manifest (package.json) of the extension */
+  manifest: ExtensionManifest;
 }
 
-/** Handles the loading of Extensions, and maintains a list of registered, currently loaded, and currently being downloaded extensions.
+/** The Extension Admin controls the list of currently loaded Extensions.
  *
- * Extensions are loaded asynchronously, leading to them being loaded in a different order than they are requested. To wait for a
- * given extension, await the PendingExtension.promise
- *
- * @beta
+ * @alpha
  */
 export class ExtensionAdmin {
-  private _extensionAdminProps?: ExtensionAdminProps;
-  private _extensionLoaders: ExtensionLoader[] = [];
-  private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
-  private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
+  /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
+  private _extensions: Map<string, InstalledExtension> = new Map<string, InstalledExtension>();
+  private _hosts: string[];
 
-  /**
-   * Fired when an extension has finished loading and is ready to use.
+  /** Fired when an Extension has been added or removed.
+   * @internal
    */
-  public readonly onExtensionLoaded = new BeEvent<(extensionName: string) => void>();
+  public onStartup = async () => {
+    await this.activateExtensionEvents("onStartup");
+  };
 
-  public constructor(props?: ExtensionAdminProps) {
-    this._extensionAdminProps = props;
-  }
-
-  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup according to the provided [[ExtensionAdminProps]].
-   * @beta
-   */
-  public onInitialized() {
-    if (this._extensionAdminProps?.configureExtensionServiceLoader ?? true)
-      this.addExtensionLoaderFront(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"));
-  }
-
-  /** @internal */
-  public addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension) {
-    const extensionNameLC = extensionRootName.toLowerCase();
-    this._pendingExtensions.set(extensionNameLC, pendingExtension);
+  public constructor() {
+    this._hosts = [];
   }
 
   /**
-   * Adds an ExtensionLoader to the front of the list of extension loaders in use. Extension loaders will be invoked front to back.
-   * By default, the list consists of public Extension Service context, unless disabled via props.
-   * @param extensionLoader Extension loader to add
+   * Adds an extension.
+   * The manifest will be fetched and the extension will be activated on an activation event.
+   * @param provider
+   * @alpha
    */
-  public addExtensionLoaderFront(extensionLoader: ExtensionLoader) {
-    this._extensionLoaders.unshift(extensionLoader);
-  }
-
-  /**
-   * Adds an ExtensionLoader to the list of extension loaders in use.
-   * By default, the list consists of public Extension Service context, unless disabled via props.
-   * @param extensionLoader Extension loader to add
-   */
-  public addExtensionLoader(extensionLoader: ExtensionLoader) {
-    this._extensionLoaders.push(extensionLoader);
-  }
-
-  /**
-   * Loads an Extension using one of the available [[ExtensionLoader]]s that are registered on the [[ExtensionAdmin]].
-   * If the Extension has already been loaded, [[Extension.onExecute]] will be called instead.
-   * @param extensionRoot the root name of the Extension to be loaded from the web server.
-   * @param extensionVersion the version of the Extension to be loaded
-   * @param args arguments that will be passed to the [[Extension.onLoaded]] and [[Extension.onExecute]] methods. If the first argument is not the extension name, the extension name will be prepended to the args array.
-   * @returns Promise that resolves to an Extension as soon as the extension has started loading. Note that this does not mean the extension is ready to use, see [[ExtensionAdmin.onExtensionLoaded]] instead.
-   */
-  public async loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined> {
-    for (const extensionLoader of this._extensionLoaders) {
-      const extensionName = extensionLoader.getExtensionName(extensionRoot);
-      // make sure there's an args and make sure the first element is the extension name.
-      if (!args) {
-        args = [extensionName];
-      } else if ((args.length < 1) || (args[0] !== extensionName)) {
-        const newArray: string[] = [extensionName];
-        args = newArray.concat(args);
+  public async addExtension(provider: ExtensionProvider): Promise<void> {
+    if (provider.hostname) {
+      const hostName = provider.hostname;
+      if (this._hosts.length > 0 && this._hosts.indexOf(hostName) < 0) {
+        throw new Error(`Error loading extension: ${hostName} was not registered.`);
       }
-
-      const extensionNameLC = extensionName.toLowerCase();
-      const pendingExtension = this._pendingExtensions.get(extensionNameLC);
-      if (undefined !== pendingExtension) {
-        // it has been loaded (or at least we have started to load it) already. If it is registered, call its reload method. (Otherwise reload called when we're done the initial load)
-        const registeredExtension = this._registeredExtensions.get(extensionNameLC);
-        if (registeredExtension) {
-          // extension is already loaded.
-          try {
-            await registeredExtension.onExecute(args);
-          } catch (err) {
-            if (err instanceof Error) {
-              Logger.logError(loggerCategory, err.message);
-            }
-          }
-        }
-        return pendingExtension.promise;
-      }
-
-      const pending: PendingExtension | undefined = await extensionLoader.loadExtension(extensionName, extensionVersion, args);
-      if (pending === undefined)
-        continue; // try another loader
-      this.addPendingExtension(extensionNameLC, pending);
-      // Return the promise of the pending plugin.
-      return pending.promise;
     }
-    return undefined;
+    try {
+      const manifest = await provider.getManifest();
+      this._extensions.set(manifest.name, {
+        manifest,
+        provider,
+      });
+      // TODO - temporary fix to execute the missed startup event
+      if (manifest.activationEvents.includes("onStartup"))
+        provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    } catch (e) {
+      throw new Error(`Failed to get manifest from extension: ${e}`);
+    }
   }
 
   /**
-   * Registers an Extension with the ExtensionAdmin. This method is called by the Extension when it is first loaded.
-   * This method verifies that the required versions of the iModel.js shared libraries are loaded. If those
-   * requirements are met, then the onLoad and onExecute methods of the Extension will be called (@see [[Extension]]).
-   * If not, no further action is taken and the Extension is not active.
-   * @param extension a newly instantiated subclass of Extension.
+   * Adds a list of extensions
+   * @param providers
+   * @alpha
    */
-  public register(extension: Extension) {
-    const extensionNameLC = extension.name.toLowerCase();
-    this._registeredExtensions.set(extensionNameLC, extension);
-    // log successful load after extension is registered.
-    Logger.logInfo(loggerCategory, `${extension.name} registered`);
-    // retrieve the args we saved in the pendingExtension.
-    let args: string[] | undefined;
-    const pendingExtension = this._pendingExtensions.get(extensionNameLC);
-    if (undefined === pendingExtension)
-      throw new Error("Pending Extension not found.");
+  public async addExtensions(providers: ExtensionProvider[]): Promise<void[]> {
+    return Promise.all(
+      providers.map(async (provider) => this.addExtension(provider))
+    );
+  }
 
-    pendingExtension.resolve!(extension);
-    extension.loader = pendingExtension.loader;
-    args = pendingExtension.args;
+  /**
+   * Register a url (hostname) for extension hosting (i.e. https://localhost:3000, https://www.yourdomain.com, etc.)
+   * @param hostUrl
+   */
+  public registerHost(hostUrl: string) {
+    const url = new URL(hostUrl).hostname.replace("www", "");
+    if (this._hosts.indexOf(url) < 0) {
+      this._hosts.push(url);
+    }
+  }
 
-    if (!args)
-      args = [extension.name];
-
-    extension.onLoad(args)
-      .then(async () => {
-        await extension.onExecute(args!);
-        this.onExtensionLoaded.raiseEvent(extension.name);
-      })
-      .catch((err) => {
-        if (err instanceof Error) {
-          Logger.logError(loggerCategory, err.message);
+  /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
+  private async activateExtensionEvents(event: string) {
+    for (const extension of this._extensions.values()) {
+      if (!extension.manifest.activationEvents) continue;
+      for (const activationEvent of extension.manifest.activationEvents) {
+        if (activationEvent === event) {
+          this._execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises
         }
-      });
+      }
+    }
+  }
+
+  /** Executes the extension. Catches and logs any errors (so that an extension will not crash the main application). */
+  private async _execute(extension: InstalledExtension) {
+    try {
+      await extension.provider.execute();
+    } catch (e) {
+      Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${e}`);
+    }
   }
 }

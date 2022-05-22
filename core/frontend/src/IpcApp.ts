@@ -6,40 +6,24 @@
  * @module NativeApp
  */
 
+import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction,
-} from "@bentley/imodeljs-common";
+  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
+  iTwinChannel, RemoveFunction,
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
- * type check for an function that returns a Promise
- * @beta
- */
-export type AsyncFunction = (...args: any) => Promise<any>;
-/**
- * a type that is the list of the asynchronous functions in an interface
- * @beta
- */
-export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
-/**
- * get the type of the promised value of an asynchronous function
- * @beta
- */
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
-
-/**
  * Options for [[IpcApp.startup]]
- * @beta
+ * @public
  */
 export interface IpcAppOptions {
-  /** The platform-specific implementation of the [IpcSocketFrontend]($common) interface */
-  ipc: IpcSocketFrontend;
+  iModelApp?: IModelAppOptions;
 }
 
 /**
  * The frontend of apps with a dedicated backend that can use [Ipc]($docs/learning/IpcInterface.md).
- * @beta
+ * @public
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
@@ -109,8 +93,11 @@ export class IpcApp {
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error)
-      throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+    if (undefined !== retVal.error) {
+      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
+      err.stack = retVal.error.stack;
+      throw err;
+    }
     return retVal.result;
   }
 
@@ -118,11 +105,15 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
-  public static async startup(opts?: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
-    this._ipc = opts?.ipcApp?.ipc;
+  /** start an IpcApp.
+   * @note this should not be called directly. It is called by NativeApp.startup */
+  public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
+    this._ipc = ipc;
+    IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
+  /** @internal */
   public static async shutdown() {
     this._ipc = undefined;
     await IModelApp.shutdown();
@@ -140,7 +131,8 @@ export class IpcApp {
  * to ensure all method names and signatures are correct. Your methods cannot have a return value.
  *
  * Then, call `MyNotificationHandler.register` at startup to connect your class to your channel.
- * @beta
+ * @public
+ * @extensions
  */
 export abstract class NotificationHandler {
   /** All subclasses must implement this method to specify their response channel name. */
@@ -165,4 +157,10 @@ export abstract class NotificationHandler {
   public static register(): RemoveFunction {
     return (new (this as any)() as NotificationHandler).registerImpl(); // create an instance of subclass. "as any" is necessary because base class is abstract
   }
+}
+
+/** IpcApp notifications from backend */
+class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
+  public get channelName() { return IpcAppChannel.AppNotify; }
+  public notifyApp() { }
 }

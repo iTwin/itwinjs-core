@@ -3,19 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import * as sinon from "sinon";
+import { assert, Guid, Id64 } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
-  NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
-} from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes, SelectClassInfo,
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
+import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { findFieldByLabel } from "../Utils";
-
-import sinon = require("sinon");
-
-/* eslint-disable deprecation/deprecation */
+import { getFieldByLabel } from "../Utils";
 
 describe("Content", () => {
 
@@ -41,40 +39,63 @@ describe("Content", () => {
     await terminate();
   });
 
-  describe("Distinct Values", () => {
+  describe("Input Keys", () => {
 
-    it("[deprecated] gets distinct content values", async () => {
+    it("associates content items with given input keys", async () => {
       const ruleset: Ruleset = {
-        id: "getRelatedDistinctValues",
+        id: Guid.createValue(),
         rules: [{
           ruleType: RuleTypes.Content,
           specifications: [{
             specType: ContentSpecificationTypes.ContentRelatedInstances,
-            relatedClasses: {
-              schemaName: "BisCore",
-              classNames: [
-                "SubCategory",
-                "LinkPartition",
-                "DefinitionPartition",
-                "PhysicalPartition",
-              ],
-            },
+            relationshipPaths: [{
+              relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+              direction: RelationshipDirection.Forward,
+              count: "*",
+            }],
           }],
         }],
       };
-      const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
-      const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
-      const keys = new KeySet([key1, key2]);
-      const descriptor = await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "Grid", keys, undefined);
-      expect(descriptor).to.not.be.undefined;
-      const field = descriptor!.getFieldByName("pc_bis_Element_Model");
-      expect(field).to.not.be.undefined;
-      const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetOrId: ruleset }, descriptor!, keys, field!.name);
-      expect(distinctValues).to.be.deep.equal([
-        "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
-        "DgnV8Bridge",
-      ]);
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          contentFlags: ContentFlags.IncludeInputKeys,
+        },
+
+        keys: new KeySet([{
+          className: "BisCore:Element",
+          id: "0x1",
+        }, {
+          className: "BisCore:Element",
+          id: "0x12",
+        }]),
+      });
+      expect(content?.contentSet.length).to.eq(9);
+      expect(content!.contentSet.map((item) => ({ itemId: item.primaryKeys[0].id, inputIds: item.inputKeys!.map((ik) => ik.id) }))).to.containSubset([{
+        itemId: "0xe", inputIds: ["0x1"],
+      }, {
+        itemId: "0x10", inputIds: ["0x1"],
+      }, {
+        itemId: "0x12", inputIds: ["0x1"],
+      }, {
+        itemId: "0x13", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x14", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x15", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x16", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x1b", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x1c", inputIds: ["0x1", "0x12"],
+      }]);
     });
+
+  });
+
+  describe("Distinct Values", () => {
 
     async function validatePagedDistinctValuesResponse(ruleset: Ruleset, keys: KeySet, descriptor: Descriptor, fieldDescriptor: FieldDescriptor, expectedResult: DisplayValueGroup[]) {
       // first request all pages and confirm the result is valid
@@ -104,16 +125,22 @@ describe("Content", () => {
           specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
 
-      let field = findFieldByLabel(descriptor.fields, "User Label")!;
+      let field = getFieldByLabel(descriptor.fields, "User Label");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "TestClass",
         groupedRawValues: ["TestClass"],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "True-False")!;
+      field = getFieldByLabel(descriptor.fields, "True-False");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "False",
         groupedRawValues: [false],
@@ -122,7 +149,7 @@ describe("Content", () => {
         groupedRawValues: [true],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "<0")!;
+      field = getFieldByLabel(descriptor.fields, "<0");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "0.00",
         groupedRawValues: [1e-7, 0.0007575],
@@ -131,7 +158,7 @@ describe("Content", () => {
         groupedRawValues: [0.123456789],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "<100")!;
+      field = getFieldByLabel(descriptor.fields, "<100");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "100.01",
         groupedRawValues: [100.01],
@@ -168,9 +195,15 @@ describe("Content", () => {
           }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
-      const field = findFieldByLabel(descriptor.fields, "Model Label")!;
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "Model Label");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2",
         groupedRawValues: ["Properties_60InstancesWithUrl2"],
@@ -185,9 +218,15 @@ describe("Content", () => {
           specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
-      const field = findFieldByLabel(descriptor.fields, "$óúrçè Fílê Ñâmé")!;
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "Ñámê");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -209,8 +248,8 @@ describe("Content", () => {
         className: "Generic:PhysicalObject",
         id: Id64.invalid,
       }]);
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", consolidatedKeys, undefined))!;
-      const field = findFieldByLabel(descriptor.fields, "User Label")!;
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "User Label");
 
       await validatePagedDistinctValuesResponse(ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "",
@@ -350,11 +389,41 @@ describe("Content", () => {
         descriptor: {},
         keys: new KeySet(),
       });
-      const field = findFieldByLabel(content!.descriptor.fields, "Test")!;
+      const field = getFieldByLabel(content!.descriptor.fields, "Test");
 
       expect(content?.contentSet.length).to.eq(1);
       expect(content?.contentSet[0].values[field.name]).to.eq("Value");
       expect(content?.contentSet[0].displayValues[field.name]).to.eq("Value");
+    });
+
+  });
+
+  describe("Navigation Properties", () => {
+
+    it("creates navigation fields", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+          }],
+        }],
+      };
+
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "Model");
+
+      assert(field.isPropertiesField());
+
+      expect(field.properties.length).to.eq(1);
+      expect(field.properties[0].property.navigationPropertyInfo).is.not.null;
+      expect(field.properties[0].property.navigationPropertyInfo?.isForwardRelationship).to.eq(false);
+      expect(field.properties[0].property.navigationPropertyInfo?.classInfo.id).to.eq("0x40");
+
     });
 
   });
@@ -412,6 +481,216 @@ describe("Content", () => {
 
   });
 
+  describe("Content sources", () => {
+
+    it("retrieves content sources for given class", async () => {
+      const expectedResult: SelectClassInfo[] = [
+        {
+          selectClassInfo: {
+            id: "0x1a0",
+            name: "PCJ_TestSchema:TestClass",
+            label: "TestClass",
+          },
+          isSelectPolymorphic: true,
+          relatedPropertyPaths: [
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x171",
+                  name: "DgnCustomItemTypes_MyProp:areaElementAspect",
+                  label: "area",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
+                },
+                targetClassInfo: {
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x43",
+                  name: "BisCore:ModelModelsElement",
+                  label: "ModelModelsElement",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
+                },
+                targetClassInfo: {
+                  id: "0xa9",
+                  name: "BisCore:RepositoryLink",
+                  label: "Repository Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+          ],
+          navigationPropertyClasses: [
+            {
+              sourceClassInfo: {
+                id: "0x3f",
+                name: "BisCore:Element",
+                label: "Element",
+              },
+              targetClassInfo: {
+                id: "0x41",
+                name: "BisCore:Model",
+                label: "Model",
+              },
+              isPolymorphicTargetClass: true,
+              relationshipInfo: {
+                id: "0x40",
+                name: "BisCore:ModelContainsElements",
+                label: "ModelContainsElements",
+              },
+              isPolymorphicRelationship: true,
+              isForwardRelationship: false,
+            },
+            {
+              sourceClassInfo: {
+                id: "0x8b",
+                name: "BisCore:GeometricElement3d",
+                label: "3D Geometric Element",
+              },
+              targetClassInfo: {
+                id: "0x8d",
+                name: "BisCore:SpatialCategory",
+                label: "Spatial Category",
+              },
+              isPolymorphicTargetClass: true,
+              relationshipInfo: {
+                id: "0x8c",
+                name: "BisCore:GeometricElement3dIsInCategory",
+                label: "GeometricElement3dIsInCategory",
+              },
+              isPolymorphicRelationship: true,
+              isForwardRelationship: true,
+            },
+          ],
+        },
+      ];
+
+      let sources = await Presentation.presentation.getContentSources({ imodel, classes: ["PCJ_TestSchema.TestClass"] });
+      expect(sources).to.deep.eq(expectedResult);
+
+      sources = await Presentation.presentation.getContentSources({ imodel, classes: ["PCJ_TestSchema:TestClass"] });
+      expect(sources).to.deep.eq(expectedResult);
+
+      sources = await Presentation.presentation.getContentSources({ imodel, classes: ["PCJTest.TestClass"] });
+      expect(sources).to.deep.eq(expectedResult);
+
+      sources = await Presentation.presentation.getContentSources({ imodel, classes: ["PCJTest:TestClass"] });
+      expect(sources).to.deep.eq(expectedResult);
+    });
+
+  });
+
+  describe("Content instance keys", () => {
+
+    it("retrieves content instance keys for given input", async () => {
+      const ruleset: Ruleset = {
+        id: "model elements",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentRelatedInstances,
+            relationshipPaths: [{
+              relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+              direction: RelationshipDirection.Forward,
+            }],
+          }],
+        }],
+      };
+      const modelKeys = new KeySet([{ className: "BisCore:DictionaryModel", id: "0x10" }]);
+      const result = await Presentation.presentation.getContentInstanceKeys({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: modelKeys,
+      });
+      expect(result.total).to.eq(7);
+
+      const resultKeys = [];
+      for await (const key of result.items())
+        resultKeys.push(key);
+      expect(resultKeys).to.deep.eq([{
+        className: "BisCore:LineStyle",
+        id: "0x1d",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1e",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1f",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x20",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x21",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x22",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x23",
+      }]);
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
@@ -448,7 +727,7 @@ describe("Content", () => {
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
       const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
       const keys = new KeySet([key1, key2]);
-      await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "Grid", keys, undefined))
+      await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "Grid" }))
         .to.be.eventually.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
     });
 
@@ -476,21 +755,15 @@ function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
   });
 }
 
-interface ECClassInfo {
-  id: Id64String;
-  baseClassIds: Id64String[];
-  derivedClassIds: Id64String[];
-}
-
-function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassInfo) {
+function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassHierarchyInfo) {
   const clone = field.clone();
   clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, filterClassInfo);
   return clone;
 }
-function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
-    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id))) {
+    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id))) {
       const clone = cloneFilteredNestedContentField(f, classInfo);
       if (clone.nestedFields.length > 0)
         filteredFields.push(clone);
@@ -500,14 +773,14 @@ function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInf
   });
   return filteredFields;
 }
-function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
       // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
       // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
       // that we need to clone the field and pick only property fields and nested fields that apply.
-      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id));
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id));
       if (appliesForGivenClass) {
         const clone = cloneFilteredNestedContentField(f, classInfo);
         if (clone.nestedFields.length > 0)
@@ -518,8 +791,8 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
       const appliesForGivenClass = f.properties.some((p) => {
         const propertyClassId = p.property.classInfo.id;
         return propertyClassId === classInfo.id
-          || classInfo.baseClassIds.includes(propertyClassId)
-          || classInfo.derivedClassIds.includes(propertyClassId);
+          || classInfo.baseClasses.some((info) => info.id === propertyClassId)
+          || classInfo.derivedClasses.some((info) => info.id === propertyClassId);
       });
       if (appliesForGivenClass)
         filteredFields.push(f);
@@ -528,56 +801,4 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
     }
   });
   return filteredFields;
-}
-
-class ECClassHierarchy {
-  private constructor(private _imodel: IModelConnection, private _baseClasses: Map<Id64String, Id64String[]>, private _derivedClasses: Map<Id64String, Id64String[]>) {
-  }
-  public static async create(imodel: IModelConnection) {
-    const baseClassHierarchy = new Map();
-    const derivedClassHierarchy = new Map();
-
-    const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
-    for await (const row of imodel.query(query)) {
-      const { classId, baseClassId } = row;
-
-      const baseClasses = baseClassHierarchy.get(classId);
-      if (baseClasses)
-        baseClasses.push(baseClassId);
-      else
-        baseClassHierarchy.set(classId, [baseClassId]);
-
-      const derivedClasses = derivedClassHierarchy.get(baseClassId);
-      if (derivedClasses)
-        derivedClasses.push(classId);
-      else
-        derivedClassHierarchy.set(baseClassId, [classId]);
-    }
-
-    return new ECClassHierarchy(imodel, baseClassHierarchy, derivedClassHierarchy);
-  }
-  private getAllBaseClassIds(classId: Id64String) {
-    const baseClassIds = this._baseClasses.get(classId) ?? [];
-    return baseClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllBaseClassIds(id));
-      return arr;
-    }, []);
-  }
-  private getAllDerivedClassIds(baseClassId: Id64String) {
-    const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
-    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllDerivedClassIds(id));
-      return arr;
-    }, []);
-  }
-  public async getClassInfo(schemaName: string, className: string) {
-    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.queryRows(classQuery, [className, schemaName]);
-    const { id } = result.rows[0];
-    return {
-      id,
-      baseClassIds: this.getAllBaseClassIds(id),
-      derivedClassIds: this.getAllDerivedClassIds(id),
-    };
-  }
 }

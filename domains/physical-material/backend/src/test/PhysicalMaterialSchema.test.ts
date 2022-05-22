@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult } from "@bentley/bentleyjs-core";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModel } from "@bentley/imodeljs-common";
+import { DbResult } from "@itwin/core-bentley";
+import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
+import { IModel } from "@itwin/core-common";
 import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend";
 
 describe("PhysicalMaterialSchema", () => {
@@ -33,7 +33,7 @@ describe("PhysicalMaterialSchema", () => {
       IModelJsFs.removeSync(iModelFileName);
     }
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "PhysicalMaterialSchema" }, createClassViews: true });
-    await iModelDb.importSchemas(new BackendRequestContext(), [PhysicalMaterialSchema.schemaFilePath]);
+    await iModelDb.importSchemas([PhysicalMaterialSchema.schemaFilePath]);
     for (let i = 1; i <= 3; i++) {
       Aggregate.create(iModelDb, IModel.dictionaryId, `${Aggregate.className}${i}`).insert();
       Aluminum.create(iModelDb, IModel.dictionaryId, `${Aluminum.className}${i}`).insert();

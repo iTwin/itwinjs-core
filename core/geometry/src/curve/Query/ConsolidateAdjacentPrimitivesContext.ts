@@ -18,6 +18,7 @@ import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { ParityRegion } from "../ParityRegion";
+import { UnionRegion } from "../UnionRegion";
 
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
@@ -98,9 +99,13 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
     g.children.length = numAccept;
   }
 
-  public handlePath(g: Path): any { return this.handleCurveChain(g); }
-  public handleLoop(g: Loop): any { return this.handleCurveChain(g); }
-  public handleParityRegion(g: ParityRegion): any {
+  public override handlePath(g: Path): any { return this.handleCurveChain(g); }
+  public override handleLoop(g: Loop): any { return this.handleCurveChain(g); }
+  public override handleParityRegion(g: ParityRegion): any {
+    for (const child of g.children)
+      child.dispatchToGeometryHandler(this);
+  }
+  public override handleUnionRegion(g: UnionRegion): any {
     for (const child of g.children)
       child.dispatchToGeometryHandler(this);
   }

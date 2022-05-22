@@ -6,8 +6,8 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";
 
@@ -18,7 +18,7 @@ import { parseArgs } from "../tools/parseArgs";
  * @beta
  */
 export class LensDistortionEffect extends AddEffectTool {
-  public static toolId = "LensDistortionEffect";
+  public static override toolId = "LensDistortionEffect";
 
   protected get effectName() { return "lensdistortion"; }
   protected get textureCoordFromPosition() { return true; }
@@ -81,7 +81,7 @@ export class LensDistortionEffect extends AddEffectTool {
       name: "height",
       type: UniformType.Float,
       bind: (uniform, context) => {
-        assert(context.viewport.view.isCameraEnabled());
+        assert(context.viewport.view.is3d() && context.viewport.view.isCameraOn);
         const fov = context.viewport.view.camera.lens.radians;
         const height = Math.tan(fov / 2) / context.viewport.viewRect.aspect;
         uniform.setUniform1f(height);
@@ -94,21 +94,21 @@ export class LensDistortionEffect extends AddEffectTool {
  * @beta
  */
 export class LensDistortionConfig extends Tool {
-  public static toolId = "LensDistortionConfig";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "LensDistortionConfig";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 2; }
 
   public static strength = 0.5;
   public static cylindricalRatio = 0.5;
 
-  public run(strength?: number, ratio?: number): boolean {
+  public override async run(strength?: number, ratio?: number): Promise<boolean> {
     LensDistortionConfig.strength = strength ?? 0.5;
     LensDistortionConfig.cylindricalRatio = ratio ?? 0.5;
     refreshViewportsForEffect("fdt lensdistortion");
     return true;
   }
 
-  public parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getFloat("s"), args.getFloat("r"));
   }

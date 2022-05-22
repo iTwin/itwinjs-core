@@ -6,17 +6,19 @@
  * @module Geometry
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
- * @beta
+ * @public
+ * @extensions
  */
-export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps ];
+export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 
 /** JSON representation of an [[ImageGraphic]].
  * @see [[GeometryStreamEntryProps]].
- * @beta
+ * @public
+ * @extensions
  */
 export interface ImageGraphicProps {
   /** The 4 corners of defining the quadrilateral on which the image is displayed. */
@@ -36,7 +38,7 @@ export interface ImageGraphicProps {
  *  0    1
  * `
  * The image can be flipped and/or rotated by specifying the points in a different order.
- * @beta
+ * @public
  */
 export class ImageGraphicCorners {
   public readonly 0: Point3d;
@@ -64,13 +66,13 @@ export class ImageGraphicCorners {
   }
 
   public toJSON(): ImageGraphicCornersProps {
-    return [ this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON() ];
+    return [this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON()];
   }
 }
 
 /** A geometric primitive that displays an image mapped to the corners of a quadrilateral, with an optional border.
  * The image is always displayed regardless of [[RenderMode]] or [[ViewFlags]], and is displayed without lighting.
- * @beta
+ * @public
  */
 export class ImageGraphic {
   /** The 4 corners of defining the quadrilateral on which the image is displayed. */

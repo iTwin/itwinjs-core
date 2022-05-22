@@ -2,20 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
 
 $example-cube-width: 256px;
+
 .example-cube-container {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
-  background: black;
+
   .example-cube {
     perspective: 600px;
     width: $example-cube-width;
     height: $example-cube-width;
+
     .face {
       display: flex;
       width: 100%;
@@ -23,22 +25,28 @@ $example-cube-width: 256px;
       color: $uicore-text-color;
       box-shadow: 0px 0px .0px 1px #000;
     }
-    .top {
+
+    .cube-top {
       background: blue;
     }
-    .front{
+
+    .cube-front {
       background: red;
     }
-    .right {
+
+    .cube-right {
       background: limegreen;
     }
-    .left {
+
+    .cube-left {
       background: darkviolet;
     }
-    .back {
+
+    .cube-back {
       background: yellow;
     }
-    .bottom {
+
+    .cube-bottom {
       background: orange;
     }
   }

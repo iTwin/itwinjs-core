@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { SkyBoxQuadsGeometry } from "../CachedGeometry";
 import { Matrix3 } from "../Matrix";

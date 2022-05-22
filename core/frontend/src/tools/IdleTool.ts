@@ -31,10 +31,10 @@ import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./
  * @public
  */
 export class IdleTool extends InteractiveTool {
-  public static toolId = "Idle";
-  public static hidden = true;
+  public static override toolId = "Idle";
+  public static override hidden = true;
 
-  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport)
       return EventHandled.No;
 
@@ -79,18 +79,18 @@ export class IdleTool extends InteractiveTool {
       return EventHandled.No;
     }
     const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, true) as ViewManip | undefined;
-    if (viewTool && viewTool.run())
+    if (viewTool && await viewTool.run())
       return viewTool.startHandleDrag(ev);
     return EventHandled.Yes;
   }
 
-  public async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport)
       return EventHandled.No;
 
     if (ev.isDoubleClick) {
       const viewTool = new FitViewTool(ev.viewport, true);
-      return viewTool.run() ? EventHandled.Yes : EventHandled.No;
+      return await viewTool.run() ? EventHandled.Yes : EventHandled.No;
     }
 
     if (ev.isControlKey || ev.isShiftKey)
@@ -100,30 +100,30 @@ export class IdleTool extends InteractiveTool {
     return EventHandled.Yes;
   }
 
-  public async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
+  public override async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
 
-  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const tool = new DefaultViewTouchTool(startEv, ev);
-    return tool.run() ? EventHandled.Yes : EventHandled.No;
+    return await tool.run() ? EventHandled.Yes : EventHandled.No;
   }
 
-  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
+  public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
     if (ev.isSingleTap) {
       // Send data down/up for single finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data);
       return EventHandled.Yes;
     } else if (ev.isTwoFingerTap) {
       // Send reset down/up for two finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset);
       return EventHandled.Yes;
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.
       const tool = new FitViewTool(ev.viewport!, true);
-      return tool.run() ? EventHandled.Yes : EventHandled.No;
+      return await tool.run() ? EventHandled.Yes : EventHandled.No;
     }
     return EventHandled.No;
   }
 
-  public exitTool(): void { }
-  public run() { return true; }
+  public async exitTool() { }
+  public override async run() { return true; }
 }

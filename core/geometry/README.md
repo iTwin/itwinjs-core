@@ -1,10 +1,10 @@
-# @bentley/geometry-core
+# @itwin/core-geometry
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/geometry-core__ package contains classes for working with geometric types including:
+The __@itwin/core-geometry__ package contains classes for working with geometric types including:
 
 * Points
 * Vectors

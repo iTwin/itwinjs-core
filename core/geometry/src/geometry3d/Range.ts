@@ -129,7 +129,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range3d, tol?: number): boolean {
+  public isAlmostEqual(other: Readonly<Range3d>, tol?: number): boolean {
     return (this.low.isAlmostEqual(other.low, tol) && this.high.isAlmostEqual(other.high, tol))
       || (this.isNull && other.isNull);
   }
@@ -441,7 +441,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d { return this.low.interpolate(fraction, this.high, result); }
 
   /**  Return a point given by fractional positions on the XYZ axes. This is done with no check for isNull !!! */
-  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d {
+  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number = 0, result?: Point3d): Point3d {
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 
@@ -546,6 +546,29 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (index === 4)
       return [0, 2, 3, 1];
     return [4, 5, 7, 6];
+  }
+  /**
+   * Return a rectangle that is the cross section as viewed from above (z direction) and at zFraction
+   * @param zFraction plane altitude within the 0..1 z fraction range
+   * @param upwardNormal true for CCW as viewed from above
+   * @param addClosure true to add closure edge back to the start
+   * @returns
+   */
+  public rectangleXY(zFraction: number = 0.0, upwardNormal: boolean = true, addClosure: boolean = true): Point3d[] | undefined{
+    if (this.isNull)
+      return undefined;
+    const points: Point3d[] = [
+      this.fractionToPoint(0, 0, zFraction),
+      this.fractionToPoint(1, 0, zFraction),
+      this.fractionToPoint(1, 1, zFraction),
+      this.fractionToPoint(0, 1, zFraction),
+    ];
+    if (addClosure)
+      points.push(points[0].clone());
+
+    if (!upwardNormal)
+      points.reverse();
+    return points;
   }
 
   /** Return the largest absolute value among any coordinates in the box corners. */
@@ -839,7 +862,7 @@ export class Range1d extends RangeBase {
     this.setDirect(low, high);
   }
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range1d): boolean {
+  public isAlmostEqual(other: Readonly<Range1d>): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
       || (this.isNull && other.isNull);
   }
@@ -929,6 +952,21 @@ export class Range1d extends RangeBase {
     return result;
   }
 
+  /**
+   * Set this range to (min(x0,x1), max(x0,x1))
+   * @param x0 first value
+   * @param x1 second value
+   */
+  public setXXUnordered(x0: number, x1: number) {
+    if (x0 <= x1) {
+      this.low = x0; this.high = x1;
+    } else {
+      this.low = x1; this.high = x0;
+    }
+  }
+  public get isExact01(): boolean {
+    return this.low === 0.0 && this.high === 1.0;
+}
   /** Create a box from two values. Values are reversed if needed
    * @param xA first value
    * @param xB second value

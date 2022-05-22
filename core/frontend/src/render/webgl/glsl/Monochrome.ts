@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { MonochromeMode } from "@bentley/imodeljs-common";
+import { MonochromeMode } from "@itwin/core-common";
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 
 const applyUnlitMonochromeColor = `

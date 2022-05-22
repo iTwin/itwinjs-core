@@ -6,9 +6,11 @@
  * @module Core
  */
 
-import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Element, IModelDb } from "@bentley/imodeljs-backend";
-import { DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@bentley/presentation-common";
+import { parse as parseVersion } from "semver";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Element, IModelDb } from "@itwin/core-backend";
+import { InstanceKey } from "@itwin/presentation-common";
+import path from "path";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -24,18 +26,16 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
   return key;
 }
 
-/** @alpha */
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-  listener: (diagnostics: DiagnosticsScopeLogs) => void;
+/** @internal */
+export function normalizeVersion(version?: string) {
+  if (version) {
+    const parsedVersion = parseVersion(version, true);
+    if (parsedVersion)
+      return `${parsedVersion.major}.${parsedVersion.minor}.${parsedVersion.patch}`;
+  }
+  return "0.0.0";
 }
 
-/**
- * A type that injects [[ClientRequestContext]] attribute into another given type. *
- * @beta
- */
-export type WithClientRequestContext<T> = T & {
-  /** Context of a client request */
-  requestContext: ClientRequestContext;
-  /** @alpha */
-  diagnostics?: BackendDiagnosticsOptions;
-};
+/** @internal */
+// istanbul ignore next
+export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");

@@ -6,9 +6,9 @@
  * @module HyperModeling
  */
 
-import { XAndY } from "@bentley/geometry-core";
-import { AbstractToolbarProps } from "@bentley/ui-abstract";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { XAndY } from "@itwin/core-geometry";
+import type { AbstractToolbarProps } from "@itwin/appui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
 
 /** @internal */
 export interface PopupToolbarProvider {
@@ -62,8 +62,9 @@ export class PopupToolbarManager {
     if (!this._current)
       return;
 
+    const delay = 1000;
     if (this._current.overToolbarHotspot || !IModelApp.toolAdmin.cursorView)
-      setTimeout(() => this.closeAfterTimeout(), 500); // Cursor not in view or over hotspot, check again
+      setTimeout(() => this.closeAfterTimeout(), delay); // Cursor not in view or over hotspot, check again
     else
       this.close();
   }

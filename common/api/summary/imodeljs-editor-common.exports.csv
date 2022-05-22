@@ -1,7 +1,0 @@
-sep=;
-Release Tag;API Item
-alpha;BasicManipulationCommandIpc 
-alpha;EditCommandIpc
-alpha;editorBuiltInCmdIds:
-internal;editorChannel = "editor"
-alpha;EditorIpc

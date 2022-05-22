@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -20,9 +21,9 @@ const cmdArg = "test command arg";
 let cmdStr: string;
 
 class TestEditTool1 extends PrimitiveTool {
-  public static toolId = "TestEditTool1";
-  public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
-  public onRestartTool() { this.exitTool(); }
+  public static override toolId = "TestEditTool1";
+  public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
+  public async onRestartTool() { return this.exitTool(); }
   public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
     return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
   }
@@ -33,24 +34,25 @@ class TestEditTool1 extends PrimitiveTool {
   }
 }
 
-if (ProcessDetector.isElectronAppFrontend) {
+if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {
-      await IModelApp.startup();
-      const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
-      IModelApp.tools.register(TestEditTool1, testNamespace);
+      await TestUtility.startFrontend(undefined, undefined, true);
+      const namespace = "TestApp";
+      await IModelApp.localization.registerNamespace(namespace);
+      IModelApp.tools.register(TestEditTool1, namespace);
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
 
     after(async () => {
       await iModel.close();
-      await IModelApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     it("should start edit commands", async () => {
-      expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
+      expect(await IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);
       const str1 = "abc";

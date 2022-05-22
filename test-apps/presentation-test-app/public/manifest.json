@@ -1,6 +1,6 @@
 {
   "short_name": "PresentationTestApp",
-  "name": "iModel.js Presentation Test App",
+  "name": "iTwin.js Presentation Test App",
   "icons": [
     {
       "src": "favicon.ico",

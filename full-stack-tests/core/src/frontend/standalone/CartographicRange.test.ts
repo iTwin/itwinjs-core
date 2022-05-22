@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Range2d } from "@bentley/geometry-core";
-import { CartographicRange } from "@bentley/imodeljs-common";
-import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { CartographicRange } from "@itwin/core-common";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import { Range2d } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
 
 describe("Cartographic range tests", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -19,7 +20,7 @@ describe("Cartographic range tests", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("Cartographic range should convert properly", () => {

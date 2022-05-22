@@ -8,13 +8,13 @@ The goal of this document is to provide a high-level overview of how you can get
 ## Asking Questions
 
 Have a question?
-Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/imodeljs/imodeljs/discussions).
+Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/iTwin/itwinjs-core/discussions).
 
 The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
-Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/imodeljs/imodeljs/labels/discussion) to contribute via GitHub issues using the `discussion` label.
+Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/iTwin/itwinjs-core/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
 ## Reporting Issues
 
@@ -25,7 +25,7 @@ Here's how you can make reporting your issue as effective as possible.
 
 ### Look For an Existing Issue
 
-Before you create a new issue, please do a search in [open issues](https://github.com/imodeljs/imodeljs/issues) to see if the issue or feature request has already been filed.
+Before you create a new issue, please do a search in [open issues](https://github.com/iTwin/itwinjs-core/issues) to see if the issue or feature request has already been filed.
 
 If you find that your issue already exists, please add relevant comments and your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments).
 Use a reaction in place of a "+1" comment:
@@ -54,7 +54,7 @@ Please include the following with each issue:
 - Images that help explain the issue
 - Any relevant error messages, logs, or other details
 - Impact of the issue
-- Use the [`bug`](https://github.com/imodeljs/imodeljs/labels/bug) or [`enhancement`](https://github.com/imodeljs/imodeljs/labels/enhancement) label to identify the type of issue you are filing
+- Use the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) or [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label to identify the type of issue you are filing
 
 Don't feel bad if the developers can't reproduce the issue right away.
 They will simply ask for more information!
@@ -70,11 +70,8 @@ There are just a few guidelines you need to follow.
 
 ### Contributor License Agreement (CLA)
 
-You must sign a [Contribution License Agreement with Bentley](Bentley-CLA.pdf) before your contributions will be accepted.
-This a one-time requirement for Bentley projects in GitHub.
+A [Contribution License Agreement with Bentley](https://gist.github.com/imodeljs-admin/9a071844d3a8d420092b5cf360e978ca) must be signed before your contributions will be accepted. Upon opening a pull request, you will be prompted to use [cla-assistant](https://cla-assistant.io/) for a one-time acceptance applicable for all Bentley projects.
 You can read more about [Contributor License Agreements](https://en.wikipedia.org/wiki/Contributor_License_Agreement) on Wikipedia.
-
-> Note: a CLA is not required if the change is trivial (such as fixing a spelling error or a typo).
 
 ### Pull Requests
 

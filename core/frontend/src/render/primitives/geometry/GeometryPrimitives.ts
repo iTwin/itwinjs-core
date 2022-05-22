@@ -6,47 +6,54 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
-  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, SweepContour, Transform,
-} from "@bentley/geometry-core";
+  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
+} from "@itwin/core-geometry";
+import { Feature } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
 
 /** @internal */
-export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;
+export type PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive;
 
 /** @internal */
 export abstract class Geometry {
   public readonly transform: Transform;
   public readonly tileRange: Range3d;
   public readonly displayParams: DisplayParams;
+  public readonly feature?: Feature;
 
-  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams) {
+  public constructor(transform: Transform, tileRange: Range3d, displayParams: DisplayParams, feature: Feature | undefined) {
     this.transform = transform;
     this.tileRange = tileRange;
     this.displayParams = displayParams;
+    this.feature = feature;
   }
 
-  public static createFromPointString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
-    return new PrimitivePointStringGeometry(pts, tf, tileRange, params);
+  public static createFromPointString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+    return new PrimitivePointStringGeometry(pts, tf, tileRange, params, feature);
   }
 
-  public static createFromLineString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
-    return new PrimitiveLineStringGeometry(pts, tf, tileRange, params);
+  public static createFromLineString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+    return new PrimitiveLineStringGeometry(pts, tf, tileRange, params, feature);
   }
 
-  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean): Geometry {
-    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint);
+  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean, feature: Feature | undefined): Geometry {
+    return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint, feature);
   }
 
-  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean): Geometry {
-    return new PrimitivePathGeometry(path, tf, tileRange, params, disjoint);
+  public static createFromSolidPrimitive(primitive: SolidPrimitive, tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+    return new SolidPrimitiveGeometry(primitive, tf, tileRange, params, feature);
   }
 
-  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams): Geometry {
-    return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params);
+  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean, feature: Feature | undefined): Geometry {
+    return new PrimitivePathGeometry(path, tf, tileRange, params, disjoint, feature);
+  }
+
+  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+    return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params, feature);
   }
 
   protected abstract _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined;
@@ -81,8 +88,8 @@ export class PrimitivePathGeometry extends Geometry {
   public readonly path: Path;
   public readonly isDisjoint: boolean;
 
-  public constructor(path: Path, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean) {
-    super(tf, range, params);
+  public constructor(path: Path, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean, feature: Feature | undefined) {
+    super(tf, range, params, feature);
     this.path = path;
     this.isDisjoint = isDisjoint;
   }
@@ -126,8 +133,8 @@ export class PrimitivePathGeometry extends Geometry {
 export class PrimitivePointStringGeometry extends Geometry {
   public readonly pts: Point3d[];
 
-  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams) {
-    super(tf, range, params);
+  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
+    super(tf, range, params, feature);
     this.pts = pts;
   }
 
@@ -152,8 +159,8 @@ export class PrimitivePointStringGeometry extends Geometry {
 export class PrimitiveLineStringGeometry extends Geometry {
   public readonly pts: Point3d[];
 
-  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams) {
-    super(tf, range, params);
+  public constructor(pts: Point3d[], tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
+    super(tf, range, params, feature);
     this.pts = pts;
   }
 
@@ -179,8 +186,8 @@ export class PrimitiveLoopGeometry extends Geometry {
   public readonly loop: Loop;
   public readonly isDisjoint: boolean;
 
-  public constructor(loop: Loop, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean) {
-    super(tf, range, params);
+  public constructor(loop: Loop, tf: Transform, range: Range3d, params: DisplayParams, isDisjoint: boolean, feature: Feature | undefined) {
+    super(tf, range, params, feature);
     this.loop = loop;
     this.isDisjoint = isDisjoint;
   }
@@ -213,13 +220,13 @@ export class PrimitiveLoopGeometry extends Geometry {
 export class PrimitivePolyfaceGeometry extends Geometry {
   public readonly polyface: IndexedPolyface;
 
-  public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams) {
-    super(tf, range, params);
-    this.polyface = polyface;
+  public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
+    super(tf, range, params, feature);
+    this.polyface = tf.isIdentity ? polyface : polyface.cloneTransformed(tf);
   }
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
-    if (!this.hasTexture) { // clear parameters
+    if (!this.hasTexture) {
       if (this.polyface.data.param)
         this.polyface.data.param.clear();
 
@@ -234,12 +241,29 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       if (this.polyface.data.normalIndex)
         this.polyface.data.normalIndex = [];
     } else if (!this.polyface.data.normal || 0 === this.polyface.data.normal.length) {
-      // ###TODO: Currently no support for generating normals in TypeScript.
+      PolyfaceQuery.buildAverageNormals(this.polyface);
     }
 
-    assert(this.transform.isIdentity);
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 
   protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined { return undefined; }
+}
+
+class SolidPrimitiveGeometry extends Geometry {
+  private readonly _primitive: SolidPrimitive;
+
+  public constructor(primitive: SolidPrimitive, tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
+    super(tf, range, params, feature);
+    const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
+    this._primitive = xformPrim !== undefined ? xformPrim as SolidPrimitive : primitive;
+  }
+
+  protected _getStrokes() { return undefined; }
+
+  protected _getPolyfaces(opts: StrokeOptions): PolyfacePrimitiveList {
+    const builder = PolyfaceBuilder.create(opts);
+    builder.addGeometryQuery(this._primitive);
+    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, builder.claimPolyface()));
+  }
 }

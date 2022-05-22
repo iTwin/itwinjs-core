@@ -2,8 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/**
+ * @internal Used for testing only.
+ */
 export type PromiseResolveFunc<T> = (value: T | PromiseLike<T>) => void;
+
+/**
+ * @internal Used for testing only.
+ */
 export type PromiseRejectFunc = (reason: any) => void;
+
+/**
+ * @internal Used for testing only.
+ */
 export class PromiseContainer<T> {
   private _resolve!: PromiseResolveFunc<T>;
   private _reject!: PromiseRejectFunc;
@@ -23,6 +34,9 @@ export class PromiseContainer<T> {
   }
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export class ResolvablePromise<T> implements PromiseLike<T> {
   private _wrapped: Promise<T>;
   private _resolve!: (value: T) => void;

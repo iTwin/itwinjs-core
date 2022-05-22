@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 // CSpell: ignore fmtr
@@ -17,12 +17,12 @@ import { parseToggle } from "./parseToggle";
  * @beta
  */
 export class ChangeUnitsTool extends Tool {
-  public static toolId = "ChangeUnits";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ChangeUnits";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
   // support boolean for backwards compatibility
-  public run(useMetric?: boolean): boolean {
+  public override async run(useMetric?: boolean): Promise<boolean> {
     const fmtr = IModelApp.quantityFormatter;
 
     // if no arg then toggle to metric from any non-metric unit system
@@ -30,17 +30,17 @@ export class ChangeUnitsTool extends Tool {
     const unitSystem = useImperial ? "imperial" : "metric";
 
     if (unitSystem !== fmtr.activeUnitSystem) {
-      fmtr.setActiveUnitSystem(unitSystem);// eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.toolAdmin.startDefaultTool();
+      await fmtr.setActiveUnitSystem(unitSystem);
+      await IModelApp.toolAdmin.startDefaultTool();
     }
 
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

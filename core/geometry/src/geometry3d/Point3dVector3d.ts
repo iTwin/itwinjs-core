@@ -9,7 +9,6 @@
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
-import { Ray3d } from "./Ray3d";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
@@ -158,7 +157,9 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, other.y, tol);
   }
   /** Return a JSON object as array `[x,y,z]` */
-  public toJSON(): XYZProps { return [this.x, this.y, this.z]; }
+  public toJSON(): XYZProps { return this.toArray(); }
+  /** Return as an array `[x,y,z]` */
+  public toArray(): number[] { return [this.x, this.y, this.z]; }
   /** Return a JSON object as key value pairs `{x: value, y: value, z: value}` */
   public toJSONXYZ(): XYZProps { return { x: this.x, y: this.y, z: this.z }; }
   /** Pack the x,y,z values in a Float64Array. */
@@ -295,6 +296,38 @@ export class XYZ implements XYAndZ {
   public unitVectorTo(target: XYAndZ, result?: Vector3d): Vector3d | undefined { return this.vectorTo(target, result).normalize(result); }
   /** Freeze this XYZ */
   public freeze(): Readonly<this> { return Object.freeze(this); }
+
+  /** access x part of XYZProps (which may be .x or [0]) */
+  public static x(xyz: XYZProps | undefined, defaultValue: number = 0): number{
+    if (xyz === undefined)
+      return defaultValue;
+    if (Array.isArray(xyz))
+      return xyz[0];
+    if (xyz.x !== undefined)
+      return xyz.x;
+    return defaultValue;
+  }
+  /** access x part of XYZProps (which may be .x or [0]) */
+  public static y(xyz: XYZProps | undefined, defaultValue: number = 0): number{
+    if (xyz === undefined)
+      return defaultValue;
+    if (Array.isArray(xyz))
+      return xyz[1];
+    if (xyz.y !== undefined)
+      return xyz.y;
+    return defaultValue;
+  }
+  /** access x part of XYZProps (which may be .x or [0]) */
+  public static z(xyz: XYZProps | undefined, defaultValue: number = 0): number{
+    if (xyz === undefined)
+      return defaultValue;
+    if (Array.isArray(xyz))
+      return xyz[2];
+    if (xyz.z !== undefined)
+      return xyz.z;
+    return defaultValue;
+  }
+
 }
 /** 3D point with `x`,`y`,`z` as properties
  * @public
@@ -371,6 +404,16 @@ export class Point3d extends XYZ {
     }
     return undefined;
   }
+/**
+ * Return an array of points constructed from groups of 3 entries in a Float64Array.
+ * Any incomplete group at the tail of the array is ignored.
+ */
+  public static createArrayFromPackedXYZ(data: Float64Array): Point3d[]{
+    const result = [];
+    for (let i = 0; i + 2 < data.length; i += 3)
+      result.push(new Point3d(data[i], data[i + 1], data[i + 2]));
+    return result;
+  }
   /** Create a new point with 000 xyz */
   public static createZero(result?: Point3d): Point3d { return Point3d.create(0, 0, 0, result); }
   /** Return the cross product of the vectors from this to pointA and pointB
@@ -411,28 +454,6 @@ export class Point3d extends XYZ {
       return Point3d.create(this.x + fraction * (other.x - this.x), this.y + fraction * (other.y - this.y), this.z + fraction * (other.z - this.z), result);
     const t: number = fraction - 1.0;
     return Point3d.create(other.x + t * (other.x - this.x), other.y + t * (other.y - this.y), other.z + t * (other.z - this.z), result);
-  }
-  /**
-   * Return a ray whose ray.origin is interpolated, and ray.direction is the vector between points with a
-   * scale factor applied.
-   * @param fraction fractional position between points.
-   * @param other endpoint of interpolation
-   * @param tangentScale scale factor to apply to the startToEnd vector
-   * @param result  optional receiver.
-   */
-  public interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d {
-    result = result ? result : Ray3d.createZero();
-    const dx = other.x - this.x;
-    const dy = other.y - this.y;
-    const dz = other.z - this.z;
-    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
-    if (fraction <= 0.5)
-      result.origin.set(this.x + fraction * dx, this.y + fraction * dy, this.z + fraction * dz);
-    else {
-      const t: number = fraction - 1.0;
-      result.origin.set(other.x + t * dx, other.y + t * dy, other.z + t * dz);
-    }
-    return result;
   }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d {
@@ -528,6 +549,17 @@ export class Point3d extends XYZ {
  */
 export class Vector3d extends XYZ {
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
+/**
+ * Return an array of vectors constructed from groups of 3 entries in a Float64Array.
+ * Any incomplete group at the tail of the array is ignored.
+ */
+ public static createArrayFromPackedXYZ(data: Float64Array): Vector3d[]{
+  const result = [];
+  for (let i = 0; i + 2 < data.length; i += 3)
+    result.push(new Vector3d(data[i], data[i + 1], data[i + 2]));
+  return result;
+}
+
   /**
    * Copy xyz from this instance to a new (or optionally reused) Vector3d
    * @param result optional instance to reuse.
@@ -625,7 +657,7 @@ export class Vector3d extends XYZ {
 
   public static fromJSON(json?: XYZProps): Vector3d { const val = new Vector3d(); val.setFromJSON(json); return val; }
   /** Copy contents from another Point3d, Point2d, Vector2d, or Vector3d */
-  public static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Vector3d): Vector3d {
+  public static createFrom(data: XYAndZ | XAndY | Float64Array | number[], result?: Vector3d): Vector3d {
     if (data instanceof Float64Array) {
       let x = 0;
       let y = 0;
@@ -637,6 +669,8 @@ export class Vector3d extends XYZ {
       if (data.length > 2)
         z = data[2];
       return Vector3d.create(x, y, z, result);
+    } else if (Array.isArray(data)) {
+      return Vector3d.create(data[0], data[1], data.length > 2 ? data[2] : 0);
     }
     return Vector3d.create(data.x, data.y, XYZ.hasZ(data) ? data.z : 0.0, result);
   }
@@ -646,12 +680,15 @@ export class Vector3d extends XYZ {
    * @param end end point for vector
    * @param result optional result
    */
-  public static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d {
+  public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
+    const zStart = XYZ.accessZ(start, 0.0) as number;
+    const zEnd = XYZ.accessZ(end, 0.0) as number;
+    const dz = zEnd - zStart;
     if (result) {
-      result.set(end.x - start.x, end.y - start.y, end.z - start.z);
+      result.set(end.x - start.x, end.y - start.y, dz);
       return result;
     }
-    return new Vector3d(end.x - start.x, end.y - start.y, end.z - start.z);
+    return new Vector3d(end.x - start.x, end.y - start.y, dz);
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]
@@ -837,7 +874,7 @@ export class Vector3d extends XYZ {
    * @param vectorB second vector
    * @param result optional preallocated result.
    */
-  public interpolate(fraction: number, vectorB: Vector3d, result?: Vector3d): Vector3d {
+  public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     if (fraction <= 0.5) {
       result.x = this.x + fraction * (vectorB.x - this.x);

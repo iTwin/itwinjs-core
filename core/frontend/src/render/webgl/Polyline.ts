@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@bentley/imodeljs-common";
-import { PolylineParams } from "../primitives/VertexTable";
+import { dispose } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -17,7 +17,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { BuffersContainer } from "./AttributeBuffers";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -75,46 +75,48 @@ export class PolylineGeometry extends LUTGeometry {
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
 
-  public get polylineBuffers(): PolylineBuffers | undefined { return this._buffers; }
+  public override get polylineBuffers(): PolylineBuffers | undefined { return this._buffers; }
 
-  private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
+  private _computeEdgePass(target: Target, colorInfo: ColorInfo): Pass {
     const vf = target.currentViewFlags;
     if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
-      return RenderPass.None;
+      return "none";
 
     // Only want to return Translucent for edges if rendering in Wireframe mode ###TODO: what about overrides?
     const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.transparency && colorInfo.hasTranslucency;
-    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
+    return isTranslucent ? "translucent" : "opaque-linear";
   }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target): Pass {
     const vf = target.currentViewFlags;
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (RenderPass.None !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
-        pass = RenderPass.None;
+      if ("none" !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
+        pass = "none";
+
       return pass;
     }
+
     const isTranslucent: boolean = vf.transparency && this.lut.colorInfo.hasTranslucency;
-    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
+    return isTranslucent ? "translucent" : "opaque-linear";
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public get isPlanar(): boolean { return this._isPlanar; }
-  public get isEdge(): boolean { return this.isAnyEdge; }
-  public get qOrigin(): Float32Array { return this.lut.qOrigin; }
-  public get qScale(): Float32Array { return this.lut.qScale; }
+  public override get isEdge(): boolean { return this.isAnyEdge; }
+  public override get qOrigin(): Float32Array { return this.lut.qOrigin; }
+  public override get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
-  public get hasFeatures() { return this._hasFeatures; }
+  public override get hasFeatures() { return this._hasFeatures; }
 
-  protected _getLineWeight(params: ShaderProgramParams): number {
+  protected override _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight) : this.lineWeight;
   }
-  protected _getLineCode(params: ShaderProgramParams): number {
+  protected override _getLineCode(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.computeEdgeLineCode(params.renderPass, this.lineCode) : this.lineCode;
   }
-  public getColor(target: Target): ColorInfo {
+  public override getColor(target: Target): ColorInfo {
     return this.isEdge ? target.computeEdgeColor(this.lut.colorInfo) : this.lut.colorInfo;
   }
 

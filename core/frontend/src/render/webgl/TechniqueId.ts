@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { CompositeFlags } from "./RenderFlags";
 
 /* eslint-disable no-restricted-syntax */
@@ -23,7 +23,9 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
-  TerrainMesh,
+  IndexedEdge,
+  RealityMesh,
+  PlanarGrid,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,
@@ -45,6 +47,7 @@ export const enum TechniqueId {
   SkySphereTexture,
   AmbientOcclusion,
   Blur,
+  BlurTestOrder,
   CombineTextures,
   Combine3Textures,
   VolClassCopyZ,

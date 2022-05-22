@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Dialog, FieldDefinitions, FieldValues, Form } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export class ExampleForm extends React.Component {
   private _title = "Example Form";
@@ -45,7 +46,7 @@ export class ExampleForm extends React.Component {
     ModalDialogManager.closeDialog();
   }
 
-  public render() {
+  public override render() {
     const fields: FieldDefinitions = {
       SiteUrl: {
         label: this._siteUrlLabel,

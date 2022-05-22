@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../../target";
+@import "../../prefix";
+
+.nz-zones-target-zone {
+  $size: 100px;
+
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  pointer-events: none;
+
+  @include uicore-z-index(zone-target);
+
+  >.nz-zones-target-target {
+    background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.6), rgba(#000, 0.4), rgba(#000, 0));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.25s ease-out;
+    pointer-events: auto;
+
+    @include oval($size);
+    @include nz-backface-visibility(hidden);
+
+    @include nz-internal-targeted {
+      background: radial-gradient(farthest-side at 50% 50%, rgba(#000, 0.8), rgba(#000, 0.4), rgba(#000, 0));
+
+      @include oval($size * 1.1);
+    }
+  }
+}

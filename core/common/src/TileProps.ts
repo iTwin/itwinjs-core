@@ -6,8 +6,8 @@
  * @module Tile
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { Range3dProps, TransformProps } from "@bentley/geometry-core";
+import { GuidString } from "@itwin/core-bentley";
+import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal
@@ -49,22 +49,37 @@ export interface TileTreeProps {
 export interface IModelTileTreeProps extends TileTreeProps {
   /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
   contentIdQualifier?: string;
-  /** The geometry guid used as a baseline for tile content. May not match the model's current geometry guid during an [InteractiveEditingSession]($frontend). */
+  /** The geometry guid used as a baseline for tile content. May not match the model's current geometry guid during a [GraphicalEditingScope]($frontend). */
   geometryGuid?: GuidString;
   /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
   maxInitialTilesToSkip?: number;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
+  /** Size of each tile in pixels. Defaults to 512. Will be 2048 if TileAdmin.useLargerTiles is true. */
+  tileScreenSize?: number;
+  /** For a tile tree produced for a [[RenderTimeline.Script]], the bounding ranges for each transform node in the script. */
+  transformNodeRanges?: Array<Range3dProps & { id: number }>;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.
- * @see [[IModelTileRpcInterface.queryVersionInfo]].
- * @alpha
+ * @see [[TileAdmin.queryVersionInfo]].
+ * @public
+ * @extensions
  */
 export interface TileVersionInfo {
-  /** The maximum exact version of the "iMdl" tile format supported by the backend. The backend can supply tiles of any earlier version of the format, but not newer than this maximum.
+  /** The exact version of the "iMdl" tile format used by the backend when generating tile content.
+   * Newer versions of the tile format remain backwards-compatible, but may fix bugs from previous versions and add new features.
+   * A frontend can request tiles of an earlier version than this, but should not of newer versions.
    * @note The version is represented as a 32-bit integer combining the 16-bit major and minor version numbers.
-   * @see [[CurrentImdlVersion]].
+   * @see [[CurrentImdlVersion]] to obtain the current version used by the frontend or backend.
    */
   formatVersion: number;
+}
+
+/**
+ * @internal
+ */
+export enum TileContentSource {
+  Backend = 0,
+  ExternalCache = 1,
 }

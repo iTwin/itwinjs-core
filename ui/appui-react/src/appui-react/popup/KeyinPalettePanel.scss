@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.uifw-command-palette-popup-container {
+  @include uicore-z-index(keyin-palette-overlay);
+
+  box-sizing: border-box;
+  background: $buic-background-control;
+  color: $buic-foreground-body;
+  -webkit-box-shadow: 0 3px 6px $buic-popup-boxshadow;
+  box-shadow: 0px 3px 6px $buic-popup-boxshadow;
+
+  .uifw-command-palette-panel {
+    margin: 4px;
+    width: 30vw;
+    min-width: 20em;
+    max-height: 50vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .uifw-history-bottom-border {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: $buic-foreground-disabled;
+  }
+}

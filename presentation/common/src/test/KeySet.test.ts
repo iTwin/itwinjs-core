@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
+import { createTestECInstanceKey } from "./_helpers/EC";
 import {
   createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,
 } from "./_helpers/random";
@@ -916,6 +917,16 @@ describe("KeySet", () => {
       expect(target.has(instanceKey12)).to.be.true;
       expect(target.has(instanceKey2)).to.be.true;
       expect(target.has(nodeKey)).to.be.true;
+    });
+
+    it("invalid instance key roundtrip", () => {
+      const key = createTestECInstanceKey({ id: Id64.invalid });
+      const set = new KeySet([key]);
+      const json = set.toJSON();
+      expect(json.instanceKeys).to.deep.eq([[key.className, Id64.invalid]]);
+      const deserialized = KeySet.fromJSON(json);
+      expect(deserialized.size).to.eq(1);
+      expect(deserialized.has(key)).to.be.true;
     });
 
     it("doesn't serialize instance classes without ids", () => {

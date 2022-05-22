@@ -6,18 +6,17 @@
  * @module Tiles
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { Cartographic } from "@itwin/core-common";
+import { request, RequestOptions, Response } from "./request/Request";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
-/** @internal */
+/** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
+ * @public
+ * @extensions
+ */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;
-  // private _localCircularSearchRequestTemplate: string;
-  protected _requestContext = new ClientRequestContext("");
 
   constructor() {
     let bingKey = "";
@@ -25,13 +24,17 @@ export class BingLocationProvider {
       bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
     }
     this._locationRequestTemplate = "https://dev.virtualearth.net/REST/v1/Locations?query={query}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
-    // this._localCircularSearchRequestTemplate = "https://dev.virtualearth.net/REST/v1/LocalSearch/?CircularMapView={{circle}}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
+  /** Return the location of a query (or undefined if not found). The strings "Space Needle" (a landmark) and "1 Microsoft Way Redmond WA" (an address) are examples of query strings with location information.
+   * These strings can be specified as a structured URL parameter or as a query parameter value.  See [Bing Location Services documentation](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-query) for additional
+   * information on queries.
+   * @public
+   */
   public async getLocation(query: string): Promise<GlobalLocation | undefined> {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const locationResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      const locationResponse: Response = await request(requestUrl, requestOptions);
       const point = locationResponse.body.resourceSets[0].resources[0].point;
       const bbox = locationResponse.body.resourceSets[0].resources[0].bbox;
       const southLatitude = bbox[0];
@@ -39,24 +42,12 @@ export class BingLocationProvider {
       const northLatitude = bbox[2];
       const eastLongitude = bbox[3];
       return {
-        center: Cartographic.fromRadians(Angle.degreesToRadians(point.coordinates[1]), Angle.degreesToRadians(point.coordinates[0])),
+        center: Cartographic.fromDegrees({ longitude: point.coordinates[1], latitude: point.coordinates[0] }),
         area: {
-          southwest: Cartographic.fromRadians(Angle.degreesToRadians(westLongitude), Angle.degreesToRadians(southLatitude)),
-          northeast: Cartographic.fromRadians(Angle.degreesToRadians(eastLongitude), Angle.degreesToRadians(northLatitude)),
+          southwest: Cartographic.fromDegrees({ longitude: westLongitude, latitude: southLatitude }),
+          northeast: Cartographic.fromDegrees({ longitude: eastLongitude, latitude: northLatitude }),
         },
       };
-    } catch (error) {
-      return undefined;
-    }
-  }
-  public async doLocalSearchByRadius(_center: Cartographic, _radius: number) {
-    // const searchCircle = (center.latitude * Angle.degreesPerRadian) + "," + (center.longitude * Angle.degreesPerRadian) + "," + radius;
-    // const requestUrl = this._localCircularSearchRequestTemplate.replace("{circle}", searchCircle);
-    // const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
-    try {
-      // const locationResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
-      return {};
-
     } catch (error) {
       return undefined;
     }

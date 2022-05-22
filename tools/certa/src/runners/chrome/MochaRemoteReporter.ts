@@ -11,6 +11,7 @@ export async function configureRemoteReporter(page: puppeteer.Page) {
   // This will stand in for mocha's "runner" on the backend.
   // Basically, we'll just be using this to echo events from the frontend runner.
   const mockRunner = new EventEmitter();
+  let realReporter: any;
 
   // Expose a function to the frontend for initializing the reporter on the backend.
   await page.exposeFunction("_CertaCreateReporter", (serializedRunner: string, reporterName: string, reporterOptions: any) => {
@@ -27,11 +28,12 @@ export async function configureRemoteReporter(page: puppeteer.Page) {
     backendMocha.reporter(reporterName);
 
     // Mocha.reporter saves the reporter constructor in this._reporter.
-    new backendMocha._reporter(runner, { reporterOptions });
+    realReporter = new backendMocha._reporter(runner, { reporterOptions });
   });
 
   // Expose a function to the frontend for initializing the reporter on the backend.
-  await page.exposeFunction("_CertaEmitReporterEvent", (name: string, ...args: any[]) => {
+  await page.exposeFunction("_CertaEmitReporterEvent", (name: string, stats: any, ...args: any[]) => {
+    realReporter.stats = stats;
     mockRunner.emit(name, ...args.map((a) => MochaSerializer.deserialize(a)));
   });
 
@@ -45,7 +47,7 @@ export async function configureRemoteReporter(page: puppeteer.Page) {
             const events = ["start", "end", "suite", "suite end", "test", "test end", "hook", "hook end", "pass", "fail", "pending"];
             for (const event of events) {
               runner.on(event, (...args: any[]) => {
-                window._CertaEmitReporterEvent(event, ...args.map((a) => MochaSerializer.serialize(a)));
+                window._CertaEmitReporterEvent(event, runner.stats, ...args.map((a) => MochaSerializer.serialize(a)));
               });
             }
             window._CertaCreateReporter(MochaSerializer.serialize(runner), reporterName, reporterOptions);

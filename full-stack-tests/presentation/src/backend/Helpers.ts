@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import deepEqual from "deep-equal";
-import { PropertyGroupingValue, Rule, RuleTypes } from "@bentley/presentation-common";
+import { PropertyGroupingValue, Rule, RuleTypes } from "@itwin/presentation-common";
 
 const rulesOrder = [
   RuleTypes.RootNodes, RuleTypes.ChildNodes,
@@ -15,13 +15,14 @@ const rulesOrder = [
 const specialDefaultValues = new Map<string, any>([
   ["condition", ""],
   ["createGroupForUnspecifiedValues", true],
+  // eslint-disable-next-line deprecation/deprecation
   ["groupingValue", PropertyGroupingValue.DisplayLabel],
   ["isExclude", false],
   ["propertyName", ""],
   ["schemaNames", []],
+  // eslint-disable-next-line deprecation/deprecation
   ["sortingValue", PropertyGroupingValue.DisplayLabel],
   ["sortAscending", true],
-  ["supportedSchemas", {}],
   ["vars", []],
 ]);
 

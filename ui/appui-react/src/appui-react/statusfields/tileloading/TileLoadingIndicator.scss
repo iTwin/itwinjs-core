@@ -1,0 +1,58 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.uifw-tile-loading-bar {
+  $font-size-medium: $iui-font-size-small;
+  $font-size-small: $iui-font-size-small - 1px;
+
+  transition: opacity .3s ease-in;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  >span {
+    font-size: $font-size-medium;
+    margin-top: 6px;
+    position: relative;
+  }
+
+  >.iui-progress-indicator-linear {
+    width: 100%;
+    flex: 1;
+  }
+
+  &.nz-footer-mode {
+    width: 12em;
+  }
+
+  &:not(.nz-footer-mode) {
+    min-width: 4em;
+  }
+
+  @include for-small-desktop-down {
+    &.nz-footer-mode {
+      width: 9em;
+    }
+  }
+
+  @include for-tablet-portrait-down {
+    font-size: $font-size-medium;
+  }
+
+  @include for-phone-only {
+    font-size: $font-size-small;
+
+    &.nz-footer-mode {
+      width: 6em;
+    }
+  }
+}
+
+.uifw-tile-loading-bar-visible {
+  opacity: 1;
+}

@@ -29,15 +29,15 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     target.announceToCurveProcessor(context);
     return context._result;
   }
-  public enter(c: CurveCollection) {
+  public override enter(c: CurveCollection) {
     if (c instanceof CurveCollection)
       super.enter(c.cloneEmptyPeer());
   }
-  public leave(): CurveCollection | undefined {
+  public override leave(): CurveCollection | undefined {
     const result = super.leave();
     if (result) {
       if (this._stack.length === 0) // this should only happen once !!!
-        this._result = result as BagOfCurves;
+        this._result = result;
       else // push this result to top of stack.
         this._stack[this._stack.length - 1].tryAddChild(result);
     }
@@ -46,10 +46,10 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
   // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
   protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
     if (this._transform)
-      return primitive.cloneTransformed(this._transform) as CurvePrimitive;
-    return primitive.clone() as CurvePrimitive;
+      return primitive.cloneTransformed(this._transform);
+    return primitive.clone();
   }
-  public announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
+  public override announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
     const c = this.doClone(primitive);
     if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];

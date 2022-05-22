@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { GeometryClass, LinePixels } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -15,7 +15,10 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
@@ -26,7 +29,10 @@ export enum SnapMode {
   Intersection = 1 << 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range
@@ -35,6 +41,7 @@ export enum SnapHeat {
 
 /** The procedure that generated this Hit.
  * @public
+ * @extensions
  */
 export enum HitSource {
   None = 0,
@@ -51,6 +58,7 @@ export enum HitSource {
 /** What was being tested to generate this hit. This is not the element or
  * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
  * @public
+ * @extensions
  */
 export enum HitGeomType {
   None = 0,
@@ -63,6 +71,7 @@ export enum HitGeomType {
 
 /** Classification of GeometricPrimitive that generated the Hit.
  * @public
+ * @extensions
  */
 export enum HitParentGeomType {
   None = 0,
@@ -73,7 +82,10 @@ export enum HitParentGeomType {
   Text = 5,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum HitPriority {
   WireEdge = 0,
   PlanarEdge = 1,
@@ -84,7 +96,10 @@ export enum HitPriority {
   Unknown = 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum HitDetailType {
   Hit = 1,
   Snap = 2,
@@ -94,10 +109,11 @@ export enum HitDetailType {
 /** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
  * @public
+ * @extensions
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
-  /** @alpha */
+  /** @internal chiefly for debugging. */
   public readonly tileId?: string;
   /** @alpha */
   public readonly isClassifier: boolean;
@@ -145,7 +161,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -154,31 +170,34 @@ export class HitDetail {
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
-  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
+  public draw(_context: DecorateContext) {
+    this.viewport.flashedId = this.sourceId;
+  }
 
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.overrideElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
     for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
       toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
     return toolTipPromise;
   }
 
-  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.
+  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport -
+   * for example, if a [[TiledGraphicsProvider]] is used to display graphics from a different iModel in the viewport.
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
-   * @alpha
    */
   public get iModel(): IModelConnection { return undefined !== this._iModel ? this._iModel : this.viewport.iModel; }
 
-  /** Returns true if this hit originated from an IModelConnection other than the one associated with the viewport.
-   * @alpha
+  /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].
+   * @see [[iModel]].
    */
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }
 
-/** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
+/** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
+ * @extensions
  */
 export class SnapDetail extends HitDetail {
   /** A sprite to show the user the type of snap performed */
@@ -210,10 +229,10 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Returns `HitDetailType.Snap` */
-  public getHitType(): HitDetailType { return HitDetailType.Snap; }
+  public override getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
-  /** Return true if the pick point was closer than [SnapRequestProps.snapAperture]($common) from the generated snap point. */
+  public override getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
+  /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
@@ -252,14 +271,14 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Make a copy of this SnapDetail. */
-  public clone(): SnapDetail {
+  public override clone(): SnapDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
     val.geomType = this.geomType;
     val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
-      val.primitive = this.primitive.clone() as CurvePrimitive;
+      val.primitive = this.primitive.clone();
     if (undefined !== this.normal)
       val.normal = this.normal.clone();
     return val;
@@ -285,7 +304,7 @@ export class SnapDetail extends HitDetail {
     return this.primitive;
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       let singleSegment = false;
       switch (this.snapMode) {
@@ -319,19 +338,22 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "sprites/SnapPointOn.png";
-      case SnapMode.NearestKeypoint: return "sprites/SnapKeypoint.png";
-      case SnapMode.MidPoint: return "sprites/SnapMidpoint.png";
-      case SnapMode.Center: return "sprites/SnapCenter.png";
-      case SnapMode.Origin: return "sprites/SnapOrigin.png";
-      case SnapMode.Bisector: return "sprites/SnapBisector.png";
-      case SnapMode.Intersection: return "sprites/SnapIntersection.png";
+      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class IntersectDetail extends SnapDetail {
   public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
     super(from, SnapMode.Intersection, heat, snapPoint);
@@ -339,7 +361,7 @@ export class IntersectDetail extends SnapDetail {
     this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
@@ -366,6 +388,7 @@ export class IntersectDetail extends SnapDetail {
 /** The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  * are somehow *better* than those later on.
  * @public
+ * @extensions
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];

@@ -76,9 +76,7 @@ export class CurveSplitContext {
   private collectSinglePrimitiveFragments(curveToCut: CurvePrimitive, intersections: CurveLocationDetailPair[] | undefined, fragments: CurvePrimitive[]) {
 
     if (intersections === undefined || !CurveSplitContext.hasInteriorDetailAIntersections(intersections)) {
-      const fragment = curveToCut.clone();
-      if (fragment)
-        fragments.push(fragment as CurvePrimitive);
+      fragments.push(curveToCut.clone());
       return;
     }
     intersections.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => (pairA.detailA.fraction - pairB.detailA.fraction));

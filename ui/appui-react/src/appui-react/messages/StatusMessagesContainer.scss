@@ -1,0 +1,53 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/text/mixins";
+@import "~@itwin/core-react/lib/cjs/core-react/icons/index";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.uifw-statusbar-message-label {
+  color: $buic-text-color;
+}
+
+.uifw-statusbar-message-brief {
+  @include uicore-text(body);
+}
+
+.uifw-statusbar-message-detailed {
+  @include uicore-text(small);
+}
+
+.uifw-statusbar-hollow-icon {
+  color: $buic-accessory-hollow;
+  width: $uicore-icons-small;
+  height: $uicore-icons-small;
+  font-size: $uicore-icons-small;
+  margin-bottom: 4px;
+}
+
+.uifw-statusbar-messages-container {
+  @include uicore-z-index(status-message);
+  max-height: 66vh;
+
+  &.uifw-scrollable {
+    overflow-y: auto;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
+  }
+
+  >.uifw-statusbar-message-list {
+    display: block;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    >li {
+      display: block;
+      position: relative;
+      padding: 4px 0;
+    }
+  }
+}

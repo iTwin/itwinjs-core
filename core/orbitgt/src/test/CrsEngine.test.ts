@@ -21,7 +21,7 @@ describe("CRS engine tests", () => {
     await CRSManager.ENGINE.prepareForArea(targetCRS, new Bounds());
     const sourcePosition: Coordinate = new Coordinate(124995, 197495, 52); // the OrbitGT office location in Lokeren, Belgium
     const targetPosition: Coordinate = CRSManager.transformPoint(sourcePosition, sourceCRS, targetCRS);
-    const expectedPosition: Coordinate = new Coordinate(4004696.937, 280869.794, 4939672.529);
+    const expectedPosition: Coordinate = new Coordinate(4004726.217, 280783.407, 4939653.828);
     assert.isTrue(targetPosition.distance3D(expectedPosition) < 0.25, "found position " + targetPosition + ", expected " + expectedPosition);
   });
 

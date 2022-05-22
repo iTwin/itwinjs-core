@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
+<body>
+  <div>
+    <div
+      class="ui-fw-categories-tree"
+    >
+      <div
+        class="core-tree components-controlledTree components-smallEditor-host"
+        role="tree"
+        tabindex="-1"
+      >
+        <div
+          class="ReactWindow__VariableSizeList"
+          style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
+        >
+          <div
+            style="height: 25px; width: 100%; min-width: 0;"
+          >
+            <div
+              class="node-wrapper"
+              style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
+            >
+              <div
+                class="core-tree-node with-checkbox"
+                data-testid="tree-node"
+                role="treeitem"
+                tabindex="-1"
+              >
+                <div
+                  class="contents"
+                  data-testid="tree-node-contents"
+                  style="margin-left: 24px;"
+                >
+                  <label
+                    class="core-image-checkbox"
+                  >
+                    <input
+                      checked=""
+                      type="checkbox"
+                    />
+                    <span
+                      class="image"
+                    >
+                      <i
+                        class="icon icon-visibility"
+                      />
+                    </span>
+                  </label>
+                  <div
+                    class="components-controlledTree-node-content"
+                  >
+                    <span
+                      title="test-node"
+                    >
+                      test-node
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;

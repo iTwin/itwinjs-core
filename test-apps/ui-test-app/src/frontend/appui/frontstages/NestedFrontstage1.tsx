@@ -2,29 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
+import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CommandItemDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
-  NestedFrontstage, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
+  NavigationWidget, NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NestedFrontstage2 } from "./NestedFrontstage2";
+import { AppUi } from "../AppUi";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
 
 /* eslint-disable react/jsx-key */
 
 export class NestedFrontstage1 extends FrontstageProvider {
+  public static stageId = "ui-test-app:NestedFrontstage1";
+
+  public get id(): string {
+    return NestedFrontstage1.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
+
     return (
-      <Frontstage id="NestedFrontstage1"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
-        defaultLayout="TwoHalvesHorizontal"
-        contentGroup="TestContentGroup2"
+        contentGroup={contentGroup}
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -77,10 +86,10 @@ export class NestedFrontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage2Def: FrontstageDef | undefined;
-  private static get frontstage2Def(): FrontstageDef {
+  private static async getFrontstage2Def() {
     if (!this._frontstage2Def) {
       const frontstageProvider = new NestedFrontstage2();
-      this._frontstage2Def = frontstageProvider.initializeDef();
+      this._frontstage2Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage2Def;
   }
@@ -91,27 +100,37 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage2",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage2Def);
+        const frontstage2Def = await FrontstageToolWidget.getFrontstage2Def();
+        await FrontstageManager.openNestedFrontstage(frontstage2Def);
       },
     });
   }
 
+  private get _openModal() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-happy",
+      label: "Open Modal Dialog",
+      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+    });
+  }
+
   private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage2} />
+          <ActionItemButton actionItem={this._openModal} />
         </>
       }
     />);
 
   private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Right}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ActionItemButton actionItem={CoreTools.rotateViewCommand} />
@@ -127,9 +146,9 @@ class FrontstageToolWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
-      <ToolWidget
+      <ToolWidget // eslint-disable-line deprecation/deprecation
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
@@ -143,8 +162,8 @@ class FrontstageToolWidget extends React.Component {
 class FrontstageNavigationWidget extends React.Component {
 
   private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec} labelKey={AppTools.item5.label} execute={AppTools.item5.execute} />
@@ -155,8 +174,8 @@ class FrontstageNavigationWidget extends React.Component {
   );
 
   private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Left}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ToolButton toolId={AppTools.item7.id} iconSpec={AppTools.item7.iconSpec} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />
@@ -166,8 +185,9 @@ class FrontstageNavigationWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
+      // eslint-disable-next-line deprecation/deprecation
       <NavigationWidget
         navigationAidId="StandardRotationNavigationAid"
         horizontalToolbar={this._horizontalToolbar}

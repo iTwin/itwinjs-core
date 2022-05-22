@@ -1,0 +1,79 @@
+{
+  "$schema": "../../../../node_modules/@itwin/presentation-common/Ruleset.schema.json",
+  "id": "ui-framework/SpatialBreakdown",
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "SpatialComposition",
+              "classNames": [
+                "CompositeElement"
+              ]
+            }
+          ],
+          "arePolymorphic": true,
+          "relatedInstances": [
+            {
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelContainsElements"
+                },
+                "direction": "Backward"
+              },
+              "isRequired": true,
+              "alias": "model"
+            }
+          ],
+          "instanceFilter": "NOT model.IsPrivate AND this.ComposingElement = NULL",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"CompositeElement\", \"SpatialComposition\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeComposesSubComposites"
+              },
+              "direction": "Forward"
+            }
+          ],
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"CompositeElement\", \"SpatialComposition\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeOverlapsSpatialElements"
+              },
+              "direction": "Forward"
+            }
+          ],
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    }
+  ]
+}

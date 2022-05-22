@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
-import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
-import { IModelConnection, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64Arg } from "@itwin/core-bentley";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
+import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedViews";
@@ -51,7 +51,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   protected _open() { this._element.style.display = "block"; }
   protected _close() { this._element.style.display = "none"; }
 
-  public get onViewChanged(): Promise<void> | undefined {
+  public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._vp.iModel) {
       this._imodel = this._vp.iModel;
       return this.populate();
@@ -139,6 +139,15 @@ export class SavedViewPicker extends ToolBarDropDown {
       inline: true,
     }).button;
 
+    const updateButton = createButton({
+      parent: buttonDiv,
+      id: "btn_updateSavedView",
+      value: "Update",
+      handler: async () => this.updateView(),
+      tooltip: "Update selected view",
+      inline: true,
+    }).button;
+
     const deleteButton = createButton({
       parent: buttonDiv,
       id: "btn_deleteSavedView",
@@ -152,7 +161,7 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     this._onSelectedViewChanged = () => {
       const disabled = undefined === this._selectedView;
-      recallButton.disabled = deleteButton.disabled = disabled;
+      recallButton.disabled = updateButton.disabled = deleteButton.disabled = disabled;
     };
 
     textBox.div.style.marginLeft = textBox.div.style.marginRight = "3px";
@@ -164,7 +173,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       textBox.textbox.style.color = viewExists ? "red" : "";
     };
 
-    newButton.disabled = recallButton.disabled = deleteButton.disabled = true;
+    newButton.disabled = recallButton.disabled = updateButton.disabled = deleteButton.disabled = true;
   }
 
   private async recallView(): Promise<void> {
@@ -195,17 +204,21 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   private async deleteView(): Promise<void> {
-    // eslint-disable-next-line no-restricted-globals
-    if (undefined === this._selectedView)
-      return;
+    if (undefined !== this._selectedView)
+      return this.deleteViewByName(this._selectedView.name);
+  }
 
-    this._views.removeName(this._selectedView.name);
+  private async deleteViewByName(name: string): Promise<void> {
+    this._views.removeName(name);
     this.populateFromViewList();
-    await this.saveNamedViews();
+    return this.saveNamedViews();
   }
 
   private async saveView(): Promise<void> {
-    const newName = this._newViewName;
+    return this.saveViewWithName(this._newViewName);
+  }
+
+  private async saveViewWithName(newName: string): Promise<void> {
     if (0 === newName.length || undefined !== this.findView(newName))
       return;
 
@@ -229,6 +242,14 @@ export class SavedViewPicker extends ToolBarDropDown {
     this.populateFromViewList();
 
     await this.saveNamedViews();
+  }
+
+  private async updateView(): Promise<void> {
+    const name = this._selectedView?.name;
+    if (name) {
+      await this.deleteViewByName(name);
+      await this.saveViewWithName(name);
+    }
   }
 
   private async saveNamedViews(): Promise<void> {

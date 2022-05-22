@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
-import { BentleyStatus, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipVector } from "@bentley/geometry-core";
-import { ColorDef, GeometryContainmentRequestProps } from "@bentley/imodeljs-common";
+import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
+import { BentleyStatus, Id64, Id64Array } from "@itwin/core-bentley";
+import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
+import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
 
 /** Color code current selection set based on containment with current view clip.
  * For selecting elements outside clip, turn off clipvolume in view settings dialog.
  * Use EDIT on clip tools dialog to re-display clip decoration after classification.
  */
 export class FenceClassifySelectedTool extends Tool {
-  public static toolId = "Fence.ClassifySelected";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "Fence.ClassifySelected";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
   public async doClassify(vp: ScreenViewport, candidates: Id64Array, clip: ClipVector, allowOverlaps: boolean): Promise<void> {
     const requestProps: GeometryContainmentRequestProps = {
@@ -53,7 +53,7 @@ export class FenceClassifySelectedTool extends Tool {
     EmphasizeElements.getOrCreate(vp).defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
   }
 
-  public run(insideOnly?: true | undefined): boolean {
+  public override async run(insideOnly?: true | undefined): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
@@ -70,13 +70,13 @@ export class FenceClassifySelectedTool extends Tool {
       return false;
 
     vp.iModel.selectionSet.emptyAll();
-    this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true);
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const insideOnly = (undefined !== args[0] && "inside" === args[0].toLowerCase()) ? true : undefined;
-    this.run(insideOnly);
+    await this.run(insideOnly);
     return true;
   }
 }

@@ -13,7 +13,6 @@ module.exports = {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
-    libraryTarget: 'umd',
     globalObject: "this",
   },
   devtool: "nosources-source-map",
@@ -53,6 +52,7 @@ module.exports = {
     "fs": "fs",
     "process": "process",
     "child_process": "child_process",
+    "ws": "commonjs ws",
   },
   node: {
     net: 'empty'

@@ -23,7 +23,7 @@ describe("BeDuration", () => {
     const t = new Test();
     const val = await halfSecond.executeAfter(t.doTest, t, 5, "test123"); // eslint-disable-line @typescript-eslint/unbound-method
     assert.equal(val, 33);
-    assert.isAtLeast(Date.now(), start + 490);
+    assert.isAtLeast(Date.now(), start + 400); // use 400ms to avoid false failures if precision of timing is reduced
   });
 
 });

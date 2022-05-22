@@ -1,6 +1,6 @@
 # Write A Web Service
 
-A [Web Service](../learning/App.md#imodel-services) is backend code.
+A [Web Service](./App.md#imodel-services) is backend code.
 
 See [how to write backend code](./backend/index.md).
 

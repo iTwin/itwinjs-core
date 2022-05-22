@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels } from "@bentley/imodeljs-common";
+import { GuidString } from "@itwin/core-bentley";
+import { ChangeData, ChangedElements, ChangedModels } from "@itwin/core-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
@@ -28,6 +28,7 @@ export class ChangedElementsManager {
       return this._entry.db;
     if (this._entry && this._entry.iModelId !== iModelId) {
       this._entry.db.closeDb();
+      this._entry.db.cleanCaches();
       this._entry = undefined;
     }
     if (!this._entry) {
@@ -45,6 +46,14 @@ export class ChangedElementsManager {
     }
 
     return undefined;
+  }
+
+  public static cleanUp() {
+    if (this._entry) {
+      this._entry.db.closeDb();
+      this._entry.db.cleanCaches();
+      this._entry = undefined;
+    }
   }
 
   /** Gets the changed elements from the cache if found

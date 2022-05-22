@@ -7,23 +7,22 @@
  */
 
 import { useCallback } from "react";
-import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { tap } from "rxjs/internal/operators/tap";
 import { Subject } from "rxjs/internal/Subject";
-import { Guid, IDisposable } from "@bentley/bentleyjs-core";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
+import { Guid, IDisposable } from "@itwin/core-bentley";
+import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@itwin/presentation-frontend";
 import {
-  AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, TreeEditingParams, TreeEventHandler, TreeModelChanges, TreeModelSource,
-  TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, toRxjsObservable, TreeEditingParams, TreeEventHandler, TreeModelChanges,
+  TreeModelSource, TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "@itwin/components-react";
+import { useDisposable } from "@itwin/core-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
  * Data structure that describes parameters for UnifiedSelectionTreeEventHandler
- * @beta
+ * @public
  */
 export interface UnifiedSelectionTreeEventHandlerParams {
   /** Node loader used to load children when node is expanded. */
@@ -54,7 +53,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
  * **Note:** conditions used to determine if node is selected and nodes that should be added to
  * unified selection can be controlled by overriding 'shouldSelectNode' and 'createKeysForSelection' methods.
  *
- * @beta
+ * @public
  */
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
   private _selectionHandler: SelectionHandler;
@@ -73,24 +72,24 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     this._modelSource = params.nodeLoader.modelSource;
     const name = params.name ?? `Tree_${this._dataProvider.rulesetId}_${Guid.createValue()}`;
     this._selectionHandler = params.selectionHandler
-      ? params.selectionHandler // istanbul ignore next
-      : new SelectionHandler({ manager: Presentation.selection, name, imodel: this._dataProvider.imodel, rulesetId: this._dataProvider.rulesetId });
+      ? params.selectionHandler
+      : /* istanbul ignore next */ new SelectionHandler({ manager: Presentation.selection, name, imodel: this._dataProvider.imodel, rulesetId: this._dataProvider.rulesetId });
     this._selectionHandler.onSelect = this.onSelect.bind(this);
     this._unregisterModelChangedListener = this._modelSource.onModelChanged.addListener((args) => this.selectNodes(args[1]));
     this.selectNodes();
   }
 
-  public get modelSource() { return this._modelSource; }
+  public override get modelSource() { return this._modelSource; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     this._cancelled.next();
     this._selectionHandler.dispose();
     this._unregisterModelChangedListener();
   }
 
-  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
-    const withUnifiedSelection = from(modifications).pipe(
+  public override onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
+    const withUnifiedSelection = toRxjsObservable(modifications).pipe(
       takeUntil(this._cancelled),
       tap({
         next: ({ selectedNodeItems, deselectedNodeItems }) => {
@@ -108,9 +107,9 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     return super.onSelectionModified({ modifications: withUnifiedSelection });
   }
 
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
+  public override onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
     let firstEmission = true;
-    const withUnifiedSelection = from(replacements).pipe(
+    const withUnifiedSelection = toRxjsObservable(replacements).pipe(
       takeUntil(this._cancelled),
       tap({
         next: ({ selectedNodeItems }) => {
@@ -226,8 +225,8 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
 }
 
 /**
- * A custom hook which creates and disposes `UnifiedSelectionTreeEventHandler`
- * @beta
+ * A custom hook which creates and disposes [[UnifiedSelectionTreeEventHandler]]
+ * @public
  */
 export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams) {
   return useDisposable(useCallback(

@@ -110,23 +110,8 @@ export class BezierCurve3d extends BezierCurveBase {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
   /** Clone as a bezier 3d. */
-  public clone(): BezierCurve3d {
+  public override clone(): BezierCurve3d {
     return new BezierCurve3d(this._polygon.clonePolygon());
-  }
-  /** Clone the interval from f0 to f1. */
-  public clonePartialCurve(f0: number, f1: number): BezierCurve3d | undefined {
-    const partialCurve = new BezierCurve3d(this._polygon.clonePolygon());
-    partialCurve._polygon.subdivideToIntervalInPlace(f0, f1);
-    return partialCurve;
-  }
-
-  /**
-   * Return a curve after transform.
-   */
-  public cloneTransformed(transform: Transform): BezierCurve3d {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
   }
   /** Return a (de-weighted) point on the curve. If de-weight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
@@ -159,7 +144,7 @@ export class BezierCurve3d extends BezierCurveBase {
     return result;
   }
   /** Near-equality test on poles. */
-  public isAlmostEqual(other: any): boolean {
+  public override isAlmostEqual(other: any): boolean {
     if (other instanceof BezierCurve3d) {
       return this._polygon.isAlmostEqual(other._polygon);
     }
@@ -204,7 +189,7 @@ export class BezierCurve3d extends BezierCurveBase {
       const data = this._polygon.packedData;
       for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
         // apply one row of the transform to get the transformed coff by itself
-        for (let i = 0, k = 0; i < order; i++ , k += 3)
+        for (let i = 0, k = 0; i < order; i++, k += 3)
           componentCoffs[i] = transform.multiplyComponentXYZ(axisIndex, data[k], data[k + 1], data[k + 2]);
         BezierPolynomialAlgebra.univariateDifference(componentCoffs, bezier.coffs);
         const roots = bezier.roots(0.0, true);

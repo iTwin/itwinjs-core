@@ -6,7 +6,7 @@
 
 const path = require("path");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
-const { BackendDefaultsPlugin } = require("@bentley/webpack-tools-core");
+const { BackendDefaultsPlugin } = require("@itwin/core-webpack-tools");
 
 function getWebpackConfig(srcFile, outDir, profile) {
   return {

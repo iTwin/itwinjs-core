@@ -1,27 +1,30 @@
 {
-  "name": "@bentley/hypermodeling-frontend",
-  "version": "2.14.0-dev.9",
-  "description": "iModel.js hypermodeling package",
-  "main": "lib/hypermodeling-frontend.js",
-  "imodeljsSharedLibrary": true,
+  "name": "@itwin/hypermodeling-frontend",
+  "version": "3.3.0-dev.9",
+  "description": "iTwin.js hypermodeling package",
+  "main": "lib/cjs/hypermodeling-frontend.js",
+  "module": "lib/esm/hypermodeling-frontend.js",
+  "typings": "lib/cjs/hypermodeling-frontend",
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "build": "npm run -s copy:public && npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
-    "cover": "npm test -- --cover",
+    "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
+    "cover": "npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/hypermodeling-frontend/file.json --tsIndexFile=./hypermodeling-frontend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=hypermodeling-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "npm run webpackTests && certa -r chrome",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
+    "test": "npm run -s webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/hypermodeling-frontend"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/hypermodeling-frontend"
   },
   "keywords": [
     "Bentley",
@@ -34,44 +37,43 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.9",
-    "@bentley/geometry-core": "^2.14.0-dev.9",
-    "@bentley/imodeljs-common": "^2.14.0-dev.9",
-    "@bentley/imodeljs-frontend": "^2.14.0-dev.9",
-    "@bentley/imodeljs-i18n": "^2.14.0-dev.9",
-    "@bentley/ui-abstract": "^2.14.0-dev.9"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9",
+    "@itwin/core-common": "workspace:^3.3.0-dev.9",
+    "@itwin/core-frontend": "workspace:^3.3.0-dev.9",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.9"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.9",
-    "@bentley/build-tools": "2.14.0-dev.9",
-    "@bentley/certa": "2.14.0-dev.9",
-    "@bentley/eslint-plugin": "2.14.0-dev.9",
-    "@bentley/geometry-core": "2.14.0-dev.9",
-    "@bentley/imodeljs-common": "2.14.0-dev.9",
-    "@bentley/imodeljs-frontend": "2.14.0-dev.9",
-    "@bentley/imodeljs-i18n": "2.14.0-dev.9",
-    "@bentley/ui-abstract": "2.14.0-dev.9",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "10.14.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
-    "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "cpx2": "^3.0.0",
+    "eslint": "^7.11.0",
     "glob": "^7.1.2",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.4.0",
     "webpack": "4.42.0"
   },
+  "dependencies": {
+    "@itwin/appui-abstract": "workspace:*"
+  },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -334,13 +334,11 @@ export class SchemaPartVisitorDelegate {
    * @param schemaPart The schema part to pass to the visitor methods.
    */
   public async visitSchemaPart(schemaPart: AnyECType): Promise<void> {
-    const schemaItem = schemaPart as SchemaItem;
-
-    if (schemaPart instanceof SchemaItem) {
-      await this.visitSchemaItem(schemaItem);
-    } else if (schemaPart instanceof Property && this._visitor.visitProperty) {
+    if (SchemaItem.isSchemaItem(schemaPart)) {
+      await this.visitSchemaItem(schemaPart);
+    } else if (Property.isProperty(schemaPart) && this._visitor.visitProperty) {
       await this._visitor.visitProperty(schemaPart);
-    } else if (schemaPart instanceof RelationshipConstraint && this._visitor.visitRelationshipConstraint) {
+    } else if (RelationshipConstraint.isRelationshipConstraint(schemaPart) && this._visitor.visitRelationshipConstraint) {
       await this._visitor.visitRelationshipConstraint(schemaPart);
     }
 
@@ -355,13 +353,11 @@ export class SchemaPartVisitorDelegate {
    * @param schemaPart The schema part to pass to the visitor methods.
    */
   public visitSchemaPartSync(schemaPart: AnyECType): void {
-    const schemaItem = schemaPart as SchemaItem;
-
-    if (schemaPart instanceof SchemaItem) {
-      this.visitSchemaItemSync(schemaItem);
-    } else if (schemaPart instanceof Property && this._visitor.visitPropertySync) {
+    if (SchemaItem.isSchemaItem(schemaPart)) {
+      this.visitSchemaItemSync(schemaPart);
+    } else if (Property.isProperty(schemaPart) && this._visitor.visitPropertySync) {
       this._visitor.visitPropertySync(schemaPart);
-    } else if (schemaPart instanceof RelationshipConstraint && this._visitor.visitRelationshipConstraintSync) {
+    } else if (RelationshipConstraint.isRelationshipConstraint(schemaPart) && this._visitor.visitRelationshipConstraintSync) {
       this._visitor.visitRelationshipConstraintSync(schemaPart);
     }
 
@@ -373,7 +369,7 @@ export class SchemaPartVisitorDelegate {
     if (this._visitor.visitSchemaItem)
       await this._visitor.visitSchemaItem(schemaItem);
 
-    if (schemaItem instanceof ECClass && this._visitor.visitClass)
+    if (ECClass.isECClass(schemaItem) && this._visitor.visitClass)
       await this._visitor.visitClass(schemaItem as AnyClass);
 
     switch (schemaItem.schemaItemType) {
@@ -440,7 +436,7 @@ export class SchemaPartVisitorDelegate {
     if (this._visitor.visitSchemaItemSync)
       this._visitor.visitSchemaItemSync(schemaItem);
 
-    if (schemaItem instanceof ECClass && this._visitor.visitClassSync)
+    if (ECClass.isECClass(schemaItem) && this._visitor.visitClassSync)
       this._visitor.visitClassSync(schemaItem as AnyClass);
 
     switch (schemaItem.schemaItemType) {

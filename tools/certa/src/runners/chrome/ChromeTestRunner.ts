@@ -16,13 +16,14 @@ interface ChromeTestResults {
   coverage: any;
 }
 
-type ConsoleMethodName = keyof typeof console;
+type ConsoleMethodName = "log" | "error" | "dir";
 
 let browser: puppeteer.Browser;
 let webserverProcess: ChildProcess;
 
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
+  public static readonly supportsCleanup = true;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Go ahead and launch puppeteer now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
     const options = {
@@ -64,7 +65,7 @@ export class ChromeTestRunner {
     if (config.cover)
       writeCoverageData(coverage);
 
-    process.exit(failures);
+    process.exitCode = failures;
   }
 }
 
@@ -97,6 +98,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
+      await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
@@ -108,7 +110,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       // ...and start the tests
       await page.evaluate(async () => {
         // NB: This is being evaluated in the frontend context!
-        Mocha.reporters.Base.useColors = true;
+        Mocha.reporters.Base.color = true as any;
         const globals = window as any;
         mocha.run((failures) => {
           const coverage = globals.__coverage__;

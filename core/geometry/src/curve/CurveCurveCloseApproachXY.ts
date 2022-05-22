@@ -166,10 +166,10 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     let globalFractionA1, globalFractionB1;
     const isInterval = intervalDetails !== undefined && intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
     if (isInterval) {
-      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails!.detailA.fraction, fractionA1);
-      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails!.detailB.fraction, fractionB1);
-      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails!.detailA.fraction1!, fractionA1);
-      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails!.detailB.fraction1!, fractionB1);
+      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
+      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
+      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1!, fractionA1);
+      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1!, fractionB1);
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
@@ -701,7 +701,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   private static _workPointB0 = Point3d.create();
   // private static _workPointB1 = Point3d.create();
   /** double dispatch handler for strongly typed segment.. */
-  public handleLineSegment3d(segmentA: LineSegment3d): any {
+  public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       const segmentB = this._geometryB;
       this.dispatchSegmentSegment(
@@ -770,7 +770,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
   }
   /** double dispatch handler for strongly typed linestring.. */
-  public handleLineString3d(lsA: LineString3d): any {
+  public override handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
       const lsB = this._geometryB;
       this.computeLineStringLineString(lsA, lsB, false);
@@ -784,7 +784,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     return undefined;
   }
   /** double dispatch handler for strongly typed arc .. */
-  public handleArc3d(arc0: Arc3d): any {
+  public override handleArc3d(arc0: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
         this._geometryB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0,
@@ -799,7 +799,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     return undefined;
   }
   /** double dispatch handler for strongly typed bspline curve .. */
-  public handleBSplineCurve3d(curve: BSplineCurve3d): any {
+  public override handleBSplineCurve3d(curve: BSplineCurve3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(this._geometryB, curve, true);
     } else if (this._geometryB instanceof LineString3d) {
@@ -812,7 +812,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     return undefined;
   }
   /** double dispatch handler for strongly typed homogeneous bspline curve .. */
-  public handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
+  public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
     /* NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH ..."easy" if both present BezierCurve3dH span loaders
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(

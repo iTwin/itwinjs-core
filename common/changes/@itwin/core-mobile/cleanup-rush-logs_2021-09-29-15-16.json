@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/electron-manager",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/electron-manager"
+}

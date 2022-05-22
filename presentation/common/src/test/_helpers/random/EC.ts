@@ -6,10 +6,16 @@ import * as faker from "faker";
 import * as ec from "../../../presentation-common/EC";
 import { createRandomId, nullable } from "./Misc";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstanceId = (): ec.InstanceId => {
   return createRandomId();
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstanceKey = (): ec.InstanceKey => {
   return {
     className: faker.random.word(),
@@ -17,6 +23,9 @@ export const createRandomECInstanceKey = (): ec.InstanceKey => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstanceKeyJSON = (): ec.InstanceKeyJSON => {
   return {
     className: faker.random.word(),
@@ -24,6 +33,9 @@ export const createRandomECInstanceKeyJSON = (): ec.InstanceKeyJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECClassInfo = (): ec.ClassInfo => {
   return {
     id: createRandomECInstanceId(),
@@ -32,6 +44,9 @@ export const createRandomECClassInfo = (): ec.ClassInfo => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
   return {
     id: createRandomId(),
@@ -40,6 +55,9 @@ export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
   return {
     sourceClassInfo: createRandomECClassInfo(),
@@ -51,6 +69,9 @@ export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRelatedClassInfoJSON = (): ec.RelatedClassInfoJSON => {
   return {
     sourceClassInfo: createRandomECClassInfoJSON(),
@@ -62,6 +83,9 @@ export const createRandomRelatedClassInfoJSON = (): ec.RelatedClassInfoJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--)
@@ -69,6 +93,9 @@ export const createRandomRelationshipPath = (length: number = 2): ec.Relationshi
   return path;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathJSON => {
   const path = new Array<ec.RelatedClassInfoJSON>();
   while (length--)
@@ -76,6 +103,9 @@ export const createRandomRelationshipPathJSON = (length: number = 2): ec.Relatio
   return path;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPropertyInfoJSON = (): ec.PropertyInfoJSON => ({
   classInfo: createRandomECClassInfoJSON(),
   name: faker.random.word(),

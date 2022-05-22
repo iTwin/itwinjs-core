@@ -1,0 +1,81 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./variables";
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/itwinui-css/scss/style/variables";
+
+// cspell:ignore unbordered
+
+/// Mixins ---------------------------------------------------------------------
+
+@mixin uicore-buttons-button {
+
+  display:                inline-block;
+
+  padding:                $uicore-button-padding $uicore-unbordered-padding;
+  margin:                 $uicore-inputs-margin 0;
+  border-radius:          $iui-border-radius;
+  line-height:            $uicore-button-line-height;
+  outline:                none;
+  font-family:            $iui-font-family;
+  font-size:              $iui-font-size;
+  text-decoration:        none;
+  cursor:                 pointer;
+  box-sizing:             border-box;
+  box-shadow:             transparent 0px 1px 1px inset;
+  border:                 1px solid transparent;
+  transition:             all $iui-speed-fast ease-in-out;
+
+  &:active,
+  &:focus {
+
+    @include uicore-buttons-button-focused;
+  }
+
+  &[disabled],
+  &[disabled]:hover,
+  &[disabled]:active,
+  &[disabled]:focus {
+
+    @include uicore-buttons-button-disabled;
+  }
+}
+
+@mixin uicore-buttons-button-focused {
+
+  box-shadow:           $uicore-button-focus-boxshadow;
+}
+
+@mixin uicore-buttons-button-unbordered {
+
+  border-color:         transparent;
+  box-shadow:           transparent 0px 1px 1px inset;
+}
+
+@mixin uicore-buttons-button-disabled {
+
+  opacity:                $uicore-opacity-disabled;
+  background-color:       $uicore-gray;
+  border:                 0;
+  color:                  $uicore-white;
+  cursor:                 not-allowed;
+}
+
+@mixin uicore-buttons-large-size {
+
+  padding:                $uicore-inputs-padding-large $uicore-unbordered-padding-large;
+  margin:                 $uicore-inputs-margin-large 0;
+  font-size:              $iui-font-size-leading;
+  font-weight:            $iui-font-weight-normal;
+}
+
+@mixin uicore-buttons-large-bordered-size {
+
+  padding:                $uicore-button-padding-bordered-large $uicore-bordered-padding-large;
+  margin:                 $uicore-inputs-margin-large 0;
+  font-size:              $iui-font-size-leading;
+  font-weight:            $iui-font-weight-normal;
+}

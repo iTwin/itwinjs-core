@@ -8,6 +8,14 @@ export interface TestAppConfiguration {
   startWithSnapshots?: boolean;
   reactAxeConsole?: boolean;
   useLocalSettings?: boolean;
+  bingMapsKey?: string;
+  mapBoxKey?: string;
+  cesiumIonKey?: string;
+
+  // ArcGis OAuth2 configuration
+  arcGisOnlineClientId?: string;
+  arcGisEnterpriseBaseUrl?: string;
+  arcGisEnterpriseClientId?: string;
 }
 
 export const loggerCategory = "ui-test-app";

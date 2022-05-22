@@ -2,22 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LoremIpsum } from "lorem-ipsum";
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import {
-  AlternateDateFormats, BasePropertyEditorParams, DateFormatter, InputEditorSizeParams, Primitives, PropertyDescription,
-  PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat, RangeEditorParams,
-  SliderEditorParams, StandardEditorNames, StandardTypeNames, TimeDisplay,
-} from "@bentley/ui-abstract";
+  DateFormatter, Primitives, PropertyRecord, PropertyValue, StandardTypeNames,
+} from "@itwin/appui-abstract";
 import {
-  ColumnDescription, FilterRenderer, LessGreaterOperatorProcessor,
-  PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider,
-  Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
-} from "@bentley/ui-components";
-import { BodyText, Toggle } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+  ColumnDescription, LessGreaterOperatorProcessor,
+  PropertyUpdatedArgs, SelectionMode, Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
+} from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
+import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
+import { BodyText, Gap } from "@itwin/core-react";
+import { TableExampleData } from "./TableExampleData";
 
 class TableExampleContentControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = <TableExampleContent />;
+  }
+}
+
+export class TableExampleWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -36,192 +43,9 @@ interface TableExampleState {
   useUtc: boolean;
 }
 
-const createPropertyRecord = (value: any, column: ColumnDescription, typename: string, editor?: PropertyEditorInfo) => {
-  const v: PropertyValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-    displayValue: value,
-  };
-  const pd: PropertyDescription = {
-    typename,
-    name: column.key,
-    displayLabel: column.label,
-    editor,
-  };
-  column.propertyDescription = pd;
-  return new PropertyRecord(v, pd);
-};
-
-const createDatePropertyRecord = (value: any, column: ColumnDescription, option: number) => {
-  const v: PropertyValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-  };
-
-  let typename = StandardTypeNames.DateTime;
-  let converter: any;
-
-  switch (option) {
-    case 0:
-      typename = StandardTypeNames.DateTime;
-      break;
-    case 1:
-      typename = StandardTypeNames.ShortDate;
-      break;
-    case 2:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { timeDisplay: TimeDisplay.H24M } }; // DateTime with 24hr time
-      break;
-    case 3:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { timeDisplay: TimeDisplay.H24MS } }; // DateTime with 24hr time
-      break;
-    case 4:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { timeDisplay: TimeDisplay.H12MSC } }; // DateTime with 12hr time
-      break;
-    case 5:
-      typename = StandardTypeNames.ShortDate;
-      converter = { name: "mm-dd-yyyy" };
-      break;
-    case 6:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoDateTime } };
-      break;
-    case 7:
-      typename = StandardTypeNames.ShortDate;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoShort } };
-      break;
-    case 8:
-      typename = StandardTypeNames.ShortDate;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShort } };
-      break;
-    case 9:
-      typename = StandardTypeNames.ShortDate;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShortWithDay } };
-      break;
-    case 10:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTime } };
-      break;
-    case 11:
-      typename = StandardTypeNames.DateTime;
-      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay } };
-      break;
-  }
-
-  const pd: PropertyDescription = {
-    typename, // ShortDate | DateTime
-    converter,
-    name: column.key,
-    displayLabel: column.label,
-  };
-  column.propertyDescription = pd;
-  return new PropertyRecord(v, pd);
-};
-
-const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) => {
-  const value = rowIndex % 4;
-  const v: PropertyValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-    displayValue: value.toString(),
-  };
-  const pd: PropertyDescription = {
-    typename: StandardTypeNames.Enum,
-    name: column.key,
-    displayLabel: column.label,
-  };
-  column.propertyDescription = pd;
-  const enumPropertyRecord = new PropertyRecord(v, pd);
-  enumPropertyRecord.property.enum = { choices: [], isStrict: false };
-  enumPropertyRecord.property.enum.choices = [
-    { label: "Yellow", value: 0 },
-    { label: "Red", value: 1 },
-    { label: "Green", value: 2 },
-    { label: "Blue", value: 3 },
-  ];
-  return enumPropertyRecord;
-};
-
-const createLoremPropertyRecord = (column: ColumnDescription) => {
-  const lorem = new LoremIpsum();
-  const value = lorem.generateWords(5);
-
-  const v: PropertyValue = {
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-    displayValue: value,
-  };
-
-  const editorParams: BasePropertyEditorParams[] = [];
-  const inputSizeParams: InputEditorSizeParams = {
-    type: PropertyEditorParamTypes.InputEditorSize,
-    size: 30,
-  };
-  editorParams.push(inputSizeParams);
-
-  const pd: PropertyDescription = {
-    typename: StandardTypeNames.Text,
-    name: column.key,
-    displayLabel: column.label,
-    editor: { name: StandardEditorNames.MultiLine, params: editorParams },
-  };
-  column.propertyDescription = pd;
-  return new PropertyRecord(v, pd);
-};
-
-class TableExampleContent extends React.Component<{}, TableExampleState>  {
-  public readonly state: Readonly<TableExampleState>;
-
-  private _columns: ColumnDescription[] = [
-    {
-      key: "id",
-      label: "ID",
-      resizable: true,
-      sortable: true,
-      width: 90,
-      editable: true,
-      filterable: true,
-      filterRenderer: FilterRenderer.Numeric,
-    },
-    {
-      key: "date",
-      label: "Date",
-      sortable: true,
-      resizable: true,
-      editable: true,
-      filterable: true,
-      filterRenderer: FilterRenderer.MultiSelect,
-    },
-    {
-      key: "title",
-      label: "Title",
-      sortable: true,
-      resizable: true,
-      editable: true,
-      filterable: true,
-      filterRenderer: FilterRenderer.MultiSelect,
-    },
-    {
-      key: "color",
-      label: "Color",
-      sortable: true,
-      resizable: true,
-      editable: true,
-      width: 180,
-      filterable: true,
-      filterRenderer: FilterRenderer.SingleSelect,
-    },
-    {
-      key: "lorem",
-      label: "Lorem",
-      resizable: true,
-      editable: true,
-      filterable: true,
-      filterRenderer: FilterRenderer.Text,
-    },
-  ];
+export class TableExampleContent extends React.Component<{}, TableExampleState>  {
+  public override readonly state: Readonly<TableExampleState>;
+  private _tableExampleData = new TableExampleData();
 
   constructor(props: any) {
     super(props);
@@ -238,96 +62,22 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
   }
 
   private loadData(useUtc: boolean) {
-    const editorParams: BasePropertyEditorParams[] = [];
-    const sliderParams: SliderEditorParams = {
-      type: PropertyEditorParamTypes.Slider,
-      minimum: 1,
-      maximum: 100,
-      step: 1,
-      showTooltip: true,
-      tooltipBelow: true,
-    };
-    const rangeParams: RangeEditorParams = {
-      type: PropertyEditorParamTypes.Range,
-      minimum: 1,
-      maximum: 100,
-    };
-    editorParams.push(sliderParams);
-    editorParams.push(rangeParams);
+    this._tableExampleData.loadData(useUtc);
 
-    const rows = new Array<RowItem>();
-    for (let i = 1; i <= 1000 /* 00 */; i++) {
-      const row: RowItem = { key: i.toString(), cells: [] };
-      row.cells.push({
-        key: this._columns[0].key,
-        record: createPropertyRecord(i, this._columns[0], StandardTypeNames.Int, { name: StandardEditorNames.Slider, params: editorParams }),
-      });
-      const monthValue = i % 12;
-      const dayValue = i % 28;
-      const day = new Date();
-      if (useUtc) {
-        day.setUTCFullYear(2019, monthValue, dayValue);
-        day.setUTCHours(0, 0, 0, 0);
-      } else {
-        day.setFullYear(2019, monthValue, dayValue);
-        day.setHours(0, 0, 0, 0);
-      }
-      row.cells.push({
-        key: this._columns[1].key,
-        record: createDatePropertyRecord(day, this._columns[1], (i - 1) % 12), // 12 different options (0-11)
-      });
-      row.cells.push({
-        key: this._columns[2].key,
-        record: createPropertyRecord(`Title ${i}`, this._columns[2], StandardTypeNames.String),
-      });
-      row.cells.push({
-        key: this._columns[3].key,
-        record: createEnumPropertyRecord(i, this._columns[3]),
-      });
-      row.cells.push({
-        key: this._columns[4].key,
-        record: createLoremPropertyRecord(this._columns[4]),
-      });
-      rows.push(row);
-    }
-
-    const dataProvider = new SimpleTableDataProvider(this._columns);
-    dataProvider.setItems(rows);
+    const dataProvider = this._tableExampleData.dataProvider;
     this.setState({ dataProvider });
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.loadData(this.state.useUtc);
   }
 
-  private _onChangeSelectionMode = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    let selectionMode: SelectionMode;
-
-    switch (e.target.value) {
-      case "1":
-        selectionMode = SelectionMode.Single;
-        break;
-      case "5":
-        selectionMode = SelectionMode.SingleAllowDeselect;
-        break;
-      case "6":
-        selectionMode = SelectionMode.Multiple;
-        break;
-      case "12":
-        selectionMode = SelectionMode.Extended;
-        break;
-      default: selectionMode = SelectionMode.Single;
-    }
-    this.setState({ selectionMode });
+  private _onChangeSelectionMode = (newValue: SelectionMode) => {
+    this.setState({ selectionMode: newValue });
   };
 
-  private _onChangeTableSelectionTarget = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target.value === "0") {
-      this.setState({ tableSelectionTarget: TableSelectionTarget.Row });
-      return;
-    }
-
-    this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
+  private _onChangeTableSelectionTarget = (newValue: TableSelectionTarget) => {
+    this.setState({ tableSelectionTarget: newValue });
   };
 
   private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
@@ -370,13 +120,16 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
   };
 
-  private _onUtcChange = (checked: boolean) => {
+  private _onUtcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     this.setState({ useUtc: checked });
     this.loadData(checked);
   };
 
-  private _onFilteringChange = (checked: boolean) => {
-    this._columns.forEach((column: ColumnDescription) => {
+  private _onFilteringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    this.setState({ filtering: checked });
+    this._tableExampleData.columns.forEach((column: ColumnDescription) => {
       column.filterable = checked;
     });
     if (this.state.dataProvider) {
@@ -385,42 +138,47 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     }
   };
 
-  public render(): React.ReactNode {
+  private _selectionModes: SelectOption<SelectionMode>[] = [
+    { value: SelectionMode.Single, label: "Single" },
+    { value: SelectionMode.SingleAllowDeselect, label: "Single Allow Deselect" },
+    { value: SelectionMode.Multiple, label: "Multiple" },
+    { value: SelectionMode.Extended, label: "Extended" },
+  ];
+
+  private _selectionTargets: SelectOption<TableSelectionTarget>[] = [
+    { value: TableSelectionTarget.Row, label: "Row" },
+    { value: TableSelectionTarget.Cell, label: "Cell" },
+  ];
+
+  public override render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
-        <div style={{ marginTop: "3px", marginBottom: "4px" }}>
-          <select onChange={this._onChangeSelectionMode} aria-label="Selection Mode">
-            <option value={SelectionMode.Single}>Single</option>
-            <option value={SelectionMode.SingleAllowDeselect}>SingleAllowDeselect</option>
-            <option value={SelectionMode.Multiple}>Multiple</option>
-            <option value={SelectionMode.Extended}>Extended</option>
-          </select>
+        <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
+          <Select onChange={this._onChangeSelectionMode} aria-label="Selection Mode" value={this.state.selectionMode} options={this._selectionModes} size="small" />
           <Gap />
-          <select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target">
-            <option value={TableSelectionTarget.Row}>Row</option>
-            <option value={TableSelectionTarget.Cell}>Cell</option>
-          </select>
+          <Select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target" value={this.state.tableSelectionTarget} options={this._selectionTargets} size="small" />
           <Gap />
           <label>
             <BodyText>Top row:</BodyText>
             &nbsp;
-            <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <Input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} size="small" />
             &nbsp;
             <span>({this.state.topRow})</span>
           </label>
           <Gap />
-          <label>
+          <label style={{ display: "flex" }}>
             <BodyText>Filtering:</BodyText>
             &nbsp;
-            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
+            <ToggleSwitch checked={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
-          <label>
+          <Gap />
+          <label style={{ display: "flex" }}>
             <BodyText>UTC:</BodyText>
             &nbsp;
-            <Toggle isOn={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
+            <ToggleSwitch checked={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
           </label>
         </div>
-        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
+        <div style={{ flex: "1", height: "calc(100% - 32px)" }}>
           {this.state.dataProvider &&
             <Table
               dataProvider={this.state.dataProvider}
@@ -436,12 +194,6 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       </div>
     );
   }
-}
-
-function Gap() {
-  return (
-    <span style={{ paddingLeft: "10px" }} />
-  );
 }
 
 ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);
@@ -485,7 +237,7 @@ class MdyFormatter implements DateFormatter {
 class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
   private _formatter = new MdyFormatter();
 
-  public convertToString(value?: Primitives.Value) {
+  public override convertToString(value?: Primitives.Value) {
     if (value === undefined)
       return "";
 
@@ -499,24 +251,24 @@ class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOpera
     return value.toString();
   }
 
-  public convertFromString(value: string) {
+  public override convertFromString(value: string) {
     if (!value)
       return undefined;
 
     return this._formatter.parseDate(value);
   }
 
-  public get isLessGreaterType(): boolean { return true; }
+  public override get isLessGreaterType(): boolean { return true; }
 
   public sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number {
     return valueA.valueOf() - valueB.valueOf();
   }
 
-  public isEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() === valueB.valueOf();
   }
 
-  public isNotEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isNotEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() !== valueB.valueOf();
   }
 

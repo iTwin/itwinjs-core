@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/space";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/scrollbar";
 
 /* frontstage */
 .imodelindex {
   background-color: $uicore-gray-b;
   color: $uicore-text-color;
   height: 100%;
-  padding: $uicore-l 55px;
+  padding: $iui-l 55px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -30,7 +30,7 @@
 
     /* thumbnail container */
     .thumbnail {
-      margin: $uicore-m;
+      margin: $iui-m;
       width: 150px;
       height: 100px;
       border: 1px solid $uicore-gray-a;
@@ -39,16 +39,17 @@
       justify-content: center;
 
       /* thumbnail */
-      > img {
+      >img {
         width: 100%;
         height: 100%;
       }
 
       /* default image when no thumbnail is available */
-      > svg {
+      >svg {
         width: 50%;
 
-        path, circle {
+        path,
+        circle {
           fill: #cccccc;
         }
       }
@@ -59,7 +60,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: $uicore-m;
+      padding: $iui-m;
       box-sizing: border-box;
       border-left: 1px;
       border-right: 1px;
@@ -67,17 +68,17 @@
       border-bottom: 0;
       border-style: solid;
       border-color: $uicore-gray-a;
-      color: rgba($uicore-text-color,.85);
-      font-size: $uicore-font-size;
+      color: rgba($uicore-text-color, .85);
+      font-size: $iui-font-size;
 
       /* imodel name */
-      > span:first-child {
-        font-size: $uicore-font-size-title;
+      >span:first-child {
+        font-size: $iui-font-size-title;
         opacity: .85;
       }
 
-      > span:nth-child(2) {
-        margin: $uicore-s 0;
+      >span:nth-child(2) {
+        margin: $iui-s 0;
       }
     }
 
@@ -87,11 +88,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0 $uicore-xl;
+      padding: 0 $iui-xl;
       min-width: 260px;
       box-sizing: border-box;
-      color: rgba($uicore-text-color,.65);
-      font-size: $uicore-font-size;
+      color: rgba($uicore-text-color, .65);
+      font-size: $iui-font-size;
 
       .checkmark-circle {
         stroke-dasharray: 166;
@@ -120,7 +121,7 @@
         stroke-miterlimit: 10;
         animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
 
-        &.success{
+        &.success {
           box-shadow: inset 0px 0px 0px #7ac142;
         }
 
@@ -153,7 +154,7 @@
 
   .imodelindex-container {
     flex: 1;
-    margin-top: $uicore-xl;
+    margin-top: $iui-xl;
     display: flex;
     flex-direction: column;
     background: $uicore-gray-c;
@@ -165,12 +166,12 @@
     .imodelindex-tabheader {
       display: flex;
       align-items: center;
-      margin-top: $uicore-sm;
+      margin-top: $iui-sm;
 
       .header-content {
         display: flex;
         margin-left: auto;
-        margin-right: $uicore-m;
+        margin-right: $iui-m;
       }
     }
 
@@ -201,13 +202,14 @@
       align-items: center;
       justify-content: center;
       z-index: 10;
-      opacity:0;  /* make things invisible upon start */
+      opacity: 0;
+      /* make things invisible upon start */
       -webkit-animation: show ease-in .4s;
       -moz-animation: show ease-in .4s;
       animation: show ease-in .4s;
-      -webkit-animation-fill-mode:forwards;
-      -moz-animation-fill-mode:forwards;
-      animation-fill-mode:forwards;
+      -webkit-animation-fill-mode: forwards;
+      -moz-animation-fill-mode: forwards;
+      animation-fill-mode: forwards;
       -webkit-animation-duration: .4s;
       -moz-animation-duration: .4s;
       animation-duration: .4s;
@@ -220,9 +222,9 @@
         background: white;
         color: #7b7b7b;
         border: 1px solid #ccc;
-        -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-        -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-         box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
       }
     }
   }
@@ -230,14 +232,15 @@
 
 /* Add Zoom Animation */
 .fade-in {
-  opacity:0;  /* make things invisible upon start */
+  opacity: 0;
+  /* make things invisible upon start */
   -webkit-animation: show ease-in .4s;
   -moz-animation: show ease-in .4s;
   animation: show ease-in .4s;
 
-  -webkit-animation-fill-mode:forwards;
-  -moz-animation-fill-mode:forwards;
-  animation-fill-mode:forwards;
+  -webkit-animation-fill-mode: forwards;
+  -moz-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
 
   -webkit-animation-duration: .4s;
   -moz-animation-duration: .4s;
@@ -259,14 +262,19 @@
     stroke-dashoffset: 0;
   }
 }
+
 @keyframes scale {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: none;
   }
+
   50% {
     transform: scale3d(1.1, 1.1, 1);
   }
 }
+
 @keyframes fill {
   100% {
     box-shadow: inset 0px 0px 0px 1px #7ac142;
@@ -274,11 +282,21 @@
 }
 
 @-webkit-keyframes show {
-  0%   {opacity: 0;}
-  100% {opacity: 1;}
+  0% {
+    opacity: 0;
   }
 
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes show {
-  0%   {opacity: 0;}
-  100% {opacity: 1;}
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

@@ -5,8 +5,7 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { FileHandler } from "@bentley/itwin-client";
+import { FileHandler } from "../itwin-client/FileHandler";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 
 /**
@@ -14,7 +13,6 @@ import { IModelBaseHandler } from "../imodelhub/BaseHandler";
  * @internal
  */
 export class IModelBankHandler extends IModelBaseHandler {
-  private _baseUrl: string;
 
   /**
    * Creates an instance of IModelBankWsgClient.
@@ -23,27 +21,23 @@ export class IModelBankHandler extends IModelBaseHandler {
    */
   public constructor(url: string, handler: FileHandler | undefined, keepAliveDuration = 30000) {
     super(keepAliveDuration, handler);
-    this._baseUrl = url;
+    this.baseUrl = url;
     if (url.startsWith("http://")) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       this._agent = require("http").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration });
     }
   }
 
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
+  public override baseUrl?: string;
 
-  public get baseUrl(): string {
-    return this._baseUrl;
-  }
-
-  public async getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
+  public override async getUrl(excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return this._url;
 
-    this._url = this._baseUrl;
+    this._url = this.baseUrl;
     if (!excludeApiVersion) {
       this._url += `/${this.apiVersion}`;
     }
-    return this._url;
+    return this._url!;
   }
 }

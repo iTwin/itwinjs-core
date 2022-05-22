@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import { Buffer } from "buffer";
 import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
@@ -30,7 +31,7 @@ export namespace MarshalingBinaryMarker {
   }
 }
 
-/** @public */
+/** @internal */
 export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
@@ -38,7 +39,7 @@ export interface RpcSerializedValue {
   stream?: Readable;
 }
 
-/** @public */
+/** @internal */
 export namespace RpcSerializedValue {
   export function create(objects = "", data: Uint8Array[] = []): RpcSerializedValue {
     return { objects, data };

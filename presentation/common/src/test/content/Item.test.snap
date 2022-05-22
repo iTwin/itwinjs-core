@@ -70,30 +70,6 @@ Object {
 }
 `;
 
-exports[`Item fromJSON creates valid Item from valid JSON without classInfo 1`] = `
-Object {
-  "classInfo": undefined,
-  "displayValues": Object {
-    "key1": "Rubber one-to-one Barbados Dollar",
-    "key2": "Quetzal context-sensitive",
-  },
-  "imageId": "64b46a85-7e4f-428a-98df-26ce9acb15ed",
-  "labelDefinition": Object {
-    "displayValue": "Washington",
-    "rawValue": "Common",
-    "typeName": "string",
-  },
-  "mergedFieldNames": Array [
-    "key1",
-  ],
-  "primaryKeys": Array [],
-  "values": Object {
-    "key1": 56931,
-    "key2": "Optimization Kazakhstan Personal Loan Account",
-  },
-}
-`;
-
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
 Object {
   "classInfo": Object {

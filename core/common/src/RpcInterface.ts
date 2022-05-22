@@ -12,10 +12,10 @@ import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
-/** @public */
+/** @internal */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
-/** @public */
+/** @internal */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
@@ -35,13 +35,15 @@ export abstract class RpcInterface {
     }
   }
 
-  /** The configuration for the RPC interface. */
+  /** The configuration for the RPC interface.
+   * @internal
+   */
   public readonly configuration: RpcConfiguration;
 
-  /** @alpha */
+  /** @internal */
   public readonly routing: RpcRoutingToken;
 
-  /** @alpha */
+  /** @internal */
   public constructor(routing: RpcRoutingToken = RpcRoutingToken.default) {
     this.routing = routing;
     this.configuration = RpcConfiguration.supply(this);

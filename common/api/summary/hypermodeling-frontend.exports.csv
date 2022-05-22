@@ -1,16 +1,16 @@
 sep=;
 Release Tag;API Item
-beta;createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise
-beta;HyperModeling
-beta;HyperModelingConfig
-beta;HyperModelingDecorator 
+public;createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise
+public;HyperModeling
+public;HyperModelingConfig
+public;HyperModelingDecorator 
 internal;MarkerData
-beta;SectionDrawingLocationState
+public;SectionDrawingLocationState
 internal;SectionDrawingLocationStateData
-beta;SectionGraphicsConfig
-beta;SectionMarker 
+public;SectionGraphicsConfig
+public;SectionMarker 
 internal;SectionMarkerCluster 
-beta;SectionMarkerConfig
-beta;SectionMarkerHandler
-beta;SectionMarkerSet 
-beta;SectionViewAttachment
+public;SectionMarkerConfig
+public;SectionMarkerHandler
+public;SectionMarkerSet 
+public;SectionViewAttachment

@@ -3,30 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
+import { IpcHandler } from "@itwin/core-backend";
+import { getConfig } from "../common/DtaConfiguration";
 
-const getWindowSize = () => {
-  let width = 1280;
-  let height = 800;
-  const sizeStr = process.env.SVT_WINDOW_SIZE;
-  if (typeof sizeStr === "string") {
-    const parts = sizeStr.split(",");
+const mainWindowName = "mainWindow";
+const getWindowSize = (winSize?: string) => {
+  if (undefined !== winSize) {
+    const parts = winSize.split(",");
     if (parts.length === 2) {
-      const w = Number.parseInt(parts[0], 10);
-      const h = Number.parseInt(parts[1], 10);
+      let width = Number.parseInt(parts[0], 10);
+      let height = Number.parseInt(parts[1], 10);
 
-      if (!Number.isNaN(w))
-        width = w;
+      if (Number.isNaN(width))
+        width = 1280;
 
-      if (!Number.isNaN(h))
-        height = h;
+      if (Number.isNaN(height))
+        height = 1024;
+      return { width, height, x: 100, y: 100 };
     }
   }
-  return { width, height };
+
+  return ElectronHost.getWindowSizeSetting(mainWindowName);
 };
 
 class DtaHandler extends IpcHandler implements DtaIpcInterface {
@@ -38,11 +39,14 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
 /**
  * This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
- * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
- * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
+ * It runs in the Electron main process and hosts the iTwin.js backend (IModelHost) code. It starts the render (frontend) process
+ * that starts from the file "index.ts". That launches the iTwin.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
-  const opts: ElectronHostOptions = {
+  // Need to load the config first to get the electron options
+  loadBackendConfig();
+
+  const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
@@ -52,11 +56,14 @@ const dtaElectronMain = async () => {
 
   await initializeDtaBackend(opts);
 
-  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
+  const configuration = getConfig();
+
+  // Restore previous window size, position and maximized state
+  const sizeAndPosition = getWindowSize(configuration.windowSize);
+  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await ElectronHost.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
+  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Display Test App", storeWindowName: mainWindowName });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
@@ -64,7 +71,7 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
-  if (autoOpenDevTools)
+  if (configuration.devTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
@@ -80,16 +87,14 @@ const dtaElectronMain = async () => {
     });
   });
 
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
-  if (configuration.useIModelBank) {
+  // Custom orchestrator URL is used to define the iModelBank URL.
+  if (configuration.customOrchestratorUri) {
     ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
       event.preventDefault();
       callback(true);
     });
   }
-
 };
 
 // execute this immediately when we load

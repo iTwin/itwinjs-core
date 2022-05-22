@@ -16,5 +16,5 @@ export interface EditorDescription {
   /** Unique name */
   name: string;
   /** Editor-specific parameters */
-  params: any;
+  params?: any;
 }

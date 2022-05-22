@@ -2,41 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import {
-  ColumnDescription, DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps, MutableTableDataProvider,
-  RowItem, TableDataChangeEvent, TableDataProvider,
-} from "@bentley/ui-components";
-import { SortDirection } from "@bentley/ui-core";
-import { DemoDragDropObject } from "./demoTreeDataProvider";
-
-export type DemoTableDragDropType = DemoDragDropObject | TableDataProvider;
-
-export enum TableDragTypes {
-  Row = "row",
-}
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDataProvider } from "@itwin/components-react";
+import { SortDirection } from "@itwin/core-react";
 
 const tableData: DemoMutableRow[] = [
-  { id: "251125811780946", label: "Row 0", type: TableDragTypes.Row, description: "row 0 of mutable table", icon: "icon-placeholder" },
-  { id: "687149942193408", label: "Row 1", type: TableDragTypes.Row, description: "row 1 of mutable table", icon: "icon-placeholder" },
-  { id: "509787447498765", label: "Row 2", type: TableDragTypes.Row, description: "row 2 of mutable table", icon: "icon-placeholder" },
-  { id: "961477382291915", label: "Row 3", type: TableDragTypes.Row, description: "row 3 of mutable table", icon: "icon-placeholder" },
-  { id: "439325449223605", label: "Row 4", type: TableDragTypes.Row, description: "row 4 of mutable table", icon: "icon-placeholder" },
-  { id: "210479889083739", label: "Row 5", type: TableDragTypes.Row, description: "row 5 of mutable table", icon: "icon-placeholder" },
-  { id: "886768039684260", label: "Row 6", type: TableDragTypes.Row, description: "row 6 of mutable table", icon: "icon-placeholder" },
-  { id: "249561029097088", label: "Row 7", type: TableDragTypes.Row, description: "row 7 of mutable table", icon: "icon-placeholder" },
-  { id: "406061527213589", label: "Row 8", type: TableDragTypes.Row, description: "row 8 of mutable table", icon: "icon-placeholder" },
-  { id: "036997900215046", label: "Row 9", type: TableDragTypes.Row, description: "row 9 of mutable table", icon: "icon-placeholder" },
-  { id: "664700749515027", label: "Row 10", type: TableDragTypes.Row, description: "row 10 of mutable table", icon: "icon-placeholder" },
-  { id: "336488208582203", label: "Row 11", type: TableDragTypes.Row, description: "row 11 of mutable table", icon: "icon-placeholder" },
-  { id: "228583045451494", label: "Row 12", type: TableDragTypes.Row, description: "row 12 of mutable table", icon: "icon-placeholder" },
-  { id: "279668137771930", label: "Row 13", type: TableDragTypes.Row, description: "row 13 of mutable table", icon: "icon-placeholder" },
-  { id: "629001192536671", label: "Row 14", type: TableDragTypes.Row, description: "row 14 of mutable table", icon: "icon-placeholder" },
-  { id: "923712658794860", label: "Row 15", type: TableDragTypes.Row, description: "row 15 of mutable table", icon: "icon-placeholder" },
-  { id: "945656428150432", label: "Row 16", type: TableDragTypes.Row, description: "row 16 of mutable table", icon: "icon-placeholder" },
-  { id: "683336990575872", label: "Row 17", type: TableDragTypes.Row, description: "row 17 of mutable table", icon: "icon-placeholder" },
-  { id: "382219622980922", label: "Row 18", type: TableDragTypes.Row, description: "row 18 of mutable table", icon: "icon-placeholder" },
-  { id: "723607060383624", label: "Row 19", type: TableDragTypes.Row, description: "row 19 of mutable table", icon: "icon-placeholder" },
+  { id: "251125811780946", label: "Row 0", type: "row", description: "row 0 of mutable table", icon: "icon-placeholder" },
+  { id: "687149942193408", label: "Row 1", type: "row", description: "row 1 of mutable table", icon: "icon-placeholder" },
+  { id: "509787447498765", label: "Row 2", type: "row", description: "row 2 of mutable table", icon: "icon-placeholder" },
+  { id: "961477382291915", label: "Row 3", type: "row", description: "row 3 of mutable table", icon: "icon-placeholder" },
+  { id: "439325449223605", label: "Row 4", type: "row", description: "row 4 of mutable table", icon: "icon-placeholder" },
+  { id: "210479889083739", label: "Row 5", type: "row", description: "row 5 of mutable table", icon: "icon-placeholder" },
+  { id: "886768039684260", label: "Row 6", type: "row", description: "row 6 of mutable table", icon: "icon-placeholder" },
+  { id: "249561029097088", label: "Row 7", type: "row", description: "row 7 of mutable table", icon: "icon-placeholder" },
+  { id: "406061527213589", label: "Row 8", type: "row", description: "row 8 of mutable table", icon: "icon-placeholder" },
+  { id: "036997900215046", label: "Row 9", type: "row", description: "row 9 of mutable table", icon: "icon-placeholder" },
+  { id: "664700749515027", label: "Row 10", type: "row", description: "row 10 of mutable table", icon: "icon-placeholder" },
+  { id: "336488208582203", label: "Row 11", type: "row", description: "row 11 of mutable table", icon: "icon-placeholder" },
+  { id: "228583045451494", label: "Row 12", type: "row", description: "row 12 of mutable table", icon: "icon-placeholder" },
+  { id: "279668137771930", label: "Row 13", type: "row", description: "row 13 of mutable table", icon: "icon-placeholder" },
+  { id: "629001192536671", label: "Row 14", type: "row", description: "row 14 of mutable table", icon: "icon-placeholder" },
+  { id: "923712658794860", label: "Row 15", type: "row", description: "row 15 of mutable table", icon: "icon-placeholder" },
+  { id: "945656428150432", label: "Row 16", type: "row", description: "row 16 of mutable table", icon: "icon-placeholder" },
+  { id: "683336990575872", label: "Row 17", type: "row", description: "row 17 of mutable table", icon: "icon-placeholder" },
+  { id: "382219622980922", label: "Row 18", type: "row", description: "row 18 of mutable table", icon: "icon-placeholder" },
+  { id: "723607060383624", label: "Row 19", type: "row", description: "row 19 of mutable table", icon: "icon-placeholder" },
 ];
 
 const columns: ColumnDescription[] = [
@@ -174,118 +164,3 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
 }
 
 export const demoMutableTableDataProvider = new DemoMutableTableDataProvider(tableData);
-
-export const tableDragSourceBeginCallback = (args: DragSourceArguments<DemoTableDragDropType>): DragSourceArguments<DemoTableDragDropType> => { // eslint-disable-line deprecation/deprecation
-  if ("id" in args.dataObject) {
-    args.dataObject.dataProvider = demoMutableTableDataProvider;
-  }
-  return args;
-};
-export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
-  if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
-    const { type, label, description, parentId, dataProvider, children, icon, ...rest } = args.dataObject;
-    let id = "";
-    if (args.dropEffect === DropEffects.Copy) { // eslint-disable-line deprecation/deprecation
-      id = `${Math.round(Math.random() * 1e14)}`;
-    } else if ((args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) && // eslint-disable-line deprecation/deprecation
-      "id" in args.dataObject && args.dataObject.id !== undefined) {
-      id = args.dataObject.id;
-    }
-
-    const dragRow: RowItem = {
-      key: id,
-      extendedData: {
-        label, icon, type, description, parentId, dataProvider, ...rest, id,
-      },
-      cells: [
-        {
-          key: "label", record: new PropertyRecord(
-            {
-              value: label,
-              valueFormat: PropertyValueFormat.Primitive,
-              displayValue: label,
-            },
-            {
-              name: "label",
-              displayLabel: "label",
-              typename: "text",
-            }),
-        },
-        {
-          key: "type", record: new PropertyRecord(
-            {
-              value: type,
-              valueFormat: PropertyValueFormat.Primitive,
-              displayValue: type,
-            },
-            {
-              name: "type",
-              displayLabel: "type",
-              typename: "text",
-            }),
-        },
-        {
-          key: "description", record: new PropertyRecord({
-            value: description,
-            valueFormat: PropertyValueFormat.Primitive,
-            displayValue: description,
-          }, {
-            name: "description",
-            displayLabel: "description",
-            typename: "text",
-          }),
-        },
-      ],
-    };
-    // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
-    if (children !== undefined && children.length > 0) {
-      args.dropStatus = DropStatus.None; // eslint-disable-line deprecation/deprecation
-      return args;
-    }
-    const exists = dataProvider === demoMutableTableDataProvider;
-    if (args.row !== undefined) {
-      if (exists && args.dropEffect === DropEffects.Move) { // eslint-disable-line deprecation/deprecation
-        demoMutableTableDataProvider.moveRow(dragRow, args.row);
-        args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
-        args.local = true;
-      } else {
-        demoMutableTableDataProvider.insertRow(dragRow, args.row);
-        args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
-      }
-    } else if (!exists) {
-      demoMutableTableDataProvider.addRow(dragRow);
-      args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
-    }
-  }
-  return args;
-};
-export const onDragSourceEnd = (args: DragSourceArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
-  if (args.dataObject && "id" in args.dataObject && args.dataObject.id && args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) { // eslint-disable-line deprecation/deprecation
-    demoMutableTableDataProvider.deleteRow({ key: args.dataObject.id, cells: [] });
-  }
-};
-export const canDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
-  if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
-    const { children } = args.dataObject;
-    // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
-    if (children !== undefined && children.length > 0) {
-      return false;
-    }
-    if (args.row !== undefined) {
-      return true;
-    }
-  }
-  return false;
-};
-
-export const objectType = (data: any) => {
-  if (data !== undefined && data.type) {
-    return data.type;
-  }
-  return "";
-};
-
-export const objectTypes = [TableDragTypes.Row];
-
-export const tableDragProps: DragSourceProps<DemoTableDragDropType> = { onDragSourceEnd, objectType }; // eslint-disable-line deprecation/deprecation
-export const tableDropProps: DropTargetProps<DemoTableDragDropType> = { onDropTargetDrop, canDropTargetDrop, objectTypes }; // eslint-disable-line deprecation/deprecation

@@ -1,24 +1,27 @@
 {
-  "name": "@bentley/webgl-compatibility",
-  "version": "2.14.0-dev.9",
-  "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
+  "name": "@itwin/webgl-compatibility",
+  "version": "3.3.0-dev.9",
+  "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
-  "main": "lib/webgl-compatibility.js",
-  "imodeljsSharedLibrary": true,
+  "main": "lib/cjs/webgl-compatibility.js",
+  "module": "lib/esm/webgl-compatibility.js",
+  "typings": "lib/cjs/webgl-compatibility.js",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "npm test -- --cover",
+    "cover": "npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run webpackTests && certa -r chrome",
+    "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/webgl-compatibility"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/webgl-compatibility"
   },
   "keywords": [
     "Bentley",
@@ -32,30 +35,29 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.9"
+  "dependencies": {
+    "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.9",
-    "@bentley/build-tools": "2.14.0-dev.9",
-    "@bentley/certa": "2.14.0-dev.9",
-    "@bentley/eslint-plugin": "2.14.0-dev.9",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "10.14.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "glob": "^7.1.2",
-    "mocha": "^5.2.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.4.0",
     "webpack": "4.42.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

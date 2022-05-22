@@ -9,101 +9,67 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
-import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskProps, PlanarClipMaskSettings, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import { SubCategoryOverride } from "./SubCategoryOverride";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
 import { RenderSchedule } from "./RenderSchedule";
-import { SkyBoxProps } from "./SkyBox";
+import { Environment, EnvironmentProps } from "./Environment";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
-import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
+import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @public
+ * @extensions
  */
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
   /** The Id of the [[SubCategory]] whose appearance is to be overridden. */
   subCategory?: Id64String;
 }
 
-/** Describes the [[FeatureAppearance]] overrides applied to a model by a [[DisplayStyle]].
- * @see [[DisplayStyleSettingsProps]]
- * @beta
+/** A [[FeatureAppearanceProps]] applied to a specific model to override its appearance within the context of a [DisplayStyle]($backend).
+ * @see [[DisplayStyleSettingsProps.modelOvr]].
+ * @public
+ * @extensions
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
   modelId?: Id64String;
 }
 
-/** Describes the [[PlanarClipMaskSettings]] applied to a model.
- * @beta
+/** A [[PlanarClipMaskProps]] associated with a specific reality model.
+ * @see [[DisplayStyleSettingsProps.planarClipOvr]].
+ * @public
+ * @extensions
  */
-export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
+export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
   modelId?: Id64String;
 }
 
-/** JSON representation of the environment setup of a [[DisplayStyle3d]].
- * @public
- */
-export interface EnvironmentProps {
-  ground?: GroundPlaneProps;
-  sky?: SkyBoxProps;
-}
-/** JSON representation of the blob properties for an OrbitGt property cloud.
- * @alpha
- */
-export interface OrbitGtBlobProps {
-  containerName: string;
-  blobFileName: string;
-  sasToken: string;
-  accountName: string;
-}
-
-/** JSON representation of a context reality model
- * A context reality model is one that is not directly attached to the iModel but is instead included in the display style to
- * provide context only when that display style is applied.
- * @public
- */
-export interface ContextRealityModelProps {
-  tilesetUrl: string;
-  /** @alpha */
-  orbitGtBlob?: OrbitGtBlobProps;
-  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
-  realityDataId?: string;
-  name?: string;
-  description?: string;
-  /** @beta */
-  classifiers?: SpatialClassificationProps.Properties[];
-  /** @beta */
-  planarClipMask?: PlanarClipMaskProps;
-  /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
-   * @beta
-   */
-  appearanceOverrides?: FeatureAppearanceProps;
-
-}
-
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
  * @public
+ * @extensions
  */
 export enum MonochromeMode {
   /** The color of the geometry is replaced with the monochrome color. e.g., if monochrome color is white, the geometry will be white. */
@@ -120,6 +86,7 @@ export enum MonochromeMode {
  * as members of `jsonProperties.styles`.
  * @see [[DisplayStyleSettings]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleSettingsProps {
   viewflags?: ViewFlagProps;
@@ -132,31 +99,31 @@ export interface DisplayStyleSettingsProps {
   monochromeColor?: ColorDefProps;
   /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
   monochromeMode?: MonochromeMode;
-  /** Settings controlling display of analytical models.
-   * @alpha
-   */
+  /** Settings controlling display of analytical models. */
   analysisStyle?: AnalysisStyleProps;
-  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0.
-   * @alpha
-   */
+  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0. */
   analysisFraction?: number;
-  /** Schedule script
+  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
+   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
+   * that hosts the script.
    * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory - they are not needed for display on the frontend.
-   * @beta
+   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
+   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
+   * @internal
    */
-  scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  scheduleScript?: RenderSchedule.ScriptProps;
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
+  renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    */
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapProps;
-  /** Contextual Reality Models */
+  backgroundMap?: PersistentBackgroundMapProps;
+  /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
   excludedElements?: Id64Array | CompressedId64Set;
@@ -164,31 +131,25 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   mapImagery?: MapImageryProps;
-  /** Overrides applied to the appearance of models in the view.
-   * @beta
-   */
+  /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core).
-   * @beta
-   */
+  /** Style applied by the view's [ClipVector]($core-geometry). */
   clipStyle?: ClipStyleProps;
-  /** Overrides to the planar clip masks.  Currently only supported for reality models
-   * @beta
-   */
-  planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
-
+  /** Planar clip masks applied to reality models. */
+  planarClipOvr?: DisplayStylePlanarClipMaskProps[];
+  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
  * @see [[DisplayStyle3dSettings]].
  * @public
+ * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
   environment?: EnvironmentProps;
-  /** Settings controlling thematic display.
-   * @beta
-   */
+  /** Settings controlling thematic display. */
   thematic?: ThematicDisplayProps;
   /** Settings controlling display of visible and hidden edges. */
   hline?: HiddenLine.SettingsProps;
@@ -198,12 +159,10 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   solarShadows?: SolarShadowSettingsProps;
   /** Settings controlling how the scene is lit. */
   lights?: LightSettingsProps;
-  /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply.
-   * @beta
-   */
+  /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -211,6 +170,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleProps extends DefinitionElementProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -221,6 +181,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
 
 /** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]].
  * @public
+ * @extensions
  */
 export interface DisplayStyle3dProps extends DisplayStyleProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -230,15 +191,16 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
- * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
- * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
- * for use with any iModel or project. This is the default behavior if no more specific options are provided.
- * @beta
+ * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given iTwin, like the set of displayed context reality models. Such settings can be useful
+ * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
+ * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
+ * @public
+ * @extensions
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
   includeAll?: true;
-  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
+  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all iTwin-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
    *  * Model Appearance overrides.
@@ -251,12 +213,12 @@ export interface DisplayStyleOverridesOptions {
    *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
    */
   includeIModelSpecific?: true;
-  /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
-   * The following are project-specific settings:
+  /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
+   * The following are iTwin-specific settings:
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
-  includeProjectSpecific?: true;
+  includeITwinSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
   /** Serialize the background map settings. */
@@ -274,7 +236,6 @@ export interface DisplayStyleOverridesOptions {
 class ExcludedElements implements OrderedId64Iterable {
   private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
-  private _set?: ObservableSet<Id64String>;
   private _synchronizing = false;
 
   public constructor(json: DisplayStyleSettingsProps) {
@@ -287,7 +248,6 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
     this.synchronize(() => {
-      this._set?.clear();
       this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
     });
   }
@@ -298,51 +258,20 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public add(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.add(id);
-        this._set?.add(id);
-      }
     });
   }
 
   public delete(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.delete(id);
-        this._set?.delete(id);
-      }
     });
-  }
-
-  public obtainSet(): Set<Id64String> {
-    if (this._set)
-      return this._set;
-
-    this.synchronize(() => {
-      this._set = new ObservableSet<string>(this._ids);
-      this._set.onAdded.addListener((id) => this.onAdded(id));
-      this._set.onDeleted.addListener((id) => this.onDeleted(id));
-      this._set.onCleared.addListener(() => this.onCleared());
-    });
-
-    assert(undefined !== this._set);
-    return this._set;
   }
 
   public [Symbol.iterator]() {
     return this._ids[Symbol.iterator]();
-  }
-
-  private onAdded(id: Id64String): void {
-    this.synchronize(() => this._ids.add(id));
-  }
-
-  private onDeleted(id: Id64String): void {
-    this.synchronize(() => this._ids.delete(id));
-  }
-
-  private onCleared(): void {
-    this.synchronize(() => this._ids.clear());
   }
 
   /** The JSON must be kept up-to-date at all times. */
@@ -365,36 +294,156 @@ class ExcludedElements implements OrderedId64Iterable {
   }
 }
 
+type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
+
+/** An implementation of Map that is based on a JSON array, used for a display styles subcategory overrides, model appearance overrides,
+ * and planar clip masks. Ensures:
+ *  - JSON representation kept in sync with changes to map; and
+ *  - Events dispatched when map contents change.
+ */
+class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
+  // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
+  public override get [Symbol.toStringTag]() { return "OverridesMap"; }
+
+  public constructor(
+    private readonly _json: DisplayStyleSettingsProps,
+    private readonly _arrayKey: OverridesArrayKey,
+    private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
+    private readonly _idFromProps: (props: OverrideProps) => Id64String | undefined,
+    private readonly _overrideToProps: (ovr: Override, id: Id64String) => OverrideProps,
+    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
+    super();
+    this.populate();
+  }
+
+  public override set(id: Id64String, override: Override): this {
+    this._event.raiseEvent(id, override);
+    super.set(id, override);
+
+    const index = this.findOrAllocateIndex(id);
+    const array = this._array;
+    assert(undefined !== array);
+    array[index] = this._overrideToProps(override, id);
+
+    return this;
+  }
+
+  public override delete(id: Id64String): boolean {
+    this._event.raiseEvent(id, undefined);
+    if (!super.delete(id))
+      return false;
+
+    const index = this.findExistingIndex(id);
+    if (undefined !== index) {
+      assert(undefined !== this._array);
+      this._array.splice(index, 1);
+    }
+
+    return true;
+  }
+
+  public override clear(): void {
+    for (const id of this.keys())
+      this.delete(id);
+
+    this._json[this._arrayKey] = undefined;
+  }
+
+  public populate(): void {
+    super.clear();
+
+    const ovrs = this._array;
+    if (!ovrs)
+      return;
+
+    for (const props of ovrs) {
+      const id = this._idFromProps(props);
+      if (undefined !== id && Id64.isValidId64(id)) {
+        const ovr = this._overrideFromProps(props);
+        if (ovr)
+          super.set(id, ovr);
+      }
+    }
+  }
+
+  private get _array(): OverrideProps[] | undefined {
+    return JsonUtils.asArray(this._json[this._arrayKey]);
+  }
+
+  private findOrAllocateIndex(id: Id64String): number {
+    const index = this.findExistingIndex(id);
+    if (undefined !== index)
+      return index;
+
+    let ovrs = this._array;
+    if (!ovrs)
+      ovrs = this._json[this._arrayKey] = [];
+
+    return ovrs.length;
+  }
+
+  private findExistingIndex(id: Id64String): number | undefined {
+    const ovrs = this._array;
+    if (!ovrs)
+      return undefined;
+
+    for (let i = 0; i < ovrs.length; i++)
+      if (this._idFromProps(ovrs[i]) === id)
+        return i;
+
+    return undefined;
+  }
+}
+
+/** Options supplied when constructing a [[DisplayStyleSettings]].
+ * @public
+ * @extensions
+ */
+export interface DisplayStyleSettingsOptions {
+  /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */
+  createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+}
+
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
  * @public
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
-  private readonly _viewFlags: ViewFlags;
+  private _viewFlags: ViewFlags;
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
-  private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
-  private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
-  private readonly _planarClipMaskOverrides: Map<Id64String, PlanarClipMaskSettings> = new Map<Id64String, PlanarClipMaskSettings>();
+  private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
+  private readonly _modelAppearanceOverrides: OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>;
+  private readonly _planarClipMasks: OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
+  private readonly _contextRealityModels: ContextRealityModels;
+  private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
   }
 
-  /** Event raised by [[applyOverrides]] just before the overrides are applied.
-   * @beta
+  /** Planar clip masks to be applied to persistent reality models (@see [SpatialModelState.isRealityModel]($frontend).
+   * The key for each entry is the Id of the model to which the mask settings apply.
    */
+  public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
+    return this._planarClipMasks;
+  }
+
+  /** Reality models to be displayed in the view. */
+  public get contextRealityModels(): ContextRealityModels {
+    return this._contextRealityModels;
+  }
+
+  /** Event raised by [[applyOverrides]] just before the overrides are applied. */
   public readonly onApplyOverrides = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
-  /** Event raised by [[applyOverrides]] after the overrides are applied.
-   * @beta
-   */
+  /** Event raised by [[applyOverrides]] after the overrides are applied. */
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
@@ -407,65 +456,58 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[backgroundMap]] property. */
   public readonly onBackgroundMapChanged = new BeEvent<(newMap: BackgroundMapSettings) => void>();
   /** Event raised just prior to assignment to the [[mapImagery]] property.
-   * @alpha
+   * @beta
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
+   * @deprecated Use onRenderTimelineChanged
    * @internal
    */
-  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
-  /** Event raised just prior to assignment to the [[timePoint]] property.
-   * @beta
-   */
+  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>();
+
+  /** Event raised just prior to assignment to the [[renderTimeline]] property. */
+  public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
+  /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisStyle]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisStyle]] property. */
   public readonly onAnalysisStyleChanged = new BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisFraction]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisFraction]] property. */
   public readonly onAnalysisFractionChanged = new BeEvent<(newFraction: number) => void>();
   /** Event raised when the contents of [[excludedElementIds]] changes. */
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
-  /** Event raised just prior to assignment to the [[clipStyle]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
-  public readonly onSubCategoryOverridesChanged = new BeEvent<() => void>();
+  public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
-  /** Event raised just prior to assignment to the [[thematic]] property.
-   * @beta
-   */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
-  /** Event raised just prior to assignment to the [[hiddenLineSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
-  /** Event raised just prior to assignment to the [[ambientOcclusionSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
-  /** Event raised just prior to assignment to the [[solarShadows]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
   public readonly onSolarShadowsChanged = new BeEvent<(newSettings: SolarShadowSettings) => void>();
-  /** Event raised just prior to assignment to the [[environment]] property. */
-  public readonly onEnvironmentChanged = new BeEvent<(newProps: Readonly<EnvironmentProps>) => void>();
-  /** Event raised just prior to assignment to the [[lights]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.environment]] property. */
+  public readonly onEnvironmentChanged = new BeEvent<(newEnv: Readonly<Environment>) => void>();
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
-  /** Event raised just before changing the plan projection settings for a model.
-   * @beta
-   */
+  /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
-  /** Event raised just before changing the planar clip mask overrides for an attached reality  model.
-   * @beta
-   */
-  public readonly onRealityModelPlanarClipMaskChanged = new BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just before adding or removing an entry from [[planarClipMasks]]. */
+  public readonly onPlanarClipMaskChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just prior to assignment to the [[whiteOnWhiteReversal]] property. */
+  public readonly onWhiteOnWhiteReversalChanged = new BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
+   * @param options Options for customizing the display style settings.
    * @note When the `DisplayStyleSetting`'s properties are modified by public setters, the `jsonProperties`'s `styles` object will be updated to reflect the change.
    * @note If `jsonProperties` contains no `styles` member, one will be added as an empty object.
    * @note Generally there is no reason to create an object of this type directly; a [[DisplayStyle]] or [[DisplayStyleState]] constructs one as part of its own construction.
    */
-  public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
+  public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }, options?: DisplayStyleSettingsOptions) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
 
@@ -476,74 +518,56 @@ export class DisplayStyleSettings {
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
-    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
+
+    // Ensure that if we used the deprecated imagery properties from this._backgroundMap to set up the base layer of this._mapImagery,
+    // we update our JSON to include that base layer.
+    this._json.mapImagery = this._mapImagery.toJSON();
 
     this._excludedElements = new ExcludedElements(this._json);
 
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
-    this.populateSubCategoryOverridesFromJSON();
-    this.populateModelAppearanceOverridesFromJSON();
-    this.populatePlanarClipMaskOverridesFromJSON();
-
+    this._whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(this._json.whiteOnWhiteReversal);
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
+
+    this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
+      (props) => props.subCategory,
+      (ovr, subCategory) => { return { ...ovr.toJSON(), subCategory }; },
+      (props) => {
+        const ovr = SubCategoryOverride.fromJSON(props);
+        return ovr.anyOverridden ? ovr : undefined;
+      });
+
+    this._modelAppearanceOverrides = new OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>(this._json, "modelOvr", this.onModelAppearanceOverrideChanged,
+      (props) => props.modelId,
+      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (props) => {
+        const app = FeatureAppearance.fromJSON(props);
+        return app.anyOverridden ? app : undefined;
+      });
+
+    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onPlanarClipMaskChanged,
+      (props) => props.modelId,
+      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (props) => {
+        const settings = PlanarClipMaskSettings.fromJSON(props);
+        return settings.isValid ? settings : undefined;
+      });
+
+    this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
   }
 
-  private populateSubCategoryOverridesFromJSON(): void {
-    this._subCategoryOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const subCatId = Id64.fromJSON(ovrJson.subCategory);
-        if (Id64.isValid(subCatId)) {
-          const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
-          if (subCatOvr.anyOverridden)
-            this.changeSubCategoryOverride(subCatId, false, subCatOvr);
-        }
-      }
-    }
-  }
-
-  private populateModelAppearanceOverridesFromJSON(): void {
-    this._modelAppearanceOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const modelId = Id64.fromJSON(ovrJson.modelId);
-        if (Id64.isValid(modelId)) {
-          const appearance = FeatureAppearance.fromJSON(ovrJson);
-          if (appearance.anyOverridden)
-            this.changeModelAppearanceOverride(modelId, false, appearance);
-        }
-      }
-    }
-  }
-  private populatePlanarClipMaskOverridesFromJSON(): void {
-    this._planarClipMaskOverrides.clear();
-    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const modelId = Id64.fromJSON(ovrJson.modelId);
-        if (Id64.isValid(modelId)) {
-          const mask = PlanarClipMaskSettings.fromJSON(ovrJson);
-          if (mask.isValid)
-            this.changePlanarClipMaskOverride(modelId, false, mask);
-        }
-      }
-    }
-  }
-  /** The ViewFlags associated with the display style.
-   * @note Do not modify the ViewFlags in place. Clone them and pass the clone to the setter.
-   */
+  /** Flags controlling various aspects of the display style. */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
     if (this.viewFlags.equals(flags))
       return;
 
     this.onViewFlagsChanged.raiseEvent(flags);
-    flags.clone(this._viewFlags);
+    this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
   }
 
@@ -592,16 +616,12 @@ export class DisplayStyleSettings {
     if (!this.backgroundMap.equals(map)) {
       this.onBackgroundMapChanged.raiseEvent(map);
       this._backgroundMap = map; // it's an immutable type.
-      this._json.backgroundMap = map.toJSON();
+      this._json.backgroundMap = map.toPersistentJSON();
     }
   }
 
-  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
-   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
-   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
-   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
-   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
-   * @alpha
+  /** Settings defining the map imagery layers to be displayed within the view.
+   * @beta
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
 
@@ -619,18 +639,34 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** @internal */
-  public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
+   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
+   */
+  public get renderTimeline(): Id64String | undefined {
+    return this._json.renderTimeline;
+  }
+  public set renderTimeline(id: Id64String | undefined) {
+    if (id !== this.renderTimeline) {
+      this.onRenderTimelineChanged.raiseEvent(id);
+      this._json.renderTimeline = id;
+    }
+  }
+
+  /** @internal @deprecated */
+  public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
-  public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+  public set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined) {
+    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
+    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional reality models.
-   * @beta
+   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
    */
   public get timePoint(): number | undefined {
     return this._json.timePoint;
@@ -643,23 +679,24 @@ export class DisplayStyleSettings {
   }
 
   /** Settings controlling the display of analytical models.
-   * @note Do not modify this object directly. Instead, create a clone and pass it to the setter.
-   * @alpha
+   * @see [[analysisFraction]] to control playback of the animation.
    */
   public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
   public set analysisStyle(style: AnalysisStyle | undefined) {
-    this.onAnalysisStyleChanged.raiseEvent(style);
-    if (!style) {
-      this._json.analysisStyle = undefined;
-      this._analysisStyle = undefined;
+    if (style === this.analysisStyle)
       return;
-    }
 
-    this._analysisStyle = style.clone(this._analysisStyle);
-    this._json.analysisStyle = style.toJSON();
+    this.onAnalysisStyleChanged.raiseEvent(style);
+    this._analysisStyle = style;
+    if (style)
+      this._json.analysisStyle = style.toJSON();
+    else
+      delete this._json.analysisStyle;
   }
 
-  /** @alpha */
+  /** A value in [0..1] indicating the current point in animation of the [[analysisStyle]], where 0 corresponds to the beginning of
+   * the animation and 1 to the end.
+   */
   public get analysisFraction(): number {
     const fraction = this._json.analysisFraction ?? 0;
     return Math.max(0, Math.min(1, fraction));
@@ -672,21 +709,36 @@ export class DisplayStyleSettings {
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
+  /** Settings controlling how white-on-white reversal is applied. */
+  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
+  public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
+    if (settings.equals(this.whiteOnWhiteReversal))
+      return;
+
+    this.onWhiteOnWhiteReversalChanged.raiseEvent(settings);
+    this._whiteOnWhiteReversal = settings;
+    const json = settings.toJSON();
+    if (json)
+      this._json.whiteOnWhiteReversal = json;
+    else
+      delete this._json.whiteOnWhiteReversal;
+  }
+
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
-   * @param id The ID of the SubCategory whose appearance is to be overridden.
+   * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
    * @see [[dropSubCategoryOverride]]
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
-    this.changeSubCategoryOverride(id, true, ovr);
+    this.subCategoryOverrides.set(id, ovr);
   }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String): void {
-    this.changeSubCategoryOverride(id, true);
+    this.subCategoryOverrides.delete(id);
   }
 
   /** The overrides applied by this style. */
@@ -695,35 +747,35 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
-   * @param id The ID of the [[SubCategory]].
+   * @param id The Id of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
-    return this._subCategoryOverrides.get(id);
+    return this.subCategoryOverrides.get(id);
   }
 
   /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean {
-    return this._subCategoryOverrides.size > 0;
+    return this.subCategoryOverrides.size > 0;
   }
 
   /** Customize the way a [Model]($backend)   is drawn by this display style.
-   * @param modelId The ID of the [Model]($backend)  whose appearance is to be overridden.
+   * @param modelId The Id of the [Model]($backend)  whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[dropModelAppearanceOverride]]
    */
   public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void {
-    this.changeModelAppearanceOverride(modelId, true, ovr);
+    this.modelAppearanceOverrides.set(modelId, ovr);
   }
 
   /** Remove any appearance overrides applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend) .
+   * @param modelId The Id of the [Model]($backend) .
    * @param ovr The overrides to apply to the [Model]($backend) .
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.changeModelAppearanceOverride(id, true);
+    this.modelAppearanceOverrides.delete(id);
   }
 
   /** The overrides applied by this style. */
@@ -732,52 +784,17 @@ export class DisplayStyleSettings {
   }
 
   /** Obtain the override applied to a [Model]($backend)  by this style.
-   * @param id The ID of the [Model]($backend).
+   * @param id The Id of the [Model]($backend).
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
   public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
-    return this._modelAppearanceOverrides.get(id);
+    return this.modelAppearanceOverrides.get(id);
   }
 
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
-    return this._modelAppearanceOverrides.size > 0;
-  }
-
-  /** Set the planar clip mask for a persistent reality [Model]($backend)  drawn by this display style.  Masking of BIM models is not supported although they can be used for masking for reality models and background maps.
- * @param modelId The ID of the persistent reality [Model]($backend)
- * @param planarClipMask The clip mask to apply to the [Model]($backend).
-
- * @see [[dropModelPlanarClipMaskOverride]]
- * @beta
- */
-  public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
-
-  /** Remove planar clip mask applied to a [Model]($backend)  by this style.
-   * @param modelId The ID of the [Model]($backend).
-   * @param planarClipMask The planar clip mask to apply to the [Model]($backend).
-   * @see [[overrideModelPlanarClipMask]]
-   * @beta
-   */
-  public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
-
-  /** Obtain the planar clip applied to a [Model]($backend)  by this style.
-    * @param id The ID of the [Model]($backend) .
-    * @returns The corresponding planar clip mask, or undefined if none exist.
-    * @beta
-    */
-  public getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined {
-    return this._planarClipMaskOverrides.get(id);
-  }
-
-  /** The set of elements that will not be drawn by this display style.
-   * @returns The set of excluded elements.
-   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
-   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
-   */
-  public get excludedElements(): Set<Id64String> {
-    return this._excludedElements.obtainSet();
+    return this.modelAppearanceOverrides.size > 0;
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -793,7 +810,7 @@ export class DisplayStyleSettings {
   }
 
   /** Add one or more elements to the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be excluded.
+   * @param id The Ids of the element(s) to be excluded.
    */
   public addExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.add("string" === typeof id ? [id] : id);
@@ -807,7 +824,7 @@ export class DisplayStyleSettings {
   }
 
   /** Remove one or more elements from the set of elements not to be displayed.
-   * @param id The IDs of the element(s) to be removed from the set of excluded elements.
+   * @param id The Ids of the element(s) to be removed from the set of excluded elements.
    */
   public dropExcludedElements(id: Id64String | Iterable<Id64String>) {
     this._excludedElements.delete("string" === typeof id ? [id] : id);
@@ -820,9 +837,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core).
-   * @beta
-   */
+  /** The style applied to the view's [ClipVector]($core-geometry). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }
@@ -841,11 +856,10 @@ export class DisplayStyleSettings {
   }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or iTwin (e.g., context reality models)
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
    * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
-   * @beta
    */
   public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps {
     if (options?.includeAll) {
@@ -861,19 +875,22 @@ export class DisplayStyleSettings {
       backgroundColor: this.backgroundColor.toJSON(),
       monochromeColor: this.monochromeColor.toJSON(),
       monochromeMode: this.monochromeMode,
+      whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
-    if (options?.includeBackgroundMap)
-      props.backgroundMap = this.backgroundMap.toJSON();
-    else
+    if (options?.includeBackgroundMap) {
+      props.backgroundMap = this.backgroundMap.toPersistentJSON();
+      props.mapImagery = this.mapImagery.toJSON();
+    } else {
       delete viewflags.backgroundMap;
+    }
 
     if (!options?.includeDrawingAids) {
       delete viewflags.acs;
       delete viewflags.grid;
     }
 
-    if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
+    if (options?.includeITwinSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
         props.contextRealityModels = this._json.contextRealityModels;
@@ -889,8 +906,14 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      if (this.scheduleScriptProps)
+      // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps) {
+        // eslint-disable-next-line deprecation/deprecation
         props.scheduleScript = [...this.scheduleScriptProps];
+      }
+
+      if (this.renderTimeline)
+        props.renderTimeline = this.renderTimeline;
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
@@ -913,7 +936,6 @@ export class DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @beta
    */
   public applyOverrides(overrides: DisplayStyleSettingsProps): void {
     this._applyOverrides(overrides);
@@ -941,208 +963,52 @@ export class DisplayStyleSettings {
       this.monochromeMode = overrides.monochromeMode;
 
     if (overrides.backgroundMap)
-      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+      this.backgroundMap = BackgroundMapSettings.fromPersistentJSON(overrides.backgroundMap);
+
+    if (overrides.mapImagery)
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toPersistentJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;
 
-    if (overrides.contextRealityModels)
-      this._json.contextRealityModels = [...overrides.contextRealityModels];
+    if (overrides.contextRealityModels) {
+      this.contextRealityModels.clear();
+      for (const props of overrides.contextRealityModels)
+        this.contextRealityModels.add(props);
+    }
 
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
 
+    if (overrides.whiteOnWhiteReversal)
+      this.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(overrides.whiteOnWhiteReversal);
+
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    if (overrides.scheduleScript)
+    // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript) {
+      // eslint-disable-next-line deprecation/deprecation
       this.scheduleScriptProps = [...overrides.scheduleScript];
+    }
+
+    if (overrides.renderTimeline)
+      this.renderTimeline = overrides.renderTimeline;
 
     if (overrides.subCategoryOvr) {
       this._json.subCategoryOvr = [...overrides.subCategoryOvr];
-      this.populateSubCategoryOverridesFromJSON();
+      this._subCategoryOverrides.populate();
     }
 
     if (overrides.modelOvr) {
       this._json.modelOvr = [...overrides.modelOvr];
-      this.populateModelAppearanceOverridesFromJSON();
+      this._modelAppearanceOverrides.populate();
     }
 
     if (overrides.excludedElements)
       this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
 
     this.onOverridesApplied.raiseEvent(overrides);
-  }
-
-  private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.subCategoryOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].subCategory === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
-
-  private changeSubCategoryOverride(id: Id64String, updateJson: boolean, ovr?: SubCategoryOverride): void {
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._subCategoryOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfSubCategoryOverrideInJSON(id, false);
-        if (-1 !== index)
-          this._json.subCategoryOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._subCategoryOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfSubCategoryOverrideInJSON(id, true);
-        this._json.subCategoryOvr![index] = ovr.toJSON();
-        this._json.subCategoryOvr![index].subCategory = id;
-      }
-    }
-
-    this.onSubCategoryOverridesChanged.raiseEvent();
-  }
-
-  /** @internal */
-  public equalSubCategoryOverrides(other: DisplayStyleSettings): boolean {
-    if (this._subCategoryOverrides.size !== other._subCategoryOverrides.size)
-      return false;
-
-    for (const [key, value] of this._subCategoryOverrides.entries()) {
-      const otherValue = other._subCategoryOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
-  }
-
-  private findIndexOfModelAppearanceOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.modelOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.modelOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].modelId === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
-
-  private changeModelAppearanceOverride(id: Id64String, updateJson: boolean, ovr?: FeatureAppearance): void {
-    this.onModelAppearanceOverrideChanged.raiseEvent(id, ovr);
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._modelAppearanceOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, false);
-        if (-1 !== index)
-          this._json.modelOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._modelAppearanceOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfModelAppearanceOverrideInJSON(id, true);
-        this._json.modelOvr![index] = ovr.toJSON();
-        this._json.modelOvr![index].modelId = id;
-      }
-    }
-  }
-
-  /** @internal */
-  public equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean {
-    if (this._modelAppearanceOverrides.size !== other._modelAppearanceOverrides.size)
-      return false;
-
-    for (const [key, value] of this._modelAppearanceOverrides.entries()) {
-      const otherValue = other._modelAppearanceOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
-  }
-  private findIndexOfPlanarClipMaskOverrideInJSON(id: Id64String, allowAppend: boolean): number {
-    const ovrsArray = JsonUtils.asArray(this._json.planarClipOvr);
-    if (undefined === ovrsArray) {
-      if (allowAppend) {
-        this._json.planarClipOvr = [];
-        return 0;
-      } else {
-        return -1;
-      }
-    } else {
-      for (let i = 0; i < ovrsArray.length; i++) {
-        if (ovrsArray[i].modelId === id)
-          return i;
-      }
-
-      return allowAppend ? ovrsArray.length : -1;
-    }
-  }
-
-  /** @internal */
-  public raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings) {
-    this.onRealityModelPlanarClipMaskChanged.raiseEvent(idOrIndex, ovr);
-  }
-
-  private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMaskSettings): boolean {
-    this.raiseRealityModelPlanarClipMaskChangedEvent(id, ovr);
-    if (undefined === ovr) {
-      // undefined => drop the override if present.
-      this._planarClipMaskOverrides.delete(id);
-      if (updateJson) {
-        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, false);
-        if (index < 0)
-          return false;
-        this._json.planarClipOvr!.splice(index, 1);
-      }
-    } else {
-      // add override, or update if present.
-      this._planarClipMaskOverrides.set(id, ovr);
-      if (updateJson) {
-        const index = this.findIndexOfPlanarClipMaskOverrideInJSON(id, true);
-        if (index < 0)
-          return false;
-        this._json.planarClipOvr![index] = ovr.toJSON();
-        this._json.planarClipOvr![index].modelId = id;
-      }
-    }
-    return true;
-  }
-
-  /** @internal */
-  public equalPlanarClipMaskOverrides(other: DisplayStyleSettings): boolean {
-    if (this._planarClipMaskOverrides.size !== other._planarClipMaskOverrides.size)
-      return false;
-
-    for (const [key, value] of this._planarClipMaskOverrides.entries()) {
-      const otherValue = other._planarClipMaskOverrides.get(key);
-      if (undefined === otherValue || !value.equals(otherValue))
-        return false;
-    }
-
-    return true;
   }
 }
 
@@ -1156,27 +1022,29 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadowSettings;
   private _lights: LightSettings;
+  private _environment: Environment;
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
-  public is3d(): this is DisplayStyle3dSettings {
+  public override is3d(): this is DisplayStyle3dSettings {
     return true;
   }
 
-  public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
-    super(jsonProperties);
+  public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
+    super(jsonProperties, options);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
+    this._environment = Environment.fromJSON(this._json3d.environment);
 
     // Very long ago we used to stick MicroStation's light settings into json.sceneLights. Later we started adding the sunDir.
     // We don't want any of MicroStation's settings. We do want to preserve the sunDir if present.
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
@@ -1209,25 +1077,19 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** @internal */
-  public toJSON(): DisplayStyle3dSettingsProps {
+  public override toJSON(): DisplayStyle3dSettingsProps {
     return this._json3d;
   }
 
-  /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
-   * are omitted, as are drawing aids (e.g., ACS triad and grid).
-   * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
-   * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
-   * @beta
-   */
-  public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
+  /** @internal */
+  public override toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)
       return props;
 
     assert(undefined !== props.viewflags);
 
-    props.environment = { ...this.environment };
+    props.environment = this.environment.toJSON();
     props.hline = this.hiddenLineSettings.toJSON();
     props.ao = this.ambientOcclusionSettings.toJSON();
     props.solarShadows = this.solarShadows.toJSON();
@@ -1265,13 +1127,13 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @beta
+   * @internal override
    */
-  public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
+  public override applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
     super._applyOverrides(overrides);
 
     if (overrides.environment)
-      this.environment = { ...overrides.environment };
+      this.environment = Environment.fromJSON(overrides.environment);
 
     if (overrides.hline)
       this.hiddenLineSettings = HiddenLine.Settings.fromJSON(overrides.hline);
@@ -1296,9 +1158,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
-  /** The settings that control thematic display.
-   * @beta
-   */
+  /** The settings that control thematic display. */
   public get thematic(): ThematicDisplay { return this._thematic; }
   public set thematic(thematic: ThematicDisplay) {
     if (thematic.equals(this.thematic))
@@ -1345,14 +1205,36 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** @internal */
-  public get environment(): EnvironmentProps {
-    const env = this._json3d.environment;
-    return undefined !== env ? env : {};
+  /** Controls the display of a [[SkyBox]] and [[GroundPlane]].
+   * @public
+   */
+  public get environment(): Environment {
+    return this._environment;
   }
-  public set environment(environment: EnvironmentProps) {
-    this.onEnvironmentChanged.raiseEvent(environment);
-    this._json3d.environment = environment;
+  public set environment(environment: Environment) {
+    if (environment !== this.environment) {
+      this.onEnvironmentChanged.raiseEvent(environment);
+      this._environment = environment;
+      this._json3d.environment = environment.toJSON();
+    }
+  }
+
+  /** Toggle display of the [[environment]]'s [[SkyBox]].
+   * @param display Whether to display the skybox, or `undefined` to toggle the current display.
+   */
+  public toggleSkyBox(display?: boolean): void {
+    display = display ?? this.environment.displaySky;
+    if (display !== this.environment.displaySky)
+      this.environment = this.environment.withDisplay({ sky: display });
+  }
+
+  /** Toggle display of the [[environment]]'s [[GroundPlane]].
+   * @param display Whether to display the ground plane, or `undefined` to toggle the current display.
+   */
+  public toggleGroundPlane(display?: boolean): void {
+    display = display ?? this.environment.displayGround;
+    if (display !== this.environment.displayGround)
+      this.environment = this.environment.withDisplay({ ground: display });
   }
 
   public get lights(): LightSettings {
@@ -1382,7 +1264,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
         cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
 
       if (!cartoCenter)
-        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+        cartoCenter = Cartographic.fromDegrees({ longitude: -75.17035, latitude: 39.954927, height: 0.0 });
     } else {
       cartoCenter = location;
     }
@@ -1400,7 +1282,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this.lights.solar.timePoint === undefined)
       return;
 
-    const solar = this.lights.solar.toJSON() ?? { };
+    const solar = this.lights.solar.toJSON() ?? {};
     solar.timePoint = undefined;
     this.lights = this.lights.clone({ solar });
   }
@@ -1413,16 +1295,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this.lights.solar.timePoint;
   }
 
-  /** Get the plan projection settings associated with the specified model, if defined.
-   * @beta
-   */
+  /** Get the plan projection settings associated with the specified model, if defined. */
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
     return undefined !== this._planProjections ? this._planProjections.get(modelId) : undefined;
   }
 
-  /** Set or clear the plan projection settings associated with the specified model.
-   * @beta
-   */
+  /** Set or clear the plan projection settings associated with the specified model. */
   public setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void {
     this.onPlanProjectionSettingsChanged.raiseEvent(modelId, settings);
 
@@ -1451,9 +1329,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.planProjections![modelId] = settings.toJSON();
   }
 
-  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object.
-   * @beta
-   */
+  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object. */
   public get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined {
     return undefined !== this._planProjections ? this._planProjections.entries() : undefined;
   }

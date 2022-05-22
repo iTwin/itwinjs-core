@@ -1,36 +1,35 @@
-import * as React from "react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeDuration } from "@bentley/bentleyjs-core";
+import * as React from "react";
+import { BeDuration } from "@itwin/core-bentley";
 import {
-  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
-import { NodeKey } from "@bentley/presentation-common";
+} from "@itwin/core-frontend";
+import { NodeKey } from "@itwin/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities,
-  WidgetState,
-} from "@bentley/ui-abstract";
-import { SelectionMode } from "@bentley/ui-components";
-import { Point, ScrollView } from "@bentley/ui-core";
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
+} from "@itwin/appui-abstract";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@itwin/components-react";
+import { Point, ScrollView } from "@itwin/core-react";
 import {
-  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef,
-  ContentLayoutManager, ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager,
-  CursorUpdatedEventArgs, CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
-  HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
-  StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget,
-  WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
+  ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
+  CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs, CustomItemDef,
+  EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider,
+  GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
+  HideIsolateEmphasizeManager, MessageManager,
+  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
+  SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
+} from "@itwin/appui-react";
+import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-// SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewDialogTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -40,32 +39,207 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { ExampleForm } from "../forms/ExampleForm";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidget } from "../widgets/ViewportWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+import { ViewSelectorPanel } from "../../tools/ViewSelectorPanel";
+import { ActiveSettingsManager } from "../../api/ActiveSettingsManager";
 
-/* eslint-disable react/jsx-key */
+function SvgApple(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' {...props}>
+      <path d='m14.38732 12.46864a8.67507 8.67507 0 0 1 -.85133 1.54667 7.83909 7.83909 0 0 1 -1.096 1.33933 2.11842 2.11842 0 0 1 -1.40933.62733 3.50824 3.50824 0 0 1 -1.30133-.314 3.7014 3.7014 0 0 0 -1.40133-.31333 3.82728 3.82728 0 0 0 -1.44066.31333 3.84425 3.84425 0 0 1 -1.24467.33067 1.98968 1.98968 0 0 1 -1.44066-.644 8.203 8.203 0 0 1 -1.14667-1.38664 9.61729 9.61729 0 0 1 -1.21266-2.43466 8.99338 8.99338 0 0 1 -.50933-2.90134 5.34287 5.34287 0 0 1 .68865-2.772 4.05969 4.05969 0 0 1 1.44134-1.474 3.84792 3.84792 0 0 1 1.94933-.556 4.55944 4.55944 0 0 1 1.50733.35466 4.79788 4.79788 0 0 0 1.196.35534 7.06478 7.06478 0 0 0 1.326-.41866 4.34039 4.34039 0 0 1 1.802-.32334 3.8146 3.8146 0 0 1 2.99733 1.59533 3.37671 3.37671 0 0 0 -1.768 3.062 3.3911 3.3911 0 0 0 1.09733 2.54467 3.59839 3.59839 0 0 0 1.096.72733q-.132.386-.27933.74133zm-3.05466-12.14864a3.43565 3.43565 0 0 1 -.86533 2.23866 2.93869 2.93869 0 0 1 -2.45 1.22267 2.58687 2.58687 0 0 1 -.018-.30334 3.63848 3.63848 0 0 1 2.03667-3.11132 3.30968 3.30968 0 0 1 1.28-.36667 2.86658 2.86658 0 0 1 .01667.32z' />
+    </svg>
+  );
+}
+
+function MyLoremIpsumPanel() {
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("mounting MyLoremIpsumPanel");
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("unmounting MyLoremIpsumPanel");
+    };
+  }, []);
+
+  return (
+    <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
+      <ScrollView>
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </div>
+        {false && <ViewportWidget iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </div>
+      </ScrollView>
+    </div>
+  );
+}
+
+/* eslint-disable react/jsx-key, deprecation/deprecation */
+function MySliderPanel() {
+  const [sliderValues, setSliderValues] = React.useState([50]);
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("mounting MySliderPanel");
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("unmounting MySliderPanel");
+    };
+  }, []);
+
+  const { closePanel } = useToolbarPopupContext();
+  const handleApply = React.useCallback(() => {
+    closePanel();
+  }, [closePanel]);
+
+  const handleChange = React.useCallback((values) => {
+    setSliderValues(values);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "center", width: "300px", height: "68px", padding: "6px", boxSizing: "border-box" }}>
+      <Slider style={{ width: "100%" }} min={0} max={100} values={sliderValues} step={1} onChange={handleChange} />
+      <Button onClick={handleApply}>Apply</Button>
+    </div>
+  );
+}
+
+export class InitialIModelContentStageProvider extends ContentGroupProvider {
+  constructor(private _forEditing?: boolean) {
+    super();
+  }
+
+  public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+      if (newContent.applicationData)
+        delete newContent.applicationData;
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public override applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+
+      if (newContent.classId === IModelViewportControl.id) {
+        newContent.applicationData = {
+          ...newContent.applicationData,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        };
+      }
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+    const viewIdsSelected = SampleAppIModelApp.getInitialViewIds();
+    const iModelConnection = UiFramework.getIModelConnection();
+
+    if (!iModelConnection)
+      throw new Error(`Unable to generate content group if not iModelConnection is available`);
+
+    if (0 === viewIdsSelected.length) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, iModelConnection);
+      if (savedViewLayoutProps) {
+        const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
+        if (viewState) {
+          UiFramework.setDefaultViewState(viewState);
+          if (this._forEditing) {
+            ActiveSettingsManager.onViewOpened(viewState);
+          }
+        }
+        return new ContentGroup(savedViewLayoutProps.contentGroupProps);
+      }
+      throw (Error(`Could not load saved layout ContentLayoutProps`));
+    }
+
+    // first find an appropriate layout
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(viewIdsSelected.length);
+    if (!contentLayoutProps) {
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${viewIdsSelected.length}`));
+    }
+
+    let viewStates: ViewState[] = [];
+    const promises = new Array<Promise<ViewState>>();
+    viewIdsSelected.forEach((viewId: string) => {
+      promises.push(iModelConnection.views.load(viewId));
+    });
+
+    try {
+      viewStates = await Promise.all(promises);
+    } catch { }
+
+    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
+    const contentProps: ContentProps[] = [];
+    viewStates.forEach((viewState, index) => {
+      if (0 === index) {
+        UiFramework.setDefaultViewState(viewState);
+        if (this._forEditing) {
+          ActiveSettingsManager.onViewOpened(viewState);
+        }
+      }
+      const thisContentProps: ContentProps = {
+        id: `imodel-view-${index}`,
+        classId: IModelViewportControl,
+        applicationData:
+        {
+          viewState, iModelConnection,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        },
+      };
+      contentProps.push(thisContentProps);
+    });
+
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        id: "views-frontstage-default-content-group",
+        layout: contentLayoutProps,
+        contents: contentProps,
+      });
+    return myContentGroup;
+  }
+}
 
 export class ViewsFrontstage extends FrontstageProvider {
+  private _contentGroupProvider = new InitialIModelContentStageProvider();
   public static stageId = "ViewsFrontstage";
+  public get id(): string {
+    return ViewsFrontstage.stageId;
+  }
+
   public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
-  private _leftPanel = {
-    widgets: [
-      <Widget
-        iconSpec="icon-placeholder"
-        labelKey="SampleApp:widgets.VisibilityTree"
-        control={VisibilityTreeWidgetControl}
-      />,
-    ],
-  };
 
   private _rightPanel = {
     allowedZones: [2, 6, 9],
@@ -122,94 +296,70 @@ export class ViewsFrontstage extends FrontstageProvider {
       this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
+  constructor() {
     super();
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
   }
 
-  /** Get the CustomItemDef for ViewSelector  */
-  private get _viewSelectorItemDef() {
-    return new CustomItemDef({
-      customId: "sampleApp:viewSelector",
-      reactElement: (
-        <IModelConnectedViewSelector
-          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
-        />
-      ),
-    });
-  }
+  /** DEPRECATED way of providing button --- Get the CustomItemDef for ViewSelector  */
+  // private get _viewSelectorItemDef() {
+  //   return new CustomItemDef({
+  //     customId: "sampleApp:viewSelector",
+  //     reactElement: (
+  //       <IModelConnectedViewSelector
+  //         listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
+  //       />
+  //     ),
+  //   });
+  // }
 
   /** Commands that opens switches the content layout */
-  private get _switchLayout1() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Horizontal Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
-  private get _switchLayout2() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Vertical Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesVertical");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
   private get _additionalNavigationVerticalToolbarItems() {
+    const customPopupButton: CustomToolbarItem = {
+      isCustom: true,
+      id: "test.custom-popup-with-slider",
+      itemPriority: 220,
+      icon: "icon-arrow-left",
+      label: "Slider Test",
+      panelContentNode: <MySliderPanel />,
+      keepContentsLoaded: true,
+      groupPriority: 20,
+    };
+
+    const customViewSelectorButton: CustomToolbarItem = {
+      isCustom: true,
+      id: "sampleApp:viewSelector",
+      itemPriority: 200,
+      icon: "icon-saved-view",
+      label: IModelApp.localization.getLocalizedString("SampleApp:buttons.selectViewToActivate"),
+      panelContentNode: <ViewSelectorPanel />,
+      keepContentsLoaded: true,
+      groupPriority: 20,
+    };
+
     return [
-      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      // DEPRECATED way of providing view selector button --- ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      customViewSelectorButton,
       ToolbarHelper.createToolbarItemFromItemDef(210,
         new GroupItemDef({
           label: "Layout Demos",
           panelLabel: "Layout Demos",
           iconSpec: "icon-placeholder",
-          items: [this._switchLayout1, this._switchLayout2],
+          items: [AppTools.switchLayout1, AppTools.switchLayout2],
         }),
       ),
+      customPopupButton,
     ];
   }
 
   public get frontstage() {
-    // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
-    if (!contentLayoutProps) {
-      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
-    }
+    const iModelConnection = UiFramework.getIModelConnection();
 
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
-
-    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
-    const contentProps: ContentProps[] = [];
-    for (const viewState of this.viewStates) {
-      const thisContentProps: ContentProps = {
-        classId: IModelViewportControl,
-        applicationData: { viewState, iModelConnection: this.iModelConnection },
-      };
-      contentProps.push(thisContentProps);
-    }
-    const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        contentGroup={this._contentGroupProvider}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
@@ -218,7 +368,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
-                  additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={false} />} />,
+                  additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={true} />} />,
               ]}
           />
         }
@@ -245,38 +395,17 @@ export class ViewsFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        centerLeft={
-          <Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={250}
-            widgets={
-              [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
-              ]}
-          />
-        }
         centerRight={
           <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={400}
             widgets={[
-              // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
-              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label}
-                control={MapLayersWidgetControl} iconSpec={MapLayersWidgetControl.iconSpec}
-                applicationData={{ hideExternalMapLayers: false, mapTypeOptions: { supportTileUrl: true, supportWmsAuthentication: true }, fetchPublicMapLayerSources: true }} />,
-
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
-                  iModelConnection: this.iModelConnection,
-                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  iModelConnection,
                   config: {
                     modelsTree: {
                       selectionMode: SelectionMode.Extended,
@@ -284,23 +413,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                     },
                   },
                 }}
-                fillZone={true} />,
-              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{
-                  iModelConnection: this.iModelConnection,
-                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: {
-                    modelsTree: {
-                      selectionMode: SelectionMode.Extended,
-                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
-                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                    },
-                    spatialContainmentTree: {
-                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                    },
-                  },
-                }}
-                fillZone={true} />,
+                fillZone={true} defaultFloatingSize={{width:330, height:540}} isFloatingStateWindowResizable={true} />,
             ]}
           />
         }
@@ -311,10 +424,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={
               [
-                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
+                   applicationData={{ iTwinName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
           />
         }
@@ -334,26 +445,13 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                  applicationData={{ iModelConnection: this.iModelConnection }}
+                  applicationData={{ iModelConnection }}
+                  isFloatingStateWindowResizable={true}
+                  defaultFloatingSize={{width:200, height:300}}
                 />,
-                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder"
+                  labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
-          />
-        }
-        leftPanel={
-          <StagePanel
-            header={<StagePanelHeader
-              collapseButton
-              collapseButtonTitle="Collapse"
-              location={StagePanelLocation.Left}
-              title="Visibility tree"
-            />}
-            defaultState={StagePanelState.Minimized}
-            pinned={false}
-            size={400}
-            minSize={150}
-            maxSize={800}
-            widgets={this._leftPanel.widgets}
           />
         }
         rightPanel={
@@ -364,6 +462,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         bottomPanel={
           <StagePanel
+            pinned={false}
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
+            ]}
             allowedZones={this._bottomPanel.allowedZones}
           />
         }
@@ -393,9 +496,11 @@ class AdditionalTools {
       if (activeContentControl && activeContentControl.viewport &&
         (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
         const frontstageProvider = new NestedAnimationStage();
-        const frontstageDef = frontstageProvider.initializeDef();
-        SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-        await FrontstageManager.openNestedFrontstage(frontstageDef);
+        const frontstageDef = await FrontstageDef.create(frontstageProvider);
+        if (frontstageDef) {
+          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+          await FrontstageManager.openNestedFrontstage(frontstageDef);
+        }
       }
     },
     isHidden: new ConditionalBooleanValue(() => {
@@ -510,7 +615,7 @@ class AdditionalTools {
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
-      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test")); },
+      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test", undefined, OutputMessageType.Sticky)); },
     });
   }
 
@@ -552,7 +657,7 @@ class AdditionalTools {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} />, id); },
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
     });
   }
 
@@ -562,7 +667,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = `ViewportDialog_${this._viewportDialogCnt.toString()}`;
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -576,52 +681,6 @@ class AdditionalTools {
   private get _defaultWidgetOpacity() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.defaultWidgetOpacity", execute: () => { UiFramework.setWidgetOpacity(WIDGET_OPACITY_DEFAULT); },
-    });
-  }
-
-  private get _saveContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", badgeType: BadgeType.TechnicalPreview, execute: () => {
-        if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-          // Create props for the Layout, ContentGroup and ViewStates
-          const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
-            (contentProps: ContentProps) => {
-              if (contentProps.applicationData)
-                delete contentProps.applicationData;
-            });
-
-          // Save the SavedViewLayoutProps
-          ViewsFrontstage.savedViewLayoutProps = JSON.stringify(savedViewLayoutProps);
-        }
-      },
-    });
-  }
-
-  private get _restoreContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
-          // Parse SavedViewLayoutProps
-          const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
-          // Create ContentLayoutDef
-          const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
-          // Create ViewStates
-          const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
-
-          // Add applicationData to the ContentProps
-          savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
-          });
-          const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
-
-          // activate the layout
-          await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
-
-          // emphasize the elements
-          SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
-        }
-      },
     });
   }
 
@@ -705,25 +764,8 @@ class AdditionalTools {
       iconSpec: "icon-arrow-down",
       label: "Popup Test",
       badgeType: BadgeType.New,
-      popupPanelNode:
-        <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
-          <ScrollView>
-            <div>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </div>
-            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
-            <div>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </div>
-          </ScrollView>
-        </div>,
-    });
+      popupPanelNode: <MyLoremIpsumPanel />, // Note: popupPanelNode populates the panelContentNode when converted to a CustomToolbarItem
+    });                                      //       which can be supplied by an UiItemsProvider
   }
 
   public formatGroupItemsItem = (): CommonToolbarItem => {
@@ -739,18 +781,19 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, {groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(132, AppTools.analysisAnimationCommand, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(135, ToolWithDynamicSettings.toolItemDef, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(145, new CommandItemDef({
       commandId: "Show widget",
-      iconSpec: "icon-placeholder",
+      iconSpec: <SvgApple />,
       label: "Show widget",
       execute: () => {
         const frontstageDef = FrontstageManager.activeFrontstageDef;
@@ -759,18 +802,31 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        widgetDef.show();
+        if (widgetDef.activeState === WidgetState.Open) {
+          widgetDef.setWidgetState(WidgetState.Hidden);
+        } else {
+          widgetDef.setWidgetState(WidgetState.Open);
+          widgetDef.expand();
+        }
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
     this.formatGroupItemsItem(),
+    ToolbarHelper.createToolbarItemFromItemDef(150, new CommandItemDef({
+      commandId: "Toggle Overlay",
+      iconSpec: "icon-lightbulb",
+      label: "Toggle View Overlay",
+      execute: () => {
+        UiFramework.setViewOverlayDisplay(!UiFramework.viewOverlayDisplay);
+      },
+    }), { groupPriority: 30 }),
   ];
 
   public getMiscGroupItem = (): CommonToolbarItem => {
     const children = ToolbarHelper.constructChildToolbarItems([
       this._nestedGroup,
-      this._saveContentLayout,
-      this._restoreContentLayout,
+      AppTools.saveContentLayout,
+      AppTools.restoreSavedContentLayout,
       this._startCursorPopup,
       this._addCursorPopups,
       this._endCursorPopup,
@@ -784,7 +840,7 @@ class AdditionalTools {
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.localization.getLocalizedString("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
     return item;
   };
 
@@ -812,5 +868,9 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.TechnicalPreview,
     }),
-  ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
+  ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenComponentExamplesPopoutTool.getActionButtonDef(400, 40),
+  OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40),
+  OpenViewDialogTool.getActionButtonDef(430, 40),
+  ];
 }
+

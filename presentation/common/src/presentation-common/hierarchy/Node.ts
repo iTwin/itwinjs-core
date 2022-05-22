@@ -20,13 +20,25 @@ export interface Node {
   label: LabelDefinition;
   /** Extensive description */
   description?: string;
-  /** Image ID */
+  /**
+   * Image ID
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   imageId?: string;
-  /** Foreground color */
+  /**
+   * Foreground color
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   foreColor?: string;
-  /** Background color */
+  /**
+   * Background color
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   backColor?: string;
-  /** Font style */
+  /**
+   * Font style
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   fontStyle?: string;
   /** Does this node have child nodes */
   hasChildren?: boolean;
@@ -36,14 +48,25 @@ export interface Node {
   isEditable?: boolean;
   /** Is this node expanded */
   isExpanded?: boolean;
-  /** Is checkbox visible for this node */
+  /**
+   * Is checkbox visible for this node
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isCheckboxVisible?: boolean;
-  /** Is this node's checkbox checked */
+  /**
+   * Is this node's checkbox checked
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isChecked?: boolean;
-  /** Is this node's checkbox enabled */
+  /**
+   * Is this node's checkbox enabled
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isCheckboxEnabled?: boolean;
   /** Extended data injected into this node */
-  extendedData?: { [key: string]: any };
+  extendedData?: {
+    [key: string]: any;
+  };
 }
 
 /**
@@ -54,28 +77,65 @@ export interface NodeJSON {
   key: NodeKeyJSON;
   labelDefinition: LabelDefinitionJSON;
   description?: string;
+  /** @deprecated */
   imageId?: string;
+  /** @deprecated */
   foreColor?: string;
+  /** @deprecated */
   backColor?: string;
+  /** @deprecated */
   fontStyle?: string;
   hasChildren?: boolean;
   isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
+  /** @deprecated */
   isCheckboxVisible?: boolean;
+  /** @deprecated */
   isChecked?: boolean;
+  /** @deprecated */
   isCheckboxEnabled?: boolean;
-  extendedData?: { [key: string]: any };
+  extendedData?: {
+    [key: string]: any;
+  };
 }
+
+/**
+ * Partial node definition.
+ * @public
+ */
+export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
+
+/**
+ * Serialized [[PartialNode]] JSON representation.
+ * @public
+ */
+export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+
+type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */
 export namespace Node {
   /** Serialize given [[Node]] to JSON */
   export function toJSON(node: Node): NodeJSON {
-    const { label, ...baseNode } = node;
+    const { key, label, ...baseNode } = node;
     return {
       ...baseNode,
-      key: NodeKey.toJSON(node.key),
+      key: NodeKey.toJSON(key),
+      labelDefinition: LabelDefinition.toJSON(label),
+    };
+  }
+
+  /** @internal */
+  export function toPartialJSON(node: PartialNode): PartialNodeJSON {
+    if (node.key === undefined) {
+      return node;
+    }
+
+    const { key, label, ...baseNode } = node;
+    return {
+      ...baseNode,
+      key: NodeKey.toJSON(key),
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
@@ -88,6 +148,20 @@ export namespace Node {
     return {
       ...baseJson,
       key: NodeKey.fromJSON(json.key),
+      label: LabelDefinition.fromJSON(labelDefinition),
+    };
+  }
+
+  /** @internal */
+  export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
+    if (json.key === undefined) {
+      return json;
+    }
+
+    const { key, labelDefinition, ...baseJson } = json;
+    return {
+      ...baseJson,
+      key: NodeKey.fromJSON(key),
       label: LabelDefinition.fromJSON(labelDefinition),
     };
   }

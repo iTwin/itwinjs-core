@@ -33,17 +33,29 @@ export interface ContentSpecificationBase extends ContentModifiersList {
   specType: ContentSpecificationTypes;
 
   /**
-   * Defines the order in which specifications are evaluated and executed. Defaults to `1000`.
+   * Controls the order in which specifications are handled — specification with higher priority value is handled
+   * first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
    *
    * @type integer
    */
   priority?: number;
 
-  /** Should each content record be assigned an image id */
+  /**
+   * Should image IDs be calculated for the returned instances. When `true`, [[ImageIdOverride]] rules get applied when
+   * creating the content.
+   *
+   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   showImages?: boolean;
 
-  /** Specifications for joining related instances */
+  /** Specifications of [related instances]($docs/presentation/RelatedInstanceSpecification.md) that can be used when creating the content. */
   relatedInstances?: RelatedInstanceSpecification[];
+
+  /**
+   * Specifies whether this specification should be ignored if another specification was handled before as
+   * determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
+   */
+  onlyIfNotHandled?: boolean;
 }
 
 /**

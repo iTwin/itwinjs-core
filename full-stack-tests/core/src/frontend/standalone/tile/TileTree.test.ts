@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { compareStrings } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { IModelTileTreeProps, ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { compareStrings } from "@itwin/core-bentley";
+import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
-} from "@bentley/imodeljs-frontend";
+  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
+  TileRequest, TileRequestChannel, TileTree,
+} from "@itwin/core-frontend";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -18,7 +19,7 @@ class MockTile extends Tile {
 
   public get channel() {
     // This is never called.
-    return { } as unknown as TileRequestChannel;
+    return {} as unknown as TileRequestChannel;
   }
 
   public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {
@@ -56,8 +57,8 @@ class MockTree extends TileTree {
   public get rootTile() { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
-  public get isContentUnbounded() { return false; }
+  public get viewFlagOverrides() { return {}; }
+  public override get isContentUnbounded() { return false; }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
     return [];
@@ -71,7 +72,7 @@ describe("TileTreeSupplier", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -79,7 +80,7 @@ describe("TileTreeSupplier", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should be discarded when ecef location is modified if tiles are ecef-dependent", async () => {
@@ -145,7 +146,7 @@ describe("requestTileTreeProps", () => {
 
   before(async () => {
     const tileAdmin = { maxActiveTileTreePropsRequests };
-    await IModelApp.startup({ tileAdmin });
+    await TestUtility.startFrontend({ tileAdmin });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -158,7 +159,7 @@ describe("requestTileTreeProps", () => {
     if (imodel2)
       await imodel2.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should process requests in FIFO order", async () => {
@@ -197,7 +198,7 @@ describe("requestTileTreeProps", () => {
       try {
         await IModelApp.tileAdmin.requestTileTreeProps(imodel, id);
         fulfilled.push(id);
-      } catch (_) {
+      } catch {
         //
       }
     };
@@ -220,7 +221,7 @@ describe("requestTileTreeProps", () => {
 
       const expectedNumPending = numRemaining - expectedNumActive;
 
-      // ###TODO The following occassionally fails with 'expected 1 to equal 0'.
+      // ###TODO The following occasionally fails with 'expected 1 to equal 0'.
       expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
     };
 

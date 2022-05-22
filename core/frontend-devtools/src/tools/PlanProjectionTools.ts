@@ -7,39 +7,39 @@
  * @module Tools
  */
 
-import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@bentley/imodeljs-frontend";
+import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-common";
+import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";
 
 /** Dumps a JSON representation of the plan projection settings for the current viewport.
- * @alpha
+ * @beta
  */
 export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
-  public static toolId = "DumpLayerSettings";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "DumpLayerSettings";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
   private _copyToClipboard = false;
 
-  protected get require3d() { return true; }
+  protected override get require3d() { return true; }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     if (1 === args.length)
       this._copyToClipboard = "c" === args[0].toLowerCase();
 
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings.planProjectionSettings;
     if (undefined === settings) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined"));
       return false;
     }
 
-    const props = [ ];
+    const props = [];
     for (const [modelId, value] of settings)
       props.push({ modelId, settings: value.toJSON() });
 
@@ -55,17 +55,17 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 /** Changes subcategory display priority.
- * @alpha
+ * @beta
  */
 export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
-  public static toolId = "OverrideSubCategoryPriority";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "OverrideSubCategoryPriority";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   private readonly _subcatIds = new Set<string>();
   private _priority?: number;
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const style = vp.displayStyle;
     for (const id of this._subcatIds) {
       const ovr = style.getSubCategoryOverride(id);
@@ -82,7 +82,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     return true;
   }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     for (const id of args[0].split(","))
       this._subcatIds.add(id);
 
@@ -95,19 +95,19 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 }
 
 /** Changes plan projection settings for one or more models.
- * @alpha
+ * @beta
  */
 export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
-  public static toolId = "ChangeLayerSettings";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 5; }
+  public static override toolId = "ChangeLayerSettings";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 5; }
 
   private readonly _modelIds = new Set<string>();
   private _settings?: PlanProjectionSettings;
 
-  protected get require3d() { return true; }
+  protected override get require3d() { return true; }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings;
     for (const modelId of this._modelIds)
       settings.setPlanProjectionSettings(modelId, this._settings);
@@ -115,12 +115,12 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     return true;
   }
 
-  protected parse(inputArgs: string[]) {
+  protected async parse(inputArgs: string[]) {
     if (!this.parseModels(inputArgs[0]))
       return false;
 
     const args = parseArgs(inputArgs.slice(1));
-    const props: PlanProjectionSettingsProps = { };
+    const props: PlanProjectionSettingsProps = {};
 
     props.transparency = args.getFloat("t");
     props.overlay = args.getBoolean("o");
@@ -132,7 +132,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
   }
 
   private parseModels(models: string) {
-    const vp  = IModelApp.viewManager.selectedView!; // already validated by super.parseAndRun
+    const vp = IModelApp.viewManager.selectedView!; // already validated by super.parseAndRun
     models = models.toLowerCase();
 
     const isPlanProjection = (modelId: string) => {

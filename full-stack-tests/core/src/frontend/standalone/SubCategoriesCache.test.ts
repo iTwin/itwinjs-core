@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, MockRender, SnapshotConnection, SubCategoriesCache } from "@bentley/imodeljs-frontend";
+import { BeDuration, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
+import { HydrateViewStateRequestProps, IModelReadRpcInterface } from "@itwin/core-common";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -22,7 +24,7 @@ describe("SubCategoriesCache", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -30,7 +32,27 @@ describe("SubCategoriesCache", () => {
     if (undefined !== imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
+  });
+
+  it("should get categories from preload, hydrate, postload workflow", async () => {
+    const catIds = new Set<string>();
+    catIds.add("0x2f"); // contains 2 subcategories: 0x33 and 0x30
+    catIds.add("0x17"); // contains 1 subcategory: 0x18
+    const expectedSubCategories = 3;
+    const subcats = new SubCategoriesCache(imodel);
+    let reqProps: HydrateViewStateRequestProps = {};
+    subcats.preload(reqProps, catIds);
+    expect(reqProps.notLoadedCategoryIds).not.to.be.undefined;
+    expect(reqProps.notLoadedCategoryIds).to.equal(CompressedId64Set.sortAndCompress(catIds));
+    const resProps = await IModelReadRpcInterface.getClient().hydrateViewState(imodel.getRpcProps(), reqProps);
+    expect(resProps?.categoryIdsResult).not.to.be.undefined;
+    expect(resProps?.categoryIdsResult?.length).to.equal(expectedSubCategories);
+    subcats.postload(resProps);
+
+    reqProps = {};
+    subcats.preload(reqProps, catIds);
+    expect(reqProps.notLoadedCategoryIds).to.be.undefined;
   });
 
   it("should not repeatedly request same categories", async () => {
@@ -75,9 +97,8 @@ describe("SubCategoriesCache", () => {
 
   function expectEqualIdSets(idSet: Id64Set, ids: Id64Arg): void {
     expect(idSet.size).to.equal(Id64.sizeOf(ids));
-    Id64.forEach(ids, (id) => {
+    for (const id of Id64.iterable(ids))
       expect(idSet.has(id)).to.be.true;
-    });
   }
 
   class Queue extends SubCategoriesCache.Queue {
@@ -101,9 +122,8 @@ describe("SubCategoriesCache", () => {
     }
 
     public expectNotLoaded(catIds: Id64Arg): void {
-      Id64.forEach(catIds, (catId) => {
+      for (const catId of Id64.iterable(catIds))
         expect(this.cache.getSubCategories(catId)).to.be.undefined;
-      });
     }
 
     public expectLoaded(catId: Id64String, subcatIds: Id64Arg): void {

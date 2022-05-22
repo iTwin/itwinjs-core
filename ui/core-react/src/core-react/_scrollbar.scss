@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./style/themecolors.scss";
+
+$uicore-scrollbar-width: 12px;
+$uicore-scrollbar-padding: 2px;
+
+@mixin uicore-scrollbar($color: $buic-background-scrollbar, $width: $uicore-scrollbar-width, $padding: $uicore-scrollbar-padding) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: $width;
+    background-color: $color;
+    background-clip: content-box;
+    border-style: solid;
+    border-color: transparent;
+    border-width: $padding;
+
+    &:hover {
+      background-color: $buic-background-scrollbar-hover;
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-track-piece:corner-present {
+    margin-bottom: -2 * $padding;
+    margin-right: -2 * $padding;
+  }
+}
+
+@mixin uicore-hidden-scrollbar {
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+@mixin uicore-touch-scrolling {
+  @supports (-webkit-overflow-scrolling: touch) {
+    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
+  }
+}

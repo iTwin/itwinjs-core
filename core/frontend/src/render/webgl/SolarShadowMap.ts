@@ -7,10 +7,12 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
-import { RenderType } from "@bentley/webgl-compatibility";
+import { assert, dispose } from "@itwin/core-bentley";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import {
+  Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
+} from "@itwin/core-common";
+import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
@@ -43,33 +45,33 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
 
     // The solar shadow projection is parallel - which can cause excessive tile selection if it is along an axis of an unbounded tile
     // tree such as the OSM buildings.  Rev limit the selection here.
-    public get maxRealityTreeSelectionCount(): undefined | number { return 500; }
+    public override get maxRealityTreeSelectionCount(): undefined | number { return 500; }
 
-    public processSelectedTiles(tiles: Tile[]): void {
+    public override processSelectedTiles(tiles: Tile[]): void {
       this._processTiles(tiles);
     }
 
-    public get frustumPlanes(): FrustumPlanes {
+    public override get frustumPlanes(): FrustumPlanes {
       if (true === this._useViewportMap)
         return super.frustumPlanes;
       else
         return this._mapFrustumPlanes;
     }
 
-    public get worldToViewMap(): Map4d {
+    public override get worldToViewMap(): Map4d {
       if (true === this._useViewportMap)
         return super.worldToViewMap;
       else
         return this._shadowMap.worldToViewMap;
     }
 
-    public drawGraphics(): void {
+    public override drawGraphics(): void {
       const graphics = this.produceGraphics();
       if (graphics)
         this._shadowMap.addGraphic(graphics);
     }
 
-    public getPixelSize(tile: Tile): number {
+    public override getPixelSize(tile: Tile): number {
       // For tiles that are part of the scene, size them based on the viewport frustum so that shadow map uses same resolution tiles as scene
       // - otherwise artifacts like shadow acne may result.
       // For tiles that are NOT part of the scene, size them based on the shadow frustum, not the viewport frustum
@@ -161,12 +163,12 @@ class Bundle implements WebGLDisposable {
     if (undefined === fboSM)
       return undefined;
 
-    const depthTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), depthTextureHandle);
+    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle, transparency: TextureTransparency.Opaque });
     const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
-    const shadowMapTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true), shadowMapTextureHandle);
+    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle, transparency: TextureTransparency.Opaque });
     const renderCommands = new RenderCommands(target, stack, batch);
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
@@ -448,17 +450,18 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const gl = System.instance.context;
     gl.viewport(0, 0, shadowMapWidth, shadowMapHeight);
 
-    const viewFlags = target.currentViewFlags.clone(this._scratchViewFlags);
-    viewFlags.renderMode = RenderMode.SmoothShade;
-    viewFlags.transparency = false;
-    // viewFlags.textures = false;  // need textures for alpha transparency shadows
-    viewFlags.lighting = false;
-    viewFlags.shadows = false;
-    viewFlags.noGeometryMap = true;
-    viewFlags.monochrome = false;
-    // viewFlags.materials = false; material transparency affects whether or not surface casts shadows
-    viewFlags.ambientOcclusion = false;
-    viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
+    // NB: textures and materials are needed because their transparencies affect whether or not a surface casts shadows
+    const viewFlags = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     System.instance.applyRenderState(this._renderState);
     const prevPlan = target.plan;

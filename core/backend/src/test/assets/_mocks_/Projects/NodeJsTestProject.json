@@ -1,1 +1,27 @@
-[{"instanceId":"8d8b93b0-2aa2-4d0a-8505-46153bf71719","schemaName":"CONNECTEDContext","className":"Project","properties":{"UltimateRefId":"15977bce-bb3a-4cbf-b790-9dfd5534d49b","DataLocationId":"99999999-9999-9999-9999-999999999999","Industry":"9999","Type":"9999","AssetId":null,"Location":"","Latitude":null,"Longitude":null,"CountryCode":"US","TimeZoneLocation":"Eastern Standard Time","Status":1,"RegisteredDate":"2017-07-03T14:31:13.353","LastModifiedDate":"2017-07-03T14:34:35.003","IsRbacEnabled":true,"AllowExternalTeamMembers":true,"ContextTypeId":3,"Name":"NodeJsTestProject","Number":"NodeJsTestProject"},"eTag":"\"v2ELJ1vHcg9tGemvRcv+JoRtdPM=\""}]
+[
+  {
+    "instanceId": "8d8b93b0-2aa2-4d0a-8505-46153bf71719",
+    "schemaName": "CONNECTEDContext",
+    "className": "Project",
+    "properties": {
+      "UltimateRefId": "15977bce-bb3a-4cbf-b790-9dfd5534d49b",
+      "DataLocationId": "99999999-9999-9999-9999-999999999999",
+      "Industry": "9999",
+      "Type": "9999",
+      "AssetId": null,
+      "Location": "",
+      "Latitude": null,
+      "Longitude": null,
+      "CountryCode": "US",
+      "TimeZoneLocation": "Eastern Standard Time",
+      "Status": 1,
+      "RegisteredDate": "2017-07-03T14:31:13.353",
+      "LastModifiedDate": "2017-07-03T14:34:35.003",
+      "IsRbacEnabled": true,
+      "AllowExternalTeamMembers": true,
+      "Name": "NodeJsTestProject",
+      "Number": "NodeJsTestProject"
+    },
+    "eTag": "\"v2ELJ1vHcg9tGemvRcv+JoRtdPM=\""
+  }
+]

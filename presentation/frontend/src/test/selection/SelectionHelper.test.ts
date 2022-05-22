@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import {
   createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionHelper } from "../../presentation-frontend";
 
 describe("SelectionHelper", () => {

@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import { getProcessEnvFromBackend } from "../../common/SideChannels";
+import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
@@ -22,10 +23,11 @@ declare const PACKAGE_VERSION: string;
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
+  public clientAccessToken?: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -56,12 +58,9 @@ export class TestContext {
     // Print out the configuration
     console.log(this.settings.toString());
 
-    // Configure iModel.js frontend logging to go to the console
+    // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
-
-    // Setup environment
-    Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
@@ -71,22 +70,27 @@ export class TestContext {
         clientId: this.settings.oidcClientId,
         redirectUri: this.settings.oidcRedirect,
         scope: this.settings.oidcScopes,
+        authority: this.settings.oidcAuthority,
       } as TestBrowserAuthorizationClientConfiguration);
     }
 
+    if (undefined !== this.settings.clientConfiguration)
+      this.clientAccessToken = await getClientAccessTokenFromBackend();
+
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     await NoRenderApp.startup({
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
-    this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
-    this.contextId = this.iModelWithChangesets.contextId;
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

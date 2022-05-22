@@ -1,0 +1,58 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/theme";
+
+// cspell:ignore colorvariables
+
+/** @note: This file should only be imported by UiCore.ts.
+ *  It should NOT be imported by any *.scss or other ui-core files.
+ */
+
+@mixin light-theme {
+  --buic-button-gradient1:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.65);
+  --buic-button-gradient2:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.00);
+
+  --buic-background-editable:         #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 70%)};
+  --buic-row-selection:               #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 80%)};
+  --buic-row-hover:                   #{mix($iui-color-background-1--light, $iui-color-background-primary--light, 90%)};
+}
+
+@mixin dark-theme {
+  --buic-button-gradient1:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.00);
+  --buic-button-gradient2:            rgba(var(--iui-color-foreground-body-invert-rgb), 0.25);
+
+  --buic-background-editable:         #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 70%)};
+  --buic-row-selection:               #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 80%)};
+  --buic-row-hover:                   #{mix($iui-color-background-1--dark, $iui-color-background-primary--dark, 90%)};
+}
+
+html,
+html[data-theme="light"] {
+  @include light-theme;
+}
+
+html[data-theme="dark"] {
+  @include dark-theme;
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="SYSTEM_PREFERRED"] {
+    @include light-theme;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="SYSTEM_PREFERRED"] {
+    @include dark-theme;
+  }
+}
+
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *:before,
+html.theme-transition *:after {
+  transition: all 100ms !important;
+  transition-delay: 0 !important;
+}

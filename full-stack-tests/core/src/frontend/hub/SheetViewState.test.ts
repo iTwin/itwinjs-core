@@ -3,34 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, IModelApp, SheetViewState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { CheckpointConnection, SheetViewState } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 describe("Sheet views (#integration)", () => {
-  const projectName = "iModelJsIntegrationTest";
   let imodel: CheckpointConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
 
   before(async () => {
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
-    const projectId = await TestUtility.getTestProjectId(projectName);
-    const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
+    imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   after(async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("loads view attachment info", async () => {
@@ -119,6 +115,19 @@ describe("Sheet views (#integration)", () => {
     expect(p2.length).to.equal(1);
     expect(p1).not.to.equal(p2);
     expect(p1).not.to.deep.equal(p2);
+  });
+
+  it("should update subcategories cache when loading a sheetview", async () => {
+    // 0x1a, 0x93 are the two category ids that are passed to preload for this view.
+    const catIds = ["0x1a", "0x93"];
+    const view = await imodel.views.load(sheetViewId) as SheetViewState;
+    const props = view.toProps();
+
+    expect(props.sheetProps).not.to.be.undefined;
+
+    for (const catId of catIds) {
+      expect(imodel.subcategories.getSubCategories(catId)).not.to.be.undefined;
+    }
   });
 
   it("preserves view attachment info when round-tripped through JSON", async () => {

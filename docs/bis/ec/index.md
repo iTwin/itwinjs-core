@@ -1,18 +1,18 @@
 # ECObjects Information Modeling Language Overview
 
-The ECObjects language is comprised of items that have attributes. In this section, we will briefly describe the "ECSchema" element and the kinds of items that are the direct members of an ECSchema element. For each of these kinds of items, we will define their attributes (and other kinds of items that they contain) in subsequent sections.
+The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items in that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
 
-The first kind of element is an *ECSchema* itself.
+The root of any domain is an *ECSchema* itself.
 
-- An **[ECSchema](./ec-schema.md)** describes one "domain"—its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all elements defined within it. ECSchemas cannot contain other ECSchemas.
+- An **[ECSchema](./ec-schema.md)** describes one "domain"—its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all items defined within it. All items within an ECSchema have a unique name.
 
-First among the kinds of elements that can be a direct member of an ECSchema is the ECSchemaReference:
+ECSchemas cannot contain other ECSchemas but they can reference ECSchemas:
 
-- **ECSchemaReference** is a member of an ECSchema that expresses that the ECSchema references another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)
+- **ECSchemaReference** is a member of an ECSchema that expresses a reference another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)
 
-ECSchema gets its extensibility through custom attributes:
+ECObjects has a fixed set of items and those items have a fixed set of attributes, the attributes of ECSchema and its items can be extended via custom attributes:
 
-- **[ECCustomAttributes](./ec-custom-attributes.md)** element is a container of ECInstances (**___NEED_LINK**) of ECCustomAttributeClasses. Those ECInstances are "extended" metadata about the item of which the ECCustomAttributes are a member. The ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass, ECProperty, etc.
+- **[ECCustomAttributes](./ec-custom-attributes.md)** is an optional child of ECSchema and some schema items that hold extended attribute values for the parent they are applied to.  ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass and ECProperty.
 
 The next 5 kinds of items are direct members of ECSchema and define different kinds of ECClasses. All of the ECClasses can contain **[ECProperties](./ec-property.md)** that define named properties with data types that are "primitives", "structs", arrays or navigation.
 

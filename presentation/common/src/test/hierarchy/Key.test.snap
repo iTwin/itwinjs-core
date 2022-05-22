@@ -7,6 +7,7 @@ Object {
     "5a1a57cf-71da-4582-8d88-b8ba91f63e0b",
   ],
   "type": "backing up",
+  "version": 2,
 }
 `;
 
@@ -18,6 +19,7 @@ Object {
     "f6197eae-8ae8-44c3-b286-3432422b5f98",
   ],
   "type": "ECClassGroupingNode",
+  "version": 2,
 }
 `;
 
@@ -38,14 +40,14 @@ Object {
     "06215be1-0c42-457f-8e21-dca1b4638454",
   ],
   "type": "ECInstancesNode",
+  "version": 2,
 }
 `;
 
 exports[`NodeKey fromJSON creates ECPropertyGroupingNodeKey 1`] = `
 Object {
   "className": "Division",
-  "groupedInstancesCount": 93277,
-  "groupingValue": 79408,
+  "groupedInstancesCount": 79408,
   "groupingValues": Array [
     77874,
     74050,
@@ -55,6 +57,7 @@ Object {
   ],
   "propertyName": "Planner",
   "type": "ECPropertyGroupingNode",
+  "version": 2,
 }
 `;
 
@@ -66,6 +69,7 @@ Object {
     "f1dd9cea-1a68-494b-a67f-635d9d40589b",
   ],
   "type": "DisplayLabelGroupingNode",
+  "version": 2,
 }
 `;
 
@@ -76,6 +80,7 @@ Object {
     "e897c093-6593-4c57-b654-422ec7b5ed55",
   ],
   "type": "Grocery",
+  "version": 2,
 }
 `;
 
@@ -87,6 +92,7 @@ Object {
     "3a2a9f3e-b31d-425a-b80a-fbae54967d0f",
   ],
   "type": "ECClassGroupingNode",
+  "version": 2,
 }
 `;
 
@@ -107,14 +113,14 @@ Object {
     "5460ba3b-3162-4839-95bc-19da5727a1c1",
   ],
   "type": "ECInstancesNode",
+  "version": 2,
 }
 `;
 
 exports[`NodeKey toJSON serializes ECPropertyGroupingNodeKey 1`] = `
 Object {
   "className": "United States of America",
-  "groupedInstancesCount": 90988,
-  "groupingValue": 50454,
+  "groupedInstancesCount": 50454,
   "groupingValues": Array [
     752,
     5097,
@@ -124,6 +130,7 @@ Object {
   ],
   "propertyName": "Synergized",
   "type": "ECPropertyGroupingNode",
+  "version": 2,
 }
 `;
 
@@ -135,5 +142,6 @@ Object {
     "46f714a1-68b6-425d-8ee6-0c175c6be362",
   ],
   "type": "DisplayLabelGroupingNode",
+  "version": 2,
 }
 `;

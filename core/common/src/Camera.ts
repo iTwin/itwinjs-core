@@ -6,11 +6,12 @@
  * @module Views
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { JsonUtils } from "@itwin/core-bentley";
+import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 
 /** JSON representation of a [[Camera]].
  * @public
+ * @extensions
  */
 export interface CameraProps {
   lens: AngleProps;

@@ -1,12 +1,14 @@
 {
-  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "$schema": "../../node_modules/@itwin/presentation-common/Ruleset.schema.json",
   "id": "Functional",
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore",
-      "Functional"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    },
+    {
+      "name": "Functional"
+    }
+  ],
   "rules": [
     {
       "ruleType": "RootNodes",

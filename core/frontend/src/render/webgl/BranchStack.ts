@@ -6,10 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
-import { ViewClipSettings } from "../ViewClipSettings";
+import { assert } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { Branch } from "./Graphic";
@@ -70,11 +69,6 @@ export class BranchStack {
   public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
     assert(1 === this.length);
     this.top.changeRenderPlan(vf, is3d, hline);
-  }
-
-  public updateViewClip(settings: ViewClipSettings | undefined): void {
-    assert(1 === this.length);
-    this.top.setViewClip(settings);
   }
 
   public setSymbologyOverrides(ovrs: FeatureSymbology.Overrides) {

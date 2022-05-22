@@ -3,21 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
+import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
-  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  ModalDialogManager, NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { UiAdmin } from "@bentley/ui-abstract";
+import { StandardContentLayouts, UiAdmin, WidgetState } from "@itwin/appui-abstract";
+import { AppUi } from "../AppUi";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 function RightPanel() {
   const direction = useWidgetDirection();
@@ -49,7 +51,7 @@ function SampleTimelineComponent() {
   const duration = 20 * 1000;
   const startDate = new Date(2014, 6, 6);
   const endDate = new Date(2016, 8, 12);
-  const [loop, setLoop] = React.useState <boolean> (false);
+  const [loop, setLoop] = React.useState<boolean>(false);
 
   const handleOnSettingsChange = (settings: PlaybackSettings) => {
     if (settings.loop !== undefined) {
@@ -76,6 +78,12 @@ function SampleTimelineComponent() {
 }
 
 export class Frontstage1 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test1";
+
+  public get id(): string {
+    return Frontstage1.stageId;
+  }
+
   private _topMostPanel = {
     widgets: [
       <Widget element={<>
@@ -128,15 +136,14 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
     return (
-      <Frontstage id="Test1"
+      <Frontstage id={this.id}
         version={1}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="TwoHalvesVertical"
-        contentGroup="TestContentGroup1"
+        contentGroup={contentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         topLeft={
           <Zone
             widgets={[
@@ -244,10 +251,11 @@ export class Frontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage1Def: FrontstageDef | undefined;
-  private static get frontstage1Def(): FrontstageDef {
+
+  private static async getFrontstage1Def() {
     if (!this._frontstage1Def) {
       const frontstageProvider = new NestedFrontstage1();
-      this._frontstage1Def = frontstageProvider.initializeDef();
+      this._frontstage1Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage1Def;
   }
@@ -258,12 +266,13 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage1Def);
+        const frontstage1Def = await FrontstageToolWidget.getFrontstage1Def();
+        await FrontstageManager.openNestedFrontstage(frontstage1Def);
       },
     });
   }
 
-  /** Command that opens switches the content layout */
+  /** Command that opens switches the content layout - TODO Review */
   private get _switchLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",
@@ -271,7 +280,7 @@ class FrontstageToolWidget extends React.Component {
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          const contentLayout = new ContentLayoutDef(StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
             await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           }
@@ -291,17 +300,37 @@ class FrontstageToolWidget extends React.Component {
       },
     });
   }
+
+  private get _openPopupWindow() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-sad",
+      label: "Open Popup Window",
+      execute: () => location.href = "pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}",
+      // execute: () => window.open("pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}"),
+    });
+  }
+
+  private get _openModal() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-happy",
+      label: "Open Modal Dialog",
+      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+    });
+  }
+
   private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
+          <ActionItemButton actionItem={this._openPopupWindow} />
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <ActionItemButton actionItem={this._switchLayout} />
           <ActionItemButton actionItem={this._pausePlayTimeline} />
+          <ActionItemButton actionItem={this._openModal} />
         </>
       }
     />
@@ -330,7 +359,7 @@ class FrontstageToolWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
@@ -369,7 +398,7 @@ class FrontstageNavigationWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
       <NavigationWidget
         navigationAidId="StandardRotationNavigationAid"

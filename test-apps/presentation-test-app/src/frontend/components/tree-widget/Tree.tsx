@@ -3,28 +3,35 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./TreeWidget.css";
-import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { useControlledTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { ControlledTree, FilteringInput, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import React from "react";
+import { IModelConnection } from "@itwin/core-frontend";
+import {
+  DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
+} from "@itwin/presentation-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
 
 const PAGING_SIZE = 10;
 
 interface Props {
   imodel: IModelConnection;
   rulesetId: string;
+  diagnostics: DiagnosticsProps;
+  filtering: {
+    filter: string;
+    activeMatchIndex: number;
+    onFilteringStateChange: (isFiltering: boolean, matchesCount: number | undefined) => void;
+  };
+  width: number;
+  height: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const Tree: React.FC<Props> = (props: Props) => {
-  const nodeLoader = usePresentationTreeNodeLoader({
+export function Tree(props: Props) {
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.imodel,
     ruleset: props.rulesetId,
     pagingSize: PAGING_SIZE,
+    ...props.diagnostics,
   });
-
-  const [filter, setFilter] = React.useState("");
-  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
 
   const {
     filteredModelSource,
@@ -32,37 +39,26 @@ export const Tree: React.FC<Props> = (props: Props) => {
     isFiltering,
     matchesCount,
     nodeHighlightingProps,
-  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
-  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader ?? nodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
-  const visibleNodes = useVisibleTreeNodes(filteredModelSource);
+  } = useControlledPresentationTreeFiltering({ nodeLoader, filter: props.filtering.filter, activeMatchIndex: props.filtering.activeMatchIndex });
 
-  const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : null;
+  const { onFilteringStateChange } = props.filtering;
+  React.useEffect(() => {
+    onFilteringStateChange(isFiltering, matchesCount);
+  }, [isFiltering, matchesCount, onFilteringStateChange]);
+
+  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
+  const treeModel = useTreeModel(filteredModelSource);
 
   return (
-    <div className="treewidget">
-      <div className="treewidget-header">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
-        <FilteringInput
-          filteringInProgress={isFiltering}
-          onFilterCancel={() => { setFilter(""); }}
-          onFilterClear={() => { setFilter(""); }}
-          onFilterStart={(newFilter) => { setFilter(newFilter); }}
-          resultSelectorProps={{
-            onSelectedChanged: (index) => setActiveMatchIndex(index),
-            resultCount: matchesCount || 0,
-          }} />
-      </div>
-      <div className="filteredTree">
-        <ControlledTree
-          visibleNodes={visibleNodes}
-          treeEvents={eventHandler}
-          nodeLoader={filteredNodeLoader}
-          selectionMode={SelectionMode.Extended}
-          nodeHighlightingProps={nodeHighlightingProps}
-          iconsEnabled={true}
-        />
-        {overlay}
-      </div>
-    </div>
+    <ControlledTree
+      model={treeModel}
+      eventsHandler={eventHandler}
+      nodeLoader={filteredNodeLoader}
+      selectionMode={SelectionMode.Extended}
+      nodeHighlightingProps={nodeHighlightingProps}
+      iconsEnabled={true}
+      width={props.width}
+      height={props.height}
+    />
   );
-};
+}

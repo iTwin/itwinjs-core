@@ -6,18 +6,16 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { Transform } from "@itwin/core-geometry";
+import {
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+} from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { ViewClipSettings } from "../ViewClipSettings";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
-import { normalizeViewFlags } from "./normalizeViewFlags";
 import { EdgeSettings } from "./EdgeSettings";
 
 /** Options used to construct a BranchState.
@@ -29,6 +27,7 @@ export interface BranchStateOptions {
   symbologyOverrides: FeatureSymbology.Overrides;
   clipVolume?: ClipVolume;
   readonly planarClassifier?: PlanarClassifier;
+  readonly secondaryClassifiers?: PlanarClassifier[];
   readonly textureDrape?: TextureDrape;
   readonly edgeSettings: EdgeSettings;
   /** Used chiefly for readPixels() to identify context of picked Ids when graphics from multiple iModels are displayed together. */
@@ -53,6 +52,7 @@ export class BranchState {
 
   public get transform() { return this._opts.transform; }
   public get viewFlags() { return this._opts.viewFlags; }
+  public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
   public get clipVolume() { return this._opts.clipVolume; }
   public get planarClassifier() { return this._opts.planarClassifier; }
   public get textureDrape() { return this._opts.textureDrape; }
@@ -61,7 +61,7 @@ export class BranchState {
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
-  public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
+  public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -71,26 +71,9 @@ export class BranchState {
   }
 
   public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
-    viewFlags.clone(this.viewFlags);
-    normalizeViewFlags(this.viewFlags);
+    this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
-  }
-
-  public setViewClip(settings: ViewClipSettings | undefined): void {
-    if (undefined === settings) {
-      this._opts.clipVolume = dispose(this._opts.clipVolume);
-      return;
-    }
-
-    // ###TODO We currently assume that the active view's ClipVector is never mutated in place, so if we are given the same object, we assume our RenderClipVolume remains valid.
-    if (!this._opts.clipVolume || this._opts.clipVolume.clipVector !== settings.clipVector) {
-      dispose(this._opts.clipVolume);
-      this._opts.clipVolume = IModelApp.renderSystem.createClipVolume(settings.clipVector) as ClipVolume | undefined;
-    }
-
-    if (this._opts.clipVolume)
-      this._opts.clipVolume.setClipColors(settings.outsideColor, settings.insideColor);
   }
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
@@ -101,15 +84,16 @@ export class BranchState {
     const iModel = branch.iModel ?? prev.iModel;
     const planarClassifier = (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier;
     const textureDrape = branch.textureDrape ?? prev.textureDrape;
-    const clipVolume = viewFlags.clipVolume ? (branch.clips ?? prev.clipVolume) : undefined;
+    const clipVolume = branch.clips;
     const edgeSettings = branch.edgeSettings ?? prev.edgeSettings;
     const is3d = branch.frustum?.is3d ?? prev.is3d;
     const frustumScale = branch.frustum?.scale ?? prev.frustumScale;
+    const secondaryClassifiers = branch.secondaryClassifiers?? prev.secondaryClassifiers;
 
     // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
     const appearanceProvider = branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider);
 
-    return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale, appearanceProvider });
+    return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale, appearanceProvider, secondaryClassifiers });
   }
 
   public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
@@ -120,10 +104,7 @@ export class BranchState {
   }
 
   public static createForDecorations(): BranchState {
-    const vf = new ViewFlags();
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.lighting = false;
-    vf.whiteOnWhiteReversal = false;
+    const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
 
     return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
   }
@@ -133,6 +114,6 @@ export class BranchState {
       opts.frustumScale = { x: 1, y: 1 };
 
     this._opts = opts;
-    normalizeViewFlags(this.viewFlags);
+    this._opts.viewFlags = this._opts.viewFlags.normalize();
   }
 }

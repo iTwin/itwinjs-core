@@ -1,0 +1,74 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.components-time {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: $buic-background-control;
+  border: 1px solid $buic-inputs-border;
+  border-radius: 3px;
+  box-shadow: var(--buic-inputs-boxshadow) 0px 1px 1px inset;
+  box-sizing: border-box;
+
+  &.has-error {
+    color: $buic-foreground-alert;
+  }
+
+  .components-time-input {
+    box-sizing: border-box;
+    width: 2em;
+    text-align: center;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+
+    &.iui-input {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    &:focus {
+      outline: 0px;
+      border: 1px solid $buic-inputs-border;
+      border-radius: 3px;
+      border-color: var(--buic-foreground-focus-border);
+      box-shadow: var(--buic-focus-boxshadow-gradient1) 0px 1px 1px, var(--buic-focus-boxshadow-gradient2) 0px 0px 0px 2px;
+      z-index: 1;
+      /* bump z-index so drop shadow in not cut off by AM/PM */
+    }
+  }
+
+  .components-time-period-input {
+    box-sizing: border-box;
+    width: 3em;
+    text-align: center;
+    border: none;
+    padding-left: 0;
+    padding-right: 0;
+    box-shadow: none;
+    margin: 0;
+
+    &:focus {
+      outline: 0px;
+      border: 1px solid $buic-inputs-border;
+      border-radius: 3px;
+      border-color: var(--buic-foreground-focus-border);
+      box-shadow: var(--buic-focus-boxshadow-gradient1) 0px 1px 1px, var(--buic-focus-boxshadow-gradient2) 0px 0px 0px 2px;
+    }
+  }
+
+  .component-time-separator {
+    margin: 0;
+    padding: 0 1px;
+  }
+
+  .iui-input {
+    padding: $uicore-iui-input-padding;
+  }
+}

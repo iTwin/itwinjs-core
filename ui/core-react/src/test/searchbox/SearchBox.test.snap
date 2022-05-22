@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchBox renders renders correctly 1`] = `
+<div
+  className="core-searchbox"
+  data-testid="core-searchbox-instance"
+>
+  <input
+    data-testid="core-searchbox-input"
+    onChange={[Function]}
+    onCut={[Function]}
+    onKeyDown={[Function]}
+    onPaste={[Function]}
+    placeholder="general.search"
+    role="searchbox"
+  />
+  <div
+    className="core-searchbox-button"
+    onClick={[Function]}
+    role="button"
+    tabIndex={-1}
+    title="general.search"
+  >
+    <span
+      className="core-searchbox-icon icon icon-search"
+    />
+  </div>
+</div>
+`;

@@ -6,16 +6,17 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
+import { RenderAreaPattern } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
-import { InstanceBuffers, InstancedGeometry } from "./InstancedGeometry";
+import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -28,31 +29,45 @@ export class Primitive extends Graphic {
 
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
-  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
-    const instanceBuffers = undefined !== instances ? InstanceBuffers.create(instances, false) : undefined;
-    if (undefined === instanceBuffers && undefined !== instances)
+  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
+    if (!geom)
       return undefined;
 
-    return this.createShared(createGeom, instanceBuffers);
+    if (instances) {
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
+      if (instances instanceof PatternBuffers) {
+        geom = InstancedGeometry.createPattern(geom, true, instances);
+      } else {
+        assert(isInstancedGraphicParams(instances));
+        const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
+        const instanceBuffers = InstanceBuffers.create(instances, range);
+        if (!instanceBuffers)
+          return undefined;
+
+        geom = InstancedGeometry.create(geom, true, instanceBuffers);
+      }
+    }
+
+    return new this(geom);
   }
 
-  public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers): Primitive | undefined {
-    let geom = createGeom();
-    if (undefined === geom)
+  public static createShared(geom: CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
+    if (!geom)
       return undefined;
 
-    if (undefined !== instances) {
+    if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      geom = new InstancedGeometry(geom, true, instances);
-
-      // Ensure range computed immediately so we can discard the Float32Array holding the instance transforms...
-      geom.computeRange();
+      if (instances instanceof InstanceBuffers)
+        geom = InstancedGeometry.create(geom, false, instances);
+      else
+        geom = InstancedGeometry.createPattern(geom, false, instances);
     }
 
     return new this(geom);
   }
 
   public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
+  public get isPickable() { return false; }
 
   public dispose() {
     dispose(this.cachedGeometry);
@@ -62,29 +77,29 @@ export class Primitive extends Graphic {
     this.cachedGeometry.collectStatistics(stats);
   }
 
-  public getRenderPass(target: Target) {
+  public getPass(target: Target): Pass {
     if (this.isPixelMode)
-      return RenderPass.ViewOverlay;
+      return "view-overlay";
 
     switch (target.primitiveVisibility) {
       case PrimitiveVisibility.Uninstanced:
         if (this.cachedGeometry.isInstanced)
-          return RenderPass.None;
+          return "none";
         break;
       case PrimitiveVisibility.Instanced:
         if (!this.cachedGeometry.isInstanced)
-          return RenderPass.None;
+          return "none";
         break;
     }
 
-    return this.cachedGeometry.getRenderPass(target);
+    return this.cachedGeometry.getPass(target);
   }
 
   public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
     if (!this.isEdge)
@@ -98,7 +113,7 @@ export class Primitive extends Graphic {
   public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
   public get hasMaterialAtlas(): boolean { return this.cachedGeometry.hasMaterialAtlas; }
 
-  public toPrimitive(): Primitive { return this; }
+  public override toPrimitive(): Primitive { return this; }
 
   private static _drawParams?: DrawParams;
 
@@ -121,7 +136,7 @@ export class Primitive extends Graphic {
 export class SkyCubePrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
 
-  public draw(shader: ShaderProgramExecutor): void {
+  public override draw(shader: ShaderProgramExecutor): void {
     // Alter viewport to maintain square aspect ratio of skybox images even as viewRect resizes
     const vh = shader.target.viewRect.height;
     const vw = shader.target.viewRect.width;
@@ -143,7 +158,7 @@ export class SkySpherePrimitive extends Primitive {
     assert(cachedGeom instanceof SkySphereViewportQuadGeometry);
   }
 
-  public draw(shader: ShaderProgramExecutor): void {
+  public override draw(shader: ShaderProgramExecutor): void {
     (this.cachedGeometry as SkySphereViewportQuadGeometry).initWorldPos(shader.target);
     super.draw(shader); // Draw the skybox sphere
   }

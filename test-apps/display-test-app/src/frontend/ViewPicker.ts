@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;
@@ -17,6 +17,7 @@ export class ViewList extends SortedArray<ViewSpec> {
 
   private constructor() {
     super((lhs, rhs) => {
+      // Every entry has a unique Id, but we want to sort in the UI based on other criteria first.
       let cmp = compareBooleans(lhs.isPrivate, rhs.isPrivate);
       if (0 === cmp) {
         cmp = compareStrings(lhs.name, rhs.name);
@@ -33,7 +34,15 @@ export class ViewList extends SortedArray<ViewSpec> {
   public async getView(id: Id64String, iModel: IModelConnection): Promise<ViewState> {
     let view = this._views.get(id);
     if (undefined === view) {
-      view = await iModel.views.load(id);
+      try {
+        view = await iModel.views.load(id);
+      } catch {
+        // The view probably refers to a nonexistent display style or model/category selector. Replace with a default spatial view.
+        // Or, we've opened a blank connection and `id` is intentionally invalid.
+        // The viewport's title bar will display "UNNAMED" instead of the bad view's name.
+        view = this.manufactureSpatialView(iModel);
+      }
+
       this._views.set(id, view);
     }
 
@@ -51,7 +60,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     return viewList;
   }
 
-  public clear(): void {
+  public override clear(): void {
     super.clear();
     this._defaultViewId = Id64.invalid;
     this._views.clear();
@@ -101,8 +110,8 @@ export class ViewList extends SortedArray<ViewSpec> {
     if (Id64.isInvalid(this._defaultViewId))
       this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName, isPrivate: false });
 
-    const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureSpatialView(iModel) : await iModel.views.load(this._defaultViewId);
-    this._views.set(this._defaultViewId, selectedView);
+    // Ensure default view is selected and loaded.
+    await this.getView(this._defaultViewId, iModel);
   }
 
   // create a new spatial view initialized to show the project extents from top view. Model and
@@ -116,16 +125,12 @@ export class ViewList extends SortedArray<ViewSpec> {
 
     // turn on the background map
     const style = blankView.displayStyle;
-    const viewFlags = style.viewFlags;
-    viewFlags.backgroundMap = true;
-    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+    style.viewFlags = style.viewFlags.with("backgroundMap", true);
 
     style.backgroundColor = ColorDef.white;
 
     // turn on the skybox in the environment
-    const env = style.environment;
-    env.sky.display = true;
-    style.environment = env; // call to accessor to get the json properties to reflect the changes
+    style.environment = style.environment.withDisplay({ sky: true });
 
     return blankView;
   }

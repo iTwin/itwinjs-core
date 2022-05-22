@@ -1,29 +1,31 @@
 {
-  "name": "@bentley/ecschema-locaters",
-  "version": "2.14.0-dev.9",
+  "name": "@itwin/ecschema-locaters",
+  "version": "3.3.0-dev.9",
   "description": "EC Schema file locaters",
   "license": "MIT",
-  "main": "lib/ecschema-locaters.js",
-  "typings": "lib/ecschema-locaters",
+  "main": "lib/cjs/ecschema-locaters.js",
+  "typings": "lib/cjs/ecschema-locaters",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-locaters"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs && npm run -s copy:test-assets",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test-tsnode --testDir=./test/",
+    "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
     "Bentley",
     "iModel",
-    "iModel.js",
+    "iTwin.js",
     "EC"
   ],
   "author": {
@@ -31,41 +33,40 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.14.0-dev.9",
-    "@bentley/ecschema-metadata": "2.14.0-dev.9",
-    "@bentley/eslint-plugin": "2.14.0-dev.9",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "10.14.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
     "@types/sinon": "^9.0.0",
-    "@types/xmldom": "^0.1.29",
+    "@xmldom/xmldom": "^0.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "cpx2": "^3.0.0",
+    "eslint": "^7.11.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "ts-node": "^7.0.1",
-    "typescript": "~4.1.0",
-    "xmldom": "^0.1.27"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "^2.14.0-dev.9"
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.9"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "sourceMap": false
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "radix": "warn"
     }

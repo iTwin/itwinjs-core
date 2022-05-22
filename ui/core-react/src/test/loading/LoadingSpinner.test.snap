@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LoadingSpinner /> renders correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with Large size correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+    size="large"
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with Medium size correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with Small size correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+    size="x-small"
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with XLarge size correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+    size="large"
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with message and position correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <span
+    className="ls-message-top"
+  >
+    test
+  </span>
+  <ProgressRadial
+    indeterminate={true}
+  />
+</div>
+`;
+
+exports[`<LoadingSpinner /> renders with message correctly 1`] = `
+<div
+  className="core-ls"
+>
+  <ProgressRadial
+    indeterminate={true}
+  />
+  <span
+    className="ls-message-bottom"
+  >
+    test
+  </span>
+</div>
+`;

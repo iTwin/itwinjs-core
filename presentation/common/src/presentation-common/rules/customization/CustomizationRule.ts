@@ -18,7 +18,7 @@ import { StyleOverride } from "./StyleOverride";
 
 /**
  * Customization rules allow customizing each node or content item separately.
- * Most of the rules have a `condition` property which uses [ECExpressions]($docs/learning/presentation/Customization/ECExpressions.md)
+ * Most of the rules have a `condition` property which uses [ECExpressions]($docs/presentation/customization/ECExpressions.md)
  * for conditional rule filtering.
  *
  * **Nested customization rules:**
@@ -36,5 +36,12 @@ import { StyleOverride } from "./StyleOverride";
  * @public
  */
 export declare type CustomizationRule =
-  InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride |
-  SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+  InstanceLabelOverride |
+  CheckBoxRule | // eslint-disable-line deprecation/deprecation
+  GroupingRule |
+  ImageIdOverride | // eslint-disable-line deprecation/deprecation
+  LabelOverride | // eslint-disable-line deprecation/deprecation
+  SortingRule |
+  StyleOverride | // eslint-disable-line deprecation/deprecation
+  ExtendedDataRule |
+  NodeArtifactsRule;

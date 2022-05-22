@@ -2,23 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Point2d, Range2d } from "@bentley/geometry-core";
-import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
-import { xml2json } from "xml-js";
-import { MapCartoRectangle } from "../../imodeljs-frontend";
-import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
-
 /** @packageDocumentation
  * @module Views
  */
+
+import { Point2d, Range2d } from "@itwin/core-geometry";
+import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
+import { xml2json } from "xml-js";
+import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
 
 /**
  * fetch XML from HTTP request
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(requestContext: ClientRequestContext, url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -26,7 +24,7 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
     retries: 2,
     auth: credentials,
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.text;
 }
 
@@ -263,6 +261,10 @@ export namespace WmtsCapability {
       });
       return googleMapsTms;
     }
+
+    public getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[] {
+      return this.tileMatrixSets.filter((tms) => tms.supportedCrs.includes("4326"));
+    }
   }
 
   export class Style {
@@ -295,12 +297,26 @@ export namespace WmtsCapability {
     }
   }
 
+  export class TileMatrixSetLimits {
+    public limits?: Range2d;
+    public tileMatrix?: string;
+
+    constructor(_json: any) {
+      this.tileMatrix = _json.TileMatrix;
+      if (_json.MinTileRow !== undefined && _json.MaxTileRow !== undefined && _json.MinTileCol !== undefined && _json.MaxTileCol)
+        this.limits = Range2d.createXYXY(Number(_json.MinTileCol._text), Number(_json.MinTileRow._text), Number(_json.MaxTileCol._text), Number(_json.MaxTileRow._text));
+    }
+  }
+
   export class TileMatrixSetLink {
     public readonly tileMatrixSet: string;
-    // TODO: TileMatrixSetLimits
+    public readonly tileMatrixSetLimits = new Array<TileMatrixSetLimits>();
 
     constructor(_json: any) {
       this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
+      const tileMatrixLimits  = _json?.TileMatrixSetLimits?.TileMatrixLimits;
+      if (Array.isArray(tileMatrixLimits))
+        tileMatrixLimits.forEach((tml: any) => this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tml)));
     }
   }
 
@@ -502,7 +518,7 @@ export class WmtsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
+    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;

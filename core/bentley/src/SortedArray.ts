@@ -9,7 +9,7 @@
 import { OrderedComparator } from "./Compare";
 
 /**
- * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes in the iModel.js library.
+ * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes.
  * It is up to the function to decide how deeply or shallowly the value is cloned. For example, [[shallowClone]] simply returns the input.
  * @public
  */
@@ -156,7 +156,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * @param criterion A function accepting an element and returning 0 if it compares as equivalent, a negative number if it compares as "less-than", or a positive value if it compares as "greater-than".
    * @returns The first element found that meets the criterion, or `undefined` if no elements meet the criterion.
    * @see [[indexOfEquivalent]].
-   * @beta
+   * @public
    */
   public findEquivalent(criterion: (element: T) => number): T | undefined {
     const index = this.indexOfEquivalent(criterion);
@@ -168,7 +168,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * use `sortedArray.indexOfEquivalent((element) => compareStrings(element.id, modelId))` where `modelId` is an [[Id64String]].
    * @param criterion A function accepting an element and returning 0 if it compares as equivalent, a negative number if the element compares as "less-than", or a positive value if the element compares as "greater-than".
    * @returns The index of the first element found that meets the criterion, or -1 if no elements meet the criterion.
-   * @beta
+   * @public
    */
   public indexOfEquivalent(criterion: (element: T) => number): number {
     // NB: Must invert the ordering.

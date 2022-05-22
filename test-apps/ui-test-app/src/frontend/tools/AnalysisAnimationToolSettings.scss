@@ -2,7 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.toolSettingsRow {
+.toolSettings-horizontal {
+  display: flex;
+}
+
+.toolSettings-rectangular {
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+}
+
+.toolSettings-row {
   display: flex;
   align-items: center;
   justify-content: left;
@@ -27,4 +37,11 @@
   width: 4em;
   margin-inline-start: 5px;
   margin-inline-end: 5px;
+}
+
+.toolSettings-label-editor {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  margin-right: 24px;
 }

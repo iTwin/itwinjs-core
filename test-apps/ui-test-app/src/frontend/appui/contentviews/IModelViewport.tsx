@@ -6,15 +6,15 @@ import * as React from "react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, IModelViewportControlOptions,
   IModelViewportControl as UIFW_IModelViewportControl, ViewSelector, ViewUtilities,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 // uncomment following to test overriding default view overlay
-// import { ScreenViewport } from "@bentley/imodeljs-frontend";
+// import { ScreenViewport } from "@itwin/core-frontend";
 // import { MyCustomViewOverlay } from "../frontstages/FrontstageUi2";
 
 /** iModel Viewport Control
  */
 export class IModelViewportControl extends UIFW_IModelViewportControl {
-  public static get id() {
+  public static override get id() {
     return "TestApp.IModelViewport";
   }
 
@@ -23,13 +23,13 @@ export class IModelViewportControl extends UIFW_IModelViewportControl {
   }
 
   /** Get the React component that will be shown when no iModel data is available */
-  protected getNoContentReactElement(options: IModelViewportControlOptions): React.ReactNode {
+  protected override getNoContentReactElement(options: IModelViewportControlOptions): React.ReactNode {
     return <MockIModelViewport bgColor={options.bgColor ? options.bgColor : "black"} />;
   }
 
   /** Returns a promise that resolves when the control is ready for usage.
    */
-  public get isReady(): Promise<void> {
+  public override get isReady(): Promise<void> {
     if (this._viewState)
       return super.isReady;
     else
@@ -42,7 +42,7 @@ export class IModelViewportControl extends UIFW_IModelViewportControl {
   }
   */
 
-  public onActivated(): void {
+  public override onActivated(): void {
     super.onActivated();
 
     // Demo for showing only the same type of view in ViewSelector - See ViewsFrontstage.tsx, <ViewSelector> listenForShowUpdates
@@ -66,7 +66,7 @@ interface MockIModelViewportProps {
 class MockIModelViewport extends React.Component<MockIModelViewportProps> {
   private _htmlCanvas!: HTMLCanvasElement;
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const divStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",

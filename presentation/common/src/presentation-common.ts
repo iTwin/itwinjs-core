@@ -14,7 +14,6 @@ export * from "./presentation-common/EC";
 export * from "./presentation-common/Error";
 export * from "./presentation-common/KeySet";
 export * from "./presentation-common/LabelDefinition";
-export * from "./presentation-common/Logging";
 export * from "./presentation-common/PresentationManagerOptions";
 export * from "./presentation-common/RegisteredRuleset";
 export * from "./presentation-common/RulesetVariables";
@@ -32,12 +31,13 @@ export * from "./presentation-common/PresentationIpcInterface";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Types related to [unified selection]($docs/learning/presentation/Unified-Selection/index.md).
+ * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
 export * from "./presentation-common/selection/SelectionScope";
 
@@ -45,7 +45,7 @@ export * from "./presentation-common/selection/SelectionScope";
  * @module Content
  *
  * @docs-group-description Content
- * Types related to presentation [content]($docs/learning/presentation/Content/index.md).
+ * Types related to presentation [content]($docs/presentation/content/index.md).
  */
 export * from "./presentation-common/content/Category";
 export * from "./presentation-common/content/Content";
@@ -58,12 +58,13 @@ export * from "./presentation-common/content/Property";
 export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
+export * from "./presentation-common/content/ContentTraverser";
 
 /**
  * @module Hierarchies
  *
  * @docs-group-description Hierarchies
- * Types related to presentation [hierarchies]($docs/learning/presentation/Hierarchies/index.md).
+ * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
 export * from "./presentation-common/hierarchy/Key";
 export * from "./presentation-common/hierarchy/Node";
@@ -75,8 +76,6 @@ export * from "./presentation-common/hierarchy/NodePathElement";
  * @docs-group-description PresentationRules
  * Types for defining the presentation ruleset.
  */
-export * from "./presentation-common/rules/hierarchy/AllInstanceNodesSpecification";
-export * from "./presentation-common/rules/hierarchy/AllRelatedInstanceNodesSpecification";
 export * from "./presentation-common/rules/hierarchy/ChildNodeRule";
 export * from "./presentation-common/rules/hierarchy/ChildNodeSpecification";
 export * from "./presentation-common/rules/hierarchy/CustomNodeSpecification";
@@ -105,10 +104,9 @@ export * from "./presentation-common/rules/content/SelectedNodeInstancesSpecific
 export * from "./presentation-common/rules/content/DefaultPropertyCategoryOverride";
 export * from "./presentation-common/rules/content/modifiers/CalculatedPropertiesSpecification";
 export * from "./presentation-common/rules/content/modifiers/ContentModifier";
-export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyCategorySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyEditorsSpecification";
-export * from "./presentation-common/rules/content/modifiers/PropertyRendererSpecification";
+export * from "./presentation-common/rules/content/modifiers/CustomRendererSpecification";
 export * from "./presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 export * from "./presentation-common/rules/ClassSpecifications";
 export * from "./presentation-common/rules/RelatedInstanceSpecification";

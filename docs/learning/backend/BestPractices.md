@@ -10,8 +10,6 @@ While the focus of this article is on backend and RpcInterface design, in many c
 
 Log all Errors that you throw. Be sure to define the logging-related arguments to the [IModelError]($common) constructor.
 
-Maintain the ClientRequestContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManagingClientRequestContext.md).
-
 The backend product should be configured to [report crashes and other fatal errors](./CrashReporting.md).
 
 ## Do not Block Too Long

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@bentley/frontend-devtools";
-import { GeometricModel3dProps } from "@bentley/imodeljs-common";
-import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@bentley/imodeljs-frontend";
+import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
+import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
+import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 // cspell:ignore dehilite textbox subcat
@@ -18,6 +18,7 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected readonly _availableIds = new Set<string>();
 
   protected abstract get _elementType(): "Model" | "Category";
+  protected get _settingsType(): "model" | "category" { return this._elementType.toLowerCase() as "model" | "category"; }
   protected get _showIn2d(): boolean { return true; }
   protected abstract get _enabledIds(): Set<string>;
   protected abstract changeDisplay(ids: Id64Arg, enabled: boolean): void;
@@ -46,6 +47,8 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Hide Selected", value: "Hide" },
       { name: "Hilite Enabled", value: "Hilite" },
       { name: "Un-hilite Enabled", value: "Dehilite" },
+      // Set [[BriefcaseConnection.editorToolSettings]].model/category to first enabled entry.
+      { name: "Set First Active", value: "SetFirstActive" },
     ];
   }
 
@@ -121,7 +124,7 @@ export abstract class IdPicker extends ToolBarDropDown {
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
   protected _open(): void { this._element.style.display = "block"; }
   protected _close(): void { this._element.style.display = "none"; }
-  public get onViewChanged(): Promise<void> { return this.populate(); }
+  public override get onViewChanged(): Promise<void> { return this.populate(); }
 
   protected showOrHide(element: HTMLElement, show: boolean) { if (element) element.style.display = show ? "block" : "none"; }
 
@@ -156,6 +159,12 @@ export abstract class IdPicker extends ToolBarDropDown {
       case "Hilite":
       case "Dehilite":
         this.hiliteEnabled("Hilite" === which);
+        return;
+      case "SetFirstActive":
+        if (this._vp.iModel.isBriefcaseConnection()) {
+          const first = Array.from(this._enabledIds)[0];
+          this._vp.iModel.editorToolSettings[this._settingsType] = first;
+        }
         return;
       case "":
         return;
@@ -192,7 +201,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     const elemIds = `(${Array.from(selectedElems).join(",")})`;
     const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
     const rows = [];
-    for await (const row of this._vp.view.iModel.query(ecsql)) {
+    for await (const row of this._vp.view.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     const column = `${elementType.toLowerCase()}.id`;
@@ -202,11 +211,11 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected toggleIds(ids: Id64Arg, enabled: boolean): void {
     const boxById = new Map<string, HTMLInputElement>();
     this._checkboxes.map((box) => boxById.set(box.id, box));
-    Id64.forEach(ids, (id) => {
+    for (const id of Id64.iterable(ids)) {
       this.changeDisplay(id, enabled);
       if (boxById.get(id))
         boxById.get(id)!.checked = enabled;
-    });
+    }
   }
 
   protected abstract hiliteEnabled(hiliteOn: boolean): void;
@@ -229,7 +238,7 @@ export class CategoryPicker extends IdPicker {
   protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeCategoryDisplay(ids, enabled); }
 
-  protected get _comboBoxEntries(): ComboBoxEntry[] {
+  protected override get _comboBoxEntries(): ComboBoxEntry[] {
     const entries = super._comboBoxEntries;
     entries.push({ name: "All SubCategories", value: "Subcategories" });
     return entries;
@@ -245,7 +254,7 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
-    for await (const row of view.iModel.query(`${ecsql} LIMIT 1000`, bindings)) {
+    for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     rows.sort((lhs, rhs) => {
@@ -279,7 +288,7 @@ export class CategoryPicker extends IdPicker {
       this._vp.changeCategoryDisplay(unusedCategories, false);
   }
 
-  protected show(which: string): void {
+  protected override show(which: string): void {
     if ("Subcategories" === which)
       this._vp.changeCategoryDisplay(this._enabledIds, true, true);
     else
@@ -314,7 +323,7 @@ export class ModelPicker extends IdPicker {
 
   protected get _elementType(): "Model" { return "Model"; }
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
-  protected get _showIn2d() { return false; }
+  protected override get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
     if (enabled)
       this._vp.addViewedModels(ids); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -392,7 +401,7 @@ export class ModelPicker extends IdPicker {
     });
     this._element.appendChild(buttons);
 
-    const view = this._vp.view as SpatialViewState;
+    const view = this._vp.view;
     assert(undefined !== view && view.isSpatialView());
 
     const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
@@ -424,13 +433,13 @@ export class ModelPicker extends IdPicker {
       ViewManip.fitView(this._vp, true);
   }
 
-  protected get _comboBoxEntries() {
+  protected override get _comboBoxEntries() {
     const entries = super._comboBoxEntries;
     entries.push({ name: "Plan Projections", value: "PlanProjections" });
     return entries;
   }
 
-  protected show(which: string) {
+  protected override show(which: string) {
     if ("PlanProjections" === which) {
       this.toggleAll(false);
       this.toggleIds(this._planProjectionIds, true);

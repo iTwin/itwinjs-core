@@ -10,7 +10,7 @@ import * as chalk from "chalk";
 import * as fs from "fs-extra";
 
 import { ECSchemaToTsXmlWriter } from "./ecschema2ts_io";
-import { SchemaContext } from "@bentley/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 
 function commaSeparatedList(value: string): string[] {
   return value.split(",");
@@ -40,7 +40,7 @@ if (undefined !== program.references) {
     const refPath = path.normalize(ref);
     try {
       fs.accessSync(refPath);
-    } catch (err) {
+    } catch (err: any) {
       console.warn(chalk.yellow(err.toString()));
       console.warn(chalk.yellow(`The reference path ${refPath} does not exist.  Skipping...`));
       continue;
@@ -57,7 +57,7 @@ if (undefined !== program.references) {
   try {
     const writer = new ECSchemaToTsXmlWriter(program.output);
     createdFiles = await writer.convertSchemaFile(new SchemaContext(), program.input, referencePaths);
-  } catch (err) {
+  } catch (err: any) {
     console.log(chalk.red(`Failed to create: ${err.message}`));
     process.exit(1);
   }

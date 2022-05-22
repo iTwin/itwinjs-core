@@ -134,8 +134,18 @@ export abstract class SchemaItem {
     if (!thatSchemaItemOrKey)
       return true;
 
-    const key = thatSchemaItemOrKey instanceof SchemaItem ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
+    const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey) ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
+  }
+
+  /**
+  * @internal
+  */
+  public static isSchemaItem(object: any): object is SchemaItem {
+    const schemaItem = object as SchemaItem;
+
+    return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
+             && schemaItem.schemaItemType !== undefined;
   }
 
   /**

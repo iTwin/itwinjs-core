@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors";
+
+$icon-size: 16px;
+
+.core-badge {
+  transform: rotate(270deg);
+  width: $icon-size;
+  height: $icon-size;
+}

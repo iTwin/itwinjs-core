@@ -6,18 +6,18 @@
  * @module RpcInterface
  */
 
-import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocation } from "./RpcInvocation";
+import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
 
 /** A serialized RPC operation descriptor.
- * @public
+ * @internal
  */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
@@ -27,9 +27,9 @@ export interface SerializedRpcOperation {
 }
 
 /** A serialized RPC operation request.
- * @public
+ * @internal
  */
-export interface SerializedRpcRequest extends SerializedClientRequestContext {
+export interface SerializedRpcRequest extends SerializedRpcActivity {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -40,7 +40,7 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 }
 
 /** An RPC operation request fulfillment.
- * @public
+ * @internal
  */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
@@ -57,9 +57,15 @@ export interface RpcRequestFulfillment {
 
   /** A protocol-specific status code value for the request. */
   status: number;
+
+  /* A protocol-specific value for retrying this request. */
+  retry?: string;
+
+  /** Whether to compress the result with one of the client's supported encodings. */
+  allowCompression?: boolean;
 }
 
-/** @public */
+/** @internal */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(undefined, error);
@@ -75,19 +81,38 @@ export namespace RpcRequestFulfillment {
 }
 
 /** Handles RPC protocol events.
- * @public
+ * @internal
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
+/** Documents changes to the RPC protocol version.
+ * @internal
+ */
+export enum RpcProtocolVersion {
+  None = 0,
+  IntroducedNoContent = 1,
+  IntroducedStatusCategory = 2
+}
+
+/**
+ * A backend response that is handled internally by the RPC system.
+ * @internal
+ */
+export interface RpcManagedStatus {
+  iTwinRpcCoreResponse: true;
+  managedStatus: "pending" | "notFound";
+  responseValue: string;
+}
+
 /** An application protocol for an RPC interface.
- * @public
+ * @internal
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
 
   /** A version code that identifies the RPC protocol capabilties of this endpoint. */
-  public static readonly protocolVersion = 1;
+  public static readonly protocolVersion: number = RpcProtocolVersion.IntroducedStatusCategory;
 
   /** The name of the RPC protocol version header. */
   public protocolVersionHeaderName = "";
@@ -104,7 +129,7 @@ export abstract class RpcProtocol {
   /** The RPC invocation class for this protocol. */
   public readonly invocationType: typeof RpcInvocation = RpcInvocation;
 
-  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+  public serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
     /** The name of the request id header. */
     id: "",
 
@@ -119,9 +144,6 @@ export abstract class RpcProtocol {
 
     /** The name of the authorization header. */
     authorization: "",
-
-    /** The id of the authorized user */
-    userId: "",
   };
 
   /** If greater than zero, specifies where to break large binary request payloads. */
@@ -132,6 +154,9 @@ export abstract class RpcProtocol {
 
   /** Used by protocols that can transmit IModelRpcProps values natively. */
   public checkToken: boolean = false;
+
+  /** Used by protocols that support user-defined status codes. */
+  public supportsStatusCategory: boolean = false;
 
   /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
   public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }
@@ -163,7 +188,7 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
-    const serializedContext: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(request);
+    const serializedContext = await RpcConfiguration.requestContext.serialize(request);
     return {
       ...serializedContext,
       operation: {

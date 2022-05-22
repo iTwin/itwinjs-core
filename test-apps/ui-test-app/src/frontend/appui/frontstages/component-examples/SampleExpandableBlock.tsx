@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { ExpandableBlock, ExpandableBlockProps } from "@bentley/ui-core";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { ExpandableBlock, ExpandableBlockProps } from "@itwin/core-react";
 
 /** Sample component using ExpandableBlock with an expanded state  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: ExpandableBlockProps) => {
   const [expanded, setExpanded] = React.useState(props.isExpanded);
 
@@ -28,6 +29,7 @@ export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: Exp
   }, [expanded]);
 
   return (
+    // eslint-disable-next-line deprecation/deprecation
     <ExpandableBlock {...props} isExpanded={expanded} onClick={handleClick} onKeyDown={handleKeyDown} />
   );
 };

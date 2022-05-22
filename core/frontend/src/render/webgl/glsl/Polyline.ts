@@ -6,21 +6,24 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { IsInstanced } from "../TechniqueFlags";
+import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
+import { addEdgeContrast } from "./Edge";
 import { addFrustum, addShaderFlags } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addHiliter } from "./FeatureSymbology";
 import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix } from "./Vertex";
+import {
+  addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
+} from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const checkForDiscard = "return discardByLineCode;";
@@ -196,21 +199,19 @@ function addCommon(prog: ProgramBuilder) {
   addLineWeight(vert);
 
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
+  prog.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
+
+  addSamplePosition(vert);
   vert.addFunction(decodePosition);
 }
 
 const decodePosition = `
 vec4 decodePosition(vec3 baseIndex) {
   float index = decodeUInt24(baseIndex);
-  vec2 tc = compute_vert_coords(index);
-  vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-  return unquantizePosition(qpos, u_qOrigin, u_qScale);
+  return samplePosition(index);
 }
 `;
 
@@ -232,13 +233,10 @@ const computePosition = `
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
 
   vec4 next = g_nextPos;
-  float clipDist;
-  g_windowPos = modelToWindowCoordinates(rawPos, next, clipDist);
+  vec4 pos;
+  g_windowPos = modelToWindowCoordinates(rawPos, next, pos, v_eyeSpace);
   if (g_windowPos.w == 0.0)
     return g_windowPos;
-
-  vec4 clipPos = rawPos + clipDist * (next - rawPos);
-  vec4 pos = MAT_MVP * clipPos;
 
   float param = a_param;
   float weight = computeLineWeight();
@@ -257,7 +255,9 @@ const computePosition = `
     param -= kNegatePerp;
   }
 
-  vec4 projNext = modelToWindowCoordinates(next, rawPos, clipDist);
+  vec4 otherPos;
+  vec3 otherMvPos;
+  vec4 projNext = modelToWindowCoordinates(next, rawPos, otherPos, otherMvPos);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
   if (param < kJointBase) {
@@ -269,7 +269,7 @@ const computePosition = `
   if (kNone != param) {
     vec2 delta = vec2(0.0);
     vec4 prev   = g_prevPos;
-    vec4 projPrev = modelToWindowCoordinates(prev, rawPos, clipDist);
+    vec4 projPrev = modelToWindowCoordinates(prev, rawPos, otherPos, otherMvPos);
     vec2 prevDir   = g_windowPos.xy - projPrev.xy;
     float thisLength = sqrt(g_windowDir.x * g_windowDir.x + g_windowDir.y * g_windowDir.y);
     const float s_minNormalizeLength = 1.0E-5;  // avoid normalizing zero length vectors.
@@ -331,8 +331,11 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
-export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
+  const instanced = IsInstanced.Yes === isInstanced;
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced });
+
   addShaderFlags(builder);
 
   addCommon(builder);
@@ -340,14 +343,18 @@ export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   polylineAddLineCode(builder);
 
   addColor(builder);
+  addEdgeContrast(builder.vert);
   addWhiteOnWhiteReversal(builder.frag);
 
   return builder;
 }
 
 /** @internal */
-export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+export function createPolylineHiliter(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
+  const instanced = IsInstanced.Yes === isInstanced;
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced });
+
   addCommon(builder);
   addFrustum(builder);
   addHiliter(builder, true);

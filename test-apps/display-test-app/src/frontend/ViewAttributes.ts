@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
-} from "@bentley/frontend-devtools";
+} from "@itwin/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
-  MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
+  GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
+} from "@itwin/core-common";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -55,6 +55,21 @@ const renderingStyles: RenderingStyle[] = [{
   viewflags: renderingStyleViewFlags,
   lights: {
     solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+  },
+}, {
+  name: "Ambient",
+  backgroundColor: 10921638,
+  environment: {
+    sky: { display: false },
+    ground: { display: false },
+  },
+  viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
+  lights: {
+    solar: { intensity: 0 },
+    portrait: { intensity: 0 },
+    ambient: { intensity: 0.55 },
+    fresnel: { intensity: 0.8, invert: true },
+    specularIntensity: 0,
   },
 }, {
   name: "Illustration",
@@ -224,7 +239,6 @@ export class ViewAttributes {
   private readonly _removeMe: () => void;
   private readonly _parent: HTMLElement;
   private _id = 0;
-  private _scratchViewFlags = new ViewFlags();
 
   private _displayStylePickerDiv?: HTMLDivElement;
   public set displayStylePickerInput(newComboBox: ComboBox) {
@@ -317,9 +331,7 @@ export class ViewAttributes {
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf[flag] = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with(flag, enabled);
       this.sync();
     }, parent);
 
@@ -405,9 +417,7 @@ export class ViewAttributes {
       id: "viewAttr_renderMode",
       value: this._vp.viewFlags.renderMode,
       handler: (thing) => {
-        const flags = this._vp.view.viewFlags.clone(this._scratchViewFlags);
-        flags.renderMode = Number.parseInt(thing.value, 10);
-        this._vp.viewFlags = flags;
+        this._vp.viewFlags = this._vp.viewFlags.withRenderMode(Number.parseInt(thing.value, 10));
         this.sync();
       },
     }).select;
@@ -472,9 +482,7 @@ export class ViewAttributes {
     };
 
     const enableMap = (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.backgroundMap = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("backgroundMap", enabled);
       backgroundSettingsDiv.style.display = enabled ? "block" : "none";
       showOrHideSettings(enabled);
       this.sync();
@@ -491,7 +499,7 @@ export class ViewAttributes {
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerName: select.value as BackgroundMapProviderName }),
+      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName }),
     }).select;
 
     const types = createComboBox({
@@ -503,7 +511,7 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
+      handler: (select) => this.updateBackgroundMapProvider({ type: Number.parseInt(select.value, 10) }),
     }).select;
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
@@ -543,9 +551,13 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
+      if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
+        imageryProviders.value = baseLayer.provider.name;
+        types.value = baseLayer.provider.type.toString();
+      }
+
       const map = this.getBackgroundMap(view);
-      imageryProviders.value = map.providerName;
-      types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
@@ -592,6 +604,11 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
+    this.sync();
+  }
+
+  private updateBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    this._vp.displayStyle.changeBackgroundMapProvider(props);
     this.sync();
   }
 
@@ -718,13 +735,17 @@ export class ViewAttributes {
     });
     slider.div.style.textAlign = "left";
 
+    const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
+      IModelApp.tileAdmin.generateAllPolyfaceEdges = enabled;
+      this._vp.invalidateScene();
+      this.sync();
+    }, edgeDisplayDiv);
+
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.visibleEdges = enabled;
+      this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
       hidEdgesCb.checkbox.disabled = !enabled;
       hidEditor.hidden = hidEditor.hidden || !enabled;
       visEditor.hidden = !enabled;
-      this._vp.viewFlags = vf;
       this.sync();
     }, nestedMenu.body);
 
@@ -732,10 +753,8 @@ export class ViewAttributes {
     edgeDisplayDiv.appendChild(visEditor);
 
     const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.hiddenEdges = enabled;
+      this._vp.viewFlags = this._vp.viewFlags.with("hiddenEdges", enabled);
       hidEditor.hidden = !enabled;
-      this._vp.viewFlags = vf;
       this.sync();
     }, edgeDisplayDiv);
 
@@ -753,10 +772,11 @@ export class ViewAttributes {
       const settings = this._edgeSettings;
       slider.slider.value = settings.transparencyThreshold.toString();
 
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      const vf = this._vp.viewFlags;
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");
@@ -904,8 +924,10 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       name: "Display Style: ",
       id: "DisplayStyles",
       value: this._vp.view.displayStyle.id,
-      handler: (select) => {
-        this._vp.displayStyle = displayStyles.get(select.value)!;
+      handler: async (select) => {
+        const style = displayStyles.get(select.value)!;
+        await style.load();
+        this._vp.displayStyle = style;
         this._vp.invalidateScene();
       },
       entries: styleEntries,
@@ -915,7 +937,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     if (undefined !== this._attributes)
       this._attributes.displayStylePickerInput = this._displayStylePickerInput;
   }
-  public get onViewChanged(): Promise<void> {
+  public override get onViewChanged(): Promise<void> {
     return this.populate();
   }
 

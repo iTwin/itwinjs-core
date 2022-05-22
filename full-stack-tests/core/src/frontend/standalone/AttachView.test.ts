@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
-} from "@bentley/imodeljs-frontend";
+import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;
@@ -16,13 +15,13 @@ describe("ViewState attached to Viewport", async () => {
   document.body.appendChild(div);
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {
@@ -88,7 +87,7 @@ describe("ViewState attached to Viewport", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
     expect(view.isAttachedToViewport).to.be.true;
-    expect(() => view.attachToViewport()).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
+    expect(() => view.attachToViewport(vp)).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
   });
 
   it("should only emit events while attached to a Viewport", async () => {

@@ -1,13 +1,10 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "./lib",
     "strictNullChecks": false,
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "noImplicitAny": false
   },
-  "include": [
-    "./src/**/*.ts"
-  ],
+  "include": ["./src/**/*.ts"]
 }

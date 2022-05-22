@@ -5,6 +5,9 @@
 import * as faker from "faker";
 import { LabelCompositeValue, LabelCompositeValueJSON, LabelDefinition, LabelDefinitionJSON } from "../../../presentation-common/LabelDefinition";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomLabelDefinitionJSON = (): LabelDefinitionJSON => {
   return {
     displayValue: faker.random.word(),
@@ -13,10 +16,16 @@ export const createRandomLabelDefinitionJSON = (): LabelDefinitionJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomLabelDefinition = (): LabelDefinition => {
   return LabelDefinition.fromJSON(createRandomLabelDefinitionJSON());
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomLabelCompositeValue = (): LabelCompositeValue => {
   return {
     separator: faker.random.alphaNumeric(1),
@@ -24,6 +33,9 @@ export const createRandomLabelCompositeValue = (): LabelCompositeValue => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomLabelCompositeValueJSON = (): LabelCompositeValueJSON => {
   return {
     separator: faker.random.alphaNumeric(1),

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { IModelJsFs } from "@bentley/imodeljs-backend";
+import { IModelJsFs } from "@itwin/core-backend";
 
 export function createFilePath(filePath: string) {
   // ###TODO: Make this function platform independent
@@ -112,7 +112,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
         else
           value = 0;
       }
-      if (colName === "iModel" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props" || colName === "Other Props")
+      if (colName === "iModel" || colName === "View" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props" || colName === "Other Props")
         stringData += `"${value}",`;
       else if (colName !== "" || index !== columns.length - 1)
         stringData += `${value},`;

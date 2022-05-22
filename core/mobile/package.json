@@ -1,0 +1,82 @@
+{
+  "name": "@itwin/core-mobile",
+  "version": "3.3.0-dev.9",
+  "description": "iTwin.js MobileHost and MobileApp",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+  },
+  "scripts": {
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-mobile/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-mobile"
+  },
+  "keywords": [
+    "Bentley",
+    "digital-twin",
+    "iTwin",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@itwin/core-backend": "workspace:^3.3.0-dev.9",
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9",
+    "@itwin/core-common": "workspace:^3.3.0-dev.9",
+    "@itwin/core-frontend": "workspace:^3.3.0-dev.9",
+    "@itwin/presentation-common": "workspace:^3.3.0-dev.9"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0",
+    "lodash": "^4.17.10",
+    "js-base64": "^3.6.1",
+    "qs": "^6.5.1",
+    "superagent": "^7.0.1",
+    "ws": "^7.5.3"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
+    "@types/fs-extra": "^4.0.7",
+    "@types/lodash": "^4.14.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
+    "@types/qs": "^6.5.0",
+    "@types/superagent": "^4.1.14",
+    "@types/ws": "^7.0.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
+    "eslint": "^7.11.0",
+    "js-base64": "^3.6.1",
+    "mocha": "^8.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  }
+}

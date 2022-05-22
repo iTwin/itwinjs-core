@@ -4,47 +4,32 @@ packageClassification:  [
       "order":"1",
       "header":"Core Packages",
       "packages":[
-         "imodeljs-frontend",
-         "imodeljs-common",
-         "imodeljs-backend",
-         "imodeljs-markup",
-         "imodeljs-i18n",
-         "backend-itwin-client",
-         "bentleyjs-core",
+         "core-frontend",
+         "core-common",
+         "core-backend",
+         "core-transformer",
+         "core-markup",
+         "core-i18n",
+         "core-quantity",
+         "core-bentley",
          "ecschema-metadata",
-         "geometry-core",
-         "logger-config",
+         "ecschema-editing",
+         "core-geometry",
          "frontend-devtools",
          "hypermodeling-frontend",
          "webgl-compatibility"
       ]
    },
    {
-     "order":"2",
-     "header": "Client Packages",
-     "packages": [
-       "context-registry-client",
-       "extension-client",
-       "forms-data-management-client",
-       "frontend-authorization-client",
-       "imodelhub-client",
-       "itwin-client",
-       "product-settings-client",
-       "projectshare-client",
-       "rbac-client",
-       "reality-data-client",
-       "usage-logging-client"
-     ]
-   },
-   {
       "order":"3",
       "header":"UI Packages",
       "packages":[
-         "ui-abstract",
-         "ui-core",
-         "ui-components",
-         "ui-ninezone",
-         "ui-framework"
+         "appui-abstract",
+         "core-react",
+         "components-react",
+         "imodel-components-react",
+         "appui-layout-react",
+         "appui-react"
       ]
    },
    {

@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { Loop, SignedLoops } from "../Loop";
+import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { RegionOps } from "../RegionOps";
 
 /** @packageDocumentation
@@ -83,44 +84,60 @@ export class PlanarSubdivision {
         return fractionA - fractionB;
       });
       let detail0 = getDetailOnCurve(details[0], p)!;
+      this.addHalfEdge(graph, p, p.startPoint (), 0.0, detail0.point, detail0.fraction);
       for (let i = 1; i < details.length; i++) {
         // create (both sides of) a graph edge . . .
         const detail1 = getDetailOnCurve(details[i], p)!;
-        if (detail0.point.isAlmostEqual(detail1.point)) {
-
-        } else {
-          const halfEdge = graph.createEdgeXYAndZ(detail0.point, 0, detail1.point, 0);
-          const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, detail0.fraction, detail1.fraction);
-          const mate = halfEdge.edgeMate;
-          halfEdge.edgeTag = detail01;
-          halfEdge.sortData = 1.0;
-          mate.edgeTag = detail01;
-          mate.sortData = -1.0;
-          halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
-          mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
-        }
+        this.addHalfEdge(graph, p, detail0.point, detail0.fraction, detail1.point, detail1.fraction);
         detail0 = detail1;
       }
+      this.addHalfEdge(graph, p, detail0.point, detail0.fraction, p.endPoint(), 1.0);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;
   }
-
-  public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10) {
+/**
+ * Create a pair of mated half edges referencing an interval of a primitive
+ *   * no action if start and end points are identical.
+ * @param graph containing graph.
+ * @param p the curve
+ * @param fraction0 starting fraction
+ * @param point0 start point
+ * @param fraction1 end fraction
+ * @param point1 end point
+ */
+  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number) {
+    if (!point0.isAlmostEqual (point1)){
+      const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+      const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
+      const mate = halfEdge.edgeMate;
+      halfEdge.edgeTag = detail01;
+      halfEdge.sortData = 1.0;
+      mate.edgeTag = detail01;
+      mate.sortData = -1.0;
+      halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
+      mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
+      }
+    }
+// based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
+  // return the area (forced to zero if within tolerance)
+  public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10): number{
     let area = RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
     if (Math.abs(area) < zeroAreaTolerance)
       area = 0.0;
+    (loop as any).computedAreaInPlanarSubdivision = area;
     if (area > 0)
       signedAreas.positiveAreaLoops.push(loop);
     else if (area < 0)
       signedAreas.negativeAreaLoops.push(loop);
     else
       signedAreas.slivers.push(loop);
-
+    return area;
   }
-  public static createLoopInFace(faceSeed: HalfEdge): Loop {
+  public static createLoopInFace(faceSeed: HalfEdge,
+    announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
     let he = faceSeed;
     const loop = Loop.create();
     do {
@@ -131,23 +148,65 @@ export class PlanarSubdivision {
           curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
         else
           curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
-        if (curve)
+        if (curve) {
+          if (announce !== undefined)
+            announce(he, curve, loop);
           loop.tryAddChild(curve);
+        }
       }
       he = he.faceSuccessor;
     } while (he !== faceSeed);
     return loop;
   }
-  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, _zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
+// return true if there are only two edges.
+  // In a line-only graph, this is a null-area face.
+  private static isNullFace(he: HalfEdge): boolean {
+    return he.faceSuccessor.faceSuccessor === he;
+  }
+  // Look  across edge mates (possibly several) for a nonnull mate face.
+  private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
+    if (this.isNullFace (e))
+      return undefined;
+    let e1 = e.edgeMate;
+    while (this.isNullFace(e1)){
+      e1 = e1.faceSuccessor.edgeMate;
+      if (e1 === e)
+        return undefined;
+    }
+    return e1;
+  }
+  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
+    const edgeMap = new Map<HalfEdge, LoopCurveLoopCurve>();
     for (const faceSeeds of q) {
-      const componentAreas = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
+      const componentAreas: SignedLoops = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
+      const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
-        const loop = this.createLoopInFace(faceSeed);
-        this.collectSignedLoop(loop, componentAreas);
+        const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
+          if (this.isNullFace(he)) {
+            // Ignore all edges of null faces.
+          } else {
+            const mate = this.nonNullEdgeMate(graph, he);
+              if (mate !== undefined){
+                const e = edgeMap.get(mate);
+                if (e === undefined) {
+                  // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
+                  const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
+                  edgeMap.set(he, e1);
+                } else if (e instanceof LoopCurveLoopCurve) {
+                  e.setB(loopC, curveC);
+                  edges.push(e);
+                  edgeMap.delete(mate);
+                }
+            }
+          }
+        });
+        this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance);
       }
+      componentAreas.edges = edges;
       result.push(componentAreas);
+      edgeMap.clear();
     }
     return result;
   }

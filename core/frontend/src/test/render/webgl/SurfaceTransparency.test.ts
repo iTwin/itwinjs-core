@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
-} from "@bentley/imodeljs-common";
+  ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
+} from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
@@ -15,33 +15,41 @@ import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { Target } from "../../../render/webgl/Target";
 import { Primitive } from "../../../render/webgl/Primitive";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
-import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
+import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
+import { MeshGraphic } from "../../../render/webgl/Mesh";
+import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { createBlankConnection } from "../../createBlankConnection";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
-  const args = new MeshArgs();
-  args.colors.initUniform(ColorDef.from(255, 0, 0, transparency));
-
-  if (mat instanceof RenderMaterial) {
-    args.material = mat;
-    args.texture = args.material.textureMapping?.texture;
-  } else {
-    args.texture = mat;
-  }
-
-  if (args.texture)
-    args.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  const colors = new ColorIndex();
+  colors.initUniform(ColorDef.from(255, 0, 0, transparency));
 
   const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
-  args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+  const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
-    args.points.add(point);
+    qpoints.add(point);
 
-  args.vertIndices = [0, 1, 2, 2, 1, 3];
-  args.isPlanar = true;
+  const args: MeshArgs = {
+    points: qpoints,
+    vertIndices: [0, 1, 2, 2, 1, 3],
+    isPlanar: true,
+    colors,
+    features: new FeatureIndex(),
+    fillFlags: FillFlags.None,
+  };
+
+  let texture;
+  if (mat instanceof RenderMaterial) {
+    args.material = mat;
+    texture = mat.textureMapping?.texture;
+  } else {
+    texture = mat;
+  }
+
+  if (texture)
+    args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
   const params = MeshParams.create(args);
   return IModelApp.renderSystem.createMesh(params)!;
@@ -65,11 +73,17 @@ describe("Surface transparency", () => {
     imodel = createBlankConnection();
 
     const opaqueImage = ImageBuffer.create(new Uint8Array([255, 255, 255]), ImageBufferFormat.Rgb, 1);
-    opaqueTexture = IModelApp.renderSystem.createTextureFromImageBuffer(opaqueImage, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+    opaqueTexture = IModelApp.renderSystem.createTexture({
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: opaqueImage, transparency: TextureTransparency.Opaque },
+    })!;
     expect(opaqueTexture).not.to.be.undefined;
 
     const translucentImage = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
-    translucentTexture = IModelApp.renderSystem.createTextureFromImageBuffer(translucentImage, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+    translucentTexture = IModelApp.renderSystem.createTexture({
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: translucentImage, transparency: TextureTransparency.Translucent },
+    })!;
     expect(translucentTexture).not.to.be.undefined;
 
     opaqueMaterial = createMaterial(1);
@@ -78,7 +92,7 @@ describe("Surface transparency", () => {
 
   beforeEach(() => {
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-    view.viewFlags.renderMode = RenderMode.SmoothShade;
+    view.viewFlags = view.viewFlags.withRenderMode(RenderMode.SmoothShade);
     viewport = ScreenViewport.create(viewDiv, view);
   });
 
@@ -94,11 +108,13 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
+    // eslint-disable-next-line deprecation/deprecation
     const params = new RenderMaterial.Params();
     params.alpha = alpha;
     if (texture)
       params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
 
+    // eslint-disable-next-line deprecation/deprecation
     const material = IModelApp.renderSystem.createMaterial(params, imodel);
     expect(material).not.to.be.undefined;
     return material!;
@@ -117,7 +133,10 @@ describe("Surface transparency", () => {
 
     const plan = createRenderPlanFromViewport(viewport);
     viewport.target.changeRenderPlan(plan);
-    expect(primitive.getRenderPass(viewport.target as Target)).to.equal(pass);
+
+    const primPass = primitive.getPass(viewport.target as Target);
+    expect(Pass.rendersOpaqueAndTranslucent(primPass)).to.be.false;
+    expect(Pass.toRenderPass(primPass as SinglePass)).to.equal(pass);
   }
 
   function expectOpaque(setup: SetupFunc): void {
@@ -148,7 +167,7 @@ describe("Surface transparency", () => {
   });
 
   it("uses base transparency if materials are disabled", () => {
-    viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.with("materials", false);
     expectOpaque(() => createMesh(0, opaqueMaterial));
     expectOpaque(() => createMesh(0, translucentMaterial));
     expectTranslucent(() => createMesh(127, opaqueMaterial));
@@ -172,7 +191,7 @@ describe("Surface transparency", () => {
   });
 
   it("ignores texture transparency if textures are disabled", () => {
-    viewport.viewFlags.textures = false;
+    viewport.viewFlags = viewport.viewFlags.with("textures", false);
 
     const m1 = createMaterial(1, opaqueTexture);
     const m2 = createMaterial(0.5, opaqueTexture);
@@ -195,7 +214,7 @@ describe("Surface transparency", () => {
   });
 
   it("ignores material and texture transparency if both view flags are disabled", () => {
-    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.copy({ textures: false, materials: false });
 
     const materials = [
       createMaterial(1, opaqueTexture),
@@ -226,7 +245,7 @@ describe("Surface transparency", () => {
   });
 
   it("uses combination of element and texture transparency if materials are disabled", () => {
-    viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.with("materials", false);
 
     const m1 = createMaterial(1, opaqueTexture);
     const m2 = createMaterial(0.5, opaqueTexture);
@@ -245,21 +264,25 @@ describe("Surface transparency", () => {
 
   it("always applies to glyph text unless reading pixels", () => {
     const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
-    const tx = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next, RenderTexture.Type.Glyph))!;
+    const tx = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Glyph,
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: img, transparency: TextureTransparency.Translucent },
+    });
     expect(tx).not.to.be.undefined;
 
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.copy({ textures: false, materials: false });
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.renderMode = RenderMode.Wireframe;
+    viewport.viewFlags = viewport.viewFlags.withRenderMode(RenderMode.Wireframe);
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.renderMode = RenderMode.HiddenLine;
+    viewport.viewFlags = viewport.viewFlags.withRenderMode(RenderMode.HiddenLine);
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 

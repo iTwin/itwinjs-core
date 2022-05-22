@@ -43,6 +43,12 @@ export class BoxTopology {
     Point3d.create(0, 1, 1),
     Point3d.create(1, 1, 1),
   ];
+  public static pointsClone(): Point3d[] {
+    const clones = [];
+    for (const p of this.points)
+      clones.push(p.clone());
+    return clones;
+  }
   /** IN faceId pair, the first component for bottom and top caps is `primaryCapId` */
   public static readonly primaryCapId = -1;
   /** Indices of vertices around faces, in CCW from the outside. */

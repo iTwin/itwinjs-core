@@ -6,10 +6,8 @@
  * @module ProcessDetector
  */
 
-// Portions modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
-
-/** Functions to determine the type of JavaScript process currently executing
- * @beta
+/** Functions to determine the type of JavaScript process currently executing.
+ * @public
  */
 export class ProcessDetector {
 
@@ -33,7 +31,7 @@ export class ProcessDetector {
    * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
   public static get isIPadBrowser() {
-    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !window.MSStream);
+    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !("MSStream" in window)); /* eslint-disable-line deprecation/deprecation */
   }
 
   /** Is this process running in a browser on an iPhone?
@@ -56,17 +54,22 @@ export class ProcessDetector {
   */
   public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser; }
 
+  /** Is this process running in a Chromium based browser (Chrome / new Edge / Electron front end)? */
+  public static get isChromium() {
+    return (this.isBrowserProcess && window.navigator.userAgent.indexOf("Chrome") > -1 && window.navigator.userAgent.indexOf("OP") === -1) || this.isElectronAppFrontend;
+  }
+
   /** Is this process the frontend of an iTwin mobile application?
    * @note this indicates that this is a browser process started by an iTwin mobile application.
    * It will return `false` when running user-launched web browsers on a mobile device.
    */
-  public static get isMobileAppFrontend() { return this.isBrowserProcess && window.location.origin === "imodeljs://app"; }
+  public static get isMobileAppFrontend() { return this.isAndroidAppFrontend || this.isIOSAppFrontend; }
 
   /** Is this process the frontend of an iOS mobile application? */
-  public static get isIOSAppFrontend() { return this.isMobileAppFrontend && window.location.hash.indexOf("platform=ios") !== -1; }
+  public static get isIOSAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=ios") !== -1; }
 
   /** Is this process the frontend of an Android mobile application? */
-  public static get isAndroidAppFrontend() { return this.isMobileAppFrontend && window.location.hash.indexOf("platform=android") !== -1; }
+  public static get isAndroidAppFrontend() { return this.isBrowserProcess && window.location.hash.indexOf("platform=android") !== -1; }
 
   /** Is this process the backend of an iOS mobile application? */
   public static get isIOSAppBackend() { return this.isNodeProcess && (process.platform as any) === "ios"; }
@@ -76,4 +79,7 @@ export class ProcessDetector {
 
   /**  Is this process a mobile app backend? */
   public static get isMobileAppBackend() { return this.isIOSAppBackend || this.isAndroidAppBackend; }
+
+  /** Is this process the frontend of a native (Electron or Mobile) app? */
+  public static get isNativeAppFrontend() { return this.isElectronAppFrontend || this.isMobileAppFrontend; }
 }

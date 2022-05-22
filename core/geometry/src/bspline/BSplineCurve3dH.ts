@@ -218,18 +218,13 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return undefined;
   }
   /** Return a deep clone of this curve. */
-  public clone(): BSplineCurve3dH {
+  public override clone(): BSplineCurve3dH {
     const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3dH(this.numPoles, this.order, knotVector1);
     curve1._bcurve.packedData = this._bcurve.packedData.slice();
     return curve1;
   }
-  /** Clone the curve and apply a transform to the clone. */
-  public cloneTransformed(transform: Transform): BSplineCurve3dH {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
-  }
+
   /** Evaluate at a position given by fractional position within a span. */
   public evaluatePointInSpan(spanIndex: number, spanFraction: number, result?: Point3d): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
@@ -276,7 +271,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       result);
   }
   /** test if the curve is almost equal to `other` */
-  public isAlmostEqual(other: any): boolean {
+  public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineCurve3dH) {
       return this._bcurve.knots.isAlmostEqual(other._bcurve.knots)
         && Point4dArray.isAlmostEqual(this._bcurve.packedData, other._bcurve.packedData);
@@ -343,7 +338,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap evolving parent map.
    */
-  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+  public override computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
     const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);

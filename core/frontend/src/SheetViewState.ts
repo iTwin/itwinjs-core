@@ -6,11 +6,12 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
+  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+} from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -29,7 +30,7 @@ import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
@@ -166,6 +167,56 @@ class ViewAttachmentsInfo {
     return new ViewAttachmentsInfo(this._attachments);
   }
 
+  public preload(options: HydrateViewStateRequestProps) {
+    if (this.isLoaded)
+      return;
+    options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
+    options.viewStateLoadProps = {
+      displayStyle: {
+        omitScheduleScriptElementIds: true,
+        compressExcludedElementIds: true,
+      },
+    };
+  }
+
+  public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
+    if (options.sheetViewViews === undefined)
+      return;
+    if (options.sheetViewAttachmentProps === undefined)
+      return;
+
+    const viewStateProps = options.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
+    const promises = [];
+    for (const viewProps of viewStateProps) {
+      const loadView = async () => {
+        try {
+          if (viewProps === undefined)
+            return undefined;
+          const view = await iModel.views.convertViewStatePropsToViewState(viewProps);
+          return view;
+        } catch {
+          return undefined;
+        }
+      };
+      promises.push(loadView());
+    }
+    const views = await Promise.all(promises);
+
+    const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
+    assert (views.length === attachmentProps.length);
+    const attachments = [];
+    for (let i = 0; i < views.length; i++) {
+      const view = views[i];
+      if (view && !(view instanceof SheetViewState)) {
+        const props = attachmentProps[i];
+        props.attachedView = view;
+        attachments.push(props);
+      }
+    }
+
+    this._attachments = attachments;
+  }
+
   public async load(iModel: IModelConnection): Promise<void> {
     if (this.isLoaded)
       return;
@@ -177,7 +228,7 @@ class ViewAttachmentsInfo {
         try {
           const view = await iModel.views.load(attachment.view.id);
           return view;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       };
@@ -215,7 +266,7 @@ class ViewAttachments {
 
   public constructor(infos: ViewAttachmentInfo[], sheetView: SheetViewState) {
     for (const info of infos) {
-      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
+      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || (info.attachedView.is3d() && info.attachedView.isCameraOn);
       const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
       const attachment = new ctor(info.attachedView, info, sheetView);
       this._attachments.push(attachment);
@@ -265,6 +316,7 @@ class ViewAttachments {
 
 /** A view of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetViewState extends ViewState2d {
   /** The width and height of the sheet in world coordinates. */
@@ -278,9 +330,9 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public static get className() { return "SheetViewDefinition"; }
+  public static override get className() { return "SheetViewDefinition"; }
 
-  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
+  public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
@@ -288,7 +340,7 @@ export class SheetViewState extends ViewState2d {
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
-  public toProps(): ViewStateProps {
+  public override toProps(): ViewStateProps {
     const props = super.toProps();
 
     props.sheetAttachments = this._attachmentsInfo.toJSON();
@@ -318,7 +370,9 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public isDrawingView(): this is DrawingViewState { return false; }
+  public override isDrawingView(): this is DrawingViewState { return false; }
+  /** @internal */
+  public override isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
@@ -338,7 +392,7 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  public getOrigin() {
+  public override getOrigin() {
     const origin = super.getOrigin();
     if (this._attachments)
       origin.z = -this._attachments.maxDepth;
@@ -346,7 +400,7 @@ export class SheetViewState extends ViewState2d {
     return origin;
   }
 
-  public getExtents() {
+  public override getExtents() {
     const extents = super.getExtents();
     if (this._attachments)
       extents.z = this._attachments.maxDepth + Frustum2d.minimumZDistance;
@@ -355,48 +409,54 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
-   * @internal
+   * @internal override
    */
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachments)
       trees.disclose(this._attachments);
   }
 
   /** @internal */
-  public collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
+  public override collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
     super.collectNonTileTreeStatistics(stats);
     if (this._attachments)
       this._attachments.collectStatistics(stats);
   }
 
   /** @internal */
-  public get defaultExtentLimits() {
+  public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
   /** @internal */
-  public getViewedExtents(): AxisAlignedBox3d {
+  public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
 
-  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
-   * @internal
-   */
-  public async load(): Promise<void> {
-    await super.load();
-    await this._attachmentsInfo.load(this.iModel);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    this._attachmentsInfo.preload(hydrateRequest);
   }
 
   /** @internal */
-  public createScene(context: SceneContext): void {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this._attachmentsInfo.postload(hydrateResponse, this.iModel));
+    await Promise.all(promises);
+  }
+
+  /** @internal */
+  public override createScene(context: SceneContext): void {
     super.createScene(context);
     if (this._attachments)
       this._attachments.addToScene(context);
   }
 
   /** @internal */
-  public get secondaryViewports(): Iterable<Viewport> {
+  public override get secondaryViewports(): Iterable<Viewport> {
     const attachments = this._attachments;
     if (!attachments)
       return super.secondaryViewports;
@@ -419,13 +479,13 @@ export class SheetViewState extends ViewState2d {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
     for await (const row of this.iModel.query(ecsql))
-      ids.push(row.attachmentId);
+      ids.push(row[0]);
 
     return ids;
   }
 
   /** @internal */
-  public async changeViewedModel(modelId: Id64String): Promise<void> {
+  public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
     this._attachmentsInfo = ViewAttachmentsInfo.fromJSON(attachmentIds);
@@ -434,20 +494,20 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
 
   /** @internal */
-  public detachFromViewport(): void {
+  public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachments = dispose(this._attachments);
   }
 
   /** @internal */
-  public get areAllTileTreesLoaded(): boolean {
+  public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
 
@@ -460,7 +520,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     super.decorate(context);
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
@@ -469,7 +529,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public computeFitRange(): Range3d {
+  public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)
       return super.computeFitRange();
@@ -490,11 +550,11 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
     this._attachment = attachment;
   }
 
-  public changeScene(scene: Scene): void {
+  public override changeScene(scene: Scene): void {
     this._attachment.scene = scene;
   }
 
-  public overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
 }
@@ -549,16 +609,18 @@ class OrthographicAttachment {
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
     const target = new AttachmentTarget(this);
-    this._viewport = OffScreenViewport.create(view, this._viewRect, true, target);
+    this._viewport = OffScreenViewport.createViewport(view, target, true);
 
     this._props = props;
     this._sheetModelId = sheetView.baseModelId;
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
 
     const applyClip = true; // set to false for debugging
-    this._viewFlagOverrides.setShowClipVolume(applyClip);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowShadows(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      clipVolume: applyClip,
+      lighting: false,
+      shadows: false,
+    };
 
     const placement = Placement2d.fromJSON(props.placement);
     const range = placement.calculateRange();
@@ -593,6 +655,11 @@ class OrthographicAttachment {
     origin.addInPlace(viewOrgToAttachment);
     this._toSheet = Transform.createRefs(origin, matrix);
     this._fromSheet = this._toSheet.inverse()!;
+
+    // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
+    // The clip needs to be transformed into sheet space.
+    if (view.isDrawingView())
+      this._viewport.drawingToSheetTransform = this._toSheet;
 
     // ###TODO? If we also apply the attachment's clip to the attached view, we may get additional culling during tile selection.
     // However the attached view's frustum is already clipped by intersection with sheet view's frustum, and additional clipping planes
@@ -751,9 +818,9 @@ class OrthographicAttachment {
 
     // Report tile statistics to sheet view's viewport.
     const tileAdmin = IModelApp.tileAdmin;
-    const selectedAndReady = tileAdmin.getTilesForViewport(this._viewport);
-    const requested = tileAdmin.getRequestsForViewport(this._viewport);
-    tileAdmin.addExternalTilesForViewport(context.viewport, {
+    const selectedAndReady = tileAdmin.getTilesForUser(this._viewport);
+    const requested = tileAdmin.getRequestsForUser(this._viewport);
+    tileAdmin.addExternalTilesForUser(context.viewport, {
       requested: requested?.size ?? 0,
       selected: selectedAndReady?.selected.size ?? 0,
       ready: selectedAndReady?.ready.size ?? 0,
@@ -792,14 +859,14 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this.changeView(view);
     }
 
-    public createSceneContext(): SceneContext {
+    public override createSceneContext(): SceneContext {
       assert(!this._isSceneReady);
 
       this._sceneContext = super.createSceneContext();
       return this._sceneContext;
     }
 
-    public renderFrame(): void {
+    public override renderFrame(): void {
       assert(!this._isSceneReady);
 
       this.clearSceneContext();
@@ -818,7 +885,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this._sceneContext = undefined;
     }
 
-    public addDecorations(_decorations: Decorations): void {
+    public override addDecorations(_decorations: Decorations): void {
       // ###TODO: skybox, ground plane, possibly grid. DecorateContext requires a ScreenViewport...
     }
   }
@@ -844,7 +911,7 @@ class RasterAttachment {
     view.setAspectRatioSkew(skew);
 
     if (true !== props.jsonProperties?.displayOptions?.preserveBackground) {
-      // Make background color 100% transparent so that Viewport.readImage() will discard transparent pixels.
+      // Make background color 100% transparent so that Viewport.readImageBuffer() will discard transparent pixels.
       const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
       view.displayStyle.backgroundColor = bgColor;
     }
@@ -869,7 +936,7 @@ class RasterAttachment {
   }
 
   public get areAllTileTreesLoaded() {
-    return this._viewport?.view.areAllTileTreesLoaded ?? true;
+    return this._viewport?.areAllTileTreesLoaded ?? true;
   }
 
   public addToScene(context: SceneContext): void {
@@ -899,6 +966,8 @@ class RasterAttachment {
     this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
 
     this._viewport.renderFrame();
+    if (this._graphics)
+      context.outputGraphic(this._graphics);
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet) {
@@ -917,7 +986,7 @@ class RasterAttachment {
 
   private createGraphics(vp: Viewport): RenderGraphic | undefined {
     // Create a texture from the contents of the view.
-    const image = vp.readImage(vp.viewRect, undefined, false);
+    const image = vp.readImageBuffer({ upsideDown: true });
     if (undefined === image)
       return undefined;
 
@@ -928,16 +997,15 @@ class RasterAttachment {
         openImageDataUrlInNewWindow(url, "Attachment");
     }
 
-    const textureParams = new RenderTexture.Params();
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, vp.iModel, textureParams);
-    if (undefined === texture)
+    const texture = IModelApp.renderSystem.createTexture({
+      image: { source: image, transparency: TextureTransparency.Opaque },
+    });
+    if (!texture)
       return undefined;
 
     // Create a material for the texture
     const graphicParams = new GraphicParams();
-    const materialParams = new RenderMaterial.Params();
-    materialParams.textureMapping = new TextureMapping(texture, new TextureMapping.Params());
-    graphicParams.material = IModelApp.renderSystem.createMaterial(materialParams, vp.iModel);
+    graphicParams.material = IModelApp.renderSystem.createRenderMaterial({ textureMapping: { texture } });
 
     // Apply the texture to a rectangular polyface.
     const depth = this.zDepth;
@@ -972,6 +1040,9 @@ class RasterAttachment {
     // Wrap the polyface in a GraphicBranch.
     const branch = new GraphicBranch(true);
     const vfOvrs = createDefaultViewFlagOverrides({ clipVolume: true, shadows: false, lighting: false, thematic: false });
+
+    // Disable transparency - background pixels are 100% transparent so they will be discarded anyway. Other pixels are 100% opaque.
+    vfOvrs.transparency = false;
     branch.setViewFlagOverrides(vfOvrs);
     branch.symbologyOverrides = new FeatureSymbology.Overrides();
     branch.entries.push(graphic);

@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="ECv2Schema" version="1.1" nameSpacePrefix="v2" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.2.0" displayLabel="SchemaA" description="This EC v2.0 test Schema.">
-</ECSchema>

@@ -6,7 +6,7 @@
  * @module Controls
  */
 
-import { RgbColor } from "@bentley/imodeljs-common";
+import { RgbColor } from "@itwin/core-common";
 
 /** @alpha */
 export type ColorInputHandler = (value: string) => void;

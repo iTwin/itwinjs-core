@@ -36,6 +36,7 @@ Object {
         "1b99c1db-1774-4d7c-a453-fb2306df0849",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Small",
@@ -81,6 +82,7 @@ Object {
         "35fbe933-627c-4856-9e2e-acbc14ddc316",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "cyan",
@@ -128,6 +130,7 @@ Array [
           "55981cb4-9872-4dc4-a9bf-aa6788c2a2d7",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Incredible Granite Mouse",
@@ -174,6 +177,7 @@ Array [
           "5bb37bcd-e2e3-4a80-95be-3e45bffd542a",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Forward",
@@ -225,6 +229,7 @@ Array [
           "df7f4363-4276-4e71-933f-e9e95dc28f6c",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Avon",
@@ -265,6 +270,7 @@ Array [
           "d9bbd6f3-5fb5-4d9e-b170-f7c7ed87d78c",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "zero defect",
@@ -317,6 +323,7 @@ Object {
         "d8dfacc0-337a-4ad1-b790-108333b5640b",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "labelDefinition": Object {
       "displayValue": "Synergistic",
@@ -363,6 +370,7 @@ Object {
         "0ac230fa-8b33-464e-8412-6dad53e94e81",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "labelDefinition": Object {
       "displayValue": "harness",
@@ -410,6 +418,7 @@ Object {
         "ecee2025-756a-4f76-bacc-dd1e5efbb6f7",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "labelDefinition": Object {
       "displayValue": "Dynamic",

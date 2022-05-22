@@ -2,87 +2,92 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
-import { UiItemsManager } from "@bentley/ui-abstract";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { Localization } from "@itwin/core-common";
+import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
+import { UiItemProviderOverrides, UiItemsManager } from "@itwin/appui-abstract";
+import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
+import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
 
-/**
- * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
+export interface MapLayersConfig {
+  localization?: Localization;
+  /** If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored. */
+  iTwinConfig?: UserPreferencesAccess;
+  mapLayerOptions?: MapLayerOptions;
+  featureInfoOpts?: MapFeatureInfoOptions;
+  delayItemsProviderRegister?: boolean;
+}
+/** Configuration for registering UiItemsProviders for the MapLayers package */
+export interface MapLayersUiProviderConfig {
+  mapLayerProviderOverrides?: UiItemProviderOverrides;
+  featureInfoProviderOverrides?: UiItemProviderOverrides;
+}
+
+/** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
- *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with ui-framework's ConfigurableUiManager
- *  // so it can be explicitly added to a stage via a FrontstageDef.
- *  await MapLayersUI.initialize (registerItemsProvider);
+ *  await MapLayersUI.initialize({...MapLayersInitProps});
  * '''
  * @beta
  */
 export class MapLayersUI {
-  private static _i18n?: I18N;
   private static _defaultNs = "mapLayers";
-  private static _uiItemsProvider: MapLayersUiItemsProvider;
+  public static localization: Localization;
+  private static _uiItemsProvidersId: string[] = [];
+  private static _iTwinConfig?: UserPreferencesAccess;
+  private static _featureInfoOpts?: MapFeatureInfoOptions;
+  private static  _mapLayerOptions?: MapLayerOptions;
 
-  /** Used to initialize the MapLayersAPI when used as a package. If `registerItemsProvider` is true then the
-   * UiItemsProvider will automatically insert the UI items into the host applications UI. If it is false then
-   * explicitly add widget definition to a specific FrontStage definition using the following syntax.
-   * ``` tsx
-   * <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
-   *   iconSpec={MapLayersWidgetControl.iconSpec} />,
-   * ```
-   */
-  public static async initialize(registerItemsProvider = true, i18n?: I18N): Promise<void> {
-    // register namespace containing localized strings for this package
-    this._i18n = (i18n ? i18n : IModelApp.i18n);
-    const namespace = this._i18n.registerNamespace(this.i18nNamespace);
-    await namespace.readFinished;
-
-    // _uiItemsProvider always created to provide access to i18n.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._i18n);
-    if (registerItemsProvider)
-      UiItemsManager.register(MapLayersUI._uiItemsProvider);
-    else
-      ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
+  public static get iTwinConfig(): UserPreferencesAccess | undefined {
+    return this._iTwinConfig;
   }
 
-  /** Unregisters the GeoTools internationalization service namespace */
+  /** Used to initialize the Map Layers */
+  public static async initialize(config?: MapLayersConfig): Promise<void> {
+    // register namespace containing localized strings for this package
+    MapLayersUI.localization = config?.localization ?? IModelApp.localization;
+    await MapLayersUI.localization.registerNamespace(
+      MapLayersUI.localizationNamespace
+    );
+
+    MapLayersUI._iTwinConfig = config?.iTwinConfig;
+    MapLayersUI._featureInfoOpts = config?.featureInfoOpts;
+    MapLayersUI._mapLayerOptions = config?.mapLayerOptions;
+
+    if (!config?.delayItemsProviderRegister)
+      MapLayersUI.registerUiItemsProviders();
+  }
+
+  /** Registers the UiItemsProviders for MapLayers with optional overrides
+   * This is useful for an app that wants to defer UiItemsProvider registration so that it
+   * may limit the MapLayers widgets to a specific workflow
+   * @beta
+   */
+  public static registerUiItemsProviders(config?: MapLayersUiProviderConfig) {
+    const mlProvider = new MapLayersUiItemsProvider({ ...MapLayersUI._mapLayerOptions });
+    const mlProviderId = config?.mapLayerProviderOverrides?.providerId ?? mlProvider.id;
+    MapLayersUI._uiItemsProvidersId.push(mlProviderId);
+    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
+
+    // Register the FeatureInfo widget only if MapHit was provided.
+    if (MapLayersUI._featureInfoOpts?.onMapHit) {
+      const fiProvider = new FeatureInfoUiItemsProvider({ ...MapLayersUI._featureInfoOpts });
+      const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
+      MapLayersUI._uiItemsProvidersId.push(fiProviderId);
+      UiItemsManager.register(mlProvider,  config?.featureInfoProviderOverrides);
+    }
+  }
+
+  /** Unregisters internationalization service namespace and UiItemManager  */
   public static terminate() {
-    if (MapLayersUI._i18n)
-      MapLayersUI._i18n.unregisterNamespace(this.i18nNamespace);
-    MapLayersUI._i18n = undefined;
+    IModelApp.localization.unregisterNamespace(MapLayersUI.localizationNamespace);
+
+    MapLayersUI._uiItemsProvidersId.forEach((uiProviderId) => {
+      UiItemsManager.unregister(uiProviderId);
+    });
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
-    return this._defaultNs;
+  public static get localizationNamespace(): string {
+    return MapLayersUI._defaultNs;
   }
-}
-
-/**
- * Extension that provides MapLayers widget
- */
-class MapLayersExtension extends Extension {
-  private _i18NNamespace?: I18NNamespace;
-  /** The uiProvider will add a widget to any stage with its usage set to "General" in the host AppUi compatible application */
-  public uiProvider?: MapLayersUiItemsProvider;
-
-  public constructor(name: string) {
-    super(name);
-  }
-
-  /** Invoked the first time this extension is loaded. */
-  public async onLoad(_args: string[]): Promise<void> {
-    this._i18NNamespace = this.i18n.getNamespace(MapLayersUI.i18nNamespace);
-    await this._i18NNamespace!.readFinished;
-    UiItemsManager.register(new MapLayersUiItemsProvider(this.i18n));
-  }
-
-  /** Invoked each time this extension is loaded. */
-  public async onExecute(_args: string[]): Promise<void> {
-  }
-}
-
-// extensionAdmin is undefined if an application is using it as a package and it is loaded prior to IModelApp defining extensionAdmin
-if (IModelApp.extensionAdmin) {
-  // Register the extension with the extensionAdmin.
-  IModelApp.extensionAdmin.register(new MapLayersExtension("map-layers"));
 }

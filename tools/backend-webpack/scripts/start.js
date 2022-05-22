@@ -9,7 +9,7 @@ const chalk = require("chalk");
 const {
   spawn,
   handleInterrupts
-} = require("@bentley/build-tools/scripts/utils/simpleSpawn");
+} = require("@itwin/build-tools/scripts/utils/simpleSpawn");
 
 exports.command = "start";
 exports.describe = chalk.bold("Runs the app's backend in development mode.");

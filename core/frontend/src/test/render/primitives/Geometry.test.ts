@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
@@ -47,7 +47,7 @@ describe("GeometryPrimitives tests", () => {
     gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     // query stroke list from loopGeom
     const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(0.0);
@@ -108,7 +108,7 @@ describe("GeometryPrimitives tests", () => {
     gfParams.lineColor = ColorDef.white;
     const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
 
-    const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false);
+    const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false, undefined);
 
     // query stroke list from pathGeom
     const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(0.0);

@@ -6,14 +6,13 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d } from "@bentley/geometry-core";
-import { RequestOptions } from "@bentley/itwin-client";
+import { assert, Id64String } from "@itwin/core-bentley";
+import { Range1d } from "@itwin/core-geometry";
+import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
+import { ScreenViewport } from "../../Viewport";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, Tile } from "../internal";
-import { MapTilingScheme } from "./MapTilingScheme";
-import { QuadId } from "./QuadId";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
 
 /** Abstract base class for terrain mesh providers responsible for producing geometry background map tiles.
  * @see [[EllipsoidTerrainMeshProvider]]
@@ -23,7 +22,7 @@ import { QuadId } from "./QuadId";
 export abstract class TerrainMeshProvider {
   constructor(protected _iModel: IModelConnection, protected _modelId: Id64String) { }
   public constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
-  public getLogo(): HTMLTableRowElement | undefined { return undefined; }
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;
   public get requestOptions(): RequestOptions { return { method: "GET", responseType: "arraybuffer" }; }
   public abstract get maxDepth(): number;

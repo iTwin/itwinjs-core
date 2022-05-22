@@ -6,40 +6,90 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
-import { IModelAppOptions } from "./IModelApp";
+import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
-import { WebViewerApp, WebViewerAppOptions } from "./WebViewerApp";
+import { IModelAppOptions } from "./IModelApp";
+
+/** @internal */
+export interface LocalHostIpcAppOpts {
+  iModelApp?: IModelAppOptions;
+
+  localhostIpcApp?: {
+    socketPort?: number;
+    socketUrl?: URL;
+  };
+}
 
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
+  private _next: number;
+  private _pending?: IpcWebSocketMessage[] = [];
 
-  public constructor(port: number) {
+  public constructor(opts: LocalHostIpcAppOpts) {
     super();
 
-    this._client = new WebSocket(`ws://localhost:${port}/`);
+    let url: URL;
+    if (opts?.localhostIpcApp?.socketUrl) {
+      url = opts?.localhostIpcApp?.socketUrl;
+    } else {
+      const port = opts?.localhostIpcApp?.socketPort ?? 3002;
+      url = new URL(`ws://localhost:${port}/`);
+    }
+
+    this._client = new WebSocket(url);
+    this._next = -1;
+
+    this._client.addEventListener("open", () => {
+      const pending = this._pending!;
+      this._pending = undefined;
+      pending.forEach((m) => this.send(m));
+    });
 
     this._client.addEventListener("message", async (event) => {
+      const message = await this.notifyIncoming(event.data, this._client);
+      if (IpcWebSocketMessage.skip(message)) {
+        return;
+      }
+
       for (const listener of IpcWebSocket.receivers)
-        listener({} as Event, JSON.parse(event.data as string));
+        listener({} as Event, message);
     });
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._client.send(JSON.stringify(message));
+    if (this._pending) {
+      this._pending.push(message);
+      return;
+    }
+
+    message.sequence = ++this._next;
+    const parts = this.serialize(message);
+    parts.forEach((part) => this._client.send(part));
   }
 }
 
 /**
  * To be used only by test applications that want to test web-based editing using localhost.
- * This is both a `WebViewerApp` and an `IpcApp`, and it initializes both.
  *  @internal
  */
 export class LocalhostIpcApp {
-  public static async startup(opts: { localhostIpcApp?: { socketPort?: number }, webViewerApp: WebViewerAppOptions, iModelApp?: IModelAppOptions }) {
-    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcApp?.socketPort ?? 3002);
-    const ipc = new IpcWebSocketFrontend();
-    await IpcApp.startup({ ipcApp: { ipc }, iModelApp: opts?.iModelApp });
-    await WebViewerApp.startup(opts); // this also attempts to initialize IModelApp, that's ok.
+  private static _initialized = false;
+  private static _ipc: IpcWebSocketFrontend;
+
+  public static buildUrlForSocket(base: URL, path = "ipc"): URL {
+    const url = new URL(base);
+    url.protocol = "ws";
+    url.pathname = [...url.pathname.split("/"), path].filter((v) => v).join("/");
+    return url;
+  }
+
+  public static async startup(opts: LocalHostIpcAppOpts) {
+    if (!this._initialized) {
+      IpcWebSocket.transport = new LocalTransport(opts);
+      this._ipc = new IpcWebSocketFrontend();
+      this._initialized = true;
+    }
+
+    await IpcApp.startup(this._ipc, opts);
   }
 }

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $appbar-height: 65px;
 $navbar-width: 72px;
-$projectpicker-min-width: 250px; /* project picker minimum width */
-$projectpicker-max-width: 450px; /* project picker maximum width */
+$itwinpicker-min-width: 250px; /* iTwin picker minimum width */
+$itwinpicker-max-width: 450px; /* iTwin picker maximum width */
 $open-background: #FCFDFD;
 $open-color: #6d6e77;
 $content-background: $uicore-white;
@@ -39,8 +39,8 @@ $border-color: #e7e9ec;
     cursor: pointer;
   }
 
-  /* projects label */
-  .project-picker-content {
+  /* itwins label */
+  .itwin-picker-content {
     display: flex;
     align-items: center;
     position: absolute;
@@ -48,19 +48,19 @@ $border-color: #e7e9ec;
     height: 80%;
     margin-left: 40px;
 
-    /* "Projects" label */
-    .projects-label {
+    /* "itwins" label */
+    .itwins-label {
       margin-right: 1em;
-      font-size: $uicore-font-size-subheading;
+      font-size: $iui-font-size-subheading;
     }
 
-    /* project picker */
-    .project-picker {
-      min-width: $projectpicker-min-width;
-      max-width: $projectpicker-max-width;
+    /* itwin picker */
+    .itwin-picker {
+      min-width: $itwinpicker-min-width;
+      max-width: $itwinpicker-max-width;
       height: 100%;
 
-      > div {
+      >div {
         height: 100%;
       }
     }

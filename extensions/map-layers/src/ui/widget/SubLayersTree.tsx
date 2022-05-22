@@ -2,22 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { CheckBoxState, ImageCheckBox, Input, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
   MutableTreeModelNode,
   SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
-  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
-} from "@bentley/ui-components";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
+} from "@itwin/components-react";
+import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
+import { Button, Input } from "@itwin/itwinui-react";
+import * as React from "react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";
+import { MapLayersUI } from "../../mapLayers";
 
 interface ToolbarProps {
   searchField?: React.ReactNode;
@@ -40,7 +41,7 @@ function Toolbar(props: ToolbarProps) {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
-  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.NoSubLayers"));
+  const [noneAvailableLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
       <div>{noneAvailableLabel}</div>
@@ -56,11 +57,11 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
-    url: settings.url,
+    source: settings.source,
     transparency: settings.transparency,
     transparentBackground: settings.transparentBackground,
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
@@ -76,9 +77,9 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
-  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.SearchPlaceholder"));
-  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOn"));
-  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOff"));
+  const [placeholderLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
+  const [allOnLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
+  const [allOffLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
   const [mapLayer, setMapLayer] = React.useState(props.mapLayer);
   const [layerFilterString, setLayerFilterString] = React.useState<string>("");
 
@@ -98,21 +99,21 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
   // `React.useCallback` is used to avoid creating new callback that creates handler on each render
   const eventHandler = useDisposable(React.useCallback(() => new SubLayerCheckboxHandler(mapLayer, nodeLoader), [nodeLoader, mapLayer]));
 
-  // get list of visible nodes to render in `ControlledTree`. This is a flat list of nodes in tree model.
-  // `useVisibleTreeNodes` uses 'modelSource' to get flat list of nodes and listens for model changes to
-  // re-render component with updated nodes list
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  // Get an immutable tree model from the model source. The model is regenerated every time the model source
+  // emits the `onModelChanged` event.
+  const treeModel = useTreeModel(modelSource);
 
   const showAll = React.useCallback(async () => {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
-        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
+        if (updatedMapLayer instanceof ImageMapLayerSettings)
+          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
     }
   }, [mapLayer]);
@@ -121,10 +122,10 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
-      if (updatedMapLayer) {
+      if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
         setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
       vp.invalidateRenderPlan();
@@ -135,6 +136,9 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
+  const [divRef, divElement] = useRefState<HTMLDivElement>();
+  const [width, height] = useLayoutResizeObserver(divElement ?? null);
+
   return <>
     <div className="map-manager-sublayer-tree">
       <Toolbar
@@ -142,26 +146,32 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           <Input type="text" className="map-manager-source-list-filter"
             placeholder={placeholderLabel}
             value={layerFilterString}
-            onChange={handleFilterTextChanged} />
+            onChange={handleFilterTextChanged}
+            size="small" />
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
-          <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
+          <Button size="small"styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
+          </Button>,
+          <Button size="small"styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
-      <ControlledTree
-        nodeLoader={nodeLoader}
-        selectionMode={SelectionMode.None}
-        treeEvents={eventHandler}
-        visibleNodes={visibleNodes}
-        treeRenderer={nodeWithEyeCheckboxTreeRenderer}
-        nodeHighlightingProps={nodeHighlightingProps}
-      />
+      {/* <div ref={ref} className="map-manager-sublayer-tree-content"> */}
+      <div ref={divRef} className="map-manager-sublayer-tree-content">
+        {width && height ? <ControlledTree
+          nodeLoader={nodeLoader}
+          selectionMode={SelectionMode.None}
+          eventsHandler={eventHandler}
+          model={treeModel}
+          treeRenderer={nodeWithEyeCheckboxTreeRenderer}
+          nodeHighlightingProps={nodeHighlightingProps}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </div>
   </>;
 }
@@ -175,7 +185,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
     this._removeModelChangedListener = this.modelSource.onModelChanged.addListener(this.onModelChanged);
   }
 
-  public dispose() {
+  public override dispose() {
     this._removeModelChangedListener();
     super.dispose();
   }
@@ -271,7 +281,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
   }
 
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
+  public override onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
     // call base checkbox handling
     const baseHandling = super.onCheckboxStateChanged({ stateChanges });
 
@@ -280,7 +290,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
       next: (changes) => {
         const vp = IModelApp.viewManager.selectedView;
         const displayStyle = vp?.displayStyle;
-        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
+        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(this._mapLayer.name, this._mapLayer.source, this._mapLayer.isOverlay) : -1;
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
 

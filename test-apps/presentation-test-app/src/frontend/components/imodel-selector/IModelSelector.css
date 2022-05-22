@@ -3,11 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-.IModelSelector {
-  padding: 10px 0px 0px 10px;
-}
-
 .IModelSelector .Error {
-  margin-top: 10px;
   color: red;
 }

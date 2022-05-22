@@ -6,39 +6,49 @@
  * @module Geometry
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { CommonLoggerCategory } from "../CommonLoggerCategory";
+} from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
 import { IModelError } from "../IModelError";
 
 /** A Range3d that is aligned with the axes of spatial coordinates.
  * @public
+ * @extensions
  */
 export type AxisAlignedBox3d = Range3d;
 
 /** The properties of a Range3d.
  * @public
+ * @extensions
  */
 export type AxisAlignedBox3dProps = Range3dProps;
 
 /** A bounding box aligned to the orientation of a 3d Element
  * @public
+ * @extensions
  */
 export type ElementAlignedBox3d = Range3d;
 
 /** A bounding box aligned to the orientation of a 2d Element
  * @public
+ * @extensions
  */
 export type ElementAlignedBox2d = Range2d;
 
 /** A bounding box aligned to a local coordinate system
  * @public
+ * @extensions
  */
 export type LocalAlignedBox3d = Range3d;
+
+/** Either a Placement2d or Placement3d
+ * @public
+ * @extensions
+ */
+export type Placement = Placement2d | Placement3d;
 
 /** The placement of a GeometricElement3d. This includes the origin, orientation, and size (bounding box) of the element.
  * All geometry of a GeometricElement are relative to its placement.
@@ -50,6 +60,8 @@ export class Placement3d implements Placement3dProps {
   public get rotation(): Matrix3d { return this.angles.toMatrix3d(); }
   /** Get the transform from local coordinates of this placement to world coordinates. */
   public get transform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.rotation); }
+  /** determine if this is 3d placement */
+  public get is3d(): boolean { return true; }
 
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
@@ -94,7 +106,7 @@ export class Placement3d implements Placement3dProps {
     const transform = other.multiplyTransformTransform(this.transform);
     const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
     if (undefined === angles)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform");
 
     this.angles = angles;
     this.origin.setFrom(transform.origin);
@@ -115,6 +127,8 @@ export class Placement2d implements Placement2dProps {
     const props: any = json ? json : {};
     return new Placement2d(Point2d.fromJSON(props.origin), Angle.fromJSON(props.angle), Range2d.fromJSON(props.bbox));
   }
+  /** determine if this is 3d placement */
+  public get is3d(): boolean { return false; }
 
   /** Get the 8 corners, in world coordinates, of this placement. */
   public getWorldCorners(out?: Frustum): Frustum {
@@ -155,7 +169,7 @@ export class Placement2d implements Placement2dProps {
     const transform = other.multiplyTransformTransform(this.transform);
     const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
     if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform");
 
     this.angle = angles.yaw;
     this.origin.setFrom(transform.origin);

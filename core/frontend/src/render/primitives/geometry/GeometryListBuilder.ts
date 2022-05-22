@@ -6,13 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform,
-} from "@bentley/geometry-core";
-import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
-import { Viewport } from "../../../Viewport";
-import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
+  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+} from "@itwin/core-geometry";
+import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
@@ -32,13 +30,20 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public readonly graphicParams: GraphicParams = new GraphicParams();
-  private _wantNormals = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String, accumulatorTf: Transform = Transform.identity) {
-    super(placement, type, viewport, pickableId);
-    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTf);
+  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+    super(options);
+    this.accum = new GeometryAccumulator({
+      system,
+      transform: accumulatorTransform,
+      analysisStyleDisplacement: this.analysisStyle?.displacement,
+      viewIndependentOrigin: options.viewIndependentOrigin,
+    });
+
+    if (this.pickable)
+      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
 
   public finish(): RenderGraphic {
@@ -51,11 +56,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     graphicParams.clone(this.graphicParams);
   }
 
-  public get wantNormals() {
-    return this._wantNormals;
-  }
-  public set wantNormals(want: boolean) {
-    this._wantNormals = want;
+  protected override _activateFeature(feature: Feature): void {
+    this.accum.currentFeature = feature;
   }
 
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
@@ -130,16 +132,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public addPolyface(meshData: Polyface): void {
-    // Currently there is no API for generating normals for a Polyface; and it would be more efficient for caller to supply them as part of their input Polyface.
-    // ###TODO: When such an API becomes available, remove the following.
-    // It's important that we correctly compute DisplayParams.ignoreLighting so that we don't try to batch this un-lightable Polyface with other lightable geometry.
-    const wantedNormals = this.wantNormals;
-    this.wantNormals = wantedNormals && undefined !== meshData.data.normal && 0 < meshData.data.normal.length;
     this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
-    this.wantNormals = wantedNormals;
   }
 
-  public abstract reset(): void;
+  public addSolidPrimitive(primitive: SolidPrimitive): void {
+    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
+  }
 
   public getGraphicParams(): GraphicParams { return this.graphicParams; }
 
@@ -152,17 +150,13 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
-  public reInitialize(localToWorld: Transform, accumTf: Transform = Transform.createIdentity()) {
-    this.accum.reset(accumTf);
-    this.activateGraphicParams(this.graphicParams);
-    this.placement = localToWorld;
-    this.reset();
-  }
-
   private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
     return this.system.getGradientTexture(gradient, this.iModel);
   }
 }
+
+// Set to true to add a range box to every graphic produced by PrimitiveBuilder.
+let addDebugRangeBox = false;
 
 /** @internal */
 export class PrimitiveBuilder extends GeometryListBuilder {
@@ -178,7 +172,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
         featureTable = meshes.features;
         range = meshes.range;
@@ -187,32 +181,26 @@ export class PrimitiveBuilder extends GeometryListBuilder {
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), (range !== undefined) ? range : new Range3d());
+      const batchRange = range ?? new Range3d();
+      const batchOptions = this._options.pickable;
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
+    }
+
+    if (addDebugRangeBox && range) {
+      addDebugRangeBox = false;
+      const builder = this.accum.system.createGraphic({ ...this._options });
+      builder.addRangeBox(range);
+      graphic = this.accum.system.createGraphicList([graphic, builder.finish()]);
+      addDebugRangeBox = true;
     }
 
     return graphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
-    let pixelSize = 1.0;
-    if (!this.isViewCoordinates) {
-      // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
-      const range = accum.geometries.computeRange();
-      const pt = range.low.interpolate(0.5, range.high);
-      pixelSize = this.viewport.getPixelSizeAtPoint(pt);
-      pixelSize = this.viewport.target.adjustPixelSizeForLOD(pixelSize);
-
-      if (this.applyAspectRatioSkew) {
-        // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
-        const skew = this.viewport.view.getAspectRatioSkew();
-        if (skew > 1)
-          pixelSize /= skew;
-      }
-    }
-
-    const toleranceMult = 0.25;
-    return pixelSize * toleranceMult;
+    return this._computeChordTolerance({
+      graphic: this,
+      computeRange: () => accum.geometries.computeRange(),
+    });
   }
-
-  public reset(): void { this.primitives = []; }
 }

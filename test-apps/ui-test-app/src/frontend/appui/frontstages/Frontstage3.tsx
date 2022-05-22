@@ -3,49 +3,57 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
-  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+  ActionItemButton, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
+  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewportControl as App_IModelViewport } from "../contentviews/IModelViewport";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
+import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test3";
+
+  public get id(): string {
+    return Frontstage3.stageId;
+  }
+
+  private getDefaultViewState = () => {
+    return UiFramework.getDefaultViewState()?.clone();
+  };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      { // Three Views, one on the left, two stacked on the right.
-        descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-        verticalSplit: {
-          percentage: 0.50,
-          minSizeLeft: 100, minSizeRight: 100,
-          left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
-        },
-      },
-    );
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ui-test-app:Frontstage3ContentGroup",
+        layout: StandardContentLayouts.fourQuadrants,
         contents: [
           {
+            id: "imodelView1",
             classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true  },
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "reactTableView",
+            classId: ReactTableDemoContentControl,
+          },
+          {
+            id: "imodelView2",
             classId: App_IModelViewport.id,
-            applicationData: { label: "Content 2a", bgColor: "blue", disableDefaultViewOverlay: true },
+            applicationData: { viewState: this.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "oldTableView",
             classId: "TableExampleContent",
-            applicationData: { label: "Content 3a", bgColor: "black" },
           },
         ],
       },
@@ -53,12 +61,10 @@ export class Frontstage3 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test3"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -109,6 +115,13 @@ export class Frontstage3 extends FrontstageProvider {
             ]}
           />
         }
+      // bottomPanel={
+      //   <StagePanel
+      //     widgets={[
+      //       <Widget iconSpec="icon-placeholder" label="Large Table" control={TableExampleWidgetControl} />,
+      //     ]}
+      //   />
+      // }
       />
     );
   }
@@ -145,7 +158,10 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand, AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+              items={[
+                AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand, AppTools.warningMessageBoxCommand,
+                AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2, AppTools.openMessageBoxCommand3,
+              ]}
               direction={Direction.Right}
               itemsInColumn={7}
             />

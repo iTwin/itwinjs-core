@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import "./TestModalDialog2.scss";
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { ColorPickerButton } from "@bentley/ui-components";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { ColorDef } from "@itwin/core-common";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { ColorPickerButton } from "@itwin/imodel-components-react";
+import { Dialog } from "@itwin/core-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export interface TestModalDialog2Props {
   opened: boolean;
@@ -15,7 +17,6 @@ export interface TestModalDialog2Props {
 }
 
 export interface TestModalDialog2State {
-  opened: boolean;
   movable: boolean;
   resizable: boolean;
   overlay: boolean;
@@ -25,7 +26,7 @@ export interface TestModalDialog2State {
 }
 
 export class TestModalDialog2 extends React.Component<TestModalDialog2Props, TestModalDialog2State> {
-  public readonly state: Readonly<TestModalDialog2State>;
+  public override readonly state: Readonly<TestModalDialog2State>;
 
   constructor(props: TestModalDialog2Props) {
     super(props);
@@ -36,7 +37,6 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     const greenDef = ColorDef.from(0, 255, 0, 0);
 
     this.state = {
-      opened: this.props.opened,
       movable: true,
       resizable: true,
       overlay: true,
@@ -61,12 +61,12 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
 
     return (
       <Dialog
         title={"Modal Dialog"}
-        opened={this.state.opened}
+        opened={true}
         resizable={this.state.resizable}
         movable={this.state.movable}
         modal={this.state.overlay}
@@ -115,9 +115,5 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     });
   };
 
-  private _closeDialog = (_followUp: () => void) => {
-    this.setState({
-      opened: false,
-    });
-  };
+  private _closeDialog = (_followUp: () => void) => ModalDialogManager.closeDialog();
 }

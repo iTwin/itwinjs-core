@@ -13,6 +13,7 @@ import { RenderMaterial } from "./RenderMaterial";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
  * @public
+ * @extensions
  */
 export enum FillFlags {
   /** No fill */
@@ -46,9 +47,7 @@ export class GraphicParams {
   public lineColor = ColorDef.black;
   /** The color of surfaces. */
   public fillColor = ColorDef.black;
-  /** Material applied to surfaces.
-   * @beta
-   */
+  /** Material applied to surfaces. */
   public material?: RenderMaterial;
   /** Gradient fill applied to surfaces. */
   public gradient?: Gradient.Symb;

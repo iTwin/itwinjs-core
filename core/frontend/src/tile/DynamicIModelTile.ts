@@ -8,13 +8,12 @@
 
 import {
   assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
-} from "@bentley/imodeljs-common";
+  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+} from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
@@ -22,7 +21,7 @@ import {
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
- * [[InteractiveEditingSession]].
+ * [[GraphicalEditingScope]].
  * @internal
  */
 export abstract class DynamicIModelTile extends Tile {
@@ -34,7 +33,7 @@ export abstract class DynamicIModelTile extends Tile {
     return new RootTile(root, elements);
   }
 
-  /** Updates the tiles when elements are modified during the editing session. */
+  /** Updates the tiles when elements are modified during the editing scope. */
   public abstract handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void;
 
   /** Overrides symbology of the *static* [[IModelTile]]s to hide elements that have been deleted or modified. */
@@ -81,7 +80,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       isLeaf: false,
       contentId: "dynamic",
       range: Range3d.createNull(),
-      maximumSize: 512,
+      maximumSize: parent.tileScreenSize,
     };
 
     super(params, parent.tree);
@@ -175,7 +174,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 }
 
-/** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
+/** Represents a single element that has been inserted or had its geometric properties modified during the current [[GraphicalEditingScope]].
  * It has no graphics of its own; it has any number of child tiles, each of which have graphics of a different level of detail.
  * Its contentId is the element's Id.
  */
@@ -328,7 +327,7 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
@@ -353,15 +352,18 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
-    const props = {
+    const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
       formatVersion: idProvider.majorFormatVersion,
       location: this.tree.iModelTransform.toJSON(),
       contentFlags: idProvider.contentFlags,
-      omitEdges: !this.tree.hasEdges,
+      omitEdges: !this.tree.edgeOptions,
+      edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
+      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
+      sectionCut: this.tree.stringifiedSectionClip,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
@@ -372,7 +374,7 @@ class GraphicsTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const stream = new ByteStream(data.buffer);
+    const stream = ByteStream.fromUint8Array(data);
 
     const position = stream.curPos;
     const format = stream.nextUint32;
@@ -383,13 +385,19 @@ class GraphicsTile extends Tile {
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);
-    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, this.contentId);
+    const { iModel, modelId, is3d, containsTransformNodes } = tree;
+    const reader = ImdlReader.create({
+      stream, iModel, modelId, is3d, system, isCanceled, containsTransformNodes,
+      type: tree.batchType,
+      loadEdges: false !== tree.edgeOptions,
+      options: { tileId: this.contentId },
+    });
 
     let content: TileContent = { isLeaf: true };
     if (reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }

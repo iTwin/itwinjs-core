@@ -7,11 +7,14 @@
  */
 
 import memoize from "micro-memoize";
-import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExtendedHierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
+import { IDisposable, Logger } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import {
+  DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
+import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
@@ -21,7 +24,7 @@ import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentati
  * Properties for creating a `PresentationTreeDataProvider` instance.
  * @public
  */
-export interface PresentationTreeDataProviderProps {
+export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
 
@@ -48,26 +51,32 @@ export interface PresentationTreeDataProviderProps {
    */
   pagingSize?: number;
 
-  /**
-   * Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`.
-   * @beta
-   */
+  /** Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`. */
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
-   * By default the provider uses [[PresentationManager]] accessed through `Presentation.presentation` to request
+   * Callback which provides a way to customize how data is mapped between [Node]($presentation-common) and [TreeNodeItem]($components-react).
+   * @beta
+   */
+  customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
+
+  /**
+   * By default the provider uses [PresentationManager]($presentation-frontend) accessed through `Presentation.presentation` to request
    * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
    * making the provider request data from custom sources.
-   * @alpha
+   * @beta
    */
   dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
 }
 
-/** @alpha */
+/**
+ * Definitions of methods used by [[PresentationTreeDataProvider]] to get nodes' data.
+ * @beta
+ */
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
-  getNodesCount: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
-  getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{ nodes: Node[], count: number }>;
-  getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Promise<NodePathElement[]>;
+  getNodesCount: (requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
+  getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{ nodes: Node[], count: number }>;
+  getFilteredNodePaths: (requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection>) => Promise<NodePathElement[]>;
 }
 
 /**
@@ -78,26 +87,32 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _imodel: IModelConnection;
   private _rulesetRegistration: RulesetRegistrationHelper;
   private _pagingSize?: number;
-  private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
   private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
+  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
+  private _nodesCreateProps: CreateTreeNodeItemProps;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
     this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
     this._imodel = props.imodel;
     this._pagingSize = props.pagingSize;
-    this._appendChildrenCountForGroupingNodes = props.appendChildrenCountForGroupingNodes;
+    this._nodesCreateProps = {
+      appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes,
+      customizeTreeNodeItem: props.customizeTreeNodeItem,
+    };
+
     this._dataSource = {
-      getNodesCount: async (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Presentation.presentation.getNodesCount(requestOptions),
-      getNodesAndCount: async (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Presentation.presentation.getNodesAndCount(requestOptions),
-      getFilteredNodePaths: async (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Presentation.presentation.getFilteredNodePaths(requestOptions, filterText),
+      getNodesCount: async (requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey>) => Presentation.presentation.getNodesCount(requestOptions),
+      getNodesAndCount: async (requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>>) => Presentation.presentation.getNodesAndCount(requestOptions),
+      getFilteredNodePaths: async (requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection>) => Presentation.presentation.getFilteredNodePaths(requestOptions),
       ...props.dataSourceOverrides,
     };
     this._disposeVariablesChangeListener = Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(() => {
       this._getNodesAndCount.cache.values.length = 0;
       this._getNodesAndCount.cache.keys.length = 0;
     });
+    this._diagnosticsOptions = createDiagnosticsOptions(props);
   }
 
   /** Destructor. Must be called to clean up.  */
@@ -119,12 +134,13 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
-  /** Called to get extended options for node requests */
-  private createRequestOptions(parentKey: NodeKey | undefined): ExtendedHierarchyRequestOptions<IModelConnection, NodeKey> {
+  /** Called to get  options for node requests */
+  private createRequestOptions<TNodeKey = NodeKey>(parentKey: TNodeKey | undefined): HierarchyRequestOptions<IModelConnection, TNodeKey> {
     return {
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,
       ...(parentKey ? { parentKey } : undefined),
+      ...(this._diagnosticsOptions ? { diagnostics: this._diagnosticsOptions } : undefined),
     };
   }
 
@@ -165,29 +181,20 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _getNodesAndCount = memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<{ nodes: TreeNodeItem[], count: number }> => {
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
     const requestOptions = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions) };
-    const nodesCreateProps: CreateTreeNodeItemProps = {
-      appendChildrenCountForGroupingNodes: this._appendChildrenCountForGroupingNodes,
-    };
     const result = await this._dataSource.getNodesAndCount(requestOptions);
-    return { nodes: createTreeNodeItems(result.nodes, parentNode?.id, nodesCreateProps), count: result.count };
+    return { nodes: createTreeNodeItems(result.nodes, parentNode?.id, this._nodesCreateProps), count: result.count };
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**
    * Returns filtered node paths.
    * @param filter Filter.
    */
-  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
-    return this._dataSource.getFilteredNodePaths(this.createRequestOptions(undefined), filter);
-  };
-
-  /**
-   * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
-   */
-  public async loadHierarchy() {
-    return Presentation.presentation.loadHierarchy(this.createRequestOptions(undefined));
+  public async getFilteredNodePaths(filter: string): Promise<NodePathElement[]> {
+    return this._dataSource.getFilteredNodePaths({
+      ...this.createRequestOptions<never>(undefined),
+      filterText: filter,
+    });
   }
-
 }
 
 class MemoizationHelpers {

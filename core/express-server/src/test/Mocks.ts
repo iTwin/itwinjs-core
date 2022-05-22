@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@itwin/core-common";
 import * as http from "http";
 import * as sinon from "sinon";
 import { IModelJsExpressServer } from "../ExpressServer";
@@ -14,7 +14,7 @@ export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfigurati
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private protocolClass = class extends BentleyCloudRpcProtocol {
-    public pathPrefix = "randomPathPrefix";
+    public override pathPrefix = "randomPathPrefix";
     public info = FakeBentleyCloudRpcConfiguration.info;
   };
 
@@ -36,7 +36,7 @@ export class TestIModelJsExpressServer extends IModelJsExpressServer {
   public get expressApp() { return this._app; }
 
   // Wrap base initialize so we configure express app, but don't actually listen on any ports
-  public async initialize(port: number) {
+  public override async initialize(port: number) {
     const httpStub = sinon.stub(http, "createServer").returns(fakeHttpServer);
     const server = super.initialize(port);
     httpStub.restore();

@@ -1,0 +1,66 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-footer-message-message {
+  $min-width: 370px;
+  $min-height: 40px;
+  $border-width: 1px;
+  $icon-width: 45px;
+
+  min-width: $min-width;
+  min-height: $min-height;
+  display: flex;
+  background-color: $buic-background-control;
+  overflow: hidden;
+
+  border: {
+    style: solid;
+    width: $border-width;
+    radius: 5px;
+  }
+
+  ;
+
+  >.nz-icon {
+    color: $buic-foreground-body;
+    width: $icon-width;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.nz-status-information {
+    border-color: $buic-accessory-primary;
+
+    >.nz-icon {
+      background-color: $buic-accessory-primary;
+    }
+  }
+
+  &.nz-status-success {
+    border-color: $buic-accessory-success;
+
+    >.nz-icon {
+      background-color: $buic-accessory-success;
+    }
+  }
+
+  &.nz-status-error {
+    border-color: $buic-accessory-alert;
+
+    >.nz-icon {
+      background-color: $buic-accessory-alert;
+    }
+  }
+
+  &.nz-status-warning {
+    border-color: $buic-accessory-warning;
+
+    >.nz-icon {
+      background-color: $buic-accessory-warning;
+    }
+  }
+}

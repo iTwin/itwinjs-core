@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import * as moq from "typemoq";
+import { PageOptions } from "@itwin/components-react";
+import { BeEvent, Logger } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { CheckBoxState } from "@itwin/core-react";
+import { Node, RegisteredRuleset } from "@itwin/presentation-common";
 import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { PageOptions } from "@bentley/ui-components";
+  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, PromiseContainer, ResolvablePromise,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
@@ -46,6 +44,10 @@ describe("TreeDataProvider", () => {
     presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesManagerMock.object);
     rulesetVariablesManagerMock.setup((x) => x.onVariableChanged).returns(() => onVariableChanged);
     provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId });
+  });
+
+  afterEach(() => {
+    provider.dispose();
   });
 
   describe("dispose", () => {
@@ -160,8 +162,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves(0);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesCount: override } });
       await provider.getNodesCount(undefined);
-      // eslint-disable-next-line deprecation/deprecation
-      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 
@@ -270,7 +271,7 @@ describe("TreeDataProvider", () => {
     it("returns presentation manager result", async () => {
       const filter = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId }, filter))
+        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId, filterText: filter }))
         .returns(async () => [createRandomNodePathElement(), createRandomNodePathElement()])
         .verifiable();
       const actualResult = await provider.getFilteredNodePaths(filter);
@@ -282,21 +283,140 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves([]);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getFilteredNodePaths: override } });
       await provider.getFilteredNodePaths("test");
-      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 
   });
 
-  describe("loadHierarchy", () => {
+  describe("diagnostics", () => {
 
-    it("calls presentation manager", async () => {
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new PresentationTreeDataProvider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+
       presentationManagerMock
-        .setup(async (x) => x.loadHierarchy({ imodel: imodelMock.object, rulesetOrId: rulesetId }))
-        .returns(async () => { })
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler } }))
+        .returns(async () => 0)
         .verifiable();
-      await provider.loadHierarchy();
+      await provider.getNodesCount();
       presentationManagerMock.verifyAll();
+    });
+
+  });
+
+  describe("documentation snippets", () => {
+
+    function mockPresentationManager(extendedData: { [key: string]: any }) {
+      const node: Node = {
+        key: createRandomECInstancesNodeKey(),
+        label: createRandomLabelDefinition(),
+        extendedData,
+      };
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }))
+        .returns(async () => ({ nodes: [node], count: 1 }));
+    }
+
+    it("uses ExtendedDataRule to set tree item icon", async () => {
+      const providerProps = {
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+      };
+
+      // __PUBLISH_EXTRACT_START__ Presentation.TreeDataProvider.Customization.Icon
+      const dataProvider = new PresentationTreeDataProvider({
+        ...providerProps,
+        customizeTreeNodeItem: (treeNodeItem, node) => {
+          treeNodeItem.icon = node.extendedData?.iconName;
+        },
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      mockPresentationManager({ iconName: "custom-icon" });
+      const treeNodeItems = await dataProvider.getNodes();
+      expect(treeNodeItems).to.be.lengthOf(1).and.to.containSubset([
+        { icon: "custom-icon" },
+      ]);
+    });
+
+    it("uses ExtendedDataRule to set tree item checkbox", async () => {
+      const providerProps = {
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+      };
+
+      // __PUBLISH_EXTRACT_START__ Presentation.TreeDataProvider.Customization.Checkbox
+      const dataProvider = new PresentationTreeDataProvider({
+        ...providerProps,
+        customizeTreeNodeItem: (treeNodeItem, node) => {
+          treeNodeItem.isCheckboxVisible = node.extendedData?.showCheckbox;
+          treeNodeItem.checkBoxState = node.extendedData?.isChecked ? CheckBoxState.On : CheckBoxState.Off;
+          treeNodeItem.isCheckboxDisabled = node.extendedData?.disableCheckbox;
+        },
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      mockPresentationManager({
+        showCheckbox: true,
+        isChecked: true,
+        disableCheckbox: false,
+      });
+      const treeNodeItems = await dataProvider.getNodes();
+      expect(treeNodeItems).to.be.lengthOf(1).and.to.containSubset([
+        {
+          isCheckboxVisible: true,
+          checkBoxState: CheckBoxState.On,
+          isCheckboxDisabled: false,
+        },
+      ]);
+    });
+
+    it("uses ExtendedDataRule to set tree item style", async () => {
+      const providerProps = {
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+      };
+
+      // __PUBLISH_EXTRACT_START__ Presentation.TreeDataProvider.Customization.Style
+      const dataProvider = new PresentationTreeDataProvider({
+        ...providerProps,
+        customizeTreeNodeItem: (treeNodeItem, node) => {
+          treeNodeItem.style = {
+            isBold: node.extendedData?.isBold,
+            isItalic: node.extendedData?.isItalic,
+            colorOverrides: {
+              color: node.extendedData?.color,
+            },
+          };
+        },
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      mockPresentationManager({
+        isBold: true,
+        isItalic: false,
+        color: 255,
+      });
+      const treeNodeItems = await dataProvider.getNodes();
+      expect(treeNodeItems).to.be.lengthOf(1).and.to.containSubset([
+        {
+          style: {
+            isBold: true,
+            isItalic: false,
+            colorOverrides: {
+              color: 255,
+            },
+          },
+        },
+      ]);
     });
 
   });

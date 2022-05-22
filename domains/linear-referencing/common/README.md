@@ -1,10 +1,10 @@
-# @bentley/linear-referencing-common
+# @itwin/linear-referencing-common
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The **@bentley/linear-referencing-common** package contains classes that frontend and backend code can use to work with the LinearReferencing schema.
+The **@itwin/linear-referencing-common** package contains classes that frontend and backend code can use to work with the LinearReferencing schema.
 
 ## Documentation
 

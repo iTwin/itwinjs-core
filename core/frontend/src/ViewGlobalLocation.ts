@@ -6,21 +6,23 @@
  * @module Views
  */
 
-import { Point3d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, GlobeMode } from "@bentley/imodeljs-common";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { Cartographic, GlobeMode } from "@itwin/core-common";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
 /** Describes a rectangular area of the earth using cartographic data structures.
- * @alpha
+ * @public
+ * @extensions
  */
 export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartographic }
 
 /** Describes a location on the earth using cartographic data structures.
  * The viewed area of the location can be optionally specified.
  * The center of the location is specified with the center position.
- * @alpha
+ * @public
+ * @extensions
  */
 export interface GlobalLocation { center: Cartographic, area?: GlobalLocationArea }
 
@@ -55,8 +57,9 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
   return output;
 }
 
-/** Queries the actual elevation of a cartographic point on the globe.
- * @internal
+/** Queries the actual elevation of a cartographic point on the globe (using Bing elevation services)
+ * @public
+ * @extensions
  */
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
   const bingElevationProvider = new BingElevationProvider();
@@ -161,7 +164,7 @@ export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean,
   const view3d = viewport.view;
 
   const transitionDistance = view3d.lookAtGlobalLocation(eyeHeight, pitchAngleRadians, location);
-  viewport.synchWithView(true);
+  viewport.synchWithView();
 
   if (doAnimate)
     viewport.animateToCurrent(before, { animationTime: metersToRange(transitionDistance) });

@@ -7,20 +7,37 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { of } from "rxjs";
+import { Observable } from "rxjs/internal/Observable";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
-  PagedTreeNodeLoader, TreeModelSource, useDebouncedAsyncValue,
-} from "@bentley/ui-components";
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader,
+  TreeModelSource, useDebouncedAsyncValue,
+} from "@itwin/components-react";
 import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 
+class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> {
+  constructor(dataProvider: IPresentationTreeDataProvider) {
+    super(new TreeModelSource(), dataProvider);
+  }
+
+  protected load(): Observable<LoadedNodeHierarchy> {
+    const loadedNodeHierarchy: LoadedNodeHierarchy = {
+      hierarchyItems: [],
+      offset: 0,
+      parentId: "",
+    };
+    return of(loadedNodeHierarchy);
+  }
+}
+
 /**
- * Parameters for `useControlledTreeFiltering` hook
- * @beta
+ * Parameters for [[useControlledPresentationTreeFiltering]] hook
+ * @public
  */
-export interface ControlledTreeFilteringProps {
+export interface ControlledPresentationTreeFilteringProps {
   nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
   filter?: string;
   activeMatchIndex?: number;
@@ -31,16 +48,18 @@ export interface ControlledTreeFilteringProps {
  * If filter string is not provided or filtering is still in progress it returns supplied
  * model source and node loader.
  *
- * @note it is required for the tree to use [[IPresentationTreeDataProvider]].
- * @beta
+ * @public
  */
-export function useControlledTreeFiltering(props: ControlledTreeFilteringProps) {
+export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps) {
   const { filteredNodeLoader, isFiltering, matchesCount } = useFilteredNodeLoader(props.nodeLoader, props.filter);
+  const filteringInProgressNodeLoader = useMemo(() => {
+    return isFiltering ? new FilteringInProgressNodeLoader(props.nodeLoader.dataProvider) : undefined;
+  }, [isFiltering, props.nodeLoader.dataProvider]);
   const nodeHighlightingProps = useNodeHighlightingProps(props.filter, filteredNodeLoader, props.activeMatchIndex);
   return {
     nodeHighlightingProps,
-    filteredNodeLoader: filteredNodeLoader || props.nodeLoader,
-    filteredModelSource: filteredNodeLoader ? filteredNodeLoader.modelSource : props.nodeLoader.modelSource,
+    filteredNodeLoader: filteredNodeLoader || filteringInProgressNodeLoader || props.nodeLoader,
+    filteredModelSource: filteredNodeLoader?.modelSource || filteringInProgressNodeLoader?.modelSource || props.nodeLoader.modelSource,
     isFiltering,
     matchesCount,
   };

@@ -6,16 +6,16 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodeKey } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, StateTracker } from "@itwin/presentation-frontend";
+import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
 import { cleanup, renderHook } from "@testing-library/react-hooks";
-import { useExpandedNodesTracking, UseExpandedNodesTrackingProps } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";
-import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
-import { NodeKey } from "@bentley/presentation-common";
-import { mockPresentationManager } from "../../_helpers/UiComponents";
-import { Presentation, StateTracker } from "@bentley/presentation-frontend";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createLabelRecord } from "../../../presentation-components/common/Utils";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { useExpandedNodesTracking, UseExpandedNodesTrackingProps } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";
+import { mockPresentationManager } from "../../_helpers/UiComponents";
 
 interface TestTreeNodeItem extends TreeNodeItem {
   key: NodeKey;
@@ -55,7 +55,7 @@ describe("UseExpandedNodesTracking", () => {
     initialProps = {
       modelSource,
       dataProvider: dataProviderMock.object,
-      enableAutoUpdate: true,
+      enableNodesTracking: true,
     };
 
     const presentationMocks = mockPresentationManager();
@@ -68,11 +68,11 @@ describe("UseExpandedNodesTracking", () => {
     Presentation.terminate();
   });
 
-  it("does not add 'onModelChange' event listener if auto update is disabled", () => {
+  it("does not add 'onModelChange' event listener if nodes tracking is disabled", () => {
     const addListenerSpy = sinon.spy(modelSource.onModelChanged, "addListener");
     renderHook(
       useExpandedNodesTracking,
-      { initialProps: { ...initialProps, enableAutoUpdate: false } },
+      { initialProps: { ...initialProps, enableNodesTracking: false } },
     );
 
     expect(addListenerSpy).to.be.not.called;
@@ -124,6 +124,7 @@ describe("UseExpandedNodesTracking", () => {
       { initialProps },
     );
 
+    stateTrackerMock.reset();
     stateTrackerMock.setup(async (x) => x.onExpandedNodesChanged(imodelMock.object, rulesetId, moq.It.isAnyString(), [])).verifiable(moq.Times.once());
     modelSource.modifyModel((model) => {
       model.setChildren(undefined, [createTreeModelInput(node, false)], 0);

@@ -3,13 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 const dtaMobileMain = (async () => {
+  const opts: MobileHostOpts = {
+    mobileHost: {
+      rpcInterfaces: getRpcInterfaces(),
+    },
+  };
+
   // Initialize the backend
-  await initializeDtaBackend();
-  MobileRpcManager.initializeImpl(getRpcInterfaces());
+  await initializeDtaBackend(opts);
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

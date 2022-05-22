@@ -59,7 +59,7 @@ You can configure VS Code to use this schema to provide intellisense (and allow 
   "json.schemas": [
     {
       "fileMatch": [ "certa.json" ],
-      "url": "./node_modules/@bentley/certa/certa.schema.json"
+      "url": "./node_modules/@itwin/certa/certa.schema.json"
     },
   ],
 ```
@@ -134,7 +134,7 @@ The following is an example VS Code `launch.json` for debugging Certa tests:
       "name": "Certa Tests (backend)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/@bentley/certa/bin/certa",
+      "program": "${workspaceFolder}/node_modules/@itwin/certa/bin/certa",
       "args": [ "--debug", "-r", "${input:integrationTestEnvironment}" ],
       "outputCapture": "std", // Needed to correctly print test results to Debug Console
       "port": 5858 // Must match ports.debugging in certa.json

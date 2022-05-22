@@ -17,9 +17,8 @@ export interface GraphicBranchFrustum {
   };
 }
 
-import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
+import { disposeArray, IDisposable } from "@itwin/core-bentley";
+import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -28,44 +27,83 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 
+/** Special values of [[GraphicBranch.animationNodeId]].
+ * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.
+ * @internal
+ */
+export enum AnimationNodeId {
+  Untransformed = 0xffffffff,
+}
+
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
  * and a transform, symbology overrides, and clip volume which are to be applied when rendering them.
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
  * @public
+ * @extensions
  */
 export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
   public readonly ownsEntries: boolean;
-  public viewFlagOverrides = new ViewFlagOverrides();
+  /** Selectively overrides the view's [ViewFlags]($common) while drawing graphics within this branch. The default overrides nothing.
+   * @see [[setViewFlagOverrides]].
+   */
+  public viewFlagOverrides: ViewFlagOverrides = {};
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
-  /** Optional animation branch Id.
+  /** Optional animation branch Id that incorporates the model Id and, for element timelines, the batch Id.
    * @internal
    */
   public animationId?: string;
+  /** Identifies the node in the [RenderSchedule.Script]($backend) with which this branch is associated.
+   * @internal
+   */
+  public animationNodeId?: AnimationNodeId | number;
 
   /** Constructor
    * @param ownsEntries If true, when this branch is [[dispose]]d, all of the [[RenderGraphic]]s it contains will also be disposed.
    */
-  public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
+  public constructor(ownsEntries: boolean = false) {
+    this.ownsEntries = ownsEntries;
+  }
 
   /** Add a graphic to this branch. */
-  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  /** @internal */
-  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this.viewFlagOverrides.apply(flags.clone(out)); }
-  /** @internal */
-  public setViewFlags(flags: ViewFlags): void { this.viewFlagOverrides.overrideAll(flags); }
-  /** @internal */
-  public setViewFlagOverrides(ovr: ViewFlagOverrides): void { this.viewFlagOverrides.copyFrom(ovr); }
+  public add(graphic: RenderGraphic): void {
+    this.entries.push(graphic);
+  }
 
-  public dispose() { this.clear(); }
-  public get isEmpty(): boolean { return 0 === this.entries.length; }
+  /** Compute the view flags that result from applying this branch's [[viewFlagOverrides]] to the input flags.
+   * @param flags The input view flags, e.g., from the view's [[DisplayStyleState]].
+   * @returns The result of applying [[viewFlagOverrides]] to `flags`.
+   */
+  public getViewFlags(flags: ViewFlags): ViewFlags {
+    return flags.override(this.viewFlagOverrides);
+  }
 
-  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[GraphicBranch.ownsEntries]] flag is set, also disposes of them. */
+  /** Set [[viewFlagOverrides]] to override **all** ViewFlags as specified by `flags`. */
+  public setViewFlags(flags: ViewFlags): void {
+    this.viewFlagOverrides = { ...flags };
+  }
+
+  /** Change [[viewFlagOverrides]]. */
+  public setViewFlagOverrides(ovr: ViewFlagOverrides): void {
+    this.viewFlagOverrides = { ...ovr };
+  }
+
+  /** Disposes of all graphics in this branch, if and only if [[ownsEntries]] is true. */
+  public dispose() {
+    this.clear();
+  }
+
+  /** Returns true if this branch contains no graphics. */
+  public get isEmpty(): boolean {
+    return 0 === this.entries.length;
+  }
+
+  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[ownsEntries]] flag is set, also disposes of them. */
   public clear(): void {
     if (this.ownsEntries)
       disposeArray(this.entries);
@@ -81,37 +119,40 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 }
 
 /** Options passed to [[RenderSystem.createGraphicBranch]].
- * @internal
+ * @public
+ * @extensions
  */
 export interface GraphicBranchOptions {
+  /** Clip applied to the graphics in the branch. */
   clipVolume?: RenderClipVolume;
+  /** @internal */
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
+  /** Optionally replaces the view's hidden line settings when drawing the branch. */
   hline?: HiddenLine.Settings;
+  /** The iModel from which the graphics originate, if different than that associated with the view. */
   iModel?: IModelConnection;
+  /** @internal */
   frustum?: GraphicBranchFrustum;
+  /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
   appearanceProvider?: FeatureAppearanceProvider;
+  /** @internal Secondary planar classifiers (map layers) */
+  secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
 }
 
 /** Clip/Transform for a branch that are varied over time.
  * @internal
  */
-export class AnimationBranchState {
-  public readonly omit?: boolean;
-  public readonly transform?: Transform;
-  public readonly clip?: RenderClipVolume;
-  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) {
-    this.transform = transform;
-    this.clip = clip;
-    this.omit = omit;
-  }
-
-  public dispose(): void {
-    if (this.clip)
-      this.clip.dispose();
-  }
+export interface AnimationBranchState {
+  readonly clip?: RenderClipVolume;
+  readonly omit?: boolean;
 }
 
 /** Mapping from node/branch IDs to animation branch state
  * @internal
  */
-export type AnimationBranchStates = Map<string, AnimationBranchState>;
+export interface AnimationBranchStates {
+  /** Maps node Id to branch state. */
+  readonly branchStates: Map<string, AnimationBranchState>;
+  /** Ids of nodes that apply a transform. */
+  readonly transformNodeIds: ReadonlySet<number>;
+}

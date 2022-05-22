@@ -1,6 +1,545 @@
-# Change Log - @bentley/imodeljs-common
+# Change Log - @itwin/core-common
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added new additionalTransformPath property to GeodeticDatums
+- Introducing StatusCategory
+- Fix bugs in GeometryStreamIterator in which values for properties like color, transparency, and displayPriority were being ignored.
+- Added "getMassPropertiesPerCandidate" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately.
+- Added new grid file format identifier for OSTN02 and OSTN15
+- Add two new rpcinterfaces, hydrateViewState and getCustomViewState3dData
+- Improve edge generation for polyfaces that lack edge visibility information.
+- Add methods to validate ColorDefProps and color strings; fix failure to find duplicate color names.
+- Add support for Web RPC response compression.
+- Add extension API generation
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add support for map layers using model geometry.
+- Deprecate IModelReadRpcInterface.getViewThumbnail
+- Deprecate RenderMaterial.Params in favor of CreateRenderMaterialArgs (core-frontend).
+- Remove IModelDb.elementGeometryUpdate.
+- ElementGeometryBuilderParams
+- Web IPC fix (when reloading frontend).
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- Migrated from deprecated MapBox api.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Add support for producing larger tiles.
+- The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height.
+- improve concurrent query changes
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Added additional documentation for ecefLocation iniModel
+- Add support for indexed edges in tile graphics.
+- Added non-existent property to EntityProps to make the compiler discriminate between EntityProps and Entity.
+- Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings.
+- Clean up SkyBox and GroundPlane APIs.
+- improve getMetaData() and provide extended error codes
+- Added support to LightSettings for Fresnel effect.
+- Add new GeoServices class and first method to interpret WKT or complete GCS JSON."
+- GeoCoordStatus documentation added
+- getAccessToken always returns a token
+- Fix frustum translate method.
+- Make ViewFlags immutable. Simplify ViewFlagOverrides.
+- Added LOCAL_ELLIPSOID vertical datum identifier.
+- Added ability to convert iModel coordinates to or from any Geographic CRS
+- rename contextId -> iTwinId
+- MapLayerSettings.fromJSON, BaseLayerSettings.fromJSON and MapSubLayerSettings.fromJSON no longer return undefined.
+- Fix problem with RealityDataSourceKey string convertion
+- Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation
+- Removed internal tag from EGFBAccessors
+- Moved RealityDataAccessProps from core-frontend to core-common
+- FeatureOverrides now merge by default in case of conflicts.
+- rename to @itwin/core-common
+- Fix an import which would cause consumers of core-common to fail during build
+- move js-base64 from devDeps to deps
+- Improve conformance with the glTF 2.0 spec when reading glb chunks.
+- remove ClientRequestContext and its subclasses
+- Added AuthorizationClient
+- Add support for inverting planar clip mask (inside vs outside)
+- Remove deprecated APIs for 3.0.
+- Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps
+- Enhance RealityDataSource class
+- Replace usage of I18N with generic Localization interface.
+- GeometryContainmentRequestProps.clip and SnapRequestProps.viewFlags use stricter type than `any`.
+- removed deprecated apis
+- Move map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase.
+- remove IModelWriteRpcInterface
+- Rename AnalysisStyleScalar to AnalysisStyleThematic
+- Rename AnalysisStyleScalar to AnalysisStyleThematic.
+- remove ClientRequestContext.current
+- rework locks
+- Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation.
+- Deprecate RenderTexture.Params
+-  Renamed an iModel's parent container to iTwin
+- Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.
+- FeatureAppearance transparency override by default ignores render mode and transparency view flag.
+- Adding WebEditServer (test scenarios only for now)
+- Concurrency fix within web IPC transport system.
+- Add ViewFlags.wiremesh to control wiremesh display.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+### Updates
+
+- Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings.
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:39 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+### Updates
+
+- Backport from PR#2451 enable reprojection and merge
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+### Updates
+
+- Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their  own azure environment.
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+### Updates
+
+- Add a new property to ContextRealityModelState named rdSourecKey that provide a new way of attaching Reality Data that will resolve tilesetUrl at runtime.
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+_Version update only_
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+### Updates
+
+- Added WhiteOnWhiteReversalSettings to control whether background color must be white for white-on-white reversal to apply.
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+### Updates
+
+- documentation fix
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- add ChangesetProps
+- Do not raise DisplayStyleSettings.onAnalysisStyleChanged event if the style did not actually change.
+- Addition of rdsUrl to OrbitGtBlobProps to support PointCloudModel OPC attachments
+- remove internal barrel-import usage
+- Added compare of numbers in Geographic CRS classes with tolerances.
+- update doc for new federationGuid policy
+- Add offset body operation for IFC connector.
+- Add frustum method to support reality tile reprojection
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Accomodated the inability to reverse Changesets when creating change summaries. 
+- Use ecef location calculated for projected models.  
+- Clean up and promote AnalysisStyle APIs.
+- Added support for section clip to ElementGraphicsRequestProps.
+- Add internal API for reconstructing TileOptions from tree and content Ids.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Include ECClass Ids in ChangedEntities; provide iteration via ChangedEntitiesIterable.
+- Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool.
+- Clean up and promote DisplayStyleSettings APIs for planar clip masks and reality model appearance overrides.
+- Clean up spatial classification APIs and promote to public.
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- Corrected geographicCoordinateSystem property from GeographicCRS to GeographicCRSProps in iModelProps"
+- Persist 'visible' property of map-layers.  Removed unused 'maxZoom' property on MapLayerProps.
+- Made MaplayerSource independent from MapLayerProps.
+- Add events for changes to IModel properties. Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
+- deprecate IModelVersion.evaluateChangeSet
+- Changed area to extent to conform with iModelHub public API
+- Promote various APIs to public. Remove useless TextureProps properties.
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- Promoted GCS model to public API
+- Make Ipc interfaces @public. Promote BriefcaseManager to public
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Remove useless TextureProps properties.
+- TextureLoadProps takes a maxTextureSize.
+- Removed unrequired sourceEllipsoidId and targetEllipsoidId from Geodetic Transforms
+- Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+### Updates
+
+- Synch map settings provider when base layer provider changes.
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Introduced Additional Transform for Geographic Coordinate Systems
+- wip: CreateElementTool. Fix not being able to pick decorations after changing files.
+- Allow RenderGraphic to be created from flatbuffers format geometry as well as json.
+- Fix incorrect transforms applied by schedule scripts.
+- Updated map layers release tags from alpha to beta.
+- Additional properties (source/target ellipsoid) and fallback transform for geodetic transforms"
+- Make changed elements public and add descriptions
+- Fixes to desktop/mobile authorization
+- Add shader based grid display.
+- Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport.
+- Clean up RenderSchedule API.
+- add placement to GeomtricElementProps
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+_Version update only_
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- FeatureOverrides can hide or override the symbology of unanimated nodes.
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Add documentation and links for each BisCodeSpec name.
+- Properly declare changeSetId variables as string.
+- Promote display-related APIs.
+- An ElementGraphicsRequest can supply a non-persistent geometry stream.
+- Add TypeScript wrappers for ExternalSource and related classes and relationships.
+- Fixes to desktop and iOS apps.
+- ClipStyle supports recolorization. Promote ModelClipGroups to public.
+- Promote thematic display API to public.
+- Optimize reality model processing.
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion
+- Update release tags.
+- Add support for forwarding txn events from backend to frontend.
+- Update api tags
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+_Version update only_
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+_Version update only_
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- added BriefcaseIdValue
+- rework Authentication to use IpcHost
+- add `bindings` member to EntityQueryParams
+- Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command.
+- Add IpcAppFunctions.queryConcurrency.
+- Memory leak fix
+- Decouple requesting tile content from cloud storage and from backend.
+- Support for transient errors
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Clarify and expand FeatureOverrides documentation.
+- The `Code` constructor now trims leading and trailing whitespace characters from the `value` property
+- The Code.getValue method has been deprecated in favor of the Code.value property
+- Fixed broken double angle bracket link syntax
+- refactor IModelApp/IModelHost startup
+- Add planar clip mask support.
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+_Version update only_
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -22,6 +561,16 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Mobile IPC fix
 - add IpcSocket
 - remove IpcInterface, getVersion() method is not needed
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+_Version update only_
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -338,7 +887,7 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Add support for cel-shaded views; promote many APIs, particularly display-related ones.
 - Map GeoCoordStatus to GeoServiceStatus so that it can be returned as error code in a RPC without colliding with existing codes.
 - Add Props interface
-- Move linear referencing domain types out to new @bentley/linear-referencing-common package.
+- Move linear referencing domain types out to new @itwin/linear-referencing-common package.
 - Add support for applying different clip volumes to groups of models in a spatial view.
 - Add PhysicalElementProps
 - Add PhysicalTypeProps

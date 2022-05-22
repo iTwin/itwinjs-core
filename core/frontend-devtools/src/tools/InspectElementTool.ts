@@ -7,12 +7,12 @@
  * @module Tools
  */
 
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
   NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -25,18 +25,19 @@ import { parseArgs } from "./parseArgs";
  *  - `copy=0|1` where 1 indicates the output should be copied to the clipboard. Defaults to true.
  *  - `refs=0|1` where 1 indicates that for geometry parts a list of all elements referencing that part should be included in the output. This is extremely computationally expensive.
  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
- * @alpha
+ * @beta
  */
 export class InspectElementTool extends PrimitiveTool {
-  public static toolId = "InspectElement";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 6; }
+  public static override toolId = "InspectElement";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 6; }
 
   private _options: GeometrySummaryOptions = {};
   private _elementIds?: Id64String[];
   private _modal = false;
   private _useSelection = false;
   private _doCopy = false;
+  private _explodeParts = false;
 
   constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]) {
     super();
@@ -58,20 +59,20 @@ export class InspectElementTool extends PrimitiveTool {
     CoreTools.outputPromptByKey(this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement");
   }
 
-  public autoLockTarget(): void { }
+  public override autoLockTarget(): void { }
 
-  public requireWriteableTarget(): boolean { return false; }
+  public override requireWriteableTarget(): boolean { return false; }
 
-  public onUnsuspend(): void {
+  public override async onUnsuspend() {
     this.showPrompt();
   }
 
-  public onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
 
     if (undefined !== this._elementIds)
-      this.process(this._elementIds).then(() => {
-        this.onReinitialize();
+      this.process(this._elementIds).then(async () => {
+        await this.onReinitialize();
       }).catch((err) => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
       });
@@ -80,7 +81,7 @@ export class InspectElementTool extends PrimitiveTool {
     }
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (this._useSelection) {
       if (undefined !== ev.viewport) {
         const ids: Id64Array = [];
@@ -94,7 +95,7 @@ export class InspectElementTool extends PrimitiveTool {
         else
           await this.process(ids);
 
-        this.onReinitialize();
+        await this.onReinitialize();
         return EventHandled.Yes;
       }
     }
@@ -108,26 +109,26 @@ export class InspectElementTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onReinitialize(): void {
+  public override async onReinitialize() {
     if (this._useSelection || undefined !== this._elementIds) {
-      this.exitTool();
+      await this.exitTool();
     } else {
-      this.onRestartTool();
+      await this.onRestartTool();
     }
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new InspectElementTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
+  public override async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
     return hit.isElementHit ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
@@ -138,7 +139,21 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      const str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      if (this._explodeParts) {
+        const regex = /^part id: (0x[a-f0-9]+)/gm;
+        const partIds = new Set<string>();
+        let match;
+        while (null !== (match = regex.exec(str)))
+          partIds.add(match[1]);
+
+        if (partIds.size > 0) {
+          request.elementIds = Array.from(partIds);
+          str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
+          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+        }
+      }
+
       if (this._doCopy)
         copyStringToClipboard(str);
 
@@ -167,13 +182,13 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", err.toString());
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", BentleyError.getErrorMessage(err));
     }
 
     IModelApp.notifications.outputMessage(messageDetails);
   }
 
-  public parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     const args = parseArgs(inputArgs);
     const ids = args.get("i");
     if (undefined !== ids)
@@ -213,6 +228,8 @@ export class InspectElementTool extends PrimitiveTool {
     const doCopy = args.getBoolean("c");
     if (undefined !== doCopy)
       this._doCopy = doCopy;
+
+    this._explodeParts = true === args.getBoolean("e");
 
     return this.run();
   }

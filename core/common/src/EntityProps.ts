@@ -6,14 +6,22 @@
  * @module Entities
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 
-/** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.
+/** The persistent format of an [Entity]($backend), also used as the "wire format" when transmitting information about entities
+ * between the backend and frontend.
+ * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
+ * no methods and no properties of `class` type.
  * @public
+ * @extensions
  */
 export interface EntityProps {
+  /** A non-existent property used to discriminate between [[EntityProps]] and [Entity]($backend).
+   * @see [Entity.isInstanceOfEntity]($backend).
+   */
+  readonly isInstanceOfEntity?: never;
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
@@ -24,6 +32,7 @@ export interface EntityProps {
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public
+ * @extensions
  */
 export interface SourceAndTarget {
   sourceId: Id64String;
@@ -32,12 +41,14 @@ export interface SourceAndTarget {
 
 /** Properties that are common to all types of link table ECRelationships
  * @public
+ * @extensions
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
+ * @extensions
  */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */
@@ -52,6 +63,10 @@ export interface EntityQueryParams {
   limit?: number;
   /** Optional "OFFSET" clause. Only valid if Limit is also present. */
   offset?: number;
+  /** Bindings for parameterized values.
+   * @see [[ECSqlStatement.bindValues]]
+   */
+  bindings?: any[] | object;
 }
 
 /** The primitive types of an Entity property.

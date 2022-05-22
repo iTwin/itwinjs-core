@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Guid } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "SimpleHierarchy",
-  supportedSchemas: { schemaNames: ["Generic", "BisCore"] },
   rules: [{
     ruleType: RuleTypes.RootNodes,
     specifications: [{

@@ -5,25 +5,22 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { HiliteSetProvider, Presentation, PresentationManager, RulesetManager } from "../../presentation-frontend";
+import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
+import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
 
   beforeEach(() => {
     imodelMock.reset();
     presentationManagerMock.reset();
-    rulesetsManagerMock.reset();
     Presentation.setPresentationManager(presentationManagerMock.object);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
   });
 
   afterEach(() => {
@@ -48,14 +45,6 @@ describe("HiliteSetProvider", () => {
       provider = HiliteSetProvider.create({ imodel: imodelMock.object });
     });
 
-    it("registers ruleset only on first call", async () => {
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.never());
-      await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-      await provider.getHiliteSet(new KeySet());
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-    });
-
     it("memoizes result", async () => {
       // note: listening on private method
       const spy = sinon.stub(provider as any, "getRecords").returns(Promise.resolve([]));
@@ -78,8 +67,7 @@ describe("HiliteSetProvider", () => {
     it("creates result for transient element keys", async () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
-      // eslint-disable-next-line deprecation/deprecation
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet()))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.isEmpty))).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;
@@ -90,7 +78,7 @@ describe("HiliteSetProvider", () => {
     it("creates result for persistent element keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createRandomDescriptor(), [
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
@@ -105,7 +93,7 @@ describe("HiliteSetProvider", () => {
     it("creates result for model keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createRandomDescriptor(), [
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
@@ -120,7 +108,7 @@ describe("HiliteSetProvider", () => {
     it("creates result for subcategory keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createRandomDescriptor(), [
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
       ]);
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
@@ -139,7 +127,7 @@ describe("HiliteSetProvider", () => {
       const resultModelKey = createRandomECInstanceKey();
       const resultSubCategoryKey = createRandomECInstanceKey();
       const resultElementKey = createRandomECInstanceKey();
-      const resultContent = new Content(createRandomDescriptor(), [
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([resultModelKey], "", "", undefined, {}, {}, [], { isModel: true }),
         new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
@@ -161,7 +149,7 @@ describe("HiliteSetProvider", () => {
 
       // first request returns content with an element key
       const elementKey = createRandomECInstanceKey();
-      const resultContent1 = new Content(createRandomDescriptor(), [
+      const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => resultContent1);
@@ -172,7 +160,7 @@ describe("HiliteSetProvider", () => {
       // third request returns content with subcategory and model keys
       const subCategoryKey = createRandomECInstanceKey();
       const modelKey = createRandomECInstanceKey();
-      const resultContent2 = new Content(createRandomDescriptor(), [
+      const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), [
         new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);

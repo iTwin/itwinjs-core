@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, IModelError, RpcRoutingToken } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, RpcRoutingToken } from "@itwin/core-common";
 
 /**
  * Controls the RPC routing for an iModel connection.

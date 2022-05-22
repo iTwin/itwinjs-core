@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "$schema": "../../node_modules/@itwin/presentation-common/Ruleset.schema.json",
   "id": "IModelIndex",
   "rules": [
     {
@@ -36,19 +36,15 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubjectOwnsSubjects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "SubjectOwnsSubjects"
+              },
+              "direction": "Forward"
+            }
+          ],
           "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
@@ -56,19 +52,15 @@
         },
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubjectOwnsSubjects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "SubjectOwnsSubjects"
+              },
+              "direction": "Forward"
+            }
+          ],
           "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\"",
           "hideExpression": "NOT ThisNode.HasChildren ANDALSO NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.isContentModel)",
           "groupByClass": false,
@@ -112,14 +104,16 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelModelsElement"
-              },
-              "requiredDirection": "Forward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "InformationPartitionElement"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelModelsElement"
+                },
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "InformationPartitionElement"
+                },
+                "direction": "Forward"
               },
               "alias": "partition",
               "isRequired": true
@@ -154,14 +148,16 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelModelsElement"
-              },
-              "requiredDirection": "Forward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "InformationPartitionElement"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelModelsElement"
+                },
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "InformationPartitionElement"
+                },
+                "direction": "Forward"
               },
               "alias": "partition",
               "isRequired": true
@@ -194,19 +190,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ModelOwnsSubModel"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GeometricModel3d"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelOwnsSubModel"
+              },
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "GeometricModel3d"
+              },
+              "direction": "Forward"
+            }
+          ],
           "instanceFilter": "NOT this.IsPrivate AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "groupByClass": false,
           "groupByLabel": false

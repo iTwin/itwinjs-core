@@ -7,10 +7,10 @@
  * @module Widgets
  */
 
-import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
@@ -58,7 +58,7 @@ function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.S
 
 function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Statistics): number {
   const trees = new Set<TileTree>();
-  const selectedTiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  const selectedTiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
   if (selectedTiles) {
     for (const tile of selectedTiles) {
       trees.add(tile.tree);
@@ -97,7 +97,9 @@ const calcMem: CalcMem[] = [
   },
   (stats, vp) => {
     vp.target.renderSystem.collectStatistics(stats);
-    IModelApp.viewManager.forEachViewport((x) => x.target.collectStatistics(stats));
+    for (const x of IModelApp.viewManager)
+      x.target.collectStatistics(stats);
+
     return collectStatisticsForAllTileTrees(vp, stats);
   },
 ];
@@ -214,8 +216,8 @@ export class MemoryTracker {
     row1.appendChild(cell11);
     table.appendChild(row1);
 
-    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments", "Thematic Textures"]);
-    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain"]);
+    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Edge Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments", "Thematic Textures"]);
+    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Indexed Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain", "Reality Mesh"]);
     this._totalElem = this.addStatistics(cell10);
     this._totalTreesElem = this.addStatistics(cell11);
 

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
 import { RenderPlan } from "../RenderPlan";
 import { ColorInfo } from "./ColorInfo";
 import { FloatRgb, FloatRgba } from "./FloatRGBA";
@@ -22,30 +22,31 @@ export class StyleUniforms {
   private readonly _bgRgb = FloatRgb.fromColorDef(this._bgColor);
   private _monoColor = ColorDef.white;
   private readonly _monoRgb = FloatRgb.fromColorDef(this._monoColor);
-  private _isWhiteBackground = true;
+  private _wantWoWReversal = true;
+  private _wowReversalSettings = WhiteOnWhiteReversalSettings.fromJSON();
+  private _bgIntensity = 0;
 
   public syncKey = 0;
 
   public update(plan: RenderPlan): void {
-    if (this._bgColor.equals(plan.bgColor) && this._monoColor.equals(plan.monoColor))
+    if (this._bgColor.equals(plan.bgColor) && this._monoColor.equals(plan.monoColor) && this._wowReversalSettings.equals(plan.whiteOnWhiteReversal))
       return;
 
     desync(this);
 
     this._monoColor = plan.monoColor;
     this._monoRgb.setColorDef(plan.monoColor);
+    this._wowReversalSettings = plan.whiteOnWhiteReversal;
 
-    this.updateBackgroundColor(plan.bgColor, true);
+    this.updateBackgroundColor(plan.bgColor);
   }
 
-  private updateBackgroundColor(bgColor: ColorDef, blackIfTransparent: boolean): void {
+  private updateBackgroundColor(bgColor: ColorDef): void {
     this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
-
-    // When rendering 3d view attachments, we set alpha to 0 to allow us to discard background pixels.
-    // When rendering planar classifiers or texture drapes, we set background color to fully-transparent black - a 0 in alpha channel indicates unclassified regions.
-    this._bgRgb.setColorDef((blackIfTransparent && this._bgRgba.alpha === 0) ? ColorDef.black : bgColor);
-    this._isWhiteBackground = this._bgRgb.isWhite;
+    this._bgRgb.setColorDef(bgColor);
+    this._wantWoWReversal = this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
+    this._bgIntensity = this._bgRgb.red * 0.3 + this._bgRgb.green * 0.59 + this._bgRgb.blue * 0.11;
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {
@@ -53,7 +54,7 @@ export class StyleUniforms {
       return;
 
     desync(this);
-    this.updateBackgroundColor(bgColor, false);
+    this.updateBackgroundColor(bgColor);
   }
 
   // vec4
@@ -72,6 +73,10 @@ export class StyleUniforms {
   public bindMonochromeRgb(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       this._monoRgb.bind(uniform);
+  }
+
+  public get backgroundIntensity(): number {
+    return this._bgIntensity;
   }
 
   public get backgroundTbgr(): number {
@@ -94,8 +99,8 @@ export class StyleUniforms {
     this._bgRgba.clone(result);
   }
 
-  public get isWhiteBackground(): boolean {
-    return this._isWhiteBackground;
+  public get wantWoWReversal(): boolean {
+    return this._wantWoWReversal;
   }
 
   public get backgroundColorInfo(): ColorInfo {

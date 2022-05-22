@@ -8,6 +8,7 @@
  */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Matrix4d } from "../geometry4d/Matrix4d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -457,6 +458,16 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
     return result;
   }
+    /** multiply each point by the transform, replace values. */
+  public static multiplyTransformInPlace(transform: Transform, data: GrowableXYZArray[] | GrowableXYZArray) {
+    if (Array.isArray(data)) {
+      for (const d of data)
+        d.multiplyTransformInPlace(transform);
+    } else {
+      data.multiplyTransformInPlace(transform);
+    }
+  }
+
   /** multiply each point by the transform, replace values. */
   public multiplyTransformInPlace(transform: Transform) {
     const data = this._data;
@@ -562,6 +573,21 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return numFail === 0;
   }
 
+  /** multiply each xyz (as a point) by a homogeneous matrix and update as the normalized point
+   *
+   */
+  public multiplyMatrix4dAndQuietRenormalizeMatrix4d(matrix: Matrix4d) {
+    const data = this._data;
+    const nDouble = this.float64Length;
+    const xyz1 = Point3d.create();
+    for (let i = 0; i + 2 <= nDouble; i += 3) {
+      matrix.multiplyXYZWQuietRenormalize(data[i], data[i + 1], data[i + 2], 1.0, xyz1);
+      data[i] = xyz1.x;
+      data[i + 1] = xyz1.y;
+      data[i + 2] = xyz1.z;
+    }
+  }
+
   /** multiply each point by the transform, replace values. */
   public tryTransformInverseInPlace(transform: Transform): boolean {
     const data = this._data;
@@ -602,7 +628,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
   }
   /** get range of points. */
-  public getRange(transform?: Transform): Range3d {
+  public override getRange(transform?: Transform): Range3d {
     const range = Range3d.createNull();
     this.extendRange(range, transform);
     return range;
@@ -645,6 +671,26 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         return false;
     return true;
   }
+  /**
+   * * If not already closed, push a copy of the first point.
+   * * If already closed within tolerance, force exact copy
+   * * otherwise leave unchanged.
+   */
+  public forceClosure(tolerance: number = Geometry.smallMetricDistance) {
+    const d = this.distanceIndexIndex(0, this.length - 1);
+    // leave the empty array alone.
+    // Note that singleton will generate 0 distance and do nothing.
+    if (d === undefined) {
+    } else if (d > tolerance)
+      this.pushXYZ(this._data[0], this._data[1], this._data[2]);
+    else if (d > 0) {
+      // overwrite last point with exact exact first point
+      const i0 = this._data.length - 3;
+      for (let i = 0; i < 3; i++)
+        this._data[i0 + i] = this._data[i];
+    }
+  }
+
   /** Compute a point at fractional coordinate between points i and j */
   public interpolate(i: number, fraction: number, j: number, result?: Point3d): Point3d | undefined {
     if (this.isIndexValid(i) && this.isIndexValid(j)) {

@@ -8,19 +8,18 @@ import { finalize } from "rxjs/internal/operators/finalize";
 import { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { BeUiEvent } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
-} from "@bentley/presentation-frontend";
+} from "@itwin/presentation-frontend";
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,

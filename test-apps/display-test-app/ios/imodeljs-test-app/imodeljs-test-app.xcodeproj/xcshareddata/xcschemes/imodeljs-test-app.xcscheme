@@ -50,13 +50,6 @@
             ReferencedContainer = "container:imodeljs-test-app.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "imjs_buddi_resolve_url_using_region"
-            value = "102"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

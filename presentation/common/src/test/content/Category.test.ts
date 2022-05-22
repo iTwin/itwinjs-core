@@ -4,24 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CategoryDescription } from "../../presentation-common/content/Category";
-import { createRandomCategory, createRandomCategoryJSON } from "../_helpers/random";
+import { createTestCategoryDescription } from "../_helpers/Content";
 
 describe("CategoryDescription", () => {
 
   describe("toJSON", () => {
 
     it("returns valid JSON for category without parent", () => {
-      const category = { ...createRandomCategory(), parent: undefined };
-      expect(CategoryDescription.toJSON(category)).to.deep.eq({
-        ...category,
-      });
+      const category = createTestCategoryDescription({ parent: undefined });
+      expect(CategoryDescription.toJSON(category)).to.not.haveOwnProperty("parent");
     });
 
     it("returns valid JSON for category with parent", () => {
-      const category = { ...createRandomCategory(), parent: createRandomCategory() };
+      const category = createTestCategoryDescription({ parent: createTestCategoryDescription() });
       expect(CategoryDescription.toJSON(category)).to.deep.eq({
         ...category,
-        parent: category.parent.name,
+        parent: category.parent!.name,
       });
     });
 
@@ -30,11 +28,11 @@ describe("CategoryDescription", () => {
   describe("listFromJSON", () => {
 
     it("creates categories and sets up correct parent-child relationships", () => {
-      const r1 = { ...createRandomCategoryJSON(), name: "r1", parent: undefined };
-      const c11 = { ...createRandomCategoryJSON(), name: "c11", parent: "r1" };
-      const c12 = { ...createRandomCategoryJSON(), name: "c12", parent: "r1" };
-      const c121 = { ...createRandomCategoryJSON(), name: "c121", parent: "c12" };
-      const r2 = { ...createRandomCategoryJSON(), name: "r2", parent: undefined };
+      const r1 = { ...createTestCategoryDescription({ name: "r1" }), parent: undefined };
+      const c11 = { ...createTestCategoryDescription({ name: "c11" }), parent: "r1" };
+      const c12 = { ...createTestCategoryDescription({ name: "c12" }), parent: "r1" };
+      const c121 = { ...createTestCategoryDescription({ name: "c121" }), parent: "c12" };
+      const r2 = { ...createTestCategoryDescription({ name: "r2" }), parent: undefined };
       const list = [r1, r2, c121, c11, c12]; // put them in random order
       const categories = CategoryDescription.listFromJSON(list);
       expect(categories.length).to.eq(5);

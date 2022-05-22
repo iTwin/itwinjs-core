@@ -6,16 +6,16 @@
  * @module Tools
  */
 
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
 import {
-  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
-import { AccuDraw } from "../AccuDraw";
+  DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
+} from "@itwin/appui-abstract";
+import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
@@ -24,7 +24,7 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
-import { Animator, ViewChangeOptions } from "../ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
@@ -88,6 +88,7 @@ const inertialDampen = (pt: Vector3d) => {
 
 /** An InteractiveTool that manipulates a view.
  * @public
+ * @extensions
  */
 export abstract class ViewTool extends InteractiveTool {
   public static translate(val: string) { return CoreTools.translate(`View.${val}`); }
@@ -95,31 +96,31 @@ export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
-  public run(..._args: any[]): boolean {
+  public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
-      IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
+      IModelApp.notifications.outputPromptByKey("iModelJs:Viewing.NotDuringMarkup");
       return false;
     }
 
-    if (!toolAdmin.onInstallTool(this))
+    if (!await toolAdmin.onInstallTool(this))
       return false;
 
-    toolAdmin.startViewTool(this);
-    toolAdmin.onPostInstallTool(this);
+    await toolAdmin.startViewTool(this);
+    await toolAdmin.onPostInstallTool(this);
     return true;
   }
 
   public constructor(public viewport?: ScreenViewport) {
     super();
   }
-  public async onResetButtonUp(_ev: BeButtonEvent) {
-    this.exitTool();
+  public override async onResetButtonUp(_ev: BeButtonEvent) {
+    await this.exitTool();
     return EventHandled.Yes;
   }
 
   /** Do not override. */
-  public exitTool(): void { IModelApp.toolAdmin.exitViewTool(); }
+  public async exitTool() { return IModelApp.toolAdmin.exitViewTool(); }
   public static showPrompt(prompt: string) {
     IModelApp.notifications.outputPrompt(ViewTool.translate(prompt));
   }
@@ -148,8 +149,8 @@ export abstract class ViewingToolHandle {
   public onWheel(_ev: BeWheelEvent): boolean { return false; }
   public onTouchStart(_ev: BeTouchEvent): boolean { return false; }
   public onTouchEnd(_ev: BeTouchEvent): boolean { return false; }
-  public onTouchComplete(_ev: BeTouchEvent): boolean { return false; }
-  public onTouchCancel(_ev: BeTouchEvent): boolean { return false; }
+  public async onTouchComplete(_ev: BeTouchEvent): Promise<boolean> { return false; }
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<boolean> { return false; }
   public onTouchMove(_ev: BeTouchEvent): boolean { return false; }
   public onTouchMoveStart(_ev: BeTouchEvent, _startEv: BeTouchEvent): boolean { return false; }
   public onTouchTap(_ev: BeTouchEvent): boolean { return false; }
@@ -176,7 +177,7 @@ export abstract class ViewingToolHandle {
   protected changeFocusFromDepthPoint() {
     if (undefined !== this._depthPoint) {
       const view = this.viewTool.viewport!.view;
-      if (view.isCameraEnabled())
+      if (view.is3d() && view.isCameraOn)
         view.changeFocusFromPoint(this._depthPoint); // set the focus distance to the depth point
     }
   }
@@ -295,6 +296,7 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport.
  * @public
+ * @extensions
  */
 export abstract class ViewManip extends ViewTool {
   /** @internal */
@@ -319,7 +321,7 @@ export abstract class ViewManip extends ViewTool {
     this.changeViewport(viewport);
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     this.viewHandles.drawHandles(context);
     this.previewDepthPoint(context);
   }
@@ -377,7 +379,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   public pickDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
     if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
-      ev.viewport.setFlashed(undefined, 0.0);
+      ev.viewport.flashedId = undefined;
 
     this.clearDepthPoint();
     if (isPreview && this.inDynamicUpdate)
@@ -416,7 +418,7 @@ export abstract class ViewManip extends ViewTool {
     return (isValidDepth || isPreview ? result.plane.getOriginRef() : undefined);
   }
 
-  public onReinitialize(): void {
+  public override async onReinitialize() {
     if (undefined !== this.viewport) {
       this.viewport.synchWithView(); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
@@ -430,7 +432,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.onReinitialize();
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Tool was started in "drag required" mode, don't advance tool state and wait to see if we get the start drag event.
     if ((0 === this.nPts && this.isDraggingRequired && !this.isDragging) || undefined === ev.viewport)
       return EventHandled.No;
@@ -449,27 +451,27 @@ export abstract class ViewManip extends ViewTool {
     if (this.nPts > 1) {
       this.inDynamicUpdate = false;
       if (this.processPoint(ev, false) && this.oneShot)
-        this.exitTool();
+        await this.exitTool();
       else
-        this.onReinitialize();
+        await this.onReinitialize();
     }
 
     return EventHandled.Yes;
   }
 
-  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     if (this.nPts <= 1 && this.isDraggingRequired && !this.isDragging && this.oneShot)
-      this.exitTool();
+      await this.exitTool();
 
     return EventHandled.No;
   }
 
-  public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
+  public override async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
     if (this.viewHandles.onWheel(ev)) // notify handles that wheel has rolled.
       return EventHandled.Yes;
 
-    IModelApp.toolAdmin.processWheelEvent(ev, false); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.toolAdmin.processWheelEvent(ev, false);
     return EventHandled.Yes;
   }
 
@@ -488,18 +490,18 @@ export abstract class ViewManip extends ViewTool {
     this.isDragging = true;
 
     if (0 === this.nPts)
-      this.onDataButtonDown(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.onDataButtonDown(ev);
 
     return EventHandled.Yes;
   }
 
-  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (BeButton.Data !== ev.button)
       return EventHandled.No;
     return this.startHandleDrag(ev);
   }
 
-  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     // NOTE: To support startHandleDrag being called by IdleTool for middle button drag, check inHandleModify and not the button type...
     if (!this.inHandleModify)
       return EventHandled.No;
@@ -507,7 +509,7 @@ export abstract class ViewManip extends ViewTool {
     return (0 === this.nPts) ? EventHandled.Yes : this.onDataButtonDown(ev);
   }
 
-  public async onMouseMotion(ev: BeButtonEvent) {
+  public override async onMouseMotion(ev: BeButtonEvent) {
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
 
@@ -521,12 +523,13 @@ export abstract class ViewManip extends ViewTool {
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
-        ev.viewport.setFlashed(currSourceId, 0.25);
+        ev.viewport.flashedId = currSourceId;
+
       ev.viewport.invalidateDecorations();
     }
   }
 
-  public async onTouchStart(ev: BeTouchEvent): Promise<void> {
+  public override async onTouchStart(ev: BeTouchEvent): Promise<void> {
     if (0 === this.nPts && this.viewHandles.testHit(ev.viewPoint))
       this.viewHandles.focusHitHandle();
     const focusHandle = this.viewHandles.focusHandle;
@@ -534,29 +537,29 @@ export abstract class ViewManip extends ViewTool {
       focusHandle.onTouchStart(ev);
   }
 
-  public async onTouchEnd(ev: BeTouchEvent): Promise<void> {
+  public override async onTouchEnd(ev: BeTouchEvent): Promise<void> {
     const focusHandle = this.viewHandles.focusHandle;
     if (undefined !== focusHandle)
       focusHandle.onTouchEnd(ev);
   }
 
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
     const focusHandle = this.viewHandles.focusHandle;
-    if (undefined !== focusHandle && focusHandle.onTouchComplete(ev))
+    if (undefined !== focusHandle && await focusHandle.onTouchComplete(ev))
       return;
     if (this.inHandleModify)
       return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
   }
 
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
     const focusHandle = this.viewHandles.focusHandle;
-    if (undefined !== focusHandle && focusHandle.onTouchCancel(ev))
+    if (undefined !== focusHandle && await focusHandle.onTouchCancel(ev))
       return;
     if (this.inHandleModify)
       return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
   }
 
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> {
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
     const focusHandle = this.viewHandles.focusHandle;
     if (undefined !== focusHandle && focusHandle.onTouchMove(ev))
       return;
@@ -564,7 +567,7 @@ export abstract class ViewManip extends ViewTool {
       return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
   }
 
-  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const focusHandle = this.viewHandles.focusHandle;
     if (undefined !== focusHandle && focusHandle.onTouchMoveStart(ev, startEv))
       return EventHandled.Yes;
@@ -573,26 +576,26 @@ export abstract class ViewManip extends ViewTool {
     return this.inHandleModify ? EventHandled.Yes : EventHandled.No;
   }
 
-  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
+  public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
     const focusHandle = this.viewHandles.focusHandle;
     if (undefined !== focusHandle && focusHandle.onTouchTap(ev))
       return EventHandled.Yes;
     return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; // Prevent IdleTool from converting single tap into data button down/up...
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
     const focusHandle = this.viewHandles.focusHandle;
     return (undefined !== focusHandle && focusHandle.onKeyTransition(wentDown, keyEvent) ? EventHandled.Yes : EventHandled.No);
   }
 
-  public async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<EventHandled> {
+  public override async onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<EventHandled> {
     const focusHandle = this.viewHandles.focusHandle;
     return (undefined !== focusHandle && focusHandle.onModifierKeyTransition(wentDown, modifier, event) ? EventHandled.Yes : EventHandled.No);
   }
 
-  public onPostInstall(): void {
-    super.onPostInstall();
-    this.onReinitialize(); // Call onReinitialize now that tool is installed.
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    await this.onReinitialize(); // Call onReinitialize now that tool is installed.
   }
 
   /** @beta */
@@ -625,7 +628,7 @@ export abstract class ViewManip extends ViewTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public onCleanup(): void {
+  public override async onCleanup() {
     let restorePrevious = false;
 
     if (this.inDynamicUpdate) {
@@ -768,15 +771,8 @@ export abstract class ViewManip extends ViewTool {
     const vp = this.viewport;
     if (!vp)
       return false;
-    const testPtView = vp.worldToView(testPt);
-    const frustum = vp.getFrustum(CoordSystem.View);
 
-    const screenRange = Point3d.create(
-      frustum.points[Npc._000].distance(frustum.points[Npc._100]),
-      frustum.points[Npc._000].distance(frustum.points[Npc._010]),
-      frustum.points[Npc._000].distance(frustum.points[Npc._001]));
-
-    return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
+    return vp.isPointVisibleXY(testPt);
   }
 
   /** @internal */
@@ -791,7 +787,7 @@ export abstract class ViewManip extends ViewTool {
     return range;
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
     const aspect = viewport.viewRect.aspect;
     viewport.view.lookAtVolume(range, aspect, options);
@@ -800,14 +796,13 @@ export abstract class ViewManip extends ViewTool {
   }
 
   /** @internal */
-  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
 
-    if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
-      const view3d = viewport.view as ViewState3d;
-      const cartographicCenter = view3d.rootToCartographic(range.center);
+    if (viewport.view.isSpatialView() && animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
+      const cartographicCenter = viewport.view.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
-        const cartographicArea = rangeToCartographicArea(view3d, range);
+        const cartographicArea = rangeToCartographicArea(viewport.view, range);
         (async () => {
           await viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
           viewport.viewCmdTargetCenter = undefined;
@@ -822,7 +817,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean> {
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
     await viewport.zoomToElements(viewport.alwaysDrawn, options);
@@ -839,7 +834,7 @@ export abstract class ViewManip extends ViewTool {
       return ViewStatus.InvalidViewport;
 
     const result = (retainEyePoint && view.isCameraOn) ?
-      view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle) :
+      view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(), lensAngle }) :
       vp.turnCameraOn(lensAngle);
 
     if (result !== ViewStatus.Success)
@@ -911,7 +906,7 @@ export abstract class ViewManip extends ViewTool {
 /** ViewingToolHandle for modifying the view's target point for operations like rotate */
 class ViewTargetCenter extends ViewingToolHandle {
   public get handleType() { return ViewHandleType.TargetCenter; }
-  public checkOneShot(): boolean { return false; } // Don't exit tool after moving target in single-shot mode...
+  public override checkOneShot(): boolean { return false; } // Don't exit tool after moving target in single-shot mode...
   public firstPoint(ev: BeButtonEvent) {
     if (undefined === ev.viewport)
       return false;
@@ -964,7 +959,7 @@ class ViewTargetCenter extends ViewingToolHandle {
     context.addCanvasDecoration({ position, drawDecoration });
   }
 
-  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+  public override drawHandle(context: DecorateContext, hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport)
       return;
 
@@ -997,7 +992,7 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 
   /** @internal */
-  public needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean {
+  public override needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean {
     const focusHandle = this.viewTool.inHandleModify ? this.viewTool.viewHandles.focusHandle : undefined;
     return (undefined !== focusHandle && ViewHandleType.TargetCenter === focusHandle.handleType);
   }
@@ -1064,7 +1059,7 @@ abstract class HandleWithInertia extends ViewingToolHandle implements Animator {
 /** ViewingToolHandle for performing the "pan view" operation */
 class ViewPan extends HandleWithInertia {
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
+  public override getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
 
   public firstPoint(ev: BeButtonEvent) {
     const tool = this.viewTool;
@@ -1098,11 +1093,13 @@ class ViewPan extends HandleWithInertia {
     const tool = this.viewTool;
     const vp = tool.viewport!;
     const view = vp.view;
-    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
-
+    const lastWorld = vp.npcToWorld(this._lastPtNpc);
+    const thisWorld = vp.npcToWorld(thisPtNpc);
+    const dist = thisWorld.vectorTo(lastWorld);
     if (view.is3d()) {
-      if (ViewStatus.Success !== view.moveCameraWorld(dist))
+      if (ViewStatus.Success !== (view.isGlobalView ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
         return false;
+
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
@@ -1114,7 +1111,7 @@ class ViewPan extends HandleWithInertia {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
+  public override needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
   }
 }
@@ -1125,7 +1122,7 @@ class ViewRotate extends HandleWithInertia {
   private readonly _activeFrustum = new Frustum();
   private readonly _anchorPtNpc = new Point3d();
   public get handleType() { return ViewHandleType.Rotate; }
-  public getHandleCursor() { return IModelApp.viewManager.rotateCursor; }
+  public override getHandleCursor() { return IModelApp.viewManager.rotateCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1213,6 +1210,8 @@ class ViewRotate extends HandleWithInertia {
       const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix);
       const frustum = this._frustum.transformBy(worldTransform);
       view.setupFromFrustum(frustum);
+      if (view.is3d())
+        view.alignToGlobe(view.getCenter());
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
       vp.setupFromView();
     }
@@ -1223,7 +1222,7 @@ class ViewRotate extends HandleWithInertia {
     return true;
   }
 
-  public onWheel(ev: BeWheelEvent): boolean {
+  public override onWheel(ev: BeWheelEvent): boolean {
     // When rotate is active, the mouse wheel should zoom about the target center when it's displayed...
     const tool = this.viewTool;
     if (tool.targetCenterLocked || tool.inHandleModify) {
@@ -1234,12 +1233,12 @@ class ViewRotate extends HandleWithInertia {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
+  public override needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return (!this.viewTool.targetCenterLocked && ev.viewport!.view.allow3dManipulations());
   }
 
   /** @internal */
-  public adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
+  public override adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
     if (vp.viewingGlobe && this.viewTool.isPointVisible(vp.iModel.ecefLocation!.earthCenter)) {
       plane.getOriginRef().setFrom(vp.iModel.ecefLocation!.earthCenter);
       plane.getNormalRef().setFrom(vp.view.getZVector());
@@ -1247,6 +1246,7 @@ class ViewRotate extends HandleWithInertia {
     }
     if (super.adjustDepthPoint(isValid, vp, plane, source))
       return true;
+
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
     return false;
   }
@@ -1259,7 +1259,7 @@ class ViewLook extends ViewingToolHandle {
   private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
-  public getHandleCursor(): string { return IModelApp.viewManager.lookCursor; }
+  public override getHandleCursor(): string { return IModelApp.viewManager.lookCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1284,7 +1284,7 @@ class ViewLook extends ViewingToolHandle {
     return true;
   }
 
-  public onWheel(_ev: BeWheelEvent): boolean {
+  public override onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     if (!tool.inHandleModify)
       return false;
@@ -1404,7 +1404,7 @@ abstract class AnimatedHandle extends ViewingToolHandle {
     return new Vector3d(dir.x * (2.0 / viewRect.width), dir.y * (2.0 / viewRect.height));
   }
 
-  public onReinitialize(): void {
+  public override onReinitialize(): void {
     const tool = this.viewTool;
     tool.inDynamicUpdate = false;
     const vp = tool.viewport;
@@ -1413,7 +1413,7 @@ abstract class AnimatedHandle extends ViewingToolHandle {
   }
 
   // called when wheel rolls, reset tool
-  public onWheel(_ev: BeWheelEvent): boolean {
+  public override onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     tool.nPts = 0; // start over
     tool.inDynamicUpdate = false; // not active
@@ -1424,9 +1424,9 @@ abstract class AnimatedHandle extends ViewingToolHandle {
 /** ViewingToolHandle for performing the "scroll view" operation */
 class ViewScroll extends AnimatedHandle {
   public get handleType() { return ViewHandleType.Scroll; }
-  public getHandleCursor(): string { return "move"; }
+  public override getHandleCursor(): string { return "move"; }
 
-  public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
+  public override drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
@@ -1471,13 +1471,13 @@ class ViewScroll extends AnimatedHandle {
     context.addCanvasDecoration({ position, drawDecoration }, true);
   }
 
-  public firstPoint(ev: BeButtonEvent) {
+  public override firstPoint(ev: BeButtonEvent) {
     super.firstPoint(ev);
     this.viewTool.provideToolAssistance("Scroll.Prompts.NextPoint");
     return true;
   }
 
-  public animate(): boolean {
+  public override animate(): boolean {
     if (!super.animate())
       return false;
 
@@ -1511,7 +1511,7 @@ class ViewScroll extends AnimatedHandle {
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
+  public override needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
   }
 }
@@ -1526,7 +1526,7 @@ class ViewZoom extends ViewingToolHandle {
   protected _startFrust?: Frustum;
   protected _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
-  public getHandleCursor() { return IModelApp.viewManager.zoomCursor; }
+  public override getHandleCursor() { return IModelApp.viewManager.zoomCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1534,7 +1534,7 @@ class ViewZoom extends ViewingToolHandle {
     return true;
   }
 
-  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+  public override drawHandle(context: DecorateContext, hasFocus: boolean): void {
     if (!hasFocus || context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
 
@@ -1584,14 +1584,14 @@ class ViewZoom extends ViewingToolHandle {
     vp.viewToWorld(this._anchorPtView, this._anchorPtWorld);
     this._startFrust = vp.getWorldFrustum();
 
-    if (vp.view.isCameraEnabled())
+    if (vp.view.is3d() && vp.view.isCameraOn)
       this._startEyePoint.setFrom(vp.view.getEyePoint());
 
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
     return true;
   }
 
-  public onWheel(_ev: BeWheelEvent): boolean {
+  public override onWheel(_ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     if (!tool.inHandleModify)
       return false;
@@ -1625,7 +1625,7 @@ class ViewZoom extends ViewingToolHandle {
     const frustum = this._startFrust.clone();
     const transform = Transform.createFixedPointAndMatrix(this._anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, view.is3d() ? zoomRatio : 1.0));
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const oldEyePoint = this._startEyePoint;
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
@@ -1635,13 +1635,15 @@ class ViewZoom extends ViewingToolHandle {
     frustum.transformBy(transform, frustum);
     if (ViewStatus.Success !== view.setupFromFrustum(frustum))
       return false;
-    if (view.isCameraEnabled())
+
+    if (view.is3d() && view.isCameraOn)
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+
     return ViewStatus.Success === viewport.setupFromView();
   }
 
   /** @internal */
-  public needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
+  public override needDepthPoint(ev: BeButtonEvent, _isPreview: boolean): boolean {
     return ev.viewport!.isCameraOn && CoordSource.User === ev.coordsFrom;
   }
 }
@@ -1814,7 +1816,7 @@ abstract class ViewNavigate extends AnimatedHandle {
   private _initialized = false;
   protected abstract getNavigateMotion(seconds: number): NavigateMotion | undefined;
 
-  public getHandleCursor() { return IModelApp.viewManager.walkCursor; }
+  public override getHandleCursor() { return IModelApp.viewManager.walkCursor; }
   public getMaxLinearVelocity() { return ToolSettings.walkVelocity; }
   public getMaxAngularVelocity() { return Math.PI / 4; }
 
@@ -1825,7 +1827,7 @@ abstract class ViewNavigate extends AnimatedHandle {
   }
 
   // called in animation loop
-  public animate(): boolean {
+  public override animate(): boolean {
     if (!super.animate())
       return false;
 
@@ -1840,7 +1842,7 @@ abstract class ViewNavigate extends AnimatedHandle {
     return false;
   }
 
-  public onReinitialize(): void {
+  public override onReinitialize(): void {
     super.onReinitialize();
     if (this._initialized)
       return;
@@ -1870,7 +1872,7 @@ abstract class ViewNavigate extends AnimatedHandle {
     vp.animateFrustumChange();
   }
 
-  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+  public override drawHandle(context: DecorateContext, hasFocus: boolean): void {
     if (!hasFocus || context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)
       return;
     const position = this._anchorPtView.clone();
@@ -1917,15 +1919,15 @@ class ViewLookAndMove extends ViewNavigate {
   }
 
   public get handleType(): ViewHandleType { return ViewHandleType.LookAndMove; }
-  public getHandleCursor(): string { return IModelApp.viewManager.lookCursor; }
+  public override getHandleCursor(): string { return IModelApp.viewManager.lookCursor; }
 
-  public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
+  public override testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
     out.priority = ViewManipPriority.Medium; // Always prefer over pan handle which is only force enabled by IdleTool middle button action...
     return true;
   }
 
-  public onReinitialize(): void {
+  public override onReinitialize(): void {
     super.onReinitialize();
     this._touchStartL = this._touchStartR = this._touchLast = undefined;
     this._touchElevate = this._touchSpeedUp = this._touchLook = false;
@@ -1935,7 +1937,7 @@ class ViewLookAndMove extends ViewNavigate {
     this.requestPointerLock(true);
   }
 
-  public onCleanup(): void {
+  public override onCleanup(): void {
     super.onCleanup();
     this.releasePointerLock();
   }
@@ -2003,11 +2005,11 @@ class ViewLookAndMove extends ViewNavigate {
       document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
       this._pointerLockChangeListener = undefined;
     }
-    if (null !== document.pointerLockElement)
+    if (null !== document.pointerLockElement && undefined !== document.exitPointerLock)
       document.exitPointerLock();
   }
 
-  public firstPoint(ev: BeButtonEvent): boolean {
+  public override firstPoint(ev: BeButtonEvent): boolean {
     this.viewTool.provideToolAssistance("LookAndMove.Prompts.NextPoint");
     if (!super.firstPoint(ev))
       return false;
@@ -2025,7 +2027,7 @@ class ViewLookAndMove extends ViewNavigate {
     return true;
   }
 
-  public doManipulation(ev: BeButtonEvent): boolean {
+  public override doManipulation(ev: BeButtonEvent): boolean {
     if (InputSource.Mouse === ev.inputSource)
       this._lastMovement = this._havePointerLock ? ev.movement : undefined;
     else
@@ -2035,7 +2037,7 @@ class ViewLookAndMove extends ViewNavigate {
     return super.doManipulation(ev);
   }
 
-  public getMaxLinearVelocity() {
+  public override getMaxLinearVelocity() {
     const maxLinearVelocity = super.getMaxLinearVelocity();
     if (0 === ToolSettings.walkVelocityChange)
       return (this._touchSpeedUp ? maxLinearVelocity * 2.0 : maxLinearVelocity);
@@ -2128,7 +2130,7 @@ class ViewLookAndMove extends ViewNavigate {
         if (pixel.distanceFraction < 0)
           continue; // No geometry at location...
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        const hitPointWorld = vp.getPixelDataWorldPoint({ pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true });
         if (undefined === hitPointWorld)
           continue;
 
@@ -2149,9 +2151,9 @@ class ViewLookAndMove extends ViewNavigate {
               const resultHi: CurveLocationDetail[] = [];
               this._lastContour.appendPlaneIntersectionPoints(yPlaneHi, resultHi);
 
-              for (const intsecHi of resultHi) {
-                if ((undefined === fractHi || intsecHi.fraction < fractHi) && intsecHi.point.distance(hitPointWorld) < ToolSettings.walkEyeHeight)
-                  fractHi = intsecHi.fraction;
+              for (const intersectionHi of resultHi) {
+                if ((undefined === fractHi || intersectionHi.fraction < fractHi) && intersectionHi.point.distance(hitPointWorld) < ToolSettings.walkEyeHeight)
+                  fractHi = intersectionHi.fraction;
               }
 
               if (undefined !== fractHi) {
@@ -2161,9 +2163,9 @@ class ViewLookAndMove extends ViewNavigate {
                 const resultLo: CurveLocationDetail[] = [];
                 this._lastContour.appendPlaneIntersectionPoints(yPlaneLo, resultLo);
 
-                for (const intsecLo of resultLo) {
-                  if (undefined === fractLo || intsecLo.fraction < fractLo)
-                    fractLo = intsecLo.fraction;
+                for (const intersectionLo of resultLo) {
+                  if (undefined === fractLo || intersectionLo.fraction < fractLo)
+                    fractLo = intersectionLo.fraction;
                 }
 
                 if (undefined === fractLo && yPlaneHi.altitude(this._lastContour.startPoint()) > 0)
@@ -2212,9 +2214,9 @@ class ViewLookAndMove extends ViewNavigate {
         contourLine.appendPlaneIntersectionPoints(stepPlane, resultStep);
 
       let stepPt;
-      for (const intsecStep of resultStep) {
-        if (undefined === stepPt || intsecStep.point.z > stepPt.z)
-          stepPt = intsecStep.point;
+      for (const step of resultStep) {
+        if (undefined === stepPt || step.point.z > stepPt.z)
+          stepPt = step.point;
       }
 
       if (undefined !== stepPt) {
@@ -2301,12 +2303,12 @@ class ViewLookAndMove extends ViewNavigate {
 
     if (0 !== nIntersectY) {
       let resultVec;
-      for (const intsec of resultY) {
-        const resultNpc = vp.worldToNpc(intsec.point);
+      for (const intersection of resultY) {
+        const resultNpc = vp.worldToNpc(intersection.point);
         if (resultNpc.z >= 1 || resultNpc.z <= 0)
           continue;
 
-        const hitVec = Vector3d.createStartEnd(newEyePt, intsec.point);
+        const hitVec = Vector3d.createStartEnd(newEyePt, intersection.point);
         if (undefined === resultVec)
           resultVec = hitVec;
         else if (hitVec.magnitude() < resultVec.magnitude())
@@ -2332,15 +2334,15 @@ class ViewLookAndMove extends ViewNavigate {
       const heightPt = Point3d.create();
       const maintainHeight = Vector3d.create();
 
-      for (const intsec of resultZ) {
-        if (intsec.point.z > newEyePt.z)
+      for (const intersection of resultZ) {
+        if (intersection.point.z > newEyePt.z)
           continue; // Ignore overhead point...
 
-        const refPt = this._lastReference.projectPointToPlane(intsec.point);
-        const offset = Vector3d.createStartEnd(refPt, intsec.point);
+        const refPt = this._lastReference.projectPointToPlane(intersection.point);
+        const offset = Vector3d.createStartEnd(refPt, intersection.point);
 
         if (offset.magnitude() > maintainHeight.magnitude()) {
-          heightPt.setFrom(intsec.point);
+          heightPt.setFrom(intersection.point);
           maintainHeight.setFrom(offset);
         }
       }
@@ -2437,7 +2439,7 @@ class ViewLookAndMove extends ViewNavigate {
       this.viewTool.viewport.invalidateDecorations();
   }
 
-  public onWheel(ev: BeWheelEvent): boolean {
+  public override onWheel(ev: BeWheelEvent): boolean {
     const tool = this.viewTool;
     if (!tool.inHandleModify || undefined === tool.viewport)
       return super.onWheel(ev);
@@ -2487,7 +2489,7 @@ class ViewLookAndMove extends ViewNavigate {
     return true;
   }
 
-  public onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): boolean {
+  public override onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): boolean {
     if (!this.viewTool.inDynamicUpdate) {
       this._positionInput.setZero(); // clear input from a previous dynamic update...
       if (!wentDown || !this.isNavigationKey(keyEvent) || !this.enableKeyStart())
@@ -2605,7 +2607,7 @@ class ViewLookAndMove extends ViewNavigate {
     return offset;
   }
 
-  public onTouchStart(ev: BeTouchEvent): boolean {
+  public override onTouchStart(ev: BeTouchEvent): boolean {
     if (undefined === ev.viewport || !ev.viewport.isCameraOn || 1 !== ev.touchEvent.changedTouches.length)
       return (undefined === this._touchStartL && undefined !== this._touchStartR ? false : true);
 
@@ -2631,7 +2633,7 @@ class ViewLookAndMove extends ViewNavigate {
     return false;
   }
 
-  public onTouchEnd(ev: BeTouchEvent): boolean {
+  public override onTouchEnd(ev: BeTouchEvent): boolean {
     let changed = false;
 
     if (undefined !== this._touchStartL && undefined !== BeTouchEvent.findTouchById(ev.touchEvent.changedTouches, this._touchStartL.touchEvent.changedTouches[0].identifier)) {
@@ -2650,18 +2652,18 @@ class ViewLookAndMove extends ViewNavigate {
     return changed;
   }
 
-  public onTouchComplete(_ev: BeTouchEvent): boolean {
+  public override async onTouchComplete(_ev: BeTouchEvent): Promise<boolean> {
     if (!this.viewTool.inDynamicUpdate || undefined === this._touchLast)
       return false;
-    this.viewTool.onReinitialize();
+    await this.viewTool.onReinitialize();
     return true;
   }
 
-  public onTouchCancel(ev: BeTouchEvent): boolean {
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<boolean> {
     return this.onTouchComplete(ev);
   }
 
-  public onTouchMove(ev: BeTouchEvent): boolean {
+  public override onTouchMove(ev: BeTouchEvent): boolean {
     if (undefined === ev.viewport || !this.viewTool.inDynamicUpdate || (undefined === this._touchStartL && undefined === this._touchStartR))
       return false;
 
@@ -2681,7 +2683,7 @@ class ViewLookAndMove extends ViewNavigate {
     return true;
   }
 
-  public onTouchMoveStart(ev: BeTouchEvent, _startEv: BeTouchEvent): boolean {
+  public override onTouchMoveStart(ev: BeTouchEvent, _startEv: BeTouchEvent): boolean {
     if (undefined === ev.viewport)
       return false;
 
@@ -2692,7 +2694,7 @@ class ViewLookAndMove extends ViewNavigate {
     return true;
   }
 
-  public onTouchTap(ev: BeTouchEvent): boolean {
+  public override onTouchTap(ev: BeTouchEvent): boolean {
     if (undefined === ev.viewport || this.viewTool.inDynamicUpdate || !ev.isSingleTap)
       return false;
 
@@ -2707,7 +2709,7 @@ class ViewLookAndMove extends ViewNavigate {
     return false;
   }
 
-  public drawHandle(context: DecorateContext, hasFocus: boolean): void {
+  public override drawHandle(context: DecorateContext, hasFocus: boolean): void {
     super.drawHandle(context, hasFocus);
     if (!hasFocus || context.viewport !== this.viewTool.viewport)
       return;
@@ -2879,7 +2881,7 @@ class ViewWalk extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
-  public firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public override firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -2916,7 +2918,7 @@ class ViewFly extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
-  public firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
+  public override firstPoint(ev: BeButtonEvent): boolean { this.viewTool.provideToolAssistance("Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -2949,13 +2951,13 @@ class ViewFly extends ViewNavigate {
  * @public
  */
 export class PanViewTool extends ViewManip {
-  public static toolId = "View.Pan";
-  public static iconSpec = "icon-hand-2";
+  public static override toolId = "View.Pan";
+  public static override iconSpec = "icon-hand-2";
   constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void {
-    super.onReinitialize();
+  public override async onReinitialize() {
+    await super.onReinitialize();
     this.provideToolAssistance("Pan.Prompts.FirstPoint");
   }
 }
@@ -2964,64 +2966,69 @@ export class PanViewTool extends ViewManip {
  * @public
  */
 export class RotateViewTool extends ViewManip {
-  public static toolId = "View.Rotate";
-  public static iconSpec = "icon-gyroscope";
+  public static override toolId = "View.Rotate";
+  public static override iconSpec = "icon-gyroscope";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Rotate.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation
  * @public
  */
 export class LookViewTool extends ViewManip {
-  public static toolId = "View.Look";
-  public static iconSpec = "icon-view-navigation";
+  public static override toolId = "View.Look";
+  public static override iconSpec = "icon-view-navigation";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Look.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation
  * @public
  */
 export class ScrollViewTool extends ViewManip {
-  public static toolId = "View.Scroll";
-  public static iconSpec = "icon-move";
+  public static override toolId = "View.Scroll";
+  public static override iconSpec = "icon-move";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Scroll.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation
  * @public
  */
 export class ZoomViewTool extends ViewManip {
-  public static toolId = "View.Zoom";
-  public static iconSpec = "icon-zoom";
+  public static override toolId = "View.Zoom";
+  public static override iconSpec = "icon-zoom";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the walk operation using mouse+keyboard or touch controls
- * @beta
+/** A tool that performs the walk operation using mouse+keyboard or touch controls.
+ * Keyboard and mouse controls are similar to those used by many video games:
+ *  - Mouse motion: look around.
+ *  - W, A, S, D (or arrow keys): move forward, left, right, or backward respectively.
+ *  - E, Q (or PgUp, PgDn): move up and down respectively.
+ *  - +, - (or scroll wheel): increase or decrease velocity.
+ * @public
  */
 export class LookAndMoveTool extends ViewManip {
-  public static toolId = "View.LookAndMove";
-  public static iconSpec = "icon-walk";
+  public static override toolId = "View.LookAndMove";
+  public static override iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
     super(viewport, ViewHandleType.LookAndMove | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
 
   /** @beta */
-  public provideToolAssistance(mainInstrKey: string): void {
+  public override provideToolAssistance(mainInstrKey: string): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -3060,16 +3067,16 @@ export class LookAndMoveTool extends ViewManip {
  * @public
  */
 export class WalkViewTool extends ViewManip {
-  public static toolId = "View.Walk";
-  public static iconSpec = "icon-walk";
+  public static override toolId = "View.Walk";
+  public static override iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
     super(viewport, ViewHandleType.Walk | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Walk.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Walk.Prompts.FirstPoint"); }
 
   /** @beta */
-  public provideToolAssistance(mainInstrKey: string): void {
+  public override provideToolAssistance(mainInstrKey: string): void {
     const walkInstructions: ToolAssistanceInstruction[] = [];
     walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
     walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
@@ -3081,15 +3088,15 @@ export class WalkViewTool extends ViewManip {
  * @public
  */
 export class FlyViewTool extends ViewManip {
-  public static toolId = "View.Fly";
-  public static iconSpec = "icon-airplane";
+  public static override toolId = "View.Fly";
+  public static override iconSpec = "icon-airplane";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("Fly.Prompts.FirstPoint"); }
+  public override async onReinitialize() { await super.onReinitialize(); this.provideToolAssistance("Fly.Prompts.FirstPoint"); }
 
   /** @beta */
-  public provideToolAssistance(mainInstrKey: string): void {
+  public override provideToolAssistance(mainInstrKey: string): void {
     const flyInstructions: ToolAssistanceInstruction[] = [];
     flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
     flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Look.flyover"), false, ToolAssistanceInputMethod.Mouse));
@@ -3101,8 +3108,8 @@ export class FlyViewTool extends ViewManip {
  * @public
  */
 export class FitViewTool extends ViewTool {
-  public static toolId = "View.Fit";
-  public static iconSpec = "icon-fit-to-view";
+  public static override toolId = "View.Fit";
+  public static override iconSpec = "icon-fit-to-view";
   public oneShot: boolean;
   public doAnimate: boolean;
   public isolatedOnly: boolean;
@@ -3135,36 +3142,36 @@ export class FitViewTool extends ViewTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return await this.doFit(ev.viewport, this.oneShot, this.doAnimate, this.isolatedOnly) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
 
-  public onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     if (undefined === this.viewport || !this.oneShot)
       this.provideToolAssistance();
 
     if (this.viewport)
-      this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly);
   }
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
     if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, { animateFrustumChange: doAnimate }))
       ViewManip.fitViewWithGlobeAnimation(viewport, doAnimate);
     if (oneShot)
-      this.exitTool();
+      await this.exitTool();
     return oneShot;
   }
 }
 
 /** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeSatelliteTool extends ViewTool {
-  public static toolId = "View.GlobeSatellite";
+  public static override toolId = "View.GlobeSatellite";
   // public static iconSpec = "icon-view-globe-satellite"; // ###TODO: need icon for this
   public oneShot: boolean;
   public doAnimate: boolean;
@@ -3175,15 +3182,17 @@ export class ViewGlobeSatelliteTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  /** @internal */
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
 
-  public onPostInstall() {
-    super.onPostInstall();
+  /** @internal */
+  public override async onPostInstall() {
+    await super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
     if (viewport) {
       (async () => {
@@ -3195,30 +3204,31 @@ export class ViewGlobeSatelliteTool extends ViewTool {
   private async _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
     const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
-        return this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch(() => { });
+        return await this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
+      } catch {
+      }
     }
     return true;
   }
 
-  private _doSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+  private async _doSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): Promise<boolean> {
     viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters + elevationOffset);
     if (oneShot)
-      this.exitTool();
+      await this.exitTool();
     return oneShot;
   }
 }
 
 /** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeBirdTool extends ViewTool {
-  public static toolId = "View.GlobeBird";
+  public static override toolId = "View.GlobeBird";
   // public static iconSpec = "icon-view-globe-bird"; // ###TODO: need icon for this
   public oneShot: boolean;
   public doAnimate: boolean;
@@ -3229,41 +3239,41 @@ export class ViewGlobeBirdTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  /** @internal */
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
       return (await this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
 
-  public onPostInstall() {
-    super.onPostInstall();
+  /** @internal */
+  public override async onPostInstall() {
+    await super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
-    if (viewport) {
-      (async () => {
-        await this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
-      })().catch(() => { });
-    }
+    if (viewport)
+      await this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
   }
 
   private async _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
     const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
-        return this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch(() => { });
+        return await this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
+      } catch {
+      }
     }
     return true;
   }
 
-  private _doBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+  private async _doBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): Promise<boolean> {
     viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters + elevationOffset, ViewGlobalLocationConstants.birdPitchAngleRadians);
     if (oneShot)
-      this.exitTool();
+      await this.exitTool();
     return oneShot;
   }
 }
@@ -3271,12 +3281,12 @@ export class ViewGlobeBirdTool extends ViewTool {
 /** A tool that views a location on the background map corresponding to a specified string.
  * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
  * Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeLocationTool extends ViewTool {
   private _globalLocation?: GlobalLocation;
 
-  public static toolId = "View.GlobeLocation";
+  public static override toolId = "View.GlobeLocation";
   // public static iconSpec = "icon-view-globe-location"; // ###TODO: need icon for this
   public oneShot: boolean;
   public doAnimate: boolean;
@@ -3287,17 +3297,20 @@ export class ViewGlobeLocationTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return undefined; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return undefined; }
 
-  // arguments: latitude longitude | string
-  // the latitude and longitude arguments are specified in degrees
-  public parseAndRun(...args: string[]): boolean {
+  /** This runs the tool based on the provided location arguments.
+   * arguments: latitude longitude | string
+   * If specified, the latitude and longitude arguments are numbers specified in degrees.
+   * If specified, the string argument contains a location name. Examples of location name include named geographic areas like "Seattle, WA" or "Alaska", a specific address like "1600 Pennsylvania Avenue NW, Washington, DC 20500", or a place name like "Philadelphia Museum of Art".
+   **/
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (2 === args.length) { // try to parse latitude and longitude
       const latitude = parseFloat(args[0]);
       const longitude = parseFloat(args[1]);
       if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
-        const center = Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude));
+        const center = Cartographic.fromDegrees({ longitude, latitude });
         this._globalLocation = { center };
       }
     }
@@ -3305,7 +3318,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
       const bingLocationProvider = new BingLocationProvider();
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         this._globalLocation = await bingLocationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {
           const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3314,9 +3327,9 @@ export class ViewGlobeLocationTool extends ViewTool {
             if (elevationOffset !== undefined)
               this._globalLocation.center.height = elevationOffset;
           }
-          await this._doLocationView();
         }
-      })().catch(() => { });
+      } catch {
+      }
     }
 
     if (this._globalLocation !== undefined)
@@ -3324,11 +3337,10 @@ export class ViewGlobeLocationTool extends ViewTool {
     return true;
   }
 
-  public onPostInstall() {
-    super.onPostInstall();
-    (async () => {
-      await this._doLocationView();
-    })().catch(() => { });
+  /** @internal */
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    await this._doLocationView();
   }
 
   private async _doLocationView(): Promise<boolean> {
@@ -3338,16 +3350,16 @@ export class ViewGlobeLocationTool extends ViewTool {
         await viewport.animateFlyoverToGlobalLocation(this._globalLocation);
     }
     if (this.oneShot)
-      this.exitTool();
+      await this.exitTool();
     return this.oneShot;
   }
 }
 
 /** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
- * @beta
+ * @public
  */
 export class ViewGlobeIModelTool extends ViewTool {
-  public static toolId = "View.GlobeIModel";
+  public static override toolId = "View.GlobeIModel";
   // public static iconSpec = "icon-view-globe-imodel"; // ###TODO: need icon for this
   public oneShot: boolean;
   public doAnimate: boolean;
@@ -3358,19 +3370,21 @@ export class ViewGlobeIModelTool extends ViewTool {
     this.doAnimate = doAnimate;
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  /** @internal */
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
-      return this._doIModelView() ? EventHandled.Yes : EventHandled.No;
+      return await this._doIModelView() ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
 
-  public onPostInstall() {
-    super.onPostInstall();
-    this._doIModelView();
+  /** @internal */
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    await this._doIModelView();
   }
 
-  private _doIModelView(): boolean {
+  private async _doIModelView(): Promise<boolean> {
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
     if (viewport && (viewport.view instanceof ViewState3d)) {
       const extents = viewport.view.iModel.projectExtents;
@@ -3385,7 +3399,7 @@ export class ViewGlobeIModelTool extends ViewTool {
       }
     }
     if (this.oneShot)
-      this.exitTool();
+      await this.exitTool();
     return this.oneShot;
   }
 }
@@ -3394,12 +3408,12 @@ export class ViewGlobeIModelTool extends ViewTool {
  * @public
  */
 export class StandardViewTool extends ViewTool {
-  public static toolId = "View.Standard";
-  public static iconSpec = "icon-cube-faces-top";
+  public static override toolId = "View.Standard";
+  public static override iconSpec = "icon-cube-faces-top";
   constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
 
-  public onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     if (this.viewport) {
       const vp = this.viewport;
       const id = vp.view.allow3dManipulations() ? this._standardViewId : StandardViewId.Top;
@@ -3414,7 +3428,7 @@ export class StandardViewTool extends ViewTool {
         vp.synchWithView({ animateFrustumChange: true });
       }
     }
-    this.exitTool();
+    return this.exitTool();
   }
 }
 
@@ -3422,8 +3436,8 @@ export class StandardViewTool extends ViewTool {
  * @public
  */
 export class WindowAreaTool extends ViewTool {
-  public static toolId = "View.WindowArea";
-  public static iconSpec = "icon-window-area";
+  public static override toolId = "View.WindowArea";
+  public static override iconSpec = "icon-window-area";
   private _haveFirstPoint: boolean = false;
   private _firstPtWorld: Point3d = Point3d.create();
   private _secondPtWorld: Point3d = Point3d.create();
@@ -3432,9 +3446,9 @@ export class WindowAreaTool extends ViewTool {
   private _shapePts = [new Point3d(), new Point3d(), new Point3d(), new Point3d(), new Point3d()];
   private _fillColor = ColorDef.from(0, 0, 255, 200);
 
-  public onPostInstall() { super.onPostInstall(); this.provideToolAssistance(); }
-  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); this.provideToolAssistance(); }
-  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
+  public override async onPostInstall() { await super.onPostInstall(); this.provideToolAssistance(); }
+  public override async onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); this.provideToolAssistance(); }
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { await this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   /** @beta */
   public provideToolAssistance(): void {
@@ -3458,7 +3472,7 @@ export class WindowAreaTool extends ViewTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport)
       return EventHandled.Yes;
 
@@ -3476,7 +3490,7 @@ export class WindowAreaTool extends ViewTool {
     if (this._haveFirstPoint) {
       this._secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
-      this.onReinitialize();
+      await this.onReinitialize();
       this.viewport.invalidateDecorations();
     } else {
       this._firstPtWorld.setFrom(ev.point);
@@ -3489,12 +3503,12 @@ export class WindowAreaTool extends ViewTool {
     return EventHandled.Yes;
   }
 
-  public async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
-  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
-  public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this._haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
+  public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this._haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   private computeWindowCorners(): Point3d[] | undefined {
     const vp = this.viewport!;
@@ -3533,7 +3547,7 @@ export class WindowAreaTool extends ViewTool {
     return corners;
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (undefined === this.viewport || !context.viewport.view.hasSameCoordinates(this.viewport.view))
       return;
     const vp = this.viewport;
@@ -3606,11 +3620,12 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     vp.viewToWorldArray(corners);
 
-    const opts: ViewChangeOptions = {
+    const opts: OnViewExtentsError = {
       onExtentsError: (stat) => view.outputStatusMessage(stat),
     };
 
-    if (view.isCameraEnabled()) {
+    let globalAlignment;
+    if (view.is3d() && view.isCameraOn) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
@@ -3637,8 +3652,9 @@ export class WindowAreaTool extends ViewTool {
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
+      if (ViewStatus.Success !== view.lookAt({ eyePoint: newEye, targetPoint: newTarget, upVector: view.getYVector(), lensAngle, opts }))
         return;
+      globalAlignment = { target: newTarget };
     } else {
       const rot = vp.rotation;
       rot.multiplyVectorArrayInPlace(corners);
@@ -3657,15 +3673,17 @@ export class WindowAreaTool extends ViewTool {
 
       view.setExtents(delta);
       view.setOrigin(originVec);
+      if (view.is3d())
+        globalAlignment = { target: range.center };
     }
 
-    vp.synchWithView({ animateFrustumChange: true });
+    vp.synchWithView({ animateFrustumChange: true, globalAlignment });
   }
 }
 
 /** @internal */
 export class DefaultViewTouchTool extends ViewManip implements Animator {
-  public static toolId = ""; // touch tools installed by IdleTool are never registered
+  public static override toolId = ""; // touch tools installed by IdleTool are never registered
   private readonly _lastPtView = new Point3d();
   private readonly _startPtWorld = new Point3d();
   private readonly _startPtView = new Point3d();
@@ -3677,9 +3695,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _singleTouch = false;
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
-  private _hasZoom = false;
   private _rotate2dDisabled = false;
   private _rotate2dThreshold?: Angle;
+  private _only2dManipulations = false;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -3706,8 +3724,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public interrupt() { }
 
-  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent, only2dManipulations = false) {
     super(startEv.viewport, 0, true, false);
+    this._only2dManipulations = only2dManipulations;
     this.onStart(ev);
   }
 
@@ -3733,7 +3752,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeZoomRatio(ev?: BeTouchEvent): number {
-    this._hasZoom = false;
     if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
@@ -3744,7 +3762,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (0.0 === distance || Math.abs(this._startDistance - distance) < threshold)
       return 1.0;
 
-    this._hasZoom = true;
+    // Remove inertia if the viewing operation includes zoom, only use it for pan and rotate.
+    this._inertiaVec = undefined;
     const adjustedDist = (distance > this._startDistance ? (distance - threshold) : (distance + threshold)); // Avoid sudden jump in zoom scale by subtracting zoom threshold distance...
     return Geometry.clamp(this._startDistance / adjustedDist, .1, 10);
   }
@@ -3880,8 +3899,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate.
-      if (!samePoint && !this._hasZoom) {
+      if (!samePoint) {
         this._inertiaVec = this._lastPtView.vectorTo(thisPt);
         this._inertiaVec.z = 0;
       }
@@ -3897,18 +3915,22 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     vp.setupViewFromFrustum(this._frustum);
 
     const singleTouch = this._singleTouch;
-    return vp.view.allow3dManipulations() ?
+    return (!this._only2dManipulations && vp.view.allow3dManipulations()) ?
       singleTouch ? this.handle3dRotate() : this.handle3dPanZoom(ev) :
       singleTouch ? this.handle2dPan() : this.handle2dRotateZoom(ev);
   }
 
-  public async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
-  public async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> {
+  public override async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
+  public override async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
+  public override async onTouchStart(ev: BeTouchEvent): Promise<void> {
+    if (undefined !== this.viewport)
+      this.onStart(ev);
+  }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
     this.handleEvent(ev);
   }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { this.exitTool(); }
-  public async onTouchComplete(_ev: BeTouchEvent): Promise<void> {
+  public override async onTouchCancel(_ev: BeTouchEvent): Promise<void> { return this.exitTool(); }
+  public override async onTouchComplete(_ev: BeTouchEvent): Promise<void> {
     // if we were moving when the touch ended, add inertia to the viewing operation
     if (this._inertiaVec) {
       this._duration = ToolSettings.viewingInertia.duration;
@@ -3918,7 +3940,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
       }
     }
 
-    this.exitTool();
+    return this.exitTool();
   }
 }
 
@@ -3926,13 +3948,13 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
  * @public
  */
 export class ViewUndoTool extends ViewTool {
-  public static toolId = "View.Undo";
-  public static iconSpec = "icon-window-backward";
+  public static override toolId = "View.Undo";
+  public static override iconSpec = "icon-window-backward";
 
-  public onPostInstall() {
+  public override async onPostInstall() {
     if (this.viewport)
       this.viewport.doUndo(ScreenViewport.animation.time.normal);
-    this.exitTool();
+    return this.exitTool();
   }
 }
 
@@ -3940,13 +3962,13 @@ export class ViewUndoTool extends ViewTool {
  * @public
  */
 export class ViewRedoTool extends ViewTool {
-  public static toolId = "View.Redo";
-  public static iconSpec = "icon-window-forward";
+  public static override toolId = "View.Redo";
+  public static override iconSpec = "icon-window-forward";
 
-  public onPostInstall() {
+  public override async onPostInstall() {
     if (this.viewport)
       this.viewport.doRedo(ScreenViewport.animation.time.normal);
-    this.exitTool();
+    return this.exitTool();
   }
 }
 
@@ -3954,12 +3976,12 @@ export class ViewRedoTool extends ViewTool {
  * @public
  */
 export class ViewToggleCameraTool extends ViewTool {
-  public static toolId = "View.ToggleCamera";
-  public static iconSpec = "icon-camera";
+  public static override toolId = "View.ToggleCamera";
+  public static override iconSpec = "icon-camera";
 
-  public onInstall(): boolean { return (undefined !== this.viewport && this.viewport.view.allow3dManipulations()); }
+  public override async onInstall(): Promise<boolean> { return (undefined !== this.viewport && this.viewport.view.allow3dManipulations()); }
 
-  public onPostInstall(): void {
+  public override async onPostInstall() {
     if (this.viewport) {
       const vp = this.viewport;
       if (vp.isCameraOn)
@@ -3969,30 +3991,30 @@ export class ViewToggleCameraTool extends ViewTool {
 
       vp.synchWithView();
     }
-    this.exitTool();
+    return this.exitTool();
   }
 }
 
 /** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
  * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
  * by calling QuantityFormatter.onInitialized at app startup.
- * @alpha
+ * @public
  */
 export class SetupCameraTool extends PrimitiveTool {
-  public static toolId = "View.SetupCamera";
-  public static iconSpec = "icon-camera-location";
+  public static override toolId = "View.SetupCamera";
+  public static override iconSpec = "icon-camera-location";
   public viewport?: ScreenViewport;
   protected _haveEyePt: boolean = false;
   protected _eyePtWorld: Point3d = Point3d.create();
   protected _targetPtWorld: Point3d = Point3d.create();
 
-  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
-  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onUnsuspend(): void { this.provideToolAssistance(); }
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+  public override requireWriteableTarget(): boolean { return false; }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
   protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) this.onReinitialize(); else this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) await this.onReinitialize(); else await this.exitTool(); return EventHandled.Yes; }
 
   /** @beta */
   protected provideToolAssistance(): void {
@@ -4016,16 +4038,16 @@ export class SetupCameraTool extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new SetupCameraTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   protected getAdjustedEyePoint() { return this.useCameraHeight ? this._eyePtWorld.plusScaled(Vector3d.unitZ(), this.cameraHeight) : this._eyePtWorld; }
   protected getAdjustedTargetPoint() { return this.useTargetHeight ? this._targetPtWorld.plusScaled(Vector3d.unitZ(), this.targetHeight) : this._targetPtWorld; }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) {
       return EventHandled.Yes;
     } else if (undefined === this.viewport) {
@@ -4042,7 +4064,7 @@ export class SetupCameraTool extends PrimitiveTool {
     if (this._haveEyePt) {
       this._targetPtWorld.setFrom(ev.point);
       this.doManipulation();
-      this.onReinitialize();
+      await this.onReinitialize();
     } else {
       this._eyePtWorld.setFrom(ev.point);
       this._targetPtWorld.setFrom(this._eyePtWorld);
@@ -4053,7 +4075,7 @@ export class SetupCameraTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public async onMouseMotion(ev: BeButtonEvent) {
+  public override async onMouseMotion(ev: BeButtonEvent) {
     if (!this._haveEyePt)
       return;
     this._targetPtWorld.setFrom(ev.point);
@@ -4136,13 +4158,13 @@ export class SetupCameraTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderVis);
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (!this._haveEyePt || undefined === this.viewport)
       return;
     SetupCameraTool.drawCameraFrustum(context, this.viewport, this.getAdjustedEyePoint(), this.getAdjustedTargetPoint(), this.useCameraHeight ? this._eyePtWorld : undefined, this.useTargetHeight ? this._targetPtWorld : undefined);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+  public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
   private doManipulation(): void {
     const vp = this.viewport;
@@ -4153,150 +4175,135 @@ export class SetupCameraTool extends PrimitiveTool {
     if (!view.is3d() || !view.allow3dManipulations())
       return;
 
-    const eyePtWorld = this.getAdjustedEyePoint();
-    const targetPtWorld = this.getAdjustedTargetPoint();
+    const eyePoint = this.getAdjustedEyePoint();
+    const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(), lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });
   }
 
-  private _useCameraHeightValue: DialogItemValue = { value: false };
-  public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
-  public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
-  private static _useCameraHeightName = "useCameraHeight";
+  private _useCameraHeightProperty: DialogProperty<boolean> | undefined;
+  public get useCameraHeightProperty() {
+    if (!this._useCameraHeightProperty)
+      this._useCameraHeightProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildLockPropertyDescription("useCameraHeight"), false, undefined, false);
+    return this._useCameraHeightProperty;
+  }
+  public get useCameraHeight(): boolean { return this.useCameraHeightProperty.value; }
+  public set useCameraHeight(option: boolean) { this.useCameraHeightProperty.value = option; }
 
-  private static _getUseCameraHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._useCameraHeightName,
-      displayLabel: "",
-      typename: "boolean",
-      editor: {
-        params: [{
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
-      },
-    };
-  };
+  private _cameraHeightProperty: DialogProperty<number> | undefined;
+  public get cameraHeightProperty() {
+    if (!this._cameraHeightProperty)
+      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")),
+        0.0, undefined, !this.useCameraHeight);
+    return this._cameraHeightProperty;
+  }
+  public get cameraHeight(): number { return this.cameraHeightProperty.value; }
+  public set cameraHeight(value: number) { this.cameraHeightProperty.value = value; }
 
-  private _useTargetHeightValue: DialogItemValue = { value: false };
-  public get useTargetHeight(): boolean { return this._useTargetHeightValue.value as boolean; }
-  public set useTargetHeight(option: boolean) { this._useTargetHeightValue.value = option; }
-  private static _useTargetHeightName = "useTargetHeight";
-  private static _getUseTargetHeightDescription = (): PropertyDescription => {
-    return {
-      name: SetupCameraTool._useTargetHeightName,
-      displayLabel: "",
-      typename: "boolean",
-      editor: {
-        params: [{
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
-      },
-    };
-  };
+  private _useTargetHeightProperty: DialogProperty<boolean> | undefined;
+  public get useTargetHeightProperty() {
+    if (!this._useTargetHeightProperty)
+      this._useTargetHeightProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildLockPropertyDescription("useTargetHeight"), false, undefined, false);
+    return this._useTargetHeightProperty;
+  }
+  public get useTargetHeight(): boolean { return this.useTargetHeightProperty.value; }
+  public set useTargetHeight(value: boolean) { this.useTargetHeightProperty.value = value; }
 
-  private _cameraHeightValue: DialogItemValue = { value: 0.0 };
-  public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
-  public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
-  private static _cameraHeightName = "cameraHeight";
-  private static _cameraHeightDescription?: LengthDescription;
-  private _getCameraHeightDescription = (): PropertyDescription => {
-    if (!SetupCameraTool._cameraHeightDescription)
-      SetupCameraTool._cameraHeightDescription = new LengthDescription(SetupCameraTool._cameraHeightName, ViewTool.translate("SetupCamera.Labels.CameraHeight"));
-    return SetupCameraTool._cameraHeightDescription;
-  };
-
-  private _targetHeightValue: DialogItemValue = { value: 0.0 };
-  public get targetHeight(): number { return this._targetHeightValue.value as number; }
-  public set targetHeight(option: number) { this._targetHeightValue.value = option; }
-  private static _targetHeightName = "targetHeight";
-  private static _targetHeightDescription?: LengthDescription;
-  private _getTargetHeightDescription = (): PropertyDescription => {
-    if (!SetupCameraTool._targetHeightDescription)
-      SetupCameraTool._targetHeightDescription = new LengthDescription(SetupCameraTool._targetHeightName, ViewTool.translate("SetupCamera.Labels.TargetHeight"));
-    return SetupCameraTool._targetHeightDescription;
-  };
+  private _targetHeightProperty: DialogProperty<number> | undefined;
+  public get targetHeightProperty() {
+    if (!this._targetHeightProperty)
+      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")),
+        0.0, undefined, !this.useTargetHeight);
+    return this._targetHeightProperty;
+  }
+  public get targetHeight(): number { return this.targetHeightProperty.value; }
+  public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
   private syncCameraHeightState(): void {
-    const cameraHeightValue = { value: this.cameraHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight) };
-    const syncItem: DialogPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
-    this.syncToolSettingsProperties([syncItem]);
+    this.cameraHeightProperty.displayValue = (this.cameraHeightProperty.description as LengthDescription).format(this.cameraHeight);
+    this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
+    this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    const targetHeightValue = { value: this.targetHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.targetHeight) };
-    const syncItem: DialogPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
-    this.syncToolSettingsProperties([syncItem]);
+    this.targetHeightProperty.displayValue = (this.targetHeightProperty.description as LengthDescription).format(this.targetHeight);
+    this.targetHeightProperty.isDisabled = !this.useTargetHeight;
+    this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
   }
 
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
-    if (updatedValue.propertyName === SetupCameraTool._useCameraHeightName) {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (updatedValue.propertyName === this.useCameraHeightProperty.name) {
       this.useCameraHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue });
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useCameraHeightProperty.item);
       this.syncCameraHeightState();
-    } else if (updatedValue.propertyName === SetupCameraTool._useTargetHeightName) {
+    } else if (updatedValue.propertyName === this.useTargetHeightProperty.name) {
       this.useTargetHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useTargetHeightName, value: this._useTargetHeightValue });
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useTargetHeightProperty.item);
       this.syncTargetHeightState();
-    } else if (updatedValue.propertyName === SetupCameraTool._cameraHeightName) {
+    } else if (updatedValue.propertyName === this.cameraHeightProperty.name) {
       this.cameraHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue });
-    } else if (updatedValue.propertyName === SetupCameraTool._targetHeightName) {
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.cameraHeightProperty.item);
+    } else if (updatedValue.propertyName === this.targetHeightProperty.name) {
       this.targetHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue });
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.targetHeightProperty.item);
     }
     return true;
   }
 
-  public supplyToolSettingsProperties(): DialogItem[] | undefined {
-
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
+      [
+        this.useCameraHeightProperty.name, this.useTargetHeightProperty.name, this.cameraHeightProperty.name, this.targetHeightProperty.name,
+      ])
       ?.forEach((value) => {
-        if (value.propertyName === SetupCameraTool._useCameraHeightName)
-          this._useCameraHeightValue = value.value;
-        else if (value.propertyName === SetupCameraTool._cameraHeightName)
-          this._cameraHeightValue = value.value;
-        else if (value.propertyName === SetupCameraTool._useTargetHeightName)
-          this._useTargetHeightValue = value.value;
-        else if (value.propertyName === SetupCameraTool._targetHeightName)
-          this._targetHeightValue = value.value;
+        if (value.propertyName === this.useCameraHeightProperty.name)
+          this.useCameraHeightProperty.dialogItemValue = value.value;
+        else if (value.propertyName === this.cameraHeightProperty.name)
+          this.cameraHeightProperty.dialogItemValue = value.value;
+        else if (value.propertyName === this.useTargetHeightProperty.name)
+          this.useTargetHeightProperty.dialogItemValue = value.value;
+        else if (value.propertyName === this.targetHeightProperty.name)
+          this.targetHeightProperty.dialogItemValue = value.value;
       });
 
-    const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription() };
-    const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription() };
+    // ensure controls are enabled/disabled base on current lock property state
+    this.targetHeightProperty.isDisabled = !this.useTargetHeight;
+    this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
+
+    const cameraHeightLock = this.useCameraHeightProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
+    const targetHeightLock = this.useTargetHeightProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 });
 
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 }, lockProperty: useCameraHeight });
-    toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 }, lockProperty: useTargetHeight });
+    toolSettings.push(this.cameraHeightProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, cameraHeightLock));
+    toolSettings.push(this.targetHeightProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, targetHeightLock));
     return toolSettings;
   }
 }
 
 /** A tool that sets a walk tool starting position by a floor point and look direction. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
- * @beta
+ * @public
  */
 export class SetupWalkCameraTool extends PrimitiveTool {
-  public static toolId = "View.SetupWalkCamera";
-  public static iconSpec = "icon-camera-location";
+  public static override toolId = "View.SetupWalkCamera";
+  public static override iconSpec = "icon-camera-location";
   public viewport?: ScreenViewport;
   protected _haveEyePt: boolean = false;
   protected _eyePtWorld: Point3d = Point3d.create();
   protected _targetPtWorld: Point3d = Point3d.create();
 
-  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
-  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onUnsuspend(): void { this.provideToolAssistance(); }
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+  public override requireWriteableTarget(): boolean { return false; }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
   protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) this.onReinitialize(); else this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) await this.onReinitialize(); else await this.exitTool(); return EventHandled.Yes; }
 
   /** @beta */
   protected provideToolAssistance(): void {
@@ -4320,16 +4327,16 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new SetupWalkCameraTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   protected getAdjustedEyePoint() { return this._eyePtWorld.plusScaled(Vector3d.unitZ(), ToolSettings.walkEyeHeight); }
   protected getAdjustedTargetPoint() { return Point3d.create(this._targetPtWorld.x, this._targetPtWorld.y, this.getAdjustedEyePoint().z); }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport) {
       return EventHandled.Yes;
     } else if (undefined === this.viewport) {
@@ -4346,7 +4353,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     if (this._haveEyePt) {
       this._targetPtWorld.setFrom(ev.point);
       this.doManipulation();
-      this.onReinitialize();
+      await this.onReinitialize();
     } else {
       this._eyePtWorld.setFrom(ev.point);
       this._targetPtWorld.setFrom(this._eyePtWorld);
@@ -4357,7 +4364,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public async onMouseMotion(ev: BeButtonEvent) {
+  public override async onMouseMotion(ev: BeButtonEvent) {
     if (!this._haveEyePt)
       return;
     this._targetPtWorld.setFrom(ev.point);
@@ -4402,7 +4409,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
   }
 
   private static getFigureTransform(vp: Viewport, base: Point3d, direction: Vector3d, scale: number): Transform | undefined {
-    const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
+    const boresite = AccuDrawHintBuilder.getBoresite(base, vp);
     if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.9999)
       return undefined;
 
@@ -4442,14 +4449,14 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderVis);
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (!this._haveEyePt || undefined === this.viewport)
       return;
     SetupWalkCameraTool.drawFigure(context, this.viewport, this._eyePtWorld, ToolSettings.walkEyeHeight);
     SetupCameraTool.drawCameraFrustum(context, this.viewport, this.getAdjustedEyePoint(), this.getAdjustedTargetPoint(), this._eyePtWorld, this._targetPtWorld);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+  public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
   private doManipulation(): void {
     const vp = this.viewport;
@@ -4460,10 +4467,10 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     if (!view.is3d() || !view.allow3dManipulations())
       return;
 
-    const eyePtWorld = this.getAdjustedEyePoint();
-    const targetPtWorld = this.getAdjustedTargetPoint();
+    const eyePoint = this.getAdjustedEyePoint();
+    const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(), lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });

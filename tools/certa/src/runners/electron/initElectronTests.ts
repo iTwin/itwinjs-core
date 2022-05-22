@@ -2,7 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
+
+// NB: This has to happen _before_ we import mocha!
+window._CertaConsole = (name: string, args: any[] = [""]) => {
+  if (args.length === 0)
+    args.push("");
+
+  return ipcRenderer.sendSync("certa-console", name, ...args);
+};
+import "../../utils/initLogging";
+
 import Mocha = require("mocha");
 
 window.onerror = (_message: any, _source: any, _lineno: any, _colno: any, error: any) => {
@@ -18,12 +28,6 @@ window.onunhandledrejection = (event: any) => {
 // Initialize mocha
 declare const window: any;
 window.mocha = new Mocha();
-window._CertaConsole = (name: string, args: any[] = [""]) => {
-  if (args.length === 0)
-    args.push("");
-
-  return remote.getGlobal("console")[name].apply(remote.getGlobal("console"), args);
-};
 import "../../utils/initMocha";
 
 async function startCertaTests(entryPoint: string) {

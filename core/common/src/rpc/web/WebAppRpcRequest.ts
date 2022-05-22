@@ -6,23 +6,24 @@
  * @module RpcInterface
  */
 
-import "@ungap/url-search-params/index";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
-import { RpcMultipart } from "./RpcMultipart";
+import { ReadableFormData, RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/** @public */
+/** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
 
 /** A web application RPC request.
- * @public
+ * @internal
  */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
@@ -33,27 +34,26 @@ export class WebAppRpcRequest extends RpcRequest {
   /** The maximum size permitted for an encoded component in a URL.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
-  public static maxUrlComponentSize = 1024;
+  public static maxUrlComponentSize = 4096;
 
   /** The HTTP method for this request. */
-  public method: HttpMethod_T;
+  public override method: HttpMethod_T;
 
   /** Convenience access to the protocol of this request. */
-  public readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
+  public override readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
 
   /** Standardized access to metadata about the request (useful for purposes such as logging). */
   public metadata = { status: 0, message: "" };
 
   /** Parse headers */
-  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedClientRequestContext {
-    const headerNames: SerializedClientRequestContext = protocol.serializedClientRequestContextHeaderNames;
-    const parsedHeaders: SerializedClientRequestContext = {
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
+    const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: SerializedRpcActivity = {
       id: req.header(headerNames.id) || "",
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      authorization: headerNames.authorization ? req.header(headerNames.authorization) : undefined,
-      userId: headerNames.userId ? req.header(headerNames.userId) : undefined,
+      authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
     };
     return parsedHeaders;
   }
@@ -96,16 +96,48 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Sends the response for a web request. */
-  public static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  public static async sendResponse(
+    protocol: WebAppRpcProtocol,
+    request: SerializedRpcRequest,
+    fulfillment: RpcRequestFulfillment,
+    req: HttpServerRequest,
+    res: HttpServerResponse,
+  ): Promise<void> {
+    const versionHeader = protocol.protocolVersionHeaderName;
+    if (versionHeader && RpcProtocol.protocolVersion) {
+      res.set(versionHeader, RpcProtocol.protocolVersion.toString());
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
+    const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
+
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
+    let responseBody;
     if (transportType === RpcContentType.Binary) {
-      WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureBinary(fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
-      WebAppRpcRequest.sendMultipart(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureMultipart(fulfillment, res);
     } else if (transportType === RpcContentType.Stream) {
-      WebAppRpcRequest.sendStream(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureStream(fulfillment);
     } else {
-      WebAppRpcRequest.sendText(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureText(fulfillment, res);
+    }
+
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
+    res.status(fulfillment.status);
+
+    if (fulfillment.allowCompression && req.header("Accept-Encoding")?.includes("gzip")) {
+      res.set("Content-Encoding", "gzip");
+      const readableResponseBody = (responseBody instanceof Stream) ? responseBody : Readable.from(responseBody);
+      responseBody = readableResponseBody.pipe(createGzip());
+    }
+
+    // This check should in theory look for instances of Readable, but that would break backend implementation at
+    // core/backend/src/RpcBackend.ts
+    if (responseBody instanceof Stream) {
+      responseBody.pipe(res);
+    } else {
+      res.send(responseBody);
     }
   }
 
@@ -139,7 +171,7 @@ export class WebAppRpcRequest extends RpcRequest {
     return this._response;
   }
 
-  protected isHeaderAvailable(name: string): boolean {
+  protected override isHeaderAvailable(name: string): boolean {
     const allowed = this.protocol.allowedHeaders;
     return allowed.has("*") || allowed.has(name);
   }
@@ -162,12 +194,33 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        reject(new ServerError(-1, reason || "Server connection error."));
+        reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
       }
     });
   }
 
-  protected handleUnknownResponse(code: number) {
+  protected override computeRetryAfter(attempts: number): number {
+    const retryAfter = this._response && this._response.headers.get("Retry-After");
+    if (retryAfter) {
+      this.resetTransientFaultCount();
+
+      const r = Number(retryAfter);
+      if (Number.isFinite(r)) {
+        return r * 1000;
+      }
+
+      const d = Date.parse(retryAfter);
+      if (!Number.isNaN(d)) {
+        return d - Date.now();
+      }
+    } else {
+      this.recordTransientFault();
+    }
+
+    return super.computeRetryAfter(attempts);
+  }
+
+  protected override handleUnknownResponse(code: number) {
     if (this.protocol.isTimeout(code)) {
       this.reject(new ServerTimeoutError("Request timeout."));
     } else {
@@ -185,6 +238,13 @@ export class WebAppRpcRequest extends RpcRequest {
         if (!response) {
           reject(new IModelError(BentleyStatus.ERROR, "Invalid state."));
           return;
+        }
+
+        if (this.protocol.protocolVersionHeaderName) {
+          const version = response.headers.get(this.protocol.protocolVersionHeaderName);
+          if (version) {
+            this.responseProtocolVersion = parseInt(version, 10);
+          }
         }
 
         const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);
@@ -206,7 +266,7 @@ export class WebAppRpcRequest extends RpcRequest {
           return;
 
         this._loading = false;
-        reject(new ServerError(this.metadata.status, reason || "Unknown server response error."));
+        reject(new ServerError(this.metadata.status, typeof (reason) === "string" ? reason : "Unknown server response error."));
       }
     });
   }
@@ -227,25 +287,24 @@ export class WebAppRpcRequest extends RpcRequest {
     if (success && request.caching === RpcResponseCacheControl.Immutable) {
       res.set("Cache-Control", "private, max-age=31536000, immutable");
     }
+
+    if (fulfillment.retry) {
+      res.set("Retry-After", fulfillment.retry);
+    }
   }
 
-  private static sendText(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const response = (fulfillment.status === 204) ? "" : fulfillment.result.objects;
+  private static configureText(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): string {
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status).send(response);
+    return (fulfillment.status === 204) ? "" : fulfillment.result.objects;
   }
 
-  private static sendBinary(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const data = fulfillment.result.data[0];
-    const response = Buffer.isBuffer(data) ? data : Buffer.from(data);
-
+  private static configureBinary(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): Buffer {
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status).send(response);
+    const data = fulfillment.result.data[0];
+    return Buffer.isBuffer(data) ? data : Buffer.from(data);
   }
 
-  private static sendMultipart(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  private static configureMultipart(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): ReadableFormData {
     const response = RpcMultipart.createStream(fulfillment.result);
     const headers = response.getHeaders();
     for (const header in headers) {
@@ -254,16 +313,11 @@ export class WebAppRpcRequest extends RpcRequest {
       }
     }
 
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status);
-    response.pipe(res);
+    return response;
   }
 
-  private static sendStream(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const response = fulfillment.result.stream;
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status);
-    response!.pipe(res);
+  private static configureStream(fulfillment: RpcRequestFulfillment) {
+    return fulfillment.result.stream!;
   }
 
   private static parseFromPath(operation: SerializedRpcOperation): RpcSerializedValue {
@@ -352,7 +406,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private setupTextTransport(parameters: RpcSerializedValue) {
     if (this.operation.policy.allowResponseCaching(this)) {
-      const encodedBody = btoa(parameters.objects);
+      const encodedBody = btoa(parameters.objects); // eslint-disable-line deprecation/deprecation
       if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
         this._request.method = "get";
         this._request.body = undefined;

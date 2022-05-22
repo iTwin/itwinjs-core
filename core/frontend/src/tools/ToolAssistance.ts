@@ -12,6 +12,7 @@ import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
  * @public
+ * @extensions
  */
 export enum ToolAssistanceImage {
   /** When Keyboard is specified, ToolAssistanceInstruction.keyboardInfo should be set. */
@@ -52,6 +53,7 @@ export enum ToolAssistanceImage {
 
 /** Input Method for Tool Assistance instruction
  * @public
+ * @extensions
  */
 export enum ToolAssistanceInputMethod {
   /** Instruction applies to both touch & mouse input methods */
@@ -64,6 +66,7 @@ export enum ToolAssistanceInputMethod {
 
 /** Tool Assistance image keyboard keys
  * @public
+ * @extensions
  */
 export interface ToolAssistanceKeyboardInfo {
   /** Text for keys to display */
@@ -74,6 +77,7 @@ export interface ToolAssistanceKeyboardInfo {
 
 /** Interface used to describe a Tool Assistance instruction.
  * @public
+ * @extensions
  */
 export interface ToolAssistanceInstruction {
   /** Name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
@@ -92,6 +96,7 @@ export interface ToolAssistanceInstruction {
 
 /** Interface used to describe a Tool Assistance section with a label and a set of instructions.
  * @public
+ * @extensions
  */
 export interface ToolAssistanceSection {
   /** Instructions in the section. */
@@ -102,6 +107,7 @@ export interface ToolAssistanceSection {
 
 /** Interface used to describe Tool Assistance for a tool's state.
  * @public
+ * @extensions
  */
 export interface ToolAssistanceInstructions {
   /** The main instruction. */
@@ -112,6 +118,7 @@ export interface ToolAssistanceInstructions {
 
 /** Tool Assistance helper methods.
  * @public
+ * @extensions
  */
 export class ToolAssistance {
 
@@ -130,8 +137,8 @@ export class ToolAssistance {
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
-  private static translateKey(key: string) { return IModelApp.i18n.translate(`${CoreTools.namespace}:toolAssistance.${key}`); }
-  private static translateTouch(cursor: string) { return IModelApp.i18n.translate(`${CoreTools.namespace}:touchCursor.${cursor}`); }
+  private static translateKey(key: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`); }
+  private static translateTouch(cursor: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`); }
 
   /** Alt key text. */
   public static get altKey(): string {
@@ -262,7 +269,7 @@ export class ToolAssistance {
    */
   public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
     const accuSnap = IModelApp.accuSnap;
-    if (accuSnap.isSnapEnabled && accuSnap.isSnapEnabledByUser && undefined === accuSnap.touchCursor) {
+    if (undefined === accuSnap.touchCursor && accuSnap.wantVirtualCursor) {
       instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch));
       return true;
     } else if (undefined !== accuSnap.touchCursor) {

@@ -1,7 +1,0 @@
-sep=;
-Release Tag;API Item
-alpha;BasicOAuthIntrospectionClient 
-internal;ImsIntrospectionResponse 
-internal;ImsOAuthIntrospectionClient 
-alpha;IntrospectionResponse 
-alpha;class OAuthIntrospectionClient

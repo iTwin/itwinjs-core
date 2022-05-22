@@ -74,12 +74,12 @@ export function createTextBox(props: TextBoxProps): TextBox {
   textbox.onkeydown = textbox.onkeyup = stopPropagation;
   const keypresshandler = props.keypresshandler;
   if (undefined !== keypresshandler) {
-    textbox.onkeypress = (ev: KeyboardEvent) => {
+    textbox.onkeypress = (ev: KeyboardEvent) => { // eslint-disable-line deprecation/deprecation
       keypresshandler(textbox, ev);
       ev.stopPropagation();
     };
   } else {
-    textbox.onkeypress = stopPropagation;
+    textbox.onkeypress = stopPropagation; // eslint-disable-line deprecation/deprecation
   }
 
   const focushandler = props.focushandler;

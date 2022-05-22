@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
 .uifw-statusFields-shadowField {
   background-color: $buic-background-statusbar;
@@ -10,10 +10,6 @@
   $font-size-small: $font-size-medium;
   // overflow: hidden;
   // width: 20em;
-}
-
-.statusfield-checkbox-label {
-  background-color: $buic-background-statusbar;
 }
 
 .statusfield-checkbox {

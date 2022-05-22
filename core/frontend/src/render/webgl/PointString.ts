@@ -6,17 +6,17 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
-import { PointStringParams } from "../primitives/VertexTable";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { FeatureIndexType, QParams3d } from "@itwin/core-common";
+import { PointStringParams } from "../primitives/PointStringParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -51,10 +51,10 @@ export class PointStringGeometry extends LUTGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return true; }
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointString; }
-  public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
-  public get hasFeatures() { return this._hasFeatures; }
+  public override getPass(): Pass { return "opaque-linear"; }
+  public override get hasFeatures() { return this._hasFeatures; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  protected _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
+  protected override _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;

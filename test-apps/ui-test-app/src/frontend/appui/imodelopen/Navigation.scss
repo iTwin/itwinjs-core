@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/index";
+@import "~@itwin/core-react/lib/cjs/core-react/style/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 //$separator-background: #F0F0F0;
 $navbar-itemheight: 54px;
@@ -89,7 +90,7 @@ $navbar-hovercolor: $uicore-blue;
   padding-left: 24px;
   text-decoration: none;
   user-select: none;
-  font-size: $uicore-font-size-leading;
+  font-size: $iui-font-size-leading;
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
@@ -140,9 +141,9 @@ $navbar-hovercolor: $uicore-blue;
 .open-navbar:hover li .label,
 .open-navbar.pinned ul li .label {
   opacity: 1;
-  -webkit-transform: scale(1,1);
-  -ms-transform: scale(1,1);
-  transform: scale(1,1);
+  -webkit-transform: scale(1, 1);
+  -ms-transform: scale(1, 1);
+  transform: scale(1, 1);
 }
 
 .open-navbar ul li:hover {
@@ -155,14 +156,14 @@ $navbar-hovercolor: $uicore-blue;
 }
 
 .open-navbar-movebarindicator {
-	position: absolute;
-	top: 0;
-	left: 0;
-	height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
   width: 3px;
-	background: $uicore-blue;
-	content: '';
-	-webkit-transition: -webkit-transform 0.3s;
+  background: $uicore-blue;
+  content: '';
+  -webkit-transition: -webkit-transform 0.3s;
   transition: transform 0.3s;
   //z-index: 2; //to travel on top of the borders
 }
@@ -170,13 +171,13 @@ $navbar-hovercolor: $uicore-blue;
 .open-navbar-barindicator {
   display: none;
   position: absolute;
-	top: 0;
+  top: 0;
   left: 0;
   bottom: 0;
-	height: 100%;
+  height: 100%;
   width: 3px;
   background: $uicore-blue;
-	content: '';
+  content: '';
 }
 
 .open-navbar .navnode.active .open-navbar-barindicator {

@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.test-popup-test-panel-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.test-popup-test-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-table-widget-container {
+  width: 100%;
+  height: 200px;
+}

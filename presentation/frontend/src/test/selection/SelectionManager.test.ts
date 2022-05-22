@@ -5,14 +5,11 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { InstanceKey, KeySet, SelectionScope } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import {
-  createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "typemoq";
+import { Id64, Id64Arg, Id64String, using } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
+import { InstanceKey, KeySet, SelectionScope } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs } from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
@@ -495,7 +492,12 @@ describe("SelectionManager", () => {
       const equalId64Arg = (lhs: Id64Arg, rhs: Id64Arg) => {
         if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs))
           return false;
-        return Id64.iterate(lhs, (lhsId) => Id64.has(rhs, lhsId));
+
+        for (const lhsId of Id64.iterable(lhs))
+          if (!Id64.has(rhs, lhsId))
+            return false;
+
+        return true;
       };
 
       beforeEach(() => {

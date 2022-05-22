@@ -6,18 +6,19 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
-import { ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a [[SpatialViewState]].
  * It defines the set of [[ModelState]]s drawn within the view as a set of IDs.
  * @public
+ * @extensions
  */
 export class ModelSelectorState extends ElementState {
   /** @internal */
-  public static get className() { return "ModelSelector"; }
+  public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();
 
@@ -46,7 +47,7 @@ export class ModelSelectorState extends ElementState {
   /** The name of this ModelSelector */
   public get name(): string { return this.code.value; }
 
-  public toJSON(): ModelSelectorProps {
+  public override toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
     val.models = [];
     this.models.forEach((model) => val.models.push(model));
@@ -72,12 +73,14 @@ export class ModelSelectorState extends ElementState {
 
   /** Add one or more models to this ModelSelectorState */
   public addModels(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.models.add(id));
+    for (const id of Id64.iterable(arg))
+      this.models.add(id);
   }
 
   /** Drop one or more models from this ModelSelectorState */
   public dropModels(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.models.delete(id));
+    for (const id of Id64.iterable(arg))
+      this.models.delete(id);
   }
 
   /** Determine whether this ModelSelectorState includes the specified modelId value */

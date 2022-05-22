@@ -6,7 +6,7 @@
  * @module LinearReferencing
  */
 
-import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "@bentley/imodeljs-common";
+import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "@itwin/core-common";
 
 /** Properties of an ILinearElement
  * @beta

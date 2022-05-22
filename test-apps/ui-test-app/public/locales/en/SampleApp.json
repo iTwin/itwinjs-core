@@ -28,26 +28,10 @@
     "loading": "Loading..."
   },
   "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
-    "dark": "Dark",
-    "systemPreferred": "System preferred",
-    "themeTitle": "Theme",
-    "themeDescription": "Toggle the theme between light and dark",
-    "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
-    "dragInteractionTitle": "Drag Interaction",
-    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
-    "newUiTitle": "Use 2.0 Ui",
-    "newUiDescription": "Use new 2.0 UI layout",
-    "useProximityOpacityTitle": "Change Toolbar Opacity",
-    "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
-    "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
     "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
     "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
-    "widgetOpacityTitle": "Widget Opacity",
-    "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+    "dark": "Dark",
+    "light": "Light"
   },
   "QuantityFormatModalFrontstage": {
     "QuantityFormatStage": "Quantity Format Overrides"
@@ -59,6 +43,7 @@
     "testFrontstage3": "Table Content",
     "testFrontstage4": "Test Messages & Dialogs",
     "testFrontstageUi20": "Ui-20 Stage",
+    "testFrontstageNoWidgets": "No Widgets Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
@@ -117,6 +102,7 @@
   "buttons": {
     "toolGroup": "Tool Group",
     "anotherGroup": "Another Group",
+    "selectViewToActivate": "Select View to activate",
     "tool1": "Tool 1",
     "tool2": "Tool 2",
     "tool3": "Tool 3",
@@ -192,7 +178,8 @@
     "misc": "Miscellaneous",
     "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
     "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
-    "bumpToolSettingToggle": "Bump Tool Setting Toggle"
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle",
+    "sketch": "Sketch New Geometry"
   },
   "tools": {
     "ToolWithSettings": {
@@ -212,7 +199,8 @@
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle",
-        "ImageCheckBox": "Image Check Box"
+        "ImageCheckBox": "Image Check Box",
+        "Number": "Number"
       },
       "Options": {
         "Red": "Red",
@@ -240,6 +228,11 @@
         "Pennsylvania": "Pennsylvania",
         "NewYork": "New York"
       }
+    },
+    "MapFeatureInfoTool": {
+      "keyin": "MapFeatureInfo",
+      "description": "Map Feature Info",
+      "flyover": "Map Feature Info"
     },
     "Tool1": {
       "keyin": "Test Tool1",
@@ -314,10 +307,22 @@
         "stop": "Stop"
       }
     },
+    "EditingSession": {
+      "keyin": "test edit"
+    },
+    "SaveContentLayoutTool": {
+      "flyover": "Save Content Layout"
+    },
+    "RestoreSavedContentLayoutTool": {
+      "flyover": "Restore Content Layout"
+    },
+    "RemoveSavedContentLayoutTool": {
+      "flyover": "Remove Saved Content Layout"
+    },
     "PlaceBlock": {
-      "keyin": "place block",
-      "description": "Place block",
-      "flyover": "Place block",
+      "keyin": "test place block",
+      "description": "Place Block",
+      "flyover": "Place Block",
       "prompts": {
         "firstPoint": "First point",
         "nextPoint": "Next point (Ctrl for polygon)",
@@ -326,21 +331,6 @@
       "ToolSettings": {
         "heigh": "Height"
       }
-    },
-    "DeleteElement": {
-      "keyin": "Test DeleteElementTool",
-      "description": "Delete element tool",
-      "flyover": "Delete Element"
-    },
-    "MoveElement": {
-      "keyin": "Test MoveElementTool",
-      "description": "Move element tool",
-      "flyover": "Move Element"
-    },
-    "PlaceLineString": {
-      "keyin": "Test PlaceLineString Tool",
-      "description": "Place Line-string tool",
-      "flyover": "Place Line-string"
     }
   },
   "widgets": {
@@ -357,8 +347,7 @@
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
-    "ModelCreation": "Create Models",
-    "MobxDemoWidget": "Mobx Demo"
+    "ModelCreation": "Create Models"
   },
   "localFileStage": {
     "localFile": "Local File",
@@ -369,6 +358,12 @@
       "tooltip": "Display Style",
       "label": "Display"
     },
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull",
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"
@@ -414,5 +409,31 @@
       "clockwise": "Clockwise",
       "counter-clockwise": "Counter-Clockwise"
     }
+  },
+  "signIn": {
+    "prompt": "Please sign in to access your Bentley services.",
+    "signInButton": "Sign In",
+    "profilePrompt": "Don't have a profile?",
+    "register": "Register",
+    "offlineButton": "Work Offline?",
+    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
+  },
+  "userProfile": {
+    "userprofile": "User Profile",
+    "signout": "Sign Out",
+    "signoutprompt": "Do you want to sign out?"
+  },
+  "iModelIndex": {
+    "views": "Views",
+    "3dModels": "3D Models",
+    "enteriModeling": "Enter iModel",
+    "upToDate": "You have the latest version.",
+    "updatesAvailable": "Later changes are available",
+    "toastTitle": "Need more control?",
+    "toastMessage": "Try ProjectWise Document Codes.",
+    "learnMore": "Learn more",
+    "enteriModel": "Enter iModel",
+    "noSavedView": "No saved views were found.",
+    "nextTab": "Switching you to the 3D Models tab..."
   }
 }

@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+
+$nz-scrollbar-width: 12px;
+$nz-scrollbar-padding: 2px;
+
+@mixin nz-scrollbar($color: $buic-background-scrollbar, $width: $nz-scrollbar-width, $padding: $nz-scrollbar-padding) {
+  @include uicore-scrollbar($color, $width, $padding);
+}
+
+@mixin nz-hidden-scrollbar {
+  @include uicore-hidden-scrollbar;
+}

@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import {
   CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable,
-} from "../bentleyjs-core";
+} from "../core-bentley";
 
 class Uint64Id {
   public constructor(public readonly high: number,
@@ -182,12 +182,12 @@ describe("Ids", () => {
     const test = (arg: Id64Arg) => {
       const uint32Set = new Id64.Uint32Set(arg);
       expect(uint32Set.size).to.equal(Id64.sizeOf(arg));
-      Id64.forEach(arg, (id) => {
+      for (const id of Id64.iterable(arg)) {
         expect(uint32Set.hasId(id)).to.be.true;
 
         // While we're here, test Id64.has()
         expect(Id64.has(arg, id)).to.be.true;
-      });
+      }
     };
 
     test("0x123");

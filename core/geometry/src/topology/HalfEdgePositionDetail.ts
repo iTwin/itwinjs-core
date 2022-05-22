@@ -17,10 +17,16 @@ import { HalfEdge } from "./Graph";
 export enum HalfEdgeTopo {
   /** No known position */
   None = 0,
-  /**  */
+  /**  Sitting at a vertex, reached by a ray in this sector */
   Vertex = 1,
+  /** Sitting on an edge */
   Edge = 2,
+  /** Face point (before hitting barrier edge) */
   Face = 3,
+  /** Exterior point (after hitting barrier edge at fraction)
+   * Fraction is 0 if exterior point "in sweep around exterior corner"
+  */
+  ExteriorFace
 }
 /**
  * Description of a generalized position within a graph, categorized as:
@@ -43,16 +49,19 @@ export class HalfEdgePositionDetail {
   private _iTag?: number;
   /** second data tag */
   private _dTag?: number;
+  /** Special case for point on edge or vertex but target beyond and exterior. */
+  private _isExteriorTarget?: boolean;
   /** Constructor.
    * * The point is CAPTURED.  (static `create` methods normally clone their inputs.)
    */
-  private constructor(node: HalfEdge | undefined, x: number, y: number, z: number, topo: HalfEdgeTopo, edgeFraction?: number, iTag?: number, _dTag?: number) {
+  private constructor(node: HalfEdge | undefined, x: number, y: number, z: number, topo: HalfEdgeTopo, edgeFraction?: number, iTag?: number, dTag?: number, isExteriorTarget?: boolean) {
     this._node = node;
     this.x = x; this.y = y; this.z = z;
     this._topo = topo;
     this._edgeFraction = edgeFraction;
     this._iTag = iTag;
-    this._dTag = _dTag;
+    this._dTag = dTag;
+    this._isExteriorTarget = isExteriorTarget;
   }
 
   /** Copy (clones of) all data from other */
@@ -105,6 +114,7 @@ export class HalfEdgePositionDetail {
       this.y = xyz.y;
       this.z = xyz.z;
     }
+    this._isExteriorTarget = undefined;
     return this;
   }
 
@@ -116,6 +126,7 @@ export class HalfEdgePositionDetail {
     this._iTag = 0;
     this._dTag = dTag;
     this._node = undefined;
+    this._isExteriorTarget = undefined;
     return this;
   }
 
@@ -131,6 +142,7 @@ export class HalfEdgePositionDetail {
     this.x = Geometry.interpolate(node.x, edgeFraction, nodeB.x);
     this.y = Geometry.interpolate(node.y, edgeFraction, nodeB.y);
     this.z = Geometry.interpolate(node.z, edgeFraction, nodeB.z);
+    this._isExteriorTarget = undefined;
     return this;
   }
 
@@ -141,14 +153,19 @@ export class HalfEdgePositionDetail {
     return new HalfEdgePositionDetail(node, node.x, node.y, node.z, HalfEdgeTopo.Vertex);
   }
 
-  /** Create with node and (optional) xyz, marked as "HalfEdgeTopo.Vertex"
-   * * if the xyz is omitted, take from the node.
+  /** Mark as "HalfEdgeTopo.Vertex"
    */
   public resetAsVertex(node: HalfEdge): HalfEdgePositionDetail {
     this._topo = HalfEdgeTopo.Vertex;
     this._node = node;
+    this._edgeFraction = 0.0;
     this.setXYZFromNode(node);
+    this._isExteriorTarget = undefined;
     return this;
+  }
+  /**  Set the flag for an exterior relationship to target. */
+  public setIsExteriorTarget(isExterior: boolean | undefined) {
+    this._isExteriorTarget = isExterior;
   }
   /** Copy x,y,z from the node to this instance local values. */
   public setXYZFromNode(node: HalfEdge) {
@@ -161,6 +178,12 @@ export class HalfEdgePositionDetail {
    */
   public get edgeFraction(): number | undefined {
     return this._edgeFraction;
+  }
+  /**  property access for the flag for an exterior relationship to target.
+   * * undefined flag is returned as false.
+  */
+  public get isExteriorTarget(): boolean {
+    return this._isExteriorTarget !== undefined ? this._isExteriorTarget : false;
   }
 
   /** Return true if this detail is marked as being within a face. */

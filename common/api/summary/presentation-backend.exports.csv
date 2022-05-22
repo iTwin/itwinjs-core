@@ -1,25 +1,32 @@
 sep=;
 Release Tag;API Item
-alpha;BackendDiagnosticsOptions 
+public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
-beta;DuplicateRulesetHandlingStrategy
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
+internal;getKeysForContentRequest(keys: Readonly
+internal;getLocalesDirectory: (assetsDirectory: string) => string
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
+alpha;MultiElementPropertiesResponse
+public;MultiManagerPresentationProps 
+internal;normalizeVersion(version?: string): string
 public;Presentation
-beta;PresentationBackendLoggerCategory
-beta;PresentationBackendNativeLoggerCategory
+public;PresentationBackendLoggerCategory
+public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
-public;PresentationProps = PresentationPropsDeprecated | PresentationPropsNew
-public;PresentationPropsDeprecated 
-public;PresentationPropsNew 
+public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
+public;PresentationPropsBase 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
+beta;RulesetInsertOptions
 public;RulesetManager
+internal;RulesetManagerImpl 
 public;RulesetVariablesManager
-beta;WithClientRequestContext
+internal;RulesetVariablesManagerImpl 
+public;SingleManagerPresentationProps 
+public;UnitSystemFormat

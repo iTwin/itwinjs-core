@@ -1,9 +1,1632 @@
 {
-  "name": "@bentley/imodeljs-frontend",
+  "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.2.0",
+      "tag": "@itwin/core-frontend_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Dispose reality mesh textures when disposing the tiles are dispose"
+          },
+          {
+            "comment": "Use a function constructor to avoid webpack warnings when dynamically importing extension files."
+          },
+          {
+            "comment": "Fixed visibility of edges when using Ambient Occlusion"
+          },
+          {
+            "comment": "Added documentation for MapLayerKey."
+          },
+          {
+            "comment": "MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods."
+          },
+          {
+            "comment": "Improve RealityTile loading priority calculation"
+          },
+          {
+            "comment": "Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size."
+          },
+          {
+            "comment": "ViewState3d.lookAtGlobalLocation should account for orthographic view points."
+          },
+          {
+            "comment": "Mark animateFrustumChange public."
+          },
+          {
+            "comment": "Added public method IModelConnection.getMassPropertiesPerCandidate."
+          },
+          {
+            "comment": "bugfix for viewstate2d's hydrateViewState"
+          },
+          {
+            "comment": "Add preload, postload functions to ViewStates. Use hydrateViewState in load function"
+          },
+          {
+            "comment": "Fix bug in which DisplayStyleState.changeBackgroundMapProvider failed to preserve previous values as advertised."
+          },
+          {
+            "comment": "Prevent calls to readPixels from being enqueued when mousing over canvas decorations."
+          },
+          {
+            "comment": "Fix scaled monochrome mode not applying to instanced geometry."
+          },
+          {
+            "comment": "Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic."
+          },
+          {
+            "comment": "Added connectViewports and related functions to enable synchronizing the states of any number of viewports."
+          },
+          {
+            "comment": "Do not produce mip-maps for reality tile textures."
+          },
+          {
+            "comment": "Make Viewport.readPixels return undefined if the viewport has been disposed."
+          },
+          {
+            "comment": "Ensure the render loop is processed immediately after the selection set changes."
+          },
+          {
+            "comment": "Reduce number of OnMotionSnap call"
+          },
+          {
+            "comment": "Use zoom target on reality tile priority calculation"
+          },
+          {
+            "comment": "Add support for remote extensions"
+          },
+          {
+            "comment": "Catch snap abandoned exception."
+          },
+          {
+            "comment": "Add extension API generation"
+          },
+          {
+            "comment": "Fix view zoom jumps on touch devices"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-frontend_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-frontend_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects.\""
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-frontend_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improved support for WMS 1.1.1 servers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-frontend_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Non-pickable decorations used to fail to render if Ambient Occlusion was enabled."
+          },
+          {
+            "comment": "Add support for map layers using model geometry."
+          },
+          {
+            "comment": "Fix overlay map layers that were displayed at the wrong elevation"
+          },
+          {
+            "comment": "Deprecate IModelReadRpcInterface.getViewThumbnail"
+          },
+          {
+            "comment": "Add support for decoding draco-compressed point clouds and glTF meshes."
+          },
+          {
+            "comment": "Add support for obtaining polyfaces from tile geometry using TileGeometryCollector and GeometryTileTreeReference."
+          },
+          {
+            "comment": "Fix openImageDataUrlInNewWindow displaying an empty window in Electron."
+          },
+          {
+            "comment": "Dynamically import approximate terrain heights instead of fetching as JSON."
+          },
+          {
+            "comment": "Expose iTwin.js Core Version for extensions"
+          },
+          {
+            "comment": "Fixed interaction between linear elements and planar elements when antialiasing is turned on."
+          },
+          {
+            "comment": "Supplied missing 'iModelJs' namespace in some calls to getLocalizedString."
+          },
+          {
+            "comment": "Added new getMapFeatureInfo API to Viewport."
+          },
+          {
+            "comment": "Simplify RenderMaterial creation by deprecating RenderSystem.createMaterial in favor of RenderSystem.createRenderMaterial."
+          },
+          {
+            "comment": "Change the type of ToolAdmin.idleTool from IdleTool to InteractiveTool"
+          },
+          {
+            "comment": "Add RealityDataError in  RealityDataSource API"
+          },
+          {
+            "comment": "Fully implement the point cloud 3d tile specification."
+          },
+          {
+            "comment": "Promote QuantityFormatter from beta to public."
+          },
+          {
+            "comment": "Now initializing Unit alternate display labels from UNIT_EXTRA_DATA. Minimal changes to support Units schema retrieval from backend iModels."
+          },
+          {
+            "comment": "Functions that fit a view to a volume accept an optional MarginOptions specifying how tightly to fit."
+          },
+          {
+            "comment": "Defaulting to the internal BasicUnitsProvider if QuantityFormatter units provider initialization fails. "
+          },
+          {
+            "comment": "Ensure view attachments referencing section drawings transform the spatial view's clip into sheet coordinates."
+          },
+          {
+            "comment": "Switched to more flexible extension api"
+          },
+          {
+            "comment": "Generalize the concept of a TileUser to include types other than Viewports."
+          },
+          {
+            "comment": "Web IPC fix (when reloading frontend)."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-frontend_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-frontend_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-frontend_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed MapBox imagery failing to display."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-frontend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove alternateLabels from UnitProps and require them to be provided via AlternateUnitLabelsProvider."
+          },
+          {
+            "comment": "Improve performance of schedule scripts containing large numbers of transform nodes."
+          },
+          {
+            "comment": "Fix striping artifact produced by ambient occlusion in views with very large frustums."
+          },
+          {
+            "comment": "Render 2d map when terrain data is not available."
+          },
+          {
+            "comment": "Make onRestartTool explicitly async"
+          },
+          {
+            "comment": "Add support for producing larger tiles."
+          },
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "remove unused ClientRequestContext.useContextForRpc"
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "SolidFill mode chooses an edge color to contrast with the element color and the background color."
+          },
+          {
+            "comment": "Remove usage-logging-client"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Add support for indexed edges in tile graphics to reduce memory footprint and number of draw calls."
+          },
+          {
+            "comment": "Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides."
+          },
+          {
+            "comment": "Ensure edges are always requested if TileAdmin.alwaysRequestEdges is true."
+          },
+          {
+            "comment": "Fix flickering with TwoWayViewportSync when one of the viewport's frustum is animated."
+          },
+          {
+            "comment": "Fix WebGL view not updating when dropping second viewport."
+          },
+          {
+            "comment": "Ensure DisplayStyleState.scheduleScript is synchronized with changes to DisplayStyleSettings.renderTimeline and DisplayStyleSettings.scheduleScriptProps."
+          },
+          {
+            "comment": "convertTouchMoveStartToButtonDownAndMotion stopped working with change to not await snap."
+          },
+          {
+            "comment": "'onPostInstall' doing the animation logic on ViewGlobeLocationTool was redundant when done in addition to ViewGlobeLocationTool.parseAndRun. We got away with it before the Tool parseAndRun async change by the convenient luck of the flow of the non-async code. This removes '_doLocationView' from ViewGlobeLocationTool.parseAndRun."
+          },
+          {
+            "comment": "Improve conformance with the glTF 2.0 spec."
+          },
+          {
+            "comment": "Fix caching of gradient textures."
+          },
+          {
+            "comment": "Removed ViewState.isCameraEnabled."
+          },
+          {
+            "comment": "large textures"
+          },
+          {
+            "comment": "Correct loop for collating imagery tiles to map mesh primitives"
+          },
+          {
+            "comment": "Omit terrain skirts if the background map has a transparent clip mask applied."
+          },
+          {
+            "comment": "Fix viewport using terrain settings from previous display style when display style is reassigned."
+          },
+          {
+            "comment": "Fix iOS15 overlay draws."
+          },
+          {
+            "comment": "Deprecated Viewport.readImage in favor of Viewport.readImageBuffer."
+          },
+          {
+            "comment": "Sky cube primitive buffers must be bound when attempting to draw a sky cube."
+          },
+          {
+            "comment": "Clean up SkyBox and GroundPlane APIs."
+          },
+          {
+            "comment": "Tweak terrain skirt height calculation to match previous"
+          },
+          {
+            "comment": "Correct calculation for up vector when looking at globe location"
+          },
+          {
+            "comment": "Fix ViewCreator3d spatial criterion to account for NULL."
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "Fix Open Street Map Building display"
+          },
+          {
+            "comment": "Added support for Fresnel effect."
+          },
+          {
+            "comment": "Update FrontendHubAccess api to use ChangesetIndexAndId"
+          },
+          {
+            "comment": "Fix issue that would prevent higher resolutions tiles to be fetch from ArcGIS server."
+          },
+          {
+            "comment": "Improved map layers validation when authentication is required."
+          },
+          {
+            "comment": "Added support for EPSG:4326 in WMS imagery provider."
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Add readGltfGraphics for producing graphics from a glTF asset."
+          },
+          {
+            "comment": "Support smooth transition to globally centered views"
+          },
+          {
+            "comment": "Fix some oversights in implementation of glTF."
+          },
+          {
+            "comment": "Added support for view-independent decoration graphics."
+          },
+          {
+            "comment": "Support creating a GraphicBuilder without a Viewport."
+          },
+          {
+            "comment": "Implemented a different clustering algorithm in MarkerSet."
+          },
+          {
+            "comment": "Add IModelApp.publicPath for users to override where core public assets are fetched from"
+          },
+          {
+            "comment": "Supports instanced rendering of area pattern symbols."
+          },
+          {
+            "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Fix erroneous AccuDraw activation."
+          },
+          {
+            "comment": "make ViewState3d.lookAt take named arguments"
+          },
+          {
+            "comment": "Added lookAtPerspectiveOrOrtho to ViewState3d"
+          },
+          {
+            "comment": "Dropped DisplayStyleState.changeBaseMapProps. Added new DisplayStyleState.backgroundMapBase setter."
+          },
+          {
+            "comment": "Fix problem with RealityDataSourceKey string convertion"
+          },
+          {
+            "comment": "Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation"
+          },
+          {
+            "comment": "Remove optimization that keep RealityDataSource from key in a list."
+          },
+          {
+            "comment": "Add Support for APIM RDS url to create RealityDataSourceKey from tilesetUrl"
+          },
+          {
+            "comment": "ViewCreator3d no longer throws if no 3d models are found; instead it uses the project extents as the view extents."
+          },
+          {
+            "comment": "moved RealityDataAccessProps from core-frontend to core-common"
+          },
+          {
+            "comment": "Impose default minimum spatial tolerance of 1mm."
+          },
+          {
+            "comment": "Support color mixing when overriding point cloud color"
+          },
+          {
+            "comment": "rename to @itwin/core-frontend"
+          },
+          {
+            "comment": "Support reading non-binary glTF assets."
+          },
+          {
+            "comment": "Fix non-locatable override for point clouds"
+          },
+          {
+            "comment": "separate OnViewExtentsError from ViewChangeOptions "
+          },
+          {
+            "comment": "Support to open OPC file from any server"
+          },
+          {
+            "comment": "Enhancements and improvements to particle systems."
+          },
+          {
+            "comment": "Removed WebAppViewer"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed config.app usage"
+          },
+          {
+            "comment": "Add support for inverting planar clip mask (inside vs outside)"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "Support transparency overrides for point clouds"
+          },
+          {
+            "comment": "Moved `UnitSystemKey` to `@itwin/core-quantity`."
+          },
+          {
+            "comment": "Simplify RealitydataAccessProps interface and usage in iModel.js"
+          },
+          {
+            "comment": "Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps"
+          },
+          {
+            "comment": "Enhance RealityDataSource class"
+          },
+          {
+            "comment": "Reduce ellipsoid occlusion tolerance to avoid misdisplayed tiles over horizon with depth off."
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Replace hard-coded Cesium ION key with TileAdminProps.cesiumIonKey to be supplied at IModelApp.startup."
+          },
+          {
+            "comment": "remove previously deprecated apis"
+          },
+          {
+            "comment": "Remove the default Bing Maps and MapBox Imagery keys from source. There are no longer any default keys available for use and apps will need to provide the keys necessary."
+          },
+          {
+            "comment": "Mvoe map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase."
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "Remove deprecate QuantityFormatter methods"
+          },
+          {
+            "comment": "fix usage or lack thereof of tile/internal barrel module"
+          },
+          {
+            "comment": "rename contexId to iTwinId"
+          },
+          {
+            "comment": "Removed NativeAppAuthorization"
+          },
+          {
+            "comment": "Improve display of textured meshes when the texture image contains a mix of transparent and opaque pixels."
+          },
+          {
+            "comment": "rename IModelReadRpcInterface.openForRead to getConnectionProps"
+          },
+          {
+            "comment": "Simplify RenderTexture creation APIs."
+          },
+          {
+            "comment": "Avoid skipping tool dynamics frame when new graphic is still pending."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Altered to use abstract Reality Data interface"
+          },
+          {
+            "comment": "Rework and correct child availability of tiled imagery formats.  Added EPSG:4326 support for WMTS."
+          },
+          {
+            "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment."
+          },
+          {
+            "comment": "Add TwoWayViewportFrustumSync to synchronize only the frusta of two viewports."
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "Added tool setting helper methods."
+          },
+          {
+            "comment": "Ensure memory consumed by instanced geometry is accurately reported."
+          },
+          {
+            "comment": "Add support for blending transparent viewport background with HTML elements beneath the viewport."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "Protect logoCard styling from app's CSS and make sure the logoCard opens in the correct window for pop-out viewports."
+          },
+          {
+            "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation"
+          },
+          {
+            "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Update LatLong display precision to 4 decimal points."
+          },
+          {
+            "comment": "Default cameraOn in 3d ViewCreator"
+          },
+          {
+            "comment": "FeatureAppearance transparency by default ignores render mode and transparency view flag."
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)."
+          },
+          {
+            "comment": "Add support for wiremesh display of design models and reality models."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.28",
+      "tag": "@itwin/core-frontend_v2.19.28",
+      "date": "Wed, 12 Jan 2022 14:52:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.27",
+      "tag": "@itwin/core-frontend_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.26",
+      "tag": "@itwin/core-frontend_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.25",
+      "tag": "@itwin/core-frontend_v2.19.25",
+      "date": "Fri, 03 Dec 2021 20:05:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.24",
+      "tag": "@itwin/core-frontend_v2.19.24",
+      "date": "Mon, 29 Nov 2021 18:44:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.23",
+      "tag": "@itwin/core-frontend_v2.19.23",
+      "date": "Mon, 22 Nov 2021 20:41:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.22",
+      "tag": "@itwin/core-frontend_v2.19.22",
+      "date": "Wed, 17 Nov 2021 01:23:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.21",
+      "tag": "@itwin/core-frontend_v2.19.21",
+      "date": "Wed, 10 Nov 2021 10:58:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.20",
+      "tag": "@itwin/core-frontend_v2.19.20",
+      "date": "Fri, 29 Oct 2021 16:14:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Viewport.pickDepthPoint and Viewport.pickNearestVisibleGeometry preserve model display transforms."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.19",
+      "tag": "@itwin/core-frontend_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix display issues with transparency, shadows, hilite, and overlay decorations on iOS 15."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.18",
+      "tag": "@itwin/core-frontend_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix failure to find any 3d models in ViewCreator3d."
+          },
+          {
+            "comment": "Backport from PR#2451 enable reprojection and merge"
+          },
+          {
+            "comment": "Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.17",
+      "tag": "@itwin/core-frontend_v2.19.17",
+      "date": "Thu, 14 Oct 2021 21:19:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their  own azure environment."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.16",
+      "tag": "@itwin/core-frontend_v2.19.16",
+      "date": "Mon, 11 Oct 2021 17:37:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.15",
+      "tag": "@itwin/core-frontend_v2.19.15",
+      "date": "Fri, 08 Oct 2021 16:44:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides"
+          },
+          {
+            "comment": "Add a new property to ContextRealityModelState named rdSourecKey that provide a new way of attaching Reality Data that will resolve tilesetUrl at runtime."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.14",
+      "tag": "@itwin/core-frontend_v2.19.14",
+      "date": "Fri, 01 Oct 2021 13:07:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.13",
+      "tag": "@itwin/core-frontend_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added callback after animating frustum change"
+          },
+          {
+            "comment": "Fix OIDC access token that didn't get renew in code that get Reality Data tiles"
+          },
+          {
+            "comment": "Remove hardcoded contextId (aka iTwinId) used for testing"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/core-frontend_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/core-frontend_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow white-on-white reversal to be applied regardless of background color."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/core-frontend_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Geometry created by a GraphicBuilder needs to have its specified placement transform applied properly."
+          },
+          {
+            "comment": "The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/core-frontend_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Correct OpenStreetMap display with reprojection, clipping or geoid offset"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/core-frontend_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/core-frontend_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/core-frontend_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/core-frontend_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Orbit OPC OrbitGtBlobProps initialization and SAS token update."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/core-frontend_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/core-frontend_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ViewCreator3d fix - modelExtents now computed from all model ranges"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/core-frontend_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/core-frontend_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Viewport.zoomToElements includes only 2d or 3d elements based on view type."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/core-frontend_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex"
+          },
+          {
+            "comment": "Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools."
+          },
+          {
+            "comment": "Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps."
+          },
+          {
+            "comment": "Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema"
+          },
+          {
+            "comment": "GraphicBuilder now generates normals for polyfaces if requested."
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Stop delivering pseudo-localized strings"
+          },
+          {
+            "comment": "Fix multi-model animation issue."
+          },
+          {
+            "comment": "Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange."
+          },
+          {
+            "comment": "Add support to GraphicBuilder for solid primitives and visible edges."
+          },
+          {
+            "comment": "move check for redirect callback handling in WebViewerApp to before IModelApp.startup call"
+          },
+          {
+            "comment": "Support reprojection of Cesium OSM tiles"
+          },
+          {
+            "comment": "internal async order change"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/core-frontend_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/core-frontend_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/core-frontend_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/core-frontend_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/core-frontend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add GraphicBuilder.addCurvePrimitive."
+          },
+          {
+            "comment": "Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script.\""
+          },
+          {
+            "comment": "Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field."
+          },
+          {
+            "comment": "Add Viewport.flashedId property and corresponding onFlashedIdChanged event."
+          },
+          {
+            "comment": "Added support for ESRI MapServer exposing a minimum LOD."
+          },
+          {
+            "comment": "Fix the Nadir color for 2 colors skybox in the context of background map."
+          },
+          {
+            "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend."
+          },
+          {
+            "comment": "Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate."
+          },
+          {
+            "comment": "pickable decoration enhancement"
+          },
+          {
+            "comment": "Update tile trees when project extents change."
+          },
+          {
+            "comment": "Remove BackgroundMapLocation use EcefLocation directly."
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can now produce section-cut graphics."
+          },
+          {
+            "comment": "Update tooltips of RealityData with its type"
+          },
+          {
+            "comment": "Add API to wait until all pending external textures have finished loading."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/core-frontend_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/core-frontend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@itwin/core-frontend_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@itwin/core-frontend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote APIs to public."
+          },
+          {
+            "comment": "DR request for doClipPlaneOrientView to choose \"better\" view x direction."
+          },
+          {
+            "comment": "Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame."
+          },
+          {
+            "comment": "Clean up and promote DisplayStyleState APIs for context reality models."
+          },
+          {
+            "comment": "Add TiledGraphicsProvider.isLoadingComplete."
+          },
+          {
+            "comment": "Make EditManipulator public"
+          },
+          {
+            "comment": "Export EmphasizeElementProps from common, deprecate from frontend."
+          },
+          {
+            "comment": "External textures enabled by default for TileAdmin. External textures will downsample to maxTextureSize of client."
+          },
+          {
+            "comment": "Make flash settings customizable for a viewport."
+          },
+          {
+            "comment": "Allow saved map-layer definition to be edited."
+          },
+          {
+            "comment": "Removed unused 'maxZoom' property on MapLayerProps.  Added MapLayerSourceProps interface."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "Add GraphicBuilder.addPrimitive accepting any type of primitive."
+          },
+          {
+            "comment": "Synchronize IModelConnection properties in response to Ipc notifications."
+          },
+          {
+            "comment": "added IModelApp.hubAccess and deprecated IModelApp.iModelClient"
+          },
+          {
+            "comment": "Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive."
+          },
+          {
+            "comment": "set authorizationClient to undefined in IModelApp.shutdown"
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "make IpcApp and NativeApp @public"
+          },
+          {
+            "comment": "Prevent preflight for ContextShare tile request"
+          },
+          {
+            "comment": "Erase touch cursor when it is drawn in a different view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@itwin/core-frontend_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@itwin/core-frontend_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@itwin/core-frontend_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@itwin/core-frontend_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@itwin/core-frontend_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@itwin/core-frontend_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Synch map settings provider when base layer provider changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@itwin/core-frontend_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@itwin/core-frontend_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@itwin/core-frontend_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@itwin/core-frontend_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add method to return ecef transform for tile tree"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@itwin/core-frontend_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make AccuDrawHintBuilder public and include everything needed by an InteractiveTool."
+          },
+          {
+            "comment": "Fix acs rotation and remove unneeded clones."
+          },
+          {
+            "comment": "(geomlibs) fix swap logic in Matrix3d.inverse alias case"
+          },
+          {
+            "comment": "motion event changes."
+          },
+          {
+            "comment": "Add BatchOptions to customize how features can be resymbolized."
+          },
+          {
+            "comment": "Synchronize viewports when changes are made to geometry outside of a graphical editing scope."
+          },
+          {
+            "comment": "wip: CreateElementTool. Fix not being able to pick decorations after changing files."
+          },
+          {
+            "comment": "BatchOptions can specify that the contents of the batch should only be drawn for readPixels."
+          },
+          {
+            "comment": "Simplify GraphicBuilder creation using GraphicBuilderOptions."
+          },
+          {
+            "comment": "IModelConnection.View.load throws if the input is not a valid Id."
+          },
+          {
+            "comment": "Fix ViewState.hasSameCoordinates returning true if a 2d model was mistakenly included in a spatial view's model selector."
+          },
+          {
+            "comment": "Produce rounded joints when tesselating polylines."
+          },
+          {
+            "comment": "Return empty symbology overrides for maps to avoid inheriting from view"
+          },
+          {
+            "comment": "Add hiliter for reality meshes"
+          },
+          {
+            "comment": "Fix hiliting of reality meshes."
+          },
+          {
+            "comment": "Fix shader header typo"
+          },
+          {
+            "comment": "Ensure materials are ignored unless smooth render mode is enabled."
+          },
+          {
+            "comment": "Add FrameStats API."
+          },
+          {
+            "comment": "In FrameStats, break down scene time."
+          },
+          {
+            "comment": "Enable querying geometry and other properties via IModelConnection.Elements.loadProps."
+          },
+          {
+            "comment": "The idleTool can now be set."
+          },
+          {
+            "comment": "improved silhouettes for non-perspective views"
+          },
+          {
+            "comment": "Mobile fixes"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          },
+          {
+            "comment": "set authorizationClient to undefined in IModelApp.shutdown"
+          },
+          {
+            "comment": "Fix errors when masking background map with a plan projection model."
+          },
+          {
+            "comment": "Support planar masks for OrbitGT, fix infinite recursion collecting classifiers graphics."
+          },
+          {
+            "comment": "Add shader based grid display."
+          },
+          {
+            "comment": "set changesetId on BriefcaseConnection in pullAndMergeChanges"
+          },
+          {
+            "comment": "Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport."
+          },
+          {
+            "comment": "Display styles support schedule scripts hosted by RenderTimeline elements."
+          },
+          {
+            "comment": "Move map tile trees to Viewport to handle synching correctly"
+          },
+          {
+            "comment": "Only draw the TouchCursor in the viewport that initiated the touch."
+          },
+          {
+            "comment": "Add iterator to ViewManager and deprecate forEachViewport."
+          },
+          {
+            "comment": "Transform tool dynamics."
+          },
+          {
+            "comment": "add placement to GeomtricElementProps"
+          },
+          {
+            "comment": "Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported"
+          },
+          {
+            "comment": "ViewCreator APIs tagged as public"
+          },
+          {
+            "comment": "View Creator API - comments updated."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@itwin/core-frontend_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@itwin/core-frontend_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@itwin/core-frontend_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@itwin/core-frontend_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@itwin/core-frontend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix animations from schedule script being erroneously applied to tile graphics."
+          },
+          {
+            "comment": "Return empty symbology overrides for maps to avoid inheriting from view"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@itwin/core-frontend_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EmphasizeElements can override the appearance of unanimated schedule script nodes."
+          },
+          {
+            "comment": "Fix iOS shader bugs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@itwin/core-frontend_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "Do not drape background map on reality if not geolocated"
+          },
+          {
+            "comment": "Revert the change which defaulted shader precompiling on. It resulted in noticeable UI sluggishness before any viewports were added, while shaders precompiled."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can obtain graphics for a non-persistent geometry stream."
+          },
+          {
+            "comment": "Refactor grid-in-view line creation to make the same context repeatedly callable."
+          },
+          {
+            "comment": "gridline filtering corrections"
+          },
+          {
+            "comment": "Fix orbitgt pointcloud position"
+          },
+          {
+            "comment": "Implement fixes for point cloud relative paths and node transforms"
+          },
+          {
+            "comment": "improved flickering silhouettes"
+          },
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          },
+          {
+            "comment": "Fix WebGL1 clipping shaders."
+          },
+          {
+            "comment": "Fixed silhouettes for instanced geometry when running with WebGL1"
+          },
+          {
+            "comment": "Allow saved map layer definition to be deleted from setting service."
+          },
+          {
+            "comment": "No longer parse MapLayerSource URL for 'basemap' token."
+          },
+          {
+            "comment": "promote NativeApp to beta"
+          },
+          {
+            "comment": "Support nested clip volumes."
+          },
+          {
+            "comment": "Precompile WebGL shaders by default."
+          },
+          {
+            "comment": "Promote globe view tools to public. Add NextVersion promotion entries for these and for thematic display."
+          },
+          {
+            "comment": "Optimize reality model processing."
+          },
+          {
+            "comment": "Drop deprecated ldclient-js dependency"
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "Renamed InteractiveEditingSession to GraphicalEditingScope."
+          },
+          {
+            "comment": "Update release tags."
+          },
+          {
+            "comment": "Add BriefcaseTxns for monitoring changes to the briefcase."
+          },
+          {
+            "comment": "Update api tags"
+          },
+          {
+            "comment": "ViewCreator2d API - modelType parameter removed"
+          },
+          {
+            "comment": "Add an option to use the virtual cursor to help with element locate w/touch input."
+          },
+          {
+            "comment": "Added capability to scale the model display transform nonuniformly and have still Accusnap properly."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@itwin/core-frontend_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@itwin/core-frontend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@itwin/core-frontend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix imports in CheckpointConnection.ts to not reference own barrel"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@itwin/core-frontend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@itwin/core-frontend_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polish up InteractiveEditingSession API and promote to beta."
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "Fixed isAuthorized check. "
+          },
+          {
+            "comment": "Fix GPU Profiler for display-test-app"
+          },
+          {
+            "comment": "Grid drawing code"
+          },
+          {
+            "comment": "fixed z for edges and polylines when extended behind the eye"
+          },
+          {
+            "comment": "Don't use GCS to align reality model if not in project vicinity."
+          },
+          {
+            "comment": "Refine test for calculating pixel size for tile sphere"
+          },
+          {
+            "comment": "Fix Viewport.turnCameraOn to invoke setupFromView, and add Viewport.turnCameraOff."
+          },
+          {
+            "comment": "Fix shader bug in function unpackFloat which affected iOS unpacking floats precisely."
+          },
+          {
+            "comment": "MapLayerImageryProviders now handle 401 errors."
+          },
+          {
+            "comment": "Quick grid performance fix from Earlin."
+          },
+          {
+            "comment": "fix check in cartographicToDbFromGcs which causes certain locations to query GCS when they should not."
+          },
+          {
+            "comment": "Refactor attribution logo cards and add OpenStreetMap building attribution"
+          },
+          {
+            "comment": "Update Quantity Formatter to support UnitFormattingSettingsProvider for persisting and retrieving unit format settings."
+          },
+          {
+            "comment": "Use ProcessDetector.isMobileBrowser to detect mobile frontends."
+          },
+          {
+            "comment": "Align scheduling of tile content requests more closely with capabilities of HTTP and RPC."
+          },
+          {
+            "comment": "Support for Bump Tool Settings"
+          },
+          {
+            "comment": "Add missing ViewState.viewFlags setter."
+          },
+          {
+            "comment": "Simplified web app signIn, following the pattern established for desktops. The logic for silent signin has now been moved to WebViewerApp. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@itwin/core-frontend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update parsing of string input in Accudraw to use quantity parsing."
+          },
+          {
+            "comment": "Initial setup for adding \"basic manipulation\" tools and commands to editor package."
+          },
+          {
+            "comment": "Added ElementSetTool base class."
+          },
+          {
+            "comment": "ElementSetTool class documentation."
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports."
+          },
+          {
+            "comment": "Fix incorrect GPU memory limits."
+          },
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Fix Viewport.requestRedraw failing to request next animation frame."
+          },
+          {
+            "comment": "Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing."
+          },
+          {
+            "comment": "Split imagery providers in their own file."
+          },
+          {
+            "comment": "refactor IModelApp startup"
+          },
+          {
+            "comment": "Improve grid line fade for vertical lines by drawing from center out."
+          },
+          {
+            "comment": "Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Added MoveElementsTool"
+          },
+          {
+            "comment": "implemented nonlocatable for planar classifiers"
+          },
+          {
+            "comment": "Update how custom QuantityType definitions are defined and registered."
+          },
+          {
+            "comment": "Add planar clip mask support."
+          },
+          {
+            "comment": "Fix transparent depthless map failing to blend with background color or skybox."
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Allow the same label to be used in two different units within the same family but in different systems."
+          },
+          {
+            "comment": "Fix failure to call screen-space effects `shouldApply` function when reading pixels."
+          },
+          {
+            "comment": "fix for running display-performance-test-app with a saved view which has volume classification using overrides"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@itwin/core-frontend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@itwin/core-frontend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Add workaround for bogus transform in tile tree for empty model."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
-      "tag": "@bentley/imodeljs-frontend_v2.12.1",
+      "tag": "@itwin/core-frontend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
       "comments": {
         "none": [
@@ -18,7 +1641,7 @@
     },
     {
       "version": "2.12.0",
-      "tag": "@bentley/imodeljs-frontend_v2.12.0",
+      "tag": "@itwin/core-frontend_v2.12.0",
       "date": "Thu, 18 Feb 2021 22:10:13 GMT",
       "comments": {
         "none": [
@@ -83,8 +1706,26 @@
       }
     },
     {
+      "version": "2.11.2",
+      "tag": "@itwin/core-frontend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download progress fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@itwin/core-frontend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.11.0",
-      "tag": "@bentley/imodeljs-frontend_v2.11.0",
+      "tag": "@itwin/core-frontend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
       "comments": {
         "none": [
@@ -165,13 +1806,13 @@
     },
     {
       "version": "2.10.3",
-      "tag": "@bentley/imodeljs-frontend_v2.10.3",
+      "tag": "@itwin/core-frontend_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
       "comments": {}
     },
     {
       "version": "2.10.2",
-      "tag": "@bentley/imodeljs-frontend_v2.10.2",
+      "tag": "@itwin/core-frontend_v2.10.2",
       "date": "Fri, 08 Jan 2021 14:52:02 GMT",
       "comments": {
         "none": [
@@ -186,7 +1827,7 @@
     },
     {
       "version": "2.10.1",
-      "tag": "@bentley/imodeljs-frontend_v2.10.1",
+      "tag": "@itwin/core-frontend_v2.10.1",
       "date": "Tue, 22 Dec 2020 00:53:38 GMT",
       "comments": {
         "none": [
@@ -198,7 +1839,7 @@
     },
     {
       "version": "2.10.0",
-      "tag": "@bentley/imodeljs-frontend_v2.10.0",
+      "tag": "@itwin/core-frontend_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
       "comments": {
         "none": [
@@ -240,7 +1881,7 @@
     },
     {
       "version": "2.9.9",
-      "tag": "@bentley/imodeljs-frontend_v2.9.9",
+      "tag": "@itwin/core-frontend_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
       "comments": {
         "none": [
@@ -252,13 +1893,13 @@
     },
     {
       "version": "2.9.8",
-      "tag": "@bentley/imodeljs-frontend_v2.9.8",
+      "tag": "@itwin/core-frontend_v2.9.8",
       "date": "Fri, 11 Dec 2020 02:57:36 GMT",
       "comments": {}
     },
     {
       "version": "2.9.7",
-      "tag": "@bentley/imodeljs-frontend_v2.9.7",
+      "tag": "@itwin/core-frontend_v2.9.7",
       "date": "Wed, 09 Dec 2020 20:58:23 GMT",
       "comments": {
         "none": [
@@ -270,31 +1911,31 @@
     },
     {
       "version": "2.9.6",
-      "tag": "@bentley/imodeljs-frontend_v2.9.6",
+      "tag": "@itwin/core-frontend_v2.9.6",
       "date": "Mon, 07 Dec 2020 18:40:48 GMT",
       "comments": {}
     },
     {
       "version": "2.9.5",
-      "tag": "@bentley/imodeljs-frontend_v2.9.5",
+      "tag": "@itwin/core-frontend_v2.9.5",
       "date": "Sat, 05 Dec 2020 01:55:56 GMT",
       "comments": {}
     },
     {
       "version": "2.9.4",
-      "tag": "@bentley/imodeljs-frontend_v2.9.4",
+      "tag": "@itwin/core-frontend_v2.9.4",
       "date": "Wed, 02 Dec 2020 20:55:40 GMT",
       "comments": {}
     },
     {
       "version": "2.9.3",
-      "tag": "@bentley/imodeljs-frontend_v2.9.3",
+      "tag": "@itwin/core-frontend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",
       "comments": {}
     },
     {
       "version": "2.9.2",
-      "tag": "@bentley/imodeljs-frontend_v2.9.2",
+      "tag": "@itwin/core-frontend_v2.9.2",
       "date": "Mon, 23 Nov 2020 15:33:50 GMT",
       "comments": {
         "none": [
@@ -306,13 +1947,13 @@
     },
     {
       "version": "2.9.1",
-      "tag": "@bentley/imodeljs-frontend_v2.9.1",
+      "tag": "@itwin/core-frontend_v2.9.1",
       "date": "Thu, 19 Nov 2020 17:03:42 GMT",
       "comments": {}
     },
     {
       "version": "2.9.0",
-      "tag": "@bentley/imodeljs-frontend_v2.9.0",
+      "tag": "@itwin/core-frontend_v2.9.0",
       "date": "Wed, 18 Nov 2020 16:01:50 GMT",
       "comments": {
         "none": [
@@ -369,7 +2010,7 @@
     },
     {
       "version": "2.8.1",
-      "tag": "@bentley/imodeljs-frontend_v2.8.1",
+      "tag": "@itwin/core-frontend_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",
       "comments": {
         "none": [
@@ -381,7 +2022,7 @@
     },
     {
       "version": "2.8.0",
-      "tag": "@bentley/imodeljs-frontend_v2.8.0",
+      "tag": "@itwin/core-frontend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
       "comments": {
         "none": [
@@ -444,13 +2085,13 @@
     },
     {
       "version": "2.7.6",
-      "tag": "@bentley/imodeljs-frontend_v2.7.6",
+      "tag": "@itwin/core-frontend_v2.7.6",
       "date": "Wed, 11 Nov 2020 16:28:23 GMT",
       "comments": {}
     },
     {
       "version": "2.7.5",
-      "tag": "@bentley/imodeljs-frontend_v2.7.5",
+      "tag": "@itwin/core-frontend_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:50 GMT",
       "comments": {
         "none": [
@@ -462,25 +2103,25 @@
     },
     {
       "version": "2.7.4",
-      "tag": "@bentley/imodeljs-frontend_v2.7.4",
+      "tag": "@itwin/core-frontend_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:01 GMT",
       "comments": {}
     },
     {
       "version": "2.7.3",
-      "tag": "@bentley/imodeljs-frontend_v2.7.3",
+      "tag": "@itwin/core-frontend_v2.7.3",
       "date": "Wed, 14 Oct 2020 17:00:59 GMT",
       "comments": {}
     },
     {
       "version": "2.7.2",
-      "tag": "@bentley/imodeljs-frontend_v2.7.2",
+      "tag": "@itwin/core-frontend_v2.7.2",
       "date": "Tue, 13 Oct 2020 18:20:38 GMT",
       "comments": {}
     },
     {
       "version": "2.7.1",
-      "tag": "@bentley/imodeljs-frontend_v2.7.1",
+      "tag": "@itwin/core-frontend_v2.7.1",
       "date": "Thu, 08 Oct 2020 13:04:35 GMT",
       "comments": {
         "none": [
@@ -492,7 +2133,7 @@
     },
     {
       "version": "2.7.0",
-      "tag": "@bentley/imodeljs-frontend_v2.7.0",
+      "tag": "@itwin/core-frontend_v2.7.0",
       "date": "Fri, 02 Oct 2020 18:03:32 GMT",
       "comments": {
         "none": [
@@ -552,19 +2193,19 @@
     },
     {
       "version": "2.6.5",
-      "tag": "@bentley/imodeljs-frontend_v2.6.5",
+      "tag": "@itwin/core-frontend_v2.6.5",
       "date": "Sat, 26 Sep 2020 16:06:34 GMT",
       "comments": {}
     },
     {
       "version": "2.6.4",
-      "tag": "@bentley/imodeljs-frontend_v2.6.4",
+      "tag": "@itwin/core-frontend_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",
       "comments": {}
     },
     {
       "version": "2.6.3",
-      "tag": "@bentley/imodeljs-frontend_v2.6.3",
+      "tag": "@itwin/core-frontend_v2.6.3",
       "date": "Mon, 21 Sep 2020 14:47:09 GMT",
       "comments": {
         "none": [
@@ -576,7 +2217,7 @@
     },
     {
       "version": "2.6.2",
-      "tag": "@bentley/imodeljs-frontend_v2.6.2",
+      "tag": "@itwin/core-frontend_v2.6.2",
       "date": "Mon, 21 Sep 2020 13:07:44 GMT",
       "comments": {
         "none": [
@@ -588,13 +2229,13 @@
     },
     {
       "version": "2.6.1",
-      "tag": "@bentley/imodeljs-frontend_v2.6.1",
+      "tag": "@itwin/core-frontend_v2.6.1",
       "date": "Fri, 18 Sep 2020 13:15:09 GMT",
       "comments": {}
     },
     {
       "version": "2.6.0",
-      "tag": "@bentley/imodeljs-frontend_v2.6.0",
+      "tag": "@itwin/core-frontend_v2.6.0",
       "date": "Thu, 17 Sep 2020 13:16:12 GMT",
       "comments": {
         "none": [
@@ -642,7 +2283,7 @@
     },
     {
       "version": "2.5.5",
-      "tag": "@bentley/imodeljs-frontend_v2.5.5",
+      "tag": "@itwin/core-frontend_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",
       "comments": {
         "none": [
@@ -654,25 +2295,25 @@
     },
     {
       "version": "2.5.4",
-      "tag": "@bentley/imodeljs-frontend_v2.5.4",
+      "tag": "@itwin/core-frontend_v2.5.4",
       "date": "Fri, 28 Aug 2020 15:34:15 GMT",
       "comments": {}
     },
     {
       "version": "2.5.3",
-      "tag": "@bentley/imodeljs-frontend_v2.5.3",
+      "tag": "@itwin/core-frontend_v2.5.3",
       "date": "Wed, 26 Aug 2020 11:46:00 GMT",
       "comments": {}
     },
     {
       "version": "2.5.2",
-      "tag": "@bentley/imodeljs-frontend_v2.5.2",
+      "tag": "@itwin/core-frontend_v2.5.2",
       "date": "Tue, 25 Aug 2020 22:09:08 GMT",
       "comments": {}
     },
     {
       "version": "2.5.1",
-      "tag": "@bentley/imodeljs-frontend_v2.5.1",
+      "tag": "@itwin/core-frontend_v2.5.1",
       "date": "Mon, 24 Aug 2020 18:13:04 GMT",
       "comments": {
         "none": [
@@ -684,7 +2325,7 @@
     },
     {
       "version": "2.5.0",
-      "tag": "@bentley/imodeljs-frontend_v2.5.0",
+      "tag": "@itwin/core-frontend_v2.5.0",
       "date": "Thu, 20 Aug 2020 20:57:09 GMT",
       "comments": {
         "none": [
@@ -744,7 +2385,7 @@
     },
     {
       "version": "2.4.2",
-      "tag": "@bentley/imodeljs-frontend_v2.4.2",
+      "tag": "@itwin/core-frontend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",
       "comments": {
         "none": [
@@ -759,7 +2400,7 @@
     },
     {
       "version": "2.4.1",
-      "tag": "@bentley/imodeljs-frontend_v2.4.1",
+      "tag": "@itwin/core-frontend_v2.4.1",
       "date": "Fri, 07 Aug 2020 19:57:43 GMT",
       "comments": {
         "none": [
@@ -774,7 +2415,7 @@
     },
     {
       "version": "2.4.0",
-      "tag": "@bentley/imodeljs-frontend_v2.4.0",
+      "tag": "@itwin/core-frontend_v2.4.0",
       "date": "Tue, 28 Jul 2020 16:26:24 GMT",
       "comments": {
         "none": [
@@ -816,7 +2457,7 @@
     },
     {
       "version": "2.3.3",
-      "tag": "@bentley/imodeljs-frontend_v2.3.3",
+      "tag": "@itwin/core-frontend_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",
       "comments": {
         "none": [
@@ -828,19 +2469,19 @@
     },
     {
       "version": "2.3.2",
-      "tag": "@bentley/imodeljs-frontend_v2.3.2",
+      "tag": "@itwin/core-frontend_v2.3.2",
       "date": "Tue, 14 Jul 2020 23:50:36 GMT",
       "comments": {}
     },
     {
       "version": "2.3.1",
-      "tag": "@bentley/imodeljs-frontend_v2.3.1",
+      "tag": "@itwin/core-frontend_v2.3.1",
       "date": "Mon, 13 Jul 2020 18:50:14 GMT",
       "comments": {}
     },
     {
       "version": "2.3.0",
-      "tag": "@bentley/imodeljs-frontend_v2.3.0",
+      "tag": "@itwin/core-frontend_v2.3.0",
       "date": "Fri, 10 Jul 2020 17:23:14 GMT",
       "comments": {
         "none": [
@@ -888,13 +2529,13 @@
     },
     {
       "version": "2.2.1",
-      "tag": "@bentley/imodeljs-frontend_v2.2.1",
+      "tag": "@itwin/core-frontend_v2.2.1",
       "date": "Tue, 07 Jul 2020 14:44:52 GMT",
       "comments": {}
     },
     {
       "version": "2.2.0",
-      "tag": "@bentley/imodeljs-frontend_v2.2.0",
+      "tag": "@itwin/core-frontend_v2.2.0",
       "date": "Fri, 19 Jun 2020 14:10:03 GMT",
       "comments": {
         "none": [
@@ -939,7 +2580,7 @@
     },
     {
       "version": "2.1.0",
-      "tag": "@bentley/imodeljs-frontend_v2.1.0",
+      "tag": "@itwin/core-frontend_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",
       "comments": {
         "none": [
@@ -999,7 +2640,7 @@
     },
     {
       "version": "2.0.0",
-      "tag": "@bentley/imodeljs-frontend_v2.0.0",
+      "tag": "@itwin/core-frontend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",
       "comments": {
         "none": [
@@ -1413,7 +3054,7 @@
     },
     {
       "version": "1.14.1",
-      "tag": "@bentley/imodeljs-frontend_v1.14.1",
+      "tag": "@itwin/core-frontend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
       "comments": {
         "none": [
@@ -1425,7 +3066,7 @@
     },
     {
       "version": "1.14.0",
-      "tag": "@bentley/imodeljs-frontend_v1.14.0",
+      "tag": "@itwin/core-frontend_v1.14.0",
       "date": "Tue, 31 Mar 2020 15:44:19 GMT",
       "comments": {
         "none": [
@@ -1443,7 +3084,7 @@
     },
     {
       "version": "1.13.0",
-      "tag": "@bentley/imodeljs-frontend_v1.13.0",
+      "tag": "@itwin/core-frontend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
       "comments": {
         "none": [
@@ -1455,7 +3096,7 @@
     },
     {
       "version": "1.12.0",
-      "tag": "@bentley/imodeljs-frontend_v1.12.0",
+      "tag": "@itwin/core-frontend_v1.12.0",
       "date": "Wed, 12 Feb 2020 17:45:50 GMT",
       "comments": {
         "none": [
@@ -1533,7 +3174,7 @@
     },
     {
       "version": "1.11.0",
-      "tag": "@bentley/imodeljs-frontend_v1.11.0",
+      "tag": "@itwin/core-frontend_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",
       "comments": {
         "none": [
@@ -1605,7 +3246,7 @@
     },
     {
       "version": "1.10.0",
-      "tag": "@bentley/imodeljs-frontend_v1.10.0",
+      "tag": "@itwin/core-frontend_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",
       "comments": {
         "none": [
@@ -1704,7 +3345,7 @@
     },
     {
       "version": "1.9.0",
-      "tag": "@bentley/imodeljs-frontend_v1.9.0",
+      "tag": "@itwin/core-frontend_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",
       "comments": {
         "none": [
@@ -1782,7 +3423,7 @@
     },
     {
       "version": "1.8.0",
-      "tag": "@bentley/imodeljs-frontend_v1.8.0",
+      "tag": "@itwin/core-frontend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",
       "comments": {
         "none": [
@@ -1890,7 +3531,7 @@
     },
     {
       "version": "1.7.0",
-      "tag": "@bentley/imodeljs-frontend_v1.7.0",
+      "tag": "@itwin/core-frontend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",
       "comments": {
         "none": [
@@ -2037,7 +3678,7 @@
     },
     {
       "version": "1.6.0",
-      "tag": "@bentley/imodeljs-frontend_v1.6.0",
+      "tag": "@itwin/core-frontend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",
       "comments": {
         "none": [
@@ -2103,7 +3744,7 @@
     },
     {
       "version": "1.5.0",
-      "tag": "@bentley/imodeljs-frontend_v1.5.0",
+      "tag": "@itwin/core-frontend_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",
       "comments": {
         "none": [
@@ -2244,7 +3885,7 @@
     },
     {
       "version": "1.4.0",
-      "tag": "@bentley/imodeljs-frontend_v1.4.0",
+      "tag": "@itwin/core-frontend_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",
       "comments": {
         "none": [
@@ -2337,7 +3978,7 @@
     },
     {
       "version": "1.3.0",
-      "tag": "@bentley/imodeljs-frontend_v1.3.0",
+      "tag": "@itwin/core-frontend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",
       "comments": {
         "none": [
@@ -2451,7 +4092,7 @@
     },
     {
       "version": "1.2.0",
-      "tag": "@bentley/imodeljs-frontend_v1.2.0",
+      "tag": "@itwin/core-frontend_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",
       "comments": {
         "none": [
@@ -2523,7 +4164,7 @@
     },
     {
       "version": "1.1.0",
-      "tag": "@bentley/imodeljs-frontend_v1.1.0",
+      "tag": "@itwin/core-frontend_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",
       "comments": {
         "none": [
@@ -2643,7 +4284,7 @@
     },
     {
       "version": "1.0.0",
-      "tag": "@bentley/imodeljs-frontend_v1.0.0",
+      "tag": "@itwin/core-frontend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",
       "comments": {
         "none": [
@@ -2808,7 +4449,7 @@
     },
     {
       "version": "0.191.0",
-      "tag": "@bentley/imodeljs-frontend_v0.191.0",
+      "tag": "@itwin/core-frontend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",
       "comments": {
         "none": [
@@ -3138,7 +4779,7 @@
     },
     {
       "version": "0.190.0",
-      "tag": "@bentley/imodeljs-frontend_v0.190.0",
+      "tag": "@itwin/core-frontend_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
       "comments": {
         "none": [
@@ -3174,7 +4815,7 @@
     },
     {
       "version": "0.189.0",
-      "tag": "@bentley/imodeljs-frontend_v0.189.0",
+      "tag": "@itwin/core-frontend_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",
       "comments": {
         "none": [
@@ -3411,7 +5052,7 @@
     },
     {
       "version": "0.188.0",
-      "tag": "@bentley/imodeljs-frontend_v0.188.0",
+      "tag": "@itwin/core-frontend_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",
       "comments": {
         "none": [
@@ -3432,13 +5073,13 @@
     },
     {
       "version": "0.187.0",
-      "tag": "@bentley/imodeljs-frontend_v0.187.0",
+      "tag": "@itwin/core-frontend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",
       "comments": {}
     },
     {
       "version": "0.186.0",
-      "tag": "@bentley/imodeljs-frontend_v0.186.0",
+      "tag": "@itwin/core-frontend_v0.186.0",
       "date": "Mon, 14 Jan 2019 23:09:10 GMT",
       "comments": {
         "none": [
@@ -3450,7 +5091,7 @@
     },
     {
       "version": "0.185.0",
-      "tag": "@bentley/imodeljs-frontend_v0.185.0",
+      "tag": "@itwin/core-frontend_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",
       "comments": {
         "none": [
@@ -3468,7 +5109,7 @@
     },
     {
       "version": "0.184.0",
-      "tag": "@bentley/imodeljs-frontend_v0.184.0",
+      "tag": "@itwin/core-frontend_v0.184.0",
       "date": "Thu, 10 Jan 2019 22:46:17 GMT",
       "comments": {
         "none": [
@@ -3513,7 +5154,7 @@
     },
     {
       "version": "0.183.0",
-      "tag": "@bentley/imodeljs-frontend_v0.183.0",
+      "tag": "@itwin/core-frontend_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",
       "comments": {
         "none": [
@@ -3534,7 +5175,7 @@
     },
     {
       "version": "0.182.0",
-      "tag": "@bentley/imodeljs-frontend_v0.182.0",
+      "tag": "@itwin/core-frontend_v0.182.0",
       "date": "Mon, 07 Jan 2019 13:31:34 GMT",
       "comments": {
         "none": [
@@ -3546,7 +5187,7 @@
     },
     {
       "version": "0.181.0",
-      "tag": "@bentley/imodeljs-frontend_v0.181.0",
+      "tag": "@itwin/core-frontend_v0.181.0",
       "date": "Fri, 04 Jan 2019 13:02:40 GMT",
       "comments": {
         "none": [
@@ -3561,7 +5202,7 @@
     },
     {
       "version": "0.180.0",
-      "tag": "@bentley/imodeljs-frontend_v0.180.0",
+      "tag": "@itwin/core-frontend_v0.180.0",
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
       "comments": {
         "none": [
@@ -3603,7 +5244,7 @@
     },
     {
       "version": "0.179.0",
-      "tag": "@bentley/imodeljs-frontend_v0.179.0",
+      "tag": "@itwin/core-frontend_v0.179.0",
       "date": "Wed, 19 Dec 2018 18:26:14 GMT",
       "comments": {
         "none": [
@@ -3627,7 +5268,7 @@
     },
     {
       "version": "0.178.0",
-      "tag": "@bentley/imodeljs-frontend_v0.178.0",
+      "tag": "@itwin/core-frontend_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",
       "comments": {
         "none": [
@@ -3651,7 +5292,7 @@
     },
     {
       "version": "0.177.0",
-      "tag": "@bentley/imodeljs-frontend_v0.177.0",
+      "tag": "@itwin/core-frontend_v0.177.0",
       "date": "Wed, 12 Dec 2018 17:21:31 GMT",
       "comments": {
         "none": [
@@ -3669,7 +5310,7 @@
     },
     {
       "version": "0.176.0",
-      "tag": "@bentley/imodeljs-frontend_v0.176.0",
+      "tag": "@itwin/core-frontend_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",
       "comments": {
         "none": [
@@ -3690,7 +5331,7 @@
     },
     {
       "version": "0.175.0",
-      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "tag": "@itwin/core-frontend_v0.175.0",
       "date": "Mon, 10 Dec 2018 17:08:55 GMT",
       "comments": {
         "none": [
@@ -3702,7 +5343,7 @@
     },
     {
       "version": "0.174.0",
-      "tag": "@bentley/imodeljs-frontend_v0.174.0",
+      "tag": "@itwin/core-frontend_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",
       "comments": {
         "none": [
@@ -3714,7 +5355,7 @@
     },
     {
       "version": "0.173.0",
-      "tag": "@bentley/imodeljs-frontend_v0.173.0",
+      "tag": "@itwin/core-frontend_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",
       "comments": {
         "none": [
@@ -3732,7 +5373,7 @@
     },
     {
       "version": "0.172.0",
-      "tag": "@bentley/imodeljs-frontend_v0.172.0",
+      "tag": "@itwin/core-frontend_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",
       "comments": {
         "none": [
@@ -3744,7 +5385,7 @@
     },
     {
       "version": "0.171.0",
-      "tag": "@bentley/imodeljs-frontend_v0.171.0",
+      "tag": "@itwin/core-frontend_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",
       "comments": {
         "none": [
@@ -3786,7 +5427,7 @@
     },
     {
       "version": "0.170.0",
-      "tag": "@bentley/imodeljs-frontend_v0.170.0",
+      "tag": "@itwin/core-frontend_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",
       "comments": {
         "none": [
@@ -3801,19 +5442,19 @@
     },
     {
       "version": "0.169.0",
-      "tag": "@bentley/imodeljs-frontend_v0.169.0",
+      "tag": "@itwin/core-frontend_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",
       "comments": {}
     },
     {
       "version": "0.168.0",
-      "tag": "@bentley/imodeljs-frontend_v0.168.0",
+      "tag": "@itwin/core-frontend_v0.168.0",
       "date": "Sat, 17 Nov 2018 14:20:11 GMT",
       "comments": {}
     },
     {
       "version": "0.167.0",
-      "tag": "@bentley/imodeljs-frontend_v0.167.0",
+      "tag": "@itwin/core-frontend_v0.167.0",
       "date": "Fri, 16 Nov 2018 21:45:44 GMT",
       "comments": {
         "none": [
@@ -3831,7 +5472,7 @@
     },
     {
       "version": "0.166.0",
-      "tag": "@bentley/imodeljs-frontend_v0.166.0",
+      "tag": "@itwin/core-frontend_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",
       "comments": {
         "none": [
@@ -3843,7 +5484,7 @@
     },
     {
       "version": "0.165.0",
-      "tag": "@bentley/imodeljs-frontend_v0.165.0",
+      "tag": "@itwin/core-frontend_v0.165.0",
       "date": "Mon, 12 Nov 2018 15:47:00 GMT",
       "comments": {
         "none": [
@@ -3858,7 +5499,7 @@
     },
     {
       "version": "0.164.0",
-      "tag": "@bentley/imodeljs-frontend_v0.164.0",
+      "tag": "@itwin/core-frontend_v0.164.0",
       "date": "Thu, 08 Nov 2018 17:59:20 GMT",
       "comments": {
         "none": [
@@ -3894,7 +5535,7 @@
     },
     {
       "version": "0.163.0",
-      "tag": "@bentley/imodeljs-frontend_v0.163.0",
+      "tag": "@itwin/core-frontend_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",
       "comments": {
         "none": [
@@ -3918,7 +5559,7 @@
     },
     {
       "version": "0.162.0",
-      "tag": "@bentley/imodeljs-frontend_v0.162.0",
+      "tag": "@itwin/core-frontend_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:06 GMT",
       "comments": {
         "none": [
@@ -3945,31 +5586,31 @@
     },
     {
       "version": "0.161.0",
-      "tag": "@bentley/imodeljs-frontend_v0.161.0",
+      "tag": "@itwin/core-frontend_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",
       "comments": {}
     },
     {
       "version": "0.160.0",
-      "tag": "@bentley/imodeljs-frontend_v0.160.0",
+      "tag": "@itwin/core-frontend_v0.160.0",
       "date": "Wed, 17 Oct 2018 18:18:38 GMT",
       "comments": {}
     },
     {
       "version": "0.159.0",
-      "tag": "@bentley/imodeljs-frontend_v0.159.0",
+      "tag": "@itwin/core-frontend_v0.159.0",
       "date": "Tue, 16 Oct 2018 14:09:09 GMT",
       "comments": {}
     },
     {
       "version": "0.158.0",
-      "tag": "@bentley/imodeljs-frontend_v0.158.0",
+      "tag": "@itwin/core-frontend_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",
       "comments": {}
     },
     {
       "version": "0.157.0",
-      "tag": "@bentley/imodeljs-frontend_v0.157.0",
+      "tag": "@itwin/core-frontend_v0.157.0",
       "date": "Sun, 14 Oct 2018 17:20:06 GMT",
       "comments": {
         "none": [
@@ -3981,7 +5622,7 @@
     },
     {
       "version": "0.156.0",
-      "tag": "@bentley/imodeljs-frontend_v0.156.0",
+      "tag": "@itwin/core-frontend_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "none": [

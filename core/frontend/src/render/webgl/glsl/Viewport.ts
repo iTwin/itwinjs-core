@@ -8,7 +8,7 @@
 
 import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { addRenderPass } from "./RenderPass";
-import { addModelViewProjectionMatrix } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix } from "./Vertex";
 
 /** @internal */
 export function addViewport(shader: ShaderBuilder) {
@@ -29,10 +29,12 @@ export function addViewportTransformation(shader: ShaderBuilder) {
 }
 
 const modelToWindowCoordinates = `
-vec4 modelToWindowCoordinates(vec4 position, vec4 next, out float clipDist) {
-  clipDist = 0.0;
+vec4 modelToWindowCoordinates(vec4 position, vec4 next, out vec4 clippedMvpPos, out vec3 clippedMvPos) {
   if (kRenderPass_ViewOverlay == u_renderPass || kRenderPass_Background == u_renderPass) {
-    vec4 q = MAT_MVP * position;
+    vec4 q = MAT_MV * position;
+    clippedMvPos = q.xyz;
+    q = u_proj * q;
+    clippedMvpPos = q;
     q.xyz /= q.w;
     q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz;
     return q;
@@ -40,21 +42,26 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next, out float clipDist) {
 
   // Negative values are in front of the camera (visible).
   float s_maxZ = -u_frustum.x;            // use -near (front) plane for segment drop test since u_frustum's near & far are pos.
-  vec4  q = MAT_MV * position;              // eye coordinates.
+  vec4  q = MAT_MV * position;            // eye coordinates.
   vec4  n = MAT_MV * next;
 
   if (q.z > s_maxZ) {
-    if (n.z > s_maxZ)
-      return vec4(0.0, 0.0,  1.0, 0.0);   // Entire segment behind eye.
+    if (n.z > s_maxZ) {
+      clippedMvPos = vec3(0.0, 0.0, 1.0);
+      clippedMvpPos = vec4(0.0, 0.0, 1.0, 0.0);
+      return vec4(0.0, 0.0, 1.0, 0.0);    // Entire segment behind front clip plane.
+    }
 
-    clipDist = (s_maxZ - q.z) / (n.z - q.z);
+    float t = (s_maxZ - q.z) / (n.z - q.z);
 
-    q.x += clipDist * (n.x - q.x);
-    q.y += clipDist * (n.y - q.y);
-    q.z = s_maxZ;                       // q.z + (s_maxZ - q.z) * (s_maxZ - q.z) / n.z - q.z
+    q.x += t * (n.x - q.x);
+    q.y += t * (n.y - q.y);
+    q.z = s_maxZ;                         // q.z + (s_maxZ - q.z) / (n.z - q.z) * (n.z - q.z) = s_maxZ
   }
 
+  clippedMvPos = q.xyz;
   q = u_proj * q;
+  clippedMvpPos = q;
   q.xyz /= q.w;                           // normalized device coords
   q.xyz = (u_viewportTransformation * vec4(q.xyz, 1.0)).xyz; // window coords
   return q;
@@ -63,7 +70,8 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next, out float clipDist) {
 
 /** @internal */
 export function addModelToWindowCoordinates(vert: VertexShaderBuilder) {
-  addModelViewProjectionMatrix(vert);
+  addModelViewMatrix(vert);
+  addProjectionMatrix(vert);
   addViewportTransformation(vert);
   addRenderPass(vert);
   vert.addFunction(modelToWindowCoordinates);

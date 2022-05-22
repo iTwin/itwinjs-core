@@ -6,18 +6,18 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@bentley/imodeljs-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
+import { MessageSeverity } from "@itwin/appui-abstract";
+import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { GeographicTilingScheme, MapCartoRectangle, MapTilingScheme, TerrainMeshProvider, TileAvailability } from "../internal";
-import { Tile } from "../Tile";
-import { MapTile, MapTileProjection } from "./MapTile";
-import { QuadId } from "./QuadId";
+import {
+  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, Tile, TileAvailability,
+} from "../internal";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -26,29 +26,37 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** @internal */
-const bentleyCesiumIonRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
-
-/** @beta */
-export function getCesiumAssetUrl(osmAssetId: number, requestKey: string) {
+/** Return the URL for a Cesium ION asset from its asset ID and request Key.
+ * @public
+ */
+export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
 /** @internal */
-export function getCesiumOSMBuildingsUrl() {
+export function getCesiumOSMBuildingsUrl(): string | undefined {
+  const key = IModelApp.tileAdmin.cesiumIonKey;
+  if (undefined === key)
+    return undefined;
+
   const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, bentleyCesiumIonRequestKey);
+  return getCesiumAssetUrl(osmBuildingAssetId, key);
 }
 
 /** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-  const requestContext = new ClientRequestContext("");
-  const _requestKey = requestKey ? requestKey : bentleyCesiumIonRequestKey;
-  const _requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
-  const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
+
+  if (undefined === requestKey) {
+    requestKey = IModelApp.tileAdmin.cesiumIonKey;
+    if (undefined === requestKey)
+      return {};
+  }
+
+  const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
+  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {
-    const apiResponse: Response = await request(requestContext, apiUrl, apiRequestOptions);
+    const apiResponse = await request(apiUrl, apiRequestOptions);
     if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
       assert(false);
       return {};
@@ -60,33 +68,46 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
   }
 }
 
+let notifiedTerrainError = false;
+
+// Notify - once per session - of failure to obtain Cesium terrain provider.
+function notifyTerrainError(detailedDescription?: string): void {
+  if (notifiedTerrainError)
+    return;
+
+  notifiedTerrainError = true;
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
+}
+
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
-  const requestContext = new ClientRequestContext("");
-  let layers;
-
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url)
+  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
+    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
+  }
 
+  let layers;
   try {
     const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
-    const layerResponse = await request(requestContext, layerUrl, layerRequestOptions);
+    const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
-      assert(false);
+      notifyTerrainError();
       return undefined;
     }
-    layers = layerResponse.body;
 
+    layers = layerResponse.body;
   } catch (error) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   if (undefined === layers.tiles || undefined === layers.version) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
   if (undefined !== layers.available) {
@@ -152,9 +173,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);      // Request a new access token every 30 minutes...
   private _tokenTimeOut: BeTimePoint;
 
-  public forceTileLoad(tile: Tile): boolean {
+  public override forceTileLoad(tile: Tile): boolean {
     // Force loading of the metadata availability tiles as these are required for determining the availability of descendants.
-    return undefined !== this._metaDataAvailableLevel && tile.depth === 1 + this._metaDataAvailableLevel && !(tile as MapTile).everLoaded;
+    const mapTile = tile as MapTile;
+    return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
   constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
@@ -163,8 +185,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
-  public getLogo(): HTMLTableRowElement {
-    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (cards.dataset.cesiumIonLogoCard)
+      return;
+
+    cards.dataset.cesiumIonLogoCard = "true";
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    cards.appendChild(card);
   }
 
   public get maxDepth(): number { return this._maxDepth; }
@@ -174,10 +201,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     if (quadId.level > this.maxDepth)
       return false;
 
-    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level - 1, quadId.column, quadId.row) : true;
+    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
-  public async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
+  public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
       const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
       if (!accessTokenAndEndpointUrl.token) {
@@ -192,10 +219,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
     const minHeight = this._exaggeration * streamBuffer.nextFloat32;
     const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
@@ -206,20 +233,20 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     terrainTile.adjustHeights(minHeight, maxHeight);
 
     if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
-    const vertexCount = streamBuffer.nextUint32;
-    const encodedVertexBuffer = new Uint16Array(blob.buffer, streamBuffer.curPos, vertexCount * 3);
-    streamBuffer.advance(vertexCount * 6);
+    const pointCount = streamBuffer.nextUint32;
+    const encodedVertexBuffer = new Uint16Array(blob.buffer, streamBuffer.curPos, pointCount * 3);
+    streamBuffer.advance(pointCount * 6);
 
-    const uBuffer = encodedVertexBuffer.subarray(0, vertexCount);
-    const vBuffer = encodedVertexBuffer.subarray(vertexCount, 2 * vertexCount);
-    const heightBuffer = encodedVertexBuffer.subarray(vertexCount * 2, 3 * vertexCount);
+    const uBuffer = encodedVertexBuffer.subarray(0, pointCount);
+    const vBuffer = encodedVertexBuffer.subarray(pointCount, 2 * pointCount);
+    const heightBuffer = encodedVertexBuffer.subarray(pointCount * 2, 3 * pointCount);
 
     zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
 
     let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
     const triangleElements = 3;
 
-    if (vertexCount > 64 * 1024) {
+    if (pointCount > 64 * 1024) {
       // More than 64k vertices, so indices are 32-bit.
       bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
     }
@@ -231,7 +258,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const triangleCount = streamBuffer.nextUint32;
     const indexCount = triangleCount * triangleElements;
 
-    const indices = getIndexArray(vertexCount, streamBuffer, indexCount);
+    const indices = getIndexArray(pointCount, streamBuffer, indexCount);
     // High water mark decoding based on decompressIndices_ in webgl-loader's loader.js.
     // https://code.google.com/p/webgl-loader/source/browse/trunk/samples/loader.js?r=99#55
     // Copyright 2012 Google Inc., Apache 2.0 license.
@@ -248,41 +275,32 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     CesiumTerrainProvider._scratchHeightRange.low = minHeight - skirtHeight;
     CesiumTerrainProvider._scratchHeightRange.high = maxHeight;
     const projection = terrainTile.getProjection(CesiumTerrainProvider._scratchHeightRange);
-
-    const mesh = TerrainMeshPrimitive.create({ range: projection.localRange });
-    for (let i = 0; i < indexCount;)
-      this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
+    const pointQParams = QParams3d.fromRange(projection.localRange);
 
     const uvScale = 1.0 / 32767.0;
     const heightScale = uvScale * (maxHeight - minHeight);
 
-    const westVertexCount = streamBuffer.nextUint32;
-    const westIndices = getIndexArray(vertexCount, streamBuffer, westVertexCount);
+    const westCount = streamBuffer.nextUint32;
+    const westIndices = getIndexArray(pointCount, streamBuffer, westCount);
 
-    const southVertexCount = streamBuffer.nextUint32;
-    const southIndices = getIndexArray(vertexCount, streamBuffer, southVertexCount);
+    const southCount = streamBuffer.nextUint32;
+    const southIndices = getIndexArray(pointCount, streamBuffer, southCount);
 
-    const eastVertexCount = streamBuffer.nextUint32;
-    const eastIndices = getIndexArray(vertexCount, streamBuffer, eastVertexCount);
+    const eastCount = streamBuffer.nextUint32;
+    const eastIndices = getIndexArray(pointCount, streamBuffer, eastCount);
 
-    const northVertexCount = streamBuffer.nextUint32;
-    const northIndices = getIndexArray(vertexCount, streamBuffer, northVertexCount);
+    const northCount = streamBuffer.nextUint32;
+    const northIndices = getIndexArray(pointCount, streamBuffer, northCount);
 
     // Extensions...
     let encodedNormalsBuffer;
-    let waterMaskBuffer;
     while (streamBuffer.curPos < streamBuffer.length) {
       const extensionId = streamBuffer.nextUint8;
       const extensionLength = streamBuffer.nextUint32;
       switch (extensionId) {
         case QuantizedMeshExtensionIds.OctEncodedNormals:
-          assert(vertexCount * 2 === extensionLength);
+          assert(pointCount * 2 === extensionLength);
           encodedNormalsBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
-          streamBuffer.advance(extensionLength);
-          break;
-
-        case QuantizedMeshExtensionIds.WaterMask:
-          waterMaskBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
           streamBuffer.advance(extensionLength);
           break;
 
@@ -313,14 +331,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       }
 
     }
-    if (undefined !== encodedNormalsBuffer) {
-    }
 
-    if (undefined !== waterMaskBuffer) {
-    }
+    const mesh = TerrainMeshPrimitive.create({ pointQParams, pointCount, indexCount, wantSkirts: this._wantSkirts, westCount, eastCount, southCount, northCount, wantNormals: undefined !== encodedNormalsBuffer });
+    for (let i = 0; i < indexCount;)
+      this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
 
     const worldToEcef = tile.iModel.getEcefTransform().matrix;
-    for (let i = 0; i < vertexCount; i++) {
+    for (let i = 0; i < pointCount; i++) {
       const u = uBuffer[i];
       const v = vBuffer[i];
       projection.getPoint(uvScale * u, uvScale * v, minHeight + heightBuffer[i] * heightScale, CesiumTerrainProvider._scratchPoint);
@@ -329,7 +346,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
         const normalIndex = i * 2;
         OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], CesiumTerrainProvider._scratchNormal);
         worldToEcef.multiplyTransposeVector(CesiumTerrainProvider._scratchNormal, CesiumTerrainProvider._scratchNormal);
-        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.fromVector(CesiumTerrainProvider._scratchNormal));
+        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.encode(CesiumTerrainProvider._scratchNormal));
       } else {
         mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d);
       }
@@ -346,43 +363,43 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       this.generateSkirts(mesh, southIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
       this.generateSkirts(mesh, northIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
     }
+    assert(mesh.isCompleted);
     return mesh;
   }
 
   private addTriangle(mesh: TerrainMeshPrimitive, i0: number, i1: number, i2: number) {
-    mesh.indices.push(i0);
-    mesh.indices.push(i1);
-    mesh.indices.push(i2);
+    mesh.addTriangle(i0, i1, i2);
   }
 
   private generateSkirts(mesh: TerrainMeshPrimitive, indices: Uint16Array | Uint32Array, projection: MapTileProjection, skirtOffset: number, heightBuffer: Uint16Array, minHeight: number, heightScale: number, wantNormals: boolean) {
     for (let i = 0; i < indices.length; i++) {
       const index = indices[i];
+      const paramIndex = index * 2;
       const height = minHeight + heightBuffer[index] * heightScale;
-      const uv = mesh.uvParams.unquantize(index, CesiumTerrainProvider._scratchPoint2d);
-      if (wantNormals) {
-        const normVal = mesh.normals[index].value;
-        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), mesh.uvParams.list[index], new OctEncodedNormal(normVal));
+      CesiumTerrainProvider._scratchQPoint2d.setFromScalars(mesh.uvs[paramIndex], mesh.uvs[paramIndex + 1]);
+      const uv = mesh.uvQParams.unquantize(CesiumTerrainProvider._scratchQPoint2d.x, CesiumTerrainProvider._scratchQPoint2d.y, CesiumTerrainProvider._scratchPoint2d);
+      if (wantNormals && mesh.normals) {
+        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d, mesh.normals[index]);
       } else {
-        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), mesh.uvParams.list[index]);
+        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d);
       }
 
       if (i) {
-        this.addTriangle(mesh, index, indices[i - 1], mesh.points.length - 2);
-        this.addTriangle(mesh, index, mesh.points.length - 2, mesh.points.length - 1);
+        this.addTriangle(mesh, index, indices[i - 1], mesh.nextPointIndex - 2);
+        this.addTriangle(mesh, index, mesh.nextPointIndex - 2, mesh.nextPointIndex - 1);
       }
     }
   }
-  public get requestOptions(): RequestOptions {
+  public override get requestOptions(): RequestOptions {
     return { method: "GET", responseType: "arraybuffer", headers: { authorization: `Bearer ${this._accessToken}` }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
   }
 
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
-    return this._tileUrlTemplate.replace("{z}", (zoomLevel - 1).toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
+  public override constructUrl(row: number, column: number, zoomLevel: number): string {
+    return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
+    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
   }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will

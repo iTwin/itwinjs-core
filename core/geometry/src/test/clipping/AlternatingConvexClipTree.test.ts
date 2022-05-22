@@ -23,6 +23,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { Angle, Matrix3d, Point3dArray, Transform } from "../../core-geometry";
 
 /* eslint-disable no-console */
 
@@ -39,10 +40,19 @@ function getEvaluationCount(clear: boolean = false) {
   return count;
 }
 
-function saveTree(root: AlternatingCCTreeNode) {
-  Checker.saveTransformedLineString(root.points);
+function saveTree(root: AlternatingCCTreeNode, shiftX: number = 0, shiftY: number = 0, scaleAroundCentroidFactor: number = 1.0) {
+  if (scaleAroundCentroidFactor === 1.0)
+      Checker.saveTransformedLineString(root.points);
+  else {
+    const centroid = Point3dArray.centroid(root.points);
+    const transform = Transform.createFixedPointAndMatrix(centroid, Matrix3d.createScale(scaleAroundCentroidFactor, scaleAroundCentroidFactor, scaleAroundCentroidFactor));
+    const scaledPoints = transform.multiplyPoint3dArray(root.points);
+    scaledPoints.push(scaledPoints[0].clone());
+    Checker.saveTransformedLineString(scaledPoints);
+  }
+  Checker.shift(shiftX, shiftY, 0);
   for (const child of root.children)
-    saveTree(child);
+    saveTree(child, shiftX, shiftY, scaleAroundCentroidFactor);
 }
 
 function clipPathA(shift: Vector3d, scale: number, points: Point3d[]) {
@@ -218,6 +228,50 @@ describe("RecursiveClipSets", () => {
     testClipper(points, rootClone);
     Checker.clearGeometry("RecursiveClipSets.test3", outDir);
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("HullAndInlets", () => {
+    const ck = new Checker();
+    let x0 = 0;
+
+    const pointsA: Point3d[] = [
+      Point3d.create(0, 0),
+      Point3d.create(-2, -2),
+      Point3d.create(4, 0),
+      Point3d.create(-2, 2),
+      Point3d.create(0, 0),
+    ];
+    testHullAndInlets(pointsA, x0, 10);
+    x0 += 100;
+    for (const degrees of [0, 45, 90, 180, 270]) {
+      x0 += 100;
+      const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0),
+        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+      const rotatedPoints = transform.multiplyPoint3dArray(pointsA);
+      testHullAndInlets(rotatedPoints, x0, 10);
+    }
+    x0 += 100;
+
+    // A diamond, but with some diagonals pushed inward and outward so there are inlets and multi-edge convex parts
+    const points: Point3d[] = [
+      Point3d.create(5, 0, 0),
+      Point3d.create(0, 5, 0),
+      Point3d.create(-1, 5, 0),
+      Point3d.create(-4, 2, 0),
+      Point3d.create(-5, 0, 0),
+      Point3d.create(0, 1, 0),
+      Point3d.create(2, 1, 0),
+      Point3d.create(0, 0, 0),
+      Point3d.create(-1, -2, 0),
+      Point3d.create(0, -5, 0),
+      Point3d.create(1, -2, 0),
+      Point3d.create(2, -1, 0),
+    ];
+    testHullAndInlets(points, x0, 12.0);
+    x0 += 100;
+
+    Checker.clearGeometry("HullAndInlets", outDir);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -428,4 +482,20 @@ function summedAreas(loops: GrowableXYZArray[]): number {
     s += PolygonOps.area(loop.getPoint3dArray());
   }
   return s;
+}
+
+function testHullAndInlets(points: Point3d[], x0: number, ay: number) {
+  Checker.moveTo(x0, 0);
+  Checker.saveTransformedLineString(points);
+  const root0 = AlternatingCCTreeNode.createTreeForPolygon(points);
+  Checker.shift(0, ay, 0);
+  saveTree(root0, 0, 0, 0.98);
+  for (let i = 1; i < 3; i++){
+    Checker.moveTo(x0 + i * 20, 0, 0);
+    Checker.saveTransformedLineString(points);
+    Checker.shift(0, ay, 0);
+    const root = AlternatingCCTreeNode.createHullAndInletsForPolygon(points);
+    saveTree(root, 0, 0, 0.98);
+    points.reverse ();
+  }
 }

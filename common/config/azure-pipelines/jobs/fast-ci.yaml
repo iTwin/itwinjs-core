@@ -1,21 +1,22 @@
-# iModel.js CI Build
+# iTwin.js Core CI Build
 
 trigger:
   - master
   - release/*
 
 pr:
+  autoCancel: true
   drafts: false
   branches:
     include:
-    - master
-    - release/*
+      - master
+      - release/*
 
 jobs:
   - template: ci-core.yaml
     parameters:
-      name: Node_12
-      nodeVersion: 12.17.0
+      name: Node_16
+      nodeVersion: 16.13.0
       pool:
         name: $(name)
         demands:

@@ -8,19 +8,14 @@
  */
 
 import {
-  ClipStyle,
-  ClipStyleProps,
-  ColorByName,
-  ColorDef,
-  LinePixels,
-  RenderMode,
-} from "@bentley/imodeljs-common";
-import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+  ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
+} from "@itwin/core-common";
+import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 
-/** Specify or unspecify a clip color to use for pixels inside or outside the clip region.
+/** This tool specifies or un-specifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
  * - clear
  * - inside   <color string> | clear
@@ -33,61 +28,73 @@ import { DisplayStyleTool } from "./DisplayStyleTools";
  * "#rrbbgg"
  * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
  * @see [ColorDef]
- * @alpha
+ * @beta
  */
 export class ClipColorTool extends Tool {
-  public static toolId = "ClipColorTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "ClipColorTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   private _clearClipColors() {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
-      vp.insideClipColor = undefined;
-      vp.outsideClipColor = undefined;
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
+      props.insideColor = props.outsideColor = undefined;
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
 
-  private _setInsideClipColor(colStr: string) {
+  private setClipColor(colStr: string, which: "insideColor" | "outsideColor") {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.insideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
+    if (vp) {
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
+      props[which] = colStr === "clear" ? undefined : RgbColor.fromColorDef(ColorDef.fromString(colStr));
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
+    }
   }
 
-  private _setOutsideClipColor(colStr: string) {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.outsideClipColor = colStr === "clear" ? undefined : ColorDef.fromString(colStr);
-  }
-
-  public parseAndRun(...args: string[]): boolean {
+  /** This runs the tool using the given arguments, specifying or unspecifying a clip color to use for pixels inside or outside the clip region.
+   * Arguments can be:
+   * - clear
+   * - inside   <color string> | clear
+   * - outside  <color string> | clear
+   * <color string> must be in one of the following forms:
+   * "rgb(255,0,0)"
+   * "rgba(255,0,0,255)"
+   * "rgb(100%,0%,0%)"
+   * "hsl(120,50%,50%)"
+   * "#rrbbgg"
+   * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
+   * @beta
+   */
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (1 === args.length) {
-      if (args[0] === "clear") {
+      if (args[0] === "clear")
         this._clearClipColors();
-        return true;
-      }
-      return false;
+
+      return true;
     }
 
-    if (args[0] === "inside")
-      this._setInsideClipColor(args[1]);
-    else if (args[0] === "outside")
-      this._setOutsideClipColor(args[1]);
-    else
-      return false;
+    const which = args[0];
+    if (which === "inside" || which === "outside")
+      this.setClipColor(args[1], "inside" === which ? "insideColor" : "outsideColor");
+
     return true;
   }
 }
 
-/** Controls a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
- * @alpha
+/** Controls a view state's view details' flag for producing cut geometry for a clip style.
+ * @beta
  */
 export class ToggleSectionCutTool extends Tool {
-  public static toolId = "ToggleSectionCut";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ToggleSectionCut";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(produceCutGeometry?: boolean): boolean {
+  /** This method runs the tool, controlling a view state's view details' flag for producing cut geometry for a clip style.
+   * @param produceCutGeometry whether to produce cut geometry
+   */
+  public override async run(produceCutGeometry?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const style = vp.view.displayStyle.settings.clipStyle;
@@ -106,33 +113,36 @@ export class ToggleSectionCutTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  /** Executes this tool's run method with args[0] containing `produceCutGeometry`.
+   * @see [[run]]
+   */
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }
 }
 
-/** Simple tool that toggles a hard-coded [ClipStyle]($frontend) overriding various aspects of the cut geometry appearance.
- * @alpha
+/** Simple tool that toggles a hard-coded clip style overriding various aspects of the cut geometry appearance.
+ * @beta
  */
 export class TestClipStyleTool extends DisplayStyleTool {
-  public static toolId = "TestClipStyle";
-  public static get maxArgs() { return 1; }
-  public static get minArgs() { return 1; }
+  public static override toolId = "TestClipStyle";
+  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
 
   private _useStyle = false;
 
-  protected get require3d() { return true; }
+  protected override get require3d() { return true; }
 
-  protected parse(args: string[]): boolean {
+  protected async parse(args: string[]): Promise<boolean> {
     this._useStyle = parseBoolean(args[0]) ?? false;
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const props: ClipStyleProps = { produceCutGeometry: true };
     if (this._useStyle) {
       props.cutStyle = {

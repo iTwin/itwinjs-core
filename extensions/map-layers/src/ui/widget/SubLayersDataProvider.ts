@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps, SubLayerId } from "@bentley/imodeljs-common";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+import { BeEvent, compareStringsOrUndefined } from "@itwin/core-bentley";
+import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 
 /**

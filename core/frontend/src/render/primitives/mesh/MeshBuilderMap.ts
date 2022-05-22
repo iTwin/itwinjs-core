@@ -6,16 +6,16 @@
  * @module Rendering
  */
 
-import { compareBooleans, compareNumbers, Dictionary } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { Feature, FeatureTable } from "@bentley/imodeljs-common";
+import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { Feature, FeatureTable } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryList } from "../geometry/GeometryList";
 import { Geometry } from "../geometry/GeometryPrimitives";
 import { PolyfacePrimitive } from "../Polyface";
-import { ToleranceRatio } from "../Primitives";
+import { GeometryOptions, ToleranceRatio } from "../Primitives";
 import { StrokesPrimitive } from "../Strokes";
-import { MeshBuilder } from "./MeshBuilder";
+import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
 import { Mesh, MeshList } from "./MeshPrimitives";
 
 /** @internal */
@@ -25,38 +25,34 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public readonly facetAreaTolerance: number;
   public readonly tolerance: number;
   public readonly is2d: boolean;
-  public readonly features?: Mesh.Features;
-
-  /** if true the order of keys created to store meshBuilders maintain order */
-  private readonly _preserveKeyOrder: boolean;
+  public readonly features?: FeatureTable;
+  public readonly options: GeometryOptions;
   private _keyOrder = 0;
 
-  constructor(tolerance: number, range: Range3d, is2d: boolean, preserveKeyOrder: boolean = false, id?: string) {
+  constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String } | undefined) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
     this.facetAreaTolerance = tolerance * ToleranceRatio.facetArea;
     this.range = range;
     this.is2d = is2d;
-    this._preserveKeyOrder = preserveKeyOrder;
-    if (undefined !== id) {
-      const table = new FeatureTable(1);
-      this.features = new Mesh.Features(table);
-      this.features.add(new Feature(id), 0);
-    }
+    this.options = options;
+
+    if (pickable)
+      this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, wantSurfacesOnly: boolean, wantPreserveOrder: boolean, id?: string): MeshBuilderMap {
-    const map = new MeshBuilderMap(tolerance, range, is2d, wantPreserveOrder, id);
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String} | undefined): MeshBuilderMap {
+    const map = new MeshBuilderMap(tolerance, range, is2d, options, pickable);
 
     for (const geom of geometries)
-      map.loadGeometry(geom, wantSurfacesOnly);
+      map.loadGeometry(geom);
 
     return map;
   }
 
   public toMeshes(): MeshList {
-    const meshes = new MeshList(undefined !== this.features ? this.features.table : undefined, this.range);
+    const meshes = new MeshList(this.features, this.range);
     for (const builder of this._values)
       meshes.push(builder.mesh);
 
@@ -68,10 +64,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
    * @param geom Geometry instance to extract polyfaces and strokes from
    * @param wantSurfacesOnly if true prevent strokes from being loaded into builders
    */
-  public loadGeometry(geom: Geometry, wantSurfacesOnly: boolean): void {
+  public loadGeometry(geom: Geometry): void {
     this.loadPolyfacePrimitiveList(geom);
 
-    if (!wantSurfacesOnly)
+    if (!this.options.wantSurfacesOnly)
       this.loadStrokePrimitiveList(geom);
   }
 
@@ -84,14 +80,14 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
     if (polyfaces !== undefined)
       for (const polyface of polyfaces)
-        this.loadIndexedPolyface(polyface);
+        this.loadIndexedPolyface(polyface, geom.feature);
   }
 
   /**
    * extract indexed polyfaces into meshBuilder stored in builderMap
    * @param polyface PolyfacePrimitive to extract indexed polyfaces from
    */
-  public loadIndexedPolyface(polyface: PolyfacePrimitive): void {
+  public loadIndexedPolyface(polyface: PolyfacePrimitive, feature: Feature | undefined): void {
     const { indexedPolyface, displayParams, isPlanar } = polyface;
     const { pointCount, normalCount } = indexedPolyface;
     const { fillColor, isTextured } = displayParams;
@@ -101,7 +97,8 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       return;
 
     const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
-    builder.addFromPolyface(indexedPolyface, { includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping });
+    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
+    builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
   }
 
   /**
@@ -113,32 +110,43 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
     if (undefined !== strokes)
       for (const stroke of strokes)
-        this.loadStrokesPrimitive(stroke);
+        this.loadStrokesPrimitive(stroke, geom.feature);
   }
 
   /**
    * extract strokes primitive into meshBuilder stored in builderMap
    * @param strokePrimitive StrokesPrimitive instance to extractfrom
    */
-  public loadStrokesPrimitive(strokePrimitive: StrokesPrimitive): void {
+  public loadStrokesPrimitive(strokePrimitive: StrokesPrimitive, feature: Feature | undefined): void {
     const { displayParams, isDisjoint, isPlanar, strokes } = strokePrimitive;
 
     const type = isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
-    builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr);
+    builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr, feature);
   }
 
   public getBuilder(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {
     const { facetAreaTolerance, tolerance, is2d, range } = this;
     const key = this.getKey(displayParams, type, hasNormals, isPlanar);
 
-    return this.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance: facetAreaTolerance, features: this.features });
+    const quantizePositions = false; // ###TODO should this be configurable?
+    return this.getBuilderFromKey(key, {
+      displayParams,
+      type,
+      range,
+      quantizePositions,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance: facetAreaTolerance,
+      features: this.features,
+    });
   }
 
   public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
     const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
-    if (this._preserveKeyOrder)
+    if (this.options.preserveOrder)
       key.order = ++this._keyOrder;
 
     return key;

@@ -5,40 +5,9 @@
 import "./ViewItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
-
-class ThumbnailCache {
-  private static _thumbnails: Map<string, ThumbnailProps | undefined> = new Map<string, ThumbnailProps>();
-
-  /** Caches thumbnails */
-  public static async getThumbnail(iModelConnection: IModelConnection | undefined, viewProps: ViewDefinitionProps) {
-    const viewId = viewProps.id!;
-    // eslint-disable-next-line no-console
-    console.log(`Retrieving thumbnail for iModel=${iModelConnection!.name} view=${viewId}`);
-
-    if (ThumbnailCache._thumbnails.has(viewId.toString()))
-      return ThumbnailCache._thumbnails.get(viewId.toString());
-    else if (iModelConnection) {
-      let thumbnail: ThumbnailProps | undefined;
-      try {
-        thumbnail = await iModelConnection.views.getThumbnail(viewProps.id!);
-      } catch {
-        if (!thumbnail) {
-          // eslint-disable-next-line no-console
-          console.log("Failed to obtain a thumbnail from the iModel");
-        }
-      }
-
-      // There are cases where the file may not have a thumbnail for the view
-      // Set even if undefined so that we avoid querying over and over again
-      ThumbnailCache._thumbnails.set(viewId.toString(), thumbnail);
-      return thumbnail;
-    }
-    return undefined;
-  }
-}
+import { ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { CommonProps, LoadingSpinner } from "@itwin/core-react";
 
 /** Properties for [[ViewItem]] component
  * @internal
@@ -78,15 +47,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
   }
 
   /** Load thumbnail from the iModelConnection if necessary */
-  public async componentDidMount() {
-    if (this.props.showThumbnail) {
-      const thumbnail = await ThumbnailCache.getThumbnail(this.props.iModelConnection, this.props.viewProps);
-      if (thumbnail) {
-        const blob = new Blob([thumbnail.image], { type: `image/${thumbnail.format}` });
-        // Load thumbnails
-        this.setState({ thumbnail: URL.createObjectURL(blob) });
-      }
-    }
+  public override async componentDidMount() {
     this.setState({ waitingForThumbnail: false });
   }
 
@@ -121,7 +82,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
     }
   }
 
-  public render() {
+  public override render() {
     const label = this.props.viewProps.userLabel ? this.props.viewProps.userLabel : this.props.viewProps.code.value;
     return (
       <>

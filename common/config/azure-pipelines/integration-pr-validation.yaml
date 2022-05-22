@@ -1,17 +1,16 @@
-# iModel.js Integration PR Validation Build
+# iTwin.js Core Integration PR Validation Build
 #
-# This integration test job currently run on all supported Node Versions of iModel.js.
+# This integration test job currently run on all supported Node Versions of iTwin.js.
 # To decrease build load, only the latest Node version is tested on pull requests.
 # All other versions are run on `master` and `release/*` branches.
 #
 # Note: Currently a subset of all integration tests
-#
 
 trigger:
   - master
   - release/*
-
 pr:
+  autoCancel: true
   drafts: false
   branches:
     include:
@@ -19,31 +18,15 @@ pr:
       - release/*
 
 variables:
-  - group: iModel.js non-secret config variables
-  - group: iModel.js Integration Test Users
+  - group: iTwin.js non-secret config variables
+  - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_12_x
+  - job: Node_16_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: 12.x
-  - job: Node_10_x
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: templates/integration-test-steps.yaml
-        parameters:
-          Node_Version: 10.x
-  - job: Node_10_17
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: templates/integration-test-steps.yaml
-        parameters:
-          Node_Version: 10.17.0
+          Node_Version: 16.x

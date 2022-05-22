@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { JsonUtils } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
@@ -19,7 +19,10 @@ import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ACSType {
   None = 0,
   Rectangular = 1,
@@ -27,7 +30,10 @@ export enum ACSType {
   Spherical = 3,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),
@@ -53,10 +59,11 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
 
 /** The state of an AuxCoordSystem element in the frontend
  * @public
+ * @extensions
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   /** @internal */
-  public static get className() { return "AuxCoordSystem"; }
+  public static override get className() { return "AuxCoordSystem"; }
   public type: number;
   public description?: string;
 
@@ -86,7 +93,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     this.type = JsonUtils.asInt(props.type, ACSType.None);
     this.description = props.description;
   }
-  public toJSON(): AuxCoordSystemProps {
+  public override toJSON(): AuxCoordSystemProps {
     const val = super.toJSON() as AuxCoordSystemProps;
     val.type = this.type;
     val.description = this.description;
@@ -271,9 +278,10 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     const exaggerate = context.viewport.view.getAspectRatioSkew();
     const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
     const rMatrix = this.getRotation();
-    rMatrix.inverse(rMatrix);
-    rMatrix.scaleRows(scale, scale / exaggerate, scale, rMatrix);
-    const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
+
+    rMatrix.transposeInPlace();
+    rMatrix.scaleColumns(scale, scale / exaggerate, scale, rMatrix);
+    const transform = Transform.createRefs(drawOrigin, rMatrix);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);
     const vp = context.viewport;
@@ -292,10 +300,11 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 /** The state of an AuxCoordSystem2d element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   /** @internal */
-  public static get className() { return "AuxCoordSystem2d"; }
+  public static override get className() { return "AuxCoordSystem2d"; }
   public readonly origin: Point2d;
   public angle: number; // in degrees
   private readonly _rMatrix: Matrix3d;
@@ -307,7 +316,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     this._rMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle))!;
   }
 
-  public toJSON(): AuxCoordSystem2dProps {
+  public override toJSON(): AuxCoordSystem2dProps {
     const val = super.toJSON() as AuxCoordSystem2dProps;
     val.origin = this.origin;
     val.angle = this.angle;
@@ -326,10 +335,11 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystem3d element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   /** @internal */
-  public static get className() { return "AuxCoordSystem3d"; }
+  public static override get className() { return "AuxCoordSystem3d"; }
   public readonly origin: Point3d;
   public yaw: number; // in degrees
   public pitch: number; // in degrees
@@ -346,7 +356,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
     this._rMatrix = angles.toMatrix3d();
   }
 
-  public toJSON(): AuxCoordSystem3dProps {
+  public override toJSON(): AuxCoordSystem3dProps {
     const val = super.toJSON() as AuxCoordSystem3dProps;
     val.origin = this.origin;
     val.yaw = this.yaw;
@@ -369,8 +379,9 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystemSpatial element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
   /** @internal */
-  public static get className() { return "AuxCoordSystemSpatial"; }
+  public static override get className() { return "AuxCoordSystemSpatial"; }
 }

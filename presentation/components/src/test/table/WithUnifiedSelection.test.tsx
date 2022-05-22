@@ -2,26 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "typemoq";
+import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/components-react";
+import { IModelConnection } from "@itwin/core-frontend";
+import { InstanceKey, KeySet } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, isKeySet } from "@itwin/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,
-} from "@bentley/presentation-frontend";
-import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";
+} from "@itwin/presentation-frontend";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {
@@ -119,7 +117,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
-      .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())) // eslint-disable-line deprecation/deprecation
+      .setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
       .returns(async () => undefined);
     Presentation.setPresentationManager(presentationManagerMock.object);
 
@@ -128,9 +126,9 @@ describe("Table withUnifiedSelection", () => {
     />).instance() as any as IUnifiedSelectionComponent;
 
     expect(component.selectionHandler).to.not.be.undefined;
-    expect(component.selectionHandler!.name).to.not.be.undefined;
-    expect(component.selectionHandler!.rulesetId).to.eq(testRulesetId);
-    expect(component.selectionHandler!.imodel).to.eq(imodelMock.object);
+    expect(component.selectionHandler?.name).to.not.be.undefined;
+    expect(component.selectionHandler?.rulesetId).to.eq(testRulesetId);
+    expect(component.selectionHandler?.imodel).to.eq(imodelMock.object);
   });
 
   it("renders correctly", () => {
@@ -153,6 +151,7 @@ describe("Table withUnifiedSelection", () => {
   });
 
   it("updates selection handler when data provider changes", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const table = shallow<TableProps>(<PresentationTable
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
@@ -200,7 +199,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and highest selection level is equal to boundary", () => {
@@ -215,7 +214,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and data provider already has keys", () => {
@@ -230,7 +229,7 @@ describe("Table withUnifiedSelection", () => {
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
       />);
-      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysNew), moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = isKeySet(keysNew), moq.Times.once());
     });
 
     it("does nothing when mounts and data provider already has keys and there are no available selection levels", () => {
@@ -260,6 +259,7 @@ describe("Table withUnifiedSelection", () => {
           isRowSelected={callback.object}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         const propCallback = table.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const actualResult = propCallback(row);
 
@@ -278,6 +278,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />, { disableLifecycleMethods: true });
 
+        // eslint-disable-next-line deprecation/deprecation
         const propCallback = component.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const result = propCallback(row);
         expect(result).to.be.false;
@@ -296,6 +297,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         const propCallback = component.find(Table).prop("isRowSelected") as ((node: RowItem) => boolean);
         const result = propCallback(row);
         expect(result).to.be.true;
@@ -317,6 +319,7 @@ describe("Table withUnifiedSelection", () => {
           onRowsSelected={callback.object}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -336,6 +339,7 @@ describe("Table withUnifiedSelection", () => {
           onRowsSelected={callback.object}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsSelected")!(rowsIter, false);
 
         selectionHandlerMock.verify((x) => x.addToSelection(rows.map((r) => r._key), 1), moq.Times.once());
@@ -354,6 +358,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -370,6 +375,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={selectionLevel}
         />, { disableLifecycleMethods: true });
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsSelected")!(rowsIter, true);
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -392,6 +398,7 @@ describe("Table withUnifiedSelection", () => {
           onRowsDeselected={callback.object}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(rows.map((r) => r._key), 1), moq.Times.once());
@@ -410,6 +417,7 @@ describe("Table withUnifiedSelection", () => {
           onRowsDeselected={callback.object}
         />);
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -424,6 +432,7 @@ describe("Table withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
         />, { disableLifecycleMethods: true });
 
+        // eslint-disable-next-line deprecation/deprecation
         await table.find(Table).prop("onRowsDeselected")!(rowsIter);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -463,7 +472,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = moq.isKeySet(keys), moq.Times.once());
+        dataProviderMock.verify((x) => x.keys = isKeySet(keys), moq.Times.once());
       });
 
       it("sets data provider keys to an empty KeySet on selection changes with lower selection level when overall selection is empty", () => {
@@ -474,7 +483,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = moq.isKeySet(keys), moq.Times.once());
+        dataProviderMock.verify((x) => x.keys = isKeySet(keys), moq.Times.once());
       });
 
       it("ignores selection changes with selection level equal to table's boundary level when base ref is not initialized", () => {
@@ -484,6 +493,7 @@ describe("Table withUnifiedSelection", () => {
           selectionHandler={selectionHandlerMock.object}
           selectionLevel={2}
         />);
+        // eslint-disable-next-line deprecation/deprecation
         const base = table.dive().instance() as Table;
         const s = sinon.spy(base, "updateSelectedRows");
         triggerSelectionChange(new KeySet(), 2);
@@ -497,6 +507,7 @@ describe("Table withUnifiedSelection", () => {
           selectionHandler={selectionHandlerMock.object}
           selectionLevel={2}
         />);
+        // eslint-disable-next-line deprecation/deprecation
         const base = table.dive().instance() as Table;
         const s = sinon.spy(base, "updateSelectedRows");
         triggerSelectionChange(new KeySet(), 3);
@@ -509,6 +520,7 @@ describe("Table withUnifiedSelection", () => {
           selectionHandler={selectionHandlerMock.object}
           selectionLevel={2}
         />);
+        // eslint-disable-next-line deprecation/deprecation
         const base = table.find(Table).instance() as Table;
         const s = sinon.spy(base, "updateSelectedRows");
         triggerSelectionChange(new KeySet(), 2);

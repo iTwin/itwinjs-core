@@ -7,7 +7,9 @@
  * @module Tools
  */
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
+import { BentleyError } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -17,19 +19,19 @@ import { parseArgs } from "./parseArgs";
  * @beta
  */
 export abstract class SourceAspectIdTool extends Tool {
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   protected abstract getECSql(queryId: string): string;
 
-  public run(idToQuery?: string, copyToClipboard?: boolean): boolean {
+  public override async run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean> {
     if (typeof idToQuery === "string")
-      this.doQuery(idToQuery, true === copyToClipboard); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doQuery(idToQuery, true === copyToClipboard);
 
     return true;
   }
 
-  public parseAndRun(...keyinArgs: string[]): boolean {
+  public override async parseAndRun(...keyinArgs: string[]): Promise<boolean> {
     const args = parseArgs(keyinArgs);
     return this.run(args.get("i"), args.getBoolean("c"));
   }
@@ -41,10 +43,10 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      for await (const row of imodel.query(this.getECSql(queryId), undefined, 1))
+      for await (const row of imodel.query(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
         resultId = row.resultId;
     } catch (ex) {
-      resultId = ex.toString();
+      resultId = BentleyError.getErrorMessage(ex);
     }
 
     if (typeof resultId !== "string")
@@ -68,7 +70,7 @@ export abstract class SourceAspectIdTool extends Tool {
  * @beta
  */
 export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
-  public static toolId = "SourceAspectIdFromElementId";
+  public static override toolId = "SourceAspectIdFromElementId";
 
   protected getECSql(queryId: string): string {
     return `SELECT Identifier as resultId FROM BisCore.ExternalSourceAspect WHERE Element.Id=${queryId} AND [Kind]='Element'`;
@@ -85,7 +87,7 @@ export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
  * @beta
  */
 export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {
-  public static toolId = "ElementIdFromSourceAspectId";
+  public static override toolId = "ElementIdFromSourceAspectId";
 
   protected getECSql(queryId: string): string {
     return `SELECT Element.Id as resultId FROM BisCore.ExternalSourceAspect WHERE Identifier='${queryId}' AND [Kind]='Element'`;

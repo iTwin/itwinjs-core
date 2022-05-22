@@ -6,16 +6,10 @@
  * @module HyperModeling
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  ClipVector, Transform, XYZProps,
-} from "@bentley/geometry-core";
-import {
-  Placement3d, SectionType,
-} from "@bentley/imodeljs-common";
-import {
-  DrawingViewState, IModelConnection, SheetViewState, SpatialViewState,
-} from "@bentley/imodeljs-frontend";
+import { Id64String } from "@itwin/core-bentley";
+import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-common";
+import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT
@@ -75,7 +69,7 @@ export interface SectionDrawingLocationStateData {
 }
 
 /** Represents a [ViewAttachment]($backend) that attaches a [[SectionDrawingLocationState]] to a [Sheet]($backend) model.
- * @beta
+ * @public
  */
 export interface SectionViewAttachment {
   /** The view attachment's element Id. */
@@ -92,7 +86,7 @@ export interface SectionViewAttachment {
 
 /** Represents a [SectionDrawingLocation]($backend), including data from related elements like [SectionDrawing]($backend) used in a hyper-modeling context.
  * @see [[SectionMarker]] for a widget that allows the user to interact with a section drawing location.
- * @beta
+ * @public
  */
 export class SectionDrawingLocationState {
   /** The iModel in which this section drawing location resides. */
@@ -141,9 +135,7 @@ export class SectionDrawingLocationState {
       if (str) {
         try {
           clip = ClipVector.fromJSON(JSON.parse(str));
-        } catch {
-          //
-        }
+        } catch { }
       }
 
       return clip;
@@ -212,9 +204,9 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql))
+      for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         states.push(new SectionDrawingLocationState(row as SectionDrawingLocationStateData, iModel));
-    } catch (_) {
+    } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
     }
 

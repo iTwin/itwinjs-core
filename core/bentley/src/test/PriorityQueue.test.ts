@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PriorityQueue } from "../bentleyjs-core";
+import { PriorityQueue } from "../core-bentley";
 
 class TestHeap extends PriorityQueue<number> {
   public invertOrder: boolean = false;

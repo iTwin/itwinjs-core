@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { ServerTimeoutError } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
@@ -58,11 +58,11 @@ class TestTile extends Tile {
     return this.channel.isActive(this);
   }
 
-  public get isDisplayable(): boolean {
+  public override get isDisplayable(): boolean {
     return this.displayable ?? super.isDisplayable;
   }
 
-  public get isEmpty(): boolean {
+  public override get isEmpty(): boolean {
     return this.empty ?? super.isEmpty;
   }
 
@@ -74,7 +74,7 @@ class TestTile extends Tile {
     return this.requestChannel;
   }
 
-  public computeLoadPriority() {
+  public override computeLoadPriority() {
     return this.priority;
   }
 
@@ -113,7 +113,7 @@ class TestTile extends Tile {
     this.clearPromises();
   }
 
-  public resolveRead(content: TileContent = { }): void {
+  public resolveRead(content: TileContent = {}): void {
     expect(this._resolveRead).not.to.be.undefined;
     this._resolveRead!(content);
     this.clearPromises();
@@ -158,7 +158,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return {}; }
   protected _selectTiles(): Tile[] { return []; }
   public draw() { }
   public prune() { }
@@ -173,8 +173,8 @@ function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
 }
 
 function requestTiles(vp: Viewport, tiles: TestTile[]): void {
-  IModelApp.tileAdmin.clearTilesForViewport(vp);
-  IModelApp.tileAdmin.clearUsageForViewport(vp);
+  IModelApp.tileAdmin.clearTilesForUser(vp);
+  IModelApp.tileAdmin.clearUsageForUser(vp);
   IModelApp.tileAdmin.requestTiles(vp, new Set<Tile>(tiles));
 }
 
@@ -220,77 +220,77 @@ class LoggingChannel extends TileRequestChannel {
     return false;
   }
 
-  public recordCompletion(tile: Tile): void {
+  public override recordCompletion(tile: Tile, content: TileContent): void {
     this.log("recordCompletion");
-    super.recordCompletion(tile);
+    super.recordCompletion(tile, content);
   }
 
-  public recordTimeout() {
+  public override recordTimeout() {
     this.log("recordTimeout");
     super.recordTimeout();
   }
 
-  public recordFailure() {
+  public override recordFailure() {
     this.log("recordFailure");
     super.recordFailure();
   }
 
-  public swapPending() {
+  public override swapPending() {
     this.log("swapPending");
     super.swapPending();
   }
 
-  public append(request: TileRequest) {
+  public override append(request: TileRequest) {
     this.log("append");
     super.append(request);
   }
 
-  public process() {
+  public override process() {
     this.log("process");
     super.process();
   }
 
-  protected dispatch(request: TileRequest) {
+  protected override dispatch(request: TileRequest) {
     this.log("dispatch");
     super.dispatch(request);
   }
 
-  public cancelAndClearAll() {
+  public override cancelAndClearAll() {
     this.log("cancelAndClearAll");
     super.cancelAndClearAll();
   }
 
-  public onNoContent(request: TileRequest): boolean {
+  public override onNoContent(request: TileRequest): boolean {
     this.log("onNoContent");
     return super.onNoContent(request);
   }
 
-  public onActiveRequestCanceled(request: TileRequest): void {
+  public override onActiveRequestCanceled(request: TileRequest): void {
     this.log("onActiveRequestCanceled");
     super.onActiveRequestCanceled(request);
   }
 
-  public onIModelClosed(iModel: IModelConnection) {
+  public override onIModelClosed(iModel: IModelConnection) {
     this.log("onIModelClosed");
     super.onIModelClosed(iModel);
   }
 
-  protected dropActiveRequest(request: TileRequest) {
+  protected override dropActiveRequest(request: TileRequest) {
     this.log("dropActiveRequest");
     super.dropActiveRequest(request);
   }
 
-  protected cancel(request: TileRequest) {
+  protected override cancel(request: TileRequest) {
     this.log("cancel");
     super.cancel(request);
   }
 
-  public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public override async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     this.log("requestContent");
     return super.requestContent(tile, isCanceled);
   }
 
-  public processCancellations() {
+  public override processCancellations() {
     this.log("processCancellations");
     super.processCancellations();
   }
@@ -406,7 +406,7 @@ describe("TileRequestChannel", () => {
     const t14 = new TestTile(tr1, channel, 4);
 
     const vp = mockViewport(imodel);
-    requestTiles(vp, [t10, t04, t00, t14 ]);
+    requestTiles(vp, [t10, t04, t00, t14]);
 
     async function waitFor(tile: TestTile) {
       await processOnce();
@@ -560,7 +560,7 @@ describe("TileRequestChannel", () => {
 
     tile.rejectRequest();
     await processOnce();
-    channel.expectRequests(0 ,0);
+    channel.expectRequests(0, 0);
   });
 
   // A canceled active request is not removed from the active set until its promise is settled.
@@ -571,11 +571,11 @@ describe("TileRequestChannel", () => {
       public numActiveCanceled = 0;
       public numProcessed = 0;
 
-      public onActiveRequestCanceled() {
+      public override onActiveRequestCanceled() {
         ++this.numActiveCanceled;
       }
 
-      public processCancellations() {
+      public override processCancellations() {
         this.numProcessed += this.statistics.numCanceled;
       }
     }
@@ -670,7 +670,7 @@ describe("TileRequestChannel", () => {
 
     tiles[0].rejectRequest(new ServerTimeoutError("oh no!"));
     await runMicroTasks();
-    expectStats({ numActiveRequests: 3, numPendingRequests: 0, totalCompletedRequests: 0, totalFailedRequests: 0,totalTimedOutRequests: 1 });
+    expectStats({ numActiveRequests: 3, numPendingRequests: 0, totalCompletedRequests: 0, totalFailedRequests: 0, totalTimedOutRequests: 1 });
 
     await tiles[1].resolveBoth();
     expectStats({ numActiveRequests: 2, numPendingRequests: 0, totalCompletedRequests: 1 });
@@ -720,7 +720,7 @@ describe("TileRequestChannel", () => {
         super(10, "channel 1");
       }
 
-      public onNoContent(req: TileRequest): boolean {
+      public override onNoContent(req: TileRequest): boolean {
         expect(req.channel).to.equal(this);
         (req.tile as TestTile).requestChannel = channel2;
         return true;
@@ -729,7 +729,7 @@ describe("TileRequestChannel", () => {
 
     const channel1 = new Channel1();
     const tree = new TestTree(imodel, channel1);
-    const tiles = [0 ,1 , 2, 3].map((x) => new TestTile(tree, channel1, x));
+    const tiles = [0, 1, 2, 3].map((x) => new TestTile(tree, channel1, x));
 
     const vp = mockViewport(imodel);
     requestTiles(vp, tiles);

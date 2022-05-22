@@ -7,43 +7,39 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-frontend` prefix.
+ * @note All logger categories in this package start with the `core-frontend` prefix.
  * @see [Logger]($bentley)
  * @public
+ * @extensions
  */
 export enum FrontendLoggerCategory {
-  Package = "imodeljs-frontend",
-
-  /** The logger category used by the [[FrontendRequestContext]] class and other related classes. */
-  FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
+  Package = "core-frontend",
 
   /** The logger category used by the [[IModelConnection]] class and other related classes. */
-  IModelConnection = "imodeljs-frontend.IModelConnection",
-
-  /** The logger category used by OIDC-related functions on iOS. */
-  MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
-
-  /** The logger category used by EventSource */
-  EventSource = "imodeljs-frontend.EventSource",
-
-  /** The logger category used for general authorization purposes */
-  Authorization = "imodeljs-frontend.Authorization",
+  IModelConnection = "core-frontend.IModelConnection",
 
   /** The logger category used for NativeApp */
-  NativeApp = "imodeljs-frontend.NativeApp",
+  NativeApp = "core-frontend.NativeApp",
 
-  /** The logger category used by feature-flag-related functions */
-  FeatureToggle = "imodeljs-frontend.FeatureToggles",
-
-  /**
-   * The logger category used by EditorConnection functions
-   * @alpha
-   */
-  EditorConnection = "imodeljs-frontend.EditorConnection",
+  /** The logger category used for making network requests. */
+  Request = "core-frontend.Request",
 
   /**
    * The logger category used by FeatureTrackingManager
    * @alpha
    */
-  FeatureTracking = "imodeljs-frontend.FeatureTracking",
+  FeatureTracking = "core-frontend.FeatureTracking",
+  /**
+   * The logger category used by RealityData
+   * @alpha
+   */
+  RealityData = "core-frontend.RealityData",
+
+  /** The logger category used for creating and displaying graphics. */
+  Render = "core-frontend.Render",
+
+  /** The logger category used for loading and executing Extensions
+   * @alpha
+   */
+  Extensions = "core-frontend.Extensions",
 }

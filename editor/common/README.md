@@ -1,10 +1,10 @@
-# @bentley/imodeljs-editor-common
+# @itwin/editor-common
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/imodeljs-editor-common__ package contains properties for commnunicating between the frontend and backend for editing iModels.
+The __@itwin/editor-common__ package contains properties for commnunicating between the frontend and backend for editing iModels.
 
 ## Documentation
 

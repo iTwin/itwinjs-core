@@ -6,11 +6,11 @@
  * @module FavoriteProperties
  */
 
-import { Id64Arg, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
-import { getScopeId, Presentation } from "@bentley/presentation-frontend";
-import { PropertyData } from "@bentley/ui-components";
+import { Id64Arg, using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { CategoryDescription, KeySet, Ruleset } from "@itwin/presentation-common";
+import { getScopeId, Presentation } from "@itwin/presentation-frontend";
+import { PropertyData } from "@itwin/components-react";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 
@@ -29,15 +29,18 @@ export const getFavoritesCategory = (): CategoryDescription => {
 };
 
 /**
- * An data provider interface for returning Favorite properties for the given elements
- * @beta
+ * An data provider interface for returning favorite properties for the given elements
+ * @public
  */
 export interface IFavoritePropertiesDataProvider {
   /** Returns property data for an element. */
   getData: (imodel: IModelConnection, elementIds: Id64Arg | KeySet) => Promise<PropertyData>;
 }
 
-/** @beta */
+/**
+ * Props for [[FavoritePropertiesDataProvider]]
+ * @public
+ */
 export interface FavoritePropertiesDataProviderProps {
   /**
    * Id of the ruleset to use when requesting properties or a ruleset itself. If not
@@ -51,7 +54,7 @@ export interface FavoritePropertiesDataProviderProps {
 
 /**
  * Presentation Rules-driven element favorite properties data provider implementation.
- * @beta
+ * @public
  */
 export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
 
@@ -79,9 +82,13 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
     this.includeFieldsWithNoValues = true;
     this.includeFieldsWithCompositeValues = true;
     this._customRuleset = /* istanbul ignore next */ props?.ruleset;
-    this._propertyDataProviderFactory = props && props.propertyDataProviderFactory ?
-      props.propertyDataProviderFactory : /* istanbul ignore next */
-      (imodel: IModelConnection, ruleset?: Ruleset | string) => new PresentationPropertyDataProvider({ imodel, ruleset });
+    this._propertyDataProviderFactory = props && props.propertyDataProviderFactory
+      ? props.propertyDataProviderFactory
+      : /* istanbul ignore next */ (imodel: IModelConnection, ruleset?: Ruleset | string) => {
+        const provider = new PresentationPropertyDataProvider({ imodel, ruleset });
+        provider.isNestedPropertyCategoryGroupingEnabled = false;
+        return provider;
+      };
   }
 
   /**

@@ -1,6 +1,766 @@
-# Change Log - @bentley/imodeljs-frontend
+# Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 23 Feb 2021 20:54:45 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Dispose reality mesh textures when disposing the tiles are dispose
+- Use a function constructor to avoid webpack warnings when dynamically importing extension files.
+- Fixed visibility of edges when using Ambient Occlusion
+- Added documentation for MapLayerKey.
+- MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods.
+- Improve RealityTile loading priority calculation
+- Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size.
+- ViewState3d.lookAtGlobalLocation should account for orthographic view points.
+- Mark animateFrustumChange public.
+- Added public method IModelConnection.getMassPropertiesPerCandidate.
+- bugfix for viewstate2d's hydrateViewState
+- Add preload, postload functions to ViewStates. Use hydrateViewState in load function
+- Fix bug in which DisplayStyleState.changeBackgroundMapProvider failed to preserve previous values as advertised.
+- Prevent calls to readPixels from being enqueued when mousing over canvas decorations.
+- Fix scaled monochrome mode not applying to instanced geometry.
+- Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic.
+- Added connectViewports and related functions to enable synchronizing the states of any number of viewports.
+- Do not produce mip-maps for reality tile textures.
+- Make Viewport.readPixels return undefined if the viewport has been disposed.
+- Ensure the render loop is processed immediately after the selection set changes.
+- Reduce number of OnMotionSnap call
+- Use zoom target on reality tile priority calculation
+- Add support for remote extensions
+- Catch snap abandoned exception.
+- Add extension API generation
+- Fix view zoom jumps on touch devices
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+### Updates
+
+- Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects."
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+### Updates
+
+- Improved support for WMS 1.1.1 servers.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Non-pickable decorations used to fail to render if Ambient Occlusion was enabled.
+- Add support for map layers using model geometry.
+- Fix overlay map layers that were displayed at the wrong elevation
+- Deprecate IModelReadRpcInterface.getViewThumbnail
+- Add support for decoding draco-compressed point clouds and glTF meshes.
+- Add support for obtaining polyfaces from tile geometry using TileGeometryCollector and GeometryTileTreeReference.
+- Fix openImageDataUrlInNewWindow displaying an empty window in Electron.
+- Dynamically import approximate terrain heights instead of fetching as JSON.
+- Expose iTwin.js Core Version for extensions
+- Fixed interaction between linear elements and planar elements when antialiasing is turned on.
+- Supplied missing 'iModelJs' namespace in some calls to getLocalizedString.
+- Added new getMapFeatureInfo API to Viewport.
+- Simplify RenderMaterial creation by deprecating RenderSystem.createMaterial in favor of RenderSystem.createRenderMaterial.
+- Change the type of ToolAdmin.idleTool from IdleTool to InteractiveTool
+- Add RealityDataError in  RealityDataSource API
+- Fully implement the point cloud 3d tile specification.
+- Promote QuantityFormatter from beta to public.
+- Now initializing Unit alternate display labels from UNIT_EXTRA_DATA. Minimal changes to support Units schema retrieval from backend iModels.
+- Functions that fit a view to a volume accept an optional MarginOptions specifying how tightly to fit.
+- Defaulting to the internal BasicUnitsProvider if QuantityFormatter units provider initialization fails. 
+- Ensure view attachments referencing section drawings transform the spatial view's clip into sheet coordinates.
+- Switched to more flexible extension api
+- Generalize the concept of a TileUser to include types other than Viewports.
+- Web IPC fix (when reloading frontend).
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- Fixed MapBox imagery failing to display.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Remove alternateLabels from UnitProps and require them to be provided via AlternateUnitLabelsProvider.
+- Improve performance of schedule scripts containing large numbers of transform nodes.
+- Fix striping artifact produced by ambient occlusion in views with very large frustums.
+- Render 2d map when terrain data is not available.
+- Make onRestartTool explicitly async
+- Add support for producing larger tiles.
+- The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height.
+- remove unused ClientRequestContext.useContextForRpc
+- improve concurrent query changes
+- SolidFill mode chooses an edge color to contrast with the element color and the background color.
+- Remove usage-logging-client
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Add support for indexed edges in tile graphics to reduce memory footprint and number of draw calls.
+- Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides.
+- Ensure edges are always requested if TileAdmin.alwaysRequestEdges is true.
+- Fix flickering with TwoWayViewportSync when one of the viewport's frustum is animated.
+- Fix WebGL view not updating when dropping second viewport.
+- Ensure DisplayStyleState.scheduleScript is synchronized with changes to DisplayStyleSettings.renderTimeline and DisplayStyleSettings.scheduleScriptProps.
+- convertTouchMoveStartToButtonDownAndMotion stopped working with change to not await snap.
+- 'onPostInstall' doing the animation logic on ViewGlobeLocationTool was redundant when done in addition to ViewGlobeLocationTool.parseAndRun. We got away with it before the Tool parseAndRun async change by the convenient luck of the flow of the non-async code. This removes '_doLocationView' from ViewGlobeLocationTool.parseAndRun.
+- Improve conformance with the glTF 2.0 spec.
+- Fix caching of gradient textures.
+- Removed ViewState.isCameraEnabled.
+- large textures
+- Correct loop for collating imagery tiles to map mesh primitives
+- Omit terrain skirts if the background map has a transparent clip mask applied.
+- Fix viewport using terrain settings from previous display style when display style is reassigned.
+- Fix iOS15 overlay draws.
+- Deprecated Viewport.readImage in favor of Viewport.readImageBuffer.
+- Sky cube primitive buffers must be bound when attempting to draw a sky cube.
+- Clean up SkyBox and GroundPlane APIs.
+- Tweak terrain skirt height calculation to match previous
+- Correct calculation for up vector when looking at globe location
+- Fix ViewCreator3d spatial criterion to account for NULL.
+- fix ecsql row format
+- Fix Open Street Map Building display
+- Added support for Fresnel effect.
+- Update FrontendHubAccess api to use ChangesetIndexAndId
+- Fix issue that would prevent higher resolutions tiles to be fetch from ArcGIS server.
+- Improved map layers validation when authentication is required.
+- Added support for EPSG:4326 in WMS imagery provider.
+- getAccessToken always returns a token
+- Add readGltfGraphics for producing graphics from a glTF asset.
+- Support smooth transition to globally centered views
+- Fix some oversights in implementation of glTF.
+- Added support for view-independent decoration graphics.
+- Support creating a GraphicBuilder without a Viewport.
+- Implemented a different clustering algorithm in MarkerSet.
+- Add IModelApp.publicPath for users to override where core public assets are fetched from
+- Supports instanced rendering of area pattern symbols.
+- LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)
+- Added ability to convert iModel coordinates to or from any Geographic CRS
+- rename contextId -> iTwinId
+- Fix erroneous AccuDraw activation.
+- make ViewState3d.lookAt take named arguments
+- Added lookAtPerspectiveOrOrtho to ViewState3d
+- Dropped DisplayStyleState.changeBaseMapProps. Added new DisplayStyleState.backgroundMapBase setter.
+- Fix problem with RealityDataSourceKey string convertion
+- Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation
+- Remove optimization that keep RealityDataSource from key in a list.
+- Add Support for APIM RDS url to create RealityDataSourceKey from tilesetUrl
+- ViewCreator3d no longer throws if no 3d models are found; instead it uses the project extents as the view extents.
+- moved RealityDataAccessProps from core-frontend to core-common
+- Impose default minimum spatial tolerance of 1mm.
+- Support color mixing when overriding point cloud color
+- rename to @itwin/core-frontend
+- Support reading non-binary glTF assets.
+- Fix non-locatable override for point clouds
+- separate OnViewExtentsError from ViewChangeOptions 
+- Support to open OPC file from any server
+- Enhancements and improvements to particle systems.
+- Removed WebAppViewer
+- remove ClientRequestContext and its subclasses
+- Removed config.app usage
+- Add support for inverting planar clip mask (inside vs outside)
+- Remove deprecated APIs for 3.0.
+- Support transparency overrides for point clouds
+- Moved `UnitSystemKey` to `@itwin/core-quantity`.
+- Simplify RealitydataAccessProps interface and usage in iModel.js
+- Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps
+- Enhance RealityDataSource class
+- Reduce ellipsoid occlusion tolerance to avoid misdisplayed tiles over horizon with depth off.
+- Replace usage of I18N with generic Localization interface.
+- Replace hard-coded Cesium ION key with TileAdminProps.cesiumIonKey to be supplied at IModelApp.startup.
+- remove previously deprecated apis
+- Remove the default Bing Maps and MapBox Imagery keys from source. There are no longer any default keys available for use and apps will need to provide the keys necessary.
+- Mvoe map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase.
+- remove IModelWriteRpcInterface
+- Remove deprecate QuantityFormatter methods
+- fix usage or lack thereof of tile/internal barrel module
+- rename contexId to iTwinId
+- Removed NativeAppAuthorization
+- Improve display of textured meshes when the texture image contains a mix of transparent and opaque pixels.
+- rename IModelReadRpcInterface.openForRead to getConnectionProps
+- Simplify RenderTexture creation APIs.
+- Avoid skipping tool dynamics frame when new graphic is still pending.
+-  Renamed an iModel's parent container to iTwin
+- Altered to use abstract Reality Data interface
+- Rework and correct child availability of tiled imagery formats.  Added EPSG:4326 support for WMTS.
+- Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.
+- Add TwoWayViewportFrustumSync to synchronize only the frusta of two viewports.
+- tool.run and tool.parseAndRun are now async methods
+- Added tool setting helper methods.
+- Ensure memory consumed by instanced geometry is accurately reported.
+- Add support for blending transparent viewport background with HTML elements beneath the viewport.
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Protect logoCard styling from app's CSS and make sure the logoCard opens in the correct window for pop-out viewports.
+- Refactored part of AccuDraw UI & Providing AccuDraw UI documentation
+- Fix bug that sets the icon on MessageBox.NoSymbol the Success icon.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Update LatLong display precision to 4 decimal points.
+- Default cameraOn in 3d ViewCreator
+- FeatureAppearance transparency by default ignores render mode and transparency view flag.
+- Adding WebEditServer (test scenarios only for now).
+- Add support for wiremesh display of design models and reality models.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+### Updates
+
+- Viewport.pickDepthPoint and Viewport.pickNearestVisibleGeometry preserve model display transforms.
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+### Updates
+
+- Fix display issues with transparency, shadows, hilite, and overlay decorations on iOS 15.
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+### Updates
+
+- Fix failure to find any 3d models in ViewCreator3d.
+- Backport from PR#2451 enable reprojection and merge
+- Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders.
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+### Updates
+
+- Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their  own azure environment.
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+### Updates
+
+- Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides
+- Add a new property to ContextRealityModelState named rdSourecKey that provide a new way of attaching Reality Data that will resolve tilesetUrl at runtime.
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+### Updates
+
+- added callback after animating frustum change
+- Fix OIDC access token that didn't get renew in code that get Reality Data tiles
+- Remove hardcoded contextId (aka iTwinId) used for testing
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+### Updates
+
+- Allow white-on-white reversal to be applied regardless of background color.
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+### Updates
+
+- Geometry created by a GraphicBuilder needs to have its specified placement transform applied properly.
+- The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place.
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+### Updates
+
+- Correct OpenStreetMap display with reprojection, clipping or geoid offset
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+### Updates
+
+- Orbit OPC OrbitGtBlobProps initialization and SAS token update.
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- ViewCreator3d fix - modelExtents now computed from all model ranges
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- Viewport.zoomToElements includes only 2d or 3d elements based on view type.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex
+- Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools.
+- Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps.
+- Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema
+- GraphicBuilder now generates normals for polyfaces if requested.
+- remove internal barrel-import usage
+- Stop delivering pseudo-localized strings
+- Fix multi-model animation issue.
+- Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange.
+- Add support to GraphicBuilder for solid primitives and visible edges.
+- move check for redirect callback handling in WebViewerApp to before IModelApp.startup call
+- Support reprojection of Cesium OSM tiles
+- internal async order change
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+### Updates
+
+- Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- add GraphicBuilder.addCurvePrimitive.
+- Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script."
+- Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field.
+- Add Viewport.flashedId property and corresponding onFlashedIdChanged event.
+- Added support for ESRI MapServer exposing a minimum LOD.
+- Fix the Nadir color for 2 colors skybox in the context of background map.
+- Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.
+- Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate.
+- pickable decoration enhancement
+- Update tile trees when project extents change.
+- Remove BackgroundMapLocation use EcefLocation directly.
+- Clean up and promote AnalysisStyle APIs.
+- TileAdmin.requestElementGraphics can now produce section-cut graphics.
+- Update tooltips of RealityData with its type
+- Add API to wait until all pending external textures have finished loading.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- DR request for doClipPlaneOrientView to choose "better" view x direction.
+- Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame.
+- Clean up and promote DisplayStyleState APIs for context reality models.
+- Add TiledGraphicsProvider.isLoadingComplete.
+- Make EditManipulator public
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- External textures enabled by default for TileAdmin. External textures will downsample to maxTextureSize of client.
+- Make flash settings customizable for a viewport.
+- Allow saved map-layer definition to be edited.
+- Removed unused 'maxZoom' property on MapLayerProps.  Added MapLayerSourceProps interface.
+- Made MaplayerSource independent from MapLayerProps.
+- Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- Synchronize IModelConnection properties in response to Ipc notifications.
+- added IModelApp.hubAccess and deprecated IModelApp.iModelClient
+- Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- set authorizationClient to undefined in IModelApp.shutdown
+- Don't allow undo of changes to project extents or geolocation.
+- make IpcApp and NativeApp @public
+- Prevent preflight for ContextShare tile request
+- Erase touch cursor when it is drawn in a different view.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+### Updates
+
+- Synch map settings provider when base layer provider changes.
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+### Updates
+
+- add method to return ecef transform for tile tree
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Make AccuDrawHintBuilder public and include everything needed by an InteractiveTool.
+- Fix acs rotation and remove unneeded clones.
+- (geomlibs) fix swap logic in Matrix3d.inverse alias case
+- motion event changes.
+- Add BatchOptions to customize how features can be resymbolized.
+- Synchronize viewports when changes are made to geometry outside of a graphical editing scope.
+- wip: CreateElementTool. Fix not being able to pick decorations after changing files.
+- BatchOptions can specify that the contents of the batch should only be drawn for readPixels.
+- Simplify GraphicBuilder creation using GraphicBuilderOptions.
+- IModelConnection.View.load throws if the input is not a valid Id.
+- Fix ViewState.hasSameCoordinates returning true if a 2d model was mistakenly included in a spatial view's model selector.
+- Produce rounded joints when tesselating polylines.
+- Return empty symbology overrides for maps to avoid inheriting from view
+- Add hiliter for reality meshes
+- Fix hiliting of reality meshes.
+- Fix shader header typo
+- Ensure materials are ignored unless smooth render mode is enabled.
+- Add FrameStats API.
+- In FrameStats, break down scene time.
+- Enable querying geometry and other properties via IModelConnection.Elements.loadProps.
+- The idleTool can now be set.
+- improved silhouettes for non-perspective views
+- Mobile fixes
+- Fixes to desktop/mobile authorization
+- set authorizationClient to undefined in IModelApp.shutdown
+- Fix errors when masking background map with a plan projection model.
+- Support planar masks for OrbitGT, fix infinite recursion collecting classifiers graphics.
+- Add shader based grid display.
+- set changesetId on BriefcaseConnection in pullAndMergeChanges
+- Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport.
+- Display styles support schedule scripts hosted by RenderTimeline elements.
+- Move map tile trees to Viewport to handle synching correctly
+- Only draw the TouchCursor in the viewport that initiated the touch.
+- Add iterator to ViewManager and deprecate forEachViewport.
+- Transform tool dynamics.
+- add placement to GeomtricElementProps
+- Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported
+- ViewCreator APIs tagged as public
+- View Creator API - comments updated.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
+
+## 2.15.5
+Thu, 20 May 2021 15:06:26 GMT
+
+_Version update only_
+
+## 2.15.4
+Tue, 18 May 2021 21:59:07 GMT
+
+_Version update only_
+
+## 2.15.3
+Mon, 17 May 2021 13:31:38 GMT
+
+_Version update only_
+
+## 2.15.2
+Wed, 12 May 2021 18:08:13 GMT
+
+### Updates
+
+- Fix animations from schedule script being erroneously applied to tile graphics.
+- Return empty symbology overrides for maps to avoid inheriting from view
+
+## 2.15.1
+Wed, 05 May 2021 13:18:31 GMT
+
+### Updates
+
+- EmphasizeElements can override the appearance of unanimated schedule script nodes.
+- Fix iOS shader bugs
+
+## 2.15.0
+Fri, 30 Apr 2021 12:36:58 GMT
+
+### Updates
+
+- Promote display-related APIs.
+- Do not drape background map on reality if not geolocated
+- Revert the change which defaulted shader precompiling on. It resulted in noticeable UI sluggishness before any viewports were added, while shaders precompiled.
+- TileAdmin.requestElementGraphics can obtain graphics for a non-persistent geometry stream.
+- Refactor grid-in-view line creation to make the same context repeatedly callable.
+- gridline filtering corrections
+- Fix orbitgt pointcloud position
+- Implement fixes for point cloud relative paths and node transforms
+- improved flickering silhouettes
+- Fix raster view attachments using black background color.
+- Fix delay before raster view attachments appear in a sheet view.
+- Fix WebGL1 clipping shaders.
+- Fixed silhouettes for instanced geometry when running with WebGL1
+- Allow saved map layer definition to be deleted from setting service.
+- No longer parse MapLayerSource URL for 'basemap' token.
+- promote NativeApp to beta
+- Support nested clip volumes.
+- Precompile WebGL shaders by default.
+- Promote globe view tools to public. Add NextVersion promotion entries for these and for thematic display.
+- Optimize reality model processing.
+- Drop deprecated ldclient-js dependency
+- Remove deprecated ElementEditor that was replaced by EditCommands.
+- Renamed InteractiveEditingSession to GraphicalEditingScope.
+- Update release tags.
+- Add BriefcaseTxns for monitoring changes to the briefcase.
+- Update api tags
+- ViewCreator2d API - modelType parameter removed
+- Add an option to use the virtual cursor to help with element locate w/touch input.
+- Added capability to scale the model display transform nonuniformly and have still Accusnap properly.
+
+## 2.14.4
+Thu, 22 Apr 2021 21:07:33 GMT
+
+_Version update only_
+
+## 2.14.3
+Thu, 15 Apr 2021 15:13:16 GMT
+
+_Version update only_
+
+## 2.14.2
+Thu, 08 Apr 2021 14:30:09 GMT
+
+### Updates
+
+- fix imports in CheckpointConnection.ts to not reference own barrel
+
+## 2.14.1
+Mon, 05 Apr 2021 16:28:00 GMT
+
+### Updates
+
+- Fix raster view attachments using black background color.
+- Fix delay before raster view attachments appear in a sheet view.
+
+## 2.14.0
+Fri, 02 Apr 2021 13:18:42 GMT
+
+### Updates
+
+- Polish up InteractiveEditingSession API and promote to beta.
+- rework Authentication to use IpcHost
+- Fixed isAuthorized check. 
+- Fix GPU Profiler for display-test-app
+- Grid drawing code
+- fixed z for edges and polylines when extended behind the eye
+- Don't use GCS to align reality model if not in project vicinity.
+- Refine test for calculating pixel size for tile sphere
+- Fix Viewport.turnCameraOn to invoke setupFromView, and add Viewport.turnCameraOff.
+- Fix shader bug in function unpackFloat which affected iOS unpacking floats precisely.
+- MapLayerImageryProviders now handle 401 errors.
+- Quick grid performance fix from Earlin.
+- fix check in cartographicToDbFromGcs which causes certain locations to query GCS when they should not.
+- Refactor attribution logo cards and add OpenStreetMap building attribution
+- Update Quantity Formatter to support UnitFormattingSettingsProvider for persisting and retrieving unit format settings.
+- Use ProcessDetector.isMobileBrowser to detect mobile frontends.
+- Align scheduling of tile content requests more closely with capabilities of HTTP and RPC.
+- Support for Bump Tool Settings
+- Add missing ViewState.viewFlags setter.
+- Simplified web app signIn, following the pattern established for desktops. The logic for silent signin has now been moved to WebViewerApp. 
+
+## 2.13.0
+Tue, 09 Mar 2021 20:28:13 GMT
+
+### Updates
+
+- Update parsing of string input in Accudraw to use quantity parsing.
+- Initial setup for adding "basic manipulation" tools and commands to editor package.
+- Added ElementSetTool base class.
+- ElementSetTool class documentation.
+- Fixed broken double angle bracket link syntax
+- Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports.
+- Fix incorrect GPU memory limits.
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Fix Viewport.requestRedraw failing to request next animation frame.
+- Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing.
+- Split imagery providers in their own file.
+- refactor IModelApp startup
+- Improve grid line fade for vertical lines by drawing from center out.
+- Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler.
+- IPC shim (WIP) for local webviewer apps.
+- Added MoveElementsTool
+- implemented nonlocatable for planar classifiers
+- Update how custom QuantityType definitions are defined and registered.
+- Add planar clip mask support.
+- Fix transparent depthless map failing to blend with background color or skybox.
+- add notifications for changed elements on SaveChanges
+- Updated to use TypeScript 4.1
+- Undo/Redo shortcuts
+- begin rename project from iModel.js to iTwin.js
+- Allow the same label to be used in two different units within the same family but in different systems.
+- Fix failure to call screen-space effects `shouldApply` function when reading pixels.
+- fix for running display-performance-test-app with a saved view which has volume classification using overrides
+
+## 2.12.3
+Mon, 08 Mar 2021 15:32:00 GMT
+
+_Version update only_
+
+## 2.12.2
+Wed, 03 Mar 2021 18:48:52 GMT
+
+### Updates
+
+- Fix incorrect cached transform for plan projection models after the model's range changes.
+- Add workaround for bogus transform in tile tree for empty model.
 
 ## 2.12.1
 Tue, 23 Feb 2021 20:54:45 GMT
@@ -34,6 +794,18 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Added support for Slope and Hillshade modes for Thematic display of Terrain
 - AccuDraw bi-directional value updates
 - Fixed AccuDraw shortcuts in apps like DR
+
+## 2.11.2
+Thu, 18 Feb 2021 02:50:59 GMT
+
+### Updates
+
+- NativeApp download progress fix
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

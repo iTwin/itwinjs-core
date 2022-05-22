@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
 import { RealityModelContextIModelCreator } from "./RealityModelContextIModelCreator";
 
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */

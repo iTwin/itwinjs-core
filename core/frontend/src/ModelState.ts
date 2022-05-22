@@ -6,22 +6,25 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
-import { GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import {
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+} from "@itwin/core-common";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
-import { SpatialClassifiers } from "./SpatialClassifiers";
-import { createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
+import { RealityDataSource } from "./RealityDataSource";
+import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
+ * @extensions
  */
 export class ModelState extends EntityState implements ModelProps {
   /** @internal */
-  public static get className() { return "Model"; }
+  public static override get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public parentModel: Id64String;
@@ -38,7 +41,7 @@ export class ModelState extends EntityState implements ModelProps {
   }
 
   /** Add all custom-handled properties of a Model to a json object. */
-  public toJSON(): ModelProps {
+  public override toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.modeledElement = this.modeledElement;
     val.parentModel = this.parentModel;
@@ -72,10 +75,11 @@ export class ModelState extends EntityState implements ModelProps {
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
+ * @extensions
  */
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   /** @internal */
-  public static get className() { return "GeometricModel"; }
+  public static override get className() { return "GeometricModel"; }
   /** @internal */
   public geometryGuid?: string;
 
@@ -89,12 +93,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
   /** @internal */
-  public get asGeometricModel(): GeometricModelState { return this; }
+  public override get asGeometricModel(): GeometricModelState { return this; }
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
 
   /** @internal */
-  public get isGeometricModel(): boolean { return true; }
+  public override get isGeometricModel(): boolean { return true; }
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
 
@@ -112,11 +116,65 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   /** @internal */
   public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
-    const url = this.jsonProperties.tilesetUrl;
-    if (undefined !== url) {
-      const spatialModel = this.asSpatialModel;
+
+    const spatialModel = this.asSpatialModel;
+    const rdSourceKey = this.jsonProperties.rdSourceKey;
+
+    if (rdSourceKey) {
+      const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
+      const treeRef = (!useOrbitGtTileTreeReference) ?
+        createRealityTileTreeReference({
+          rdSourceKey,
+          iModel: this.iModel,
+          source: view,
+          modelId: this.id,
+          // url: tilesetUrl, // If rdSourceKey is defined, url is not used
+          classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        }) :
+        createOrbitGtTileTreeReference({
+          rdSourceKey,
+          iModel: this.iModel,
+          source: view,
+          modelId: this.id,
+          // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
+          classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        });
+      return treeRef;
+    }
+
+    const orbitGtBlob = this.jsonProperties.orbitGtBlob;
+
+    // If this is an OrbitGt reality model, create it's reference
+    if(orbitGtBlob) {
+      let orbitGtName = "";
+      if (orbitGtBlob.blobFileName !== "") {
+        if (orbitGtBlob.blobFileName[0] === "/")
+          orbitGtName = orbitGtBlob.blobFileName.substring(1);
+        else
+          orbitGtName = orbitGtBlob.blobFileName;
+      }
+      // Create rdSourceKey if not provided
+      const rdSourceKeyOGT: RealityDataSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
+
+      return createOrbitGtTileTreeReference({
+        rdSourceKey: rdSourceKeyOGT,
+        iModel: this.iModel,
+        source: view,
+        modelId: this.id,
+        orbitGtBlob,
+        name: orbitGtName,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+      });
+    }
+
+    // If this is a TileTree reality model, create it's reference
+    const tilesetUrl = this.jsonProperties.tilesetUrl;
+
+    if(tilesetUrl) {
+      const rdSourceKeyCS = RealityDataSource.createKeyFromUrl(tilesetUrl);
       return createRealityTileTreeReference({
-        url,
+        rdSourceKey: rdSourceKeyCS,
+        url : tilesetUrl,
         iModel: this.iModel,
         source: view,
         modelId: this.id,
@@ -130,10 +188,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   /** @internal */
-  public static get className() { return "GeometricModel2d"; }
+  public static override get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
 
@@ -145,9 +204,9 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   /** @internal */
   public get is3d(): boolean { return false; }
   /** @internal */
-  public get asGeometricModel2d(): GeometricModel2dState { return this; }
+  public override get asGeometricModel2d(): GeometricModel2dState { return this; }
 
-  public toJSON(): GeometricModel2dProps {
+  public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
     val.globalOrigin = this.globalOrigin;
     return val;
@@ -156,10 +215,11 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 
 /** Represents the front-end state of a [GeometricModel3d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
-  public static get className() { return "GeometricModel3d"; }
+  public static override get className() { return "GeometricModel3d"; }
 
   constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
     super(props, iModel, state);
@@ -168,7 +228,7 @@ export class GeometricModel3dState extends GeometricModelState {
   }
 
   /** @internal */
-  public toJSON(): GeometricModel3dProps {
+  public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
     if (this.isNotSpatiallyLocated)
       val.isNotSpatiallyLocated = true;
@@ -182,7 +242,7 @@ export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
   public get is3d(): boolean { return true; }
   /** @internal */
-  public get asGeometricModel3d(): GeometricModel3dState { return this; }
+  public override get asGeometricModel3d(): GeometricModel3dState { return this; }
 
   /** If true, then the elements in this GeometricModel3dState are expected to be in an XY plane.
    * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
@@ -196,71 +256,73 @@ export class GeometricModel3dState extends GeometricModelState {
 
   /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
   public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
-  /** @deprecated use [[isSpatiallyLocated]] */
-  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetModelState extends GeometricModel2dState {
   /** @internal */
-  public static get className() { return "SheetModel"; }
+  public static override get className() { return "SheetModel"; }
 }
 
 /** Represents the front-end state of a [SpatialModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialModelState extends GeometricModel3dState {
-  /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it.
-   * @beta
-   */
+  /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
 
   /** @internal */
-  public static get className() { return "SpatialModel"; }
+  public static override get className() { return "SpatialModel"; }
   /** @internal */
-  public get asSpatialModel(): SpatialModelState { return this; }
+  public override get asSpatialModel(): SpatialModelState { return this; }
 
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
     if (this.isRealityModel)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
-  /** Return true if this is a reality model (represented by a 3d tile set)
-   * @beta
-   */
-  public get isRealityModel(): boolean { return undefined !== this.jsonProperties.tilesetUrl; }
+  /** Return true if this is a reality model (represented by a 3d tile set). */
+  public get isRealityModel(): boolean {
+    return undefined !== this.jsonProperties.tilesetUrl;
+  }
 }
 
 /** Represents the front-end state of a [PhysicalModel]($backend).
  * @public
+ * @extensions
  */
 export class PhysicalModelState extends SpatialModelState {
   /** @internal */
-  public static get className() { return "PhysicalModel"; }
+  public static override get className() { return "PhysicalModel"; }
 }
 
 /** Represents the front-end state of a [SpatialLocationModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialLocationModelState extends SpatialModelState {
   /** @internal */
-  public static get className() { return "SpatialLocationModel"; }
+  public static override get className() { return "SpatialLocationModel"; }
 }
 
 /** Represents the front-end state of a [DrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class DrawingModelState extends GeometricModel2dState {
   /** @internal */
-  public static get className() { return "DrawingModel"; }
+  public static override get className() { return "DrawingModel"; }
 }
 
 /** Represents the front-end state of a [SectionDrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class SectionDrawingModelState extends DrawingModelState {
   /** @internal */
-  public static get className() { return "SectionDrawingModel"; }
+  public static override get className() { return "SectionDrawingModel"; }
 }

@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
@@ -92,7 +96,7 @@ class FractionalNumeric {
 }
 
 /** A helper class that contains methods used to format quantity values based on a format that are defined via the Format class.
- * @alpha
+ * @beta
  */
 export class Formatter {
   // eslint-disable-next-line @typescript-eslint/naming-convention

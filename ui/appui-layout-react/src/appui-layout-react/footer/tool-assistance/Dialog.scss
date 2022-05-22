@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../variables";
+
+.nz-footer-toolAssistance-dialog {
+  min-width: $nz-footer-popup-min-width;
+  min-height: 75px;
+  color: $buic-background-dialog-stroke;
+
+  .nz-content {
+    color: $buic-text-color;
+    min-width: 250px;
+    max-width: 360px;
+  }
+}

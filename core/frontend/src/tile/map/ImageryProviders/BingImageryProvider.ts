@@ -6,10 +6,10 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
-import { Range2d } from "@bentley/geometry-core";
-import { ImageSource, MapLayerSettings } from "@bentley/imodeljs-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
+import { Range2d } from "@itwin/core-geometry";
+import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
+import { request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import {
@@ -80,7 +80,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _mapTilingScheme: MapTilingScheme;
   private _urlBase: string;
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._urlBase = settings.url;
     this._zoomMax = 0;
@@ -147,8 +147,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     return matchingAttributions;
   }
 
-  public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
     for (const match of matchingAttributions)
@@ -160,18 +160,18 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         copyrightMsg += "<br>";
       copyrightMsg += copyrights[i];
     }
-    return IModelApp.makeLogoCard({ iconSrc: "images/bing.svg", heading: "Microsoft Bing", notice: copyrightMsg });
+
+    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.
-  public async initialize(): Promise<void> {
+  public override async initialize(): Promise<void> {
     // get the template url
-    // NEEDSWORK - should get bing key from server. Currently coming from iModelApp defaultMapLayerOptions
     const bingRequestUrl = this._urlBase.replace("{bingKey}", this._settings.accessKey ? this._settings.accessKey.value : "");
     const requestOptions: RequestOptions = { method: "GET" };
 
     try {
-      const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
+      const response: Response = await request(bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];

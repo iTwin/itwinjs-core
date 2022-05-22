@@ -6,13 +6,15 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@bentley/imodeljs-common";
+import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
+import {
+  BatchedTileIdMap, GltfBufferData, GltfDataType, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
+} from "./internal";
 
 /**
  * Deserializes a tile in [b3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Batched3DModel) format.
@@ -21,10 +23,11 @@ import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, Should
 export class B3dmReader extends GltfReader {
   private _batchIdRemap = new Map<number, number>();
   private _colors?: Array<number>;
+  private readonly _modelId: Id64String;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
-    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): B3dmReader | undefined {
+    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): B3dmReader | undefined {
     const header = new B3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -47,17 +50,21 @@ export class B3dmReader extends GltfReader {
     if (undefined !== returnToCenterTransform)
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(returnToCenterTransform) : returnToCenterTransform;
 
-    const props = GltfReaderProps.create(stream, yAxisUp);
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
 
     return undefined !== props ? new B3dmReader(props, iModel, modelId, is3d, system, range, isLeaf, batchTableLength,
-      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias) : undefined;
+      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices) : undefined;
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
-    , isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
+    , shouldAbort?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false) {
+    super({
+      props, iModel, system, shouldAbort, deduplicateVertices,
+      is2d: !is3d,
+    });
+    this._modelId = modelId;
   }
 
   public async read(): Promise<GltfReaderResult> {
@@ -134,14 +141,14 @@ export class B3dmReader extends GltfReader {
       featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
     return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias);
   }
 
-  protected readBatchTable(mesh: Mesh, json: any) {
+  protected override readBatchTable(mesh: Mesh, json: any) {
     if (mesh.features !== undefined) {
       if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
         const view = this.getBufferView(json.attributes, "_BATCHID");

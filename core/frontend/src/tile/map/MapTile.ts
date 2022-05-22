@@ -6,18 +6,20 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder, TileTreeLoadStatus } from "../../imodeljs-frontend";
+import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
-import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TraversalSelectionContext } from "../internal";
-import { TileGraphicType } from "../TileTreeReference";
+import {
+  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,
+  TileLoadStatus, TileTreeLoadStatus, TraversalSelectionContext,
+} from "../internal";
 
 /** @internal */
 export class PlanarTilePatch {
@@ -48,6 +50,10 @@ export abstract class MapTileProjection {
   abstract get transformFromLocal(): Transform;
   public abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
   public get ellipsoidPatch(): EllipsoidPatch | undefined { return undefined; }
+  public getGlobalPoint(u: number, v: number, z: number, result?: Point3d): Point3d {
+    const point = this.getPoint(u, v, z, result);
+    return this.transformFromLocal.multiplyPoint3d(point, point);
+  }
 }
 
 /** @internal */
@@ -66,7 +72,7 @@ class EllipsoidProjection extends MapTileProjection {
     const ray = this._patch.anglesToUnitNormalRay(angles, EllipsoidProjection._scratchRay);
     return Point3d.createFrom(ray!.origin, result);
   }
-  public get ellipsoidPatch() { return this._patch; }
+  public override get ellipsoidPatch() { return this._patch; }
 }
 
 /** @internal */
@@ -93,7 +99,7 @@ class PlanarProjection extends MapTileProjection {
 /** @internal */
 export interface TerrainTileContent extends TileContent {
   terrain?: {
-    geometry?: RenderTerrainMeshGeometry;
+    renderGeometry?: RenderTerrainGeometry;
     /** Used on leaves to support up-sampling. */
     mesh?: TerrainMeshPrimitive;
   };
@@ -116,35 +122,35 @@ export class MapTile extends RealityTile {
   private _imageryTiles?: ImageryMapTile[];
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   protected _heightRange: Range1d | undefined;
-  protected _geometry?: RenderTerrainMeshGeometry;
+  protected _renderGeometry?: RenderTerrainGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
-  public get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
-  public get geometry() { return this._geometry; }
+  public override get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
+  public override get hasGraphics(): boolean { return this._renderGeometry !== undefined; }
+  public get renderGeometry() { return this._renderGeometry; }
   public get mesh() { return this._mesh; }
   public get loadableTerrainTile() { return this.loadableTile as MapTile; }
-  public get hasGraphics(): boolean { return undefined !== this.geometry; }
   public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
 
   public getRangeCorners(result: Point3d[]): Point3d[] { return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result); }
-  constructor(params: TileParams, public readonly mapTree: MapTileTree, public quadId: QuadId, private _patch: TilePatch, public readonly rectangle: MapCartoRectangle, heightRange: Range1d | undefined, protected _cornerRays: Ray3d[] | undefined) {
+  constructor(params: RealityTileParams, public readonly mapTree: MapTileTree, public quadId: QuadId, private _patch: TilePatch, public readonly rectangle: MapCartoRectangle, heightRange: Range1d | undefined, protected _cornerRays: Ray3d[] | undefined) {
     super(params, mapTree);
     this._heightRange = heightRange ? heightRange.clone() : undefined;
   }
-  public getSizeProjectionCorners(): Point3d[] | undefined {
+  public override getSizeProjectionCorners(): Point3d[] | undefined {
     // Use only the first 4 corners -- On terrain tiles the height is initially exagerated to world height range which can cause excessive tile loading.
     const rangeCorners = this.getRangeCorners(scratchCorners);
     return rangeCorners.slice(0, 4);
   }
 
-  public markUsed(args: TileDrawArgs) {
+  public override markUsed(args: TileDrawArgs) {
     super.markUsed(args);
     if (this._imageryTiles)
       for (const imageryTile of this._imageryTiles)
         imageryTile.markUsed(args);
   }
 
-  public get graphicType() {
+  public override get graphicType() {
     return this.mapTree.isOverlay ? TileGraphicType.Overlay : ((this.mapTree.useDepthBuffer || this._forceDepthBuffer) ? TileGraphicType.Scene : TileGraphicType.BackgroundMap);
   }
 
@@ -176,7 +182,7 @@ export class MapTile extends RealityTile {
     return this.mapTree.globeMode === GlobeMode.Ellipsoid && this.depth < 8;       // For large ellipsoidal globe tile force the depth buffer on to avoid anomalies at horizon.  These are large enough that they
   }
 
-  public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
+  public override addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     if (!this.isDisplayable)
       return;
 
@@ -225,7 +231,7 @@ export class MapTile extends RealityTile {
     builder.addPointString(transitionPoints);
   }
 
-  public getContentClip(): ClipVector | undefined {
+  public override getContentClip(): ClipVector | undefined {
     const points = this.getClipShape();
     if (points.length < 3)
       return undefined;
@@ -254,7 +260,7 @@ export class MapTile extends RealityTile {
     }
   }
 
-  public setNotFound(): void {
+  public override setNotFound(): void {
     super.setNotFound();
 
     // For map tiles assume that an unfound tile implies descendants and siblings will also be unfound.
@@ -267,11 +273,11 @@ export class MapTile extends RealityTile {
   /** For globe tiles displaying less then depth 2 appears distorted
    * @internal
    */
-  public get isDisplayable() {
+  public override get isDisplayable() {
     return this.mapTree.globeMode === GlobeMode.Ellipsoid ? (this.depth >= MapTileTree.minDisplayableDepth) : super.isDisplayable;
   }
 
-  public isOccluded(viewingSpace: ViewingSpace): boolean {
+  public override isOccluded(viewingSpace: ViewingSpace): boolean {
     if (undefined === this._cornerRays || this.mapTree.globeMode !== GlobeMode.Ellipsoid)
       return false;
 
@@ -282,7 +288,7 @@ export class MapTile extends RealityTile {
       for (const cornerNormal of this._cornerRays) {
         const eyeNormal = Vector3d.createStartEnd(viewingSpace.eyePoint, cornerNormal.origin, scratchNormal);
         eyeNormal.normalizeInPlace();
-        if (eyeNormal.dotProduct(cornerNormal.direction) < .1)
+        if (eyeNormal.dotProduct(cornerNormal.direction) < .01)
           return false;
       }
     } else {
@@ -294,10 +300,11 @@ export class MapTile extends RealityTile {
     return true;
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     const mapTree = this.mapTree;
-    const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
-    const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
+    const childLevel = this.quadId.level + 1;
+    const rowCount = mapTree.sourceTilingScheme.getNumberOfYChildrenAtLevel(childLevel);
+    const columnCount = mapTree.sourceTilingScheme.getNumberOfXChildrenAtLevel(childLevel);
 
     const resolveChildren = (children: Tile[]) => {
       const childrenRange = Range3d.createNull();
@@ -326,15 +333,17 @@ export class MapTile extends RealityTile {
           const quadId = new QuadId(level, column + i, row + j);
           const corners = childCorners[j * columnCount + i];
           const rectangle = mapTree.getTileRectangle(quadId);
-
           const normal = PolygonOps.areaNormal([corners[0], corners[1], corners[3], corners[2]]);
           normal.normalizeInPlace();
 
           const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
           const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
           const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
-          const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal, chordHeight, scratchCorners, heightRange));
-          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange));
+          const rangeCorners = MapTile.computeRangeCorners(corners, normal, chordHeight, undefined, heightRange);
+          const range = Range3d.createArray(rangeCorners);
+          const child = this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange);
+          if (child)
+            children.push(child);
         }
       }
       resolveChildren(children);
@@ -363,13 +372,12 @@ export class MapTile extends RealityTile {
 
         children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
-      resolve(children);
     }
-
+    resolve(children);
     return children;
   }
 
-  public static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result: Point3d[], heightRange?: Range1d) {
+  public static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d) {
     if (result === undefined) {
       result = [];
       for (let i = 0; i < 8; i++)
@@ -391,10 +399,10 @@ export class MapTile extends RealityTile {
 
   }
 
-  public isRegionCulled(args: TileDrawArgs): boolean {
+  public override isRegionCulled(args: TileDrawArgs): boolean {
     return this.isContentCulled(args);
   }
-  public isContentCulled(args: TileDrawArgs): boolean {
+  public override isContentCulled(args: TileDrawArgs): boolean {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
   }
   public clearLayers() {
@@ -411,20 +419,21 @@ export class MapTile extends RealityTile {
     }
   }
 
-  public produceGraphics(): RenderGraphic | undefined {
+  public override produceGraphics(): RenderGraphic | undefined {
     if (undefined !== this._graphic && this.imageryIsReady)
       return this._graphic;
 
-    const geometry = this.geometry;
+    const geometry = this.renderGeometry;
     assert(undefined !== geometry);
     if (undefined === geometry)
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const graphic = IModelApp.renderSystem.createTerrainMeshGraphic(geometry, PackedFeatureTable.pack(this.mapLoader.featureTable), this.contentId, this.mapTree.baseColor, this.mapTree.baseTransparent, textures);
+    const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
+    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers }, true);
 
-    // We no longer need the drape tiles.
-    if (this.imageryIsReady)
+    // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
+    if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
       this._graphic = graphic;
 
     return graphic;
@@ -434,14 +443,11 @@ export class MapTile extends RealityTile {
     return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays![0].origin, this._cornerRays![1].origin, this._cornerRays![3].origin, this._cornerRays![2].origin];
   }
 
-  protected _collectStatistics(stats: RenderMemory.Statistics): void {
+  protected override _collectStatistics(stats: RenderMemory.Statistics): void {
     super._collectStatistics(stats);
 
-    if (undefined !== this._geometry)
-      this._geometry.collectStatistics(stats);
-
-    if (undefined !== this._mesh)
-      this._mesh.collectStatistics(stats);
+    this._renderGeometry?.collectStatistics(stats);
+    this._mesh?.collectStatistics(stats);
   }
 
   /** Height range is along with the tile corners to detect if tile intersects view frustum.
@@ -474,6 +480,8 @@ export class MapTile extends RealityTile {
       this._heightRange.low = Math.max(this.heightRange!.low, minHeight);
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
+    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+      this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
   public getProjection(heightRange?: Range1d): MapTileProjection {
     return this._patch instanceof PlanarTilePatch ? new PlanarProjection(this._patch, heightRange) : new EllipsoidProjection(this._patch, heightRange);
@@ -500,7 +508,7 @@ export class MapTile extends RealityTile {
   /** Select secondary (imagery) tiles
    * @internal
    */
-  public selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
+  public override selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
     if (0 === this.mapTree.imageryTrees.length || this.imageryIsReady)
       return;
 
@@ -531,7 +539,7 @@ export class MapTile extends RealityTile {
    * @internal
    */
 
-  public forceSelectRealityTile(): boolean {
+  public override forceSelectRealityTile(): boolean {
 
     let parentHeightDepth = 0;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -603,10 +611,20 @@ export class MapTile extends RealityTile {
     return new TerrainTexture(imageryTile.texture, featureIndex, scale, translate, drapeRectangle, this.mapTree.getLayerIndex(imageryModelId), this.mapTree.getLayerTransparency(imageryModelId), clipRect);
   }
 
-  public setContent(content: TerrainTileContent): void {
-    dispose(this._geometry); // This should never happen but paranoia.
-    this._geometry = content.terrain?.geometry;
+  public override setContent(content: TerrainTileContent): void {
     this._mesh = content.terrain?.mesh;
+    if (this.mapTree.produceGeometry) {
+      const iModelTransform = this.mapTree.iModelTransform;
+      const geometryTransform =  content.terrain?.renderGeometry?.transform;
+      const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
+      const polyface = content.terrain?.mesh?.createPolyface(transform);
+      this._geometry = polyface ? { polyfaces: [polyface] } : undefined;
+
+    } else {
+      dispose(this._renderGeometry);
+      this._renderGeometry = content.terrain?.renderGeometry;
+    }
+
     this.everLoaded = true;
 
     if (undefined !== content.contentRange)
@@ -615,13 +633,13 @@ export class MapTile extends RealityTile {
     this.setIsReady();
   }
 
-  public freeMemory(): void {
+  public override freeMemory(): void {
     // ###TODO MapTiles and ImageryMapTiles share resources and don't currently interact well with TileAdmin.freeMemory(). Opt out for now.
   }
 
-  public disposeContents() {
+  public override disposeContents() {
     super.disposeContents();
-    this._geometry = dispose(this._geometry);
+    this._renderGeometry = dispose(this._renderGeometry);
     this.clearImageryTiles();
     // Note - don't dispose of mesh - these should only ever exist on terrain leaf tile and are required by children.  Let garbage collector handle them.
   }
@@ -629,39 +647,47 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
-  public get isLoadable() { return false; }
-  public get isUpsampled() { return true; }
-  public get isEmpty() { return false; }
-  public get loadableTile(): RealityTile {
+  public override get isUpsampled() { return true; }
+  public override get isEmpty() { return false; }
+  public override get loadableTile(): RealityTile {
     let parent = this.parent as MapTile;
     for (; parent && parent.isUpsampled; parent = parent.parent as MapTile)
       ;
     return parent;
   }
-
-  public get geometry() {
-    if (undefined === this._geometry) {
-      const parent = this.loadableTerrainTile;
-      const parentMesh = parent.mesh;
-      if (undefined === parentMesh) {
-        return undefined;
-      }
-
-      const thisId = this.quadId, parentId = parent.quadId;
-      const levelDelta = thisId.level - parentId.level;
-      const thisColumn = thisId.column - (parentId.column << levelDelta);
-      const thisRow = thisId.row - (parentId.row << levelDelta);
-      const scale = 1.0 / (1 << levelDelta);
-      const parentParameterRange = Range2d.createXYXY(scale * thisColumn, scale * thisRow, scale * (thisColumn + 1), scale * (thisRow + 1));
-      const upsample = parentMesh.upsample(parentParameterRange);
-      this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
-      const projection = parent.getProjection(this.heightRange);
-      this._geometry = IModelApp.renderSystem.createTerrainMeshGeometry(upsample.mesh, projection.transformFromLocal);
+  private upsampleFromParent() {
+    const parent = this.loadableTerrainTile;
+    const parentMesh = parent.mesh;
+    if (undefined === parentMesh) {
+      return undefined;
     }
-    return this._geometry;
+    const thisId = this.quadId, parentId = parent.quadId;
+    const levelDelta = thisId.level - parentId.level;
+    const thisColumn = thisId.column - (parentId.column << levelDelta);
+    const thisRow = thisId.row - (parentId.row << levelDelta);
+    const scale = 1.0 / (1 << levelDelta);
+    const parentParameterRange = Range2d.createXYXY(scale * thisColumn, scale * thisRow, scale * (thisColumn + 1), scale * (thisRow + 1));
+    const upsample = parentMesh.upsample(parentParameterRange);
+    this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
+    return upsample;
   }
-  public get isLoading(): boolean { return this.loadableTile.isLoading; }
-  public get isQueued(): boolean { return this.loadableTile.isQueued; }
-  public get isNotFound(): boolean { return this.loadableTile.isNotFound; }
-  public get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
+
+  public override get renderGeometry() {
+    if (undefined === this._renderGeometry) {
+      const upsample = this.upsampleFromParent();
+      const projection = this.loadableTerrainTile.getProjection(this.heightRange);
+      if (upsample)
+        this._renderGeometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal, true);
+    }
+    return this._renderGeometry;
+  }
+  public override get isLoading(): boolean { return this.loadableTile.isLoading; }
+  public override get isQueued(): boolean { return this.loadableTile.isQueued; }
+  public override get isNotFound(): boolean { return this.loadableTile.isNotFound; }
+  public override get isReady(): boolean { return (this._renderGeometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
+
+  public override markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this.loadableTile);
+  }
 }

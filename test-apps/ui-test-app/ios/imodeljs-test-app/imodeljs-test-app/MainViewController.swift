@@ -6,18 +6,70 @@
 import UIKit
 import WebKit
 
+class ProxyAuthClient : NSObject, AuthorizationClient {
+    var expiresAt = 1614644192978.124;
+    var startsAt = 1614640594109.5281;
+    var userToken = "...";
+
+    func initialize(_ authSettings: AuthSettings, onComplete completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
+    }
+    func sign(in completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
+        raiseOnUserStateChanged(token: userToken, err: nil);
+    }
+    func signOut(_ completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
+        raiseOnUserStateChanged(token: userToken, err: nil);
+    }
+    func wrapTokenInJson(token: String?) -> String? {
+        var jsonString: String? = nil;
+        if (token != nil) {
+            let jsonDic : [String: Any] = [
+                "tokenString": token!,
+                "expiresAt" : expiresAt,
+                "startsAt" : startsAt,
+            ];
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: jsonDic, options: []);
+                jsonString = String(data: jsonData, encoding: String.Encoding.ascii)!;
+            } catch {}
+        }
+        return jsonString;
+    }
+    func raiseOnUserStateChanged(token: String?, err:Error?) -> Void {
+        let jToken = wrapTokenInJson(token: token);
+        if (onUserStateChanged != nil) {
+            onUserStateChanged!(jToken, err);
+        }
+    }
+    func getAccessToken(_ completion: @escaping AccessTokenCallback) {
+        let jToken = wrapTokenInJson(token: userToken);
+        completion(jToken, nil);
+    }
+    func resumeExternalUserAgentFlow(_ url: URL) -> Bool {
+        return true;
+    }
+
+    var onUserStateChanged: UserStateChanged?
+    var isAuthorized: Bool {
+        get {
+            return true;
+        }
+    }
+}
 
 class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     private var webView : WKWebView? = nil
-
+    private var timer = Timer()
     func setupBackend () {
         let host = IModelJsHost.sharedInstance();
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
         let client = MobileAuthorizationClient(viewController: self);
+        // let client = ProxyAuthClient();
         host.loadBackend(main, withAuthClient: client,withInspect: true)
-
     }
 
     func setupFrontend (bimFile: URL?) {
@@ -73,8 +125,11 @@ class MainViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
-        setupFrontend(bimFile: nil)
+        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { (Timer) in
+            self.setupFrontend(bimFile: nil);
+        })
     }
 
 }
+
 

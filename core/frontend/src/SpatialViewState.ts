@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Matrix3d, Range3d, XYAndZ } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
+import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -16,23 +16,24 @@ import { DisplayStyle3dState } from "./DisplayStyleState";
 import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState3d } from "./ViewState";
+import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
  * @public
+ * @extensions
  */
 export class SpatialViewState extends ViewState3d {
   /** @internal */
-  public static get className() { return "SpatialViewDefinition"; }
+  public static override get className() { return "SpatialViewDefinition"; }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
   private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
-   * @beta
+   * @public
    */
   public readonly onViewedModelsChanged = new BeEvent<() => void>();
 
@@ -62,7 +63,7 @@ export class SpatialViewState extends ViewState3d {
    * @param origin The origin for the new SpatialViewState
    * @param extents The extents for the new SpatialViewState
    * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
-   * @beta
+   * @public
    */
   public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
     const blank = {} as any;
@@ -77,14 +78,14 @@ export class SpatialViewState extends ViewState3d {
     return view;
   }
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
+  public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
     const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
     return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
   }
 
-  public toProps(): ViewStateProps {
+  public override toProps(): ViewStateProps {
     const props = super.toProps();
     props.modelSelectorProps = this.modelSelector.toJSON();
     return props;
@@ -100,11 +101,11 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public isSpatialView(): this is SpatialViewState { return true; }
+  public override isSpatialView(): this is SpatialViewState { return true; }
 
-  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
-  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+  public override createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
 
   /** @internal */
@@ -145,15 +146,30 @@ export class SpatialViewState extends ViewState3d {
     return extents;
   }
 
-  public toJSON(): SpatialViewDefinitionProps {
+  public override toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-  public async load(): Promise<void> {
-    await super.load();
-    return this.modelSelector.load();
+
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
+    if (undefined === notLoaded)
+      return; // all requested models are already loaded
+    hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.modelSelectorStateModels !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps(hydrateResponse.modelSelectorStateModels));
+    await Promise.all(promises);
+  }
+
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
@@ -168,28 +184,39 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
+  public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this._treeRefs)
       func(ref);
   }
 
   /** @internal */
-  public createScene(context: SceneContext): void {
+  public override createScene(context: SceneContext): void {
     super.createScene(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 
   /** @internal */
-  public attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     this.registerModelSelectorListeners();
   }
 
   /** @internal */
-  public detachFromViewport(): void {
+  public override detachFromViewport(): void {
     super.detachFromViewport();
     this.unregisterModelSelectorListeners();
+  }
+
+  /** Chiefly for debugging: change the "deactivated" state of one or more tile tree references. Deactivated references are
+   * omitted when iterating the references, so e.g. their graphics are omitted from the scene.
+   * @param modelIds The Ids of one or more models whose tile tree references are to be affected. If omitted, all models are affected.
+   * @param deactivated True to deactivate the specified references, false to reactivate them, undefined to invert each one's current state.
+   * @param which The references to be affected as either a broad category or one or more indices of animated references.
+   * @internal
+   */
+  public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+    this._treeRefs.setDeactivated(modelIds, deactivated, which);
   }
 
   private registerModelSelectorListeners(): void {
@@ -211,12 +238,13 @@ export class SpatialViewState extends ViewState3d {
 }
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
  * @public
+ * @extensions
  */
 export class OrthographicViewState extends SpatialViewState {
   /** @internal */
-  public static get className() { return "OrthographicViewDefinition"; }
+  public static override get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
-  public supportsCamera(): boolean { return false; }
+  public override supportsCamera(): boolean { return false; }
 }

@@ -1,24 +1,27 @@
 {
-  "name": "@bentley/imodeljs-common",
-  "version": "2.14.0-dev.9",
-  "description": "iModel.js components common to frontend and backend",
-  "main": "lib/imodeljs-common.js",
-  "typings": "lib/imodeljs-common",
-  "imodeljsSharedLibrary": true,
+  "name": "@itwin/core-common",
+  "version": "3.3.0-dev.9",
+  "description": "iTwin.js components common to frontend and backend",
+  "main": "lib/cjs/core-common.js",
+  "module": "lib/esm/core-common.js",
+  "typings": "lib/cjs/core-common",
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./imodeljs-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-common",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
+    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
-    "cover": "nyc npm test"
+    "test": "mocha",
+    "cover": "nyc npm -s test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/common"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/common"
   },
   "keywords": [
     "Bentley",
@@ -32,48 +35,53 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@ungap/url-search-params": "^0.1.2",
+    "buffer": "^6.0.3",
     "flatbuffers": "~1.12.0",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "string_decoder": "^1.3.0",
+    "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.9",
-    "@bentley/geometry-core": "^2.14.0-dev.9",
-    "@bentley/imodelhub-client": "^2.14.0-dev.9",
-    "@bentley/itwin-client": "^2.14.0-dev.9",
-    "@bentley/rbac-client": "^2.14.0-dev.9"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.9"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.9",
-    "@bentley/build-tools": "2.14.0-dev.9",
-    "@bentley/eslint-plugin": "2.14.0-dev.9",
-    "@bentley/geometry-core": "2.14.0-dev.9",
-    "@bentley/imodelhub-client": "2.14.0-dev.9",
-    "@bentley/itwin-client": "2.14.0-dev.9",
-    "@bentley/rbac-client": "2.14.0-dev.9",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
-    "@types/js-base64": "^2.3.1",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "10.14.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
-    "js-base64": "^2.4.5",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "eslint": "^7.11.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "ts-node": "^7.0.1",
-    "typescript": "~4.1.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "all": true
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "@itwin/public-extension-exports": [
+        "error",
+        {
+          "releaseTags": [
+            "public",
+            "preview"
+          ],
+          "outputApiFile": false
+        }
+      ]
+    }
   }
 }

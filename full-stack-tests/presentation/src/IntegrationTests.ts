@@ -2,38 +2,48 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
-import * as cpx from "cpx";
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
-import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
-  PresentationProps as PresentationBackendProps,
-} from "@bentley/presentation-backend";
-import { RequestPriority } from "@bentley/presentation-common";
-import { PresentationComponentsLoggerCategory } from "@bentley/presentation-components";
-import { PresentationFrontendLoggerCategory, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
+} from "@itwin/presentation-backend";
+import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 chai.use(sinonChai);
 chai.use(chaiSubset);
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
-const copyBentleyBackendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
-    return path.join(packagePath, "lib", "assets");
+const copyITwinBackendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
+    return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {
@@ -41,10 +51,10 @@ const copyBentleyBackendAssets = (outputDir: string) => {
   });
 };
 
-const copyBentleyFrontendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
+const copyITwinFrontendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
     return path.join(packagePath, "lib", "public");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
@@ -54,16 +64,12 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
 };
 
 class IntegrationTestsApp extends NoRenderApp {
-  protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
-    return { urlTemplate };
-  }
-
-  public static async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
+  public static override async startup(opts?: IModelAppOptions): Promise<void> {
+    await NoRenderApp.startup(opts);
+    await IModelApp.localization.changeLanguage("en-PSEUDO");
     cpx.copySync(`assets/**/*`, "lib/assets");
-    copyBentleyBackendAssets("lib/assets");
-    copyBentleyFrontendAssets("lib/public");
+    copyITwinBackendAssets("lib/assets");
+    copyITwinFrontendAssets("lib/public");
   }
 }
 
@@ -71,38 +77,42 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   // init logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
+  Logger.setLevel("i18n", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Localization, LogLevel.Info);
-  Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationFrontendLoggerCategory.Package, LogLevel.Info);
-  Logger.setLevel(PresentationComponentsLoggerCategory.Package, LogLevel.Info);
 
   const libDir = path.resolve("lib");
-  console.log(`Backend's lib directory path: ${libDir}`); // eslint-disable-line no-console
+  const hierarchiesCacheDir = path.join(libDir, "cache");
+  if (!fs.existsSync(hierarchiesCacheDir))
+    fs.mkdirSync(hierarchiesCacheDir);
 
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
     localeDirectories: [path.join(libDir, "assets", "locales")],
-    activeLocale: "en-PSEUDO",
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
+    defaultLocale: "en-PSEUDO",
+    workerThreadsCount: 1,
+    caching: {
+      hierarchies: {
+        mode: HierarchyCacheMode.Disk,
+        directory: hierarchiesCacheDir,
+      },
     },
-    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(libDir, "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
-    activeLocale: "en-PSEUDO",
+    presentation: {
+      activeLocale: "en-PSEUDO",
+    },
   };
 
   const frontendAppOptions: IModelAppOptions = {
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
+    localization: new ITwinLocalization({ urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}` }),
   };
 
   if (props.useClientServices)
-    await frontendAppOptions.authorizationClient!.signIn(new ClientRequestContext());
+    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
@@ -112,7 +122,10 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
-  console.log(`Backend PID: ${process.pid}`); // eslint-disable-line no-console
+
+  global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 0);
+  });
 };
 
 export const initialize = async (backendTimeout: number = 0) => {
@@ -124,6 +137,7 @@ export const initializeWithClientServices = async () => {
 };
 
 export const terminate = async () => {
+  delete (global as any).requestAnimationFrame;
   await terminateTesting();
 };
 

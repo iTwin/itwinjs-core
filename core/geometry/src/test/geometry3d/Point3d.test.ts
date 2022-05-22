@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Ray3d } from "../../core-geometry";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
@@ -122,12 +123,12 @@ describe("Point3d", () => {
         const vectorIJV = vectorI.vectorTo(vectorJ);
         const unitIJV = vectorI.unitVectorTo(vectorJ);
         ck.testVector3d(vectorIJ, vectorIJV, "vectorTo between points, vectors");
-        if (ck.testPointer(unitIJV) && unitIJV) {
+        if (ck.testPointer(unitIJV)) {
           ck.testParallel(unitIJV, vectorIJ);
           ck.testCoordinate(unitIJV.dotProduct(vectorIJV), vectorI.distance(vectorJ));
         }
         for (const f of [0.1, 0.5, 0.9, 1.1]) {
-          const ray = pointI.interpolatePointAndTangent(f, pointJ, 1.0);
+          const ray = Ray3d.interpolatePointAndTangent(pointI, f, pointJ, 1.0);
           const point = pointI.interpolate(f, pointJ);
           ck.testPoint3d(point, ray.origin);
           ck.testVector3d(vectorIJ, ray.direction);
@@ -144,7 +145,7 @@ describe("Point3d", () => {
         ck.testPerpendicular(vectorJ, perpVector, "projection vector");
 
         const rotateI90 = vectorI.rotate90Towards(vectorJ);
-        if (ck.testPointer(rotateI90) && rotateI90) {
+        if (ck.testPointer(rotateI90)) {
           ck.testPerpendicular(vectorI, rotateI90);
           const cross = vectorI.crossProduct(rotateI90);
           ck.testParallel(cross, vectorIJcross);

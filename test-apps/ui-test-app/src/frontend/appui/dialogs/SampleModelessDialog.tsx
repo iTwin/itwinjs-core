@@ -3,41 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ModelessDialog } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
-  opened: boolean;
   dialogId: string;
   onClose?: () => void;
+  movable?: boolean;
 }
 
-export interface SampleModelessDialogState {
-  opened: boolean;
-}
-
-export class SampleModelessDialog extends React.Component<SampleModelessDialogProps, SampleModelessDialogState> {
-  public readonly state: Readonly<SampleModelessDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModelessDialog");
+export class SampleModelessDialog extends React.Component<SampleModelessDialogProps> {
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModelessDialog");
 
   constructor(props: SampleModelessDialogProps) {
     super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <ModelessDialog
         title={this._title}
-        opened={this.state.opened}
+        opened={true}
         dialogId={this.props.dialogId}
         width={450}
         height={300}
+        movable={this.props.movable}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
-        onOutsideClick={this._handleCancel}
+      /* onOutsideClick={this._handleCancel} */
       >
         {/*  cSpell:disable */}
         Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per.
@@ -53,9 +46,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
   };
 
   private _closeDialog = () => {
-    this.setState(
-      { opened: false },
-      () => this.props.onClose && this.props.onClose()
-    );
+    this.props.onClose && this.props.onClose();
+    ModelessDialogManager.closeDialog(this.props.dialogId);
   };
 }

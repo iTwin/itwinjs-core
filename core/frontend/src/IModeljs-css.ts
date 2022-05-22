@@ -28,6 +28,8 @@ let iModelJsCss: string | undefined = `
   --safe-area-bottom: env(safe-area-inset-bottom);
   --safe-area-right: constant(safe-area-inset-right);
   --safe-area-right: env(safe-area-inset-right);
+  --logo-foreground-body:#000000;
+  --logo-background-1:#ffffff;
 }
 
 .logo-card-logo {
@@ -39,10 +41,10 @@ let iModelJsCss: string | undefined = `
 
 .logo-card-logo img {
   margin-top:4px;
-  border: solid 3px var(--background-1)
+  border: solid 3px var(--logo-background-1)
 }
 
-.logo-card-message p {
+.logo-card-message {
   font-size:13px;
   line-height:1.25;
   margin-block-start:.5em;
@@ -51,7 +53,7 @@ let iModelJsCss: string | undefined = `
   opacity:.7
 }
 
-.logo-cards h2 {
+.logo-card-header {
   margin:auto;
   font-size:18px;
   font-weight:bold;
@@ -79,8 +81,8 @@ let iModelJsCss: string | undefined = `
 .imodeljs-modal {
   border-radius:3px;
   box-shadow: 0px 1px 3px 0 rgba(0,0,0,0.1);
-  color:var(--foreground-body);
-  background-color:var(--background-1);
+  color:var(--logo-foreground-body);
+  background-color:var(--logo-background-1);
   font-family:"Segoe UI","Open Sans",sans-serif;
   font-weight:normal;
   font-stretch:normal;
@@ -141,7 +143,7 @@ let iModelJsCss: string | undefined = `
 }
 `;
 
-// add the iModel.js frontend .css styles into DOM head when we load
+// add the iTwin.js frontend .css styles into DOM head when we load
 (() => {
   // Skip adding the css to document if document does not exist.
   if ("undefined" === typeof document)

@@ -4,8 +4,8 @@ package-lock.json
 
 # build output
 .nyc_output
-/**/lib
-/**/build
+lib
+build
 /**/test/output
 /generated-docs
 /out
@@ -13,6 +13,7 @@ package-lock.json
 coverage
 full_stack_test_results
 integration_test_results
+ecschema-rpcinterface-tests-result
 imjs_plugins
 imjs_extensions
 !tools/build
@@ -23,6 +24,10 @@ package-deps.json
 /**/.rush
 *.build.log
 *.build.error.log
+common/autoinstallers/*/.npmrc
+
+# pnpm
+.pnpm-debug.log
 
 # docs
 /public
@@ -42,3 +47,9 @@ package-deps.json
 .DS_Store
 
 .env
+.env.local
+.env.*.local
+
+common/api/summary/summary.exports.csv
+
+debug.log

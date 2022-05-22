@@ -6,13 +6,13 @@
  * @module Tiles
  */
 
-import { assert, compareNumbers } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Range2d } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { assert, compareNumbers } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
+import { Cartographic } from "@itwin/core-common";
 import { MapTilingScheme } from "../internal";
 
-const scratchCartographic1 = new Cartographic();
-const scratchCartographic2 = new Cartographic();
+const scratchCartographic1 = Cartographic.createZero();
+const scratchCartographic2 = Cartographic.createZero();
 
 /** @internal */
 export class QuadId {
@@ -31,7 +31,9 @@ export class QuadId {
     return new QuadId(parseInt(idParts[0], 10), parseInt(idParts[1], 10), parseInt(idParts[2], 10));
   }
 
-  public get contentId(): string { return `${this.level}_${this.column}_${this.row}`; }
+  public get contentId(): string { return  QuadId.getTileContentId(this.level, this.column, this.row); }
+  public static getTileContentId(level: number, column: number, row: number): string { return `${level}_${column}_${row}`; }
+
   public get debugString(): string { return `Level: ${this.level} Column: ${this.column} Row: ${this.row}`; }
 
   public constructor(level: number, column: number, row: number) {

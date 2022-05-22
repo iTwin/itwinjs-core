@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestFunctional" alias="testFunc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
 
+    <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
     <ECSchemaReference name="Functional" version="1.0" alias="func" />
 
     <ECCustomAttributes>
         <SchemaHasBehavior xmlns="BisCore.1.0"/>
     </ECCustomAttributes>
+
+    <ECEntityClass typeName="TestFuncPartition">
+        <BaseClass>bis:InformationPartitionElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestFuncModel" displayLabel="Test Functional Model">
+        <BaseClass>func:FunctionalModel</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+    </ECEntityClass>
 
     <ECEntityClass typeName="Breakdown" displayLabel="Test Functional Breakdown">
         <BaseClass>func:FunctionalBreakdownElement</BaseClass>
@@ -21,6 +31,11 @@
         <BaseClass>func:FunctionalType</BaseClass>
         <ECProperty propertyName="StringProperty" typeName="string" />
         <ECProperty propertyName="IntProperty" typeName="int" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestFuncAspect">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="strProp" typeName="string"/>
     </ECEntityClass>
 
 </ECSchema>

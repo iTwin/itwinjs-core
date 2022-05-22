@@ -6,15 +6,16 @@
  * @module Views
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
-import { Camera } from "@bentley/imodeljs-common";
+import { BeTimePoint } from "@itwin/core-bentley";
+import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Camera } from "@itwin/core-common";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
 /** The "pose" for a view. This is either the volume or area, depending on whether the view is 3d or 2d,
  * plus the camera position/angle, if it is enabled.
  * @note a ViewPose is immutable.
  * @public
+ * @extensions
  */
 export abstract class ViewPose {
   public undoTime?: BeTimePoint; // the time this pose was created, if it is saved in the view undo stack.
@@ -49,7 +50,7 @@ export class ViewPose3d extends ViewPose {
     this.camera = view.camera.clone();
   }
 
-  public get target() {
+  public override get target() {
     return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
   }
 

@@ -88,15 +88,15 @@ export abstract class CurveCollection extends GeometryQuery {
   /** Apply transform recursively to children */
   public tryTransformInPlace(transform: Transform): boolean { return TransformInPlaceContext.tryTransformInPlace(this, transform); }
   /** Return a deep copy. */
-  public clone(): CurveCollection | undefined {
-    return CloneCurvesContext.clone(this);
+  public override clone(): CurveCollection {
+    return CloneCurvesContext.clone(this) as CurveCollection;
   }
   /** Create a deep copy of transformed curves. */
-  public cloneTransformed(transform: Transform): CurveCollection | undefined {
+  public override cloneTransformed(transform: Transform): CurveCollection | undefined {
     return CloneCurvesContext.clone(this, transform);
   }
   /** Create a deep copy with all linestrings expanded to multiple LineSegment3d. */
-  public cloneWithExpandedLineStrings(): CurveCollection | undefined {
+  public cloneWithExpandedLineStrings(): CurveCollection {
     return CloneWithExpandedLineStrings.clone(this);
   }
   /** Recurse through children to collect CurvePrimitive's in flat array. */
@@ -204,7 +204,7 @@ export abstract class CurveChain extends CurveCollection {
   protected _curves: CurvePrimitive[];
   protected constructor() { super(); this._curves = []; }
   /** Return the array of `CurvePrimitive` */
-  public get children(): CurvePrimitive[] {
+  public override get children(): CurvePrimitive[] {
     if (this._curves === undefined)
       this._curves = [];
     return this._curves;
@@ -243,7 +243,7 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
-  public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
   /*  EDL 01/20 Path, Loop, CurveChainWithDistanceIndex all implement this.
       Reducing it to abstract.
       Hypothetically, a derived class in the wild might be depending on this.
@@ -270,7 +270,7 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** invoke `curve.extendRange(range, transform)` for each child  */
-  public extendRange(range: Range3d, transform?: Transform): void {
+  public override extendRange(range: Range3d, transform?: Transform): void {
     for (const curve of this._curves)
       curve.extendRange(range, transform);
   }
@@ -312,7 +312,7 @@ export class BagOfCurves extends CurveCollection {
   /** Construct an empty `BagOfCurves` */
   public constructor() { super(); this._children = []; }
   /** Return the (reference to) array of children */
-  public get children(): AnyCurve[] { return this._children; }
+  public override get children(): AnyCurve[] { return this._children; }
   /** create with given curves. */
   public static create(...data: AnyCurve[]): BagOfCurves {
     const result = new BagOfCurves();

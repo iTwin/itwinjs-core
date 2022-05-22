@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
+import { LogLevel } from "@itwin/core-bentley";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 
 /* eslint-disable @typescript-eslint/indent */
 
@@ -23,9 +24,9 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  useProjectName: boolean;
-  projectId?: string;
-  projectName?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
   changeSetId?: string;
 }
 
@@ -37,8 +38,6 @@ export function getRpcInterfaces(settings: Settings) {
     rpcInterfaces.push(PresentationRpcInterface);
   if (settings.runiModelReadRpcTests)
     rpcInterfaces.push(IModelReadRpcInterface);
-  if (settings.runiModelWriteRpcTests)
-    rpcInterfaces.push(IModelWriteRpcInterface);
   if (settings.runiModelTileRpcTests)
     rpcInterfaces.push(IModelTileRpcInterface);
 
@@ -59,10 +58,11 @@ export class Settings {
   public oidcClientId!: string;
   public oidcScopes!: string;
   public oidcRedirect!: string;
-  public imsUrl!: string;
+  public oidcAuthority?: string;
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
+  public clientConfiguration?: ServiceAuthorizationClientConfiguration;
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
@@ -106,11 +106,6 @@ export class Settings {
   /** Loads the necessary variables from `process.env`.
    */
   private load() {
-
-    // Parse environment
-    if (undefined !== process.env.ENVIRONMENT)
-      this.env = parseInt(process.env.ENVIRONMENT, 10);
-
     // Parse OIDC
     if (undefined === process.env.OIDC_CLIENT_ID)
       throw new Error("Missing the 'OIDC_CLIENT_ID' setting.");
@@ -119,6 +114,9 @@ export class Settings {
     if (undefined === process.env.OIDC_SCOPES)
       throw new Error("Missing the 'OIDC_SCOPES' setting");
     this.oidcScopes = process.env.OIDC_SCOPES;
+
+    if (process.env.OIDC_AUTHORITY)
+      this.oidcAuthority = process.env.OIDC_AUTHORITY;
 
     this.oidcRedirect = (undefined === process.env.OIDC_REDIRECT) ? "http://localhost:5000" : process.env.OIDC_REDIRECT;
 
@@ -138,9 +136,9 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      useProjectName: !process.env.IMODEL_PROJECTID,
-      projectId: process.env.IMODEL_PROJECTID,
-      projectName: process.env.IMODEL_PROJECTNAME,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
 
       // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       changeSetId: process.env.IMODEL_CHANGESETID,
@@ -158,9 +156,9 @@ export class Settings {
         useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
         name: process.env.IMODEL_WRITE_IMODELNAME,
-        useProjectName: !process.env.IMODEL_WRITE_PROJECTID,
-        projectId: process.env.IMODEL_WRITE_PROJECTID,
-        projectName: process.env.IMODEL_WRITE_PROJECTNAME,
+        useITwinName: !process.env.IMODEL_WRITE_PROJECTID,
+        iTwinId: process.env.IMODEL_WRITE_PROJECTID,
+        iTwinName: process.env.IMODEL_WRITE_PROJECTNAME,
       });
     }
 
@@ -189,6 +187,15 @@ export class Settings {
       email: process.env.USER_WITH_ACCESS_USERNAME || "",
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
+
+    if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
+      this.clientConfiguration = {
+        clientId: process.env.CLIENT_WITH_ACCESS_ID,
+        clientSecret: process.env.CLIENT_WITH_ACCESS_SECRET,
+        scope: process.env.CLIENT_WITH_ACCESS_SCOPES,
+        authority: this.oidcAuthority,
+      };
+    }
   }
 
   public toString(): string {

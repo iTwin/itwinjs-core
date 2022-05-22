@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
@@ -16,18 +16,22 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const os = (typeof (process) !== "undefined") ? require("os") : undefined;
+let hostname = "";
 function getHostname(): string {
-  if (os !== undefined) {
-    return os.hostname();
-  } else {
-    if (typeof (window) !== "undefined") {
-      return window.location.host;
-    } else {
-      return "imodeljs-mobile";
+  if (!hostname) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const os = require("os");
+      hostname = os.hostname();
+    } catch (_) {
+      if (globalThis.window) {
+        hostname = globalThis.window.location.host;
+      } else {
+        hostname = "imodeljs-mobile";
+      }
     }
   }
+  return hostname;
 }
 
 /** @internal */
@@ -54,13 +58,14 @@ export class WebAppRpcLogging {
   }
 
   private static findPathIds(path: string) {
-    let contextId = "";
+    let iTwinId = "";
     let iModelId = "";
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
-      if ((/^context$/i).test(tokens[i])) {
-        contextId = tokens[i + 1] || "";
+      // For backwards compatibility, find old "context" or current "iTwin" terminology
+      if ((/^context$/i).test(tokens[i]) || (/^itwin$/i).test(tokens[i])) {
+        iTwinId = tokens[i + 1] || "";
       }
 
       if ((/^imodel$/i).test(tokens[i])) {
@@ -68,7 +73,7 @@ export class WebAppRpcLogging {
       }
     }
 
-    return { contextId, iModelId };
+    return { iTwinId, iModelId };
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {

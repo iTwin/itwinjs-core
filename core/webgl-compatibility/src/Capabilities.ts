@@ -6,7 +6,7 @@
  * @module Compatibility
  */
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import {
   GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
@@ -63,6 +63,39 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+const maxTexSizeAllowed = 4096; // many devices and browsers have issues with source textures larger than this
+
+// Regexes to match Intel UHD/HD 620/630 integrated GPUS that suffer from GraphicsDriverBugs.fragDepthDoesNotDisableEarlyZ.
+const buggyIntelMatchers = [
+  // Original unmasked renderer string when workaround we implemented.
+  /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
+  // New unmasked renderer string circa October 2021.
+  /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
+];
+
+// Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
+const buggyMaliMatchers = [
+  /Mali-G71/,
+  /Mali-G76/,
+];
+
+// Regexes to match as many Intel integrated GPUs as possible.
+// https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
+const integratedIntelGpuMatchers = [
+  /(U)?HD Graphics/,
+  /Iris/,
+];
+
+function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
+  if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel") && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
+    return true;
+
+  // NB: For now, we do not attempt to detect AMD integrated graphics.
+  // It appears that AMD integrated graphics are not usually paired with a graphics card so detecting integrated usage there is less important than Intel.
+
+  return false;
+}
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -81,17 +114,21 @@ export class Capabilities {
   private _canRenderDepthWithoutColor: boolean = false;
   private _maxAnisotropy?: number;
   private _maxAntialiasSamples: number = 1;
+  private _supportsCreateImageBitmap: boolean = false;
+  private _maxTexSizeAllow: number = maxTexSizeAllowed;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
   private _isWebGL2: boolean = false;
   private _isMobile: boolean = false;
-  private _driverBugs: GraphicsDriverBugs = { };
+  private _driverBugs: GraphicsDriverBugs = {};
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
   public get maxTextureSize(): number { return this._maxTextureSize; }
+  public get maxTexSizeAllow(): number { return this._maxTexSizeAllow; }
+  public get supportsCreateImageBitmap(): boolean { return this._supportsCreateImageBitmap; }
   public get maxColorAttachments(): number { return this._maxColorAttachments; }
   public get maxDrawBuffers(): number { return this._maxDrawBuffers; }
   public get maxFragTextureUnits(): number { return this._maxFragTextureUnits; }
@@ -223,14 +260,26 @@ export class Capabilities {
 
     this._isMobile = ProcessDetector.isMobileBrowser;
 
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
+
+    this._driverBugs = {};
+    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
+      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+    if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
+      this._driverBugs.msaaWillHang = true;
+
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromium && !ProcessDetector.isIOSBrowser;
+    this._maxTexSizeAllow = Math.min(this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     this._maxVertAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
     this._maxVertUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     this._maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
     this._maxFragUniformVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
-    this._maxAntialiasSamples = (this._isWebGL2 && undefined !== gl2 ? gl.getParameter(gl2.MAX_SAMPLES) : 1);
+    this._maxAntialiasSamples = this._driverBugs.msaaWillHang ? 1 : (this._isWebGL2 && undefined !== gl2 ? gl.getParameter(gl2.MAX_SAMPLES) : 1);
 
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
@@ -257,7 +306,16 @@ export class Capabilities {
     }
 
     // Determine the maximum color-renderable attachment type.
-    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    const allowFloatRender =
+      (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float"))
+      // iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices.
+      // Because of this, for now we disallow full float rendering on iOS devices.
+      // ###TODO: Re-assess this after future iOS updates.
+      && !ProcessDetector.isIOSBrowser
+      // Samsung Galaxy Note 8 exhibits same issue as described above for iOS >= 15.
+      // It uses specifically Mali-G71 MP20 but reports its renderer as follows.
+      && unmaskedRenderer !== "Mali-G71";
+
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
@@ -277,20 +335,13 @@ export class Capabilities {
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
 
-    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
-    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
-
-    this._driverBugs = { };
-    if (undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer))
-      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
-
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
       missingRequiredFeatures,
       missingOptionalFeatures,
       unmaskedRenderer,
       unmaskedVendor,
+      usingIntegratedGraphics: isIntegratedGraphics({unmaskedVendor, unmaskedRenderer}),
       driverBugs: { ...this._driverBugs },
       userAgent: navigator.userAgent,
       createdContext: gl,

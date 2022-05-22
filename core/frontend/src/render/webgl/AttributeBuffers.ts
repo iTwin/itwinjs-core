@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { QParams2d, QParams3d } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -160,17 +160,17 @@ export class VAOContainerWebGL1 extends VAOContainer {
     this._vao = new VertexArrayObjectHandle(this._vaoExt);
   }
 
-  public bind(): void {
+  public override bind(): void {
     this._vao.bind();
   }
 
-  public unbind(): void {
+  public override unbind(): void {
     VertexArrayObjectHandle.unbind(this._vaoExt);
   }
 
-  public get isDisposed(): boolean { return this._vao.isDisposed; }
+  public override get isDisposed(): boolean { return this._vao.isDisposed; }
 
-  public dispose(): void {
+  public override dispose(): void {
     this._vao.dispose();
   }
 }
@@ -189,17 +189,17 @@ export class VAOContainerWebGL2 extends VAOContainer {
     this._vao = new VertexArrayObjectHandleWebGL2(this._context);
   }
 
-  public bind(): void {
+  public override bind(): void {
     this._vao.bind();
   }
 
-  public unbind(): void {
+  public override unbind(): void {
     VertexArrayObjectHandleWebGL2.unbind(this._context);
   }
 
-  public get isDisposed(): boolean { return this._vao.isDisposed; }
+  public override get isDisposed(): boolean { return this._vao.isDisposed; }
 
-  public dispose(): void {
+  public override dispose(): void {
     this._vao.dispose();
   }
 }
@@ -372,6 +372,7 @@ export class BufferHandle implements WebGLDisposable {
     if (!this.isDisposed) {
       System.instance.context.deleteBuffer(this._glBuffer!);
       this._glBuffer = undefined;
+      this._bytesUsed = 0;
     }
   }
 

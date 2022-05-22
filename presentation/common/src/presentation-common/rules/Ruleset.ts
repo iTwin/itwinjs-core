@@ -7,20 +7,21 @@
  */
 
 import { Rule } from "./Rule";
-import { SchemasSpecification } from "./SchemasSpecification";
+import { RequiredSchemaSpecification } from "./SchemasSpecification";
 import { VariablesGroup } from "./Variables";
 
 /**
  * Presentation ruleset is a list of rules that define tree hierarchy and content provided by
- * the presentation manager. The ruleset consists of:
+ * the presentation library. The ruleset consists of:
  * - Ruleset options
- * - Navigation rules:
+ * - Hierarchy rules:
  *   - Root node rules
  *   - Child node rules
- * - Content rules for content you see in content controls
+ * - Content rules for content you see in content controls like property grid and table.
  * - Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.
  * - User-controllable variables.
  *
+ * @see [Presentation library documentation page]($docs/presentation/index.md)
  * @public
  */
 export interface Ruleset {
@@ -32,10 +33,25 @@ export interface Ruleset {
   id: string;
 
   /**
-   * Names of schemas which the rules should be applied for. Rules are applied to all
-   * schemas if this property is not set.
+   * Version of the presentation ruleset in SemVer format: `{major}.{minor}.{patch}`.
+   *
+   * Setting the version is optional, but might be useful when ruleset is persisted
+   * somewhere and evolves over time. Having a version helps choose persisting
+   * strategy (keep all versions or only latest) and find the latest ruleset from a list
+   * of rulesets with the same id.
+   *
+   * Defaults to `0.0.0`.
+   *
+   * @pattern ^[\d]+\.[\d]+\.[\d]+$
+   * @beta
    */
-  supportedSchemas?: SchemasSpecification;
+  version?: string;
+
+  /**
+   * Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.
+   * @beta
+   */
+  requiredSchemas?: RequiredSchemaSpecification[];
 
   /** Supplementation-related information for this ruleset */
   supplementationInfo?: SupplementationInfo;
@@ -49,7 +65,7 @@ export interface Ruleset {
 
 /**
  * Contains supplementation-related information for
- * [supplemental rulesets]($docs/learning/presentation/RulesetSupplementation.md).
+ * [supplemental rulesets]($docs/presentation/advanced/RulesetSupplementation.md).
  *
  * @public
  */

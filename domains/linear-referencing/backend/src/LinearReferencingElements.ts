@@ -6,14 +6,14 @@
  * @module LinearReferencing
  */
 
-import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@bentley/imodeljs-backend";
-import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
+import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
 import {
   ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
   LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps,
   LinearlyReferencedLocationType, QueryParams, ReferentElementProps,
-} from "@bentley/linear-referencing-common";
+} from "@itwin/linear-referencing-common";
 import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
 import {
   ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, IReferentReferencesElement,
@@ -22,9 +22,9 @@ import {
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
  */
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement {
   /** @internal */
-  public static get className(): string { return "LinearlyLocatedAttribution"; }
+  public static override get className(): string { return "LinearlyLocatedAttribution"; }
 
   public attributedElement?: ILinearlyLocatedAttributesElement;
 
@@ -43,7 +43,7 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
  */
 export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
-  public static get className(): string { return "LinearLocationElement"; }
+  public static override get className(): string { return "LinearLocationElement"; }
 
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -57,9 +57,9 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
 /** Linear Referencing Location attached to an Element not inherently Linearly Referenced.
  * @beta
  */
-export class LinearLocation extends LinearLocationElement {
+export class LinearLocation extends LinearLocationElement implements LinearlyLocatedBase {
   /** @internal */
-  public static get className(): string { return "LinearLocation"; }
+  public static override get className(): string { return "LinearLocation"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -89,7 +89,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 
   public insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
-    const newId = LinearlyLocated.insertFromTo(iModel, this, linearElementId, fromToPosition);
+    const newId = LinearlyLocated.insertFromTo(iModel, this.toJSON(), linearElementId, fromToPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -106,7 +106,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
-    const newId = LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
+    const newId = LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -119,7 +119,7 @@ export class LinearLocation extends LinearLocationElement {
  */
 export abstract class LinearPhysicalElement extends PhysicalElement {
   /** @internal */
-  public static get className(): string { return "LinearPhysicalElement"; }
+  public static override get className(): string { return "LinearPhysicalElement"; }
 
   public constructor(props: PhysicalElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -129,9 +129,9 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
+export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
-  public static get className(): string { return "ReferentElement"; }
+  public static override get className(): string { return "ReferentElement"; }
 
   public referencedElement?: IReferentReferencesElement;
 
@@ -150,7 +150,7 @@ export abstract class ReferentElement extends SpatialLocationElement implements 
  */
 export class Referent extends ReferentElement {
   /** @internal */
-  public static get className(): string { return "Referent"; }
+  public static override get className(): string { return "Referent"; }
   public constructor(props: ReferentElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -177,7 +177,7 @@ export class Referent extends ReferentElement {
   }
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
-    return LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
+    return LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
   }
 }
 
@@ -197,7 +197,7 @@ class AtAndFromToECSQLGenImpl extends ECSQLGenImpl {
       "coalesce(AtLocation.AtPosition.DistanceAlongFromStart, FromToLocation.ToPosition.DistanceAlongFromStart) StopDistanceAlong, " +
       "coalesce(AtLocation.ECInstanceId, FromToLocation.ECInstanceId) LocationAspectId ";
   }
-  public selectDistinct(): boolean {
+  public override selectDistinct(): boolean {
     return true;
   }
   public genFromJoin(): string {

@@ -1,9 +1,0 @@
-sep=;
-Release Tag;API Item
-internal;ProjectShareClient 
-internal;ProjectShareFile 
-internal;ProjectShareFileQuery 
-internal;ProjectShareFolder 
-internal;ProjectShareFolderQuery 
-internal;ProjectShareQuery 
-internal;RecycleOption

@@ -3,34 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Dialog } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 export interface SampleModalDialogProps {
-  opened: boolean;
   onResult?: (result: DialogButtonType) => void;
 }
 
-export interface SampleModalDialogState {
-  opened: boolean;
-}
-
-export class SampleModalDialog extends React.Component<SampleModalDialogProps, SampleModalDialogState> {
-  public readonly state: Readonly<SampleModalDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModalDialog");
+export class SampleModalDialog extends React.Component<SampleModalDialogProps> {
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModalDialog");
 
   constructor(props: SampleModalDialogProps) {
     super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Dialog
         title={this._title}
-        opened={this.state.opened}
+        opened={true}
         modal={true}
         width={450}
         height={300}
@@ -58,8 +51,7 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps, S
   };
 
   private _closeDialog = (followUp: () => void) => {
-    this.setState(
-      { opened: false },
-      () => followUp());
+    followUp && followUp();
+    ModalDialogManager.closeDialog();
   };
 }

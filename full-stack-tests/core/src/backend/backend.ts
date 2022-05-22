@@ -4,80 +4,152 @@
 *--------------------------------------------------------------------------------------------*/
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
-import * as http from "http";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { WebEditServer } from "@itwin/express-server";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
+import {
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  SubjectOwnsPartitionElements,
+} from "@itwin/core-backend";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
+import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
-import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
+class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
+  public get channelName() { return fullstackIpcChannel; }
+
+  public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+    const modeledElementProps: ElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      model: IModel.repositoryModelId,
+      code: newModelCode,
+    };
+    const modeledElement = iModelDb.elements.createElement(modeledElementProps);
+    return iModelDb.elements.insertElement(modeledElement.toJSON());
+  }
+
+  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+    return iModelDb.models.insertModel(newModel.toJSON());
+  }
+
+  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+    const categoryId = category.insert();
+    category.setDefaultAppearance(appearance);
+    return categoryId;
+  }
+}
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  // Bootstrap the cloud environment
-  await CloudEnv.initialize();
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  iModelHost.concurrentQuery.concurrent = 2;
-  iModelHost.concurrentQuery.pollInterval = 5;
+
+  // Bootstrap the cloud environment
+  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
+  if (enableIModelBank) {
+    iModelHost.hubAccess = getIModelBankAccess();
+  } else {
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  }
+
+  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+
+  let shutdown: undefined | (() => Promise<void>);
 
   if (ProcessDetector.isElectronAppBackend) {
+    exposeBackendCallbacks();
+    const authClient = new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
+    });
+    await authClient.signInSilent();
+    iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
+    await authClient.signInSilent();
+
     EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
-    await server.initialize(port);
+    const webEditServer = new WebEditServer(rpcConfig.protocol);
+    const httpServer = await webEditServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await new Promise((resolve) => {
-      http.createServer(async (request, response) => {
-        return serveHandler(request, response, {
-          cleanUrls: false,
-          public: "lib",
-          headers: [{ source: "*", headers: [{ key: "Access-Control-Allow-Origin", value: "*" }] }],
-        });
-      }).listen(Number(process.env.CERTA_PORT ?? 3011) + 4000, undefined, undefined, resolve);
-    });
-    await IModelHost.startup(iModelHost);
+    await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
+
+    EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
+    shutdown = async () => {
+      await new Promise((resolve) => httpServer.close(resolve));
+      await IpcHost.shutdown();
+    };
   }
 
-  // Start the backend
+  ECSchemaRpcImpl.register();
+
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
-  Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
-  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
+  return shutdown;
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver {
-  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
-  public tryResolveFileName(inFileName: string): string {
+  /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
+  public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
-  public tryResolveKey(fileKey: string): string | undefined {
+  public override tryResolveKey(fileKey: string): string | undefined {
     switch (fileKey) {
       case "test-key": return this.tryResolveFileName("test.bim");
       case "test2-key": return this.tryResolveFileName("test2.bim");

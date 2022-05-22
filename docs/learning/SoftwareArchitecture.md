@@ -26,11 +26,11 @@ The software architecture of iTwin.js was driven by the following goals:
 iTwin.js Web App backends are [Node.js](http://www.nodejs.org) applications.
 Node.js provides the [V8 JavaScript Engine](https://developers.google.com/v8/) and the [N-API](https://github.com/nodejs/abi-stable-node) for writing Node Addons in C++.
 This is how the iTwin.js Native Libraries are exposed to the iTwin.js backend framework.
-Portable application logic is written in TypeScript and calls TypeScript APIs exposed from the `@bentley/imodeljs-backend` package.
+Portable application logic is written in TypeScript and calls TypeScript APIs exposed from the `@itwin/core-backend` package.
 
 Notice that the backend architecture is identical between Agents and backends for interactive Web Applications.
 
-Web App frontends run in a web browser and use HTML GUI for presentation, and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) to request services from the backend.
+Web App frontends run in a web browser and use HTML GUI for presentation, and APIs exposed from the `@itwin/core-frontend` package for *Remote Procedure Calls* (RPC) to request services from the backend.
 
 The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for interactive web applications.
 

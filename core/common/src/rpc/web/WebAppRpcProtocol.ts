@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Readable, Writable } from "stream";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -14,9 +15,10 @@ import { RpcProtocol } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory, RpcInterface, RpcManager } from "../../imodeljs-common";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { RpcInterface } from "../../RpcInterface";
+import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { Logger } from "@bentley/bentleyjs-core";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";
@@ -45,9 +47,11 @@ class InitializeInterface extends RpcInterface {
  * @public
  */
 export interface HttpServerRequest extends Readable {
+  aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
   httpVersionMinor: number;
+  complete: boolean;
   connection: any;
   headers: { [header: string]: string | string[] | undefined };
   rawHeaders: string[];
@@ -76,10 +80,10 @@ export interface HttpServerResponse extends Writable {
 }
 
 /** The HTTP application protocol.
- * @public
+ * @internal
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
-  public preserveStreams = true;
+  public override preserveStreams = true;
 
   private _initialized: Promise<void> | undefined;
 
@@ -100,7 +104,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
           (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
         }
       } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", () => err);
+        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", BentleyError.getErrorProps(err));
       }
 
       resolve();
@@ -116,7 +120,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     const request = await WebAppRpcRequest.parseRequest(this, req);
     const fulfillment = await this.fulfill(request);
-    WebAppRpcRequest.sendResponse(this, request, fulfillment, res);
+    await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
@@ -151,28 +155,36 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public readonly requestType = WebAppRpcRequest;
 
   /** Supplies the status corresponding to a protocol-specific code value. */
-  public getStatus(code: number): RpcRequestStatus {
+  public override getStatus(code: number): RpcRequestStatus {
     switch (code) {
       case 404: return RpcRequestStatus.NotFound;
       case 202: return RpcRequestStatus.Pending;
       case 200: return RpcRequestStatus.Resolved;
       case 500: return RpcRequestStatus.Rejected;
       case 204: return RpcRequestStatus.NoContent;
+      case 502: return RpcRequestStatus.BadGateway;
+      case 503: return RpcRequestStatus.ServiceUnavailable;
+      case 504: return RpcRequestStatus.GatewayTimeout;
       default: return RpcRequestStatus.Unknown;
     }
   }
 
   /** Supplies the protocol-specific code corresponding to a status value. */
-  public getCode(status: RpcRequestStatus): number {
+  public override getCode(status: RpcRequestStatus): number {
     switch (status) {
       case RpcRequestStatus.NotFound: return 404;
       case RpcRequestStatus.Pending: return 202;
       case RpcRequestStatus.Resolved: return 200;
       case RpcRequestStatus.Rejected: return 500;
       case RpcRequestStatus.NoContent: return 204;
+      case RpcRequestStatus.BadGateway: return 502;
+      case RpcRequestStatus.ServiceUnavailable: return 503;
+      case RpcRequestStatus.GatewayTimeout: return 504;
       default: return 501;
     }
   }
+
+  public override supportsStatusCategory = true;
 
   /** Whether an HTTP status code indicates a request timeout. */
   public isTimeout(code: number): boolean {

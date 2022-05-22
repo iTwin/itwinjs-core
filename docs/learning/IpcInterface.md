@@ -10,7 +10,7 @@ This article discusses IPC communication in iTwin.js. See also [RPC vs IPC](./Rp
 
 The basis for communication between the frontend/backend pair is a platform-specific implementation of the [IpcSocket]($common) interface. There are two specializations of IpcSocket, [IpcSocketFrontend]($common) and [IpcSocketBackend]($common) for the frontend and backend respectively. They both allow sending and receiving messages, but frontend has a method to invoke _functions_ on the backend, and the backend interface has a method to handle those invocations.
 
-For desktops, those interfaces are implemented by Electron's ipc layers, exposed through the `@bentley/electron-manager` package.
+For desktops, those interfaces are implemented by Electron's ipc layers, exposed through the `@itwin/core-electron` package.
 
 To use Ipc under Electron, you must call `ElectronApp.startup` on the frontend and `ElectronHost.startup` on the backend:
 
@@ -70,7 +70,7 @@ class MyClassHandler extends IpcHandler implements MyInterface
 3. In your frontend code, implement a function like:
 
 ```ts
-  import { AsyncMethodsOf, PromiseReturnType } from "@bentley/imodeljs-frontend";
+  import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-frontend";
 
   const callMyBackend = async <T extends AsyncMethodsOf<MyInterface>>(methodName: T,...args: Parameters<MyInterface[T]>) => {
     return IpcApp.callIpcChannel(myChannel, methodName, ...args) as PromiseReturnType<MyInterface[T]>;

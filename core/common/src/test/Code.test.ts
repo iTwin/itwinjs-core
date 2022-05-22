@@ -35,7 +35,6 @@ describe("Code", () => {
     assert.isTrue(Code.isValid(undefinedValue));
     assert.isTrue(Code.isEmpty(undefinedValue));
     assert.equal(new Code(undefinedValue).value, "");
-    assert.equal(new Code(undefinedValue).getValue(), ""); // eslint-disable-line deprecation/deprecation
     assert.isTrue(Code.equalCodes(new Code(undefinedValue), emptyCode));
 
     const fromUndefined = Code.fromJSON();
@@ -48,11 +47,10 @@ describe("Code", () => {
     assert.isTrue(Code.isEmpty(fromEmpty));
     assert.isTrue(Code.equalCodes(fromEmpty, emptyCode));
 
-    const fromWhitespace = new Code({ spec, scope, value: "  \t\n  "});
+    const fromWhitespace = new Code({ spec, scope, value: "  \t\n  " });
     assert.isTrue(Code.isValid(fromWhitespace));
     assert.isTrue(Code.isEmpty(fromWhitespace));
     assert.equal(fromWhitespace.value, "");
-    assert.equal(fromWhitespace.getValue(), ""); // eslint-disable-line deprecation/deprecation
     assert.isTrue(Code.equalCodes(fromWhitespace, emptyCode));
   });
 
@@ -61,18 +59,15 @@ describe("Code", () => {
     const code = new Code({ spec, scope, value });
     assert.isTrue(Code.isValid(code));
     assert.equal(value, code.value);
-    assert.equal(value, code.getValue()); // eslint-disable-line deprecation/deprecation
 
     const newValue = "NewValue";
     code.value = newValue;
     assert.isTrue(Code.isValid(code));
     assert.equal(newValue, code.value);
-    assert.equal(newValue, code.getValue()); // eslint-disable-line deprecation/deprecation
 
     code.value = "  \t\n  Value  \t\n  ";
     assert.isTrue(Code.isValid(code));
     assert.equal(value, code.value);
-    assert.equal(value, code.getValue()); // eslint-disable-line deprecation/deprecation
 
     code.value = "";
     assert.isTrue(Code.isValid(code));
@@ -82,7 +77,6 @@ describe("Code", () => {
     assert.isTrue(Code.isValid(code));
     assert.isTrue(Code.isEmpty(code));
     assert.equal(code.value, "");
-    assert.equal(code.getValue(), ""); // eslint-disable-line deprecation/deprecation
   });
 
   it("should roundtrip through JSON", () => {

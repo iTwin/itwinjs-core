@@ -37,12 +37,12 @@ class BanImportsPlugin {
 
 export class BanFrontendImportsPlugin extends BanImportsPlugin {
   constructor(localFrontendSrcDir: string) {
-    super("BACKEND", "FRONTEND", localFrontendSrcDir, /imodeljs-frontend/);
+    super("BACKEND", "FRONTEND", localFrontendSrcDir, /core-frontend/);
   }
 }
 
 export class BanBackendImportsPlugin extends BanImportsPlugin {
   constructor(localBackendSrcDir: string) {
-    super("FRONTEND", "BACKEND", localBackendSrcDir, /imodeljs-backend/);
+    super("FRONTEND", "BACKEND", localBackendSrcDir, /core-backend/);
   }
 }

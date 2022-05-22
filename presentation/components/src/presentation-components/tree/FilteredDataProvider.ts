@@ -7,11 +7,11 @@
  */
 
 import memoize from "micro-memoize";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodeKey, NodePathElement } from "@itwin/presentation-common";
 import {
   ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "./Utils";
 
@@ -149,11 +149,4 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
   public nodeMatchesFilter(node: TreeNodeItem): boolean {
     return this._filteredResultMatches.some((result) => result.id === node.id);
   }
-
-  /** @alpha Hierarchy loading performance needs to be improved before this becomes publicly available. */
-  // istanbul ignore next
-  public async loadHierarchy() {
-    // the hierarchy is already loaded when this provider is created
-  }
-
 }

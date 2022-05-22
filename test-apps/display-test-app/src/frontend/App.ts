@@ -3,47 +3,59 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
+import { FrontendDevTools } from "@itwin/frontend-devtools";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
+import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
-} from "@bentley/imodeljs-frontend";
-import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
+  ToolAdmin,
+} from "@itwin/core-frontend";
+import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
+import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingSessionTool, PlaceLineStringTool } from "./EditingTools";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { FrameStatsTool } from "./FrameStatsTool";
+import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { GltfDecorationTool } from "./GltfDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
-import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MacroTool } from "./MacroTools";
+import { TerrainDrapeTool } from "./TerrainDrapeTool";
+import { SaveImageTool } from "./SaveImageTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
-  public get keypointDivisor() { return 2; }
-  public getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public override get keypointDivisor() { return 2; }
+  public override getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
   public setActiveSnapModes(snaps: SnapMode[]): void {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
@@ -53,16 +65,16 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
-  public processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
-    if (wentDown && IModelApp.accuDraw.isEnabled)
+  public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
+    if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
   }
 }
 
 class SVTSelectionTool extends SelectionTool {
-  public static toolId = "SVTSelect";
-  protected initSelectTool() {
+  public static override toolId = "SVTSelect";
+  protected override initSelectTool() {
     super.initSelectTool();
 
     // ###TODO Want to do this only if version comparison enabled, but meh.
@@ -70,17 +82,68 @@ class SVTSelectionTool extends SelectionTool {
   }
 }
 
+class SignInTool extends Tool {
+  public static override toolId = "SignIn";
+  public override async run(): Promise<boolean> {
+    await signIn();
+    return true;
+  }
+}
+
+class SignOutTool extends Tool {
+  public static override toolId = "SignOut";
+  public override async run(): Promise<boolean> {
+    await signOut();
+    return true;
+  }
+}
+
+class PushChangesTool extends Tool {
+  public static override toolId = "PushChanges";
+  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+
+  public override async run(description?: string): Promise<boolean> {
+    if (!description || "string" !== typeof description)
+      return false;
+
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    await imodel.pushChanges(description);
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(args[0]);
+  }
+}
+
+class PullChangesTool extends Tool {
+  public static override toolId = "PullChanges";
+
+  public override async run(): Promise<boolean> {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    await imodel.pullChanges();
+    return true;
+  }
+}
+
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
+    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
   }
 }
 
 class RefreshTilesTool extends Tool {
-  public static toolId = "RefreshTiles";
-  public static get maxArgs() { return undefined; }
+  public static override toolId = "RefreshTiles";
+  public static override get maxArgs() { return undefined; }
 
-  public run(changedModelIds?: string[]): boolean {
+  public override async run(changedModelIds?: string[]): Promise<boolean> {
     if (undefined !== changedModelIds && 0 === changedModelIds.length)
       changedModelIds = undefined;
 
@@ -88,17 +151,17 @@ class RefreshTilesTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
 
 class PurgeTileTreesTool extends Tool {
-  public static toolId = "PurgeTileTrees";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return undefined; }
+  public static override toolId = "PurgeTileTrees";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return undefined; }
 
-  public run(modelIds?: string[]): boolean {
+  public override async run(modelIds?: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -106,101 +169,130 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.viewManager.refreshForModifiedModels(modelIds);
-    });
+    await vp.iModel.tiles.purgeTileTrees(modelIds);
+    IModelApp.viewManager.refreshForModifiedModels(modelIds);
 
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
 
 class ShutDownTool extends Tool {
-  public static toolId = "ShutDown";
+  public static override toolId = "ShutDown";
 
-  public run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    if (ProcessDetector.isElectronAppFrontend)
-      ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
+    await app.shutdown();
+
     debugger; // eslint-disable-line no-debugger
     return true;
   }
 }
 
-export class DisplayTestApp {
-  public static tileAdminProps: TileAdmin.Props = {
-    retryInterval: 50,
-    enableInstancing: true,
-  };
+class ExitTool extends Tool {
+  public static override toolId = "Exit";
 
+  public override async run(_args: any[]): Promise<boolean> {
+    DisplayTestApp.surface.closeAllViewers();
+    await DtaRpcInterface.getClient().terminate();
+    return true;
+  }
+}
+
+export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  private static _iTwinId?: GuidString;
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
-    const opts = {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
+    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
-        tileAdmin: DisplayTestApp.tileAdminProps,
+        tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
-          Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          IModelWriteRpcInterface,
           SnapshotIModelRpcInterface,
         ],
-      },
-      webViewerApp: {
-        rpcParams: {
-          uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
-          info: { title: "DisplayTestApp", version: "v1.0" },
+        /* eslint-disable @typescript-eslint/naming-convention */
+        mapLayerOptions: {
+          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
         },
+        /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPort: 3002,
+        socketUrl,
       },
     };
+
+    this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts);
+      await IOSApp.startup(opts as IOSAppOpts);
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const urlObj = new URL(redirectUri);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+      }
+
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
+      if (opts.iModelApp?.rpcInterfaces)
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
       await LocalhostIpcApp.startup(opts);
     }
-
-    // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
-    const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
+    const svtToolNamespace = "SVTTools";
+    await IModelApp.localization.registerNamespace(svtToolNamespace);
     [
+      ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
       DockWindowTool,
       DrawingAidTestTool,
-      EditingSessionTool,
+      EditingScopeTool,
+      ExitTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
+      FrameStatsTool,
+      GenerateElementGraphicsTool,
+      GenerateTileContentTool,
+      GltfDecorationTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
@@ -208,6 +300,8 @@ export class DisplayTestApp {
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
+      PullChangesTool,
+      PushChangesTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -216,7 +310,12 @@ export class DisplayTestApp {
       RestoreWindowTool,
       SaveImageTool,
       ShutDownTool,
+      SignInTool,
+      SignOutTool,
       SVTSelectionTool,
+      SyncViewportFrustaTool,
+      SyncViewportsTool,
+      TerrainDrapeTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
@@ -226,7 +325,7 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true });
+    await EditTools.initialize({ registerAllTools: true });
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

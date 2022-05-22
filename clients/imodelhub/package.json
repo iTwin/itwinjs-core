@@ -1,23 +1,26 @@
 {
-  "name": "@bentley/imodelhub-client",
-  "version": "2.14.0-dev.9",
+  "name": "@bentley/imodelbank-client",
+  "private": true,
+  "version": "3.3.0-dev.9",
   "description": "iModel.js iModelHub Client",
-  "main": "lib/imodelhub-client.js",
-  "typings": "lib/imodelhub-client",
-  "imodeljsSharedLibrary": true,
+  "main": "lib/cjs/imodelhub-client.js",
+  "modules": "lib/esm/imodelhub-client.js",
+  "typings": "lib/cjs/imodelhub-client",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/imodelhub"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/clients/imodelhub"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "extract-api": "betools extract-api --entry=imodelhub-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
+    "extract-api": "",
+    "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "",
+    "test": "mocha",
     "cover": ""
   },
   "keywords": [
@@ -33,34 +36,54 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/context-registry-client": "2.14.0-dev.9",
+    "agentkeepalive": "^4.1.4",
     "deep-assign": "^2.0.0",
-    "js-base64": "^2.4.5"
+    "fs-write-stream-atomic": "^1.0.10",
+    "got": "~11.8.2",
+    "js-base64": "^3.6.1",
+    "lodash": "^4.17.10",
+    "qs": "^6.5.1",
+    "proper-lockfile": "^4.1.2",
+    "semver": "^5.5.0",
+    "superagent": "^7.0.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.14.0-dev.9",
-    "@bentley/frontend-authorization-client": "^2.14.0-dev.9",
-    "@bentley/itwin-client": "^2.14.0-dev.9",
-    "@bentley/rbac-client": "^2.14.0-dev.9"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.9"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.14.0-dev.9",
-    "@bentley/build-tools": "2.14.0-dev.9",
-    "@bentley/eslint-plugin": "2.14.0-dev.9",
-    "@bentley/frontend-authorization-client": "2.14.0-dev.9",
-    "@bentley/itwin-client": "2.14.0-dev.9",
-    "@bentley/rbac-client": "2.14.0-dev.9",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/projects-client": "^0.6.0",
+    "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
-    "@types/js-base64": "^2.3.1",
-    "@types/node": "10.14.1",
-    "eslint": "^6.8.0",
+    "@types/fs-extra": "^4.0.7",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/qs": "^6.5.0",
+    "@types/semver": "^5.5.0",
+    "@types/sinon": "^9.0.0",
+    "@types/stream-buffers": "~3.0.2",
+    "@types/proper-lockfile": "^4.1.1",
+    "@types/superagent": "^4.1.14",
+    "@types/lodash": "^4.14.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
+    "chai": "^4.1.2",
+    "eslint": "^7.11.0",
+    "fs-extra": "^8.1.0",
+    "mocha": "^8.3.2",
+    "nock": "^12.0.3",
     "rimraf": "^3.0.2",
-    "typescript": "~4.1.0"
+    "sinon": "^9.0.2",
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

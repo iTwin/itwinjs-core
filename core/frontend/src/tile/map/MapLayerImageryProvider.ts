@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module MapLayers
  */
 
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@bentley/imodeljs-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { BeEvent } from "@itwin/core-bentley";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { ScreenViewport } from "../../Viewport";
-
-import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId } from "../internal";
+import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
+
+const doDebugToolTips = false;
 
 /** @internal */
 export enum MapLayerImageryProviderStatus {
@@ -30,41 +31,63 @@ export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
   public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+  private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
+  private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
-  public get minimumZoomLevel(): number { return 4; }
+  public get minimumZoomLevel(): number { return 0; }
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
+  public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
-  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
+  constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
+    this._mercatorTilingScheme = new WebMercatorTilingScheme();
+    this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
+  }
 
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
     });
   }
-  protected _requestContext = new ClientRequestContext("");
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-
-  public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
+  public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
-  protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void) { resolveChildren(); }
+  public getPotentialChildIds(tile: ImageryMapTile): QuadId[] {
+    const childLevel = tile.quadId.level + 1;
+    return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
 
-  public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+  }
+
+  protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    resolveChildren(this.getPotentialChildIds(tile));
+  }
+
+  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
       tile.setLeaf();
       return;
     }
-    this._testChildAvailability(tile, resolveChildren);
+    this._generateChildIds(tile, resolveChildren);
   }
 
-  public async getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    if (doDebugToolTips) {
+      const range = quadId.getLatLongRange(tree.tilingScheme);
+      strings.push(`QuadId: ${quadId.debugString}, Lat: ${range.low.x} - ${range.high.x} Long: ${range.low.y} - ${range.high.y}`);
+    }
+  }
+
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+    // default implementation; simply return an empty feature info
+    featureInfos.push({layerName: this._settings.name});
   }
 
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
@@ -102,7 +125,7 @@ export abstract class MapLayerImageryProvider {
   public async makeTileRequest(url: string) {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
-    return request(this._requestContext, url, tileRequestOptions);
+    return request(url, tileRequestOptions);
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -119,7 +142,7 @@ export abstract class MapLayerImageryProvider {
       }
 
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
@@ -127,7 +150,7 @@ export abstract class MapLayerImageryProvider {
         // and then encountered an error, otherwise I assume an error was already reported
         // through the source validation process.
         if (this._hasSuccessfullyFetchedTile) {
-          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
@@ -145,7 +168,7 @@ export abstract class MapLayerImageryProvider {
     }; // spell-checker: disable-line
 
     try {
-      const response: Response = await request(this._requestContext, url, requestOptions);
+      const response: Response = await request(url, requestOptions);
       if (undefined !== response.text) {
         strings.push(response.text);
       }
@@ -154,7 +177,7 @@ export abstract class MapLayerImageryProvider {
   }
   protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
     try {
-      const json = await getJson(this._requestContext, url);
+      const json = await getJson(url);
       if (undefined !== json) {
 
       }
@@ -186,7 +209,8 @@ export abstract class MapLayerImageryProvider {
 
   // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.
   // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
-  public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
+
+  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     const mapSize = 256 << zoomLevel;
     const leftGrid = 256 * column;
     const topGrid = 256 * row;
@@ -199,15 +223,33 @@ export abstract class MapLayerImageryProvider {
     const y1 = 0.5 - (topGrid / mapSize);
     const latitudeTop = 90.0 - 360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
 
-    const left = this.getEPSG3857X(longitudeLeft);
-    const right = this.getEPSG3857X(longitudeRight);
-    const bottom = this.getEPSG3857Y(latitudeBottom);
-    const top = this.getEPSG3857Y(latitudeTop);
+    return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
+  }
+
+  public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
+    const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);
+
+    const left = this.getEPSG3857X(epsg4326Extent.longitudeLeft);
+    const right = this.getEPSG3857X(epsg4326Extent.longitudeRight);
+    const bottom = this.getEPSG3857Y(epsg4326Extent.latitudeBottom);
+    const top = this.getEPSG3857Y(epsg4326Extent.latitudeTop);
 
     return { left, right, bottom, top };
   }
+
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
+  }
+
+  public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
+    const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
+    if (latLongAxisOrdering) {
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},
+              ${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
+    } else {
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},
+              ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
+    }
   }
 }

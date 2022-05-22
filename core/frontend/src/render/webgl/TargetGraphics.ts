@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { dispose, disposeArray } from "@itwin/core-bentley";
 import { GraphicList } from "../RenderGraphic";
 import { Decorations } from "../Decorations";
 import { CanvasDecorationList } from "../CanvasDecoration";

@@ -1,0 +1,28 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-toolSettings-overflow {
+  height: 100%;
+  width: 3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $buic-background-2;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &.nz-hidden {
+    visibility: hidden;
+  }
+}

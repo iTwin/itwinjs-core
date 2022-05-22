@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
@@ -24,4 +24,4 @@ export abstract class RenderPlanarClassifier implements IDisposable {
 }
 
 /** @internal */
-export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
+export type PlanarClassifierMap = Map<string, RenderPlanarClassifier>;

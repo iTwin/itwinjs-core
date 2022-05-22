@@ -18,6 +18,6 @@ export function copyStringToClipboard(str: string): void {
   el.style.left = "-9999px";
   document.body.appendChild(el);
   el.select();
-  document.execCommand("copy");
+  document.execCommand("copy"); // eslint-disable-line deprecation/deprecation
   document.body.removeChild(el);
 }

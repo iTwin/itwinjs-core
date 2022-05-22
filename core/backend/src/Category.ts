@@ -6,10 +6,10 @@
  * @module Categories
  */
 
-import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
@@ -19,7 +19,7 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
  */
 export class SubCategory extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "SubCategory"; }
+  public static override get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
@@ -33,7 +33,7 @@ export class SubCategory extends DefinitionElement {
   }
 
   /** @internal */
-  public toJSON(): SubCategoryProps {
+  public override toJSON(): SubCategoryProps {
     const val = super.toJSON() as SubCategoryProps;
     val.appearance = this.appearance.toJSON();
     if (this.description && this.description.length > 0)
@@ -93,16 +93,16 @@ export class SubCategory extends DefinitionElement {
    */
   public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
-    return iModelDb.elements.insertElement(subCategory);
+    return iModelDb.elements.insertElement(subCategory.toJSON());
   }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]].
  * @public
  */
-export class Category extends DefinitionElement implements CategoryProps {
+export class Category extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "Category"; }
+  public static override get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
   public description?: string;
 
@@ -114,7 +114,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   }
 
   /** @internal */
-  public toJSON(): CategoryProps {
+  public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
     if (this.description && this.description.length > 0)
@@ -132,7 +132,7 @@ export class Category extends DefinitionElement implements CategoryProps {
 
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
-    this.iModel.elements.updateElement(subCat);
+    this.iModel.elements.updateElement(subCat.toJSON());
   }
 }
 
@@ -141,7 +141,7 @@ export class Category extends DefinitionElement implements CategoryProps {
  */
 export class DrawingCategory extends Category {
   /** @internal */
-  public static get className(): string { return "DrawingCategory"; }
+  public static override get className(): string { return "DrawingCategory"; }
 
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory
@@ -149,14 +149,6 @@ export class DrawingCategory extends Category {
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
-
-  /** Tell monitors about the automatic insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
@@ -206,9 +198,9 @@ export class DrawingCategory extends Category {
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category);
+    category.id = elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }
 
@@ -217,21 +209,13 @@ export class DrawingCategory extends Category {
  */
 export class SpatialCategory extends Category {
   /** @internal */
-  public static get className(): string { return "SpatialCategory"; }
+  public static override get className(): string { return "SpatialCategory"; }
   /** Construct a SpatialCategory
    * @param opts  The properties of the new SpatialCategory
    * @param iModel The IModelDb where the SpatialCategory may be inserted.
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
-
-  /** Tell monitors about the sneaky insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
@@ -280,9 +264,8 @@ export class SpatialCategory extends Category {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
-    const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category);
+    category.id = iModelDb.elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }

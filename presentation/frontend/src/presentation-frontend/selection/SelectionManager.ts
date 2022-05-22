@@ -6,9 +6,9 @@
  * @module UnifiedSelection
  */
 
-import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@bentley/presentation-common";
+import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
+import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
+import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@itwin/presentation-common";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
@@ -19,7 +19,7 @@ import { getScopeId, SelectionScopesManager } from "./SelectionScopesManager";
  * @public
  */
 export interface SelectionManagerProps {
-  /** A manager for [selection scopes]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) */
+  /** A manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
   scopes: SelectionScopesManager;
 }
 
@@ -35,7 +35,7 @@ export class SelectionManager implements ISelectionProvider {
   /** An event which gets broadcasted on selection changes */
   public readonly selectionChange: SelectionChangeEvent;
 
-  /** Manager for [selection scopes]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) */
+  /** Manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
   public readonly scopes: SelectionScopesManager;
 
   /**
@@ -63,6 +63,10 @@ export class SelectionManager implements ISelectionProvider {
     }
     return selectionContainer;
   }
+
+  /** @internal */
+  // istanbul ignore next
+  public getToolSelectionSyncHandler(imodel: IModelConnection) { return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler; }
 
   /**
    * Request the manager to sync with imodel's tool selection (see `IModelConnection.selectionSet`).
@@ -147,7 +151,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to add
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public addToSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -168,7 +172,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to remove
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -189,7 +193,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to add
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -209,7 +213,7 @@ export class SelectionManager implements ISelectionProvider {
    * Clear current selection
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public clearSelection(source: string, imodel: IModelConnection, level: number = 0, rulesetId?: string): void {
@@ -226,12 +230,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Add keys to selection after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
+   * Add keys to selection after applying [selection scope]($docs/presentation/unified-selection/index#selection-scopes) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to add
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
@@ -240,12 +244,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Remove keys from current selection after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
+   * Remove keys from current selection after applying [selection scope]($docs/presentation/unified-selection/index#selection-scopes) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to remove
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
@@ -254,12 +258,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Replace current selection with keys after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
+   * Replace current selection with keys after applying [selection scope]($docs/presentation/unified-selection/index#selection-scopes) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to replace with
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Selection level (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
@@ -406,15 +410,15 @@ export class ToolSelectionSyncHandler implements IDisposable {
 const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
-  Id64.iterate(ids, (id) => {
+  for (const id of Id64.iterable(ids)) {
     if (Id64.isTransient(id))
       allPersistent = false;
     else
       allTransient = false;
+
     if (!allPersistent && !allTransient)
-      return false;
-    return true;
-  });
+      break;
+  }
 
   // avoid making a copy if ids are only persistent or only transient
   if (allPersistent) {
@@ -427,14 +431,20 @@ const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => 
   // a Set for performance
   const persistentElementIds: Id64Array = [];
   const transientElementIds: Id64Array = [];
-  Id64.forEach(ids, (id) => {
+  for (const id of Id64.iterable(ids)) {
     if (Id64.isTransient(id))
       transientElementIds.push(id);
     else
       persistentElementIds.push(id);
-  });
+  }
+
   return { persistent: persistentElementIds, transient: transientElementIds };
 };
+
+function addTransientKeys(transientIds: Id64Arg, keys: KeySet): void {
+  for (const id of Id64.iterable(transientIds))
+    keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id });
+}
 
 /** @internal */
 class ScopedSelectionChanger {
@@ -453,17 +463,17 @@ class ScopedSelectionChanger {
   }
   public async add(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
   public async remove(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
   public async replace(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
     const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    addTransientKeys(transientIds, keys);
     this.manager.replaceSelection(this.name, this.imodel, keys, level);
   }
 }

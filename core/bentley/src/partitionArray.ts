@@ -21,7 +21,7 @@
  * for (let i = 0; i < list.length; i++)
  *   assert(isEven(list[i]) === i < firstOddIndex);
  * ```
- * @beta
+ * @public
  */
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number {
   let index = 0;

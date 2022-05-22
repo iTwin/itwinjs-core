@@ -7,6 +7,3 @@
 // from the frontend.
 
 import "./frontend/index";
-// Imported here to make this package available for Extensions.
-// In order for a package to be available it needs to be imported at least once in the application.
-import "@bentley/projectshare-client";

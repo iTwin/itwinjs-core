@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { utf8ToString, utf8ToStringPolyfill } from "../bentleyjs-core";
+import { utf8ToString, utf8ToStringPolyfill } from "../core-bentley";
 
 function expectString(utf8: number[], expected: string) {
   const bytes = new Uint8Array(utf8);

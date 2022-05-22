@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { SpatialClassifier } from "@itwin/core-common";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
@@ -16,12 +16,14 @@ import { RenderTextureDrape } from "./RenderSystem";
  * @internal
  */
 export interface SceneVolumeClassifier {
-  classifier: SpatialClassificationProps.Classifier;
+  classifier: SpatialClassifier;
   modelId: Id64String;
 }
 
-/** Holds a collection of objects comprising a [[Viewport]]'s scene.
- * @beta
+/** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
+ * @see [[SceneContext]] for the context in which the scene is created.
+ * @public
+ * @extensions
  */
 export class Scene {
   /** Graphics to be drawn as a "normal" part of the scene - that is, with depth. */
@@ -31,7 +33,7 @@ export class Scene {
   /** Graphics to be overlaid atop all other graphics. */
   public readonly overlay: RenderGraphic[] = [];
   /** @internal */
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
+  public readonly planarClassifiers = new Map<string, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   /** @internal */
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   /** @internal */

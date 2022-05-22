@@ -2,21 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 
   // Start the backend
   await initializeBackend();
 
-  if (process.argv.length > 2 && process.argv[2].split(".").pop() === "json")
-    DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
+  let debug = true;
+  process.argv.forEach((arg) => {
+    if (arg.split(".").pop() === "json")
+      DisplayPerfRpcInterface.jsonFilePath = arg;
+    else if (arg === "no_debug")
+      debug = false;
+  });
 
-  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
-  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
+  const autoOpenDevTools = (undefined === process.env.IMJS_NO_DEV_TOOLS) && debug;
+  const maximizeWindow = (undefined === process.env.IMJS_NO_MAXIMIZE_WINDOW); // Make max window the default
 
   await ElectronHost.openMainWindow({ width: 1280, height: 800, show: !maximizeWindow });
   assert(ElectronHost.mainWindow !== undefined);

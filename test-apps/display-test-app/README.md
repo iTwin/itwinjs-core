@@ -2,7 +2,7 @@
 
 ## About this Application
 
-The application contained within this directory provides a test environment for developers working on the frontend functionality of iTwin.js. It is **not** intended to serve as an example or template for the design of "real" iTwin.js applications.
+The application contained within this directory provides a test environment for developers working on the frontend functionality of iTwin.js. It is `not` intended to serve as an example or template for the design of "real" iTwin.js applications.
 
 * package.json
   * Provides the npm start script for the application
@@ -13,7 +13,7 @@ The application contained within this directory provides a test environment for 
   * Assets (images, icons, fonts)
 * frontend/
   * The main application body of code that runs on initialization of the Electron app, as well setting up event handlers for parts of the UI
-  * Extended API functionality build on top of the imodeljs-core frontend dependency
+  * Extended API functionality build on top of the `@itwin/core-frontend` dependency
 * backend/
   * Specifications for initializing the Electron application, as well as event handlers for Electron events.
 
@@ -23,7 +23,7 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 
-* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see below.
+* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
 * To start the application in Electron, navigate to the root of display-test-app, and use the command:
 
@@ -39,9 +39,11 @@ npm run start:servers
 
 ## Using display-test-app
 
-Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
+display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
+The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
 
 display-test-app's UI consists of:
+
 * A toolbar containing tools for interacting with the currently-selected viewport.
 * A status bar at the top containing:
   * A key-in field into which key-in commands can be entered for execution.
@@ -54,6 +56,7 @@ display-test-app's UI consists of:
 Much of display-test-app's functionality can be efficiently accessed via the key-in field. Press the backtick key to focus the key-in field. As you type, available key-in commands matching the input will be displayed. Press `Enter` to execute the key-in. See the list of key-ins below.
 
 Viewports are displayed as floating windows. The currently-focused window is indicated by a bright title bar and border. Windows can be manipulated as follows:
+
 * Left-drag title bar: move the window.
 * Left-click cross in top-left corner: close the window.
 * Left-drag triangle in top-right corner: resize the window
@@ -73,18 +76,37 @@ The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n agai
 
 ## Debugging
 
-Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iTwin.js you would like to step through:
+Debugging display-test-app can be accomplished using the following procedures to easily debug both the backend and frontend of the app.
 
-* frontend
-  * The frontend and common iTwin.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
-* backend
-  * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'display-test-app Electron (backend)' or 'display-test-app Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
+In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
+
+1. Make sure the backend is built `npm run build:backend`
+1. Run `npm run start:webserver`
+    * Launches the react-scripts dev server, providing hot-module reloading of the frontend
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
+
+1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
+    * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
+    * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
+1. Run `npm run start:webserver` in a separate terminal
+    * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+### What if a change is made in a dependent package in the monorepo?
+
+The display-test-app is part of a monorepo which is setup to link all packages with symlinks so any time you make a change in a dependent package, and run that package's `npm run build` script, the output will automatically be picked up by the application. The steps to pick up that change is different depending on if it was a backend or frontend change.
+
+For the frontend, if the page doesn't automatically refresh just refresh the page and the updated source will be available.
+
+For the backend, restart the debugger config to pick up the changes.
 
 ## Dependencies
 
 * Installed dependencies for display-test-app may be found in the generated node_modules directory. Since display-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
-* Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in display-test-app. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
-* If dependencies have changed after pulling the most recent version of imodeljs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
+* Any changes made to itwinjs-core files outside of this directory will not immediately be reflected in display-test-app. The entire monorepo must be rebuilt in order for changes to take effect.
+* If dependencies have changed after pulling the most recent version of the repo, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
 
 ```cmd
 rush install -c
@@ -93,104 +115,125 @@ rush install -c
 ## Environment Variables
 
 You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
-* SVT_STANDALONE_FILENAME
+
+* IMJS_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
-* SVT_STANDALONE_FILEPATH (browser only)
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
-* SVT_STANDALONE_VIEWNAME
+* IMJS_STANDALONE_FILEPATH (browser only)
+  * Allows display-test-app running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
+* IMJS_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
-* SVT_STANDALONE_SIGNIN
-  * If defined (value does not matter), the user will be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
-* SVT_NO_MAXIMIZE_WINDOW
+* IMJS_STANDALONE_SIGNIN
+  * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+* IMJS_STARTUP_MACRO
+  * If defined, run macro from specified path. If the file path contains no periods, a .txt extension will be appended.
+* IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
-* SVT_NO_DEV_TOOLS
+* IMJS_NO_DEV_TOOLS
   * If defined, do not open the electron dev tools on startup
-* SVT_LOG_LEVEL
+* IMJS_LOG_LEVEL
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
-* SVT_DISABLE_DIAGNOSTICS
+* IMJS_DISABLE_DIAGNOSTICS
   * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.
-* SVT_DISABLED_EXTENSIONS
+* IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
-* SVT_DISABLE_INSTANCING
-  * If defined, instanced geometry will not be generated for tiles.
-* SVT_NO_IMPROVED_ELISION
+* IMJS_DISABLE_INSTANCING
+  * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_INDEXED_EDGES
+  * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
+* IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
-* SVT_IGNORE_AREA_PATTERNS
+* IMJS_IGNORE_AREA_PATTERNS
   * If defined, area pattern geometry will be omitted from tiles.
-* SVT_DISABLE_MAGNIFICATION
+* IMJS_DISABLE_MAGNIFICATION
   * If defined, tiles will always be subdivided (size multipliers will never be applied).
-* SVT_PRESERVE_SHADER_SOURCE_CODE
+* IMJS_PRESERVE_SHADER_SOURCE_CODE
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
-* SVT_TILETREE_EXPIRATION_SECONDS
+* IMJS_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
-* SVT_TILE_EXPIRATION_SECONDS
+* IMJS_TILE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
-* SVT_DISABLE_LOG_Z
+* IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* SVT_FAKE_CLOUD_STORAGE
+* IMJS_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/backend/tiles/. They will be removed by a `rush clean` or `npm run clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
-* SVT_ENABLE_MAP_TEXTURE_FILTER
+* IMJS_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
-* SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+* IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
-* SVT_DISABLE_DPI_AWARE_VIEWPORTS
+* IMJS_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
-* SVT_DEVICE_PIXEL_RATIO_OVERRIDE
+* IMJS_DEVICE_PIXEL_RATIO_OVERRIDE
   * If defined, the pixel ratio used instead of the system's actual device pixel ratio.
-* SVT_DPI_LOD
+* IMJS_DPI_LOD
   * If defined, account for the device DPI when computing level of detail for tiles and decoration graphics.
-* SVT_DISABLE_EDGE_DISPLAY
+* IMJS_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
-* SVT_USE_WEBGL2
+* IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
-* SVT_MAX_TILES_TO_SKIP
+* IMJS_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
-* SVT_DISABLE_IDLE_WORK
-  * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
-* SVT_DEBUG_SHADERS
+* IMJS_DEBUG_SHADERS
   * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
-* SVT_WINDOW_SIZE
+* IMJS_WINDOW_SIZE
   * If defined, a comma-separated startup size for the electron application window as `width,height`.
-* SVT_ALWAYS_LOAD_EDGES
+* IMJS_ALWAYS_LOAD_EDGES
   * If defined, when requesting tile content, edges will always be requested regardless of view settings.
-* SVT_SUBDIVIDE_INCOMPLETE
+* IMJS_SUBDIVIDE_INCOMPLETE
   * If defined, TileAdmin.Props.alwaysSubdivideIncompleteTiles will be initialized to `true`.
-* SVT_MIN_SPATIAL_TOLERANCE
+* IMJS_MIN_SPATIAL_TOLERANCE
   * See TileAdmin.Props.minimumSpatialTolerance.
-* SVT_NO_EXTERNAL_TEXTURES
+* IMJS_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
+* IMJS_ITWIN_ID.
+  * GuidString of the Context Id (aka project id) to use to query Reality Data - use by Spatial Classification (e.g. "fb1696c8-c074-4c76-a539-a5546e048cc6").
+  For IMJS_ITWIN_ID to work you should be in signin mode (IMJS_STANDALONE_SIGNIN=true).
+* IMJS_MAPBOX_KEY
+  * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
+* IMJS_BING_MAPS_KEY
+  * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
+* IMJS_CESIUM_ION_KEY
+  * If defined, the API key supplying access to Cesium ION assets.
 
 ## Key-ins
 
-display-test-app has access to all key-ins defined in the imodeljs-frontend and frontend-devtools packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
+display-test-app has access to all key-ins defined in the `@itwin/core-frontend` and `@itwin/frontend-devtools` packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
 
-* **win resize** width height *windowId* - resize the content area of the specified of focused window to specified width and height.
-* **win focus** windowId - give focus to the specified window.
-* **win max** *windowId* - maximize the specified or focused window.
-* **win dock** dock *windowId* - dock the specified or focused window. `dock` is a 1- or 2-character combination of the characters `t`, `l`, `r`, and `b`. e.g., to dock the focused window into the bottom-left corner, execute `win dock bl`.
-* **win restore** *windowId* - restore (un-dock) the specified or focused window.
-* **win close** *windowId* - close the specified or focused window.
-* **vp clone** *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* **dta version compare** - emulate version comparison.
-* **dta save image** - open a new window containing a snapshot of the contents of the selected viewport.
-* **dta record fps** *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
-* **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
-* **dta incident markers** - toggle incident marker demo in the selected viewport.
-* **dta path decoration** - toggle drawing a small path decoration in the selected viewport for testing purposes.
-* **dta markup** - toggle markup on the selected viewport.
-* **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+* `win resize` width height *windowId* - resize the content area of the specified of focused window to specified width and height.
+* `win focus` windowId - give focus to the specified window.
+* `win max` *windowId* - maximize the specified or focused window.
+* `win dock` dock *windowId* - dock the specified or focused window. `dock` is a 1- or 2-character combination of the characters `t`, `l`, `r`, and `b`. e.g., to dock the focused window into the bottom-left corner, execute `win dock bl`.
+* `win restore` *windowId* - restore (un-dock) the specified or focused window.
+* `win close` *windowId* - close the specified or focused window.
+* `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
+* `dta version compare` - emulate version comparison.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
+* `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
+* `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
+* `dta incident markers` - toggle incident marker demo in the selected viewport.
+* `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
+* `dta markup` - toggle markup on the selected viewport.
+* `dta signin` - sign in to use Bentley services like iModelHub and reality data.
+* `dta macro` - runs the macro file specified in the argument.  If file extension not specified, .txt is assumed.  Each line in the file is executed as a keyin command and run sequentially.
+* `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `c`: compile all shaders – compiles all shaders before output, otherwise only shaders that have been compiled by the time it is run will output.
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
     * `f` or `v`: output only fragment or vertex shaders, respectively.
     * `g` or `h`: output only glsl or hlsl code, respectively.
     * `u` or `n`: output only used or not-used shaders, respectively.
-* **dta drawing aid points** - start tool for testing AccuSnap.
-* **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
-* **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
-* **dta shadow tiles** - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
-* **dta detach views** - If the selected viewport is displaying a sheet view, remove all view attachments from it.
-* **dta attach view** - If the selected viewport is displaying a sheet view, add the specified view as a view attachment. Arguments:
+* `dta drawing aid points` - start tool for testing AccuSnap.
+* `dta refresh tiles` *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* `dta exit` - Shuts down the backend server and exits the app.
+* `dta shutdown` - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
+* `dta shadow tiles` - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
+* `dta detach views` - If the selected viewport is displaying a sheet view, remove all view attachments from it.
+* `dta attach view` - If the selected viewport is displaying a sheet view, add the specified view as a view attachment. Arguments:
   * `view=` (required): The Id of the persistent view, in hexadecimal format (e.g. `0x1ac`).
   * `category=`: The Id of the category onto which to place the attachment. Defaults to the first category found in the view's category selector.
   * `x=`, `y=`: The origin of the attachment on the sheet. Default to zero.
@@ -199,27 +242,48 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
-* **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
-* **dta classifyclip selected** *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
-* **dta model transform** - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
+* `dta aspect skew decorator` *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
+* `dta drape terrain` - Start a tool that demonstrates draping a linestring to either a reality mesh model or background map with terrain applied. The model is first selected and subsequent points define the linestring.
+* `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
+* `dta grid settings` - Change the grid settings for the selected viewport.
+  * `spacing=number` Specify x and y grid reference line spacing in meters.
+  * `ratio=number` Specify y spacing as current x * ratio.
+  * `gridsPerRef=number` Specify number of grid lines to display per reference line.
+  * `orientation=0|1|2|3|4` Value for GridOrientationType.
+* `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
+* `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
+* `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
+* `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+* `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+  * `elementId=Id` The element for which to obtain graphics
+  * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 
 ## Editing
 
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
-* Set SVT_READ_WRITE=1 in the environment.
-* Open an editable standalone iModel.
-* Use the key-ins below to make changes; typically:
-  * `dta edit` to begin an interactive session;
-  * key-ins to delete/move/insert elements and undo/redo those changes;
-  * `dta edit` to end the interactive session.
 
-Using an editing session is optional, but outside of a session, the viewport's graphics will not remain in sync with your changes. In the context of a session, the graphics will update immediately to reflect your changes; when the session ends, new tiles will be produced reflecting the sum of those changes.
+* Set IMJS_READ_WRITE=1 in the environment.
+* Open a briefcase or an editable standalone iModel.
+* Use the key-ins below to make changes; typically:
+  * `dta edit` to begin an editing scope;
+  * key-ins to delete/move/insert elements and undo/redo those changes;
+  * `dta edit` to end the editing scope.
+
+Using an editing scope is optional, but outside of a scope, the viewport's graphics will not remain in sync with your changes. In the context of a scope, the graphics will update immediately to reflect your changes; when the scope ends, new tiles will be produced reflecting the sum of those changes.
 
 ### Editing key-ins
 
-* `dta edit` - begin a new editing session, or end the current editing session. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing session, or "[EDIT]" indicating an active editing session.
-* `dta delete elements` - delete all elements currently in the selection set.
-* `dta move elements` - start moving elements. If no elements are currently in the selection set, you will be prompted to select one. First data point defines the start point; second defines the end point and moves the element(s) by the delta between the two points.
+display-test-app has access to all key-ins defined in the `@itwin/editor-frontend` package. It also provides the following additional key-ins.
+
+* `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta undo` - undo the most recent change.
-* `dta redo` - redo the most recently-undone change.
+* `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
+* `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+
+## Running in iOS
+
+The steps to run the display test app in an iOS app:
+
+1. Run `npm run build:ios`
+2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
+3. Start the XCode Project to an iPad

@@ -9,21 +9,21 @@
  * @module RpcInterface
  */
 
-import { assert, BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
 
-/** @alpha */
+/** @internal */
 export type RpcPushMessageListener<T> = (message: T) => void;
 
 /** Defines a transport for push messages.
- *  @alpha
+ *  @internal
  */
 export abstract class RpcPushTransport {
   public onMessage?: (channelId: string, messageData: any) => void;
 }
 
 /** Defines a source of push messages.
- *  @alpha
+ *  @internal
  */
 export class RpcPushService {
   /** The push service for the dedicated backend (for example, an electron or mobile app). */
@@ -37,7 +37,7 @@ export class RpcPushService {
 }
 
 /** Defines a named stream of push messages.
- *  @alpha
+ *  @internal
  */
 export class RpcPushChannel<T> {
   /** @internal */
@@ -126,7 +126,7 @@ export class RpcPushChannel<T> {
 }
 
 /** Receives push messages from the backend.
- *  @alpha
+ *  @internal
  */
 export class RpcPushSubscription<T> {
   public readonly channel: RpcPushChannel<T>;
@@ -139,7 +139,7 @@ export class RpcPushSubscription<T> {
 }
 
 /** Sends push messages to the frontend.
- *  @alpha
+ *  @internal
  */
 export abstract class RpcPushConnection<T> {
   public static for<T>(_channel: RpcPushChannel<T>, _client: unknown = undefined): RpcPushConnection<T> {

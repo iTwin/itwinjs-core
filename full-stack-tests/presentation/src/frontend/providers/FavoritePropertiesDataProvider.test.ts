@@ -3,21 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { DEFAULT_PROPERTY_GRID_RULESET, FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
-
-/* eslint-disable deprecation/deprecation */
 
 describe("FavoritePropertiesDataProvider", async () => {
 
   let imodel: IModelConnection;
   let provider: FavoritePropertiesDataProvider;
+  const scope = FavoritePropertiesScope.IModel;
 
   before(async () => {
     await initialize();
@@ -35,7 +33,7 @@ describe("FavoritePropertiesDataProvider", async () => {
   });
 
   afterEach(async () => {
-    await Presentation.favoriteProperties.clear();
+    await Presentation.favoriteProperties.clear(imodel, scope);
   });
 
   describe("getData", () => {
@@ -43,15 +41,16 @@ describe("FavoritePropertiesDataProvider", async () => {
     it("returns favorite properties", async () => {
       // make a couple of properties favorited
       const propertyProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertyProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertyProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
       const propertyData = await propertyProvider.getData();
 
       let record = getPropertyRecordByLabel(propertyData, "Country")!;
       let field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!);
+      await Presentation.favoriteProperties.add(field!, imodel, scope);
       record = getPropertyRecordByLabel(propertyData, "Model")!;
       field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!);
+      await Presentation.favoriteProperties.add(field!, imodel, scope);
 
       Presentation.selection.scopes.activeScope = "element";
       const tooltipData = await provider.getData(imodel, "0x38");

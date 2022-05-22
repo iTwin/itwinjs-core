@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
 import { OrbitGtContextIModelCreator } from "./OrbitGtContextModelCreator";
 
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */
 const argv: yargs.Arguments<{}> = yargs
   .usage("Usage: $0 --input [RealityModelURL] --output [iModelFileName]")
+  .describe("rdsUrl", "RDS URL")
+  .string("rdsUrl")
   .describe("accountName", "Account Name")
   .string("accountName")
   .describe("sasToken", "SAS Token")
@@ -32,6 +34,7 @@ const argv: yargs.Arguments<{}> = yargs
   Logger.initializeToConsole();
 
   const pcProps = {
+    rdsUrl: argv.rdsUrl as string,
     accountName: argv.accountName as string,
     sasToken: argv.sasToken as string,
     containerName: argv.containerName as string,

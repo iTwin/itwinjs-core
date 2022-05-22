@@ -23,7 +23,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   //  (This is pretty strange)
   // The sort vector is (1,c, c*c, ...)
   // Setting c = 1 makes it 1,1,1 which may be useful for visual scans during debug.
-  // c with some inobvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
+  // c with some non-obvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.
   /** Return a component of the sort vector. */
   public static sortVectorComponent(index: number): number {
@@ -46,19 +46,19 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** load a block, placing data[i] at block[i+1] to allow sort coordinate first.
    * @param data array of numDataPerBlock values.
    */
-  public addBlock(data: number[]) {
+  public override addBlock(data: number[]) {
     const i0 = this.newBlockIndex() + 1;
     const n = Math.min(this.numPerBlock - 1, data.length);
     for (let i = 0; i < n; i++)
       this._data[i0 + i] = data[i];
   }
-  /** add a block with directly 2 to 5 listed content parameters.
+  /** add a block directly with 1 to 5 listed content parameters.
    * This assumes numDataPerPoint is sufficient for the parameters provided.
    */
-  public addDirect(x0: number, x1: number, x2?: number, x3?: number, x4?: number) {
+  public addDirect(x0: number, x1?: number, x2?: number, x3?: number, x4?: number) {
     const i0 = this.newBlockIndex();
     this._data[i0 + 1] = x0;
-    this._data[i0 + 2] = x1;
+    if (x1 !== undefined) this._data[i0 + 2] = x1;
     if (x2 !== undefined) this._data[i0 + 3] = x2;
     if (x3 !== undefined) this._data[i0 + 4] = x3;
     if (x4 !== undefined) this._data[i0 + 5] = x4;
@@ -121,7 +121,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     this._data[i0 + 1 + this._numCoordinatePerPoint + i] = value;
   }
 
-  /** this value is used as cluster terminator in the Uint232rray of indcies. */
+  /** this value is used as cluster terminator in the Uint232Array of indices. */
   public static readonly clusterTerminator = 0xFFffFFff;
   /** Test if `x` is the cluster terminator value. */
   public static isClusterTerminator(x: number): boolean { return x === ClusterableArray.clusterTerminator; }
@@ -317,7 +317,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param data points to cluster.
    */
   public static clusterPoint3dArray(data: Point3d[], tolerance: number = Geometry.smallMetricDistance):
-  PackedPointsWithIndex {
+    PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, data.length);
     data.forEach((p: Point3d) => {
       clusterArray.addDirect(p.x, p.y, p.z);
@@ -333,6 +333,31 @@ export class ClusterableArray extends GrowableBlockedArray {
       } else {
         if (numThisCluster === 0)
           result.packedPoints.push(data[k].clone());
+        result.oldToNew[k] = currentClusterIndex;
+        numThisCluster++;
+      }
+    });
+    return result;
+  }
+
+  /**
+   * Returns number array with indices mapping old to new.
+   * @param data numbers to cluster.
+   */
+  public static clusterNumberArray(data: number[], tolerance: number = Geometry.smallMetricDistance): PackedNumbersWithIndex {
+    const clusterArray = new ClusterableArray(1, 0, data.length);
+    data.forEach((x: number) => {clusterArray.addDirect(x);});
+    const order = clusterArray.clusterIndicesLexical(tolerance);
+    const result = new PackedNumbersWithIndex(data.length);
+    let currentClusterIndex = 0;
+    let numThisCluster = 0;
+    order.forEach((k: number) => {
+      if (ClusterableArray.isClusterTerminator(k)) {
+        currentClusterIndex++;
+        numThisCluster = 0;
+      } else {
+        if (numThisCluster === 0)
+          result.packedNumbers.push(data[k]);
         result.oldToNew[k] = currentClusterIndex;
         numThisCluster++;
       }
@@ -376,7 +401,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * @param data points to cluster.
    */
   public static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance):
-  PackedPointsWithIndex {
+    PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, source.length);
     const p = Point3d.create();
     const numSourcePoint = source.length;
@@ -475,6 +500,38 @@ class PackedPoint2dsWithIndex {
     this.oldToNew = new Uint32Array(numOldIndexEntry);
     for (let i = 0; i < numOldIndexEntry; i++) {
       this.oldToNew[i] = PackedPoint2dsWithIndex.invalidIndex;
+    }
+  }
+  /**
+   * Use the oldToNew array to update an array of "old" indices.
+   * @param indices array of indices into prepacked array.
+   * @returns true if all input indices were valid for the oldToNew array.
+   */
+  public updateIndices(indices: number[]): boolean {
+    return updateIndices(indices, this.oldToNew);
+  }
+}
+
+/**
+ * @internal
+ */
+ class PackedNumbersWithIndex {
+  /** Array of numbers */
+  public packedNumbers: number[];
+  /** mapping from old point index to new point index. */
+  public oldToNew: Uint32Array;
+  /** integer value for unknown index. */
+  public static readonly invalidIndex = 0xFFFFffff;
+
+  /** construct a PackedNumbers object with
+   * * empty packedNumbers array
+   * * oldToNew indices all initialized to PackedNumbers.invalidIndex
+   */
+  constructor(numOldIndexEntry: number) {
+    this.packedNumbers = [];
+    this.oldToNew = new Uint32Array(numOldIndexEntry);
+    for (let i = 0; i < numOldIndexEntry; i++) {
+      this.oldToNew[i] = PackedPointsWithIndex.invalidIndex;
     }
   }
   /**

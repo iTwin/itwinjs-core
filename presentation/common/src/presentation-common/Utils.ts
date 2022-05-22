@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import * as path from "path";
 import { NodeKey } from "./hierarchy/Key";
 import { KeySet } from "./KeySet";
 
@@ -29,6 +28,12 @@ export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export type Subtract<T, K> = Omit<T, keyof K>;
 
 /**
+ * Create a type from given type `T` and make specified properties optional.
+ * @public
+ */
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
  * A dictionary data structure.
  * @public
  */
@@ -38,7 +43,7 @@ export interface ValuesDictionary<T> {
 
 /**
  * A structure for paged responses
- * @beta
+ * @public
  */
 export interface PagedResponse<T> {
   /** Total number of items */
@@ -81,7 +86,3 @@ export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 /** @internal */
 export const PRESENTATION_COMMON_ROOT = __dirname;
-
-/** @internal */
-// istanbul ignore next
-export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");

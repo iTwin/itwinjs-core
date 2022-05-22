@@ -6,14 +6,15 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { assert } from "@itwin/core-bentley";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
+import { PositionType } from "./TechniqueFlags";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -358,16 +359,16 @@ export class ShaderVariables {
     }
   }
 
-  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
-  public exceedsMaxVaryingVectors(fragSource: string): boolean {
-    // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
-    // The packing rules are defined by the standard. Specifically each row can contain one of:
-    //  vec4
-    //  vec3 (+ float)
-    //  vec2 (+ vec2)
-    //  vec2 (+ float (+ float))
-    //  float (+ float (+ float (+ float)))
-    // Varyings are packed in order of size from largest to smallest
+  // Return the number of varying vectors used by the shader.
+  // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
+  // The packing rules are defined by the standard. Specifically each row can contain one of:
+  //  vec4
+  //  vec3 (+ float)
+  //  vec2 (+ vec2)
+  //  vec2 (+ float (+ float))
+  //  float (+ float (+ float (+ float)))
+  // Varyings are packed in order of size from largest to smallest
+  public computeNumVaryingVectors(fragSource: string): number {
     const loopSize = 64;
     const registers = Array(loopSize + 1).fill(0);
 
@@ -414,7 +415,7 @@ export class ShaderVariables {
     }
 
     const slotsUsed = registers.indexOf(0);
-    return slotsUsed > 8;
+    return slotsUsed;
   }
 }
 
@@ -461,17 +462,14 @@ export class SourceBuilder {
 }
 
 /** @internal */
-export const enum ShaderBuilderFlags {
-  // No special flags. Vertex data comes from attributes, geometry is not instanced.
-  None = 0,
-  // Vertex data comes from a texture.
-  VertexTable = 1 << 0,
-  // Geometry is instanced.
-  Instanced = 1 << 1,
-  InstancedVertexTable = VertexTable | Instanced,
+export interface ShaderBuilderFlags {
+  /** If defined and true, the geometry is instanced. */
+  readonly instanced?: boolean;
+  /** If defined, indicates the vertex data comes from a texture and specifies whether the positions are quantized 16-bit integers or unquantized 32-bit floats. */
+  readonly positionType?: PositionType;
 }
 
-/*
+/**
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
  * @internal
@@ -487,8 +485,9 @@ export class ShaderBuilder extends ShaderVariables {
   protected readonly _flags: ShaderBuilderFlags;
   protected _initializers: string[] = new Array<string>();
 
-  public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
-  public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
+  public get usesInstancedGeometry(): boolean {
+    return !!this._flags.instanced;
+  }
 
   public addInitializer(initializer: string): void {
     if (-1 === this._initializers.indexOf(initializer))
@@ -657,7 +656,11 @@ export class ShaderBuilder extends ShaderVariables {
  * @internal
  */
 export const enum VertexShaderComponent {
-  // (Optional) Adjust the result of unquantizeVertexPosition().
+  // (Optional) Compute the quantized position. By default this simply returns the `a_pos` attribute.
+  // This runs before any initializers.
+  // vec3 computeQuantizedPosition()
+  ComputeQuantizedPosition,
+  // (Optional) Adjust the result of computeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
   // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
@@ -678,6 +681,9 @@ export const enum VertexShaderComponent {
   // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
   // vec4 applyFeatureColor(vec4 baseColor)
   ApplyFeatureColor,
+  // (Optional) Adjust base color for contrast
+  // vec4 adjustContrast(vec4 baseColor)
+  AdjustContrast,
   // (Optional) Return true if this vertex should be "discarded" (is not visible)
   // bool checkForDiscard()
   // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
@@ -704,7 +710,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(VertexShaderComponent.COUNT, flags);
 
     this.addDefine("MAT_NORM", "g_nmx");
@@ -718,6 +724,15 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     addPosition(this, this.usesVertexTable);
+  }
+
+  public get usesVertexTable(): boolean {
+    return undefined !== this._flags.positionType;
+  }
+
+  public get positionType(): PositionType {
+    assert(undefined !== this._flags.positionType);
+    return this._flags.positionType;
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -740,6 +755,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
       prelude.addFunction("vec4 computePosition(vec4 rawPos)", computePosition);
     }
 
+    const computeQPos = this.get(VertexShaderComponent.ComputeQuantizedPosition) ?? "return a_pos;";
+    prelude.addFunction("vec3 computeQuantizedPosition()", computeQPos);
+    main.addline("  vec3 qpos = computeQuantizedPosition();");
+
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
@@ -749,7 +768,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = computeVertexPosition(qpos);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
@@ -790,6 +809,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       if (undefined !== applyFeatureColor) {
         prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
         main.addline("  baseColor = applyFeatureColor(baseColor);");
+      }
+
+      const adjustContrast = this.get(VertexShaderComponent.AdjustContrast);
+      if (adjustContrast) {
+        prelude.addFunction("vec4 adjustContrast(vec4 baseColor)", adjustContrast);
+        main.addline("  baseColor = adjustContrast(baseColor);");
       }
 
       main.addline("  v_color = baseColor;");
@@ -875,6 +900,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply solar shadow map.
   // vec4 applySolarShadowMap(vec4)
   ApplySolarShadowMap,
+  // (Optional) Apply wiremesh to edges of triangles
+  // vec4 applyWiremesh(vec4 baseColor)
+  ApplyWiremesh,
   // (Optional) Apply a debug color
   // vec4 applyDebugColor(vec4 baseColor)
   ApplyDebugColor,
@@ -890,6 +918,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
   // vec4 overrideColor(vec4 currentColor)
   OverrideColor,
+  // (Optional) Override render order to be output to pick buffers.
+  // float overrideRenderOrder(float renderOrder)
+  OverrideRenderOrder,
   COUNT,
 }
 
@@ -899,7 +930,7 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public requiresEarlyZWorkaround = false;
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(FragmentShaderComponent.COUNT, flags);
 
     if (System.instance.capabilities.isWebGL2)
@@ -1050,6 +1081,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  baseColor = applyFlash(baseColor);");
     }
 
+    const applyWiremesh = this.get(FragmentShaderComponent.ApplyWiremesh);
+    if (applyWiremesh) {
+      prelude.addFunction("vec4 applyWiremesh(vec4 baseColor)", applyWiremesh);
+      main.addline("  baseColor = applyWiremesh(baseColor);");
+    }
+
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);
     if (undefined !== applyDebug) {
       prelude.addFunction("vec4 applyDebugColor(vec4 baseColor)", applyDebug);
@@ -1100,7 +1137,7 @@ export class ProgramBuilder {
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(attrMap?: Map<string, AttributeDetails>, flags = ShaderBuilderFlags.None) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = { }) {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);
@@ -1151,9 +1188,6 @@ export class ProgramBuilder {
   public buildProgram(gl: WebGLContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
-    const checkMaxVarying = true;
-    if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource))
-      assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
     // Debug output
     const debugVaryings = false;

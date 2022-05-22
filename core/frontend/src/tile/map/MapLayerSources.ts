@@ -2,20 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
-import { compareStrings } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
-import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../FrontendRequestContext";
+import { compareStrings } from "@itwin/core-bentley";
+import {
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+} from "@itwin/core-common";
+import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
-import { MapLayerSettingsService } from "./MapLayerSettingsService";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 
-/** @internal */
+/** @beta */
 export enum MapLayerSourceStatus {
   Valid,
   InvalidCredentials,
@@ -25,40 +26,84 @@ export enum MapLayerSourceStatus {
   RequireAuth,
 }
 
+/** JSON representation of a map layer source.
+ * @internal
+ */
+interface MapLayerSourceProps {
+  /** Identifies the map layers source. Defaults to 'WMS'. */
+  formatId?: string;
+  /** Name */
+  name: string;
+  /** URL */
+  url: string;
+  /** True to indicate background is transparent.  Defaults to 'true'. */
+  transparentBackground?: boolean;
+  /** Is a base layer.  Defaults to 'false'. */
+  isBase?: boolean;
+  /** Indicate if this source definition should be used as a base map. Defaults to false. */
+  baseMap?: boolean;
+  /** UserName */
+  userName?: string;
+  /** Password */
+  password?: string;
+}
+
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
  * @internal
  */
-export class MapLayerSource implements MapLayerProps {
-  public subLayers?: MapSubLayerProps[];
+export class MapLayerSource {
+  public formatId: string;
+  public name: string;
+  public url: string;
+  public baseMap = false;
+  public transparentBackground?: boolean;
+  public userName?: string;
+  public password?: string;
 
-  private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
-  public static fromJSON(json: any): MapLayerSource | undefined {
-    const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);
-    return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, userName?: string, password?: string) {
+    this.formatId = formatId;
+    this.name = name;
+    this.url = url;
+    this.baseMap = baseMap;
+    this.transparentBackground = transparentBackground;
+    this.userName = userName;
+    this.password = password;
+  }
+
+  public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
+    if (json === undefined)
+      return undefined;
+
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.userName, json.password);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  public static fromBackgroundMapProps(props: BackgroundMapProps) {
-    const settings = BackgroundMapSettings.fromJSON(props);
-    if (undefined !== settings) {
-      const layerSettings = MapLayerSettings.fromMapSettings(settings);
-      if (undefined !== layerSettings) {
-        const source = MapLayerSource.fromJSON(layerSettings);
-        source!.baseMap = true;
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps) {
+    const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
+    const layerSettings = BaseMapLayerSettings.fromProvider(provider);
+    if (undefined !== layerSettings) {
+      const source = MapLayerSource.fromJSON(layerSettings);
+      if (source) {
+        source.baseMap = true;
         return source;
       }
     }
+
     return undefined;
   }
   public toJSON() {
-    return { url: this.url, name: this.name, formatId: this.formatId, maxZoom: this.maxZoom, transparentBackground: this.transparentBackground };
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(): MapLayerSettings | undefined {
-    const layerSettings = MapLayerSettings.fromJSON(this);
-    layerSettings?.setCredentials(this.userName, this.password);
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
+    // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
+    const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
+    if (this.userName !== undefined || this.password !== undefined) {
+      layerSettings?.setCredentials(this.userName, this.password);
+    }
+
     return layerSettings;
   }
 
@@ -70,10 +115,11 @@ export class MapLayerSource implements MapLayerProps {
 /** A collection of [[MapLayerSource]] objects.
  * @internal
  */
-
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
+
+  public static getInstance() { return MapLayerSources._instance; }
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -95,20 +141,6 @@ export class MapLayerSources {
     return layers;
   }
 
-  /**
-   *  This function fetch the USG map layer sources. Those are free and publicly available but not worldwide.
-   *  Needs to validate the location of the user before fetching it.
-   */
-  private static async getUSGSSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://index.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://hydro.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://carto.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    return mapLayerSources;
-  }
-
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
@@ -122,16 +154,6 @@ export class MapLayerSources {
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    return mapLayerSources;
-  }
-
-  /**
- *  This function fetch the Disco map layer sources. Those sources are for Europe but not very reliable.
- *  Needs to validate the location of the user before fetching it.
- */
-  private static async getDiscoSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
     return mapLayerSources;
   }
 
@@ -171,8 +193,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const requestContext = new FrontendRequestContext();
-      const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
+      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
@@ -181,14 +202,6 @@ export class MapLayerSources {
       }
 
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
-    }
-
-    if (iModel && iModel.contextId && iModel.iModelId) {
-      try {
-        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
-      } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
-      }
     }
 
     sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
@@ -209,5 +222,18 @@ export class MapLayerSources {
     MapLayerSources._instance._sources.push(mapLayerSource);
     MapLayerSources._instance._sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));
     return MapLayerSources._instance;
+  }
+
+  public static removeLayerByName(name: string): boolean {
+    if (!MapLayerSources._instance) {
+      return false;
+    }
+
+    // For now we only rely on the name
+    const lengthBeforeRemove = MapLayerSources._instance._sources.length;
+    MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
+      return (source.name !== name);
+    });
+    return (lengthBeforeRemove !== MapLayerSources._instance._sources.length);
   }
 }

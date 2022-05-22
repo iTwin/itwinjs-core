@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
-import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface";
+import { assert } from "@itwin/core-bentley";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";
@@ -29,10 +29,12 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
   }
 
   public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
-    return ChangedElementsManager.getChangedElements(tokenProps.iModelId!, startChangesetId, endChangesetId);
+    assert(undefined !== tokenProps.iModelId);
+    return ChangedElementsManager.getChangedElements(tokenProps.iModelId, startChangesetId, endChangesetId);
   }
 
   public async isChangesetProcessed(tokenProps: IModelRpcProps, changesetId: string): Promise<boolean> {
-    return ChangedElementsManager.isProcessed(tokenProps.iModelId!, changesetId);
+    assert(undefined !== tokenProps.iModelId);
+    return ChangedElementsManager.isProcessed(tokenProps.iModelId, changesetId);
   }
 }

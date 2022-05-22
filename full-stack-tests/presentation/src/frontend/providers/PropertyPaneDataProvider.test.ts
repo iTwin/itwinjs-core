@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, RuleTypes } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { using } from "@itwin/core-bentley";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet, RuleTypes } from "@itwin/presentation-common";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyCategory } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
@@ -105,6 +107,45 @@ describe("PropertyDataProvider", async () => {
         expect(properties).to.matchSnapshot();
       });
 
+      it("finds root property record keys", async () => {
+        provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x75" }]);
+        const properties = await provider.getData();
+
+        const category = properties.categories.find((c) => c.name === "/selected-item/");
+        expect(category).to.not.be.undefined;
+
+        const record = properties.records[category!.name].find((r) => r.property.displayLabel === "Code");
+        expect(record).to.not.be.undefined;
+
+        const keys = await provider.getPropertyRecordInstanceKeys(record!);
+        expect(keys).to.deep.eq([{ className: "Generic:PhysicalObject", id: "0x75" }]);
+      });
+
+      it("finds nested property record keys", async () => {
+        provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x75" }]);
+        const properties = await provider.getData();
+
+        function findNestedCategory(categories: PropertyCategory[], label: string): PropertyCategory | undefined {
+          for (const c of categories) {
+            if (c.label === label)
+              return c;
+
+            const nested = findNestedCategory(c.childCategories ?? [], label);
+            if (nested)
+              return nested;
+          }
+          return undefined;
+        }
+        const category = findNestedCategory(properties.categories, "workingUnitsProp");
+        expect(category).to.not.be.undefined;
+
+        const record = properties.records[category!.name].find((r) => r.property.displayLabel === "Distance");
+        expect(record).to.not.be.undefined;
+
+        const keys = await provider.getPropertyRecordInstanceKeys(record!);
+        expect(keys).to.deep.eq([{ className: "DgnCustomItemTypes_MyProp:workingUnitsPropElementAspect", id: "0x24" }]);
+      });
+
     });
 
   };
@@ -112,4 +153,27 @@ describe("PropertyDataProvider", async () => {
   runTests("with flat property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = false);
   runTests("with nested property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = true);
 
+  it("gets property data after re-initializing Presentation", async () => {
+    const checkDataProvider = async () => {
+      await using(new PresentationPropertyDataProvider({ imodel }), async (p) => {
+        p.keys = new KeySet([physicalModelProps]);
+        const properties = await p.getData();
+        expect(properties.categories).to.not.be.empty;
+      });
+    };
+
+    // first request something to make sure we get data back
+    await checkDataProvider();
+
+    // re-initialize
+    Presentation.terminate();
+    await Presentation.initialize({
+      presentation: {
+        activeLocale: "en-pseudo",
+      },
+    });
+
+    // repeat request
+    await checkDataProvider();
+  });
 });

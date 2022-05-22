@@ -2,22 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
-import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
-import { MapCartoRectangle, WmsUtilities } from "../internal";
-import WMS = require("wms-capabilities");
-
 /** @packageDocumentation
  * @module Views
  */
+
+import { MapSubLayerProps } from "@itwin/core-common";
+import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
+import WMS from "wms-capabilities";
+import { MapCartoRectangle, WmsUtilities } from "../internal";
 
 /**
  * fetch XML from HTTP request
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(requestContext: ClientRequestContext, url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -25,7 +24,7 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
     retries: 2,
     auth: credentials,
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.text;
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
@@ -83,13 +82,12 @@ export namespace WmsCapability {
     public readonly subLayers = new Array<SubLayer>();
     private static readonly PREFIX_SEPARATOR = ":";
 
-    constructor(_json: any) {
-      this.queryable = _json.queryable;
-      this.title = _json.title;
-      this.srs = initArray<string>(_json.SRS);
-      this.cartoRange = rangeFromJSON(_json);
-      this.subLayers.push(new SubLayer(_json));
-
+    constructor(json: any, capabilities: WmsCapabilities) {
+      this.queryable = json.queryable;
+      this.title = json.title;
+      this.srs = initArray<string>(capabilities.isVersion13 ? json.CRS : json.SRS);
+      this.cartoRange = rangeFromJSON(json);
+      this.subLayers.push(new SubLayer(json, capabilities));
     }
     public getSubLayers(visible = true): MapSubLayerProps[] {
       const subLayers = new Array<MapSubLayerProps>();
@@ -139,23 +137,59 @@ export namespace WmsCapability {
 
       return subLayers;
     }
+
+    public getSubLayersCrs(layerNameFilter: string[]): Map<string, string[]> {
+      const subLayerCrs = new Map<string, string[]>();
+
+      const processSubLayer = ((subLayer: SubLayer) => {
+        if (layerNameFilter.includes(subLayer.name)) {
+          subLayerCrs.set(subLayer.name, subLayer.crs);
+        }
+        if (subLayer.children) {
+          subLayer.children.forEach((child) => {
+            processSubLayer(child);
+          });
+        }
+      });
+
+      this.subLayers.forEach((subLayer) => processSubLayer(subLayer));
+      return subLayerCrs;
+    }
   }
+
   /** @internal */
   export class SubLayer {
     public readonly name: string;
     public readonly title: string;
+    public readonly crs: string[];
+    public readonly ownCrs: string[];   // CRS specific to this layer (ie. not including inherited CRS)
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
-    public constructor(_json: any, public readonly parent?: SubLayer) {
+    public constructor(_json: any, capabilities: WmsCapabilities, public readonly parent?: SubLayer) {
+
+      const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
+        parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
+        if (parentLayer.parent) {
+          getParentCrs(parentLayer.parent, crsSet);
+        }
+      };
+
       this.name = _json.Name ? _json.Name : "";
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
+      this.ownCrs = capabilities.isVersion13 ? _json.CRS : _json.SRS;
+      const crs = new Set<string>(this.ownCrs);
+      if (parent) {
+        getParentCrs(parent, crs);
+      }
+      this.crs = [...crs];
+
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
         for (const childLayer of _json.Layer) {
-          this.children.push(new SubLayer(childLayer, this));
+          this.children.push(new SubLayer(childLayer, capabilities, this));
         }
       }
     }
@@ -167,6 +201,7 @@ export class WmsCapabilities {
   private static _capabilitiesCache = new Map<string, WmsCapabilities | undefined>();
   public readonly service: WmsCapability.Service;
   public readonly version?: string;
+  public readonly isVersion13: boolean;
   public readonly layer?: WmsCapability.Layer;
   public get json() { return this._json; }
   public get maxLevel(): number { return this.layer ? this.layer.subLayers.length : - 1; }
@@ -175,9 +210,10 @@ export class WmsCapabilities {
   public get featureInfoFormats(): string[] | undefined { return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined; }
   constructor(private _json: any) {
     this.version = _json.version;
+    this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
     this.service = new WmsCapability.Service(_json.Service);
     if (_json.Capability)
-      this.layer = new WmsCapability.Layer(_json.Capability.Layer);
+      this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
   public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined> {
@@ -187,7 +223,7 @@ export class WmsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
+    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;
@@ -199,5 +235,9 @@ export class WmsCapabilities {
   }
   public getSubLayers(visible = true): undefined | MapSubLayerProps[] {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
+  }
+
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]>|undefined {
+    return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }

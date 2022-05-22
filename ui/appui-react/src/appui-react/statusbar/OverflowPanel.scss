@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/index";
+
+.uifw-statusbar-panel {
+  background: $buic-background-1;
+  padding: 0.5em;
+
+  &.core-popup.core-popup-top {
+    @include uicore-z-index(status-overflow-popup);
+  }
+}
+
+.uifw-statusbar-overflow-items-container {
+  display: flex;
+  flex-direction: column;
+
+  >.nz-footer-separator {
+    display: none;
+  }
+}

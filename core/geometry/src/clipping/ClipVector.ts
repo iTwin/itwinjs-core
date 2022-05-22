@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -16,9 +16,14 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { ClipPlane } from "./ClipPlane";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive} from "../curve/CurvePrimitive";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveProps, ClipShape } from "./ClipPrimitive";
-import { ClipPlaneContainment } from "./ClipUtils";
+import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { BooleanClipNodeIntersection } from "./BooleanClipNode";
+import { Arc3d } from "../curve/Arc3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /** Wire format describing a [[ClipVector]].
  * @public
@@ -30,7 +35,7 @@ export type ClipVectorProps = ClipPrimitiveProps[];
  * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker flag indicating that they outside of each hole is live.
  * @public
  */
-export class ClipVector {
+export class ClipVector implements Clipper {
   private _clips: ClipPrimitive[];
   /** range acting as first filter.
    * * This is understood as overall range limit, not as precise planes.
@@ -138,8 +143,15 @@ export class ClipVector {
     return true;
   }
 
-  /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */
+  /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection).*/
   public pointInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
+    return this.isPointOnOrInside(point, onTolerance);
+  }
+
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public isPointOnOrInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
     if (!this.boundingRange.isNull && !this.boundingRange.containsPoint(point))
       return false;
 
@@ -149,8 +161,51 @@ export class ClipVector {
     }
     return true;
   }
-
-  /** Transforms this ClipVector to a new coordinate-system.
+  // Proxy object to implement line and arc clip.
+  private _clipNodeProxy?: BooleanClipNodeIntersection;
+  private ensureProxyClipNode(): boolean{
+    if (this._clipNodeProxy)
+      return true;
+    this._clipNodeProxy = new BooleanClipNodeIntersection(true);
+    let numChildren = 0;
+    for (const child of this._clips) {
+      const q = child.fetchClipPlanesRef();
+      if (q) {
+        numChildren++;
+        this._clipNodeProxy.captureChild(q);
+      }
+    }
+    return numChildren > 0;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
+    this.ensureProxyClipNode();
+    if (this._clipNodeProxy)
+      return this._clipNodeProxy.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce);
+    return false;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensureProxyClipNode();
+    if (this._clipNodeProxy)
+      return this._clipNodeProxy.announceClippedArcIntervals(arc, announce);
+    return false;
+  }
+/** Execute polygon clip as intersection of the child primitives. */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+      this.ensureProxyClipNode();
+      if (this._clipNodeProxy)
+        this._clipNodeProxy.appendPolygonClip(xyz, insideFragments, outsideFragments, arrayCache);
+      }
+ /** Transforms this ClipVector to a new coordinate-system.
    * Note that if the transform has rotate and scale the boundingRange member expands.
    * Returns true if successful.
    */
@@ -274,7 +329,7 @@ export class ClipVector {
 
   /**
    * Determines whether the given points fall inside or outside this set of ClipShapes. If any set is defined by masking planes,
-   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the _clipplanes member.
+   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the _clipPlanes member.
    */
   public classifyPointContainment(points: Point3d[], ignoreMasks: boolean = false): ClipPlaneContainment {
     let currentContainment = ClipPlaneContainment.Ambiguous;
@@ -295,7 +350,7 @@ export class ClipVector {
 
   /**
    * Determines whether a 3D range lies inside or outside this set of ClipShapes. If any set is defined by masking planes,
-   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the _clipplanes member.
+   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the clip planes member.
    */
   public classifyRangeContainment(range: Range3d, ignoreMasks: boolean): ClipPlaneContainment {
     const corners: Point3d[] = range.corners();
@@ -379,7 +434,6 @@ export class ClipVector {
    *  Number:
    *    number
    *    _
-   * @alpha
    */
   public toCompactString(): string {
     function formatNumber(num: number) {

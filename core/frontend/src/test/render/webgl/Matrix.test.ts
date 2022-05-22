@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../render/webgl/Matrix";
 
 describe("Matrix3", () => {

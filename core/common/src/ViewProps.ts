@@ -6,17 +6,20 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
+import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
+import { ModelProps } from "./ModelProps";
+import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
- * @beta
+ * @public
+ * @extensions
  */
 export interface SectionDrawingViewProps {
   /** The Id of the spatial view from which the SectionDrawing was generated. */
@@ -27,30 +30,83 @@ export interface SectionDrawingViewProps {
   drawingToSpatialTransform?: TransformProps;
 }
 
+/** The response props from the getCustomViewState3dData RPC endpoint
+ * @internal
+ */
+export interface CustomViewState3dProps {
+  modelIds: CompressedId64Set;
+  modelExtents: Range3dProps;
+  categoryIds: CompressedId64Set;
+}
+
+/**
+ * The options passed to the getCustomViewState3dData RPC endpoint.
+ * @internal
+ */
+export interface CustomViewState3dCreatorOptions {
+  modelIds?: CompressedId64Set;
+}
+
+/**
+ * A result row from querying for subcategories during hydrateViewState
+ * @internal
+ */
+export interface SubCategoryResultRow {
+  parentId: Id64String;
+  id: Id64String;
+  appearance: SubCategoryAppearance.Props;
+}
+
+/**
+ * Request props for the hydrateViewState RPC endpoint.
+ * @internal
+ */
+export interface HydrateViewStateRequestProps {
+  acsId?: string;
+  notLoadedModelSelectorStateModels?: CompressedId64Set;
+  notLoadedCategoryIds?: CompressedId64Set;
+  sheetViewAttachmentIds?: CompressedId64Set;
+  viewStateLoadProps?: ViewStateLoadProps;
+  baseModelId?: Id64String;
+  spatialViewId?: Id64String;
+}
+
+/** Response props from the hydrateViewState RPC endpoint.
+ * @internal
+ */
+export interface HydrateViewStateResponseProps {
+  acsElementProps?: ElementProps;
+  modelSelectorStateModels?: ModelProps[];
+  // cast this to viewattachmentInfo[] on the frontend.
+  sheetViewAttachmentProps?: ViewAttachmentProps[];
+  sheetViewViews?: (ViewStateProps | undefined)[];
+  baseModelProps?: ModelProps;
+  spatialViewProps?: ViewStateProps;
+  categoryIdsResult?: SubCategoryResultRow[];
+}
+
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
+ * @extensions
  */
 export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
   modelSelectorProps?: ModelSelectorProps;
   displayStyleProps: DisplayStyleProps;
-  /** @beta */
+  /** Sheet-specific properties, if this is a view of a [SheetModel]($backend). */
   sheetProps?: SheetProps;
-  /** @beta */
+  /** The Ids of the [ViewAttachment]($backend)s contained within the [SheetModel]($backend), if this is a sheet view. */
   sheetAttachments?: Id64Array;
-  /** For drawing views, the extents of the drawing model.
-   * @alpha
-   */
+  /** For a [DrawingViewState]($frontend), the extents of the [DrawingModel]($backend), used for determining the upper limits of the view's extents. */
   modelExtents?: Range3dProps;
-  /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view.
-   * @beta
-   */
+  /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view. */
   sectionDrawing?: SectionDrawingViewProps;
 }
 
 /** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
  * @public
+ * @extensions
  */
 export interface ViewStateLoadProps {
   /** Options for loading the view's [[DisplayStyleProps]]. */
@@ -59,6 +115,7 @@ export interface ViewStateLoadProps {
 
 /** Properties that define a ModelSelector
  * @public
+ * @extensions
  */
 export interface ModelSelectorProps extends DefinitionElementProps {
   models: Id64Array;
@@ -66,6 +123,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 
 /** Properties that define a CategorySelector
  * @public
+ * @extensions
  */
 export interface CategorySelectorProps extends DefinitionElementProps {
   categories: Id64Array;
@@ -73,6 +131,7 @@ export interface CategorySelectorProps extends DefinitionElementProps {
 
 /** Parameters for performing a query on [ViewDefinition]($backend) classes.
  * @public
+ * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
@@ -80,19 +139,21 @@ export interface ViewQueryParams extends EntityQueryParams {
 
 /** Parameters used to construct a ViewDefinition
  * @public
+ * @extensions
  */
 export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64String;
   displayStyleId: Id64String;
   description?: string;
-  /** @internal */
   jsonProperties?: {
+    /** Additional properties of the view. */
     viewDetails?: ViewDetailsProps;
   };
 }
 
 /** Parameters to construct a ViewDefinition3d
  * @public
+ * @extensions
  */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
   /** if true, camera is valid. */
@@ -105,14 +166,15 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   angles?: YawPitchRollProps;
   /** The camera used for this view. */
   camera: CameraProps;
-  /** @internal */
   jsonProperties?: {
+    /** Additional properties of the view. */
     viewDetails?: ViewDetails3dProps;
   };
 }
 
 /** Parameters to construct a SpatialViewDefinition
  * @public
+ * @extensions
  */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelectorId: Id64String;
@@ -120,6 +182,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 /** Parameters used to construct a ViewDefinition2d
  * @public
+ * @extensions
  */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64String;
@@ -128,7 +191,10 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   angle: AngleProps;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface AuxCoordSystemProps extends ElementProps {
   type?: number;
   description?: string;
@@ -136,6 +202,7 @@ export interface AuxCoordSystemProps extends ElementProps {
 
 /**  Properties of AuxCoordSystem2d
  * @public
+ * @extensions
  */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem2d */
@@ -146,6 +213,7 @@ export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
 
 /** Properties of AuxCoordSystem3d
  * @public
+ * @extensions
  */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem3d */

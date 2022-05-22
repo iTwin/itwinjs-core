@@ -6,13 +6,13 @@
  * @module Ids
  */
 
-/** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
+/** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
  */
 export type Id64String = string;
 
-/** A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
+/** A string containing a well-formed string representation of a [Guid]($core-bentley).
  * @public
  */
 export type GuidString = string;
@@ -221,6 +221,7 @@ export namespace Id64 {
    * @param highBytes The upper 4 bytes of the Id
    * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
    * operation `lowBytes | (highBytes << 32)`.
+   * @see [[Id64.fromUint32PairObject]] if you have a [[Id64.Uint32Pair]] object.
    */
   export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
     const localIdLow = lowBytes >>> 0;
@@ -252,6 +253,13 @@ export namespace Id64 {
       buffer.length = index;
 
     return String.fromCharCode(...scratchCharCodes);
+  }
+
+  /** Create an Id64String from a [[Id64.Uint32Pair]].
+   * @see [[Id64.fromUint32Pair]].
+   */
+  export function fromUint32PairObject(pair: Uint32Pair): Id64String {
+    return fromUint32Pair(pair.lower, pair.upper);
   }
 
   /** Returns true if the inputs represent two halves of a valid 64-bit Id.
@@ -313,7 +321,7 @@ export namespace Id64 {
    *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
    * ```
    *
-   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.forEach]] or [[Id64.iterate]].
+   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.iterable]].
    *
    * @param arg The Ids to convert to an Id64Set.
    * @param makeCopy If true, and the input is already an Id64Set, returns a deep copy of the input.
@@ -336,32 +344,29 @@ export namespace Id64 {
     return ids;
   }
 
-  /** Execute a function on each [[Id64String]] of an [[Id64Arg]].
-   * @param arg The Id(s) to iterate.
-   * @param callback The function to invoke on each Id.
-   * @see [[Id64.iterate]] for a similar function which allows iteration to be halted before it completes.
+  /** Obtain iterator over the specified Ids.
+   * @see [[Id64.iterable]].
    */
-  export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
-    Id64.iterate(arg, (id: Id64String) => {
-      callback(id);
-      return true;
-    });
+  export function* iterator(ids: Id64Arg): Iterator<Id64String> {
+    if (typeof ids === "string") {
+      yield ids;
+    } else {
+      for (const id of ids)
+        yield id;
+    }
   }
 
-  /** Execute a function on each [[Id64String]] of an [[Id64Arg]], optionally terminating before iteration completes.
-   * @param arg The Id(s) to iterate.
-   * @param callback The function to invoke on each Id. The function returns false to terminate iteration, or true to continue iteration.
-   * @returns True if all Ids were iterated, or false if iteration was terminated due to the callback returning false.
+  /** Obtain an iterable over the specified Ids. Example usage:
+   * ```ts
+   *  const ids = ["0x123", "0xfed"];
+   *  for (const id of Id64.iterable(ids))
+   *    console.log(id);
+   * ```
    */
-  export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
-    if (typeof arg === "string")
-      return callback(arg);
-
-    for (const id of arg)
-      if (!callback(id))
-        return false;
-
-    return true;
+  export function iterable(ids: Id64Arg): Iterable<Id64String> {
+    return {
+      [Symbol.iterator]: () => iterator(ids),
+    };
   }
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
@@ -504,7 +509,8 @@ export namespace Id64 {
 
     /** Add any number of Ids to the set. */
     public addIds(ids: Id64Arg): void {
-      Id64.forEach(ids, (id) => this.addId(id));
+      for (const id of Id64.iterable(ids))
+        this.addId(id);
     }
 
     /** Returns true if the set contains the specified Id. */
@@ -528,7 +534,8 @@ export namespace Id64 {
 
     /** Remove any number of Ids from the set. */
     public deleteIds(ids: Id64Arg): void {
-      Id64.forEach(ids, (id) => this.deleteId(id));
+      for (const id of Id64.iterable(ids))
+        this.deleteId(id);
     }
 
     /** Remove an Id from the set. */

@@ -5,156 +5,61 @@
 /** @packageDocumentation
  * @module Extensions
  */
-import { ExtensionProps } from "@bentley/extension-client";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { IModelApp } from "../IModelApp";
 
 /**
- * @internal
+ * @alpha
  */
-export const loggerCategory = "imodeljs-frontend.Extension";
+export type ActivationEvent = "onStartup";
 
-type ResolveFunc = ((arg: any) => void);
-type RejectFunc = ((arg: Error) => void);
-
-/** Implement this interface, then register it using IModelApp.extensionAdmin.addExtensionLoader to load extensions from a different source.
- * @beta
+/**
+ * @alpha
  */
-export interface ExtensionLoader {
-  // get extension name from extension root string
-  getExtensionName(extensionRoot: string): string;
-  // load the extension javascript from the tar file.
-  loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
-  // resolve resource url given a relative path
-  resolveResourceUrl(extensionName: string, relativeFileName: string): string;
+export type ResolveFunc = () => Promise<any>;
+
+/**
+ * @alpha
+ */
+export type ResolveManifestFunc = () => Promise<ExtensionManifest>;
+
+/** Defines the format of an Extension manifest
+ * @alpha
+ */
+export interface ExtensionManifest {
+  /** The extension name */
+  readonly name: string;
+  /** The extension display name */
+  readonly displayName?: string;
+  /** The extension version */
+  readonly version: string;
+  /** The extension description */
+  readonly description?: string;
+  /** The main module file to load. This should be a path to the javascript file
+   * e.g "./lib/main.js"
+   */
+  readonly main: string;
+  /** Only valid when the Extension is loaded at build-time.
+   *
+   * Defines the main ES module that will be imported
+   */
+  readonly module?: string;
+  /** List of activation events this Extension supports. */
+  readonly activationEvents: ActivationEvent[];
 }
 
 /**
- * Base Extension class for writing a demand-loaded module.
- * @see [[ExtensionAdmin]] for a description of how Extensions are loaded.
- * @see [Extensions]($docs/learning/frontend/extensions.md)
- * @beta
+ * An Extension Provider defines how to fetch and execute an extension.
+ * An extension can be one of three kinds:
+ *   1. A locally installed extension.
+ *   2. A remote extension served from a user provided host.
+ *   3. A remote extension served from Bentley's Extension Service.
+ * All three must have a way to fetch the manifest (package.json) and main entry point files.
+ * @alpha
  */
-export abstract class Extension {
-  /**
-   * Subclasses should override this with the default I18N namespace name. It will be loaded when initializing I18N.
-   */
-  protected _defaultNs: string = "noDefaultNs";
-
-  /** Constructor for base Extension class
-   * @param name - the name of the extension.
-   * @note Typically, an Extension subclass is instantiated and registered with top-level JavaScript statements like these:
-   * ```ts
-   *  const myExtension = new MyExtension(EXTENSION_NAME);
-   *  IModelApp.extensionAdmin.register(myExtension);
-   * ```
-   */
-  public constructor(public name: string) { }
-
-  // returns an instance of I18N that can be reliably called from the Extension.
-  private getI18n(): I18N {
-    return new I18N(this._defaultNs, {
-      urlTemplate: (lng: string[], ns: string[]) => {
-        if (lng.length < 1 || ns.length < 1)
-          throw new Error("No language info provided");
-        return this.resolveResourceUrl("locales".concat("/", lng[0], "/", ns[0], ".json"));
-      },
-    });
-  }
-
-  /** Method called when the Extension is first loaded.
-   * @param _args arguments that were passed to [ExtensionAdmin.loadExtension]($frontend). The first argument is the extension name.
-   */
-  public async onLoad(_args: string[]): Promise<void> {
-  }
-
-  /** Method called immediately following the call to onLoad when the Extension is first loaded, and also once for
-   * each additional call to [ExtensionAdmin.loadExtension]($frontend) for the same Extension.
-   * @param _args arguments that were passed to [ExtensionAdmin.loadExtension]($frontend). The first argument is the extension name.
-   */
-  public abstract onExecute(_args: string[]): Promise<void>;
-
-  private _loader: ExtensionLoader | undefined;
-  /** @internal */
-  public get loader(): ExtensionLoader | undefined { return this._loader; }
-  public set loader(loader: ExtensionLoader | undefined) {
-    this._loader = loader;
-  }
-
-  /** Returns a fully qualified resource URL which is needed when the extension is loaded from an external server
-   * @param relativeUrl the url relative to the location specified for the Extension URL.
-   */
-  public resolveResourceUrl(relativeUrl: string): string {
-    if (this._loader === undefined)
-      throw new Error("The register method must be called prior to using the resolveResourceUrl method of Extension.");
-    return this._loader.resolveResourceUrl(this.name, relativeUrl);
-  }
-
-  private _i18n: I18N | undefined;
-
-  /** Property that retrieves the localization instance specific to the Extension. */
-  public get i18n(): I18N {
-    if (this._i18n)
-      return this._i18n;
-
-    if (this._loader === undefined)
-      throw new Error("The register method must be called prior to using the i18n member of Extension.");
-
-    return (this._i18n = this.getI18n());
-  }
-
-  /** Can be used to set up a localization instance. Used only if non-standard treatment is required.
-   * @param defaultNamespace
-   * @param options
-   * @deprecated Please override _defaultNs instead
-   */
-  public setI18n(defaultNamespace?: string, options?: I18NOptions) {
-    this._i18n = new I18N(defaultNamespace, options);
-  }
-
-}
-
-/** Represents an Extension that we are attempting to load.
- * @beta
- */
-export class PendingExtension {
-  public resolve: ResolveFunc | undefined = undefined;
-  public reject: RejectFunc | undefined = undefined;
-  public promise: Promise<Extension>;
-
-  public constructor(private _tarFileUrl: string, public loader: ExtensionLoader, public args?: string[]) {
-    this.promise = new Promise(this.executor.bind(this));
-  }
-
-  public executor(resolve: ResolveFunc, reject: RejectFunc) {
-    this.resolve = resolve;
-    this.reject = reject;
-
-    const head = document.getElementsByTagName("head")[0];
-    if (!head)
-      reject(new Error("no head element found"));
-
-    // create the script element. We handle onerror and resolve a ExtensionLoadResult failure in the onerror handler,
-    // but we don't resolve success until the loaded extension calls "register" (see Extension.register)
-    const scriptElement = document.createElement("script");
-
-    scriptElement.onerror = this.cantLoad.bind(this);
-
-    scriptElement.async = true;
-    scriptElement.src = this._tarFileUrl;
-    head.insertBefore(scriptElement, head.lastChild);
-  }
-
-  // called when we can't load the URL
-  private cantLoad(_ev: string | Event) {
-    this.resolve!(IModelApp.i18n.translate("iModelJs:ExtensionErrors.CantFind", { extensionUrl: this._tarFileUrl }));
-  }
-}
-
-/**
- * @internal
- */
-export interface LoadedExtensionProps {
-  props: ExtensionProps;
-  basePath: string;
+export interface ExtensionProvider {
+  /** A function that returns the extension's manifest (package.json) file */
+  getManifest: ResolveManifestFunc;
+  /** A function that executes the main entry point of the extension */
+  execute: ResolveFunc;
+  /** Hostname of a remote extension */
+  readonly hostname?: string;
 }

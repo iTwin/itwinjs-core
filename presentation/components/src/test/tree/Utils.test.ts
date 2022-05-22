@@ -5,15 +5,15 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PageOptions } from "@bentley/ui-components";
-import { createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
+import { GroupingNodeKey, LabelDefinition, Node } from "@itwin/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { PageOptions } from "@itwin/components-react";
+import {
+  createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY,
+} from "../../presentation-components/tree/Utils";
 
 describe("Utils", () => {
-
   describe("createTreeNodeItem", () => {
-
     it("creates tree node", () => {
       const node = createRandomECInstancesNode();
       const treeNode = createTreeNodeItem(node);
@@ -35,7 +35,7 @@ describe("Utils", () => {
 
     it("creates tree node with custom label styles", () => {
       const node = createRandomECInstancesNode();
-      node.fontStyle = "Bold Italic";
+      node.fontStyle = "Bold Italic"; // eslint-disable-line deprecation/deprecation
       const treeNode = createTreeNodeItem(node);
       expect(treeNode).to.matchSnapshot();
     });
@@ -52,6 +52,53 @@ describe("Utils", () => {
       expect(treeNode).to.matchSnapshot();
     });
 
+    it("uses provided callback to customize tree node", () => {
+      const node = createRandomECInstancesNode();
+      const treeNode = createTreeNodeItem(node, undefined, {
+        customizeTreeNodeItem: (item) => {
+          item.icon = "custom-icon";
+          item.description = "custom-description";
+        },
+      });
+      expect(treeNode).to.matchSnapshot();
+    });
+  });
+
+  describe("createPartialTreeNodeItem", () => {
+    it("assigns item id and label from loaded node", () => {
+      const node = createPartialTreeNodeItem(
+        {
+          key: { type: "", version: 0, pathFromRoot: [] },
+          label: LabelDefinition.fromLabelString("test"),
+        },
+        undefined,
+        {},
+      );
+      expect(node.id).not.to.be.undefined;
+      expect(node.label).not.to.be.undefined;
+      expect(PRESENTATION_TREE_NODE_KEY in node).to.be.true;
+    });
+
+    it("does not set a presentation tree node key when input does not have a key", () => {
+      const node = createPartialTreeNodeItem({}, undefined, {});
+      expect(PRESENTATION_TREE_NODE_KEY in node).to.be.false;
+    });
+
+    it("uses provided callback to customize tree node", () => {
+      const treeNode = createPartialTreeNodeItem(
+        {
+          key: { type: "", version: 0, pathFromRoot: [] },
+          label: LabelDefinition.fromLabelString("test"),
+        }, undefined,
+        {
+          customizeTreeNodeItem: (item) => {
+            item.icon = "custom-icon";
+            item.description = "custom-description";
+          },
+        },
+      );
+      expect(treeNode).to.matchSnapshot();
+    });
   });
 
   describe("createTreeNodeItems", () => {
@@ -86,7 +133,5 @@ describe("Utils", () => {
       expect(result!.size).to.be.equal(size);
       expect(result!.start).to.be.equal(start);
     });
-
   });
-
 });

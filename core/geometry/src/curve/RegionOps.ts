@@ -27,7 +27,7 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { CurveChainWireOffsetContext, JointOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
@@ -281,7 +281,7 @@ export class RegionOps {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA, RegionGroupOpType.Union,
       operation,
-      inputB, RegionGroupOpType.Union);
+      inputB, RegionGroupOpType.Union, true);
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
@@ -301,7 +301,7 @@ export class RegionOps {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA, RegionGroupOpType.Union,
       operation,
-      inputB, RegionGroupOpType.Union);
+      inputB, RegionGroupOpType.Union, true);
     if (!graph)
       return undefined;
     const loopEdges = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
@@ -310,6 +310,7 @@ export class RegionOps {
       const points = new GrowableXYZArray();
       for (const edge of graphLoop)
         points.pushXYZ(edge.x, edge.y, edge.z);
+      points.pushWrap(1);
       const loop = Loop.create();
       loop.tryAddChild(LineString3d.createCapture(points));
       allLoops.push(loop);
@@ -329,24 +330,22 @@ export class RegionOps {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
   }
-  /**
-   * Construct curves that are offset from a Path or Loop
+    /**
+   * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
-   * * Offset distance is defined as positive to the left.
-   * * If offsetDistanceOrOptions is given as a number, default options are applied.
+   * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
    *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * if the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are
+   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
+   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
    *      * each line segment (except first and last) touches the arc at its midpoint.
-   *   * Otherwise the prior and successor curves are extended to simple intersection.
-   * @param curves input curves
-   * @param offsetDistanceOrOptions offset controls.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
-    const options = JointOptions.create(offsetDistanceOrOptions);
-    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a polygon.
@@ -520,9 +519,9 @@ export class RegionOps {
     } else if (Array.isArray(data)) {
       return this.rectangleEdgeTransform(new Point3dArrayCarrier(data), requireClosurePoint);
     } else if (data instanceof Loop && data.children.length === 1 && data.children[0] instanceof LineString3d) {
-      return this.rectangleEdgeTransform((data.children[0] as LineString3d).packedPoints, true);
+      return this.rectangleEdgeTransform(data.children[0].packedPoints, true);
     } else if (data instanceof Path && data.children.length === 1 && data.children[0] instanceof LineString3d) {
-      return this.rectangleEdgeTransform((data.children[0] as LineString3d).packedPoints, requireClosurePoint);
+      return this.rectangleEdgeTransform(data.children[0].packedPoints, requireClosurePoint);
     } else if (data instanceof CurveChain) {
       if (!data.checkForNonLinearPrimitives()) {
         // const linestring = LineString3d.create();
@@ -573,8 +572,18 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
-   * Find all areas bounded by the unstructured, possibly intersection curves.
+   * Find all areas bounded by the unstructured, possibly intersecting curves.
    * * In `curvesAndRegions`, Loop/ParityRegion/UnionRegion contribute curve primitives.
+   * * Each returned [[SignedLoops]] object describes faces in a single connected component.
+   * * Within the [[SignedLoops]]:
+   *    * positiveAreaLoops contains typical "interior" loops with positive area loop ordered counterclockwise
+   *    * negativeAreaLoops contains (probably just one) "exterior" loop which is ordered clockwise and
+   *    * slivers contains sliver areas such as appear between coincident curves.
+   *    * edges contains [[LoopCurveLoopCurve]] about each edge within the component. In each edge object
+   *        * loopA = a loop on one side of the edge
+   *        * curveA = a curve that appears as one of loopA.children.
+   *        * loopB = the loop on the other side
+   *        * curveB = a curve that appears as one of loopB.children
    * @param curvesAndRegions Any collection of curves.
    * @alpha
    */

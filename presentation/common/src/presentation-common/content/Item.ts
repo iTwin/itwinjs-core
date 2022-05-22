@@ -16,8 +16,11 @@ import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON,
  * @public
  */
 export interface ItemJSON {
+  /** @beta */
+  inputKeys?: InstanceKeyJSON[];
   primaryKeys: InstanceKeyJSON[];
   labelDefinition: LabelDefinitionJSON;
+  /** @deprecated */
   imageId: string;
   classInfo?: ClassInfoJSON;
   values: ValuesDictionary<ValueJSON>;
@@ -31,11 +34,19 @@ export interface ItemJSON {
  * @public
  */
 export class Item {
+  /**
+   * Keys of input instances that caused this item to be included in content.
+   * @beta
+   */
+  public inputKeys?: InstanceKey[];
   /** Keys of instances whose data is contained in this item */
   public primaryKeys: InstanceKey[];
   /** Display label of the item */
   public label: LabelDefinition;
-  /** ID of the image associated with this item */
+  /**
+   * ID of the image associated with this item
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
   public classInfo?: ClassInfo;
@@ -43,7 +54,7 @@ export class Item {
   public values: ValuesDictionary<Value>;
   /** Display values dictionary */
   public displayValues: ValuesDictionary<DisplayValue>;
-  /** List of field names whose values are merged (see [Merging values]($docs/learning/presentation/Content/Terminology#value-merging)) */
+  /** List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging)) */
   public mergedFieldNames: string[];
   /** Extended data injected into this content item */
   public extendedData?: { [key: string]: any };
@@ -56,13 +67,13 @@ export class Item {
    * @param classInfo For cases when item consists only of same class instances, information about the ECClass
    * @param values Raw values dictionary
    * @param displayValues Display values dictionary
-   * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/presentation/Content/Terminology#value-merging))
+   * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
   public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,
     values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
     this.primaryKeys = primaryKeys;
-    this.imageId = imageId;
+    this.imageId = imageId; // eslint-disable-line deprecation/deprecation
     this.classInfo = classInfo;
     this.values = values;
     this.displayValues = displayValues;
@@ -83,6 +94,8 @@ export class Item {
     const { label, ...baseItem } = this;
     return {
       ...baseItem,
+      ...(this.inputKeys ? { inputKeys: this.inputKeys.map(InstanceKey.toJSON) } : {}),
+      primaryKeys: this.primaryKeys.map(InstanceKey.toJSON),
       classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
       values: Value.toJSON(this.values) as ValuesMapJSON,
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
@@ -99,6 +112,7 @@ export class Item {
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {
+      ...(json.inputKeys ? { inputKeys: json.inputKeys.map((ik) => InstanceKey.fromJSON(ik)) } : {}),
       primaryKeys: json.primaryKeys.map((pk) => InstanceKey.fromJSON(pk)),
       classInfo: json.classInfo ? ClassInfo.fromJSON(json.classInfo) : undefined,
       values: Value.fromJSON(json.values),

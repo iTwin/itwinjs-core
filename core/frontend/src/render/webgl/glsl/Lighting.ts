@@ -82,8 +82,22 @@ const applyLighting = `
 
   specularAccum += hemiSpecWeight * specularColor * hemiColor;
 
-  // Clamp while preserving hue.
   vec3 litColor = diffuseAccum + specularAccum;
+
+  // Apply fresnel reflection.
+  float fresnelIntensity = u_lightSettings[15];
+  if (0.0 != fresnelIntensity) {
+    float fresnel = -dot(toEye, normal);
+    if (fresnelIntensity < 0.0) {
+      fresnelIntensity = abs(fresnelIntensity);
+      fresnel = 1.0 - fresnel;
+    }
+
+    fresnel = clamp(1.0 - fresnel, 0.0, 1.0);
+    litColor = litColor * (1.0 + fresnelIntensity * fresnel);
+  }
+
+  // Clamp while preserving hue.
   float maxIntensity = max(litColor.r, max(litColor.g, litColor.b));
   float numCel = u_lightSettings[14];
   if (numCel > 0.0)
@@ -111,7 +125,7 @@ export function addLighting(builder: ProgramBuilder) {
     });
   }, VariablePrecision.High);
 
-  frag.addUniform("u_lightSettings[15]", VariableType.Float, (prog) => {
+  frag.addUniform("u_lightSettings[16]", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_lightSettings[0]", (uniform, params) => {
       params.target.uniforms.lights.bind(uniform);
     });

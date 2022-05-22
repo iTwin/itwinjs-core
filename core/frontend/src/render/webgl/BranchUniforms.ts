@@ -6,10 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
-import { ViewClipSettings } from "../ViewClipSettings";
+import { assert } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
+import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -20,8 +19,9 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
+import { System } from "./System";
 import { Target } from "./Target";
-import { ClipVolume } from "./ClipVolume";
+import { ClipStack } from "./ClipStack";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -41,6 +41,9 @@ function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
  * @internal
  */
 export class BranchUniforms {
+  public readonly clipStack: ClipStack;
+  private _viewClipEnabled = false;
+
   // The model-view and model-view-projection matrices depend on the frustum.
   public syncToken?: SyncToken;
   public syncKey = 0;
@@ -54,13 +57,13 @@ export class BranchUniforms {
   // CPU state
   private readonly _mv = Matrix4d.createIdentity();
   private readonly _mvp = Matrix4d.createIdentity();
-  private _clipVolume?: ClipVolume;
 
   // GPU state
   private readonly _mv32 = new Matrix4();
   private readonly _mvp32 = new Matrix4();
   private readonly _m32 = new Matrix4();
   private readonly _v32 = new Matrix3();
+  private readonly _mvn32 = new Matrix3();
 
   // Working state
   private readonly _scratchTransform = Transform.createIdentity();
@@ -73,6 +76,10 @@ export class BranchUniforms {
 
   public constructor(target: Target) {
     this._target = target;
+    this.clipStack = new ClipStack(
+      () => target.uniforms.frustum.viewMatrix,
+      () => this._viewClipEnabled && this.top.viewFlags.clipVolume,
+    );
   }
 
   public createBatchState(): BatchState {
@@ -98,51 +105,45 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-    this.updateClipVolume();
+    if (this.top.clipVolume)
+      this.clipStack.push(this.top.clipVolume);
   }
 
   public pushState(state: BranchState): void {
     desync(this);
     this._stack.pushState(state);
-    this.updateClipVolume();
+    if (this.top.clipVolume)
+      this.clipStack.push(this.top.clipVolume);
   }
 
   public pop(): void {
     desync(this);
-    this._stack.pop();
-    this.updateClipVolume();
-  }
+    if (this.top.clipVolume)
+      this.clipStack.pop();
 
-  public get clipVolume(): ClipVolume | undefined {
-    return this._clipVolume;
+    this._stack.pop();
   }
 
   public pushViewClip(): void {
+    assert(!this._viewClipEnabled);
+    this._viewClipEnabled = true;
+
     // Target.readPixels() pushes another BranchState before pushing view clip...
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
-    this.updateClipVolume(this._stack.bottom);
   }
 
   public popViewClip(): void {
+    assert(this._viewClipEnabled);
+    this._viewClipEnabled = false;
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
-    this._clipVolume = undefined;
-  }
-
-  private updateClipVolume(state?: BranchState): void {
-    if (!state)
-      state = this.top;
-
-    this._clipVolume = undefined;
-    if (state.clipVolume && state.viewFlags.clipVolume && state.clipVolume.syncWithView(this._target.uniforms.frustum.viewMatrix))
-      this._clipVolume = state.clipVolume;
   }
 
   public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
     this._stack.changeRenderPlan(vf, is3d, hline);
   }
 
-  public updateViewClip(settings: ViewClipSettings | undefined): void {
-    this._stack.updateViewClip(settings);
+  public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
+    this.clipStack.setViewClip(clip, style);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
@@ -167,6 +168,11 @@ export class BranchUniforms {
   public bindWorldToViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
     if (this.update(uniform, geom, isViewCoords))
       uniform.setMatrix3(this._v32);
+  }
+
+  public bindModelViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
+    if (this.update(uniform, geom, isViewCoords))
+      uniform.setMatrix3(this._mvn32);
   }
 
   private update(uniform: UniformHandle, geometry: CachedGeometry, isViewCoords: boolean): boolean {
@@ -209,7 +215,14 @@ export class BranchUniforms {
       if (undefined !== instancedGeom) {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
-        mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        if (vio) {
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          mv.multiplyTransformTransform(viModelMatrix, mv);
+        } else {
+          mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        }
       } else {
         if (undefined !== vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
@@ -234,6 +247,13 @@ export class BranchUniforms {
     if (!this._isInstanced) {
       uniforms.projectionMatrix.multiplyMatrixMatrix(this._mv, this._mvp);
       this._mvp32.initFromMatrix4d(this._mvp);
+      if (!System.instance.capabilities.isWebGL2) { // inverse model to view is only used if not instanced and not WebGL2
+        const inv = this._mv.createInverse();
+        if (undefined !== inv) {
+          const invTr = inv.cloneTransposed();
+          this._mvn32.initFromMatrix3d(invTr.matrixPart());
+        }
+      }
     }
 
     return true;

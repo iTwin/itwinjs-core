@@ -18,7 +18,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -38,8 +38,8 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
-          new RegExp(`import { (?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
+          new RegExp(`import { (?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -59,8 +59,8 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -80,7 +80,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -100,7 +100,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -120,7 +120,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -140,7 +140,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -160,7 +160,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -180,7 +180,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -207,7 +207,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { (?=.*\\b(EntityProps)\\b)(?=.*\\b(RelatedElementProps)\\b).* } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(EntityProps)\\b)(?=.*\\b(RelatedElementProps)\\b).* } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -236,7 +236,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -265,7 +265,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
           new RegExp(`import { DerivedStruct } from "./RefTestElementProps";`),
         ],
         expectedPropsTs: [utils.dedent`
@@ -298,8 +298,8 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -334,7 +334,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -363,7 +363,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
           new RegExp(`import { TestStruct } from "./RefTestElementProps";`),
         ],
         expectedPropsTs: [utils.dedent`
@@ -411,7 +411,7 @@ describe("ecjson properties to ts", () => {
             </ECEntityClass>
           </ECSchema>`,
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {

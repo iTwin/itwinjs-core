@@ -143,7 +143,7 @@ export interface BSplineSurface3dQuery {
    */
   poleStepUV(select: UVSelect): number;
 
-  /*
+  /**
      * evaluate the surface at u and v fractions. Return a (squared, right handed) coordinate frame at that point on the surface.
      * @param fractionU u parameter
      * @param fractionV v parameter
@@ -721,7 +721,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
   /** test for identical counts and near-equal coordinates */
-  public isAlmostEqual(other: any): boolean {
+  public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3d) {
       return this.knots[0].isAlmostEqual(other.knots[0])
         && this.knots[1].isAlmostEqual(other.knots[1])
@@ -1004,7 +1004,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
   /** test for identical counts and near-equal coordinates */
-  public isAlmostEqual(other: any): boolean {
+  public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3dH) {
       return this.knots[0].isAlmostEqual(other.knots[0])
         && this.knots[1].isAlmostEqual(other.knots[1])

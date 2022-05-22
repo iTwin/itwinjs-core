@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { BeEvent, BeEventList } from "../bentleyjs-core";
+import { BeEvent, BeEventList } from "../core-bentley";
 
 /* eslint-disable no-empty */
 class Dummy {

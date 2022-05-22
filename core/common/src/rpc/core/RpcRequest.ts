@@ -6,8 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -16,7 +15,7 @@ import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheCo
 import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -24,7 +23,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
-/** @public */
+/** @internal */
 export class ResponseLike implements Response {
   private _data: Promise<any>;
   public get body() { return null; }
@@ -50,27 +49,27 @@ export class ResponseLike implements Response {
 }
 
 /** Supplies an IModelRpcProps for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 /** Notification callback for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 /** Determines if caching is permitted for a RPC response.
- * @public
+ * @internal
  */
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
 /** Runtime information related to the operation load of one or more RPC interfaces.
- * @public
+ * @internal
  */
 export interface RpcOperationsProfile {
   readonly lastRequest: number;
@@ -78,12 +77,12 @@ export interface RpcOperationsProfile {
 }
 
 /** Handles RPC request events.
- * @public
+ * @internal
  */
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
 /** Resolves "not found" responses for RPC requests.
- * @public
+ * @internal
  */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
@@ -101,7 +100,7 @@ class Cancellable<T> {
 }
 
 /** A RPC operation request.
- * @public
+ * @internal
  */
 export abstract class RpcRequest<TResponse = any> {
   private static _activeRequests: Map<string, RpcRequest> = new Map();
@@ -119,8 +118,12 @@ export abstract class RpcRequest<TResponse = any> {
   private _hasRawListener = false;
   private _raw: ArrayBuffer | string | undefined = undefined;
   private _sending?: Cancellable<number>;
+  private _attempts = 0;
+  private _retryAfter: number | null = null;
+  private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
+  protected responseProtocolVersion = 0;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -203,6 +206,9 @@ export abstract class RpcRequest<TResponse = any> {
   /** A protocol-specific method identifier for this request. */
   public method: string;
 
+  /** An attempt-specific value for when to next retry this request. */
+  public get retryAfter() { return this._retryAfter; }
+
   /** Finds the first parameter of a given structural type if present. */
   public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
@@ -266,6 +272,26 @@ export abstract class RpcRequest<TResponse = any> {
     return true;
   }
 
+  protected computeRetryAfter(attempts: number) {
+    return (((Math.pow(2, attempts) - 1) / 2) * 500) + 500;
+  }
+
+  protected recordTransientFault() {
+    ++this._transientFaults;
+  }
+
+  protected resetTransientFaultCount() {
+    this._transientFaults = 0;
+  }
+
+  protected supportsStatusCategory() {
+    if (!this.protocol.supportsStatusCategory) {
+      return false;
+    }
+
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+  }
+
   /* @internal */
   public cancel() {
     if (typeof (this._sending) === "undefined") {
@@ -286,6 +312,8 @@ export abstract class RpcRequest<TResponse = any> {
       return;
 
     this._lastSubmitted = new Date().getTime();
+    this._retryAfter = null;
+    ++this._attempts;
 
     if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound || this.status === RpcRequestStatus.Cancelled) {
       this.setStatus(RpcRequestStatus.Submitted);
@@ -340,7 +368,12 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
-    const status = this.protocol.getStatus(code);
+    const protocolStatus = this.protocol.getStatus(code);
+    const status = this.transformResponseStatus(protocolStatus, value);
+
+    if (RpcRequestStatus.isTransientError(status)) {
+      return this.handleTransientError(status);
+    }
 
     switch (status) {
       case RpcRequestStatus.Resolved: {
@@ -363,6 +396,35 @@ export abstract class RpcRequest<TResponse = any> {
         return this.handleNoContent();
       }
     }
+  }
+
+  private transformResponseStatus(protocolStatus: RpcRequestStatus, value: RpcSerializedValue): RpcRequestStatus {
+    if (!this.supportsStatusCategory()) {
+      return protocolStatus;
+    }
+
+    let status = protocolStatus;
+
+    if (protocolStatus === RpcRequestStatus.Pending) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.NotFound) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.Unknown) {
+      status = RpcRequestStatus.Rejected;
+    }
+
+    if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
+      const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
+      value.objects = managedStatus.responseValue;
+
+      if (managedStatus.managedStatus === "pending") {
+        status = RpcRequestStatus.Pending;
+      } else if (managedStatus.managedStatus === "notFound") {
+        status = RpcRequestStatus.NotFound;
+      }
+    }
+
+    return status;
   }
 
   private handleResolved(value: RpcSerializedValue) {
@@ -389,7 +451,7 @@ export abstract class RpcRequest<TResponse = any> {
       const name = hasInfo ? error.name : "";
       const message = hasInfo ? error.message : "";
       const errorNumber = (hasInfo && error.hasOwnProperty("errorNumber")) ? error.errorNumber : BentleyStatus.ERROR;
-      return this.reject(new BackendError(errorNumber, name, message, Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend, () => error));
+      return this.reject(new BackendError(errorNumber, name, message, () => error));
     } catch (err) {
       return this.reject(err);
     }
@@ -484,14 +546,29 @@ export abstract class RpcRequest<TResponse = any> {
     RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, this);
   }
 
+  private handleTransientError(status: RpcRequestStatus) {
+    if (!this._active)
+      return;
+
+    this.setLastUpdatedTime();
+    this._retryAfter = this.computeRetryAfter(this._attempts - 1);
+
+    if (this._transientFaults > this.protocol.configuration.transientFaultLimit) {
+      this.reject(new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
+    } else {
+      this.setStatus(status);
+      RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
+    }
+  }
+
   protected async setHeaders(): Promise<void> {
     const versionHeader = this.protocol.protocolVersionHeaderName;
     if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
     }
 
-    const headerNames: SerializedClientRequestContext = this.protocol.serializedClientRequestContextHeaderNames;
-    const headerValues: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(this);
+    const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
+    const headerValues = await RpcConfiguration.requestContext.serialize(this);
 
     if (headerNames.id)
       this.setHeader(headerNames.id, headerValues.id || this.id); // Cannot be empty
@@ -507,9 +584,6 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (headerNames.authorization && headerValues.authorization)
       this.setHeader(headerNames.authorization, headerValues.authorization);
-
-    if (headerNames.userId && headerValues.userId)
-      this.setHeader(headerNames.userId, headerValues.userId);
 
     if (headerValues.csrfToken)
       this.setHeader(headerValues.csrfToken.headerName, headerValues.csrfToken.headerValue);

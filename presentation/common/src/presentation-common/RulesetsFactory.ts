@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
 import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
@@ -39,9 +39,8 @@ export class RulesetsFactory {
       throw new Error("Can't create 'similar instances' for records based on multiple different ECClass instances");
     const propertyName = getPropertyName(field);
     const propertyValue = getPropertyValue(record, field);
-    const relatedInstances = createRelatedInstanceSpecs(field);
-    const relatedClasses = relatedInstances.map((r) => r.class);
-    const relatedInstanceSpecs = relatedInstances.map((r) => r.spec);
+    const relatedInstanceInfo = createRelatedInstanceSpecInfo(field);
+    const relatedClass = relatedInstanceInfo?.class;
     const ruleset: Ruleset = {
       id: `SimilarInstances/${propertyName}/${Guid.createValue()}`,
       rules: [],
@@ -51,12 +50,12 @@ export class RulesetsFactory {
       specifications: [{
         specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
-        arePolymorphic: true,
-        relatedInstances: relatedInstanceSpecs,
-        instanceFilter: createInstanceFilter(relatedInstanceSpecs, field.type, propertyName, propertyValue.raw),
+        handleInstancesPolymorphically: true,
+        relatedInstances: relatedInstanceInfo ? [relatedInstanceInfo.spec] : [],
+        instanceFilter: createInstanceFilter(relatedInstanceInfo?.spec, field.type, propertyName, propertyValue.raw),
       }],
     });
-    return { ruleset, relatedClasses, propertyName, propertyValue };
+    return { ruleset, relatedClass, propertyName, propertyValue };
   }
 
   /**
@@ -69,7 +68,7 @@ export class RulesetsFactory {
    */
   public async createSimilarInstancesRuleset(field: Field, record: Item, computeDisplayValue?: ComputeDisplayValueCallback): Promise<{ ruleset: Ruleset, description: string }> {
     const info = this.createSimilarInstancesRulesetInfo(field, record);
-    const description = await createDescriptionAsync(record, info.relatedClasses, field, info.propertyValue, computeDisplayValue);
+    const description = await createDescriptionAsync(record, info.relatedClass, field, info.propertyValue, computeDisplayValue);
     return { ruleset: info.ruleset, description };
   }
 }
@@ -100,19 +99,14 @@ const toString = (displayValue: Value | DisplayValue): string => {
   return displayValue.toString();
 };
 
-const createDescription = (record: Item, relatedClasses: ClassInfo[], field: Field, value: string): string => {
-  const classes = (relatedClasses.length > 0) ? relatedClasses : [record.classInfo!];
-  return classes.reduce((descr, classInfo, index) => {
-    if (index !== 0)
-      descr += " OR ";
-    descr += `[${classInfo.label}].[${field.label}] = ${value}`;
-    return descr;
-  }, "");
+const createDescription = (record: Item, relatedClass: ClassInfo | undefined, field: Field, value: string): string => {
+  const classInfo = relatedClass ?? record.classInfo!;
+  return `[${classInfo.label}].[${field.label}] = ${value}`;
 };
 
-const createDescriptionAsync = async (record: Item, relatedClasses: ClassInfo[], field: Field, value: PrimitiveValueDef, computeDisplayValue?: ComputeDisplayValueCallback): Promise<string> => {
+const createDescriptionAsync = async (record: Item, relatedClass: ClassInfo | undefined, field: Field, value: PrimitiveValueDef, computeDisplayValue?: ComputeDisplayValueCallback): Promise<string> => {
   const displayValue = computeDisplayValue ? await computeDisplayValue(field.type.typeName, value.raw, value.display) : toString(value.display);
-  return createDescription(record, relatedClasses, field, displayValue);
+  return createDescription(record, relatedClass, field, displayValue);
 };
 
 const getPropertyName = (field: PropertiesField) => {
@@ -170,20 +164,13 @@ const getPropertyValue = (record: Item, field: Field): PrimitiveValueDef => {
 };
 
 const createInstanceFilter = (
-  relatedInstances: Array<Readonly<RelatedInstanceSpecification>>,
+  relatedInstanceSpec: Readonly<RelatedInstanceSpecification> | undefined,
   propertyType: PrimitiveTypeDescription,
   propertyName: string,
   propertyValue: PrimitivePropertyValue,
 ): string => {
-  const aliases = relatedInstances.map((relatedInstanceSpec) => relatedInstanceSpec.alias);
-  if (aliases.length === 0)
-    aliases.push("this");
-  return aliases.reduce((filter: string, alias: string, index: number): string => {
-    if (index !== 0)
-      filter += " OR ";
-    filter += createComparison(propertyType, `${alias}.${propertyName}`, "=", propertyValue);
-    return filter;
-  }, "");
+  const alias = relatedInstanceSpec ? relatedInstanceSpec.alias : "this";
+  return createComparison(propertyType, `${alias}.${propertyName}`, "=", propertyValue);
 };
 
 type Operator = "=" | "!=" | ">" | ">=" | "<" | "<=";
@@ -245,25 +232,19 @@ const createRelatedInstanceSpec = (pathFromSelectToPropertyClass: RelationshipPa
   class: pathFromSelectToPropertyClass[pathFromSelectToPropertyClass.length - 1].targetClassInfo,
 });
 
-const createPathsFromSelectToPropertyClasses = (field: PropertiesField): RelationshipPath[] => {
+const createPathFromSelectToPropertyClass = (field: PropertiesField): RelationshipPath => {
   let currField: Field = field;
   const pathFromPropertyToSelectClass: RelationshipPath = [];
   while (currField.parent) {
     pathFromPropertyToSelectClass.push(...currField.parent.pathToPrimaryClass);
     currField = currField.parent;
   }
-  const pathFromSelectToPropertyClass = RelationshipPath.reverse(pathFromPropertyToSelectClass);
-  const relatedPropertyPaths = field.properties.map((prop) => prop.relatedClassPath); // eslint-disable-line deprecation/deprecation
-  const fullPaths = relatedPropertyPaths.map((relatedPropertyPath): RelationshipPath => [
-    ...pathFromSelectToPropertyClass,
-    ...relatedPropertyPath,
-  ]).filter((path) => path.length > 0);
-  return fullPaths;
+  return RelationshipPath.reverse(pathFromPropertyToSelectClass);
 };
 
-const createRelatedInstanceSpecs = (field: PropertiesField): Array<{ spec: RelatedInstanceSpecification, class: ClassInfo }> => {
-  const paths = createPathsFromSelectToPropertyClasses(field);
-  return paths.map((path, index) => createRelatedInstanceSpec(path, index));
+const createRelatedInstanceSpecInfo = (field: PropertiesField): { spec: RelatedInstanceSpecification, class: ClassInfo } | undefined => {
+  const path = createPathFromSelectToPropertyClass(field);
+  return path.length ? createRelatedInstanceSpec(path, 0) : undefined;
 };
 
 const hexToDec = (id: Id64String) => {
