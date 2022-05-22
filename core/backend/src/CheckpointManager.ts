@@ -191,11 +191,16 @@ export class V2CheckpointManager {
       const nRequests = process.env.PREFETCH_NREQUESTS ? parseInt(process.env.PREFETCH_NREQUESTS, 10) : 10;
       if (process.env.PREFETCHBEFOREOPEN) {
         const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName, { nRequests });
+        const stopwatch = new StopWatch("prefetch", true);
         if (process.env.PREFETCH_TIME) {
-          const stopwatch = new StopWatch("prefetch", true);
           await prefetchObject.promise;
           stopwatch.stop();
-          Logger.logInfo("V2", `Seconds taken for pin: ${stopwatch.elapsedSeconds}`);
+          Logger.logInfo("V2", `Seconds taken for prefetch: ${stopwatch.elapsedSeconds}`);
+        } else {
+          prefetchObject.promise.then(() => {
+            stopwatch.stop();
+            Logger.logInfo("V2", `Seconds taken for prefetch: ${stopwatch.elapsedSeconds}`);
+          })
         }
       }
       return { dbName: v2props.dbName, container };
