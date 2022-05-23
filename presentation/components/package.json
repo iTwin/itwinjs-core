@@ -104,7 +104,7 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
