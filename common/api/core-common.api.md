@@ -7481,7 +7481,8 @@ export class RpcOperation {
 
 // @internal (undocumented)
 export namespace RpcOperation {
-    export function allowResponseCaching(control?: RpcResponseCacheControl): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
+    const recommendedCacheHeader: string;
+    export function allowResponseCaching(control?: RpcResponseCacheControl, cacheControlHeader?: string): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
     export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => void;
     export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
     export function setRoutingProps(handler: RpcRequestTokenSupplier_T): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
@@ -7492,6 +7493,8 @@ export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowResponseCompression: boolean;
     allowTokenMismatch: boolean;
+    // (undocumented)
+    cacheControlHeader: string;
     forceStrictMode: boolean;
     requestCallback: RpcRequestCallback_T;
     retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
@@ -7793,6 +7796,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 // @internal
 export interface RpcRequestFulfillment {
     allowCompression?: boolean;
+    cacheControlHeader?: string;
     id: string;
     interfaceName: string;
     rawResult: any;
