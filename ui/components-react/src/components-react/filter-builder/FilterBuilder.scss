@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/index";
 
+.filter-builder > .rule-group {
+  border-left: 0;
+  padding-left: 0;
+}
+
 .rule-group {
-  padding-left: 10px;
-  padding-right: 5px;
-  border-radius: $iui-border-radius;
-  border: 1px solid;
+  padding: 5px 0 5px 10px;
+  border-left: 1px solid;
   @include themed {
     border-color: t(iui-color-background-border);
   }
@@ -16,7 +19,6 @@
   .rule-group-header {
     display: grid;
     grid-template-columns: auto auto;
-    padding: 5px 0;
 
     .rule-group-operator {
       margin-right: auto;
@@ -33,11 +35,7 @@
   }
 
   .rule-group-items {
-    padding: 0 0 10px 10px;
-
-    &:empty {
-      padding-bottom: 0px;
-    }
+    padding-left: 10px;
 
     .rule-group-or-rule {
       position: relative;
@@ -51,42 +49,6 @@
       &:last-child {
         margin-bottom: 0;
       }
-
-      &::before, &::after {
-        content: "";
-        position: absolute;
-        left: 0px;
-        width: 10px;
-        height: calc(50% + 10px);
-        box-sizing: border-box;
-        border-style: solid;
-        @include themed {
-          border-color: t(iui-color-background-border);
-        }
-      }
-
-      &::before {
-        top: -10px;
-        border-width: 0 0 1px 1px;
-      }
-
-      &::after {
-        top: 50%;
-        border-width: 0 0 0 1px;
-      }
-    }
-
-    .rule-group-or-rule:first-child::before {
-      top: -15px;
-      height: calc(50% + 15px);
-    }
-
-    .rule-group-or-rule:last-child::before {
-      border-bottom-left-radius: $iui-border-radius;
-    }
-
-    .rule-group-or-rule:last-child::after {
-      display: none;
     }
   }
 }
