@@ -20,7 +20,7 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
 ## iModel Connector schemas
 
-- Use an existing element-class or type-definition class from a schema in the Discipline-Physical or Discipline-Other layers as target of the mapping done by an iModel Connector when possible.
+- Use an existing element-class or type-definition class from a schema at the Discipline-Physical or Discipline-Other layers of BIS as target of the mapping done by an iModel Connector when possible.
 - Make use of Type-Definitions when appropriate in order to avoid an unnecessary large number of classes in a schema.
 - Categorize properties from the source format into:
 
@@ -28,9 +28,34 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
   2) **Standard - not intrinsic** to the classification of its owning concept. These are candidates to be captured in an *Aspect* class.
   3) **User-defined**. These should be captured by an *Aspect* class in a dynamic schema (generated at runtime).
 
-Another way to think about it is to ask if a given set of properties would appear on many different classes. If there is a single natural "base class" for all of the classes that need those properties and only classes that need those properties, then it makes sense to add the properties to that *Element Class or* its related *TypeDefinition* class. Otherwise, it may be better to use an *Aspect* class.
+  Another way to think about it is to ask if a given set of properties would appear on many different classes. If there is a single natural "base class" for all of the classes that need those properties and only classes that need those properties, then it makes sense to add the properties to that *Element Class or* its related *TypeDefinition* class. Otherwise, it may be better to use an *Aspect* class.
 
-- Regarding concepts whose semantics are not well understood by the iModel Connector, they can be addressed by either:
+- With respect to concepts whose semantics are understood by the iModel Connector but there is not a corresponding class in a schema at the Discipline-Physical or Discipline-Other layers of BIS yet, it is recommended that the Connector directly subclasses the appropriate base-class of the `BisCore` schema. Typically, they are the `PhysicalElement` and `SpatialLocationElement` base-classes. BIS schemas are continously evolving, so when the missing concept is added to a shared-layer schema, a iModel Connector that introduced separate classes for previously missing concepts just needs to inject the new concept as the base class of its existing class. The following two class-diagrams show such a situation:
 
-  1) Targeting the appropriate class from the `Generic` schema, or,
-  2) Directly subclassing the appropriate base-class from the `BisCore` schema if Standard-intrinsic properties need to be introduced on such concept. Avoid introducing an intermediate base-class for this kind of subclasses. They will get in the way of re-targeting a more appropriate base-class from a schema in the Discipline-Physical or Discipline-Other layers if the iModel Connector is able to understand the concept's semantics at a later time.
+  Before "concept1" is introduced in a shared BIS schema
+![Before schema evolution](../media/schema-evolution-known-concept-before.png)
+
+  After "concept1" is introduced in a shared BIS schema
+![Before schema evolution](../media/schema-evolution-known-concept-after.png)
+
+  Avoid introducing an intermediate base-class in the iModel Connector schema for this kind of classes. They will get in the way of re-targeting a more appropriate base-class from a schema in the Discipline-Physical or Discipline-Other layers if the iModel Connector is able to understand the concept's semantics at a later time. The following two class-diagrams depict such a situation:
+
+  Before "concept1" is introduced in a shared BIS schema
+![Before schema evolution](../media/schema-evolution-base-conn-class-before.png)
+
+  After "concept1" is introduced in a shared BIS schema, the base-class introduced by the iModel Connector gets in the way of reassigning the corresponding concrete class because such schema change operation is not supported.
+![Before schema evolution](../media/schema-evolution-base-conn-class-after.png)
+
+- Regarding concepts whose semantics are not understood by the iModel Connector, they can be addressed by:
+
+  1) Discern, or make a good guess, about the general classification of the concept in terms of *BisCore* base-classes. That is, choosing between `PhysicalElement`, `SpatialLocationElement` or `DrawingGraphic`.
+  2) Either:
+
+      a) Directly subclass the chosen base-class from the *BisCore* schema if Standard-intrinsic properties need to be introduced on such concept, or,
+
+      b) Target the appropriate class from the `Generic` schema - e.g. `PhysicalObject` or `SpatialLocation`.
+
+  If at a later time, the external format and the iModel Connector evolve to understand a concept applicable to a subset of elements already mapped to a single generic class, the iModel Connector will have to recreate those elements in the iModel under a more appropriate class. Such process may be disruptive for existing consumers of its output. Please keep the following recommendations in mind in order to minimize or mitigate its impact:
+
+  1) Try to reuse the *ElementId* of an element being recreated.
+  2) Preserve any unique and global identifiers from the element being deleted into the new one. The most important properties in that category are `Code` and `FederationGuid`.
