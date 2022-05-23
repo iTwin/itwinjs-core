@@ -453,7 +453,7 @@ describe("RpcInterface", () => {
       assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
-  it("should set cache-control headers when applicable", async function () {
+  it.only("should set cache-control headers when applicable", async function () {
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
       return this.skip();
@@ -469,7 +469,7 @@ describe("RpcInterface", () => {
     assert.isTrue(result === input);
     let cacheControlHeader: string = response.headers.get("Cache-Control");
     assert.isDefined(cacheControlHeader);
-    assert.isTrue(cacheControlHeader === "s-maxage=86400, max-age=172800, immutable");
+    assert.equal(cacheControlHeader, "s-maxage=86400, max-age=172800, immutable");
 
     // Take off caching
     RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.None;

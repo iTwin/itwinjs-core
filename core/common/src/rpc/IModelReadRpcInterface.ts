@@ -61,31 +61,32 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  // Can't store getConnectionProps on the browser for long, since we need this request to ensure the backend gets started up.
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, `s-maxage=${3600 * 24}, max-age=1, immutable`)
   public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> { return this.forward(arguments); }
   public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
   public async getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   /** @deprecated */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async getCustomViewState3dData(_iModelToken: IModelRpcProps, _options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> { return this.forward(arguments); }
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
@@ -93,7 +94,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
   public async getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { return this.forward(arguments); }
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
   public async queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> { return this.forward(arguments); }

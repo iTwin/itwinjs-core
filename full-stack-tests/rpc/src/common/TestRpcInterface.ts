@@ -70,7 +70,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
   public async op2(_id: Id64String): Promise<Id64String> {
     return this.forward(arguments);
   }

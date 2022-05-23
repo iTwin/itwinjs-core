@@ -63,6 +63,9 @@ export interface RpcRequestFulfillment {
 
   /** Whether to compress the result with one of the client's supported encodings. */
   allowCompression?: boolean;
+
+  /** The Cache-Control header which should be set on the response to the request. */
+  cacheControlHeader?: string;
 }
 
 /** @internal */
