@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -65,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
-      edgesRequired: EdgeType.None !== treeId.edges,
+      edges: treeId.edges,
       allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
@@ -263,7 +263,7 @@ class PrimaryTreeReference extends TileTreeReference {
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
-    const edges = edgesRequired ? (IModelApp.tileAdmin.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed) : EdgeType.None;
+    const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
     return { type: BatchType.Primary, edges, animationId, sectionCut };
   }
@@ -442,7 +442,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: EdgeType.None };
+    return { type: BatchType.Primary, edges: false };
   }
 }
 
@@ -471,7 +471,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   }
 
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: EdgeType.None };
+    return { type: BatchType.Primary, edges: false };
   }
 
   public get treeOwner(): TileTreeOwner {

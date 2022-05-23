@@ -488,9 +488,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(!!floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
-      const nzBounds = Rectangle.createFromSize(state.size);
-      const newContainedBounds = newBounds.containIn(nzBounds);
-      setRectangleProps(floatingWidget.bounds, newContainedBounds);
+      setRectangleProps(floatingWidget.bounds, newBounds);
       return;
     }
     case "WIDGET_DRAG_END": {
@@ -524,10 +522,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           id: target.newWidgetId,
         };
       } else {
-        state.panels[target.side].widgets = [target.newWidgetId];
-        state.widgets[target.newWidgetId] = {
+        const panelSectionId = getWidgetPanelSectionId(target.side, 0);
+        state.panels[target.side].widgets = [panelSectionId];
+        state.widgets[panelSectionId] = {
           ...draggedWidget,
-          id: target.newWidgetId,
+          id: panelSectionId,
           minimized: false,
         };
       }
@@ -582,29 +581,29 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
 
       if (homeWidget) {
+        // Add tabs to an existing widget.
         homeWidget.tabs.push(...widget.tabs);
         removeWidget(state, widget.id);
-      } else {
-        const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
-        // if widget container was remove because it was empty insert it
-        state.widgets[destinationWidgetContainerName] = {
-          activeTabId: widget.tabs[0],
-          id: destinationWidgetContainerName,
-          minimized: false,
-          tabs: [...widget.tabs],
-        };
-
-        let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
-        // istanbul ignore next
-        if (0 === panel.widgets.length)
-          insertIndex = 0;
-        panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
-        widget.minimized = false;
-        if (home.widgetId)
-          removeWidget(state, widget.id);
-        else
-          removeFloatingWidget(state, widget.id);
+        return;
       }
+
+      const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
+      // if widget container was removed because it was empty insert it
+      state.widgets[destinationWidgetContainerName] = {
+        activeTabId: widget.tabs[0],
+        id: destinationWidgetContainerName,
+        minimized: false,
+        tabs: [...widget.tabs],
+      };
+
+      let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
+      // istanbul ignore next
+      if (0 === panel.widgets.length)
+        insertIndex = 0;
+      panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
+      widget.minimized = false;
+
+      removeWidget(state, widget.id);
       return;
     }
     case "POPOUT_WIDGET_SEND_BACK": {

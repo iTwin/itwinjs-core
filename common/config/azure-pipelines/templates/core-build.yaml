@@ -25,7 +25,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
-    displayName: rush build
+    displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
   - script: node common/scripts/install-run-rush.js build -v -p max
@@ -35,6 +35,9 @@ steps:
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
+
+  - script: node ./common/scripts/install-run-rush webpack:test -v
+    displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose

@@ -5,6 +5,7 @@
 import { RpcInterface, RpcManager } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
+import { DtaConfiguration } from "./DtaConfiguration";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {
@@ -28,4 +29,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async readExternalFile(_filename: string): Promise<string> { return this.forward(arguments); }
   public async writeExternalFile(_filename: string, _content: string): Promise<void> { return this.forward(arguments); }
   public async terminate(): Promise<void> { return this.forward(arguments); }
+  public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
 }
