@@ -32,19 +32,15 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
 - With respect to concepts whose semantics are understood by the iModel Connector but there is not a corresponding class in a schema at the Discipline-Physical or Discipline-Other layers of BIS yet, it is recommended that the Connector directly subclasses the appropriate base-class of the `BisCore` schema. Typically, they are the `PhysicalElement` and `SpatialLocationElement` base-classes. BIS schemas are continously evolving, so when the missing concept is added to a shared-layer schema, a iModel Connector that introduced separate classes for previously missing concepts just needs to inject the new concept as the base class of its existing class. The following two class-diagrams show such a situation:
 
-  Before "concept1" is introduced in a shared BIS schema
-![Before schema evolution](../media/schema-evolution-known-concept-before.png)
-
-  After "concept1" is introduced in a shared BIS schema
-![Before schema evolution](../media/schema-evolution-known-concept-after.png)
+  | Before "concept1" is introduced in a shared BIS schema | After "concept1" is introduced in a shared BIS schema |
+  |-|-|
+  | ![Before schema evolution](../media/schema-evolution-known-concept-before.png) | ![After schema evolution](../media/schema-evolution-known-concept-after.png) |
 
   Avoid introducing an intermediate base-class in the iModel Connector schema for this kind of classes. They will get in the way of re-targeting a more appropriate base-class from a schema in the Discipline-Physical or Discipline-Other layers if the iModel Connector is able to understand the concept's semantics at a later time. The following two class-diagrams depict such a situation:
 
-  Before "concept1" is introduced in a shared BIS schema
-![Before schema evolution](../media/schema-evolution-base-conn-class-before.png)
-
-  After "concept1" is introduced in a shared BIS schema, the base-class introduced by the iModel Connector gets in the way of reassigning the corresponding concrete class because such schema change operation is not supported.
-![Before schema evolution](../media/schema-evolution-base-conn-class-after.png)
+  | Before "concept1" is introduced in a shared BIS schema | After "concept1" is introduced in a shared BIS schema. The iModel Connector base-class gets in the way while trying to align the corresponding concrete class. |
+  |-|-|
+  | ![Before schema evolution](../media/schema-evolution-base-conn-class-before.png) | ![After schema evolution](../media/schema-evolution-base-conn-class-after.png) |
 
 - Regarding concepts whose semantics are not understood by the iModel Connector, they can be addressed by:
 
