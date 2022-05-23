@@ -13,7 +13,7 @@ const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.co
 
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
@@ -545,7 +545,7 @@ export class IModelApp {
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization: await this.getAccessToken(),
+        authorization: ProcessDetector.isMobileAppFrontend ? "" : await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

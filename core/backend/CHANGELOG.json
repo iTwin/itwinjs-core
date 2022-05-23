@@ -2,6 +2,33 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.2.0",
+      "tag": "@itwin/core-backend_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new additionalTransformPath property to GeodeticDatums and tests"
+          },
+          {
+            "comment": "changed name of GCS in test dataset"
+          },
+          {
+            "comment": "Create an ios test project to run webpacked core tests."
+          },
+          {
+            "comment": "Added \"getMassPropertiesPerCandidate\" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately."
+          },
+          {
+            "comment": "Add two new rpcimpls, hydrateViewState and getCustomViewState3dData"
+          },
+          {
+            "comment": "add imodel import context state saving/loading functions for transformer"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.1.3",
       "tag": "@itwin/core-backend_v3.1.3",
       "date": "Fri, 15 Apr 2022 13:49:25 GMT",

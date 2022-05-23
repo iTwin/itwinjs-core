@@ -190,8 +190,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  public override getLogo() {
-    return IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.arcGisLogoCard) {
+      cards.dataset.arcGisLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
+    }
   }
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.

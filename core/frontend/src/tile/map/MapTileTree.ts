@@ -911,15 +911,13 @@ export class MapTileTreeReference extends TileTreeReference {
   /** Add logo cards to logo div. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
-    let logo;
     if (tree) {
-      if (undefined !== (logo = tree.mapLoader.terrainProvider.getLogo()))
-        cards.appendChild(logo);
+      tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
       for (const imageryTreeRef of this._layerTrees) {
         if (imageryTreeRef.layerSettings.visible) {
-          const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
-          if (imageryTree && (undefined !== (logo = imageryTree.getLogo(vp))))
-            cards.appendChild(logo);
+          const imageryTree = imageryTreeRef.treeOwner.tileTree;
+          if (imageryTree instanceof ImageryMapTileTree)
+            imageryTree.addLogoCards(cards, vp);
         }
       }
     }

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers",
-      "comment": "Fix a display issue with background color's ColorPicker where part of the dialog was missing.",
+      "comment": "upgrade mocha to version 10.0.0",
       "type": "none"
     }
   ],
