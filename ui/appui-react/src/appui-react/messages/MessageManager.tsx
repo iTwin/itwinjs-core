@@ -26,6 +26,7 @@ import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 import { StatusMessageManager } from "./StatusMessageManager";
 import { toaster, ToastOptions } from "@itwin/itwinui-react";
+import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 class MessageBoxCallbacks {
   constructor(
@@ -231,8 +232,19 @@ export class MessageManager {
     this.animateOutToRef = el;
   }
 
-  private static displayToast(message: NotifyMessageDetailsType) {
-    const options: ToastOptions = {
+  /** Display a message.
+   * Works only with `Sticky` and `Toast` message types.
+   * @param  message  Details about the message to display.
+   * @param options Optionally override individual toast parameters.
+   * @param settings Optionally override all toasts settings (i.e. placement or order).
+   * @returns Object with reference to the message (i.e. to close it programmatically) if it was displayed.
+   */
+  public static displayMessage(message: NotifyMessageDetailsType, options?: ToastOptions, settings?: ToasterSettings) {
+    if (message.msgType !== OutputMessageType.Sticky && message.msgType !== OutputMessageType.Toast) {
+      return;
+    }
+
+    const toastOptions: ToastOptions = {
       hasCloseButton: true,
       duration: message.displayTime.milliseconds,
       type:
@@ -241,22 +253,19 @@ export class MessageManager {
           : "temporary",
       animateOutTo: this.animateOutToRef,
       link: { title: message.detailedMessage as string, onClick: toaster.closeAll },
+      ...options,
     };
-    toaster.setSettings({ placement: "bottom", order: "ascending" });
+    toaster.setSettings({ placement: "bottom", order: "ascending", ...settings });
     switch (message.priority) {
       case OutputMessagePriority.Warning:
-        toaster.warning(message.briefMessage, options);
-        break;
+        return toaster.warning(message.briefMessage, toastOptions);
       case OutputMessagePriority.Info:
-        toaster.informational(message.briefMessage, options);
-        break;
+        return toaster.informational(message.briefMessage, toastOptions);
       case OutputMessagePriority.Error:
       case OutputMessagePriority.Fatal:
-        toaster.negative(message.briefMessage, options);
-        break;
+        return toaster.negative(message.briefMessage, toastOptions);
       default:
-        toaster.positive(message.briefMessage, options);
-        break;
+        return toaster.positive(message.briefMessage, toastOptions);
     }
   }
 
@@ -269,7 +278,7 @@ export class MessageManager {
       this._lastMessage = message;
     }
 
-    this.displayToast(message);
+    this._activeMessageManager.add(message);
 
     this.onMessageAddedEvent.emit({ message });
   }

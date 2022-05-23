@@ -14,7 +14,6 @@ import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from 
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { StatusMessage } from "../messages/StatusMessageManager";
 import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
 
 // cspell:ignore safearea
@@ -24,10 +23,8 @@ import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
  */
 interface StatusBarState {
   openWidget: StatusBarFieldId;
-  messages: ReadonlyArray<StatusMessage>;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
-  toastTarget: HTMLElement | null;
 }
 
 /** Properties for the [[StatusBar]] React component
@@ -42,6 +39,7 @@ export interface StatusBarProps extends CommonProps {
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
+  private messages: {close: () => void}[] = [];
 
   /** @internal */
   constructor(props: StatusBarProps) {
@@ -49,10 +47,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
     this.state = {
       openWidget: null,
-      messages: MessageManager.activeMessageManager.messages,
       activityMessageInfo: undefined,
       isActivityMessageVisible: false,
-      toastTarget: null,
     };
   }
 
@@ -101,7 +97,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
     MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
 
-    MessageManager.activeMessageManager.initialize();
     MessageManager.updateMessages();
   }
 
@@ -112,13 +107,16 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
-  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
-    this.setState({ messages: MessageManager.activeMessageManager.messages });
+  private _handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
+    const displayedMessage = MessageManager.displayMessage(message);
+    if(!!displayedMessage)
+      this.messages.push(displayedMessage);
   };
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
-    this.setState({ messages: MessageManager.activeMessageManager.messages });
+    this.messages.forEach((msg) => msg.close());
+    this.messages = [];
   };
 
   /**
@@ -142,16 +140,17 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   };
 
   private getFooterMessages(): React.ReactNode {
-    if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible) && this.state.messages.length === 0)
+    if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible))
       return null;
 
     return (
+      // eslint-disable-next-line deprecation/deprecation
       <StatusMessagesContainer
-        messages={this.state.messages}
+        messages={[]}
         activityMessageInfo={this.state.activityMessageInfo}
         isActivityMessageVisible={this.state.isActivityMessageVisible}
-        toastTarget={this.state.toastTarget}
-        closeMessage={this._closeMessage}
+        toastTarget={null}
+        closeMessage={() => {}}
         cancelActivityMessage={this._cancelActivityMessage}
         dismissActivityMessage={this._dismissActivityMessage}
       />
@@ -181,13 +180,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     });
   };
 
-  private _closeMessage = (id: string) => {
-    MessageManager.activeMessageManager.remove(id);
-    MessageManager.updateMessages();
-  };
-
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
-    this.setState({ toastTarget });
+    MessageManager.registerAnimateOutRef(toastTarget);
   };
 }
 

@@ -11,7 +11,6 @@ import * as React from "react";
 import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
 import { CommonProps } from "@itwin/core-react";
-import { StatusMessage } from "./StatusMessageManager";
 import { StatusMessagesContainer } from "./StatusMessagesContainer";
 
 /** Properties for [[StatusMessageRenderer]] component
@@ -26,24 +25,35 @@ export interface StatusMessageRendererProps extends CommonProps {
 /** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message without a StatusBar.
  * @note This component was formerly named MessageRenderer in previous releases.
  * @public
+ * @deprecated Use `toaster` from iTwinui-react to display status messages.
  */
 export function StatusMessageRenderer(props: StatusMessageRendererProps) {
-  const [messages, setMessages] = React.useState<ReadonlyArray<StatusMessage>>(MessageManager.activeMessageManager.messages);
+  const messages = React.useRef<{close: () => void}[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
   const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);
+  const lastToastId = React.useRef(0);
 
   React.useEffect(() => {
-    const handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
-      setMessages(MessageManager.activeMessageManager.messages);
+    const handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
+      const displayedMessage = MessageManager.displayMessage(
+        message,
+        { onRemove: () => props.closeMessage?.(lastToastId.current.toString()) },
+        { placement: "top", order: "descending" }
+      );
+      if(!!displayedMessage) {
+        messages.current.push(displayedMessage);
+        ++lastToastId.current;
+      }
     };
 
     return MessageManager.onMessageAddedEvent.addListener(handleMessageAddedEvent);
-  }, []);
+  }, [props]);
 
   React.useEffect(() => {
     /** Respond to clearing the message list */
     const handleMessagesUpdatedEvent = () => {
-      setMessages(MessageManager.activeMessageManager.messages);
+      messages.current.forEach((message) => message.close());
+      messages.current = [];
     };
 
     return MessageManager.onMessagesUpdatedEvent.addListener(handleMessagesUpdatedEvent);
@@ -68,12 +78,6 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
     return MessageManager.onActivityMessageCancelledEvent.addListener(handleActivityMessageCancelledEvent);
   }, []);
 
-  const closeMessage = React.useCallback((id: string) => {
-    MessageManager.activeMessageManager.remove(id);
-    MessageManager.updateMessages();
-    props.closeMessage && props.closeMessage(id);
-  }, [props]);
-
   const cancelActivityMessage = React.useCallback(() => {
     MessageManager.endActivityMessage(false);
     props.cancelActivityMessage && props.cancelActivityMessage();
@@ -84,17 +88,18 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
     props.dismissActivityMessage && props.dismissActivityMessage();
   }, [props]);
 
-  if (!(activityMessageInfo && isActivityMessageVisible) && messages.length === 0)
+  if (!(activityMessageInfo && isActivityMessageVisible))
     return null;
 
   return (
     <div className={classnames("uifw-message-renderer", props.className)} style={props.style}>
+      {/* eslint-disable-next-line deprecation/deprecation */}
       <StatusMessagesContainer
-        messages={messages}
+        messages={[]}
         activityMessageInfo={activityMessageInfo}
         isActivityMessageVisible={isActivityMessageVisible}
         toastTarget={null}
-        closeMessage={closeMessage}
+        closeMessage={() => {}}
         cancelActivityMessage={cancelActivityMessage}
         dismissActivityMessage={dismissActivityMessage}
       />
