@@ -38,7 +38,7 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
   Avoid introducing an intermediate base-class in the iModel Connector schema for this kind of classes. They will get in the way of re-targeting a more appropriate base-class from a schema in the Discipline-Physical or Discipline-Other layers if the iModel Connector is able to understand the concept's semantics at a later time. The following two class-diagrams depict such a situation:
 
-  | Before "concept1" is introduced in a shared BIS schema | After "concept1" is introduced in a shared BIS schema. The iModel Connector base-class gets in the way while trying to align the corresponding concrete class. |
+  | Before "concept1" is introduced in a shared BIS schema. iModel Connector introduced a common base-class for known concepts with no target in BIS. | After "concept1" is introduced in a shared BIS schema. The iModel Connector base-class gets in the way while trying to align the corresponding concrete class. |
   |-|-|
   | ![Before schema evolution](../media/schema-evolution-base-conn-class-before.png) | ![After schema evolution](../media/schema-evolution-base-conn-class-after.png) |
 
