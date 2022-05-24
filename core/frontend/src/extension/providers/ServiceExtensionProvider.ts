@@ -12,6 +12,7 @@ import { ExtensionClient, ExtensionMetadata } from "./ExtensionServiceClient";
 import type {
   ExtensionManifest, ExtensionProvider,
 } from "../Extension";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Required props for an extension uploaded to Bentley's Extension Service
@@ -22,8 +23,10 @@ export interface ServiceExtensionProviderProps {
   name: string;
   /** Version number (Semantic Versioning) */
   version: string;
-  /** iTwin Id where the extension was published, or undefined if public */
+  /** iTwin Id */
   iTwinId?: string;
+  /** @internal */
+  getAccessToken?: () => Promise<AccessToken>;
 }
 
 /**
@@ -65,7 +68,7 @@ export class ServiceExtensionProvider implements ExtensionProvider {
   private async _getExtensionFiles(props: ServiceExtensionProviderProps) {
     const extensionClient = new ExtensionClient();
 
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    const accessToken = await (props.getAccessToken?.() ?? IModelApp.authorizationClient?.getAccessToken());
     if (!accessToken)
       return undefined;
 
