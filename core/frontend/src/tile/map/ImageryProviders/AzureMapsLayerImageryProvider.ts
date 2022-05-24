@@ -21,7 +21,10 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
-  public override getLogo() {
-    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.azureMapsLogoCard) {
+      cards.dataset.azureMapsLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") }));
+    }
   }
 }

@@ -2,6 +2,18 @@
   "name": "@itwin/presentation-testing",
   "entries": [
     {
+      "version": "3.2.0",
+      "tag": "@itwin/presentation-testing_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a way to reduce raw numeric values' decimal precision to overcome rounding differences across platforms"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.1.3",
       "tag": "@itwin/presentation-testing_v3.1.3",
       "date": "Fri, 15 Apr 2022 13:49:25 GMT",
