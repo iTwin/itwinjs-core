@@ -122,6 +122,17 @@
   },
   "filterBuilder": {
     "rule": "Rule",
-    "ruleGroup": "Rule Group"
+    "ruleGroup": "Rule Group",
+    "operators": {
+      "isTrue": "Is True",
+      "isFalse": "Is False",
+      "equal": "Equal",
+      "notEqual": "Not Equal",
+      "contains": "Contains",
+      "isNull": "Is Null",
+      "isNotNull": "Is Not Null",
+      "and": "And",
+      "or": "Or"
+    }
   }
 }

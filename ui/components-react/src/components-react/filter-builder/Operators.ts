@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
+import { UiComponents } from "../UiComponents";
 
 /** @alpha */
 export enum FilterRuleGroupOperator {
@@ -80,13 +81,13 @@ export function getAvailableOperators(property: PropertyDescription) {
 export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
   switch(operator) {
     case FilterRuleOperator.IsTrue:
-      return "Is True";
+      return UiComponents.translate("filterBuilder.operators.isTrue");
     case FilterRuleOperator.IsFalse:
-      return "Is False";
+      return UiComponents.translate("filterBuilder.operators.isFalse");
     case FilterRuleOperator.IsEqual:
-      return "Equal";
+      return UiComponents.translate("filterBuilder.operators.equal");
     case FilterRuleOperator.IsNotEqual:
-      return "Not Equal";
+      return UiComponents.translate("filterBuilder.operators.notEqual");
     case FilterRuleOperator.Greater:
       return ">";
     case FilterRuleOperator.GreaterOrEqual:
@@ -96,11 +97,11 @@ export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
     case FilterRuleOperator.LessOrEqual:
       return "<=";
     case FilterRuleOperator.Like:
-      return "Contains";
+      return UiComponents.translate("filterBuilder.operators.contains");
     case FilterRuleOperator.IsNull:
-      return "Is Null";
+      return UiComponents.translate("filterBuilder.operators.isNull");
     case FilterRuleOperator.IsNotNull:
-      return "Is Not Null";
+      return UiComponents.translate("filterBuilder.operators.isNotNull");
   }
 }
 

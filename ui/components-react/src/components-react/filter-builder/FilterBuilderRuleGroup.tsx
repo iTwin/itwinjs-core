@@ -35,10 +35,10 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
       <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
       <ButtonGroup className="rule-group-actions">
         <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
-          {React.useMemo(() => UiComponents.localization.getLocalizedString("UiComponents:filterBuilder.rule"), [])}
+          {UiComponents.translate("filterBuilder.rule")}
         </Button>
         <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>
-          {React.useMemo(() => UiComponents.localization.getLocalizedString("UiComponents:filterBuilder.ruleGroup"), [])}
+          {UiComponents.translate("filterBuilder.ruleGroup")}
         </Button>
         {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
       </ButtonGroup>
@@ -60,8 +60,8 @@ export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOper
   const {operator, onChange} = props;
 
   const options = React.useMemo<Array<SelectOption<FilterRuleGroupOperator>>>(() => ([
-    { value: FilterRuleGroupOperator.And, label: "And" },
-    { value: FilterRuleGroupOperator.Or, label: "Or" },
+    { value: FilterRuleGroupOperator.And, label: UiComponents.translate("filterBuilder.operators.and") },
+    { value: FilterRuleGroupOperator.Or, label: UiComponents.translate("filterBuilder.operators.or") },
   ]), []);
 
   return <div className="rule-group-operator">

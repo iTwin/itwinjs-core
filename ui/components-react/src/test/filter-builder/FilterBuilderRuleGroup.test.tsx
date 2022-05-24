@@ -78,7 +78,7 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
       }}
     />);
 
-    getByText("Or");
+    getByText(TestUtils.i18n.getLocalizedString("Components:filterBuilder.operators.or"));
   });
 
   it("dispatches add rule event when button is clicked", () => {
@@ -134,7 +134,7 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
 
     selector?.click();
 
-    getByText("Or").click();
+    getByText(TestUtils.i18n.getLocalizedString("Components:filterBuilder.operators.or")).click();
 
     expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_GROUP_OPERATOR", path: defaultProps.path, operator: FilterRuleGroupOperator.Or});
   });

@@ -13,5 +13,8 @@
   },
   "instance-key-value-renderer": {
     "select-instance": "Select element"
+  },
+  "instance-filter-builder": {
+    "classes": "Classes"
   }
 }

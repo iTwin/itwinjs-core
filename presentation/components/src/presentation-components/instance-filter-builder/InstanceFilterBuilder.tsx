@@ -12,6 +12,7 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 import { Filter, FilterBuilder } from "@itwin/components-react";
 import { Label } from "@itwin/itwinui-react";
 import { ClassInfo } from "@itwin/presentation-common";
+import { translate } from "../common/Utils";
 import { MultiTagSelect } from "./MultiTagSelect";
 import "./InstanceFilterBuilder.scss";
 
@@ -51,7 +52,7 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
   return <div className="presentation-instance-filter">
     <div className="presentation-instance-filter-class-selector">
       <Label htmlFor="class-combo-input">
-        Classes
+        {translate("instance-filter-builder.classes")}
       </Label>
       <MultiTagSelect
         id="class-combo-input"

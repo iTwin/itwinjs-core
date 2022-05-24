@@ -31,16 +31,6 @@ describe("getAvailableOperators", () => {
       FilterRuleOperator.Less,
       FilterRuleOperator.LessOrEqual,
     ]);
-    expect(getAvailableOperators({name: "prop", displayLabel: "Prop", typename: "long"})).to.containSubset([
-      FilterRuleOperator.IsEqual,
-      FilterRuleOperator.IsNotEqual,
-      FilterRuleOperator.IsNull,
-      FilterRuleOperator.IsNotNull,
-      FilterRuleOperator.Greater,
-      FilterRuleOperator.GreaterOrEqual,
-      FilterRuleOperator.Less,
-      FilterRuleOperator.LessOrEqual,
-    ]);
     expect(getAvailableOperators({name: "prop", displayLabel: "Prop", typename: "double"})).to.containSubset([
       FilterRuleOperator.IsEqual,
       FilterRuleOperator.IsNotEqual,
@@ -56,6 +46,10 @@ describe("getAvailableOperators", () => {
       FilterRuleOperator.IsNotEqual,
       FilterRuleOperator.IsNull,
       FilterRuleOperator.IsNotNull,
+      FilterRuleOperator.Greater,
+      FilterRuleOperator.GreaterOrEqual,
+      FilterRuleOperator.Less,
+      FilterRuleOperator.LessOrEqual,
     ]);
     expect(getAvailableOperators({name: "prop", displayLabel: "Prop", typename: "otherType"})).to.containSubset([
       FilterRuleOperator.IsEqual,
