@@ -7493,7 +7493,6 @@ export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowResponseCompression: boolean;
     allowTokenMismatch: boolean;
-    // (undocumented)
     cacheControlHeader: string;
     forceStrictMode: boolean;
     requestCallback: RpcRequestCallback_T;
