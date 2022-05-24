@@ -3,5 +3,5 @@
 exports[`ImageRenderer render renders svg 1`] = `
 "<div><i class=\\"icon core-svg-icon\\"><div><svg-loader encoding=\\"UTF-8\\" version=\\"1.0\\" src=\\"<?xml\\">
     
-   id=\\"svg-id\\"&gt;</svg-loader></div></i></div>"
+  &gt;</svg-loader></div></i></div>"
 `;

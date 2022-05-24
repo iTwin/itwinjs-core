@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.3.0-dev.7",
+  "version": "3.3.0-dev.11",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -41,10 +41,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.7",
-    "@itwin/core-common": "workspace:^3.3.0-dev.7",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.7",
-    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.7"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.11",
+    "@itwin/core-common": "workspace:^3.3.0-dev.11",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.11",
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.11"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {
@@ -80,7 +80,7 @@
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "null-loader": "^0.1.1",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

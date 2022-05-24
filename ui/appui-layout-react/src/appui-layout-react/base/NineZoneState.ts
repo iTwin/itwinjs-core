@@ -488,9 +488,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(!!floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
-      const nzBounds = Rectangle.createFromSize(state.size);
-      const newContainedBounds = newBounds.containIn(nzBounds);
-      setRectangleProps(floatingWidget.bounds, newContainedBounds);
+      setRectangleProps(floatingWidget.bounds, newBounds);
       return;
     }
     case "WIDGET_DRAG_END": {
@@ -524,10 +522,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           id: target.newWidgetId,
         };
       } else {
-        state.panels[target.side].widgets = [target.newWidgetId];
-        state.widgets[target.newWidgetId] = {
+        const panelSectionId = getWidgetPanelSectionId(target.side, 0);
+        state.panels[target.side].widgets = [panelSectionId];
+        state.widgets[panelSectionId] = {
           ...draggedWidget,
-          id: target.newWidgetId,
+          id: panelSectionId,
           minimized: false,
         };
       }
