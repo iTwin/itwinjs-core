@@ -10,6 +10,7 @@ import { fireEvent } from "@testing-library/react";
 import { FilterBuilderRuleRenderer, FilterBuilderRuleRendererProps } from "../../components-react/filter-builder/FilterBuilderRule";
 import { FilterBuilderRuleOperatorProps } from "../../components-react/filter-builder/FilterBuilderRuleOperator";
 import { FilterBuilderRuleValueProps } from "../../components-react/filter-builder/FilterBuilderRuleValue";
+import { FilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
 import { FilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 import { renderWithContext } from "./Common";
@@ -94,8 +95,9 @@ describe("<FilterBuilderRuleRenderer", () => {
   });
 
   it("dispatches property change when property is selected", () => {
-    const spy = sinon.spy();
-    const {container, getByText} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {dispatch: spy, properties: [defaultProperty]});
+    const actions = new FilterBuilderActions(sinon.spy());
+    const {container, getByText} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {actions, properties: [defaultProperty]});
+    const setRulePropertySpy = sinon.stub(actions, "setRuleProperty");
 
     const selector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(selector).to.not.be.null;
@@ -104,17 +106,18 @@ describe("<FilterBuilderRuleRenderer", () => {
 
     getByText(defaultProperty.displayLabel).click();
 
-    expect(spy).to.be.calledOnceWith({type: "SET_RULE_PROPERTY", path: defaultProps.path, property: defaultProperty});
+    expect(setRulePropertySpy).to.be.calledOnceWith(defaultProps.path, defaultProperty);
   });
 
   it("dispatches property change with undefined property when selected property is not in properties list", () => {
-    const spy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
+    const setRulePropertySpy = sinon.stub(actions, "setRuleProperty");
     renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
-    />, {dispatch: spy, properties: []});
+    />, {actions, properties: []});
 
-    expect(spy).to.be.calledOnceWith({type: "SET_RULE_PROPERTY", path: defaultProps.path, property: undefined});
+    expect(setRulePropertySpy).to.be.calledOnceWith(defaultProps.path, undefined);
   });
 
   it("invokes onRulePropertySelected callback when property is selected", () => {
@@ -132,46 +135,47 @@ describe("<FilterBuilderRuleRenderer", () => {
   });
 
   it("dispatches remove rule action", () => {
-    const spy = sinon.spy();
-    const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {dispatch: spy});
+    const actions = new FilterBuilderActions(sinon.spy());
+    const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />, {actions});
+    const removeItemSpy = sinon.stub(actions, "removeItem");
 
     const button = container.querySelector(".rule-actions")?.firstElementChild;
     expect(button).to.not.be.null;
     fireEvent.click(button!);
-    expect(spy).to.be.calledOnceWith({type: "REMOVE_ITEM", path: defaultProps.path});
+    expect(removeItemSpy).to.be.calledOnceWith(defaultProps.path);
   });
 
   it("dispatches operator change when operator is changed", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const operatorRendererSpy = sinon.spy();
     renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
-    />, {dispatch: dispatchSpy}, {ruleOperatorRenderer: operatorRendererSpy});
+    />, {actions}, {ruleOperatorRenderer: operatorRendererSpy});
+    const setRuleOperatorSpy = sinon.stub(actions, "setRuleOperator");
 
-    dispatchSpy.resetHistory();
     expect(operatorRendererSpy).to.be.calledOnce;
     const operatorRendererProps = operatorRendererSpy.firstCall.args[0] as FilterBuilderRuleOperatorProps;
     const newOperator = FilterRuleOperator.IsNotNull;
     operatorRendererProps.onChange(newOperator);
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_OPERATOR", path: defaultProps.path, operator: newOperator});
+    expect(setRuleOperatorSpy).to.be.calledOnceWith(defaultProps.path, newOperator);
   });
 
   it("dispatches value change when value is changed", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const valueRendererSpy = sinon.spy();
     renderWithContext(<FilterBuilderRuleRenderer
       {...defaultProps}
       rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
-    />, {dispatch: dispatchSpy}, {ruleValueRenderer: valueRendererSpy});
+    />, {actions}, {ruleValueRenderer: valueRendererSpy});
+    const setRuleValueSpy = sinon.stub(actions, "setRuleValue");
 
-    dispatchSpy.resetHistory();
     expect(valueRendererSpy).to.be.calledOnce;
     const valueRendererProps = valueRendererSpy.firstCall.args[0] as FilterBuilderRuleValueProps;
     const newValue: PropertyValue = {valueFormat: PropertyValueFormat.Primitive};
     valueRendererProps.onChange(newValue);
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_VALUE", path: defaultProps.path, value: newValue});
+    expect(setRuleValueSpy).to.be.calledOnceWith(defaultProps.path, newValue);
   });
 });

@@ -8,7 +8,7 @@ import { FilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
 import { FilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { FilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
-  FilterBuilderAction, FilterBuilderRule, FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup, useFilterBuilderState,
+  FilterBuilderActions, FilterBuilderRule, FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup, useFilterBuilderState,
 } from "./FilterBuilderState";
 import { filterRuleOperatorNeedsValue } from "./Operators";
 import { Filter } from "./Types";
@@ -24,11 +24,8 @@ export interface FilterBuilderProps {
 }
 
 /** @alpha */
-export type FilterBuilderDispatch = (action: FilterBuilderAction) => void;
-
-/** @alpha */
 export interface FilterBuilderContext {
-  dispatch: FilterBuilderDispatch;
+  actions: FilterBuilderActions;
   properties: PropertyDescription[];
   onRulePropertySelected?: (property: PropertyDescription) => void;
 }
@@ -51,14 +48,14 @@ const ROOT_GROUP_PATH: string[] = [];
 /** @alpha */
 export function FilterBuilder(props: FilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
-  const [state, dispatch] = useFilterBuilderState();
+  const {state, actions} = useFilterBuilderState();
 
   const filter = React.useMemo(() => buildFilter(state.rootGroup), [state]);
   React.useEffect(() => {
     onFilterChanged(filter);
   }, [filter, onFilterChanged]);
 
-  const contextValue = React.useMemo<FilterBuilderContext>(() => ({dispatch, properties, onRulePropertySelected}), [dispatch, properties, onRulePropertySelected]);
+  const contextValue = React.useMemo<FilterBuilderContext>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
   const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
   return (
     <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>

@@ -19,16 +19,16 @@ export interface FilterBuilderRuleGroupRendererProps {
 
 /** @alpha */
 export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps) {
-  const {path, group} = props;
-  const {dispatch} = React.useContext(FilterBuilderContext);
+  const { path, group } = props;
+  const { actions } = React.useContext(FilterBuilderContext);
 
-  const addRule = () => dispatch({type: "ADD_ITEM", path, itemType: "RULE"});
-  const addRuleGroup = () => dispatch({type: "ADD_ITEM", path, itemType: "RULE_GROUP"});
-  const removeGroup = () => dispatch({type: "REMOVE_ITEM", path});
+  const addRule = () => actions.addItem(path, "RULE");
+  const addRuleGroup = () => actions.addItem(path, "RULE_GROUP");
+  const removeGroup = () => actions.removeItem(path);
 
   const onOperatorChange = React.useCallback((operator) => {
-    dispatch({type: "SET_RULE_GROUP_OPERATOR", path, operator});
-  }, [path, dispatch]);
+    actions.setRuleGroupOperator(path, operator);
+  }, [path, actions]);
 
   return <div className="rule-group">
     <div className="rule-group-header">

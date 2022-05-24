@@ -34,117 +34,76 @@ export interface FilterBuilderRule {
 }
 
 /** @alpha */
-export interface FilterBuilderAddItemAction {
-  type: "ADD_ITEM";
-  path: string[];
-  itemType: "RULE" | "RULE_GROUP";
-}
+export class FilterBuilderActions {
+  constructor(private setState: (setter: (prevState: FilterBuilderState) => FilterBuilderState) => void) {}
 
-/** @alpha */
-export interface FilterBuilderRemoveItemAction {
-  type: "REMOVE_ITEM";
-  path: string[];
-}
+  private updateState(updater: (state: Draft<FilterBuilderState>) => void) {
+    this.setState(produce(updater));
+  }
 
-/** @alpha */
-export interface FilterBuilderSetRuleGroupOperatorAction {
-  type: "SET_RULE_GROUP_OPERATOR";
-  path: string[];
-  operator: FilterRuleGroupOperator;
-}
-
-/** @alpha */
-export interface FilterBuilderSetRulePropertyAction {
-  type: "SET_RULE_PROPERTY";
-  path: string[];
-  property?: PropertyDescription;
-}
-
-/** @alpha */
-export interface FilterBuilderSetRuleOperatorAction {
-  type: "SET_RULE_OPERATOR";
-  path: string[];
-  operator: FilterRuleOperator;
-}
-
-/** @alpha */
-export interface FilterBuilderSetRuleValueAction {
-  type: "SET_RULE_VALUE";
-  path: string[];
-  value: PropertyValue;
-}
-
-/** @alpha */
-export interface FilterBuilderResetPropertiesAction {
-  type: "RESET_PROPERTIES";
-}
-
-/** @alpha */
-export type FilterBuilderAction =
-  FilterBuilderAddItemAction |
-  FilterBuilderRemoveItemAction |
-  FilterBuilderSetRuleGroupOperatorAction |
-  FilterBuilderSetRulePropertyAction |
-  FilterBuilderSetRuleOperatorAction |
-  FilterBuilderSetRuleValueAction;
-
-/** @alpha */
-export const filterBuilderStateReducer: (state: FilterBuilderState, action: FilterBuilderAction) => FilterBuilderState = produce(
-  (state: Draft<FilterBuilderState>, action: FilterBuilderAction) => {
-    switch (action.type) {
-      case "ADD_ITEM": {
-        const parentGroup = findRuleGroup(state.rootGroup, action.path);
-        if (!parentGroup)
-          return;
-        const item = action.itemType === "RULE_GROUP" ? createEmptyRuleGroup(parentGroup.id) : createEmptyRule(parentGroup.id);
-        parentGroup.items.push(item);
+  public addItem(path: string[], itemType: "RULE_GROUP" | "RULE") {
+    this.updateState((state) => {
+      const parentGroup = findRuleGroup(state.rootGroup, path);
+      if (!parentGroup)
         return;
-      }
-      case "REMOVE_ITEM": {
-        const itemId = action.path.pop();
-        const parentGroup = findRuleGroup(state.rootGroup, action.path);
-        if (!parentGroup)
-          return;
-        const itemIndex = parentGroup.items.findIndex((item) => item.id === itemId);
-        if (itemIndex === -1)
-          return;
-        parentGroup.items.splice(itemIndex, 1);
+      const item = itemType === "RULE_GROUP" ? createEmptyRuleGroup(parentGroup.id) : createEmptyRule(parentGroup.id);
+      parentGroup.items.push(item);
+    });
+  }
+
+  public removeItem(path: string[]) {
+    this.updateState((state) => {
+      const itemId = path.pop();
+      const parentGroup = findRuleGroup(state.rootGroup, path);
+      if (!parentGroup)
         return;
-      }
-      case "SET_RULE_GROUP_OPERATOR": {
-        const group = findRuleGroup(state.rootGroup, action.path);
-        if (!group)
-          return;
-        group.operator = action.operator;
+      const itemIndex = parentGroup.items.findIndex((item) => item.id === itemId);
+      if (itemIndex === -1)
         return;
-      }
-      case "SET_RULE_PROPERTY": {
-        const rule = findRule(state.rootGroup, action.path);
-        if (!rule)
-          return;
-        rule.property = action.property;
-        rule.operator = undefined;
+      parentGroup.items.splice(itemIndex, 1);
+    });
+  }
+
+  public setRuleGroupOperator(path: string[], operator: FilterRuleGroupOperator) {
+    this.updateState((state) => {
+      const group = findRuleGroup(state.rootGroup, path);
+      if (!group)
+        return;
+      group.operator = operator;
+    });
+  }
+
+  public setRuleProperty(path: string[], property?: PropertyDescription) {
+    this.updateState((state) => {
+      const rule = findRule(state.rootGroup, path);
+      if (!rule)
+        return;
+      rule.property = property;
+      rule.operator = undefined;
+      rule.value = undefined;
+    });
+  }
+
+  public setRuleOperator(path: string[], operator: FilterRuleOperator) {
+    this.updateState((state) => {
+      const rule = findRule(state.rootGroup, path);
+      if (!rule)
+        return;
+      if (!filterRuleOperatorNeedsValue(operator))
         rule.value = undefined;
+      rule.operator = operator;
+    });
+  }
+
+  public setRuleValue(path: string[], value: PropertyValue) {
+    this.updateState((state) => {
+      const rule = findRule(state.rootGroup, path);
+      if (!rule)
         return;
-      }
-      case "SET_RULE_OPERATOR": {
-        const rule = findRule(state.rootGroup, action.path);
-        if (!rule)
-          return;
-        if (!filterRuleOperatorNeedsValue(action.operator))
-          rule.value = undefined;
-        rule.operator = action.operator;
-        return;
-      }
-      case "SET_RULE_VALUE": {
-        const rule = findRule(state.rootGroup, action.path);
-        if (!rule)
-          return;
-        rule.value = action.value;
-        return;
-      }
-    }
-  });
+      rule.value = value;
+    });
+  }
+}
 
 /** @alpha */
 export function isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item is FilterBuilderRuleGroup {
@@ -153,9 +112,12 @@ export function isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item
 
 /** @alpha */
 export function useFilterBuilderState() {
-  return React.useReducer(filterBuilderStateReducer, {
+  const [state, setState] = React.useState(() => ({
     rootGroup: createEmptyRuleGroup(),
-  });
+  }));
+  const [actions] = React.useState(() => new FilterBuilderActions(setState));
+
+  return { state, actions };
 }
 
 function createEmptyRule(groupId: string): FilterBuilderRule {

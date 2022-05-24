@@ -23,7 +23,7 @@ describe("useFilterBuilderState", () => {
 
   it("initializes group with one empty rule", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state] = result.current;
+    const {state} = result.current;
     expect(state.rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.And,
       items: [{
@@ -34,10 +34,10 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule to root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [_, dispatch] = result.current;
-    dispatch({type: "ADD_ITEM", itemType: "RULE", path: []});
+    const {actions} = result.current;
+    actions.addItem([], "RULE");
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.And,
       items: [{
@@ -50,15 +50,15 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule to nested group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [_, dispatch] = result.current;
-    dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
+    const {actions} = result.current;
+    actions.addItem([], "RULE_GROUP");
 
-    const nestedGroup = result.current[0].rootGroup.items[1];
+    const nestedGroup = result.current.state.rootGroup.items[1];
     expect(nestedGroup).to.not.be.undefined;
 
-    dispatch({type: "ADD_ITEM", itemType: "RULE", path: [nestedGroup.id]});
+    actions.addItem([], "RULE");
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.And,
       items: [{
@@ -75,10 +75,10 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule group to root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [_, dispatch] = result.current;
-    dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
+    const {actions} = result.current;
+    actions.addItem([], "RULE_GROUP");
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.And,
       items: [{
@@ -93,22 +93,22 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state if parent group is not found when adding item", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
-    dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: ["invalidParent"]});
+    const {state, actions} = result.current;
+    actions.addItem(["invalidParent"], "RULE_GROUP");
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("removes rule from root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [_, dispatch] = result.current;
+    const {actions} = result.current;
 
-    let rootGroup = result.current[0].rootGroup;
+    let rootGroup = result.current.state.rootGroup;
     expect(rootGroup.items).to.have.lengthOf(1);
-    dispatch({type: "REMOVE_ITEM", path: [rootGroup.items[0].id]});
+    actions.removeItem([rootGroup.items[0].id]);
 
-    rootGroup = result.current[0].rootGroup;
+    rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.And,
       items: [],
@@ -117,30 +117,30 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state if parent group is not found when removing item", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
-    dispatch({type: "REMOVE_ITEM", path: ["invalidParent", state.rootGroup.items[0].id]});
+    const {state, actions} = result.current;
+    actions.removeItem(["invalidParent", state.rootGroup.items[0].id]);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("does not change state when removing non existing item", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
-    dispatch({type: "REMOVE_ITEM", path: ["invalidItem"]});
+    const {state, actions} = result.current;
+    actions.removeItem(["invalidItem"]);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("sets root group operator", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     expect(state.rootGroup.operator).to.be.eq(FilterRuleGroupOperator.And);
-    dispatch({type: "SET_RULE_GROUP_OPERATOR", operator: FilterRuleGroupOperator.Or, path: []});
+    actions.setRuleGroupOperator([], FilterRuleGroupOperator.Or);
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       operator: FilterRuleGroupOperator.Or,
       items: [{
@@ -151,21 +151,21 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state when setting non existing group operator", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
-    dispatch({type: "SET_RULE_GROUP_OPERATOR", operator: FilterRuleGroupOperator.Or, path: ["invalidGroup"]});
+    const {state, actions} = result.current;
+    actions.setRuleGroupOperator(["invalidGroup"], FilterRuleGroupOperator.Or);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("sets rule property", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
-    dispatch({type: "SET_RULE_PROPERTY", property, path: [state.rootGroup.items[0].id]});
+    actions.setRuleProperty([state.rootGroup.items[0].id], property);
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       items: [{
         groupId: rootGroup.id,
@@ -176,22 +176,22 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state when setting non existing rule property", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
-    dispatch({type: "SET_RULE_PROPERTY", property, path: ["invalidRule"]});
+    actions.setRuleProperty(["invalidRule"], property);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("sets rule operator", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
-    dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsEqual, path: [state.rootGroup.items[0].id]});
+    actions.setRuleOperator([state.rootGroup.items[0].id], FilterRuleOperator.IsEqual);
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       items: [{
         groupId: rootGroup.id,
@@ -202,16 +202,16 @@ describe("useFilterBuilderState", () => {
 
   it("resets rule value if new operator does not need value", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
-    dispatch({type: "SET_RULE_VALUE", value, path: [state.rootGroup.items[0].id]});
-    const rule = result.current[0].rootGroup.items[0] as FilterBuilderRule;
+    actions.setRuleValue([state.rootGroup.items[0].id], value);
+    const rule = result.current.state.rootGroup.items[0] as FilterBuilderRule;
     expect(rule.value).to.be.deep.eq(value);
 
-    dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsNull, path: [state.rootGroup.items[0].id]});
+    actions.setRuleOperator([state.rootGroup.items[0].id], FilterRuleOperator.IsNull);
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       items: [{
         groupId: rootGroup.id,
@@ -223,22 +223,22 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state when setting non existing rule operator", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
-    dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsEqual, path: ["invalidRule"]});
+    actions.setRuleOperator(["invalidRule"], FilterRuleOperator.IsEqual);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("sets rule value", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
-    dispatch({type: "SET_RULE_VALUE", value, path: [state.rootGroup.items[0].id]});
+    actions.setRuleValue([state.rootGroup.items[0].id], value);
 
-    const rootGroup = result.current[0].rootGroup;
+    const rootGroup = result.current.state.rootGroup;
     expect(rootGroup).to.containSubset({
       items: [{
         groupId: rootGroup.id,
@@ -249,36 +249,36 @@ describe("useFilterBuilderState", () => {
 
   it("does not change state when setting non existing rule value", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
-    dispatch({type: "SET_RULE_VALUE", value, path: ["invalidRule"]});
+    actions.setRuleValue(["invalidRule"], value);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("does not change state when trying to set property on rule group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const [state, dispatch] = result.current;
+    const {state, actions} = result.current;
 
     const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
-    dispatch({type: "SET_RULE_PROPERTY", property, path: []});
+    actions.setRuleProperty([], property);
 
-    const [newState] = result.current;
+    const {state: newState} = result.current;
     expect(state).to.be.eq(newState);
   });
 
   describe("nested rule", () => {
     function getStateWithNestedRule() {
       const {result} = renderHook(() => useFilterBuilderState());
-      const [_, dispatch] = result.current;
+      const {actions} = result.current;
 
-      const getNestingRule = () => result.current[0].rootGroup.items[1] as FilterBuilderRuleGroup;
+      const getNestingRule = () => result.current.state.rootGroup.items[1] as FilterBuilderRuleGroup;
       const getNestedRule = () => getNestingRule().items[0] as FilterBuilderRule;
       const getNestedRulePath = () => [getNestingRule().id, getNestedRule().id];
 
-      dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
+      actions.addItem([], "RULE_GROUP");
       expect(getNestingRule()).to.not.be.undefined;
       expect(getNestedRule()).to.not.be.undefined;
 
@@ -287,10 +287,10 @@ describe("useFilterBuilderState", () => {
 
     it("sets property", () => {
       const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
-      const [_, dispatch] = result.current;
+      const {actions} = result.current;
 
       const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
-      dispatch({type: "SET_RULE_PROPERTY", property, path: getNestedRulePath()});
+      actions.setRuleProperty(getNestedRulePath(), property);
 
       const rule = getNestedRule();
       expect(rule).to.containSubset({
@@ -301,9 +301,9 @@ describe("useFilterBuilderState", () => {
 
     it("sets operator", () => {
       const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
-      const [_, dispatch] = result.current;
+      const {actions} = result.current;
 
-      dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsEqual, path: getNestedRulePath()});
+      actions.setRuleOperator(getNestedRulePath(), FilterRuleOperator.IsEqual);
 
       const rule = getNestedRule();
       expect(rule).to.containSubset({
@@ -314,10 +314,10 @@ describe("useFilterBuilderState", () => {
 
     it("sets value", () => {
       const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
-      const [_, dispatch] = result.current;
+      const {actions} = result.current;
 
       const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
-      dispatch({type: "SET_RULE_VALUE", value, path: getNestedRulePath()});
+      actions.setRuleValue(getNestedRulePath(), value);
 
       const rule = getNestedRule();
       expect(rule).to.containSubset({
@@ -328,9 +328,9 @@ describe("useFilterBuilderState", () => {
 
     it("removes", () => {
       const {result, getNestingRule, getNestedRulePath} = getStateWithNestedRule();
-      const [_, dispatch] = result.current;
+      const {actions} = result.current;
 
-      dispatch({type: "REMOVE_ITEM", path: getNestedRulePath()});
+      actions.removeItem(getNestedRulePath());
 
       const nestingRule = getNestingRule();
       expect(nestingRule.items).to.be.empty;

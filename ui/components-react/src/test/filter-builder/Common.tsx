@@ -6,6 +6,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
 import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "../../components-react/filter-builder/FilterBuilder";
+import { FilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
 
 /** @internal */
 export function renderWithContext(
@@ -14,7 +15,7 @@ export function renderWithContext(
   rendererContext: Partial<FilterBuilderRuleRenderingContext> = {}
 ): ReturnType<typeof render> {
   const builderContextValue: FilterBuilderContext = {
-    dispatch: builderContext.dispatch ?? sinon.spy(),
+    actions: builderContext.actions ?? new FilterBuilderActions(sinon.spy()),
     properties: builderContext.properties ?? [],
     onRulePropertySelected: builderContext.onRulePropertySelected,
   };

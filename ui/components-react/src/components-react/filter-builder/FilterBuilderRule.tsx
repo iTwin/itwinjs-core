@@ -22,25 +22,25 @@ export interface FilterBuilderRuleRendererProps {
 /** @alpha */
 export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps) {
   const { path, rule} = props;
-  const { properties, dispatch, onRulePropertySelected } = React.useContext(FilterBuilderContext);
+  const { properties, actions, onRulePropertySelected } = React.useContext(FilterBuilderContext);
   const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(FilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
-    dispatch({type: "SET_RULE_PROPERTY", path, property: newProperty});
+    actions.setRuleProperty(path, newProperty);
     if (onRulePropertySelected && newProperty)
       onRulePropertySelected(newProperty);
-  }, [path, onRulePropertySelected, dispatch]);
+  }, [path, onRulePropertySelected, actions]);
 
   const onRuleOperatorChange = React.useCallback((newOperator: FilterRuleOperator) => {
-    dispatch({type: "SET_RULE_OPERATOR", path, operator: newOperator});
-  }, [path, dispatch]);
+    actions.setRuleOperator(path, newOperator);
+  }, [path, actions]);
 
   const onRuleValueChange = React.useCallback((newValue: PropertyValue) => {
-    dispatch({type: "SET_RULE_VALUE", path, value: newValue});
-  }, [path, dispatch]);
+    actions.setRuleValue(path, newValue);
+  }, [path, actions]);
 
-  const removeRule = () => dispatch({type: "REMOVE_ITEM", path});
+  const removeRule = () => actions.removeItem(path);
 
   const operatorRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleOperatorRenderer)

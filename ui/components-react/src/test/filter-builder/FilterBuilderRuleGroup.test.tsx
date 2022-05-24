@@ -7,7 +7,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { FilterBuilderRuleGroupRenderer, FilterBuilderRuleGroupRendererProps } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
-import { FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
+import { FilterBuilderActions, FilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { FilterRuleGroupOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
 import { renderWithContext } from "./Common";
@@ -82,31 +82,33 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
   });
 
   it("dispatches add rule event when button is clicked", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
-    />, {dispatch: dispatchSpy});
+    />, {actions});
+    const addItemSpy = sinon.stub(actions, "addItem");
 
     const addRuleButton = getByTestId("rule-group-add-rule");
     addRuleButton.click();
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "ADD_ITEM", itemType: "RULE", path: defaultProps.path});
+    expect(addItemSpy).to.be.calledOnceWith(defaultProps.path, "RULE");
   });
 
   it("dispatches add rule group event when button is clicked", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
-    />, {dispatch: dispatchSpy});
+    />, {actions});
+    const addItemSpy = sinon.stub(actions, "addItem");
 
     const addRuleGroupButton = getByTestId("rule-group-add-rule-group");
     addRuleGroupButton.click();
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "ADD_ITEM", itemType: "RULE_GROUP", path: defaultProps.path});
+    expect(addItemSpy).to.be.calledOnceWith(defaultProps.path, "RULE_GROUP");
   });
 
   it("dispatches remove item event when button is clicked", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const {getByTestId} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
       group={{
@@ -115,19 +117,21 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
         operator: FilterRuleGroupOperator.And,
         items: [],
       }}
-    />, {dispatch: dispatchSpy});
+    />, {actions});
+    const removeItemSpy = sinon.stub(actions, "removeItem");
 
     const removeButton = getByTestId("rule-group-remove");
     removeButton.click();
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "REMOVE_ITEM", path: defaultProps.path});
+    expect(removeItemSpy).to.be.calledOnceWith(defaultProps.path);
   });
 
   it("dispatches operator change event when operator is selected", () => {
-    const dispatchSpy = sinon.spy();
+    const actions = new FilterBuilderActions(sinon.spy());
     const {container, getByText} = renderWithContext(<FilterBuilderRuleGroupRenderer
       {...defaultProps}
-    />, {dispatch: dispatchSpy});
+    />, {actions});
+    const setRuleGroupOperatorSpy = sinon.stub(actions, "setRuleGroupOperator");
 
     const selector = container.querySelector<HTMLInputElement>(".rule-group-operator .iui-select-button");
     expect(selector).to.not.be.null;
@@ -136,6 +140,6 @@ describe("<FilterBuilderRuleGroupRenderer", () => {
 
     getByText(TestUtils.i18n.getLocalizedString("Components:filterBuilder.operators.or")).click();
 
-    expect(dispatchSpy).to.be.calledOnceWith({type: "SET_RULE_GROUP_OPERATOR", path: defaultProps.path, operator: FilterRuleGroupOperator.Or});
+    expect(setRuleGroupOperatorSpy).to.be.calledOnceWith(defaultProps.path, FilterRuleGroupOperator.Or);
   });
 });
