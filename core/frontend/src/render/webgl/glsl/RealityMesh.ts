@@ -186,8 +186,11 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
 
   return `
-  if (!u_texturesPresent)
-    return u_baseColor;
+  if (!u_texturesPresent) {
+    vec4 col = u_baseColor;
+    ${applyFeatureColor}
+    return col;
+  }
 
   bool doDiscard = true;
   vec4 col = u_baseColor;
