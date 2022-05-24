@@ -24,6 +24,7 @@ export interface ServiceExtensionProviderProps {
   version: string;
   /** iTwin Id */
   iTwinId: string;
+  /** @internal */
   getAccessToken?: () => Promise<AccessToken>;
 }
 
