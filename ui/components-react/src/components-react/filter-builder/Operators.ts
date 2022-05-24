@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyDescription } from "@itwin/appui-abstract";
+import { PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
 
 /** @alpha */
 export enum FilterRuleGroupOperator {
@@ -31,9 +31,9 @@ export enum FilterRuleOperator {
 
 /** @alpha */
 export function getAvailableOperators(property: PropertyDescription) {
-  const typename = property.typename.toLowerCase();
+  const typename = property.typename;
 
-  if (typename === "boolean") {
+  if (typename === StandardTypeNames.Bool || typename === StandardTypeNames.Boolean) {
     return [
       FilterRuleOperator.IsTrue,
       FilterRuleOperator.IsFalse,
@@ -47,9 +47,15 @@ export function getAvailableOperators(property: PropertyDescription) {
     FilterRuleOperator.IsNotNull,
   ];
 
-  if (typename === "double"
-    || typename === "int"
-    || typename === "long") {
+  if (typename === StandardTypeNames.Number
+    || typename === StandardTypeNames.Int
+    || typename === StandardTypeNames.Integer
+    || typename === StandardTypeNames.Double
+    || typename === StandardTypeNames.Float
+    || typename === StandardTypeNames.Hex
+    || typename === StandardTypeNames.Hexadecimal
+    || typename === StandardTypeNames.ShortDate
+    || typename === StandardTypeNames.DateTime) {
     return [
       ...operators,
       FilterRuleOperator.Greater,
@@ -59,7 +65,7 @@ export function getAvailableOperators(property: PropertyDescription) {
     ];
   }
 
-  if (typename === "string") {
+  if (typename === StandardTypeNames.String || typename === StandardTypeNames.Text) {
     return [
       ...operators,
       FilterRuleOperator.Like,
