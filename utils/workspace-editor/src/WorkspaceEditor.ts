@@ -209,7 +209,7 @@ async function listWorkspaceDb(args: ListOptions) {
     let prefetch: IModelJsNative.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      prefetch = file.prefetch();
+      prefetch = file.prefetch({ nRequests: args.nRequests });
     }
 
     if (!args.strings && !args.blobs && !args.files)
