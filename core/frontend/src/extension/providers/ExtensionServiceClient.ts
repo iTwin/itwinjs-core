@@ -72,9 +72,9 @@ export class ExtensionClient {
   }
 
   /**
-   * Gets information on extensions. If extensionName is undefined, will return all extensions in the iTwinId.
-   * If it's defined, will return all versions of that extension.
-   * If iTwinId is undefined, will default to public.
+   * Gets information on extensions. If extensionName is undefined, will return all extensions in the iTwin.
+   * If extensionName is defined, will return all versions of that extension.
+   * If iTwinId is undefined, will default to the public extensions.
    * @param extensionName Extension name (optional)
    * @param iTwinId iTwin Id (optional)
    */
