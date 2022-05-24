@@ -1,6 +1,15 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Add option to auto-collapse unpinned widget panels.
+- Animate tool settings appearance in the docked tool settings bar.
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT

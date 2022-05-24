@@ -1037,6 +1037,9 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
 export function isPanelLocation(location: TabLocation): location is PanelLocation;
 
 // @internal (undocumented)
+export function isPanelTarget(target: DragTarget): target is PanelTarget_2;
+
+// @internal (undocumented)
 export function isPopoutLocation(location: TabLocation): location is PopoutLocation;
 
 // @internal (undocumented)
@@ -1044,6 +1047,9 @@ export function isPopoutWidgetLocation(location: WidgetLocation): location is Po
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
+
+// @internal (undocumented)
+export function isWidgetTarget(target: DragTarget): target is WidgetTarget_2;
 
 // @beta @deprecated
 export class Item extends React.PureComponent<ItemProps> {

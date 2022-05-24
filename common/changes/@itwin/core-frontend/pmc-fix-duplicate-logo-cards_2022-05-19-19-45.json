@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Catch snap abandoned exception.",
+      "comment": "Prevent duplicate logo cards from displaying when clicking the iTwin.js logo in a viewport.",
       "type": "none"
     }
   ],
