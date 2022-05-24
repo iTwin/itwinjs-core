@@ -9580,6 +9580,8 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
 // @alpha
 export interface ServiceExtensionProviderProps {
+    // @internal (undocumented)
+    getAccessToken?: () => Promise<AccessToken>;
     iTwinId: string;
     name: string;
     version: string;
