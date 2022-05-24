@@ -1039,33 +1039,34 @@ export interface FilterableTable {
 export function FilterBuilder(props: FilterBuilderProps): JSX.Element;
 
 // @alpha (undocumented)
-export type FilterBuilderAction = FilterBuilderAddItemAction | FilterBuilderRemoveItemAction | FilterBuilderSetRuleGroupOperatorAction | FilterBuilderSetRulePropertyAction | FilterBuilderSetRuleOperatorAction | FilterBuilderSetRuleValueAction;
+export class FilterBuilderActions {
+    constructor(setState: (setter: (prevState: FilterBuilderState) => FilterBuilderState) => void);
+    // (undocumented)
+    addItem(path: string[], itemType: "RULE_GROUP" | "RULE"): void;
+    // (undocumented)
+    removeItem(path: string[]): void;
+    // (undocumented)
+    setRuleGroupOperator(path: string[], operator: FilterRuleGroupOperator): void;
+    // (undocumented)
+    setRuleOperator(path: string[], operator: FilterRuleOperator): void;
+    // (undocumented)
+    setRuleProperty(path: string[], property?: PropertyDescription): void;
+    // (undocumented)
+    setRuleValue(path: string[], value: PropertyValue): void;
+    }
 
 // @alpha (undocumented)
-export interface FilterBuilderAddItemAction {
-    // (undocumented)
-    itemType: "RULE" | "RULE_GROUP";
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    type: "ADD_ITEM";
-}
+export const FilterBuilderContext: React.Context<FilterBuilderContextProps>;
 
 // @alpha (undocumented)
-export interface FilterBuilderContext {
+export interface FilterBuilderContextProps {
     // (undocumented)
-    dispatch: FilterBuilderDispatch;
+    actions: FilterBuilderActions;
     // (undocumented)
     onRulePropertySelected?: (property: PropertyDescription) => void;
     // (undocumented)
     properties: PropertyDescription[];
 }
-
-// @alpha (undocumented)
-export const FilterBuilderContext: React.Context<FilterBuilderContext>;
-
-// @alpha (undocumented)
-export type FilterBuilderDispatch = (action: FilterBuilderAction) => void;
 
 // @alpha (undocumented)
 export interface FilterBuilderProps {
@@ -1079,20 +1080,6 @@ export interface FilterBuilderProps {
     ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
     // (undocumented)
     ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderRemoveItemAction {
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    type: "REMOVE_ITEM";
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderResetPropertiesAction {
-    // (undocumented)
-    type: "RESET_PROPERTIES";
 }
 
 // @alpha (undocumented)
@@ -1184,15 +1171,15 @@ export interface FilterBuilderRuleRendererProps {
 }
 
 // @alpha (undocumented)
-export interface FilterBuilderRuleRenderingContext {
+export const FilterBuilderRuleRenderingContext: React.Context<FilterBuilderRuleRenderingContextProps>;
+
+// @alpha (undocumented)
+export interface FilterBuilderRuleRenderingContextProps {
     // (undocumented)
     ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
     // (undocumented)
     ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
 }
-
-// @alpha (undocumented)
-export const FilterBuilderRuleRenderingContext: React.Context<FilterBuilderRuleRenderingContext>;
 
 // @alpha (undocumented)
 export function FilterBuilderRuleValue(props: FilterBuilderRuleValueProps): JSX.Element;
@@ -1208,53 +1195,10 @@ export interface FilterBuilderRuleValueProps {
 }
 
 // @alpha (undocumented)
-export interface FilterBuilderSetRuleGroupOperatorAction {
-    // (undocumented)
-    operator: FilterRuleGroupOperator;
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    type: "SET_RULE_GROUP_OPERATOR";
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderSetRuleOperatorAction {
-    // (undocumented)
-    operator: FilterRuleOperator;
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    type: "SET_RULE_OPERATOR";
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderSetRulePropertyAction {
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    property?: PropertyDescription;
-    // (undocumented)
-    type: "SET_RULE_PROPERTY";
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderSetRuleValueAction {
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    type: "SET_RULE_VALUE";
-    // (undocumented)
-    value: PropertyValue;
-}
-
-// @alpha (undocumented)
 export interface FilterBuilderState {
     // (undocumented)
     rootGroup: FilterBuilderRuleGroup;
 }
-
-// @alpha (undocumented)
-export const filterBuilderStateReducer: (state: FilterBuilderState, action: FilterBuilderAction) => FilterBuilderState;
 
 // @public
 export enum FilterCompositionLogicalOperator {
@@ -1516,7 +1460,7 @@ export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 export function getAvailableOperators(property: PropertyDescription): FilterRuleOperator[];
 
 // @alpha (undocumented)
-export function getFilterRuleOperatorLabel(operator: FilterRuleOperator): "<" | "<=" | ">" | ">=" | "Is True" | "Is False" | "Equal" | "Not Equal" | "Contains" | "Is Null" | "Is Not Null";
+export function getFilterRuleOperatorLabel(operator: FilterRuleOperator): string;
 
 // @internal
 export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string;
@@ -4477,7 +4421,10 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
 };
 
 // @alpha (undocumented)
-export function useFilterBuilderState(): [FilterBuilderState, React.Dispatch<FilterBuilderAction>];
+export function useFilterBuilderState(): {
+    state: FilterBuilderState;
+    actions: FilterBuilderActions;
+};
 
 // @public
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;

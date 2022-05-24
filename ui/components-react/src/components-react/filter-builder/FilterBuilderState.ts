@@ -112,7 +112,7 @@ export function isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item
 
 /** @alpha */
 export function useFilterBuilderState() {
-  const [state, setState] = React.useState(() => ({
+  const [state, setState] = React.useState<FilterBuilderState>(() => ({
     rootGroup: createEmptyRuleGroup(),
   }));
   const [actions] = React.useState(() => new FilterBuilderActions(setState));

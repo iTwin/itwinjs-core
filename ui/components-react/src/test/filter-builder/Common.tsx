@@ -5,24 +5,24 @@
 import * as React from "react";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
-import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "../../components-react/filter-builder/FilterBuilder";
 import { FilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
+import { FilterBuilderContext, FilterBuilderContextProps, FilterBuilderRuleRenderingContext, FilterBuilderRuleRenderingContextProps } from "../../components-react/filter-builder/FilterBuilder";
 
 /** @internal */
 export function renderWithContext(
   component: JSX.Element,
-  builderContext: Partial<FilterBuilderContext> = {},
-  rendererContext: Partial<FilterBuilderRuleRenderingContext> = {}
+  builderContextProps: Partial<FilterBuilderContextProps> = {},
+  rendererContextProps: Partial<FilterBuilderRuleRenderingContextProps> = {}
 ): ReturnType<typeof render> {
-  const builderContextValue: FilterBuilderContext = {
-    actions: builderContext.actions ?? new FilterBuilderActions(sinon.spy()),
-    properties: builderContext.properties ?? [],
-    onRulePropertySelected: builderContext.onRulePropertySelected,
+  const builderContextValue: FilterBuilderContextProps = {
+    actions: builderContextProps.actions ?? new FilterBuilderActions(sinon.spy()),
+    properties: builderContextProps.properties ?? [],
+    onRulePropertySelected: builderContextProps.onRulePropertySelected,
   };
 
-  const rendererContextValue: FilterBuilderRuleRenderingContext = {
-    ruleOperatorRenderer: rendererContext.ruleOperatorRenderer,
-    ruleValueRenderer: rendererContext.ruleValueRenderer,
+  const rendererContextValue: FilterBuilderRuleRenderingContextProps = {
+    ruleOperatorRenderer: rendererContextProps.ruleOperatorRenderer,
+    ruleValueRenderer: rendererContextProps.ruleValueRenderer,
   };
 
   return render(<FilterBuilderContext.Provider value={builderContextValue}>

@@ -24,24 +24,23 @@ export interface FilterBuilderProps {
 }
 
 /** @alpha */
-export interface FilterBuilderContext {
+export interface FilterBuilderContextProps {
   actions: FilterBuilderActions;
   properties: PropertyDescription[];
   onRulePropertySelected?: (property: PropertyDescription) => void;
 }
-/** @alpha */
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const FilterBuilderContext = React.createContext<FilterBuilderContext>(undefined!);
 
 /** @alpha */
-export interface FilterBuilderRuleRenderingContext {
+export const FilterBuilderContext = React.createContext<FilterBuilderContextProps>(null!);
+
+/** @alpha */
+export interface FilterBuilderRuleRenderingContextProps {
   ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
 }
 
 /** @alpha */
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const FilterBuilderRuleRenderingContext = React.createContext<FilterBuilderRuleRenderingContext>(undefined!);
+export const FilterBuilderRuleRenderingContext = React.createContext<FilterBuilderRuleRenderingContextProps>({});
 
 const ROOT_GROUP_PATH: string[] = [];
 
@@ -55,8 +54,8 @@ export function FilterBuilder(props: FilterBuilderProps) {
     onFilterChanged(filter);
   }, [filter, onFilterChanged]);
 
-  const contextValue = React.useMemo<FilterBuilderContext>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
-  const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
+  const contextValue = React.useMemo<FilterBuilderContextProps>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
+  const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContextProps>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
   return (
     <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
       <FilterBuilderContext.Provider value={contextValue}>
