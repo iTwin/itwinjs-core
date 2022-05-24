@@ -34,7 +34,7 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule to root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const dispatch = result.current[1];
+    const [_, dispatch] = result.current;
     dispatch({type: "ADD_ITEM", itemType: "RULE", path: []});
 
     const rootGroup = result.current[0].rootGroup;
@@ -50,7 +50,7 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule to nested group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const dispatch = result.current[1];
+    const [_, dispatch] = result.current;
     dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
 
     const nestedGroup = result.current[0].rootGroup.items[1];
@@ -75,7 +75,7 @@ describe("useFilterBuilderState", () => {
 
   it("adds rule group to root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const dispatch = result.current[1];
+    const [_, dispatch] = result.current;
     dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: []});
 
     const rootGroup = result.current[0].rootGroup;
@@ -96,13 +96,13 @@ describe("useFilterBuilderState", () => {
     const [state, dispatch] = result.current;
     dispatch({type: "ADD_ITEM", itemType: "RULE_GROUP", path: ["invalidParent"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
   it("removes rule from root group", () => {
     const {result} = renderHook(() => useFilterBuilderState());
-    const dispatch = result.current[1];
+    const [_, dispatch] = result.current;
 
     let rootGroup = result.current[0].rootGroup;
     expect(rootGroup.items).to.have.lengthOf(1);
@@ -120,7 +120,7 @@ describe("useFilterBuilderState", () => {
     const [state, dispatch] = result.current;
     dispatch({type: "REMOVE_ITEM", path: ["invalidParent", state.rootGroup.items[0].id]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -129,7 +129,7 @@ describe("useFilterBuilderState", () => {
     const [state, dispatch] = result.current;
     dispatch({type: "REMOVE_ITEM", path: ["invalidItem"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -154,7 +154,7 @@ describe("useFilterBuilderState", () => {
     const [state, dispatch] = result.current;
     dispatch({type: "SET_RULE_GROUP_OPERATOR", operator: FilterRuleGroupOperator.Or, path: ["invalidGroup"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -181,7 +181,7 @@ describe("useFilterBuilderState", () => {
     const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
     dispatch({type: "SET_RULE_PROPERTY", property, path: ["invalidRule"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -227,7 +227,7 @@ describe("useFilterBuilderState", () => {
 
     dispatch({type: "SET_RULE_OPERATOR", operator: FilterRuleOperator.IsEqual, path: ["invalidRule"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -254,7 +254,7 @@ describe("useFilterBuilderState", () => {
     const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
     dispatch({type: "SET_RULE_VALUE", value, path: ["invalidRule"]});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 
@@ -265,7 +265,7 @@ describe("useFilterBuilderState", () => {
     const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
     dispatch({type: "SET_RULE_PROPERTY", property, path: []});
 
-    const newState = result.current[0];
+    const [newState] = result.current;
     expect(state).to.be.eq(newState);
   });
 

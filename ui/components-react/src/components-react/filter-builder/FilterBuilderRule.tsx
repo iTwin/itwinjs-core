@@ -22,8 +22,8 @@ export interface FilterBuilderRuleRendererProps {
 /** @alpha */
 export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps) {
   const { path, rule} = props;
-  const { properties, dispatch, onRulePropertySelected} = React.useContext(FilterBuilderContext);
-  const { ruleOperatorRenderer, ruleValueRenderer} = React.useContext(FilterBuilderRuleRenderingContext);
+  const { properties, dispatch, onRulePropertySelected } = React.useContext(FilterBuilderContext);
+  const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(FilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {

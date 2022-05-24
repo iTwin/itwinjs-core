@@ -34,14 +34,14 @@ describe("<FilterBuilderRuleRenderer", () => {
   });
 
   describe("rule operator", () => {
-    it("does not renderer operator if rule property is undefined", () => {
+    it("does not render operator if rule property is undefined", () => {
       const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
       expect(operatorContainer).to.be.null;
     });
 
-    it("renderers operator if rule property is defined", () => {
+    it("renders operator if rule property is defined", () => {
       const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
@@ -57,21 +57,21 @@ describe("<FilterBuilderRuleRenderer", () => {
   });
 
   describe("rule value", () => {
-    it("does not renderer value if rule property is undefined", () => {
+    it("does not render value if rule property is undefined", () => {
       const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} />);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
       expect(valueContainer).to.be.null;
     });
 
-    it("does not renderer value if rule operator is undefined", () => {
+    it("does not render value if rule operator is undefined", () => {
       const {container} = renderWithContext(<FilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
       expect(valueContainer).to.be.null;
     });
 
-    it("renderers value when value and operator defined", () => {
+    it("renders value when value and operator defined", () => {
       const {container} = renderWithContext(<FilterBuilderRuleRenderer
         {...defaultProps}
         rule={{...defaultProps.rule, property: defaultProperty, operator: FilterRuleOperator.IsEqual}}
