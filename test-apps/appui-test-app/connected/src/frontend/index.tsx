@@ -27,7 +27,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, SpatialViewState, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, SelectionTool, SnapMode, SpatialViewState, ToolAdmin, ViewClipByPlaneTool, ViewState3d,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -149,39 +149,48 @@ interface ProgressInfo {
 }
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
-  const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
-  // try specified viewId first
-  if (requestedViewId) {
-    const queryParams: ViewQueryParams = {};
-    queryParams.from = SpatialViewState.classFullName;
-    queryParams.where = `ECInstanceId=${requestedViewId}`;
-    const vwProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), queryParams);
-    if (vwProps.length !== 0) {
-      return requestedViewId;
+  try {
+    const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
+    // try specified viewId first
+    if (requestedViewId) {
+      const queryParams: ViewQueryParams = {};
+      // queryParams.from = SpatialViewState.classFullName;
+      queryParams.from = ViewState3d.classFullName;
+      queryParams.where = `ECInstanceId=${requestedViewId}`;
+      const vwProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), queryParams);
+      if (vwProps.length !== 0) {
+        return requestedViewId;
+      }
     }
-  }
 
-  const viewId = await iModelConnection.views.queryDefaultViewId();
-  const params: ViewQueryParams = {};
-  params.from = SpatialViewState.classFullName;
-  params.where = `ECInstanceId=${viewId}`;
+    const viewId = await iModelConnection.views.queryDefaultViewId();
+    const params: ViewQueryParams = {};
+    params.from = SpatialViewState.classFullName;
+    params.where = `ECInstanceId=${viewId}`;
 
-  // Check validity of default view
-  const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), params);
-  if (viewProps.length === 0) {
-    // Return the first view we can find
-    const viewList = await iModelConnection.views.getViewList({ wantPrivate: false });
-    if (viewList.length === 0)
+    // Check validity of default view
+    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), params);
+    if (viewProps.length === 0) {
+      // Return the first view we can find
+      const viewList = await iModelConnection.views.getViewList({ wantPrivate: false });
+      if (viewList.length === 0)
+        return undefined;
+
+      const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
+      if (spatialViewList.length !== 0)
+        return spatialViewList[0].id;
+
+      const threeDViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("3d") !== -1);
+      if (threeDViewList.length !== 0)
+        return threeDViewList[0].id;
+
       return undefined;
-
-    const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
-    if (spatialViewList.length === 0)
-      return undefined;
-
-    return spatialViewList[0].id;
+    }
+    return viewId;
+  } catch (err) {
+    alert(`Unable to determine view for iModel - Error: ${err}`);
+    return undefined;
   }
-
-  return viewId;
 }
 
 export class SampleAppIModelApp {
