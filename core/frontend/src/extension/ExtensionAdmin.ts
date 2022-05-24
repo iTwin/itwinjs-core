@@ -110,7 +110,7 @@ export class ExtensionAdmin {
   /** Returns the hostname of an input string. Throws an error if input is not a valid hostname (or URL). */
   private getHostName(inputUrl: string): string {
     // inputs without a protocol (e.g., http://) will throw an error in URL constructor
-    const inputWithProtocol = /(ftp|http|https):\/\//.test(inputUrl) ?
+    const inputWithProtocol = /(http|https):\/\//.test(inputUrl) ?
       inputUrl :
       `https://${inputUrl}`;
     try {
