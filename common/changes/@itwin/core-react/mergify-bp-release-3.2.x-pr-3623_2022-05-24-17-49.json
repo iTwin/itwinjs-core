@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Backport change to update panel background to use same as buic-background-dialog so dispabled itwin ui components display properly.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
