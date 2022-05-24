@@ -7,10 +7,12 @@ import * as React from "react";
 import sinon from "sinon";
 import { UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { ClassInfo } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { act, fireEvent, render } from "@testing-library/react";
-import { stubRaf } from "./Common";
 import { InstanceFilterBuilder } from "../../presentation-components/instance-filter-builder/InstanceFilterBuilder";
+import { stubRaf } from "./Common";
 
 describe("InstanceFilter", () => {
   stubRaf();
@@ -20,11 +22,17 @@ describe("InstanceFilter", () => {
   ];
 
   before(async () => {
+    await NoRenderApp.startup({
+      localization: new EmptyLocalization(),
+    });
     await UiComponents.initialize(new EmptyLocalization());
+    await Presentation.initialize();
   });
 
-  after(() => {
+  after(async () => {
+    Presentation.terminate();
     UiComponents.terminate();
+    await IModelApp.shutdown();
   });
 
   it("invokes 'onClassSelected' when non selected class is clicked", () => {

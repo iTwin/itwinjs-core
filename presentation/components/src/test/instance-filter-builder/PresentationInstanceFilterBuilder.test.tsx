@@ -8,11 +8,12 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { FilterRuleOperator, getFilterRuleOperatorLabel, UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Descriptor } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation } from "@itwin/presentation-frontend";
 import { act, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
@@ -38,12 +39,18 @@ describe("PresentationInstanceFilter", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(async () => {
+    await NoRenderApp.startup({
+      localization: new EmptyLocalization(),
+    });
     await UiComponents.initialize(new EmptyLocalization());
+    await Presentation.initialize();
     Element.prototype.scrollIntoView = sinon.stub();
   });
 
-  after(() => {
+  after(async () => {
+    Presentation.terminate();
     UiComponents.terminate();
+    await IModelApp.shutdown();
     sinon.restore();
   });
 
