@@ -124,7 +124,9 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
     * @note This cache header may not be applicable to all cacheable RPC operations!
     * Example RPC operation where this header does not apply:
     *   getTileCacheContainerUrl - This RPC operation returns a SAS key which expires in 24 hours, so it can't be cached on the browser for 48 hours.
-    * @todo Add stale-while-revalidate to this header, once it is supported and tested in the RPC caching service.
+    *
+    *
+    * TODO: Add stale-while-revalidate to this header, once it is supported and tested in the RPC caching service.
     */
   export const recommendedCacheHeader = `s-maxage=${3600 * 24}, max-age=${3600 * 48}, immutable`;
 
