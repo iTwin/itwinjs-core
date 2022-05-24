@@ -453,7 +453,7 @@ describe("RpcInterface", () => {
       assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
-  it.only("should set cache-control headers when applicable", async function () {
+  it("should set cache-control headers when applicable", async function () {
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
       return this.skip();
