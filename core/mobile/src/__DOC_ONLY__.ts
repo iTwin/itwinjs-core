@@ -33,3 +33,11 @@ export * from "./MobileFrontend";
  * @docs-group-description MobileRpcServer
  * Provides RPC handling for the backend host on mobile.
  */
+/**
+ * @docs-group-description iModelHub
+ * Classes for interacting with iModelHub.
+ */
+/**
+ * @docs-group-description RpcInterface
+ * Used to define a set of operations exposed by a service that a client can call, using configurable protocols.
+ */
