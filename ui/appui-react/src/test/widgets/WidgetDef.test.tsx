@@ -72,6 +72,9 @@ describe("WidgetDef", () => {
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
     expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
+    widgetDef.defaultFloatingSize = {width: 400, height:400};
+    expect (widgetDef.defaultFloatingSize.width).to.eq(400);
+    expect (widgetDef.defaultFloatingSize.height).to.eq(400);
 
     widgetDef.iconSpec = "icon-lightbulb";
     expect(widgetDef.iconSpec).to.eq("icon-lightbulb");

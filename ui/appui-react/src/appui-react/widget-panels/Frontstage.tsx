@@ -834,6 +834,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
   nineZone.tabs[newTab.id] = newTab;
   if (widgetDef.tabLocation.floating) {
     const location = widgetDef.tabLocation;
+    // istanbul ignore next
     const floatingWidgetId = widgetDef.floatingContainerId ?? getUniqueId();
     const widgetContainerId = getWidgetId(location.side, panelZoneKeys[location.widgetIndex]);
     const home: FloatingWidgetHomeState = {side: location.side, widgetId: widgetContainerId, widgetIndex: 0 };
@@ -927,8 +928,8 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
     // istanbul ignore else
   } else if (!isPopoutLocation(location)) {
     const widgetId = location.widgetId;
-    const side = "side" in location ? location.side : "left";
-    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+    const side = "side" in location ? location.side : /* istanbul ignore next */ "left";
+    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : /* istanbul ignore next */ 0;
     const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
     const floating = false;
     widgetDef.tabLocation = {
