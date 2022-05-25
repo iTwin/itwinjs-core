@@ -18,9 +18,9 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  AddFloatingWidgetProps, addFloatingWidgetToDraftState, addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState,
+  createTabState, createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
+  isHorizontalPanelSide, isPopoutLocation, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -832,7 +832,23 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
   });
   nineZone.tabs[newTab.id] = newTab;
-  if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
+  if (widgetDef.tabLocation.floating) {
+    const location = widgetDef.tabLocation;
+    const floatingWidgetId = widgetDef.floatingContainerId ?? getUniqueId();
+    const widgetContainerId = getWidgetId(location.side, panelZoneKeys[location.widgetIndex]);
+    const home: FloatingWidgetHomeState = {side: location.side, widgetId: widgetContainerId, widgetIndex: 0 };
+    // const preferredPosition = widgetDef.defaultFloatingPosition;
+    // addWidgetTabToFloatingPanel(nineZone, floatingContainerId, widgetDef.id, homePanelInfo);
+    const floatingWidgetProps: AddFloatingWidgetProps = {
+      floatingWidgetId,
+      widgetTabId: widgetDef.id,
+      home,
+      preferredSize: widgetDef.defaultFloatingSize,
+      preferredPosition: widgetDef.defaultFloatingPosition,
+      isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+    };
+    addFloatingWidgetToDraftState(nineZone, floatingWidgetProps);
+  } else if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
     // Add to existing widget (by widget id).
     const widgetId = widgetDef.tabLocation.widgetId;
     const newTabWidget = nineZone.widgets[widgetId];
@@ -905,16 +921,26 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const location = findTab(state, widgetDef.id);
   if (!location)
     return;
-  const widgetId = location.widgetId;
-  const side = "side" in location ? location.side : "left";
-  const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
-  const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
-  widgetDef.tabLocation = {
-    side,
-    tabIndex,
-    widgetId,
-    widgetIndex,
-  };
+  if (isFloatingLocation(location)) {
+    const widget = state.widgets[location.widgetId];
+    if (widgetDef.id !== widget.activeTabId)
+      return;
+    widgetDef.tabLocation.floating = true;
+    widgetDef.setFloatingContainerId(location.floatingWidgetId);
+  } else if (!isPopoutLocation(location)) {
+    const widgetId = location.widgetId;
+    const side = "side" in location ? location.side : "left";
+    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+    const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
+    const floating = false;
+    widgetDef.tabLocation = {
+      side,
+      tabIndex,
+      widgetId,
+      widgetIndex,
+      floating,
+    };
+  }
   removeTab(state, widgetDef.id);
 }
 
@@ -924,7 +950,7 @@ export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState[
   if (!location)
     return;
   const widget = nineZone.widgets[location.widgetId];
-  if ("side" in location) {
+  if ("side" in location && !isFloatingLocation(location)) {
     const panel = nineZone.panels[location.side];
     panel.collapsed = false;
     widget.minimized = false;

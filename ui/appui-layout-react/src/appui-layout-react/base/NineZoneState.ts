@@ -1590,7 +1590,61 @@ export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide
     }
   });
 }
+/** Props to add a floating widget to the draft NinZoneState
+ * @internal
+ */
+export interface AddFloatingWidgetProps {
+  floatingWidgetId: string;
+  widgetTabId: string;
+  home: FloatingWidgetHomeState;
+  preferredSize?: SizeProps;
+  preferredPosition?: PointProps;
+  userSized?: boolean;
+  isFloatingStateWindowResizable?: boolean;
+}
 
+/** Add a floating widget to the draft NinZoneState
+ * @internal
+ */
+export function addFloatingWidgetToDraftState(draft: Draft<NineZoneState>, props: AddFloatingWidgetProps) {
+
+  // tab must be defined but not placed in a container (ie not in panel, floating, or popout)
+  const tab = draft.tabs[props.widgetTabId];
+
+  const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...props.preferredSize };
+  const preferredPoint = props.preferredPosition ?? { x: (draft.size.width - size.width) / 2, y: (draft.size.height - size.height) / 2 };
+  const nzBounds = Rectangle.createFromSize(draft.size);
+  const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
+  const containedBounds = bounds.containIn(nzBounds);
+
+  if (!draft.floatingWidgets.allIds.includes(props.floatingWidgetId))
+    draft.floatingWidgets.allIds.push(props.floatingWidgetId);
+
+  // add new floating widget to array of widgets in the state
+  const floatedTab = draft.tabs[props.widgetTabId];
+  initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
+  if (!(props.floatingWidgetId in draft.floatingWidgets.byId)) {
+    draft.floatingWidgets.byId[props.floatingWidgetId] = {
+      bounds: containedBounds.toProps(),
+      id: props.floatingWidgetId,
+      home: props.home,
+      userSized: props.userSized !== undefined ? props.userSized : tab.userSized,
+    };
+  }
+
+  if (props.floatingWidgetId in draft.widgets) {
+    draft.widgets[props.floatingWidgetId].tabs.push(props.widgetTabId);
+  } else {
+    draft.widgets[props.floatingWidgetId] = {
+      activeTabId: props.widgetTabId,
+      id: props.floatingWidgetId,
+      minimized: false,
+      tabs: [props.widgetTabId],
+      isFloatingStateWindowResizable: props.isFloatingStateWindowResizable,
+    };
+  }
+
+}
 /** Add a new Floating Panel with a single widget tab
  * @internal
  */
@@ -1601,42 +1655,8 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
   if (location || !(widgetTabId in state.tabs))
     return state;
 
-  // tab must be defined but not placed in a container (ie not in panel, floating, or popout)
-  const tab = state.tabs[widgetTabId];
-
   return produce(state, (draft) => {
-    const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
-    const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
-    const nzBounds = Rectangle.createFromSize(state.size);
-    const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
-    const containedBounds = bounds.containIn(nzBounds);
-
-    // add new id to list of floatingWidgets
-    if (!state.floatingWidgets.allIds.includes(floatingWidgetId))
-      draft.floatingWidgets.allIds.push(floatingWidgetId);
-
-    // add new floating widget to array of widgets in the state
-    const floatedTab = draft.tabs[widgetTabId];
-    initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
-    if (!(floatingWidgetId in state.floatingWidgets.byId)) {
-      draft.floatingWidgets.byId[floatingWidgetId] = {
-        bounds: containedBounds.toProps(),
-        id: floatingWidgetId,
-        home,
-        userSized,
-      };
-    }
-
-    if (floatingWidgetId in state.widgets) {
-      draft.widgets[floatingWidgetId].tabs.push(widgetTabId);
-    } else {
-      draft.widgets[floatingWidgetId] = {
-        activeTabId: widgetTabId,
-        id: floatingWidgetId,
-        minimized: false,
-        tabs: [widgetTabId],
-        isFloatingStateWindowResizable,
-      };
-    }
+    addFloatingWidgetToDraftState(draft, {floatingWidgetId, widgetTabId, home,
+      preferredSize, preferredPosition, userSized, isFloatingStateWindowResizable});
   });
 }

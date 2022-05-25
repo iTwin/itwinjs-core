@@ -12,7 +12,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, findTab, isFloatingLocation, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
@@ -1416,6 +1416,27 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "t1");
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Open);
           sut.widgets.w1.activeTabId.should.eq("t1");
+        });
+
+        it("should reopen floating widget in floating state", () => {
+          const widgetDef = new WidgetDef({
+            id: "w1",
+          });
+          let nineZone = createNineZoneState();
+          nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
+          let location = findTab(nineZone, widgetDef.id);
+          expect (location).not.to.be.undefined;
+          expect (isFloatingLocation(location!)).to.be.true;
+
+          let sut = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+          location = findTab(sut, widgetDef.id);
+          expect (location).to.be.undefined;
+
+          nineZone = sut;
+          sut = setWidgetState(nineZone, widgetDef, WidgetState.Open);
+          location = findTab(sut, widgetDef.id);
+          expect (location).not.to.be.undefined;
+          expect (isFloatingLocation(location!)).to.be.true;
         });
 
         it("should add removed tab", () => {
