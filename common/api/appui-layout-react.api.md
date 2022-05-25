@@ -27,6 +27,27 @@ export const ActiveTabIdContext: React.Context<string>;
 // @internal (undocumented)
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
 
+// @internal
+export interface AddFloatingWidgetProps {
+    // (undocumented)
+    floatingWidgetId: string;
+    // (undocumented)
+    home: FloatingWidgetHomeState;
+    // (undocumented)
+    isFloatingStateWindowResizable?: boolean;
+    // (undocumented)
+    preferredPosition?: PointProps;
+    // (undocumented)
+    preferredSize?: SizeProps;
+    // (undocumented)
+    userSized?: boolean;
+    // (undocumented)
+    widgetTabId: string;
+}
+
+// @internal
+export function addFloatingWidgetToDraftState(draft: Draft<NineZoneState>, props: AddFloatingWidgetProps): void;
+
 // @internal (undocumented)
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
@@ -2046,12 +2067,12 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
         zones: {
             1: import("./Zone").ZoneManagerProps;
             2: import("./Zone").ZoneManagerProps;
-            3: import("./Zone").ZoneManagerProps;
             4: import("./Zone").ZoneManagerProps;
+            3: import("./Zone").ZoneManagerProps;
+            9: import("./Zone").ZoneManagerProps;
             6: import("./Zone").ZoneManagerProps;
             7: import("./Zone").ZoneManagerProps;
             8: import("./Zone").ZoneManagerProps;
-            9: import("./Zone").ZoneManagerProps;
         };
         draggedWidget?: import("./Widget").DraggedWidgetManagerProps | undefined;
         isInFooterMode: boolean;

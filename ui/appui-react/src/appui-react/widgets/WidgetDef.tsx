@@ -206,8 +206,6 @@ export class WidgetDef {
 
   /** @internal */
   public get defaultState() { return this._defaultState; }
-  /** @internal */
-  public set defaultState(state: WidgetState) { this._defaultState = state; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
