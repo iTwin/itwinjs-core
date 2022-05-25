@@ -103,6 +103,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       return PerModelCategoryVisibility.Override.None;
   }
 
+  public setOverride2(: [])
+
   public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
     const ovr = this._scratch;
     let changed = false;
@@ -133,6 +135,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       if (PerModelCategoryVisibility.Override.None !== override) {
         // Ensure subcategories loaded.
         this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._vp.view.categorySelector.addCategories(categoryIds);
+        await this._vp.view.load().then(() => this._vp.setViewedCategoriesPerModelChanged());
       }
     }
   }
