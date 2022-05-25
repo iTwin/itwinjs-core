@@ -923,10 +923,12 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
     return;
   if (isFloatingLocation(location)) {
     const widget = state.widgets[location.widgetId];
+    // istanbul ignore else
     if (widgetDef.id !== widget.activeTabId)
       return;
     widgetDef.tabLocation.floating = true;
     widgetDef.setFloatingContainerId(location.floatingWidgetId);
+    // istanbul ignore else
   } else if (!isPopoutLocation(location)) {
     const widgetId = location.widgetId;
     const side = "side" in location ? location.side : "left";
