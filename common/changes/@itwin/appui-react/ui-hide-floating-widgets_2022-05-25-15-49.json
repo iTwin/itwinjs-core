@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add processing of floating widgets in setWidgetState(), hideWidget(), and addRemovedTab() to make sure floating widgets that are hidden are still floating when they are unhidden. Add a prop to WidgetDef.tabLocation to track whether a widget was floating when it was hidden. Add a test to Frontstage.test.tsx.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
