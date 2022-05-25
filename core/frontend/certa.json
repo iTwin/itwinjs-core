@@ -7,7 +7,7 @@
     "frontendDebugging": 9223
   },
   "mochaOptions": {
-    "timeout": 2000, // These are unit tests; they should be quick.
+    "timeout": 10000, // These are unit tests; they should be quick. But mac build agents frequently time out on simple tests.
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"
