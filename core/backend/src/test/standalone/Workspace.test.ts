@@ -150,7 +150,7 @@ describe("WorkspaceFile", () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
-    defaultDb.close();
+    await defaultDb.close();
 
     const settings = workspace.settings;
     const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
@@ -161,7 +161,7 @@ describe("WorkspaceFile", () => {
     const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
-    fontsDb.close();
+    await fontsDb.close();
 
     const fontList = settings.getArray<string>("workspace/fontDbs")!;
     const fonts = await workspace.getWorkspaceDb(fontList[0]);

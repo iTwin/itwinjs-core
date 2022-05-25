@@ -8,11 +8,13 @@
 
 /** The type of a font.
  * @public
+ * @extensions
  */
 export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 
 /** An iModel-local identifier for a font.
  * @public
+ * @extensions
  */
 export type FontId = number;
 
@@ -30,6 +32,7 @@ export interface FontProps {
 
 /** The properties of a FontMap
  * @public
+ * @extensions
  */
 export interface FontMapProps { fonts: FontProps[] }
 

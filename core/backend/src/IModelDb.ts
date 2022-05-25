@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
@@ -1465,7 +1465,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Read element data from the iModel as JSON
-     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson

@@ -206,10 +206,10 @@ async function listWorkspaceDb(args: ListOptions) {
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
-
+    let prefetch: IModelJsNative.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
-      file.prefetch();
+      prefetch = file.prefetch({ nRequests: args.nRequests });
     }
 
     if (!args.strings && !args.blobs && !args.files)
@@ -249,20 +249,20 @@ async function listWorkspaceDb(args: ListOptions) {
       });
     }
 
-    showMessage(`time = ${timer.elapsedSeconds.toString()}`);
-    // await askQuestion("press any key");
+    if (prefetch) {
+      showMessage(`time = ${timer.elapsedSeconds.toString()}`);
+      // await askQuestion("press any key");
 
-    // const queryTimer = new StopWatch("list", true);
-    // showMessage(`start query`);
-    // file.sqliteDb.withSqliteStatement("SELECT id,value FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
-    //   while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-    //   }
-    // });
-    // showMessage(`done query, time= ${queryTimer.elapsedSeconds.toString()}`);
+      // const queryTimer = new StopWatch("list", true);
+      // showMessage(`start query`);
+      // file.sqliteDb.withSqliteStatement("SELECT id,value FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
+      //   while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+      //   }
+      // });
+      // showMessage(`done query, time= ${queryTimer.elapsedSeconds.toString()}`);
 
-    if (args.prefetch && cloudContainer) {
-      // await file.prefetchOp?.promise;
-      showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}`);
+      const done = await prefetch.promise;
+      showMessage(`prefetch time = ${timer.elapsedSeconds.toString()}, done=${done}`);
     }
   });
 }

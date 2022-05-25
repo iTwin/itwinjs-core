@@ -14,6 +14,7 @@ import { Geometry } from "@itwin/core-geometry";
  *  the simple equations that are defined at:
  *  https://en.wikipedia.org/wiki/Flattening and https://en.wikipedia.org/wiki/Earth_ellipsoid.
  *  @public
+ *  @extensions
  */
 export interface GeodeticEllipsoidProps {
   /** Ellipsoid key name */

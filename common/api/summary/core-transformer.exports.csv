@@ -1,8 +1,10 @@
 sep=;
 Release Tag;API Item
 beta;IModelExporter
+internal;IModelExporterState
 beta;class IModelExportHandler
 beta;IModelImporter 
+internal;IModelImporterState
 beta;IModelImportOptions
 beta;IModelTransformer 
 beta;IModelTransformOptions

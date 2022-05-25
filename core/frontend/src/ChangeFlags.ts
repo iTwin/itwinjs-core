@@ -28,6 +28,7 @@ export enum ChangeFlag {
 /** Describes which aspects of a [[Viewport]] have changed. Each time [[Viewport.renderFrame]] is invoked, the aspects of the viewport that have changed since
  * the previous call to `renderFrame` are computed and dispatched via the [[Viewport.onViewportChanged]] event.
  * @public
+ * @extensions
  */
 export class ChangeFlags {
   /** @internal */

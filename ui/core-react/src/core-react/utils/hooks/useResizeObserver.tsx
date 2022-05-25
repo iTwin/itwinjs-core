@@ -60,7 +60,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
     owningWindowRef.current = target.ownerDocument.defaultView;
     // istanbul ignore else
     if (owningWindowRef.current) {
-      owningWindowRef.current.addEventListener("beforeunload", resizeObserverCleanup);
+      owningWindowRef.current.addEventListener("unload", resizeObserverCleanup);
 
       // using requestAnimationFrame to stop the "ResizeObserver loop completed with undelivered notifications." and
       // "ResizeObserver loop limit exceeded" messages reported to window.onError
@@ -159,7 +159,7 @@ export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?
     owningWindowRef.current = target.ownerDocument.defaultView;
     // istanbul ignore else
     if (owningWindowRef.current) {
-      owningWindowRef.current.addEventListener("beforeunload", resizeObserverCleanup);
+      owningWindowRef.current.addEventListener("unload", resizeObserverCleanup);
 
       // using requestAnimationFrame to stop the "ResizeObserver loop completed with undelivered notifications." and
       // "ResizeObserver loop limit exceeded" messages reported to window.onError

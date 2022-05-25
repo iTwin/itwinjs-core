@@ -576,7 +576,7 @@ describe("GeoServices", () => {
           ],
         },
         datumId: "ED50-DK34",
-        description: "Longitude / Latitude (ED 50 Denmark)",
+        description: "DummyName",
         extent: {
           northEast: {
             latitude: 90,
@@ -587,7 +587,7 @@ describe("GeoServices", () => {
             longitude: -180,
           },
         },
-        id: "Longitude.Latitude (ED ",
+        id: "DummyName",
         projection: {
           method: "None",
         },
@@ -766,7 +766,7 @@ describe("GeoServices", () => {
     };
 
     await interpretWKTTest('PROJCS["AirportGrid2007", GEOGCS["HeathrowT5.LL",DATUM["Heathrow T5", SPHEROID["AIRY30",6377563.396,299.32496127],358.398,-213.7028,495.3183,-668.80613932004700,4.72664217602752,-719.67109718139600,-6.26386076385543],PRIMEM["Greenwich",0],UNIT["Decimal Degree",0.017453292519943295]],PROJECTION["Transverse Mercator"],PARAMETER["latitude_of_origin",51.470110655555558],PARAMETER["central_meridian",-0.41832591666666669],PARAMETER["scale_factor",0.999995],PARAMETER["false_easting",7334.810],PARAMETER["false_northing",5637.423],UNIT["Meter",1.00000000000000]]', airportGrid2007);
-    await interpretWKTTest('GEOGCS[ "Longitude / Latitude (ED 50 Denmark)", DATUM ["European 1950 (Denmark)", SPHEROID ["International 1924", 6378388, 297],-81.0703, -89.3603, -115.7526, .48488, .02436, .41321, -.540645], PRIMEM [ "Greenwich", 0.000000 ], UNIT ["Decimal Degree", 0.01745329251994330]]', denmarkED50);
+    await interpretWKTTest('GEOGCS[ "DummyName", DATUM ["European 1950 (Denmark)", SPHEROID ["International 1924", 6378388, 297],-81.0703, -89.3603, -115.7526, .48488, .02436, .41321, -.540645], PRIMEM [ "Greenwich", 0.000000 ], UNIT ["Decimal Degree", 0.01745329251994330]]', denmarkED50);
     await interpretWKTTest('PROJCS["NAD_1983_StatePlane_California_II_FIPS_0402_Feet",GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",6561666.666666666],PARAMETER["False_Northing",1640416.666666667],PARAMETER["Central_Meridian",-122],PARAMETER["Standard_Parallel_1",38.33333333333334],PARAMETER["Standard_Parallel_2",39.83333333333334],PARAMETER["Latitude_Of_Origin",37.66666666666666],UNIT["Foot_US",0.30480060960121924]]', californiaStateZone2);
     await interpretWKTTest('PROJCS["WGS 84 / UTM zone 34S", GEOGCS [ "WGS 84", DATUM ["World Geodetic System 1984 (EPSG ID 6326)", SPHEROID ["WGS 84 (EPSG ID 7030)", 6378137, 298.257223563]], PRIMEM [ "Greenwich", 0.000000 ], UNIT ["Decimal Degree", 0.01745329251994328]], PROJECTION ["UTM zone 34S (EPSG OP 16134)"], PARAMETER ["Latitude_Of_Origin", 0], PARAMETER ["Central_Meridian", 21], PARAMETER ["Scale_Factor", .9996], PARAMETER ["False_Easting", 500000], PARAMETER ["False_Northing", 10000000], UNIT ["Meter", 1]]', utm84Zone34S);
     await interpretWKTTest('COMPD_CS["WGS 84 / UTM zone 32N + EGM96 geoid height",PROJCS["WGS 84 / UTM zone32N",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",9],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","32632"]],VERT_CS["EGM96 geoid height",VERT_DATUM["EGM96 geoid",2005,EXTENSION["PROJ4_GRIDS","egm96_15.gtx"],AUTHORITY["EPSG","5171"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Up",UP],AUTHORITY["EPSG","5773"]]]', utm84Zone32NGeoid);

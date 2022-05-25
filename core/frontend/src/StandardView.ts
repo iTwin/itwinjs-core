@@ -9,6 +9,7 @@ import { Matrix3d } from "@itwin/core-geometry";
 
 /** Describes a set of commonly-used view rotations.
  * @public
+ * @extensions
  */
 export enum StandardViewId {
   /** Any rotation which does not match one of the standard rotations.

@@ -8,11 +8,11 @@
 
 // cspell:ignore calltrace
 
-import * as multiparty from "multiparty";
-import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
+import * as FormData from "form-data";
+import * as multiparty from "multiparty";
 import { assert, Logger } from "@itwin/core-bentley";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
@@ -61,6 +61,8 @@ export function initializeRpcBackend() {
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();
     RpcMultipart.writeValueToForm(form, value);
+    // Type information for FormData is lying. It actually extends Stream but not Readable, although it appears to work
+    // fine for now.
     return form;
   };
 
@@ -110,4 +112,3 @@ export function initializeRpcBackend() {
     });
   };
 }
-

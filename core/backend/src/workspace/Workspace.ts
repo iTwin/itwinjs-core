@@ -712,10 +712,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public prefetch(opts?: { nRequests: number }) {
+  public prefetch(opts?: CloudSqlite.PrefetchProps) {
     const cloudContainer = this.container.cloudContainer;
-    if (cloudContainer !== undefined)
-      new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts);
+    return (cloudContainer !== undefined) ? new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
   }
 }
 

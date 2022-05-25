@@ -41,10 +41,15 @@ function getConfig(env) {
     },
     target: "node",
     devtool: "source-map",
+    resolve: { mainFields: ["main", "module"] },
     module: {
       rules: [
         {
           test: /AzCopyFileHandler\.js/g,
+          use: 'null-loader'
+        },
+        {
+          test: /itwin\+electron-authorization/g,
           use: 'null-loader'
         },
         {
@@ -58,6 +63,8 @@ function getConfig(env) {
     },
     externals: {
       "electron": "electron",
+      "bufferutil": "bufferutil",
+      "utf-8-validate": "utf-8-validate"
     },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),

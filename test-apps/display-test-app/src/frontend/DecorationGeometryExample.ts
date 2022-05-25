@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
-import { ColorDef, RenderMode, SkyBox } from "@itwin/core-common";
+import { ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
@@ -22,6 +22,8 @@ class GeometryDecorator {
     this.addBox(2);
     this.addCone(4);
     this.addShape(6);
+
+    this.addMultiFeatureDecoration();
   }
 
   public decorate(context: DecorateContext): void {
@@ -77,6 +79,31 @@ class GeometryDecorator {
     const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 0.5, 0.25, true);
     if (cone)
       this.addDecorator((builder) => builder.addSolidPrimitive(cone));
+  }
+
+  private addMultiFeatureDecoration(): void {
+    const y = 4;
+    const boxId = this._iModel.transientIds.next,
+      sphereId = this._iModel.transientIds.next,
+      coneId = this._iModel.transientIds.next;
+
+    this._decorators.set(this._iModel.transientIds.next, (builder) => {
+      builder.addShape([ new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0) ]);
+
+      builder.activatePickableId(boxId);
+      const box = Box.createRange(new Range3d(2, y, 0, 3, y + 1, 1), true);
+      assert(undefined !== box);
+      builder.addSolidPrimitive(box);
+
+      builder.activateFeature(new Feature(sphereId, undefined, GeometryClass.Construction));
+      const sphere = Sphere.createCenterRadius(new Point3d(4.5, y + 0.5, 0.5), 0.5);
+      builder.addSolidPrimitive(sphere);
+
+      builder.activatePickableId(coneId);
+      const cone = Cone.createAxisPoints(new Point3d(6, y, 0), new Point3d(6, y, 1), 0.5, 0.25, true);
+      assert(undefined !== cone);
+      builder.addSolidPrimitive(cone);
+    });
   }
 }
 
