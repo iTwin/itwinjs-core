@@ -16,8 +16,6 @@ import {
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
-  MapLayerAuthenticationInfo,
-  MapLayerAuthType,
   MapLayerFormat,
   MapLayerImageryProvider,
   MapLayerSourceStatus,
@@ -95,12 +93,10 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
-      let authInfo: MapLayerAuthenticationInfo|undefined;
       if (err?.status === 401) {
         status = (credentials ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
-        authInfo = {authMethod: MapLayerAuthType.Basic};
       }
-      return { status, authInfo};
+      return { status};
     }
   }
 }

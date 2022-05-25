@@ -96,6 +96,7 @@ export class GltfHeader extends TileHeader {
  * @param is3d True if the graphics are 3d.
  * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized; or false if you don't want to produce a batch.
  * @public
+ * @extensions
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = ByteStream.fromUint8Array(bytes);
@@ -226,6 +227,7 @@ interface ImdlVertexTable {
   };
   /** If the vertex table contains multiple surface materials, describes the embedded material atlas. */
   readonly materialAtlas?: ImdlMaterialAtlas;
+  readonly usesUnquantizedPositions?: boolean;
 }
 
 /** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
@@ -935,6 +937,7 @@ export class ImdlReader {
       numVertices: json.count,
       numRgbaPerVertex: json.numRgbaPerVertex,
       uvParams,
+      usesUnquantizedPositions: true === json.usesUnquantizedPositions,
     });
   }
 

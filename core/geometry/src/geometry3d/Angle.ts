@@ -295,7 +295,7 @@ export class Angle implements BeJSONFunctions {
    * @param dotVV dot product of vectorV with itself
    * @param dotUV dot product of vectorU with vectorV
    */
-  public static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number) {
+  public static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean {
     return dotUU > Geometry.smallMetricDistanceSquared
       && dotVV > Geometry.smallMetricDistanceSquared
       && dotUV * dotUV <= Geometry.smallAngleRadiansSquared * dotUU * dotVV;

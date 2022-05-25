@@ -20,6 +20,7 @@ import { DisplayParams } from "./primitives/DisplayParams";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
+ * @extensions
  */
 export interface ParticleCollectionBuilderParams {
   /** The image mapped to each particle quad.
@@ -57,6 +58,7 @@ export interface ParticleCollectionBuilderParams {
 /** Describes a particle to to add to a particle collection via [[ParticleCollectionBuilder.addParticle]].
  * The x, y, and z coordinates represent the centroid of the particle quad in the collection's coordinate space.
  * @public
+ * @extensions
  */
 export interface ParticleProps extends XYAndZ {
   /** The size of the particle, in the collection's coordinate space. If omitted, it defaults to the size supplied to the collection by [[ParticleCollectionBuilderParams.size]].
@@ -82,6 +84,7 @@ export interface ParticleProps extends XYAndZ {
    * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @public
+ * @extensions
  */
 export interface ParticleCollectionBuilder {
   /** The default transparency for newly-added particles as an integer in [0,255], used by [[ParticleCollectionBuilder.addParticle]] if [[ParticleProps.transparency]] is omitted.

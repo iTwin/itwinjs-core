@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
@@ -694,6 +694,92 @@ export class IModelExporter {
       return this.handler.onProgress();
     }
   }
+
+  /**
+   * You may override this to store arbitrary json state in a exporter state dump, useful for some resumptions
+   * @see [[IModelTransformer.saveStateToFile]]
+   */
+  protected getAdditionalStateJson(): any {
+    return {};
+  }
+
+  /**
+   * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
+   * @see [[IModelTransformer.loadStateFromFile]]
+   */
+  protected loadAdditionalStateJson(_additionalState: any): void {}
+
+  /**
+   * Reload our state from a JSON object
+   * Intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   * You can load custom json from the exporter save state for custom exporters by overriding [[IModelExporter.loadAdditionalStateJson]]
+   */
+  public loadStateFromJson(state: IModelExporterState): void {
+    if (state.exporterClass !== this.constructor.name)
+      throw Error("resuming from a differently named exporter class, it is not necessarily valid to resume with a different exporter class");
+    this.wantGeometry = state.wantGeometry;
+    this.wantTemplateModels = state.wantTemplateModels;
+    this.wantSystemSchemas = state.wantSystemSchemas;
+    this.visitElements = state.visitElements;
+    this.visitRelationships = state.visitRelationships;
+    this._excludedCodeSpecNames = new Set(state.excludedCodeSpecNames);
+    this._excludedElementIds = CompressedId64Set.decompressSet(state.excludedElementIds),
+    this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds),
+    this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
+    this._excludedElementAspectClassFullNames = new Set(state.excludedElementAspectClassFullNames);
+    this._excludedElementAspectClasses = new Set(state.excludedElementAspectClassFullNames.map((c) => this.sourceDb.getJsClass(c)));
+    this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));
+    this.loadAdditionalStateJson(state.additionalState);
+  }
+
+  /**
+   * Serialize state to a JSON object
+   * Intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   * You can add custom json to the exporter save state for custom exporters by overriding [[IModelExporter.getAdditionalStateJson]]
+   */
+  public saveStateToJson(): IModelExporterState {
+    return {
+      exporterClass: this.constructor.name,
+      wantGeometry: this.wantGeometry,
+      wantTemplateModels: this.wantTemplateModels,
+      wantSystemSchemas: this.wantSystemSchemas,
+      visitElements: this.visitElements,
+      visitRelationships: this.visitRelationships,
+      excludedCodeSpecNames: [...this._excludedCodeSpecNames],
+      excludedElementIds: CompressedId64Set.compressSet(this._excludedElementIds),
+      excludedElementCategoryIds: CompressedId64Set.compressSet(this._excludedElementCategoryIds),
+      excludedElementClassNames: Array.from(this._excludedElementClasses, (cls) => cls.classFullName),
+      excludedElementAspectClassFullNames: [...this._excludedElementAspectClassFullNames],
+      excludedRelationshipClassNames: Array.from(this._excludedRelationshipClasses, (cls) => cls.classFullName),
+      additionalState: this.getAdditionalStateJson(),
+    };
+  }
+}
+
+/**
+ * The JSON format of a serialized IModelExporter instance
+ * Used for starting an exporter in the middle of an export operation,
+ * such as resuming a crashed transformation
+ *
+ * @note Must be kept synchronized with IModelExporter
+ * @internal
+ */
+export interface IModelExporterState {
+  exporterClass: string;
+  wantGeometry: boolean;
+  wantTemplateModels: boolean;
+  wantSystemSchemas: boolean;
+  visitElements: boolean;
+  visitRelationships: boolean;
+  excludedCodeSpecNames: string[];
+  excludedElementIds: CompressedId64Set;
+  excludedElementCategoryIds: CompressedId64Set;
+  excludedElementClassNames: string[];
+  excludedElementAspectClassFullNames: string[];
+  excludedRelationshipClassNames: string[];
+  additionalState?: any;
 }
 
 class ChangedInstanceOps {
@@ -725,22 +811,19 @@ class ChangedInstanceIds {
     const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     const changedInstanceIds = new ChangedInstanceIds();
-    changesets.forEach((changeset): void => {
-      const changesetPath = changeset.pathname;
-      const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-      if (statusOrResult.error) {
-        throw new IModelError(statusOrResult.error.status, "Error processing changeset");
-      }
-      if (statusOrResult.result && statusOrResult?.result !== "") {
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
-        changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
-        changedInstanceIds.model.addFromJson(result.model);
-        changedInstanceIds.element.addFromJson(result.element);
-        changedInstanceIds.aspect.addFromJson(result.aspect);
-        changedInstanceIds.relationship.addFromJson(result.relationship);
-        changedInstanceIds.font.addFromJson(result.font);
-      }
-    });
+    const changesetFiles = changesets.map((c) => c.pathname);
+    const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSets(changesetFiles);
+    if (statusOrResult.error) {
+      throw new IModelError(statusOrResult.error.status, "Error processing changeset");
+    }
+    const result = statusOrResult.result;
+    assert(result !== undefined);
+    changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
+    changedInstanceIds.model.addFromJson(result.model);
+    changedInstanceIds.element.addFromJson(result.element);
+    changedInstanceIds.aspect.addFromJson(result.aspect);
+    changedInstanceIds.relationship.addFromJson(result.relationship);
+    changedInstanceIds.font.addFromJson(result.font);
     return changedInstanceIds;
   }
 }

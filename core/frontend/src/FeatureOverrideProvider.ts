@@ -16,6 +16,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
  *
  * @see [[Viewport.addFeatureOverrideProvider]] to register a provider with a viewport.
  * @public
+ * @extensions
  */
 export interface FeatureOverrideProvider {
   /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */

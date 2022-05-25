@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { useSpecificWidgetDef } from "@itwin/appui-react";
+import { UiFramework, useSpecificWidgetDef } from "@itwin/appui-react";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Centered } from "@itwin/core-react";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
@@ -40,6 +40,9 @@ export function SelectedElementDataWidgetComponent() {
   const widgetDef = useSpecificWidgetDef("ui-item-provider-test:elementDataListWidget");
 
   React.useEffect(() => {
+    if (UiFramework.uiVersion === "1")
+      return;
+
     // using setImmediate to give time for frontstage to load before calling setWidgetState
     if (idList.length === 0) {
       setImmediate(() => widgetDef?.setWidgetState(WidgetState.Hidden));

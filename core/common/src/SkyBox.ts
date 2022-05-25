@@ -13,6 +13,7 @@ import { TextureImageSpec } from "./RenderTexture";
 /** Supported types of [[SkyBox]] images.
  * @see [[SkyBoxImageProps]].
  * @public
+ * @extensions
  */
 export enum SkyBoxImageType {
   /** No image, indicating a [[SkyGradient]] should be displayed. */
@@ -33,6 +34,7 @@ export enum SkyBoxImageType {
  * Each property specifies the image for a face of the cube as either an image URL, or the Id of a [Texture]($backend) element.
  * Each image must be square and have the same dimensions as all the other images.
  * @public
+ * @extensions
  */
 export interface SkyCubeProps {
   front: TextureImageSpec;
@@ -68,6 +70,7 @@ export interface SkyCubeImageProps {
 /** JSON representation of the image(s) to be mapped to the surfaces of a [[SkyBox]].
  * @see [[SkyBoxProps.image]].
  * @public
+ * @extensions
  */
 export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?: SkyBoxImageType, texture?: never, textures?: never };
 
@@ -90,6 +93,7 @@ export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?
  *
  * @see [[DisplayStyle3dSettings.environment]] to define the skybox for a display style.
  * @public
+ * @extensions
  */
 export interface SkyBoxProps {
   /** Whether or not the skybox should be displayed.

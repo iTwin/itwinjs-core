@@ -13,6 +13,7 @@ import { SkyBox, SkyBoxProps } from "./SkyBox";
 /** JSON representation of an [[Environment]].
  * @see [[DisplayStyle3dSettingsProps.environment]].
  * @public
+ * @extensions
  */
 export interface EnvironmentProps {
   /** @see [[Environment.ground]] and [[Environment.displayGround]]. */

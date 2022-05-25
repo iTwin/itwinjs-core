@@ -55,7 +55,7 @@ export abstract class MapLayerImageryProvider {
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
-  public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 

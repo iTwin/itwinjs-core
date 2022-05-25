@@ -17,6 +17,7 @@ import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
+ * @extensions
  */
 export enum LocateAction {
   Identify = 0,
@@ -26,13 +27,17 @@ export enum LocateAction {
 /** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
  * @public
+ * @extensions
  */
 export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapStatus {
   Success = 0,
   Aborted = 1,
@@ -46,6 +51,7 @@ export enum SnapStatus {
 
 /** Options that customize the way element location (i.e. *picking*) works.
  * @public
+ * @extensions
  */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
@@ -92,7 +98,10 @@ export class LocateOptions {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
@@ -115,12 +124,18 @@ export class LocateResponse {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -264,7 +279,10 @@ export class ElementPicker {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;
