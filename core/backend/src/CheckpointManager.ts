@@ -188,14 +188,13 @@ export class V2CheckpointManager {
       const container = this.getContainer(v2props);
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (process.env.PREFETCHBEFOREOPEN) {
+      if (IModelHost.appWorkspace.settings.getBoolean("prefetchCheckpoints", true)) {
+        const stopwatch = new StopWatch("prefetch", true);
         const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
-        if (process.env.PREFETCH_TIME) {
-          const stopwatch = new StopWatch("prefetch", true);
-          await prefetchObject.promise;
+        prefetchObject.promise.then(() => {
           stopwatch.stop();
-          Logger.logInfo("V2", `Seconds taken for pin: ${stopwatch.elapsedSeconds}`);
-        }
+          Logger.logInfo(loggerCategory, `Seconds taken for prefetch to complete: ${stopwatch.elapsedSeconds}`);
+        });
       }
       return { dbName: v2props.dbName, container };
     } catch (e: any) {

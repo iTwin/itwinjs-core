@@ -2449,8 +2449,6 @@ export class SnapshotDb extends IModelDb {
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
-    if (process.env.PREFETCHAFTEROPEN)
-      snapshot._prefetch = new IModelJsNative.CloudPrefetch(container, dbName);
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
