@@ -922,10 +922,6 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
   if (!location)
     return;
   if (isFloatingLocation(location)) {
-    const widget = state.widgets[location.widgetId];
-    // istanbul ignore else
-    if (widgetDef.id !== widget.activeTabId)
-      return;
     widgetDef.tabLocation.floating = true;
     widgetDef.setFloatingContainerId(location.floatingWidgetId);
     // istanbul ignore else
