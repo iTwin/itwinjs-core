@@ -195,10 +195,10 @@ function mapId64<R>(
   // is a string if compressed or singular id64, but check for singular just checks if it's a string so do this test first
   if (idContainer === undefined) {
     // nothing
-  } else if (isId64String(idContainer)) {
-    results.push(func(idContainer));
   } else if (isRelatedElem(idContainer)) {
     results.push(func(idContainer.id));
+  } else if (isId64String(idContainer)) {
+    results.push(func(idContainer));
   } else {
     throw Error([
       `Id64 container '${idContainer}' is unsupported.`,
