@@ -21,7 +21,7 @@ describe("PrimitiveBuilder", () => {
     });
 
     builder.addShape([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0), new Point3d(0, 0, 0)]);
-    return builder.finish() as Branch;
+    return builder.finish();
   }
 
   it("omits degenerate facets", () => {
