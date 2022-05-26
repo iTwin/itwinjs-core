@@ -14,7 +14,7 @@ import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from 
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
+import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
 
 // cspell:ignore safearea
 
@@ -24,7 +24,6 @@ import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
 interface StatusBarState {
   openWidget: StatusBarFieldId;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
-  isActivityMessageVisible: boolean;
 }
 
 /** Properties for the [[StatusBar]] React component
@@ -48,7 +47,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this.state = {
       openWidget: null,
       activityMessageInfo: undefined,
-      isActivityMessageVisible: false,
     };
   }
 
@@ -124,10 +122,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    * @param args  New values to set for ActivityMessage
    */
   private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
-    this.setState((prevState) => ({
+    this.setState({
       activityMessageInfo: args,
-      isActivityMessageVisible: args.restored ? true : prevState.isActivityMessageVisible,
-    }));
+    });
   };
 
   /**
@@ -135,25 +132,13 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _handleActivityMessageCancelledEvent = () => {
     this.setState({
-      isActivityMessageVisible: false,
+      activityMessageInfo: undefined,
     });
   };
 
   private getFooterMessages(): React.ReactNode {
-    if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible))
-      return null;
-
     return (
-      // eslint-disable-next-line deprecation/deprecation
-      <StatusMessagesContainer
-        messages={[]}
-        activityMessageInfo={this.state.activityMessageInfo}
-        isActivityMessageVisible={this.state.isActivityMessageVisible}
-        toastTarget={null}
-        closeMessage={() => {}}
-        cancelActivityMessage={this._cancelActivityMessage}
-        dismissActivityMessage={this._dismissActivityMessage}
-      />
+      <CustomActivityMessageRenderer settings={{placement: "bottom"}} activityMessageInfo={this.state.activityMessageInfo} cancelActivityMessage={this._cancelActivityMessage} />
     );
   }
 
@@ -162,16 +147,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _cancelActivityMessage = () => {
     MessageManager.endActivityMessage(false);
-    this._dismissActivityMessage();
-  };
-
-  /**
-   * Dismisses ActivityMessage
-   */
-  private _dismissActivityMessage = () => {
-    this.setState({
-      isActivityMessageVisible: false,
-    });
   };
 
   private _handleOpenWidget = (openWidget: StatusBarFieldId) => {

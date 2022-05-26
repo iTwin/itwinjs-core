@@ -895,6 +895,7 @@ export class ComponentExamplesProvider {
   };
 
   private static get messageSamples(): ComponentExampleCategory {
+    MessageManager.registerAnimateOutRef(null);
     return {
       title: "Messages",
       examples: [

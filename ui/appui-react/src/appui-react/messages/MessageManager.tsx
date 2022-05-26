@@ -25,7 +25,7 @@ import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 import { StatusMessageManager } from "./StatusMessageManager";
-import { toaster, ToastOptions } from "@itwin/itwinui-react";
+import { Small, toaster, ToastOptions } from "@itwin/itwinui-react";
 import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 class MessageBoxCallbacks {
@@ -243,7 +243,6 @@ export class MessageManager {
     if (message.msgType !== OutputMessageType.Sticky && message.msgType !== OutputMessageType.Toast) {
       return;
     }
-
     const toastOptions: ToastOptions = {
       hasCloseButton: true,
       duration: message.displayTime.milliseconds,
@@ -252,20 +251,25 @@ export class MessageManager {
           ? "persisting"
           : "temporary",
       animateOutTo: this.animateOutToRef,
-      link: { title: message.detailedMessage as string, onClick: toaster.closeAll },
       ...options,
     };
     toaster.setSettings({ placement: "bottom", order: "ascending", ...settings });
+    const content = <>
+      {message.briefMessage}
+      {message.detailedMessage &&
+      <Small>{message.detailedMessage}</Small>
+      }
+    </>;
     switch (message.priority) {
       case OutputMessagePriority.Warning:
-        return toaster.warning(message.briefMessage, toastOptions);
+        return toaster.warning(content, toastOptions);
       case OutputMessagePriority.Info:
-        return toaster.informational(message.briefMessage, toastOptions);
+        return toaster.informational(content, toastOptions);
       case OutputMessagePriority.Error:
       case OutputMessagePriority.Fatal:
-        return toaster.negative(message.briefMessage, toastOptions);
+        return toaster.negative(content, toastOptions);
       default:
-        return toaster.positive(message.briefMessage, toastOptions);
+        return toaster.positive(content, toastOptions);
     }
   }
 

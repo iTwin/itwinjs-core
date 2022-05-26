@@ -8,10 +8,9 @@
 
 import "./StatusMessageRenderer.scss";
 import * as React from "react";
-import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
 import { CommonProps } from "@itwin/core-react";
-import { StatusMessagesContainer } from "./StatusMessagesContainer";
+import { useActivityMessage } from "./ActivityMessage";
 
 /** Properties for [[StatusMessageRenderer]] component
  * @public
@@ -30,7 +29,6 @@ export interface StatusMessageRendererProps extends CommonProps {
 export function StatusMessageRenderer(props: StatusMessageRendererProps) {
   const messages = React.useRef<{close: () => void}[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
-  const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);
   const lastToastId = React.useRef(0);
 
   React.useEffect(() => {
@@ -62,17 +60,14 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
   React.useEffect(() => {
     const handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
       setActivityMessageInfo(args);
-      if (args.restored)
-        setIsActivityMessageVisible(true);
     };
 
     return MessageManager.onActivityMessageUpdatedEvent.addListener(handleActivityMessageUpdatedEvent);
-  }, [isActivityMessageVisible]);
+  }, []);
 
   React.useEffect(() => {
     const handleActivityMessageCancelledEvent = () => {
       setActivityMessageInfo(undefined);
-      setIsActivityMessageVisible(false);
     };
 
     return MessageManager.onActivityMessageCancelledEvent.addListener(handleActivityMessageCancelledEvent);
@@ -84,26 +79,10 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
   }, [props]);
 
   const dismissActivityMessage = React.useCallback(() => {
-    setIsActivityMessageVisible(false);
     props.dismissActivityMessage && props.dismissActivityMessage();
   }, [props]);
 
-  if (!(activityMessageInfo && isActivityMessageVisible))
-    return null;
+  useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 
-  return (
-    <div className={classnames("uifw-message-renderer", props.className)} style={props.style}>
-      {/* eslint-disable-next-line deprecation/deprecation */}
-      <StatusMessagesContainer
-        messages={[]}
-        activityMessageInfo={activityMessageInfo}
-        isActivityMessageVisible={isActivityMessageVisible}
-        toastTarget={null}
-        closeMessage={() => {}}
-        cancelActivityMessage={cancelActivityMessage}
-        dismissActivityMessage={dismissActivityMessage}
-      />
-
-    </div>
-  );
+  return null;
 }
