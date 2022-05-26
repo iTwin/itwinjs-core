@@ -54,7 +54,12 @@ export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps)
     return <FilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
   }, [value, ruleValueRenderer, onRuleValueChange]);
 
-  return <div className="rule">
+  return <div className="rule" tabIndex={-1}>
+    <div className="rule-remove-action">
+      <IconButton onClick={removeRule} styleType="borderless" size="small">
+        <SvgDelete />
+      </IconButton>
+    </div>
     <div className="rule-condition">
       <FilterBuilderRuleProperty
         properties={properties}
@@ -63,11 +68,6 @@ export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps)
       />
       {property && operatorRenderer(property)}
       {property && operator && filterRuleOperatorNeedsValue(operator) && valueRenderer(property)}
-    </div>
-    <div className="rule-actions">
-      <IconButton onClick={removeRule} styleType="borderless" size="small">
-        <SvgDelete />
-      </IconButton>
     </div>
   </div>;
 }
