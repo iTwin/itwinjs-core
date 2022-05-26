@@ -2332,7 +2332,6 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
-  private _prefetch?: IModelJsNative.CloudPrefetch;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });

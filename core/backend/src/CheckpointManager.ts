@@ -186,17 +186,17 @@ export class V2CheckpointManager {
 
     try {
       const container = this.getContainer(v2props);
+      const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (IModelHost.appWorkspace.settings.getBoolean("prefetchCheckpoints", true)) {
-        const stopwatch = new StopWatch("prefetch", true);
-        const prefetchObject = new IModelHost.platform.CloudPrefetch(container, v2props.dbName);
-        prefetchObject.promise.then(() => {
-          stopwatch.stop();
-          Logger.logInfo(loggerCategory, `Seconds taken for prefetch to complete: ${stopwatch.elapsedSeconds}`);
-        });
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
+        const name = `[${container.containerId}/${dbName}]`;
+        const stopwatch = new StopWatch(name, true);
+        Logger.logInfo(loggerCategory, `Starting prefetch of ${name}`);
+        const prefetch = new IModelHost.platform.CloudPrefetch(container, dbName);
+        prefetch.promise.then((done) => Logger.logInfo(loggerCategory, `Prefetch of ${name} complete=${done} (${stopwatch.elapsedSeconds} seconds)`));
       }
-      return { dbName: v2props.dbName, container };
+      return { dbName, container };
     } catch (e: any) {
       const error = `Cloud cache connect failed: ${e.message}`;
       if (checkpoint.expectV2)
