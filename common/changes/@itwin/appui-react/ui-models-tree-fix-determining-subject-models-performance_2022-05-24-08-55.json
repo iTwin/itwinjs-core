@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Models Tree: Fix performance of determining Subject nodes' display state.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
