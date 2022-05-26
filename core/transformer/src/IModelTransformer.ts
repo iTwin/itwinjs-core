@@ -186,7 +186,7 @@ function mapId64<R>(
   idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
-  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
+  const isId64String = (arg: any): arg is Id64String => (typeof arg === "string" && Id64.isValidId64(arg));
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
 
@@ -195,10 +195,10 @@ function mapId64<R>(
   // is a string if compressed or singular id64, but check for singular just checks if it's a string so do this test first
   if (idContainer === undefined) {
     // nothing
-  } else if (isRelatedElem(idContainer)) {
-    results.push(func(idContainer.id));
   } else if (isId64String(idContainer)) {
     results.push(func(idContainer));
+  } else if (isRelatedElem(idContainer)) {
+    results.push(func(idContainer.id));
   } else {
     throw Error([
       `Id64 container '${idContainer}' is unsupported.`,
