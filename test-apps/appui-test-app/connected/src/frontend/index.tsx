@@ -43,7 +43,6 @@ import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
-import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
@@ -79,7 +78,7 @@ export interface SampleAppState {
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  isIModelLocal: true,  // initialize to true to hide iModelIndex from enabling which should only occur if External iModel is open.
+  isIModelLocal: true,
   initialViewIds: [],
 };
 
@@ -369,17 +368,7 @@ export class SampleAppIModelApp {
       SampleAppIModelApp.setIsIModelLocal(false, true);
     }
 
-    let viewIds: Id64String[] = [];
-    if (viewIdsSelected) {
-      viewIds = viewIdsSelected;
-    } else {
-      const viewId = await getDefaultViewId(iModelConnection);
-      if (viewId)
-        viewIds.push(viewId);
-    }
-
-    if (viewIds)
-      await this.openViews(iModelConnection, viewIds);
+    await this.openViews(iModelConnection, viewIdsSelected);
   }
 
   public static async closeCurrentIModel() {
@@ -389,12 +378,22 @@ export class SampleAppIModelApp {
         SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
-        SampleAppIModelApp.setIsIModelLocal(true, true); // set to true to hide iModelIndex option which should only show if External imodel is open.
+        SampleAppIModelApp.setIsIModelLocal(true, true);
       }
     }
   }
 
-  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
+  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected?: Id64String[]) {
+
+    let viewIds: Id64String[] = [];
+    if (viewIdsSelected) {
+      viewIds = viewIdsSelected;
+    } else {
+      const viewId = await getDefaultViewId(iModelConnection);
+      if (viewId)
+        viewIds.push(viewId);
+    }
+
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
     const defaultFrontstage = MainFrontstage.stageId;
@@ -406,8 +405,8 @@ export class SampleAppIModelApp {
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
 
-    if (viewIdsSelected.length) {
-      SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
+    if (viewIds.length) {
+      SampleAppIModelApp.setInitialViewIds(viewIds);
     }
 
     if (this.iModelParams && this.iModelParams.stageId)
@@ -439,17 +438,18 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
-  public static async showIModelIndex(iTwinId: string, iModelId: string) {
+  public static async showIModel(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
+    let iModelConnection: IModelConnection | undefined;
+
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
       await SampleAppIModelApp.closeCurrentIModel();
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModel: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
         const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
@@ -476,7 +476,8 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
+    if (iModelConnection)
+      await this.openViews(iModelConnection);
   }
 
   public static async showIModelOpen() {
@@ -534,17 +535,12 @@ export class SampleAppIModelApp {
         // open directly into the iModel (view)
         await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel?.id, [viewId]);
       } else {
-        // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel?.id);
+        // open directly into the iModel with default viewId
+        await SampleAppIModelApp.showIModel(iTwin.id, iModel.id);
       }
     } else if (SampleAppIModelApp.iModelParams) {
-      if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
-        // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
-      } else {
-        // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId);
-      }
+      // open directly into the iModel (view)
+      await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
     } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
       // open to the Local File frontstage
       await LocalFileOpenFrontstage.open();

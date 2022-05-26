@@ -38,11 +38,6 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.state = { isDropdownOpen: false, showITwinsDialog: false };
   }
 
-  private _onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
-    this.closeDropdown();
-    this.setState({ showITwinsDialog: true });
-  };
-
   private _onItemClick(iTwin: ITwin) {
     this.closeDropdown();
     this.props.onITwinClicked(iTwin);
@@ -87,7 +82,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
 
     if (iTwins && iTwins.length === 0) {
       return (
-        <div className="ip-no-mru" style={ulStyle}><p>Most recently used iTwins appear here.</p>Click &quot;More&quot; below to search for an iTwin and add it to this list.</div>
+        <div className="ip-no-mru" style={ulStyle}><p>Most recently used iTwins appear here.</p></div>
       );
     } else {
       return (
@@ -114,11 +109,6 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
       <Popup isOpen={this.state.isDropdownOpen} position={RelativePosition.Bottom} onClose={this._handleOnOutsideClick} target={this._target}>
         <div className="ip-dropdown">
           {this.renderITwins()}
-          <div className="ip-separator" />
-          <div className="ip-more" style={liStyle} onClick={this._onMoreClicked} >
-            <span className="ip-icon icon icon-search" />
-            More
-          </div>
         </div>
       </Popup>
     );

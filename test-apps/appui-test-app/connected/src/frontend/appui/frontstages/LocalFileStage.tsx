@@ -22,7 +22,6 @@ import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
 import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { IModelOpenFrontstage } from "./IModelOpenFrontstage";
-import { IModelIndexFrontstage } from "./IModelIndexFrontstage";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
   const viewId = await iModelConnection.views.queryDefaultViewId();
@@ -107,12 +106,10 @@ class BackstageItemsProvider implements UiItemsProvider {
   public readonly id = "local-file-open-stage-backstageItemProvider";
 
   public provideBackstageItems(): BackstageItem[] {
-    const imodelIndexHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.isIModelLocal, [SampleAppUiActionId.setIsIModelLocal]);
     // hide option in backstage if snapshotPath is not set
     const openLocalFileHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.testAppConfiguration?.snapshotPath === undefined, [SampleAppUiActionId.setIsIModelLocal]);
     return [
       BackstageItemUtilities.createStageLauncher(IModelOpenFrontstage.stageId, 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
-      BackstageItemUtilities.createStageLauncher(IModelIndexFrontstage.stageId, 300, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
       BackstageItemUtilities.createActionItem(LocalFileOpenFrontstage.stageId, 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
     ];
   }

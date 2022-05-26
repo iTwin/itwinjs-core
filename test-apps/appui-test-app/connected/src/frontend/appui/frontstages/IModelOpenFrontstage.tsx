@@ -33,7 +33,7 @@ export class IModelOpenFrontstage {
     // if frontstage has not yet been registered register it now
     if (!FrontstageManager.hasFrontstage(IModelOpenFrontstage.stageId)) {
       const contentGroupProps: ContentGroupProps = {
-        id: "appui-test-app:IModelIndexGroup",
+        id: "appui-test-app:IModelOpenGroup",
         layout: StandardContentLayouts.singleView,
         contents: [
           {
