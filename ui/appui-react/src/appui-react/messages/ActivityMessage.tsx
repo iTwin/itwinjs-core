@@ -89,6 +89,7 @@ interface CustomActivityMessageProps {
 
 /**
  * Hook to render an Activity message.
+ * @internal
  */
 export function useActivityMessage({activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings}: CustomActivityMessageProps) {
   const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
@@ -112,6 +113,7 @@ export function useActivityMessage({activityMessageInfo, dismissActivityMessage,
 
 /**
  * Component wrapping the `useActivityMessage` hook to use in class components.
+ * @internal
  */
 export function CustomActivityMessageRenderer({activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings}: CustomActivityMessageProps) {
   useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage, settings});

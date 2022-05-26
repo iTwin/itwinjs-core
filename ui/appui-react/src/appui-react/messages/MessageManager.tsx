@@ -15,7 +15,7 @@ import {
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
 } from "@itwin/core-frontend";
 import { MessageSeverity, UiEvent } from "@itwin/appui-abstract";
-import { MessageContainer } from "@itwin/core-react";
+import { MessageContainer, ReactMessage } from "@itwin/core-react";
 import { ConfigurableUiActionId } from "../configurableui/state";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
@@ -257,7 +257,7 @@ export class MessageManager {
     const content = <>
       {message.briefMessage}
       {message.detailedMessage &&
-      <Small>{message.detailedMessage}</Small>
+      <Small>{(message.detailedMessage as ReactMessage).reactNode || message.detailedMessage}</Small>
       }
     </>;
     switch (message.priority) {
