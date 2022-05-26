@@ -13,6 +13,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BriefcaseStatus } from '@itwin/core-bentley';
+import { Buffer } from 'buffer';
 import { ByteStream } from '@itwin/core-bentley';
 import { ChangeSetStatus } from '@itwin/core-bentley';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -1697,6 +1698,22 @@ export interface CustomAttribute {
     };
 }
 
+// @internal
+export interface CustomViewState3dCreatorOptions {
+    // (undocumented)
+    modelIds?: CompressedId64Set;
+}
+
+// @internal
+export interface CustomViewState3dProps {
+    // (undocumented)
+    categoryIds: CompressedId64Set;
+    // (undocumented)
+    modelExtents: Range3dProps;
+    // (undocumented)
+    modelIds: CompressedId64Set;
+}
+
 // @public
 export class CutStyle {
     readonly appearance?: FeatureAppearance;
@@ -2378,11 +2395,10 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha
-export enum EdgeType {
-    Indexed = 2,
-    None = 0,
-    NonIndexed = 1
+// @internal
+export interface EdgeOptions {
+    indexed: boolean;
+    smooth: boolean;
 }
 
 // @internal
@@ -3263,6 +3279,7 @@ export enum GeoCoordStatus {
 // @public
 export class GeodeticDatum implements GeodeticDatumProps {
     constructor(_data?: GeodeticDatumProps);
+    readonly additionalTransformPaths?: GeodeticTransformPath[];
     readonly deprecated: boolean;
     readonly description?: string;
     readonly ellipsoid?: GeodeticEllipsoid;
@@ -3278,6 +3295,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
 
 // @public
 export interface GeodeticDatumProps {
+    additionalTransformPaths?: GeodeticTransformPathProps[];
     deprecated?: boolean;
     description?: string;
     ellipsoid?: GeodeticEllipsoidProps;
@@ -3323,7 +3341,9 @@ export class GeodeticTransform implements GeodeticTransformProps {
     readonly gridFile?: GridFileTransform;
     readonly method: GeodeticTransformMethod;
     readonly positionalVector?: PositionalVectorTransform;
+    readonly sourceDatumId?: string;
     readonly sourceEllipsoid?: GeodeticEllipsoid;
+    readonly targetDatumId?: string;
     readonly targetEllipsoid?: GeodeticEllipsoid;
     toJSON(): GeodeticTransformProps;
 }
@@ -3332,12 +3352,32 @@ export class GeodeticTransform implements GeodeticTransformProps {
 export type GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined";
 
 // @public
+export class GeodeticTransformPath implements GeodeticTransformPathProps {
+    constructor(_data?: GeodeticTransformPathProps);
+    equals(other: GeodeticTransformPath): boolean;
+    static fromJSON(data: GeodeticTransformPathProps): GeodeticTransformPath;
+    readonly sourceDatumId?: string;
+    readonly targetDatumId?: string;
+    toJSON(): GeodeticTransformPathProps;
+    readonly transforms?: GeodeticTransform[];
+}
+
+// @public
+export interface GeodeticTransformPathProps {
+    sourceDatumId?: string;
+    targetDatumId?: string;
+    transforms?: GeodeticTransformProps[];
+}
+
+// @public
 export interface GeodeticTransformProps {
     geocentric?: GeocentricTransformProps;
     gridFile?: GridFileTransformProps;
     method: GeodeticTransformMethod;
     positionalVector?: PositionalVectorTransformProps;
+    sourceDatumId?: string;
     sourceEllipsoid?: GeodeticEllipsoidProps;
+    targetDatumId?: string;
     targetEllipsoid?: GeodeticEllipsoidProps;
 }
 
@@ -3778,13 +3818,15 @@ export interface GraphicsRequestProps {
     // @alpha
     readonly contentFlags?: ContentFlags;
     // @internal
-    readonly edgeType?: EdgeType;
+    readonly edgeType?: 1 | 2;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
     readonly sectionCut?: string;
+    // @internal
+    readonly smoothPolyfaceEdges?: boolean;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -3812,7 +3854,7 @@ export interface GridFileDefinitionProps {
 export type GridFileDirection = "Direct" | "Inverse";
 
 // @public
-export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN";
+export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN" | "OSTN02" | "OSTN15";
 
 // @public
 export class GridFileTransform implements GridFileTransformProps {
@@ -3925,14 +3967,13 @@ export namespace HiddenLine {
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
-        // (undocumented)
         get transThreshold(): number;
         readonly visible: Style;
     }
     export interface SettingsProps {
-        readonly hidden?: StyleProps;
-        readonly transThreshold?: number;
-        readonly visible?: StyleProps;
+        hidden?: StyleProps;
+        transThreshold?: number;
+        visible?: StyleProps;
     }
     export class Style {
         readonly color?: ColorDef;
@@ -3954,11 +3995,11 @@ export namespace HiddenLine {
         readonly width?: number;
     }
     export interface StyleProps {
-        readonly color?: ColorDefProps;
+        color?: ColorDefProps;
         // @internal
-        readonly ovrColor?: boolean;
-        readonly pattern?: LinePixels;
-        readonly width?: number;
+        ovrColor?: boolean;
+        pattern?: LinePixels;
+        width?: number;
     }
 }
 
@@ -4135,6 +4176,42 @@ export interface HttpServerResponse extends Writable {
     set(field: string, value: string): void;
     // (undocumented)
     status(code: number): HttpServerResponse;
+}
+
+// @internal
+export interface HydrateViewStateRequestProps {
+    // (undocumented)
+    acsId?: string;
+    // (undocumented)
+    baseModelId?: Id64String;
+    // (undocumented)
+    notLoadedCategoryIds?: CompressedId64Set;
+    // (undocumented)
+    notLoadedModelSelectorStateModels?: CompressedId64Set;
+    // (undocumented)
+    sheetViewAttachmentIds?: CompressedId64Set;
+    // (undocumented)
+    spatialViewId?: Id64String;
+    // (undocumented)
+    viewStateLoadProps?: ViewStateLoadProps;
+}
+
+// @internal
+export interface HydrateViewStateResponseProps {
+    // (undocumented)
+    acsElementProps?: ElementProps;
+    // (undocumented)
+    baseModelProps?: ModelProps;
+    // (undocumented)
+    categoryIdsResult?: SubCategoryResultRow[];
+    // (undocumented)
+    modelSelectorStateModels?: ModelProps[];
+    // (undocumented)
+    sheetViewAttachmentProps?: ViewAttachmentProps[];
+    // (undocumented)
+    sheetViewViews?: (ViewStateProps | undefined)[];
+    // (undocumented)
+    spatialViewProps?: ViewStateProps;
 }
 
 // @internal
@@ -4449,6 +4526,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
+    getCustomViewState3dData(_iModelToken: IModelRpcProps, _options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps>;
+    // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
@@ -4463,6 +4542,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
+    getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
@@ -4470,6 +4551,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
+    // (undocumented)
+    hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
@@ -5135,6 +5218,20 @@ export enum MassPropertiesOperation {
 }
 
 // @public
+export interface MassPropertiesPerCandidateRequestProps {
+    // (undocumented)
+    candidates: CompressedId64Set;
+    // (undocumented)
+    operations: MassPropertiesOperation[];
+}
+
+// @public
+export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
+    // (undocumented)
+    candidate: Id64String;
+}
+
+// @public
 export interface MassPropertiesRequestProps {
     // (undocumented)
     candidates?: Id64Array;
@@ -5144,25 +5241,15 @@ export interface MassPropertiesRequestProps {
 
 // @public
 export interface MassPropertiesResponseProps {
-    // (undocumented)
     area?: number;
-    // (undocumented)
     centroid?: XYZProps;
-    // (undocumented)
     ixy?: number;
-    // (undocumented)
     ixz?: number;
-    // (undocumented)
     iyz?: number;
-    // (undocumented)
     length?: number;
-    // (undocumented)
     moments?: XYZProps;
-    // (undocumented)
     perimeter?: number;
-    // (undocumented)
     status: BentleyStatus;
-    // (undocumented)
     volume?: number;
 }
 
@@ -5774,13 +5861,20 @@ export class PackedFeatureTable {
     unpack(): FeatureTable;
 }
 
-// @internal (undocumented)
-export function parseTileTreeIdAndContentId(treeId: string, contentId: string): {
-    modelId: Id64String;
-    treeId: IModelTileTreeId;
+// @internal
+export interface ParsedTileTreeIdAndContentId {
+    // (undocumented)
     contentId: ContentIdSpec;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
     options: TileOptions;
-};
+    // (undocumented)
+    treeId: IModelTileTreeId;
+}
+
+// @internal (undocumented)
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId;
 
 // @public
 export interface PartReference {
@@ -6071,7 +6165,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    edges: EdgeType;
+    edges: EdgeOptions | false;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -7330,6 +7424,16 @@ export class RpcInvocation {
     }
 
 // @internal
+export interface RpcManagedStatus {
+    // (undocumented)
+    iTwinRpcCoreResponse: true;
+    // (undocumented)
+    managedStatus: "pending" | "notFound";
+    // (undocumented)
+    responseValue: string;
+}
+
+// @internal
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -7394,6 +7498,7 @@ export namespace RpcOperation {
 // @internal
 export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
+    allowResponseCompression: boolean;
     allowTokenMismatch: boolean;
     forceStrictMode: boolean;
     requestCallback: RpcRequestCallback_T;
@@ -7449,13 +7554,14 @@ export abstract class RpcProtocol {
     // (undocumented)
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     preserveStreams: boolean;
-    static readonly protocolVersion = 1;
+    static readonly protocolVersion: number;
     protocolVersionHeaderName: string;
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
     serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
+    supportsStatusCategory: boolean;
     transferChunkThreshold: number;
 }
 
@@ -7491,6 +7597,16 @@ export enum RpcProtocolEvent {
 
 // @internal
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
+
+// @internal
+export enum RpcProtocolVersion {
+    // (undocumented)
+    IntroducedNoContent = 1,
+    // (undocumented)
+    IntroducedStatusCategory = 2,
+    // (undocumented)
+    None = 0
+}
 
 // @internal
 export class RpcPushChannel<T> {
@@ -7644,6 +7760,8 @@ export abstract class RpcRequest<TResponse = any> {
     readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
+    // (undocumented)
+    protected responseProtocolVersion: number;
     get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
@@ -7654,6 +7772,8 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
+    // (undocumented)
+    protected supportsStatusCategory(): boolean;
     }
 
 // @internal
@@ -7680,6 +7800,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 
 // @internal
 export interface RpcRequestFulfillment {
+    allowCompression?: boolean;
     id: string;
     interfaceName: string;
     rawResult: any;
@@ -8388,6 +8509,16 @@ export interface SubCategoryProps extends DefinitionElementProps {
     description?: string;
 }
 
+// @internal
+export interface SubCategoryResultRow {
+    // (undocumented)
+    appearance: SubCategoryAppearance.Props;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    parentId: Id64String;
+}
+
 // @public
 export interface SubjectProps extends ElementProps {
     // (undocumented)
@@ -8853,6 +8984,8 @@ export interface TileOptions {
     readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
+    // (undocumented)
+    readonly generateAllPolyfaceEdges: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
@@ -9401,6 +9534,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
+    // (undocumented)
+    supportsStatusCategory: boolean;
 }
 
 // @internal
@@ -9426,7 +9561,7 @@ export class WebAppRpcRequest extends RpcRequest {
     preflight(): Promise<Response | undefined>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
-    static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
+    static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;

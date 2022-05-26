@@ -1132,7 +1132,7 @@ describe("Frontstage local storage wrapper", () => {
         const widgetDef = new WidgetDef({
           id: "w1",
           preferredPanelSize: "fit-content",
-          defaultFloatingSize: {width: 33, height: 33},
+          defaultFloatingSize: { width: 33, height: 33 },
         });
         sinon.stub(frontstageDef, "topCenter").get(() => zoneDef);
         sinon.stub(zoneDef, "getSingleWidgetDef").returns(widgetDef);
@@ -2001,7 +2001,7 @@ describe("Frontstage local storage wrapper", () => {
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
-        expect (widgetDef).to.not.be.undefined;
+        expect(widgetDef).to.not.be.undefined;
 
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         // should be hidden initially
@@ -2031,7 +2031,7 @@ describe("Frontstage local storage wrapper", () => {
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
-        expect (widgetDef).to.not.be.undefined;
+        expect(widgetDef).to.not.be.undefined;
 
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         // should be hidden initially
@@ -2054,7 +2054,7 @@ describe("Frontstage local storage wrapper", () => {
         const spy = sinon.stub(frontstageDef!, "setIsApplicationClosing");
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         spy.calledOnce.should.true;
-        window.dispatchEvent(new Event("beforeunload"));
+        window.dispatchEvent(new Event("unload"));
         spy.calledTwice.should.true;
         wrapper.unmount();
       });
@@ -2152,7 +2152,7 @@ describe("Frontstage local storage wrapper", () => {
         state.panels.bottom.widgets.should.eql(["bottomStart", "bottomEnd"]);
 
         state.widgets.leftStart.tabs.should.eql(["CenterLeft1", "LeftStart1"]);
-        state.widgets.leftEnd.tabs.should.eql(["BottomLeft1", "LeftMiddle1", "LeftEnd1","Left1"]);
+        state.widgets.leftEnd.tabs.should.eql(["BottomLeft1", "LeftMiddle1", "LeftEnd1", "Left1"]);
 
         state.widgets.rightStart.tabs.should.eql(["CenterRight1", "RightStart1"]);
         state.widgets.rightEnd.tabs.should.eql(["BottomRight1", "RightMiddle1", "RightEnd1", "Right1"]);

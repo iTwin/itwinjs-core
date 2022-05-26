@@ -15,6 +15,7 @@ import { IModel } from "./IModel";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
+ * @extensions
  */
 export enum FillDisplay {
   /** don't fill, even if fill attribute is on for the viewport */
@@ -29,6 +30,7 @@ export enum FillDisplay {
 
 /** Describes how a view's background color affects the interior area of a closed region.
  * @public
+ * @extensions
  */
 export enum BackgroundFill {
   /** single color fill uses the fill color and line color to draw either a solid or outline fill */
@@ -44,6 +46,7 @@ export enum BackgroundFill {
  * @see [[GeometryStreamProps]].
  * @see [[Feature]].
  * @public
+ * @extensions
  */
 export enum GeometryClass {
   /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */

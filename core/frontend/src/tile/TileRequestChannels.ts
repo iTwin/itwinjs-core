@@ -44,6 +44,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
  * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[TileRequestChannels.getForHttp]] for the most typical way of obtaining or registering a channel.
  * @public
+ * @extensions
  */
 export class TileRequestChannels {
   /** @internal */

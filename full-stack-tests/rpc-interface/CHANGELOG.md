@@ -1,6 +1,24 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added integration test for the "getMassPropertiesPerCandidate" RPC operation in IModelReadRpcInterface.
+- Added test for maxUrlComponentSize to make sure gets work at this upper bound
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
 
 ## 3.1.1
 Thu, 31 Mar 2022 15:55:48 GMT

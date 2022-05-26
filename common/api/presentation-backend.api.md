@@ -108,10 +108,9 @@ export interface MultiElementPropertiesResponse {
 }
 
 // @public
-export interface MultiManagerPresentationProps extends PresentationManagerProps {
+export interface MultiManagerPresentationProps extends PresentationPropsBase {
     // @internal
     clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    requestTimeout?: number;
     unusedClientLifetime?: number;
 }
 
@@ -228,6 +227,7 @@ export interface PresentationManagerProps {
     };
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
+    // @deprecated
     enableSchemasPreload?: boolean;
     // @internal
     id?: string;
@@ -248,6 +248,12 @@ export interface PresentationManagerProps {
 
 // @public
 export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
+
+// @public
+export interface PresentationPropsBase extends PresentationManagerProps {
+    enableSchemasPreload?: boolean;
+    requestTimeout?: number;
+}
 
 // @beta
 export class RulesetEmbedder {
@@ -333,8 +339,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 }
 
 // @public
-export interface SingleManagerPresentationProps extends PresentationManagerProps {
-    requestTimeout?: number;
+export interface SingleManagerPresentationProps extends PresentationPropsBase {
     // @alpha
     useSingleManager?: boolean;
 }

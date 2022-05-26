@@ -22,7 +22,6 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { app } from "electron";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -159,11 +158,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return fileName;
   }
 
+  public override async getEnvConfig(): Promise<DtaConfiguration> {
+    return getConfig();
+  }
+
   public override async terminate() {
     await IModelHost.shutdown();
 
     // Electron only
-    if (app !== undefined) app.exit();
+    try {
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      if (app !== undefined) app.exit();
+    } catch {
+
+    }
 
     // Browser only
     if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
@@ -199,7 +207,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     const hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
     iModelHost.hubAccess = new IModelHubBackend(hubClient);
   } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   }
 

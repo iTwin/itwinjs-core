@@ -50,17 +50,17 @@ export function Icon(props: IconProps) {
         </i>
       );
     const webComponentString = IconSpecUtilities.getWebComponentSource(iconString);
-    if (webComponentString){
-      const svgLoader = `<svg-loader src=${webComponentString} id="svg-id"></svg-loader>`;
+    if (webComponentString) {
+      const svgLoader = `<svg-loader src=${webComponentString}></svg-loader>`;
       const svgDiv = `<div>${svgLoader}</div>`;
       // the esm build of dompurify has a default import but the cjs build does not
       // if there is a default export, use it (likely esm), otherwise use the namespace
       // istanbul ignore next
       const sanitizer = DOMPurify ?? DOMPurifyNS;
-      const sanitizedIconString = sanitizer.sanitize(svgDiv, {ALLOWED_TAGS: ["svg-loader"]});
+      const sanitizedIconString = sanitizer.sanitize(svgDiv, { ALLOWED_TAGS: ["svg-loader"] });
       // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
       // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
-      const webComponentNode = <div dangerouslySetInnerHTML={{__html:sanitizedIconString}}></div>;
+      const webComponentNode = <div dangerouslySetInnerHTML={{ __html: sanitizedIconString }}></div>;
       return (
         <i className={classnames("icon", "core-svg-icon", props.className)} >
           {webComponentNode}

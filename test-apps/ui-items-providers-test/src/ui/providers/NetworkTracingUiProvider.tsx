@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 
 import * as React from "react";
 import {
-  AbstractWidgetProps, BackstageItem,
+  AbstractWidgetProps, AbstractZoneLocation, BackstageItem,
   BackstageItemUtilities, BadgeType,
   CommonStatusBarItem,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
@@ -15,7 +16,7 @@ import {
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { CustomToolbarItem } from "@itwin/components-react";
-import { Indicator, PropsHelper, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { FrontstageManager, Indicator, PropsHelper, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher, UiFramework } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
@@ -28,6 +29,7 @@ import downstreamQuerySvg from "../icons/downstream-query.svg";
 import queryMultiSvg from "../icons/query-multi.svg";
 import upstreamQuerySvg from "../icons/upstream-query.svg";
 import { SvgList } from "@itwin/itwinui-icons-react";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function SvgApple(props: React.SVGProps<SVGSVGElement>) {
@@ -45,14 +47,38 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
   public static providerId = "ui-item-provider-test:NetworkTracingUiProvider";
   public readonly id = NetworkTracingUiProvider.providerId;
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
+  private _removeListenerFunc?: () => void;
+
+  // Listen for selection changes and when nothing is selection hide the Widget by calling widgetDef.setWidgetState
+  private _onPresentationSelectionChanged = async (evt: SelectionChangeEventArgs, selectionProvider: ISelectionProvider) => {
+    const widgetDef = FrontstageManager.activeFrontstageDef?.findWidgetDef("ui-item-provider-test:elementDataListWidget");
+    if (widgetDef) {
+      const selection = selectionProvider.getSelection(evt.imodel, evt.level);
+      if (selection.isEmpty) {
+        widgetDef?.setWidgetState(WidgetState.Hidden);
+      } else {
+        if (selection.instanceKeys.size !== 0) {
+          widgetDef?.setWidgetState(WidgetState.Open);
+        }
+      }
+    }
+  };
 
   public static register() {
-    UiItemsManager.register(new NetworkTracingUiProvider());
+    const provider = new NetworkTracingUiProvider();
+    UiItemsManager.register(provider);
+    if (UiFramework.uiVersion === "1")
+      provider._removeListenerFunc = Presentation.selection.selectionChange.addListener(provider._onPresentationSelectionChanged);
   }
 
   public static unregister() {
     UiItemsManager.unregister(NetworkTracingUiProvider.providerId);
   }
+
+  // When the provider is unloaded also remove the handler
+  public onUnregister = () => {
+    this._removeListenerFunc && this._removeListenerFunc();
+  };
 
   /** static method that updates the value in redux store and dispatches a sync event so items are refreshed. */
   public static toggleTraceTool() {
@@ -88,7 +114,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         );
 
       /** This is an example of where the tool generates the action button definition allowing user to pass item and group
-       * priority to control ordering of buttons in toolbox. */
+     * priority to control ordering of buttons in toolbox. */
       const getConnectedButton = OpenTraceDialogTool.getActionButtonDef(10);
 
       /** Sample group entry that hides if isTraceAvailable is set to false  */
@@ -172,21 +198,24 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
   }
 
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
-    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+    section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, _stageAppData?: any): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if ((stageId === NetworkTracingFrontstage.stageId || stageId === "ui-test-app:no-widget-frontstage") &&
-      location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+    if ((stageId === NetworkTracingFrontstage.stageId || stageId === "ui-test-app:no-widget-frontstage" || stageId === "ViewsFrontstage") &&
+      (location === StagePanelLocation.Right && section === StagePanelSection.Start && UiFramework.uiVersion !== "1") ||
+      zoneLocation === AbstractZoneLocation.BottomRight) {
       /** This widget when only be displayed when there is an element selected. */
-      const widget: AbstractWidgetProps = {...{
-        id: "ui-item-provider-test:elementDataListWidget",
-        label: "Data",
-        defaultState: WidgetState.Hidden,
-        isFloatingStateSupported: true,
-        // eslint-disable-next-line react/display-name
-        getWidgetContent: () => {
-          return <SelectedElementDataWidgetComponent />;
-        },
-      }, ...PropsHelper.getAbstractPropsForReactIcon(<SvgApple/>)};
+      const widget: AbstractWidgetProps = {
+        ...{
+          id: "ui-item-provider-test:elementDataListWidget",
+          label: "Data",
+          defaultState: WidgetState.Hidden,
+          isFloatingStateSupported: true,
+          // eslint-disable-next-line react/display-name
+          getWidgetContent: () => {
+            return <SelectedElementDataWidgetComponent />;
+          },
+        }, ...PropsHelper.getAbstractPropsForReactIcon(<SvgApple />),
+      };
       widgets.push(widget);
     }
 
@@ -198,7 +227,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         icon: PresentationPropertyGridWidgetControl.iconSpec,
         defaultState: WidgetState.Open,
         isFloatingStateSupported: true,
-        defaultFloatingSize: {width: 400, height: 600 },
+        defaultFloatingSize: { width: 400, height: 600 },
         isFloatingStateWindowResizable: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
@@ -217,7 +246,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     const iconProps = PropsHelper.getAbstractPropsForReactIcon(<SvgApple />);
     return [
       // use 200 to group it with secondary stages in ui-test-app
-      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", iconProps.icon, {internalData: iconProps.internalData}),
+      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", iconProps.icon, { internalData: iconProps.internalData }),
     ];
   }
 

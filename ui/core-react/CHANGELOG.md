@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added 'useCrossOriginPopup' and 'useInterval' hooks
+- ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`
+- Fix for losing viewport content after clicking PW link 
+- Implement svg icons loading as a web component.
+- Allow React icons to be used on Wedget tabs, backstage, and status bar items
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
 
 ## 3.1.1
 Thu, 31 Mar 2022 15:55:48 GMT

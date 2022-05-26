@@ -3,9 +3,6 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "outDir": "./lib",
-    "types": [
-      "@bentley/react-scripts"
-    ]
   },
   "include": [
     "./**/*.ts",

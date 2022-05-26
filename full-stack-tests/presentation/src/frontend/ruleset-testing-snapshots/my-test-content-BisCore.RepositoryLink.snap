@@ -3,7 +3,7 @@
 exports[`BisCore.RepositoryLink`] = `
 Array [
   PropertyRecord {
-    "description": "Ñót spêçìfíêd",
+    "description": "DgnV8Bridge",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Model",
@@ -11,7 +11,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "Ñót spêçìfíêd",
+      "displayValue": "DgnV8Bridge",
       "value": Object {
         "className": "BisCore:RepositoryModel",
         "id": "0x1",

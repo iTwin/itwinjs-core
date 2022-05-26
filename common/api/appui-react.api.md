@@ -161,6 +161,7 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
@@ -554,6 +555,8 @@ export class AppNotificationManager extends NotificationManager {
 // @public
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
+    // (undocumented)
+    animateToolSettings: UiStateEntry<boolean>;
     // (undocumented)
     apply(storage: UiStateStorage): Promise<void>;
     // (undocumented)
@@ -1158,6 +1161,8 @@ export class ConfigurableCreateInfo {
 
 // @public
 export enum ConfigurableUiActionId {
+    // (undocumented)
+    AnimateToolSettings = "configurableui:set-animate-tool-settings",
     // @alpha (undocumented)
     AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
@@ -1189,6 +1194,7 @@ export const ConfigurableUiActions: {
     setShowWidgetIcon: (showWidgetIcon: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetShowWidgetIcon, boolean>;
     setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>;
     setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
+    setAnimateToolSettings: (animateToolSettings: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AnimateToolSettings, boolean>;
 };
 
 // @public
@@ -1280,6 +1286,8 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, ac
 
 // @public
 export interface ConfigurableUiState {
+    // (undocumented)
+    animateToolSettings: boolean;
     // @alpha (undocumented)
     autoCollapseUnpinnedPanels: boolean;
     // (undocumented)
@@ -3306,6 +3314,8 @@ export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
+    // (undocumented)
+    animateToolSettings?: boolean;
     // @alpha (undocumented)
     autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
@@ -5883,12 +5893,23 @@ export interface StagePanelZonesProps {
 
 // @public
 export class StandardContentToolsProvider extends BaseUiItemsProvider {
-    constructor(providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
+    constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+    static register(providerId: string, defaultContentTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+}
+
+// @beta (undocumented)
+export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultContextTools?: DefaultContentTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
 }
 
 // @public
@@ -5897,6 +5918,7 @@ export interface StandardFrontstageProps {
     bottomPanelProps?: WidgetPanelProps;
     contentGroupProps: ContentGroupProps | ContentGroupProvider;
     cornerButton?: React.ReactNode;
+    defaultTool?: ToolItemDef;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
     // (undocumented)
@@ -5945,6 +5967,15 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
     static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardNavigationToolsProvider;
 }
 
+// @beta
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultNavigationTools?: DefaultNavigationTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+}
+
 // @alpha
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
@@ -5967,6 +5998,15 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardStatusbarItemsProvider;
+}
+
+// @beta
+export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
+    constructor(_defaultItems?: DefaultStatusbarItems | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
 }
 
 // @public
@@ -6783,6 +6823,7 @@ export interface UiDataProvidedDialogProps {
 
 // @public
 export class UiFramework {
+    static get animateToolSettings(): boolean;
     // @alpha (undocumented)
     static get autoCollapseUnpinnedPanels(): boolean;
     // (undocumented)
@@ -6854,6 +6895,8 @@ export class UiFramework {
     static setActiveIModelId(iModelId: string): void;
     // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
+    // (undocumented)
+    static setAnimateToolSettings(value: boolean): void;
     // @alpha
     static setAutoCollapseUnpinnedPanels(value: boolean): void;
     // (undocumented)

@@ -212,7 +212,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -287,6 +287,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/node-cli-authorization",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -356,6 +364,10 @@
     },
     {
       "name": "@svgdotjs/svg.js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@testing-library/dom",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -692,7 +704,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "jsdom-global",
@@ -863,6 +875,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "react-router-dom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-select",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -877,6 +893,10 @@
     {
       "name": "react-test-renderer",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "react-transition-group",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-window",
@@ -936,7 +956,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "tools" ]
     },
     {
       "name": "spdy",

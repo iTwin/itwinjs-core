@@ -65,6 +65,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @kabentley @pmconne
 /common/**/editor-*/                          @bbastings @kabentley @pmconne
+/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
+/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /common/**/core-frontend.*                    @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-frontend/                     @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
@@ -105,9 +107,9 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
 /core/electron                  @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
-/core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8
+/core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
-/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8
+/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
 /core/geometry                  @bbastings @mgooding @dassaf4
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
@@ -136,7 +138,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /extensions                           @bsteinbk @calebmshafer
 /extensions/test-extension            @calebmshafer @wgoehrig @aruniverse @kckst8
-/extensions/map-layers                @bsteinbk @mdastous-bentley
+/extensions/map-layers                @mdastous-bentley @MarcBedard8
 
 /full-stack-tests/core                @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig

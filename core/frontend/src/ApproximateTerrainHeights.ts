@@ -38,8 +38,10 @@ export class ApproximateTerrainHeights {
    * @return {Promise}
    */
   public async initialize(): Promise<void> {
-    if (!this._terrainHeights)
-      this._terrainHeights = (await import("./ApproximateTerrainHeightsProps")).props;
+    if (!this._terrainHeights) {
+      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps");
+      this._terrainHeights = JSON.parse(terrainHeightsPropsString);
+    }
   }
 
   public getTileHeightRange(quadId: QuadId, result?: Range1d): Range1d {
