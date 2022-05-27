@@ -38,9 +38,6 @@ export class RpcOperationPolicy {
    */
   public allowResponseCaching: RpcResponseCachingCallback_T = (_request) => RpcResponseCacheControl.None;
 
-  /** The Cache-Control header set on the response by the backend if response caching is enabled. */
-  public cacheControlHeader: string = "no-store";
-
   /** Forces RpcConfiguration.strictMode for this operation. */
   public forceStrictMode: boolean = false;
 
@@ -115,21 +112,6 @@ export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
 /** @internal */
 export namespace RpcOperation { // eslint-disable-line no-redeclare
-
-  /** This is the recommended cache header for RPC operations which are deemed cacheable. Currently the header instructs a shared cache to store the response for 24 hours
-    * and instructs the browser to store the response for 48 hours.
-    * Please see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
-    * for more information on cache headers.
-    *
-    * @note This cache header may not be applicable to all cacheable RPC operations!
-    * Example RPC operation where this header does not apply:
-    *   getTileCacheContainerUrl - This RPC operation returns a SAS key which expires in 24 hours, so it can't be cached on the browser for 48 hours.
-    *
-    *
-    * TODO: Add stale-while-revalidate to this header, once it is supported and tested in the RPC caching service.
-    */
-  export const recommendedCacheHeader = `s-maxage=${3600 * 24}, max-age=${3600 * 48}, immutable`;
-
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {
       return obj;
@@ -147,14 +129,11 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
     };
   }
 
-  /** Convenience decorator for setting an RPC operation policy that allows response caching.
-   *  The current default cacheControlHeader when using this decorator is "no-store".
-   */
-  export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable, cacheControlHeader: string = "no-store") {
+  /** Convenience decorator for setting an RPC operation policy that allows response caching. */
+  export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
         public override allowResponseCaching = () => control;
-        public override cacheControlHeader = cacheControlHeader;
       }());
     };
   }

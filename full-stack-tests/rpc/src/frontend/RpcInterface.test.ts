@@ -469,7 +469,7 @@ describe("RpcInterface", () => {
     assert.isTrue(result === input);
     let cacheControlHeader: string = response.headers.get("Cache-Control");
     assert.isDefined(cacheControlHeader);
-    assert.equal(cacheControlHeader, "s-maxage=86400, max-age=172800, immutable");
+    assert.isTrue(cacheControlHeader === "s-maxage=86400, max-age=172800, immutable");
 
     // Take off caching
     RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.None;

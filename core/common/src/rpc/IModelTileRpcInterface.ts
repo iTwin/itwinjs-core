@@ -35,8 +35,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /** Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
    * @beta
    */
-  // Can't exceed 24 hours, since this RPC operation can return a SAS with an expiry time of 24 hours.
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, `s-maxage=${3600 * 23}, max-age=${3600 * 23}, immutable`)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }
@@ -49,7 +48,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   }
 
   /** @internal */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, RpcOperation.recommendedCacheHeader)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
 
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -
@@ -57,7 +56,6 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @returns TileContentSource - if Backend, use retrieveTileContent. If ExternalCache, use TileAdmin.requestCachedTileContent
    * @internal
    */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable, "no-store")
   public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource> {
     return this.forward(arguments);
   }

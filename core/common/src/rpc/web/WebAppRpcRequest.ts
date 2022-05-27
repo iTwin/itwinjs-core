@@ -286,13 +286,25 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private static configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
+    // TODO: Use stale-while-revalidate in cache headers. This needs to be tested, and does not currently have support in the router/caching-service.
+    // This will allow browsers to use stale cached responses while also revalidating with the router, allowing us to start up a backend if necessary.
 
+    // RPC Caching Service uses the s-maxage header to determine the TTL for the redis cache.
+    const oneHourInSeconds = 3600;
     if (success && request.caching === RpcResponseCacheControl.Immutable) {
       // If response size is > 50 MB, do not cache it.
       if (fulfillment.result.objects.length > (50 * 10**7)) {
         res.set("Cache-Control", "no-store");
-      } else if (fulfillment.cacheControlHeader) {
-        res.set("Cache-Control", fulfillment.cacheControlHeader);
+      } else if (request.operation.operationName === "generateTileContent") {
+        res.set("Cache-Control", "no-store");
+      } else if (request.operation.operationName === "getConnectionProps") {
+        // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
+      } else if (request.operation.operationName === "getTileCacheContainerUrl") {
+        // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 23}, max-age=${oneHourInSeconds * 23}, immutable`);
+      } else {
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=${oneHourInSeconds * 48}, immutable`);
       }
     }
 
