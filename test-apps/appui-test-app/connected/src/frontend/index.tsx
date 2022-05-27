@@ -47,7 +47,7 @@ import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
+// cSpell:ignore setTestProperty sampleapp uitestapp projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -56,7 +56,6 @@ RpcConfiguration.developmentMode = true;
 export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
-  setIsIModelLocal = "sampleapp:setisimodellocal",
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
 
@@ -65,8 +64,6 @@ export enum SampleAppUiActionId {
 * and using that initial value in ui-test-app. By default UiFramework initializes
 * the Redux state to UI 2.0 mode.
 ----------------------------------------------------------------------------- */
-const useUi1Mode = false;
-
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
@@ -85,7 +82,6 @@ const initialState: SampleAppState = {
 export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
-  setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
   setInitialViewIds: (viewIds: string[]) => createAction(SampleAppUiActionId.setInitialViewIds, viewIds),
 };
 
@@ -118,9 +114,6 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     case SampleAppUiActionId.setAnimationViewId: {
       return { ...state, animationViewId: action.payload };
     }
-    case SampleAppUiActionId.setIsIModelLocal: {
-      return { ...state, isIModelLocal: action.payload };
-    }
     case SampleAppUiActionId.setInitialViewIds: {
       return { ...state, initialViewIds: action.payload };
     }
@@ -144,51 +137,6 @@ interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
-}
-
-async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
-  try {
-    const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
-    // try specified viewId first
-    if (requestedViewId) {
-      const queryParams: ViewQueryParams = {};
-      // queryParams.from = SpatialViewState.classFullName;
-      queryParams.from = ViewState3d.classFullName;
-      queryParams.where = `ECInstanceId=${requestedViewId}`;
-      const vwProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), queryParams);
-      if (vwProps.length !== 0) {
-        return requestedViewId;
-      }
-    }
-
-    const viewId = await iModelConnection.views.queryDefaultViewId();
-    const params: ViewQueryParams = {};
-    params.from = SpatialViewState.classFullName;
-    params.where = `ECInstanceId=${viewId}`;
-
-    // Check validity of default view
-    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), params);
-    if (viewProps.length === 0) {
-      // Return the first view we can find
-      const viewList = await iModelConnection.views.getViewList({ wantPrivate: false });
-      if (viewList.length === 0)
-        return undefined;
-
-      const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
-      if (spatialViewList.length !== 0)
-        return spatialViewList[0].id;
-
-      const threeDViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("3d") !== -1);
-      if (threeDViewList.length !== 0)
-        return threeDViewList[0].id;
-
-      return undefined;
-    }
-    return viewId;
-  } catch (err) {
-    alert(`Unable to determine view for iModel - Error: ${err}`);
-    return undefined;
-  }
 }
 
 export class SampleAppIModelApp {
@@ -284,7 +232,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined, undefined, useUi1Mode);
+    await UiFramework.initialize(undefined, undefined);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -314,21 +262,17 @@ export class SampleAppIModelApp {
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    if (!useUi1Mode) {
-      const defaults: InitialAppUiSettings = {
-        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-        dragInteraction: false,
-        frameworkVersion: "2",
-        widgetOpacity: 0.8,
-        showWidgetIcon: true,
-        autoCollapseUnpinnedPanels: false,
-      };
+    const defaults: InitialAppUiSettings = {
+      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+      dragInteraction: false,
+      frameworkVersion: "2",
+      widgetOpacity: 0.8,
+      showWidgetIcon: true,
+      autoCollapseUnpinnedPanels: false,
+    };
 
-      // initialize any settings providers that may need to have defaults set by iModelApp
-      UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
-    } else {
-      window.localStorage.removeItem("AppUiSettings.FrameworkVersion");
-    }
+    // initialize any settings providers that may need to have defaults set by iModelApp
+    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
 
     UiFramework.useDefaultPopoutUrl = true;
 
@@ -341,7 +285,7 @@ export class SampleAppIModelApp {
 
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
-    const category = `ui-test-app.${className}`;
+    const category = `appui-test-app.${className}`;
     return category;
   }
 
@@ -353,68 +297,44 @@ export class SampleAppIModelApp {
       `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
-    if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-      });
-      await req.downloadPromise;
-      iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
-      SampleAppIModelApp.setIsIModelLocal(true, true);
-    } else {
-
-      try {
-        const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-        await iModel.openIModel();
-        if (!iModel.iModelConnection || iModel.iModelConnection.isClosed) {
-          alert(`Unable to open selected iModel`);
-          iModelConnection = undefined;
-          await this.showIModelOpen();
-          return;
-        }
-        iModelConnection = iModel.iModelConnection!;
-        if (!viewIdsSelected && iModel.viewId) {
-          viewIdsSelected = [iModel.viewId];
-        }
-        SampleAppIModelApp.setIsIModelLocal(false, true);
-      } catch (e: any) {
-        alert(`Error opening selected iModel: ${e.message}`);
-        iModelConnection = undefined;
+    try {
+      const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+      await iModel.openIModel();
+      if (!iModel.iModelConnection || iModel.iModelConnection.isClosed) {
+        alert(`Unable to open selected iModel`);
         await this.showIModelOpen();
         return;
       }
-    }
-
-    await this.openViews(iModelConnection, viewIdsSelected);
-  }
-
-  public static async closeCurrentIModel() {
-    if (SampleAppIModelApp.isIModelLocal) {
-      const currentIModelConnection = UiFramework.getIModelConnection();
-      if (currentIModelConnection) {
-        SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
-        await currentIModelConnection.close();
-        UiFramework.setIModelConnection(undefined);
-        SampleAppIModelApp.setIsIModelLocal(true, true);
+      iModelConnection = iModel.iModelConnection!;
+      if ((undefined === viewIdsSelected || 0 === viewIdsSelected.length) && iModel.viewId) {
+        viewIdsSelected = [iModel.viewId];
       }
-    }
-  }
-
-  public static async openViews(iModelConnection?: IModelConnection, viewIdsSelected?: Id64String[]) {
-
-    if (!iModelConnection || !iModelConnection.isOpen) {
+      if (viewIdsSelected) {
+        await this.openViews(iModelConnection, viewIdsSelected);
+      }
+      else {
+        alert(`Unable to find view to open in selected iModel`);
+        await this.showIModelOpen();
+        return;
+      }
+    } catch (e: any) {
+      alert(`Error opening selected iModel: ${e.message}`);
+      iModelConnection = undefined;
       await this.showIModelOpen();
       return;
     }
+  }
 
-    let viewIds: Id64String[] = [];
-    if (viewIdsSelected) {
-      viewIds = viewIdsSelected;
-    } else {
-      const viewId = await getDefaultViewId(iModelConnection);
-      if (viewId)
-        viewIds.push(viewId);
+  public static async closeCurrentIModel() {
+    const currentIModelConnection = UiFramework.getIModelConnection();
+    if (currentIModelConnection) {
+      SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
+      await currentIModelConnection.close();
+      UiFramework.setIModelConnection(undefined);
     }
+  }
 
+  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
     const defaultFrontstage = MainFrontstage.stageId;
@@ -426,8 +346,10 @@ export class SampleAppIModelApp {
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
 
-    if (viewIds.length) {
-      SampleAppIModelApp.setInitialViewIds(viewIds);
+    if (viewIdsSelected.length) {
+      SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+        `openViews: iTwinId=${iModelConnection.iTwinId} iModelId=${iModelConnection.iModelId} viewIdsSelected=${JSON.stringify(viewIdsSelected)}`);
     }
 
     if (this.iModelParams && this.iModelParams.stageId)
@@ -465,35 +387,28 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModel: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModel: iTwinId = ${iTwinId}& iModelId=${iModelId} mode = ${this.allowWrite ? "ReadWrite" : "Readonly"} `);
 
-      if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-          // eslint-disable-next-line no-console
-          console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-        });
-        await req.downloadPromise;
-        iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
-      } else {
-        try {
-          const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-          await iModel.openIModel();
-          iModelConnection = iModel.iModelConnection!;
-        } catch (e: any) {
-          alert(`Error opening selected iModel: ${e.message}`);
-          iModelConnection = undefined;
+      try {
+        const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+        await iModel.openIModel();
+        iModelConnection = iModel.iModelConnection;
+
+        if (!iModelConnection || !iModelConnection.isOpen || !iModel.viewId) {
+          alert(`Unable to open specified iModel`);
           await this.showIModelOpen();
           return;
         }
+
+        // store the IModelConnection in the sample app store
+        UiFramework.setIModelConnection(iModelConnection, true);
+        await this.openViews(iModelConnection, [iModel.viewId!]);
+      } catch (e: any) {
+        alert(`Error opening selected iModel: ${e.message} `);
+        await this.showIModelOpen();
+        return;
       }
-
-      SampleAppIModelApp.setIsIModelLocal(!!iModelConnection?.isBriefcaseConnection, true);
-
-      // store the IModelConnection in the sample app store
-      UiFramework.setIModelConnection(iModelConnection, true);
     }
-
-    await this.openViews(iModelConnection);
   }
 
   public static async showIModelOpen() {
@@ -545,7 +460,7 @@ export class SampleAppIModelApp {
         iModel = imodel;
 
       if (!iModel)
-        throw new Error(`No iModel with the name ${iModelName}`);
+        throw new Error(`No iModel with the name ${iModelName} `);
 
       if (viewId) {
         // open directly into the iModel (view)
@@ -614,10 +529,6 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp.store.getState().sampleAppState.animationViewId;
   }
 
-  public static setIsIModelLocal(isIModelLocal: boolean, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SampleAppUiActionId.setIsIModelLocal, isIModelLocal, immediateSync);
-  }
-
   public static setInitialViewIds(viewIds: string[], immediateSync = false) {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setInitialViewIds, viewIds, immediateSync);
   }
@@ -628,7 +539,8 @@ export class SampleAppIModelApp {
 
   public static async showFrontstage(frontstageId: string) {
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    if (frontstageDef !== FrontstageManager.activeFrontstageDef)
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   }
 }
 
@@ -682,11 +594,11 @@ const SampleAppViewer2 = () => {
   };
 
   const _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id = ${args.deactivatedFrontstageDef.id} totalTime = ${args.totalTime} engagementTime = ${args.engagementTime} idleTime = ${args.idleTime} `);
   };
 
   const _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title = ${args.modalFrontstage.title} totalTime = ${args.totalTime} engagementTime = ${args.engagementTime} idleTime = ${args.idleTime} `);
   };
 
   React.useEffect(() => {
