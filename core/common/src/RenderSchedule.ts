@@ -893,14 +893,21 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A reference to a [[RenderSchedule.Script]] indicating the persistent [Element]($backend) from which the script was obtained.
-   * Prior to the introduction of the [RenderTimeline]($backend) class in version 01.00.13 of the BisCore ECSchema, scripts were
-   * stored in the JSON properties of [DisplayStyle]($backend) elements. Now they are stored in the Script property of a RenderTimeline element.
-   * The `sourceId` can refer to either a DisplayStyle or a RenderTimeline.
+  /** A reference to a [[RenderSchedule.Script]] identifying the source of the script.
+   * A schedule script may originate from one of the following sources:
+   *  - A [RenderTimeline]($backend) element stored in the iModel; or
+   *  - The `scheduleScript` JSON property of a [DisplayStyle]($backend) element stored in the iModel; or
+   *  - Any other source outside of the iModel, such as code that generates the script on the frontend, a script obtained from some server, etc.
+   *
+   * Two ScriptReferences with the same [[sourceId]] are assumed to have identical [[script]] contents.
    */
   export class ScriptReference {
-    /** The Id of the [RenderTimeline]($backend) or [DisplayStyle]($backend) element that hosts the script. */
-    public readonly sourceId: Id64String;
+    /** Uniquely identifies the source of the script. If the source is a [RenderTimeline]($backend) or [DisplayStyle]($backend) element, `sourceId` provides the Id of that element.
+     * Otherwise, the provider of the Id is responsible for ensuring that two ScriptReferences with the same [[script]] contents, and that two ScriptReferences with different [[script]]
+     * contents will have different `sourceId`s. One way to produce unique identifiers is via [IModelConnection.transientIds]($frontend).
+     * @note `sourceId` properties are compared very frequently - avoid using lengthy strings.
+     */
+    public readonly sourceId: Id64String | string;
     /** The script. */
     public readonly script: Script;
 
