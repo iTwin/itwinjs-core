@@ -9,6 +9,7 @@
 import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
+import { ViewState } from "./ViewState";
 
 /** Per-model category visibility permits the visibility of categories within a [[Viewport]] displaying a [[SpatialViewState]] to be overridden in
  * the context of individual [[GeometricModelState]]s.
@@ -48,6 +49,8 @@ export namespace PerModelCategoryVisibility {
     getOverride(modelId: Id64String, categoryId: Id64String): Override;
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    /** Changes multiple overrides, given an array of overrides */
+    setOverrides(perModelCategoryVisibility: PerModelCategoryVisibilityProps[], viewState?: ViewState): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */
@@ -84,6 +87,12 @@ function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: 
   return 0 === cmp ? compareStrings(lhs.categoryId, rhs.categoryId) : cmp;
 }
 
+// TODO: I know the saved-views package defines an interface with the same exact name... Will this cause problems? Maybe I should define these props as part of the PerModelCategoryVisibility namespace.
+export interface PerModelCategoryVisibilityProps {
+  modelId: string;
+  categoryIds: Id64Arg;
+  visOverride: PerModelCategoryVisibility.Override;
+}
 /** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides. */
 class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
   private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);
@@ -103,29 +112,77 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       return PerModelCategoryVisibility.Override.None;
   }
 
-  public setOverride2(: [])
+  /**
+   *
+   * @param perModelCategoryVisibility array of model category visibility overrides
+   * @param viewState Optional param viewState. If no viewState is provided, then the viewState associated with the viewport (used to construct this class) is used. This param is WIP, not sure if necessary.
+   * Messaged OCP team to figure this one out. Waiting on response.
+   * @returns void promise
+   */
+  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibilityProps[], viewState?: ViewState): Promise<void> {
+    let anyChanged = false;
+    const addedCategoryIds: string[] = [];
+    const viewStateToUse = viewState ? viewState : this._vp.view;
+    for (const override of perModelCategoryVisibility) {
+      const modelId = override.modelId;
+      const categoryIds = override.categoryIds;
+      const visOverride = override.visOverride;
+      for (const categoryId of Id64.iterable(categoryIds)) {
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
+          anyChanged = true;
+          this._vp.setViewedCategoriesPerModelChanged();
+          if (PerModelCategoryVisibility.Override.None !== visOverride) {
+          // Ensure subcategories loaded. Temporarily add them to the viewState's categorySelector to take advantage of viewState.load().
+            if (!viewStateToUse.categorySelector.has(categoryId)) {
+              viewStateToUse.categorySelector.addCategories(categoryId);
+              addedCategoryIds.push(categoryId);
+            }
+          }
+        }
+      }
+    }
+    if (anyChanged) {
+      this._vp.setViewedCategoriesPerModelChanged();
+      // as long as the viewstate's imodel is correct then calling load should populate the correct subcategories.
+      // this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories); is called in viewstate.load.
+      return viewStateToUse.load().then(() => {
+        viewStateToUse.categorySelector.dropCategories(addedCategoryIds);
+        this._vp.setViewedCategoriesPerModelChanged();
+      });
+    }
+    return;
+  }
+
+  /** Find and update the override in the array of overrides. If override not found, adds it to the array.
+   *  If the array was changed, returns true. */
+  private findAndUpdateOverrideInArray(modelId: Id64String, categoryId: Id64String, override: PerModelCategoryVisibility.Override): boolean {
+    const ovr = this._scratch;
+    ovr.reset(modelId, categoryId, false);
+    let changed = false;
+    const index = this.indexOf(ovr);
+    if (-1 === index) {
+      if (PerModelCategoryVisibility.Override.None !== override) {
+        this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
+        changed = true;
+      }
+    } else {
+      if (PerModelCategoryVisibility.Override.None === override) {
+        this._array.splice(index, 1);
+        changed = true;
+      } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
+        this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+        changed = true;
+      }
+    }
+    return changed;
+  }
 
   public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
-    const ovr = this._scratch;
     let changed = false;
     for (const modelId of Id64.iterable(modelIds)) {
       for (const categoryId of Id64.iterable(categoryIds)) {
-        ovr.reset(modelId, categoryId, false);
-        const index = this.indexOf(ovr);
-        if (-1 === index) {
-          if (PerModelCategoryVisibility.Override.None !== override) {
-            this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
-            changed = true;
-          }
-        } else {
-          if (PerModelCategoryVisibility.Override.None === override) {
-            this._array.splice(index, 1);
-            changed = true;
-          } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
-            this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
-            changed = true;
-          }
-        }
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, override))
+          changed = true;
       }
     }
 
@@ -135,8 +192,6 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       if (PerModelCategoryVisibility.Override.None !== override) {
         // Ensure subcategories loaded.
         this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
-        this._vp.view.categorySelector.addCategories(categoryIds);
-        await this._vp.view.load().then(() => this._vp.setViewedCategoriesPerModelChanged());
       }
     }
   }
