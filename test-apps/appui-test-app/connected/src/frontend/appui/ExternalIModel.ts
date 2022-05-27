@@ -92,10 +92,10 @@ export class ExternalIModel {
         this.viewId = await this.onIModelSelected(this.iModelConnection);
 
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `openIModel (external): iTwinId=${this.iTwinId}&iModelId=${this.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
+          `openIModel (external): iTwinId=${this.iTwinId}&iModelId=${this.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
       } catch (err: any){
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `openIModel (external): Error ${err.message}`);
+          `openIModel (external): Error ${err.message}`);
       }
     }
   }
