@@ -66,7 +66,6 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
 
     this.setState({ isPointerDown: true });
 
-    e.preventDefault();
     this._isDragged = false;
     this._initial = new Point(e.clientX, e.clientY);
   };

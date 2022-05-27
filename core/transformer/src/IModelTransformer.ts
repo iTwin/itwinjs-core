@@ -186,7 +186,11 @@ function mapId64<R>(
   idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
-  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
+  const isId64String = (arg: any): arg is Id64String => {
+    const isString = typeof arg === "string";
+    assert(() => !isString || Id64.isValidId64(arg));
+    return isString;
+  };
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
 
