@@ -88,8 +88,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     let signingInMessage: string | undefined;
     if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
-      const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
-      signingInMessage = UiFramework.localization.getLocalizedString(signingInMessageStringId);
+      signingInMessage = IModelApp.localization.getLocalizedString("SampleApp:signIn.signingInMessage");
     }
 
     return (
