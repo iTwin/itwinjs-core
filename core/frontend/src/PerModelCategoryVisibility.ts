@@ -130,7 +130,6 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       for (const categoryId of Id64.iterable(categoryIds)) {
         if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
           anyChanged = true;
-          this._vp.setViewedCategoriesPerModelChanged();
           if (PerModelCategoryVisibility.Override.None !== visOverride) {
           // Ensure subcategories loaded. Temporarily add them to the viewState's categorySelector to take advantage of viewState.load().
             if (!viewStateToUse.categorySelector.has(categoryId)) {
@@ -145,10 +144,12 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       this._vp.setViewedCategoriesPerModelChanged();
       // as long as the viewstate's imodel is correct then calling load should populate the correct subcategories.
       // this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories); is called in viewstate.load.
-      return viewStateToUse.load().then(() => {
-        viewStateToUse.categorySelector.dropCategories(addedCategoryIds);
-        this._vp.setViewedCategoriesPerModelChanged();
-      });
+      if (addedCategoryIds.length !== 0) {
+        return viewStateToUse.load().then(() => {
+          viewStateToUse.categorySelector.dropCategories(addedCategoryIds);
+          this._vp.setViewedCategoriesPerModelChanged();
+        });
+      }
     }
     return;
   }
