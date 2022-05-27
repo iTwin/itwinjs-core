@@ -74,15 +74,16 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
     this.script.addSymbologyOverrides(overrides, time);
   }
 
-  public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+  public modelRequiresBatching(modelId: Id64String): boolean {
     // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
+    return this.script.requiresBatching && this.script.modelTimelines.some((x) => x.modelId === modelId && x.requiresBatching);
+  }
+
+  public getModelAnimationId(modelId: Id64String): Id64String | undefined {
+    // Transient model Ids don't exist in the iModel, so we can't generate special tiles for them.
     if (Id64.isTransient(modelId))
       return undefined;
 
-    for (const modelTimeline of this.script.modelTimelines)
-      if (modelTimeline.modelId === modelId && modelTimeline.requiresBatching)
-        return this.sourceId;
-
-    return undefined;
+    return this.modelRequiresBatching(modelId) ? this.sourceId : undefined;
   }
 }
