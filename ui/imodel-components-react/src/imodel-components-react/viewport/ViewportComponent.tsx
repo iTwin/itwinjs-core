@@ -179,11 +179,22 @@ export function ViewportComponent(props: ViewportProps) {
     }
   };
 
+  // istanbul ignore next
+  const handleWindowUnload = () => {
+    const parentDiv = viewportDiv.current;
+    if (parentDiv) {
+      const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+      if (parentWindow !== window) {
+        handleDisconnectFromViewManager();
+      }
+    }
+  };
+
   const getScreenViewport = (parentDiv: HTMLDivElement, inViewState: ViewState) => {
     // istanbul ignore next
     const screenViewportFactory = screenViewportOverride ? screenViewportOverride : ScreenViewport;
     const parentWindow = parentDiv.ownerDocument.defaultView as Window;
-    parentWindow.addEventListener("beforeunload", handleDisconnectFromViewManager, true); // listener clear after being called
+    parentWindow.addEventListener("unload", handleWindowUnload, true); // listener clear after being called
     ViewportComponentEvents.initialize();
     ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(handleDrawingViewportChangeEvent);
     ViewportComponentEvents.onCubeRotationChangeEvent.addListener(handleCubeRotationChangeEvent);
@@ -259,7 +270,7 @@ export function ViewportComponent(props: ViewportProps) {
     const parentDiv = viewportDiv.current;
     const viewManager = viewManagerRef.current;
     // istanbul ignore next
-    if (parentDiv && initialViewState && (initialViewState?.iModel.isOpen || initialViewState?.iModel.isBlank) ) {
+    if (parentDiv && initialViewState && (initialViewState?.iModel.isOpen || initialViewState?.iModel.isBlank)) {
       if (!screenViewportCreated.current) {
         const screenViewport = getScreenViewport(parentDiv, initialViewState);
         screenViewportRef.current = screenViewport;

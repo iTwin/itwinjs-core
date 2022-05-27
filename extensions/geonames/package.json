@@ -1,6 +1,6 @@
 {
   "name": "@itwin/geonames-extension",
-  "version": "3.2.0-dev.54",
+  "version": "3.3.0-dev.14",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

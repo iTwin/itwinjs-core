@@ -139,11 +139,19 @@ export interface ExportGraphicsOptions {
    * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($core-backend)
    */
   partInstanceArray?: ExportPartInstanceInfo[];
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry).
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -222,11 +230,19 @@ export interface ExportPartGraphicsOptions {
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
   onPartLineGraphics?: ExportPartLinesFunction;
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry)
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.

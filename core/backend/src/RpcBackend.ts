@@ -8,11 +8,11 @@
 
 // cspell:ignore calltrace
 
-import * as multiparty from "multiparty";
-import * as FormData from "form-data";
+import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
-import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
+import * as FormData from "form-data";
+import * as multiparty from "multiparty";
 import { IModelHost } from "./IModelHost";
 
 /**
@@ -78,6 +78,8 @@ export function initializeRpcBackend() {
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();
     RpcMultipart.writeValueToForm(form, value);
+    // Type information for FormData is lying. It actually extends Stream but not Readable, although it appears to work
+    // fine for now.
     return form;
   };
 
@@ -127,4 +129,3 @@ export function initializeRpcBackend() {
     });
   };
 }
-

@@ -87,6 +87,9 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespace = "FrontendDevTools";
     const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
@@ -233,5 +236,9 @@ export class FrontendDevTools {
       tool.register(namespace);
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

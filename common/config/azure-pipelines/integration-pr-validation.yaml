@@ -22,10 +22,11 @@ variables:
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Integration_Tests_PR_Validation
+  - job: Node_16_x
+    condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: 14.x
+          Node_Version: 16.x
