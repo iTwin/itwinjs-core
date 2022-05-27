@@ -45,7 +45,6 @@
     "editStage": "Edit and Modify iModel",
     "exit": "Exit",
     "imodelopen": "IModel Open",
-    "fileSelect": "Open Local File",
     "custom": "Custom",
     "componentExamples": "Component Examples"
   },
@@ -338,10 +337,6 @@
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
     "ModelCreation": "Create Models"
-  },
-  "localFileStage": {
-    "localFile": "Local File",
-    "selectFile": "Select Local File"
   },
   "statusFields": {
     "displayStyle": {

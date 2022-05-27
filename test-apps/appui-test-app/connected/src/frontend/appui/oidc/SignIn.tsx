@@ -26,8 +26,6 @@ export interface SignInProps extends CommonProps {
   onSignIn: () => void;
   /** Handler for clicking the Register link */
   onRegister?: () => void;
-  /** Handler for clicking the Offline link */
-  onOffline?: () => void;
 }
 
 /** @internal */
@@ -37,7 +35,6 @@ interface SignInState {
   signInButton: string;
   profilePrompt: string;
   registerAnchor: string;
-  offlineButton: string;
 }
 
 /**
@@ -56,7 +53,6 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
       signInButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.signInButton"),
       profilePrompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.profilePrompt"),
       registerAnchor: IModelApp.localization.getLocalizedString("SampleApp:signIn.register"),
-      offlineButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.offlineButton"),
     };
   }
 
@@ -115,11 +111,6 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
                 {this.state.registerAnchor}
               </a>
             </span>
-          }
-          {this.props.onOffline !== undefined &&
-            <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
-              {this.state.offlineButton}
-            </a>
           }
         </div>
       </div>

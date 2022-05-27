@@ -38,7 +38,6 @@ import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
 import { ExternalIModel } from "./appui/ExternalIModel";
-import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
@@ -362,10 +361,27 @@ export class SampleAppIModelApp {
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       SampleAppIModelApp.setIsIModelLocal(true, true);
     } else {
-      const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-      await iModel.openIModel();
-      iModelConnection = iModel.iModelConnection!;
-      SampleAppIModelApp.setIsIModelLocal(false, true);
+
+      try {
+        const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+        await iModel.openIModel();
+        if (!iModel.iModelConnection || iModel.iModelConnection.isClosed) {
+          alert(`Unable to open selected iModel`);
+          iModelConnection = undefined;
+          await this.showIModelOpen();
+          return;
+        }
+        iModelConnection = iModel.iModelConnection!;
+        if (!viewIdsSelected && iModel.viewId) {
+          viewIdsSelected = [iModel.viewId];
+        }
+        SampleAppIModelApp.setIsIModelLocal(false, true);
+      } catch (e: any) {
+        alert(`Error opening selected iModel: ${e.message}`);
+        iModelConnection = undefined;
+        await this.showIModelOpen();
+        return;
+      }
     }
 
     await this.openViews(iModelConnection, viewIdsSelected);
@@ -383,7 +399,12 @@ export class SampleAppIModelApp {
     }
   }
 
-  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected?: Id64String[]) {
+  public static async openViews(iModelConnection?: IModelConnection, viewIdsSelected?: Id64String[]) {
+
+    if (!iModelConnection || !iModelConnection.isOpen) {
+      await this.showIModelOpen();
+      return;
+    }
 
     let viewIds: Id64String[] = [];
     if (viewIdsSelected) {
@@ -434,10 +455,6 @@ export class SampleAppIModelApp {
     }
   }
 
-  public static async handleWorkOffline() {
-    await LocalFileOpenFrontstage.open();
-  }
-
   public static async showIModel(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     let iModelConnection: IModelConnection | undefined;
@@ -465,7 +482,7 @@ export class SampleAppIModelApp {
         } catch (e: any) {
           alert(`Error opening selected iModel: ${e.message}`);
           iModelConnection = undefined;
-          await LocalFileOpenFrontstage.open();
+          await this.showIModelOpen();
           return;
         }
       }
@@ -476,8 +493,7 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    if (iModelConnection)
-      await this.openViews(iModelConnection);
+    await this.openViews(iModelConnection);
   }
 
   public static async showIModelOpen() {
@@ -541,9 +557,6 @@ export class SampleAppIModelApp {
     } else if (SampleAppIModelApp.iModelParams) {
       // open directly into the iModel (view)
       await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
-    } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
-      // open to the Local File frontstage
-      await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
       await SampleAppIModelApp.showIModelOpen();
@@ -731,7 +744,6 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
   SampleAppIModelApp.testAppConfiguration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
   SampleAppIModelApp.testAppConfiguration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
-  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console

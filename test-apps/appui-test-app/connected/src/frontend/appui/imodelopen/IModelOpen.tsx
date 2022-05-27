@@ -37,10 +37,12 @@ export function IModelOpen(props: IModelOpenProps) {
   React.useEffect(() => {
     async function fetchProjects() {
       const client = new ProjectsAccessClient();
-      const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
-      setRecentITwins(iTwins);
-      if (iTwins.length)
-        setCurrentITwin(iTwins[0]);
+      try {
+        const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
+        setRecentITwins(iTwins);
+        if (iTwins.length)
+          setCurrentITwin(iTwins[0]);
+      } catch { }
     }
     fetchProjects(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [accessToken]);

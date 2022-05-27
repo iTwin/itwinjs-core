@@ -53,12 +53,6 @@ To set the environment variables, either set them directly within the terminal y
   * (Online-only) Set the iTwin to open when the app starts. The iModel Name variable is required for this one to properly work and the iModel to be opened.
 * IMJS_UITESTAPP_IMODEL_VIEWID
   * (Online-only) Opens the provided iModel to the viewId, otherwise default viewId is used.
-* IMJS_UITESTAPP_SNAPSHOT_FILEPATH
-  * Set to folder containing .bim or .ibim files (required)
-* IMJS_UITESTAPP_START_WITH_SNAPSHOTS
-  * Set to 1 to start with File Open dialog (optional)
-* IMJS_UITESTAPP_ALLOW_WRITE
-  * Editing Support - set to 1. If not defined, false is assumed. WARNING: this is strictly used to test the UI when editing is enabled
 * IMJS_UITESTAPP_USE_LOCAL_SETTINGS
   * Store settings in LocalStorage instead of Project Settings Service
 

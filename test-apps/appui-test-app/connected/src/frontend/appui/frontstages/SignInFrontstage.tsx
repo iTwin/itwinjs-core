@@ -18,16 +18,11 @@ class SignInControl extends ContentControl {
 
     const client = IModelApp.authorizationClient;
     if ((client as BrowserAuthorizationClient).signIn !== undefined) {
-      this.reactNode = <SignIn onSignIn={this._onSignIn} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+      this.reactNode = <SignIn onSignIn={this._onSignIn} onRegister={this._onRegister} />;
     } else {
       this.reactNode = <Centered>{"No authorization client available"}</Centered>;
     }
   }
-
-  // user chose to work offline from the sign in page
-  private _onWorkOffline = async () => {
-    await SampleAppIModelApp.handleWorkOffline();
-  };
 
   private _onSignIn = () => {
     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {

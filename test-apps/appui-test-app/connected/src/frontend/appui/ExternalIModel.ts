@@ -90,8 +90,10 @@ export class ExternalIModel {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
         `openIModel (external): iTwinId=${this.iTwinId}&iModelId=${this.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      this.iModelConnection = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
-      this.viewId = await this.onIModelSelected(this.iModelConnection);
+      try{
+        this.iModelConnection = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
+        this.viewId = await this.onIModelSelected(this.iModelConnection);
+      } catch {}
     }
   }
 
@@ -112,9 +114,14 @@ export class ExternalIModel {
 
   /** Pick the first available spatial view definition in the imodel */
   private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
+    const defaultViewId = await imodel.views.queryDefaultViewId();
+    if (defaultViewId)
+      return defaultViewId;
+
     const viewSpecs = await imodel.views.queryProps({});
     const acceptedViewClasses = [
       "BisCore:SpatialViewDefinition",
+      "BisCore:OrthographicViewDefinition",
       "BisCore:DrawingViewDefinition",
     ];
     const acceptedViewSpecs = viewSpecs.filter((spec) => (-1 !== acceptedViewClasses.indexOf(spec.classFullName)));
@@ -129,6 +136,13 @@ export class ExternalIModel {
 
     if (spatialViews.length > 0)
       return spatialViews[0].id!;
+
+    const orthoViews = acceptedViewSpecs.filter((v) => {
+      return v.classFullName === "BisCore:OrthographicViewDefinition";
+    });
+
+    if (orthoViews.length > 0)
+      return orthoViews[0].id!;
 
     return acceptedViewSpecs[0].id!;
   }
