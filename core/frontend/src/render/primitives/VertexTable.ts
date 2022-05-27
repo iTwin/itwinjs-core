@@ -736,14 +736,14 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
 function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: SurfaceType } {
   if (args.points instanceof QPoint3dList)
-    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>); // wtf compiler?
+    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>);
   else
-    return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>); // seriously wtf?
+    return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>);
 }
 
 function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
   if (args.points instanceof QPoint3dList)
-    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>); // wtf compiler?
+    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
   else
-    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>); // seriously wtf?
+    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
 }
