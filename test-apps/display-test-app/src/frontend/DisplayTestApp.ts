@@ -111,6 +111,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
     tileAdminProps.optimizeBRepProcessing = false;
 
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
+  tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
