@@ -6,7 +6,9 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, RenderMode, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties } from "@itwin/core-common";
+import {
+  BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+} from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -19,12 +21,16 @@ import {
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
+  scheduleScript?: RenderSchedule.ScriptReference;
 }
 
 function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
   let cmp = compareStrings(lhs.modelId, rhs.modelId);
-  if (0 === cmp)
+  if (0 === cmp) {
     cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.scheduleScript?.sourceId, rhs.scheduleScript?.sourceId);
+  }
 
   return 0 === cmp ? compareIModelTileTreeIds(lhs, rhs) : cmp;
 }
@@ -68,7 +74,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
     for (const tree of trees)
-      if (tree.id.animationId === scriptSourceId)
+      if (scriptSourceId === (tree.id.animationId ?? tree.id.scheduleScript?.sourceId))
         modelIds.add(tree.id.modelId);
   }
 
@@ -184,12 +190,12 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const script = source?.scheduleState;
-  const animationId = (undefined !== script) ? script.getModelAnimationId(classifier.modelId) : undefined;
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleState);
   return {
     modelId: classifier.modelId,
     type,
     expansion: classifier.expand,
-    animationId,
+    animationId: scriptInfo?.animationId,
+    scheduleScript: scriptInfo?.scheduleScript,
   };
 }

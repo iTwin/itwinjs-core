@@ -6,9 +6,10 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
+  PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -27,11 +28,12 @@ import {
 } from "./internal";
 
 interface PrimaryTreeId {
-  readonly treeId: PrimaryTileTreeId;
-  readonly modelId: Id64String;
-  readonly is3d: boolean;
-  readonly isPlanProjection: boolean;
-  readonly forceNoInstancing: boolean;
+  treeId: PrimaryTileTreeId;
+  modelId: Id64String;
+  is3d: boolean;
+  isPlanProjection: boolean;
+  forceNoInstancing: boolean;
+  scheduleScript?: RenderSchedule.ScriptReference;
 }
 
 class PlanProjectionTileTree extends IModelTileTree {
@@ -52,8 +54,11 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
       cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
-      if (0 === cmp)
+      if (0 === cmp) {
         cmp = compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing);
+        if (0 === cmp)
+          cmp = compareStringsOrUndefined(lhs.scheduleScript?.sourceId, rhs.scheduleScript?.sourceId);
+      }
     }
 
     return cmp;
@@ -64,9 +69,12 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
+    // ###TODO remove restriction that animated tile trees can't contained instanced geometry.
+    const isAnimated = undefined !== treeId.animationId || undefined !== id.scheduleScript;
+    const allowInstancing = !isAnimated && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing;
     const options = {
       edges: treeId.edges,
-      allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
+      allowInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
     };
@@ -98,7 +106,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
     for (const tree of trees)
-      if (tree.id.treeId.animationId === scriptSourceId)
+      if (scriptSourceId === (tree.id.treeId.animationId ?? tree.id.scheduleScript?.sourceId))
         modelIds.add(tree.id.modelId);
   }
 
@@ -162,12 +170,14 @@ class PrimaryTreeReference extends TileTreeReference {
       view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
     }
 
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleState);
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
       forceNoInstancing: this._forceNoInstancing,
+      scheduleScript: scriptInfo?.scheduleScript,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
@@ -257,9 +267,7 @@ class PrimaryTreeReference extends TileTreeReference {
       };
     }
 
-    const script = view.displayStyle.scheduleState;
-    const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-
+    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleState)?.animationId;
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
