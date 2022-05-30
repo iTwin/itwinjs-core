@@ -314,7 +314,8 @@ export class Capabilities {
       && !ProcessDetector.isIOSBrowser
       // Samsung Galaxy Note 8 exhibits same issue as described above for iOS >= 15.
       // It uses specifically Mali-G71 MP20 but reports its renderer as follows.
-      && unmaskedRenderer !== "Mali-G71";
+      // Samsung Galaxy A50 and S9 exhibits same issue; they use Mali-G72.
+      && unmaskedRenderer !== "Mali-G71" && unmaskedRenderer !== "Mali-G72";
 
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
