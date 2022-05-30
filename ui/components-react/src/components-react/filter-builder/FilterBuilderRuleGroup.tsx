@@ -30,7 +30,7 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
     actions.setRuleGroupOperator(path, operator);
   }, [path, actions]);
 
-  return <div className="rule-group" tabIndex={-1}>
+  return <div className="rule-group">
     <div className="rule-group-remove-action">
       {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
     </div>

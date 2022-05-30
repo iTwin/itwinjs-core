@@ -54,7 +54,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
     return <PropertyFilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
   }, [value, ruleValueRenderer, onRuleValueChange]);
 
-  return <div className="rule" tabIndex={-1}>
+  return <div className="rule">
     <div className="rule-remove-action">
       <IconButton onClick={removeRule} styleType="borderless" size="small">
         <SvgDelete />
