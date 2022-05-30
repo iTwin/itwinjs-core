@@ -191,11 +191,10 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
         const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
-          const name = `[${container.containerId}/${dbName}]`;
-          const stopwatch = new StopWatch(name, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${name}`);
+          const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
+          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${name} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
+          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         logPrefetch(new IModelHost.platform.CloudPrefetch(container, dbName));
