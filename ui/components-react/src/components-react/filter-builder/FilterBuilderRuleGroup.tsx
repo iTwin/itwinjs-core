@@ -6,21 +6,21 @@ import * as React from "react";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
 import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
-import { FilterBuilderContext } from "./FilterBuilder";
-import { FilterBuilderRuleRenderer } from "./FilterBuilderRule";
-import { FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup } from "./FilterBuilderState";
-import { FilterRuleGroupOperator } from "./Operators";
+import { PropertyFilterBuilderContext } from "./FilterBuilder";
+import { PropertyFilterBuilderRuleRenderer } from "./FilterBuilderRule";
+import { isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderRuleGroup, PropertyFilterBuilderRuleGroupItem } from "./FilterBuilderState";
+import { PropertyFilterRuleGroupOperator } from "./Operators";
 
 /** @alpha */
-export interface FilterBuilderRuleGroupRendererProps {
+export interface PropertyFilterBuilderRuleGroupRendererProps {
   path: string[];
-  group: FilterBuilderRuleGroup;
+  group: PropertyFilterBuilderRuleGroup;
 }
 
 /** @alpha */
-export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps) {
+export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps) {
   const { path, group } = props;
-  const { actions } = React.useContext(FilterBuilderContext);
+  const { actions } = React.useContext(PropertyFilterBuilderContext);
 
   const addRule = () => actions.addItem(path, "RULE");
   const addRuleGroup = () => actions.addItem(path, "RULE_GROUP");
@@ -35,9 +35,9 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
       {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
     </div>
     <div className="rule-group-content">
-      <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
+      <PropertyFilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
       <div className="rule-group-items">
-        {group.items.map((item) => <FilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
+        {group.items.map((item) => <PropertyFilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
       </div>
       <ButtonGroup className="rule-group-actions">
         <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
@@ -52,33 +52,33 @@ export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRend
 }
 
 /** @alpha */
-export interface FilterBuilderRuleGroupOperatorProps {
-  operator: FilterRuleGroupOperator;
-  onChange: (operator: FilterRuleGroupOperator) => void;
+export interface PropertyFilterBuilderRuleGroupOperatorProps {
+  operator: PropertyFilterRuleGroupOperator;
+  onChange: (operator: PropertyFilterRuleGroupOperator) => void;
 }
 
 /** @alpha */
-export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps) {
+export function PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps) {
   const {operator, onChange} = props;
 
-  const options = React.useMemo<Array<SelectOption<FilterRuleGroupOperator>>>(() => ([
-    { value: FilterRuleGroupOperator.And, label: UiComponents.translate("filterBuilder.operators.and") },
-    { value: FilterRuleGroupOperator.Or, label: UiComponents.translate("filterBuilder.operators.or") },
+  const options = React.useMemo<Array<SelectOption<PropertyFilterRuleGroupOperator>>>(() => ([
+    { value: PropertyFilterRuleGroupOperator.And, label: UiComponents.translate("filterBuilder.operators.and") },
+    { value: PropertyFilterRuleGroupOperator.Or, label: UiComponents.translate("filterBuilder.operators.or") },
   ]), []);
 
   return <div className="rule-group-operator">
     <Select options={options} value={operator} onChange={onChange} size="small" />
   </div>;
 }
-interface FilterBuilderGroupOrRuleProps {
+interface PropertyFilterBuilderGroupOrRuleProps {
   path: string[];
-  item: FilterBuilderRuleGroupItem;
+  item: PropertyFilterBuilderRuleGroupItem;
 }
 
-function FilterBuilderGroupOrRule({path, item}: FilterBuilderGroupOrRuleProps) {
+function PropertyFilterBuilderGroupOrRule({path, item}: PropertyFilterBuilderGroupOrRuleProps) {
   const itemPath = React.useMemo(() => ([...path, item.id]), [path, item]);
 
-  if (isFilterBuilderRuleGroup(item))
-    return <FilterBuilderRuleGroupRenderer path={itemPath} group={item} />;
-  return <FilterBuilderRuleRenderer path={itemPath} rule={item} />;
+  if (isPropertyFilterBuilderRuleGroup(item))
+    return <PropertyFilterBuilderRuleGroupRenderer path={itemPath} group={item} />;
+  return <PropertyFilterBuilderRuleRenderer path={itemPath} rule={item} />;
 }

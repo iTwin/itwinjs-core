@@ -9,7 +9,7 @@
 import * as React from "react";
 import { ActionMeta } from "react-select";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { Filter, FilterBuilder } from "@itwin/components-react";
+import { PropertyFilter, PropertyFilterBuilder } from "@itwin/components-react";
 import { Label } from "@itwin/itwinui-react";
 import { ClassInfo } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
@@ -21,7 +21,7 @@ export interface InstanceFilterBuilderProps {
   selectedClasses: ClassInfo[];
   classes: ClassInfo[];
   properties: PropertyDescription[];
-  onFilterChanged: (filter?: Filter) => void;
+  onFilterChanged: (filter?: PropertyFilter) => void;
   onClassSelected: (selectedClass: ClassInfo) => void;
   onClassDeSelected: (selectedClass: ClassInfo) => void;
   onClearClasses: () => void;
@@ -66,6 +66,6 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         isClearable={true}
       />
     </div>
-    <FilterBuilder properties={properties} onFilterChanged={onFilterChanged} onRulePropertySelected={onPropertySelected}/>
+    <PropertyFilterBuilder properties={properties} onFilterChanged={onFilterChanged} onRulePropertySelected={onPropertySelected}/>
   </div>;
 }

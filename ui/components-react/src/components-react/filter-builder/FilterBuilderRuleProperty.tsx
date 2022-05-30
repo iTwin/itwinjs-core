@@ -7,14 +7,14 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 import { ComboBox } from "@itwin/itwinui-react";
 
 /** @alpha */
-export interface FilterBuilderRulePropertyProps {
+export interface PropertyFilterBuilderRulePropertyProps {
   properties: PropertyDescription[];
   selectedProperty?: PropertyDescription;
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
 }
 
 /** @alpha */
-export function FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps) {
+export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
   const { selectedProperty, properties, onSelectedPropertyChanged } = props;
 
   const selectOptions = React.useMemo(() => properties.map((property) => ({

@@ -5,29 +5,32 @@
 import * as React from "react";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
-import { FilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
-import { FilterBuilderContext, FilterBuilderContextProps, FilterBuilderRuleRenderingContext, FilterBuilderRuleRenderingContextProps } from "../../components-react/filter-builder/FilterBuilder";
+import {
+  PropertyFilterBuilderContext, PropertyFilterBuilderContextProps, PropertyFilterBuilderRuleRenderingContext,
+  PropertyFilterBuilderRuleRenderingContextProps,
+} from "../../components-react/filter-builder/FilterBuilder";
+import { PropertyFilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
 
 /** @internal */
 export function renderWithContext(
   component: JSX.Element,
-  builderContextProps: Partial<FilterBuilderContextProps> = {},
-  rendererContextProps: Partial<FilterBuilderRuleRenderingContextProps> = {}
+  builderContextProps: Partial<PropertyFilterBuilderContextProps> = {},
+  rendererContextProps: Partial<PropertyFilterBuilderRuleRenderingContextProps> = {}
 ): ReturnType<typeof render> {
-  const builderContextValue: FilterBuilderContextProps = {
-    actions: builderContextProps.actions ?? new FilterBuilderActions(sinon.spy()),
+  const builderContextValue: PropertyFilterBuilderContextProps = {
+    actions: builderContextProps.actions ?? new PropertyFilterBuilderActions(sinon.spy()),
     properties: builderContextProps.properties ?? [],
     onRulePropertySelected: builderContextProps.onRulePropertySelected,
   };
 
-  const rendererContextValue: FilterBuilderRuleRenderingContextProps = {
+  const rendererContextValue: PropertyFilterBuilderRuleRenderingContextProps = {
     ruleOperatorRenderer: rendererContextProps.ruleOperatorRenderer,
     ruleValueRenderer: rendererContextProps.ruleValueRenderer,
   };
 
-  return render(<FilterBuilderContext.Provider value={builderContextValue}>
-    <FilterBuilderRuleRenderingContext.Provider value={rendererContextValue}>
+  return render(<PropertyFilterBuilderContext.Provider value={builderContextValue}>
+    <PropertyFilterBuilderRuleRenderingContext.Provider value={rendererContextValue}>
       {component}
-    </FilterBuilderRuleRenderingContext.Provider>
-  </FilterBuilderContext.Provider>);
+    </PropertyFilterBuilderRuleRenderingContext.Provider>
+  </PropertyFilterBuilderContext.Provider>);
 }

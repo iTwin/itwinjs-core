@@ -5,20 +5,20 @@
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { Select } from "@itwin/itwinui-react";
-import { FilterRuleOperator, getAvailableOperators, getFilterRuleOperatorLabel } from "./Operators";
+import { getPropertyFilterOperatorLabel, getPropertyFilterOperators, PropertyFilterRuleOperator } from "./Operators";
 
 /** @alpha */
-export interface FilterBuilderRuleOperatorProps {
-  operator?: FilterRuleOperator;
+export interface PropertyFilterBuilderRuleOperatorProps {
+  operator?: PropertyFilterRuleOperator;
   property: PropertyDescription;
-  onChange: (operator: FilterRuleOperator) => void;
+  onChange: (operator: PropertyFilterRuleOperator) => void;
 }
 
 /** @alpha */
-export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps) {
+export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps) {
   const {operator, property, onChange} = props;
 
-  const availableOperators = React.useMemo(() => getAvailableOperators(property), [property]);
+  const availableOperators = React.useMemo(() => getPropertyFilterOperators(property), [property]);
   const selectedOperator = operator ?? availableOperators[0];
 
   React.useEffect(() => {
@@ -28,7 +28,7 @@ export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps)
 
   const availableOptions = React.useMemo(() => availableOperators.map((op) => ({
     value: op,
-    label: getFilterRuleOperatorLabel(op),
+    label: getPropertyFilterOperatorLabel(op),
   })), [availableOperators]);
 
   return <div className="rule-operator">

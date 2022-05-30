@@ -4,83 +4,84 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { FilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
-import { FilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
-import { FilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
+import { PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
+import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
+import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
-  FilterBuilderActions, FilterBuilderRule, FilterBuilderRuleGroup, FilterBuilderRuleGroupItem, isFilterBuilderRuleGroup, useFilterBuilderState,
+  isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
+  PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
 } from "./FilterBuilderState";
-import { filterRuleOperatorNeedsValue } from "./Operators";
-import { Filter } from "./Types";
+import { propertyFilterOperatorNeedsValue } from "./Operators";
+import { PropertyFilter } from "./Types";
 import "./FilterBuilder.scss";
 
 /** @alpha */
-export interface FilterBuilderProps {
+export interface PropertyFilterBuilderProps {
   properties: PropertyDescription[];
-  onFilterChanged: (filter?: Filter) => void;
+  onFilterChanged: (filter?: PropertyFilter) => void;
   onRulePropertySelected?: (property: PropertyDescription) => void;
-  ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
-  ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
+  ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+  ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
 }
 
 /** @alpha */
-export interface FilterBuilderContextProps {
-  actions: FilterBuilderActions;
+export interface PropertyFilterBuilderContextProps {
+  actions: PropertyFilterBuilderActions;
   properties: PropertyDescription[];
   onRulePropertySelected?: (property: PropertyDescription) => void;
 }
 
 /** @alpha */
-export const FilterBuilderContext = React.createContext<FilterBuilderContextProps>(null!);
+export const PropertyFilterBuilderContext = React.createContext<PropertyFilterBuilderContextProps>(null!);
 
 /** @alpha */
-export interface FilterBuilderRuleRenderingContextProps {
-  ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
-  ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
+export interface PropertyFilterBuilderRuleRenderingContextProps {
+  ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+  ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
 }
 
 /** @alpha */
-export const FilterBuilderRuleRenderingContext = React.createContext<FilterBuilderRuleRenderingContextProps>({});
+export const PropertyFilterBuilderRuleRenderingContext = React.createContext<PropertyFilterBuilderRuleRenderingContextProps>({});
 
 const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
-export function FilterBuilder(props: FilterBuilderProps) {
+export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
-  const {state, actions} = useFilterBuilderState();
+  const {state, actions} = usePropertyFilterBuilderState();
 
-  const filter = React.useMemo(() => buildFilter(state.rootGroup), [state]);
+  const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);
   React.useEffect(() => {
     onFilterChanged(filter);
   }, [filter, onFilterChanged]);
 
-  const contextValue = React.useMemo<FilterBuilderContextProps>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
-  const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContextProps>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
+  const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
+  const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
   return (
-    <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
-      <FilterBuilderContext.Provider value={contextValue}>
+    <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
+      <PropertyFilterBuilderContext.Provider value={contextValue}>
         <div className="filter-builder">
-          <FilterBuilderRuleGroupRenderer path={ROOT_GROUP_PATH} group={state.rootGroup} />
+          <PropertyFilterBuilderRuleGroupRenderer path={ROOT_GROUP_PATH} group={state.rootGroup} />
         </div>
-      </FilterBuilderContext.Provider>
-    </FilterBuilderRuleRenderingContext.Provider>
+      </PropertyFilterBuilderContext.Provider>
+    </PropertyFilterBuilderRuleRenderingContext.Provider>
   );
 }
 
 /** @internal */
-export function buildFilter(groupItem: FilterBuilderRuleGroupItem): Filter | undefined {
-  if (isFilterBuilderRuleGroup(groupItem))
-    return buildFilterFromRuleGroup(groupItem);
-  return buildFilterFromRule(groupItem);
+export function buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined {
+  if (isPropertyFilterBuilderRuleGroup(groupItem))
+    return buildPropertyFilterFromRuleGroup(groupItem);
+  return buildPropertyFilterFromRule(groupItem);
 }
 
-function buildFilterFromRuleGroup(rootGroup: FilterBuilderRuleGroup): Filter | undefined {
+function buildPropertyFilterFromRuleGroup(rootGroup: PropertyFilterBuilderRuleGroup): PropertyFilter | undefined {
   if (rootGroup.items.length === 0)
     return undefined;
 
-  const rules = new Array<Filter>();
+  const rules = new Array<PropertyFilter>();
   for (const item of rootGroup.items) {
-    const rule = buildFilter(item);
+    const rule = buildPropertyFilter(item);
     if (!rule)
       return undefined;
     rules.push(rule);
@@ -95,12 +96,12 @@ function buildFilterFromRuleGroup(rootGroup: FilterBuilderRuleGroup): Filter | u
   };
 }
 
-function buildFilterFromRule(rule: FilterBuilderRule): Filter | undefined {
+function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyFilter | undefined {
   const {property, operator, value} = rule;
   if (!property || operator === undefined)
     return undefined;
 
-  if (filterRuleOperatorNeedsValue(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
+  if (propertyFilterOperatorNeedsValue(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
     return undefined;
 
   return {property, operator, value};

@@ -6,13 +6,13 @@ import { PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiComponents } from "../UiComponents";
 
 /** @alpha */
-export enum FilterRuleGroupOperator {
+export enum PropertyFilterRuleGroupOperator {
   And,
   Or,
 }
 
 /** @alpha */
-export enum FilterRuleOperator {
+export enum PropertyFilterRuleOperator {
   IsTrue,
   IsFalse,
 
@@ -31,21 +31,21 @@ export enum FilterRuleOperator {
 }
 
 /** @alpha */
-export function getAvailableOperators(property: PropertyDescription) {
+export function getPropertyFilterOperators(property: PropertyDescription) {
   const typename = property.typename;
 
   if (typename === StandardTypeNames.Bool || typename === StandardTypeNames.Boolean) {
     return [
-      FilterRuleOperator.IsTrue,
-      FilterRuleOperator.IsFalse,
+      PropertyFilterRuleOperator.IsTrue,
+      PropertyFilterRuleOperator.IsFalse,
     ];
   }
 
   const operators = [
-    FilterRuleOperator.IsEqual,
-    FilterRuleOperator.IsNotEqual,
-    FilterRuleOperator.IsNull,
-    FilterRuleOperator.IsNotNull,
+    PropertyFilterRuleOperator.IsEqual,
+    PropertyFilterRuleOperator.IsNotEqual,
+    PropertyFilterRuleOperator.IsNull,
+    PropertyFilterRuleOperator.IsNotNull,
   ];
 
   if (typename === StandardTypeNames.Number
@@ -59,17 +59,17 @@ export function getAvailableOperators(property: PropertyDescription) {
     || typename === StandardTypeNames.DateTime) {
     return [
       ...operators,
-      FilterRuleOperator.Greater,
-      FilterRuleOperator.GreaterOrEqual,
-      FilterRuleOperator.Less,
-      FilterRuleOperator.LessOrEqual,
+      PropertyFilterRuleOperator.Greater,
+      PropertyFilterRuleOperator.GreaterOrEqual,
+      PropertyFilterRuleOperator.Less,
+      PropertyFilterRuleOperator.LessOrEqual,
     ];
   }
 
   if (typename === StandardTypeNames.String || typename === StandardTypeNames.Text) {
     return [
       ...operators,
-      FilterRuleOperator.Like,
+      PropertyFilterRuleOperator.Like,
     ];
   }
 
@@ -78,40 +78,40 @@ export function getAvailableOperators(property: PropertyDescription) {
 
 /* istanbul ignore next */
 /** @alpha */
-export function getFilterRuleOperatorLabel(operator: FilterRuleOperator) {
+export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator) {
   switch(operator) {
-    case FilterRuleOperator.IsTrue:
+    case PropertyFilterRuleOperator.IsTrue:
       return UiComponents.translate("filterBuilder.operators.isTrue");
-    case FilterRuleOperator.IsFalse:
+    case PropertyFilterRuleOperator.IsFalse:
       return UiComponents.translate("filterBuilder.operators.isFalse");
-    case FilterRuleOperator.IsEqual:
+    case PropertyFilterRuleOperator.IsEqual:
       return UiComponents.translate("filterBuilder.operators.equal");
-    case FilterRuleOperator.IsNotEqual:
+    case PropertyFilterRuleOperator.IsNotEqual:
       return UiComponents.translate("filterBuilder.operators.notEqual");
-    case FilterRuleOperator.Greater:
+    case PropertyFilterRuleOperator.Greater:
       return ">";
-    case FilterRuleOperator.GreaterOrEqual:
+    case PropertyFilterRuleOperator.GreaterOrEqual:
       return ">=";
-    case FilterRuleOperator.Less:
+    case PropertyFilterRuleOperator.Less:
       return "<";
-    case FilterRuleOperator.LessOrEqual:
+    case PropertyFilterRuleOperator.LessOrEqual:
       return "<=";
-    case FilterRuleOperator.Like:
+    case PropertyFilterRuleOperator.Like:
       return UiComponents.translate("filterBuilder.operators.contains");
-    case FilterRuleOperator.IsNull:
+    case PropertyFilterRuleOperator.IsNull:
       return UiComponents.translate("filterBuilder.operators.isNull");
-    case FilterRuleOperator.IsNotNull:
+    case PropertyFilterRuleOperator.IsNotNull:
       return UiComponents.translate("filterBuilder.operators.isNotNull");
   }
 }
 
 /** @alpha */
-export function filterRuleOperatorNeedsValue(operator: FilterRuleOperator) {
+export function propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator) {
   switch (operator) {
-    case FilterRuleOperator.IsTrue:
-    case FilterRuleOperator.IsFalse:
-    case FilterRuleOperator.IsNull:
-    case FilterRuleOperator.IsNotNull:
+    case PropertyFilterRuleOperator.IsTrue:
+    case PropertyFilterRuleOperator.IsFalse:
+    case PropertyFilterRuleOperator.IsNull:
+    case PropertyFilterRuleOperator.IsNotNull:
       return false;
   }
   return true;

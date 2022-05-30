@@ -7,7 +7,7 @@
  */
 
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
-import { FilterRuleGroupOperator, FilterRuleOperator } from "@itwin/components-react";
+import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { ClassId, PropertiesField } from "@itwin/presentation-common";
 
 /** @alpha */
@@ -15,13 +15,13 @@ export type PresentationInstanceFilter = PresentationInstanceFilterConditionGrou
 
 /** @alpha */
 export interface PresentationInstanceFilterConditionGroup {
-  operator: FilterRuleGroupOperator;
+  operator: PropertyFilterRuleGroupOperator;
   conditions: PresentationInstanceFilter[];
 }
 
 /** @alpha */
 export interface PresentationInstanceFilterCondition {
-  operator: FilterRuleOperator;
+  operator: PropertyFilterRuleOperator;
   field: PropertiesField;
   value?: PropertyValue;
 }

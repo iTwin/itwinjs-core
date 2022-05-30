@@ -7,14 +7,14 @@ import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat
 import { EditorContainer, PropertyUpdatedArgs } from "../editors/EditorContainer";
 
 /** @alpha */
-export interface FilterBuilderRuleValueProps {
+export interface PropertyFilterBuilderRuleValueProps {
   value?: PropertyValue;
   property: PropertyDescription;
   onChange: (value: PropertyValue) => void;
 }
 
 /** @alpha */
-export function FilterBuilderRuleValue(props: FilterBuilderRuleValueProps) {
+export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps) {
   const {value, property, onChange} = props;
 
   const propertyRecord = React.useMemo(() => {

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { FilterRuleOperator, getFilterRuleOperatorLabel, UiComponents } from "@itwin/components-react";
+import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Descriptor } from "@itwin/presentation-common";
@@ -87,15 +87,15 @@ describe("PresentationInstanceFilter", () => {
     expect(operatorSelector).to.not.be.null;
     operatorSelector?.click();
     act(() => {
-      getByText(getFilterRuleOperatorLabel(FilterRuleOperator.IsNotNull)).click();
+      getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)).click();
     });
 
     // wait until operator is selected
-    await waitFor(() => getByText(getFilterRuleOperatorLabel(FilterRuleOperator.IsNotNull)));
+    await waitFor(() => getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
 
     expect(spy).to.be.calledOnceWith({
       field: propertiesField,
-      operator: FilterRuleOperator.IsNotNull,
+      operator: PropertyFilterRuleOperator.IsNotNull,
       value: undefined,
     });
   });

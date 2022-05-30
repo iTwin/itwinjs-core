@@ -7,7 +7,7 @@
  */
 
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { Filter, FilterRule, FilterRuleGroup, isFilterRuleGroup } from "@itwin/components-react";
+import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
 import { CategoryDescription, ClassId, Descriptor, Field, FIELD_NAMES_SEPARATOR } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
@@ -20,8 +20,8 @@ export function createInstanceFilterPropertyInfos(descriptor: Descriptor): Prope
 }
 
 /** @internal */
-export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter) {
-  if (isFilterRuleGroup(filter))
+export function createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter) {
+  if (isPropertyFilterRuleGroup(filter))
     return createPresentationInstanceFilterConditionGroup(descriptor, filter);
   return createPresentationInstanceFilterCondition(descriptor, filter);
 }
@@ -31,7 +31,7 @@ function getInstanceFilterFieldName(property: PropertyDescription) {
   return fieldName;
 }
 
-function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: FilterRuleGroup): PresentationInstanceFilter | undefined {
+function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: PropertyFilterRuleGroup): PresentationInstanceFilter | undefined {
   const conditions = new Array<PresentationInstanceFilter>();
   for (const rule of group.rules) {
     const condition = createPresentationInstanceFilter(descriptor, rule);
@@ -52,7 +52,7 @@ function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, 
   };
 }
 
-function createPresentationInstanceFilterCondition(descriptor: Descriptor, condition: FilterRule): PresentationInstanceFilterCondition | undefined {
+function createPresentationInstanceFilterCondition(descriptor: Descriptor, condition: PropertyFilterRule): PresentationInstanceFilterCondition | undefined {
   const field = findField(descriptor, getInstanceFilterFieldName(condition.property));
   if (!field || !field.isPropertiesField())
     return undefined;

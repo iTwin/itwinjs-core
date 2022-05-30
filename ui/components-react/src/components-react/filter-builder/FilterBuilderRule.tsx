@@ -6,24 +6,24 @@ import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { SvgDelete } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
-import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "./FilterBuilder";
-import { FilterBuilderRuleOperator } from "./FilterBuilderRuleOperator";
-import { FilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
-import { FilterBuilderRuleValue } from "./FilterBuilderRuleValue";
-import { FilterBuilderRule } from "./FilterBuilderState";
-import { FilterRuleOperator, filterRuleOperatorNeedsValue } from "./Operators";
+import { PropertyFilterBuilderContext, PropertyFilterBuilderRuleRenderingContext } from "./FilterBuilder";
+import { PropertyFilterBuilderRuleOperator } from "./FilterBuilderRuleOperator";
+import { PropertyFilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
+import { PropertyFilterBuilderRuleValue } from "./FilterBuilderRuleValue";
+import { PropertyFilterBuilderRule } from "./FilterBuilderState";
+import { propertyFilterOperatorNeedsValue, PropertyFilterRuleOperator } from "./Operators";
 
 /** @alpha */
-export interface FilterBuilderRuleRendererProps {
+export interface PropertyFilterBuilderRuleRendererProps {
   path: string[];
-  rule: FilterBuilderRule;
+  rule: PropertyFilterBuilderRule;
 }
 
 /** @alpha */
-export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps) {
+export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule} = props;
-  const { properties, actions, onRulePropertySelected } = React.useContext(FilterBuilderContext);
-  const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(FilterBuilderRuleRenderingContext);
+  const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);
+  const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
@@ -32,7 +32,7 @@ export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps)
       onRulePropertySelected(newProperty);
   }, [path, onRulePropertySelected, actions]);
 
-  const onRuleOperatorChange = React.useCallback((newOperator: FilterRuleOperator) => {
+  const onRuleOperatorChange = React.useCallback((newOperator: PropertyFilterRuleOperator) => {
     actions.setRuleOperator(path, newOperator);
   }, [path, actions]);
 
@@ -45,13 +45,13 @@ export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps)
   const operatorRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleOperatorRenderer)
       return ruleOperatorRenderer({property: prop, operator, onChange: onRuleOperatorChange});
-    return <FilterBuilderRuleOperator property={prop} onChange={onRuleOperatorChange} operator={operator} />;
+    return <PropertyFilterBuilderRuleOperator property={prop} onChange={onRuleOperatorChange} operator={operator} />;
   }, [ operator,ruleOperatorRenderer, onRuleOperatorChange]);
 
   const valueRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleValueRenderer)
       return ruleValueRenderer({property: prop, value, onChange: onRuleValueChange});
-    return <FilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
+    return <PropertyFilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
   }, [value, ruleValueRenderer, onRuleValueChange]);
 
   return <div className="rule" tabIndex={-1}>
@@ -61,13 +61,13 @@ export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps)
       </IconButton>
     </div>
     <div className="rule-condition">
-      <FilterBuilderRuleProperty
+      <PropertyFilterBuilderRuleProperty
         properties={properties}
         selectedProperty={rule.property}
         onSelectedPropertyChanged={onSelectedPropertyChanged}
       />
       {property && operatorRenderer(property)}
-      {property && operator && filterRuleOperatorNeedsValue(operator) && valueRenderer(property)}
+      {property && operator && propertyFilterOperatorNeedsValue(operator) && valueRenderer(property)}
     </div>
   </div>;
 }

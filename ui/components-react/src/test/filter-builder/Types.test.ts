@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { FilterRuleGroupOperator, FilterRuleOperator } from "../../components-react/filter-builder/Operators";
-import { isFilterRuleGroup } from "../../components-react/filter-builder/Types";
+import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "../../components-react/filter-builder/Operators";
+import { isPropertyFilterRuleGroup } from "../../components-react/filter-builder/Types";
 
-describe("isFilterRuleGroup", () => {
+describe("isPropertyFilterRuleGroup", () => {
   it("returns correct values", () => {
-    expect(isFilterRuleGroup({operator: FilterRuleGroupOperator.And, rules: []})).to.be.true;
-    expect(isFilterRuleGroup({
+    expect(isPropertyFilterRuleGroup({operator: PropertyFilterRuleGroupOperator.And, rules: []})).to.be.true;
+    expect(isPropertyFilterRuleGroup({
       property: {name: "prop", displayLabel: "Prop", typename: "string"},
-      operator: FilterRuleOperator.IsNull}
+      operator: PropertyFilterRuleOperator.IsNull}
     )).to.be.false;
   });
 });

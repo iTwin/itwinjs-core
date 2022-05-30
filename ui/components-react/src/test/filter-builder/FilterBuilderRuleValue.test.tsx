@@ -7,10 +7,10 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
-import { FilterBuilderRuleValue } from "../../components-react/filter-builder/FilterBuilderRuleValue";
+import { PropertyFilterBuilderRuleValue } from "../../components-react/filter-builder/FilterBuilderRuleValue";
 import TestUtils from "../TestUtils";
 
-describe("<FilterBuilderRuleValue", () => {
+describe("PropertyFilterBuilderRuleValue", () => {
   const defaultProperty: PropertyDescription = {
     name: "prop",
     displayLabel: "Prop",
@@ -26,7 +26,7 @@ describe("<FilterBuilderRuleValue", () => {
   });
 
   it("renders string value", async () => {
-    const {getByDisplayValue} = render(<FilterBuilderRuleValue
+    const {getByDisplayValue} = render(<PropertyFilterBuilderRuleValue
       value={{valueFormat: PropertyValueFormat.Primitive, value: "Test String"}}
       property={defaultProperty}
       onChange={() => {}}
@@ -35,7 +35,7 @@ describe("<FilterBuilderRuleValue", () => {
   });
 
   it("renders empty value", () => {
-    const {container} = render(<FilterBuilderRuleValue
+    const {container} = render(<PropertyFilterBuilderRuleValue
       property={defaultProperty}
       onChange={() => {}}
     />);
@@ -48,7 +48,7 @@ describe("<FilterBuilderRuleValue", () => {
 
   it("calls onChange when value is changed", async () => {
     const spy = sinon.spy();
-    const {container, getByDisplayValue} = render(<FilterBuilderRuleValue
+    const {container, getByDisplayValue} = render(<PropertyFilterBuilderRuleValue
       property={defaultProperty}
       onChange={spy}
     />);

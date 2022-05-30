@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { Filter } from "@itwin/components-react";
+import { PropertyFilter } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
@@ -31,7 +31,7 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
   const classHierarchyProvider = useECClassHierarchyProvider(imodel);
   const filteringProps = usePresentationInstanceFilteringProps(descriptor, classHierarchyProvider, enableClassFilteringByProperties);
 
-  const onFilterChanged = React.useCallback((filter?: Filter) => {
+  const onFilterChanged = React.useCallback((filter?: PropertyFilter) => {
     const presentationFilter = filter ? createPresentationInstanceFilter(descriptor, filter) : undefined;
     onInstanceFilterChanged(presentationFilter);
   }, [descriptor, onInstanceFilterChanged]);

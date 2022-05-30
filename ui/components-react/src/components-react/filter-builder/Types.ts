@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
-import { FilterRuleGroupOperator, FilterRuleOperator } from "./Operators";
+import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
 
 /** @alpha */
-export type Filter = FilterRule | FilterRuleGroup;
+export type PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup;
 
 /** @alpha */
-export interface FilterRuleGroup {
-  operator: FilterRuleGroupOperator;
-  rules: Array<Filter>;
+export interface PropertyFilterRuleGroup {
+  operator: PropertyFilterRuleGroupOperator;
+  rules: Array<PropertyFilter>;
 }
 
 /** @alpha */
-export interface FilterRule {
+export interface PropertyFilterRule {
   property: PropertyDescription;
-  operator: FilterRuleOperator;
+  operator: PropertyFilterRuleOperator;
   value?: PropertyValue;
 }
 
 /** @alpha */
-export function isFilterRuleGroup(filter: Filter): filter is FilterRuleGroup {
+export function isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup {
   return (filter as any).rules !== undefined;
 }

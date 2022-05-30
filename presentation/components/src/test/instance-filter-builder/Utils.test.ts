@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { FilterRuleGroup, FilterRuleGroupOperator, FilterRuleOperator } from "@itwin/components-react";
+import { PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { Field, PropertyValueFormat } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
@@ -115,51 +115,51 @@ describe("createPresentationInstanceFilter", () => {
   }
 
   it("finds properties fields for property description", () => {
-    const filter: FilterRuleGroup = {
-      operator: FilterRuleGroupOperator.And,
+    const filter: PropertyFilterRuleGroup = {
+      operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
         property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
-        operator: FilterRuleOperator.IsNull,
+        operator: PropertyFilterRuleOperator.IsNull,
       }, {
         property: {name: getPropertyDescriptionName(propertyField2), displayLabel: "Prop2", typename: "string"},
-        operator: FilterRuleOperator.IsNull,
+        operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
     expect(createPresentationInstanceFilter(descriptor, filter)).to.matchSnapshot();
   });
 
   it("returns filter condition when group has only one rule", () => {
-    const filter: FilterRuleGroup = {
-      operator: FilterRuleGroupOperator.And,
+    const filter: PropertyFilterRuleGroup = {
+      operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
         property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
-        operator: FilterRuleOperator.IsNull,
+        operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
     expect(createPresentationInstanceFilter(descriptor, filter)).to.containSubset({
-      operator: FilterRuleOperator.IsNull,
+      operator: PropertyFilterRuleOperator.IsNull,
       field: propertyField1,
     });
   });
 
   it("returns undefined if filter group is empty", () => {
-    expect(createPresentationInstanceFilter(descriptor, {operator: FilterRuleGroupOperator.And, rules: []})).to.be.undefined;
+    expect(createPresentationInstanceFilter(descriptor, {operator: PropertyFilterRuleGroupOperator.And, rules: []})).to.be.undefined;
   });
 
   it("returns undefined when rule properties field cannot be found", () => {
     const property: PropertyDescription = {name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop", typename: "string"};
-    expect(createPresentationInstanceFilter(descriptor, {property, operator: FilterRuleOperator.IsNull})).to.be.undefined;
+    expect(createPresentationInstanceFilter(descriptor, {property, operator: PropertyFilterRuleOperator.IsNull})).to.be.undefined;
   });
 
   it("returns undefined when group has rule with invalid property field", () => {
-    const filter: FilterRuleGroup = {
-      operator: FilterRuleGroupOperator.And,
+    const filter: PropertyFilterRuleGroup = {
+      operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
         property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
-        operator: FilterRuleOperator.IsNull,
+        operator: PropertyFilterRuleOperator.IsNull,
       }, {
         property: {name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop2", typename: "string"},
-        operator: FilterRuleOperator.IsNull,
+        operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
     expect(createPresentationInstanceFilter(descriptor, filter)).to.be.undefined;
