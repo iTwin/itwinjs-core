@@ -1,0 +1,88 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-target-target {
+  $border-size: 2px;
+  $length: 4em;
+  $width: 4em;
+  $panelLength: 6em;
+  $border-color: $buic-background-5;
+  $target-color: $buic-background-4;
+  $widget-color: $buic-background-1;
+  $targeted-color: rgb(140, 210, 255);
+
+  box-sizing: border-box;
+  border: $border-size solid $border-color;
+  border-radius: 3px;
+  transition: transform $iui-speed-fast ease-in;
+  pointer-events: all;
+
+  &.nz-start,
+  &.nz-end {
+    display: flex;
+
+    >.nz-section {
+      flex: 1;
+    }
+
+    >.nz-border {
+      flex: 0 0 $border-size;
+      background-color: $border-color;
+    }
+
+    >.nz-section {
+      background-color: $widget-color;
+
+      &.nz-target {
+        background-color: $target-color;
+      }
+    }
+
+    &:hover {
+      >.nz-section {
+        &.nz-target {
+          background-color: $targeted-color;
+        }
+      }
+    }
+  }
+
+  &.nz-fill,
+  &.nz-panel {
+    background-color: $target-color;
+
+    &:hover {
+      background-color: $targeted-color;
+    }
+  }
+
+  &.nz-horizontal {
+    height: $width;
+    width: $length;
+    flex-direction: row;
+
+    &.nz-panel {
+      width: $panelLength;
+    }
+  }
+
+  &.nz-vertical {
+    height: $length;
+    width: $width;
+    flex-direction: column;
+
+    &.nz-panel {
+      height: $panelLength;
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+  }
+}

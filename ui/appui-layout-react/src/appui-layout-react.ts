@@ -64,6 +64,9 @@ export * from "./appui-layout-react/stage-panels/manager/NestedStagePanels";
 export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 
+export * from "./appui-layout-react/target/Target";
+export * from "./appui-layout-react/target/TargetContainer";
+
 export * from "./appui-layout-react/tool-settings/Docked";
 export * from "./appui-layout-react/tool-settings/Handle";
 export * from "./appui-layout-react/tool-settings/Overflow";
