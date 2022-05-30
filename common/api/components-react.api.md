@@ -397,7 +397,7 @@ export interface BreadcrumbUpdateEventArgs {
 }
 
 // @internal (undocumented)
-export function buildFilter(groupItem: FilterBuilderRuleGroupItem): Filter | undefined;
+export function buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined;
 
 // @beta
 export interface CategorizedPropertyItem extends FlatGridItemBase {
@@ -1012,9 +1012,6 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @alpha (undocumented)
-export type Filter = FilterRule | FilterRuleGroup;
-
 // @public
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
@@ -1033,171 +1030,6 @@ export interface FilterableColumn {
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
-}
-
-// @alpha (undocumented)
-export function FilterBuilder(props: FilterBuilderProps): JSX.Element;
-
-// @alpha (undocumented)
-export class FilterBuilderActions {
-    constructor(setState: (setter: (prevState: FilterBuilderState) => FilterBuilderState) => void);
-    // (undocumented)
-    addItem(path: string[], itemType: "RULE_GROUP" | "RULE"): void;
-    // (undocumented)
-    removeItem(path: string[]): void;
-    // (undocumented)
-    setRuleGroupOperator(path: string[], operator: FilterRuleGroupOperator): void;
-    // (undocumented)
-    setRuleOperator(path: string[], operator: FilterRuleOperator): void;
-    // (undocumented)
-    setRuleProperty(path: string[], property?: PropertyDescription): void;
-    // (undocumented)
-    setRuleValue(path: string[], value: PropertyValue): void;
-    }
-
-// @alpha (undocumented)
-export const FilterBuilderContext: React.Context<FilterBuilderContextProps>;
-
-// @alpha (undocumented)
-export interface FilterBuilderContextProps {
-    // (undocumented)
-    actions: FilterBuilderActions;
-    // (undocumented)
-    onRulePropertySelected?: (property: PropertyDescription) => void;
-    // (undocumented)
-    properties: PropertyDescription[];
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderProps {
-    // (undocumented)
-    onFilterChanged: (filter?: Filter) => void;
-    // (undocumented)
-    onRulePropertySelected?: (property: PropertyDescription) => void;
-    // (undocumented)
-    properties: PropertyDescription[];
-    // (undocumented)
-    ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
-    // (undocumented)
-    ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderRule {
-    // (undocumented)
-    groupId: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    operator?: FilterRuleOperator;
-    // (undocumented)
-    property?: PropertyDescription;
-    // (undocumented)
-    value?: PropertyValue;
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleGroup {
-    // (undocumented)
-    groupId?: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    items: FilterBuilderRuleGroupItem[];
-    // (undocumented)
-    operator: FilterRuleGroupOperator;
-}
-
-// @alpha (undocumented)
-export type FilterBuilderRuleGroupItem = FilterBuilderRuleGroup | FilterBuilderRule;
-
-// @alpha (undocumented)
-export function FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleGroupOperatorProps {
-    // (undocumented)
-    onChange: (operator: FilterRuleGroupOperator) => void;
-    // (undocumented)
-    operator: FilterRuleGroupOperator;
-}
-
-// @alpha (undocumented)
-export function FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleGroupRendererProps {
-    // (undocumented)
-    group: FilterBuilderRuleGroup;
-    // (undocumented)
-    path: string[];
-}
-
-// @alpha (undocumented)
-export function FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleOperatorProps {
-    // (undocumented)
-    onChange: (operator: FilterRuleOperator) => void;
-    // (undocumented)
-    operator?: FilterRuleOperator;
-    // (undocumented)
-    property: PropertyDescription;
-}
-
-// @alpha (undocumented)
-export function FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRulePropertyProps {
-    // (undocumented)
-    onSelectedPropertyChanged: (property?: PropertyDescription) => void;
-    // (undocumented)
-    properties: PropertyDescription[];
-    // (undocumented)
-    selectedProperty?: PropertyDescription;
-}
-
-// @alpha (undocumented)
-export function FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleRendererProps {
-    // (undocumented)
-    path: string[];
-    // (undocumented)
-    rule: FilterBuilderRule;
-}
-
-// @alpha (undocumented)
-export const FilterBuilderRuleRenderingContext: React.Context<FilterBuilderRuleRenderingContextProps>;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleRenderingContextProps {
-    // (undocumented)
-    ruleOperatorRenderer?: (props: FilterBuilderRuleOperatorProps) => React.ReactNode;
-    // (undocumented)
-    ruleValueRenderer?: (props: FilterBuilderRuleValueProps) => React.ReactNode;
-}
-
-// @alpha (undocumented)
-export function FilterBuilderRuleValue(props: FilterBuilderRuleValueProps): JSX.Element;
-
-// @alpha (undocumented)
-export interface FilterBuilderRuleValueProps {
-    // (undocumented)
-    onChange: (value: PropertyValue) => void;
-    // (undocumented)
-    property: PropertyDescription;
-    // (undocumented)
-    value?: PropertyValue;
-}
-
-// @alpha (undocumented)
-export interface FilterBuilderState {
-    // (undocumented)
-    rootGroup: FilterBuilderRuleGroup;
 }
 
 // @public
@@ -1340,61 +1172,6 @@ export enum FilterRenderer {
     Text = 4
 }
 
-// @alpha (undocumented)
-export interface FilterRule {
-    // (undocumented)
-    operator: FilterRuleOperator;
-    // (undocumented)
-    property: PropertyDescription;
-    // (undocumented)
-    value?: PropertyValue;
-}
-
-// @alpha (undocumented)
-export interface FilterRuleGroup {
-    // (undocumented)
-    operator: FilterRuleGroupOperator;
-    // (undocumented)
-    rules: Array<Filter>;
-}
-
-// @alpha (undocumented)
-export enum FilterRuleGroupOperator {
-    // (undocumented)
-    And = 0,
-    // (undocumented)
-    Or = 1
-}
-
-// @alpha (undocumented)
-export enum FilterRuleOperator {
-    // (undocumented)
-    Greater = 4,
-    // (undocumented)
-    GreaterOrEqual = 5,
-    // (undocumented)
-    IsEqual = 2,
-    // (undocumented)
-    IsFalse = 1,
-    // (undocumented)
-    IsNotEqual = 3,
-    // (undocumented)
-    IsNotNull = 10,
-    // (undocumented)
-    IsNull = 9,
-    // (undocumented)
-    IsTrue = 0,
-    // (undocumented)
-    Less = 6,
-    // (undocumented)
-    LessOrEqual = 7,
-    // (undocumented)
-    Like = 8
-}
-
-// @alpha (undocumented)
-export function filterRuleOperatorNeedsValue(operator: FilterRuleOperator): boolean;
-
 // @beta
 export type FlatGridItem = CategorizedPropertyItem | GridCategoryItem;
 
@@ -1457,10 +1234,10 @@ export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, cust
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
 // @alpha (undocumented)
-export function getAvailableOperators(property: PropertyDescription): FilterRuleOperator[];
+export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string;
 
 // @alpha (undocumented)
-export function getFilterRuleOperatorLabel(operator: FilterRuleOperator): string;
+export function getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[];
 
 // @internal
 export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string;
@@ -1868,10 +1645,10 @@ export interface IPropertyValueRenderer {
 export function isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem;
 
 // @alpha (undocumented)
-export function isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item is FilterBuilderRuleGroup;
+export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup;
 
 // @alpha (undocumented)
-export function isFilterRuleGroup(filter: Filter): filter is FilterRuleGroup;
+export function isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup;
 
 // @public
 export const isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider;
@@ -2713,12 +2490,235 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
+// @alpha (undocumented)
+export type PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup;
+
+// @alpha (undocumented)
+export function PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element;
+
+// @alpha (undocumented)
+export class PropertyFilterBuilderActions {
+    constructor(setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void);
+    // (undocumented)
+    addItem(path: string[], itemType: "RULE_GROUP" | "RULE"): void;
+    // (undocumented)
+    removeItem(path: string[]): void;
+    // (undocumented)
+    setRuleGroupOperator(path: string[], operator: PropertyFilterRuleGroupOperator): void;
+    // (undocumented)
+    setRuleOperator(path: string[], operator: PropertyFilterRuleOperator): void;
+    // (undocumented)
+    setRuleProperty(path: string[], property?: PropertyDescription): void;
+    // (undocumented)
+    setRuleValue(path: string[], value: PropertyValue): void;
+    }
+
+// @alpha (undocumented)
+export const PropertyFilterBuilderContext: React.Context<PropertyFilterBuilderContextProps>;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderContextProps {
+    // (undocumented)
+    actions: PropertyFilterBuilderActions;
+    // (undocumented)
+    onRulePropertySelected?: (property: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderProps {
+    // (undocumented)
+    onFilterChanged: (filter?: PropertyFilter) => void;
+    // (undocumented)
+    onRulePropertySelected?: (property: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    // (undocumented)
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRule {
+    // (undocumented)
+    groupId: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    operator?: PropertyFilterRuleOperator;
+    // (undocumented)
+    property?: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroup {
+    // (undocumented)
+    groupId?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    items: PropertyFilterBuilderRuleGroupItem[];
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+}
+
+// @alpha (undocumented)
+export type PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule;
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroupOperatorProps {
+    // (undocumented)
+    onChange: (operator: PropertyFilterRuleGroupOperator) => void;
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroupRendererProps {
+    // (undocumented)
+    group: PropertyFilterBuilderRuleGroup;
+    // (undocumented)
+    path: string[];
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleOperatorProps {
+    // (undocumented)
+    onChange: (operator: PropertyFilterRuleOperator) => void;
+    // (undocumented)
+    operator?: PropertyFilterRuleOperator;
+    // (undocumented)
+    property: PropertyDescription;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRulePropertyProps {
+    // (undocumented)
+    onSelectedPropertyChanged: (property?: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    selectedProperty?: PropertyDescription;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleRendererProps {
+    // (undocumented)
+    path: string[];
+    // (undocumented)
+    rule: PropertyFilterBuilderRule;
+}
+
+// @alpha (undocumented)
+export const PropertyFilterBuilderRuleRenderingContext: React.Context<PropertyFilterBuilderRuleRenderingContextProps>;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleRenderingContextProps {
+    // (undocumented)
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    // (undocumented)
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleValueProps {
+    // (undocumented)
+    onChange: (value: PropertyValue) => void;
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderState {
+    // (undocumented)
+    rootGroup: PropertyFilterBuilderRuleGroup;
+}
+
 // @public
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
 // @public
 export type PropertyFilterChangesListener = () => void;
+
+// @alpha (undocumented)
+export function propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator): boolean;
+
+// @alpha (undocumented)
+export interface PropertyFilterRule {
+    // (undocumented)
+    operator: PropertyFilterRuleOperator;
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterRuleGroup {
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+    // (undocumented)
+    rules: Array<PropertyFilter>;
+}
+
+// @alpha (undocumented)
+export enum PropertyFilterRuleGroupOperator {
+    // (undocumented)
+    And = 0,
+    // (undocumented)
+    Or = 1
+}
+
+// @alpha (undocumented)
+export enum PropertyFilterRuleOperator {
+    // (undocumented)
+    Greater = 4,
+    // (undocumented)
+    GreaterOrEqual = 5,
+    // (undocumented)
+    IsEqual = 2,
+    // (undocumented)
+    IsFalse = 1,
+    // (undocumented)
+    IsNotEqual = 3,
+    // (undocumented)
+    IsNotNull = 10,
+    // (undocumented)
+    IsNull = 9,
+    // (undocumented)
+    IsTrue = 0,
+    // (undocumented)
+    Less = 6,
+    // (undocumented)
+    LessOrEqual = 7,
+    // (undocumented)
+    Like = 8
+}
 
 // @public
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
@@ -4420,12 +4420,6 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
     inProgress: boolean;
 };
 
-// @alpha (undocumented)
-export function useFilterBuilderState(): {
-    state: FilterBuilderState;
-    actions: FilterBuilderActions;
-};
-
 // @public
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
@@ -4435,6 +4429,12 @@ export function usePropertyData(props: {
 }): {
     value: import("../PropertyDataProvider").PropertyData | undefined;
     inProgress: boolean;
+};
+
+// @alpha (undocumented)
+export function usePropertyFilterBuilderState(): {
+    state: PropertyFilterBuilderState;
+    actions: PropertyFilterBuilderActions;
 };
 
 // @beta

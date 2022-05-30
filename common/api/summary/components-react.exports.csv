@@ -45,7 +45,7 @@ beta;BreadcrumbUpdateEvent
 deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
 deprecated;BreadcrumbUpdateEventArgs
-internal;buildFilter(groupItem: FilterBuilderRuleGroupItem): Filter | undefined
+internal;buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined
 beta;CategorizedPropertyItem 
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict
@@ -109,32 +109,8 @@ public;FavoritePropertiesRenderer
 alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
-alpha;Filter = FilterRule | FilterRuleGroup
 public;FilterableColumn
 public;FilterableTable
-alpha;FilterBuilder(props: FilterBuilderProps): JSX.Element
-alpha;FilterBuilderActions
-alpha;FilterBuilderContext: React.Context
-alpha;FilterBuilderContextProps
-alpha;FilterBuilderProps
-alpha;FilterBuilderRule
-alpha;FilterBuilderRuleGroup
-alpha;FilterBuilderRuleGroupItem = FilterBuilderRuleGroup | FilterBuilderRule
-alpha;FilterBuilderRuleGroupOperator(props: FilterBuilderRuleGroupOperatorProps): JSX.Element
-alpha;FilterBuilderRuleGroupOperatorProps
-alpha;FilterBuilderRuleGroupRenderer(props: FilterBuilderRuleGroupRendererProps): JSX.Element
-alpha;FilterBuilderRuleGroupRendererProps
-alpha;FilterBuilderRuleOperator(props: FilterBuilderRuleOperatorProps): JSX.Element
-alpha;FilterBuilderRuleOperatorProps
-alpha;FilterBuilderRuleProperty(props: FilterBuilderRulePropertyProps): JSX.Element
-alpha;FilterBuilderRulePropertyProps
-alpha;FilterBuilderRuleRenderer(props: FilterBuilderRuleRendererProps): JSX.Element
-alpha;FilterBuilderRuleRendererProps
-alpha;FilterBuilderRuleRenderingContext: React.Context
-alpha;FilterBuilderRuleRenderingContextProps
-alpha;FilterBuilderRuleValue(props: FilterBuilderRuleValueProps): JSX.Element
-alpha;FilterBuilderRuleValueProps
-alpha;FilterBuilderState
 public;FilterCompositionLogicalOperator
 public;FilterDescriptor
 public;FilterDescriptorCollection 
@@ -147,19 +123,14 @@ public;FilteringInputStatus
 public;FilteringPropertyDataProvider 
 public;FilterOperator
 public;FilterRenderer
-alpha;FilterRule
-alpha;FilterRuleGroup
-alpha;FilterRuleGroupOperator
-alpha;FilterRuleOperator
-alpha;filterRuleOperatorNeedsValue(operator: FilterRuleOperator): boolean
 beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
 beta;FlatGridItemBase
 beta;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
-alpha;getAvailableOperators(property: PropertyDescription): FilterRuleOperator[]
-alpha;getFilterRuleOperatorLabel(operator: FilterRuleOperator): string
+alpha;getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string
+alpha;getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[]
 internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getPropertyRecordAsString(label: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -207,8 +178,8 @@ beta;IPropertyGridModel
 beta;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
-alpha;isFilterBuilderRuleGroup(item: FilterBuilderRuleGroupItem): item is FilterBuilderRuleGroup
-alpha;isFilterRuleGroup(filter: Filter): filter is FilterRuleGroup
+alpha;isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup
+alpha;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
@@ -307,8 +278,37 @@ public;PropertyEditingArgs
 public;class PropertyEditorBase 
 public;PropertyEditorManager
 public;PropertyEditorProps 
+alpha;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
+alpha;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
+alpha;PropertyFilterBuilderActions
+alpha;PropertyFilterBuilderContext: React.Context
+alpha;PropertyFilterBuilderContextProps
+alpha;PropertyFilterBuilderProps
+alpha;PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroup
+alpha;PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupOperatorProps
+alpha;PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupRendererProps
+alpha;PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleOperatorProps
+alpha;PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element
+alpha;PropertyFilterBuilderRulePropertyProps
+alpha;PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleRendererProps
+alpha;PropertyFilterBuilderRuleRenderingContext: React.Context
+alpha;PropertyFilterBuilderRuleRenderingContextProps
+alpha;PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element
+alpha;PropertyFilterBuilderRuleValueProps
+alpha;PropertyFilterBuilderState
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
+alpha;propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator): boolean
+alpha;PropertyFilterRule
+alpha;PropertyFilterRuleGroup
+alpha;PropertyFilterRuleGroupOperator
+alpha;PropertyFilterRuleOperator
 public;PropertyGrid 
 public;PropertyGridCategory
 deprecated;PropertyGridCategory
@@ -501,9 +501,9 @@ public;Unsubscribable
 public;UrlPropertyValueRenderer 
 public;useAsyncValue: 
 alpha;useDebouncedAsyncValue
-alpha;useFilterBuilderState():
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
+alpha;usePropertyFilterBuilderState():
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:

@@ -9,7 +9,7 @@ public;ControlledPresentationTreeFilteringProps
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[]
-internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter): PresentationInstanceFilter | undefined
+internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
 public;DataProvidersFactoryProps

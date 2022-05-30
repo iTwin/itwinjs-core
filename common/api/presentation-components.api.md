@@ -22,10 +22,7 @@ import { EnumerationInfo } from '@itwin/presentation-common';
 import { FavoritePropertiesScope } from '@itwin/presentation-frontend';
 import { Field } from '@itwin/presentation-common';
 import { FieldHierarchy } from '@itwin/presentation-common';
-import { Filter } from '@itwin/components-react';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
-import { FilterRuleGroupOperator } from '@itwin/components-react';
-import { FilterRuleOperator } from '@itwin/components-react';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateRecord } from '@itwin/presentation-common';
 import { HighlightableTreeProps } from '@itwin/components-react';
@@ -60,6 +57,9 @@ import { PropertyDataChangeEvent } from '@itwin/components-react';
 import { PropertyDataFiltererBase } from '@itwin/components-react';
 import { PropertyDataFilterResult } from '@itwin/components-react';
 import { PropertyDescription } from '@itwin/appui-abstract';
+import { PropertyFilter } from '@itwin/components-react';
+import { PropertyFilterRuleGroupOperator } from '@itwin/components-react';
+import { PropertyFilterRuleOperator } from '@itwin/components-react';
 import { PropertyRecord } from '@itwin/appui-abstract';
 import { PropertyValue } from '@itwin/appui-abstract';
 import { PropertyValueRendererContext } from '@itwin/components-react';
@@ -170,7 +170,7 @@ export function createFieldInfo(field: Field, namePrefix?: string): {
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[];
 
 // @internal (undocumented)
-export function createPresentationInstanceFilter(descriptor: Descriptor, filter: Filter): PresentationInstanceFilter | undefined;
+export function createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined;
 
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
@@ -358,7 +358,7 @@ export interface InstanceFilterBuilderProps {
     // (undocumented)
     onClearClasses: () => void;
     // (undocumented)
-    onFilterChanged: (filter?: Filter) => void;
+    onFilterChanged: (filter?: PropertyFilter) => void;
     // (undocumented)
     onPropertySelected?: (property: PropertyDescription) => void;
     // (undocumented)
@@ -450,7 +450,7 @@ export interface PresentationInstanceFilterCondition {
     // (undocumented)
     field: PropertiesField;
     // (undocumented)
-    operator: FilterRuleOperator;
+    operator: PropertyFilterRuleOperator;
     // (undocumented)
     value?: PropertyValue;
 }
@@ -460,7 +460,7 @@ export interface PresentationInstanceFilterConditionGroup {
     // (undocumented)
     conditions: PresentationInstanceFilter[];
     // (undocumented)
-    operator: FilterRuleGroupOperator;
+    operator: PropertyFilterRuleGroupOperator;
 }
 
 // @public
