@@ -175,7 +175,11 @@
                   "schemaName": "BisCore",
                   "className": "ModelContainsElements"
                 },
-                "direction": "Forward"
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement3d"
+                }
               },
               {
                 "relationship": {
@@ -246,7 +250,11 @@
                   "schemaName": "BisCore",
                   "className": "ModelContainsElements"
                 },
-                "direction": "Forward"
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement2d"
+                }
               },
               {
                 "relationship": {
