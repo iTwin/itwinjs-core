@@ -18,11 +18,11 @@
               "schemaName": "BisCore",
               "classNames": [
                 "Subject"
-              ]
+              ],
+              "arePolymorphic": false
             }
           ],
           "instanceFilter": "this.Parent = NULL",
-          "arePolymorphic": false,
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -83,9 +83,9 @@
             "schemaName": "BisCore",
             "classNames": [
               "Model"
-            ]
+            ],
+            "arePolymorphic": true
           },
-          "arePolymorphic": true,
           "relatedInstances": [
             {
               "relationshipPath": {
@@ -113,9 +113,9 @@
             "schemaName": "BisCore",
             "classNames": [
               "Model"
-            ]
+            ],
+            "arePolymorphic": true
           },
-          "arePolymorphic": true,
           "relatedInstances": [
             {
               "relationshipPath": {
@@ -188,6 +188,47 @@
           ],
           "suppressSimilarAncestorsCheck": true,
           "groupByClass": false,
+          "groupByLabel": false,
+          "nestedRules": [
+            {
+              "ruleType": "ChildNodes",
+              "condition": "ParentNode.IsOfClass(\"SpatialCategory\", \"BisCore\")",
+              "specifications": [
+                {
+                  "specType": "RelatedInstanceNodes",
+                  "relationshipPaths": [
+                    {
+                      "relationship": {
+                        "schemaName": "BisCore",
+                        "className": "GeometricElement3dIsInCategory"
+                      },
+                      "direction": "Backward"
+                    }
+                  ],
+                  "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
+                  "groupByClass": true,
+                  "groupByLabel": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelContainsElements"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "InformationContentElement"
+              }
+            }
+          ],
+          "groupByClass": true,
           "groupByLabel": false
         }
       ]
@@ -218,6 +259,47 @@
           ],
           "suppressSimilarAncestorsCheck": true,
           "groupByClass": false,
+          "groupByLabel": false,
+          "nestedRules": [
+            {
+              "ruleType": "ChildNodes",
+              "condition": "ParentNode.IsOfClass(\"DrawingCategory\", \"BisCore\")",
+              "specifications": [
+                {
+                  "specType": "RelatedInstanceNodes",
+                  "relationshipPaths": [
+                    {
+                      "relationship": {
+                        "schemaName": "BisCore",
+                        "className": "GeometricElement2dIsInCategory"
+                      },
+                      "direction": "Backward"
+                    }
+                  ],
+                  "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
+                  "groupByClass": true,
+                  "groupByLabel": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelContainsElements"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "InformationContentElement"
+              }
+            }
+          ],
+          "groupByClass": true,
           "groupByLabel": false
         }
       ]
@@ -240,49 +322,7 @@
               }
             ]
           ],
-          "suppressSimilarAncestorsCheck": true,
-          "groupByClass": false,
-          "groupByLabel": false
-        }
-      ]
-    },
-    {
-      "ruleType": "ChildNodes",
-      "condition": "ParentNode.IsOfClass(\"SpatialCategory\", \"BisCore\")",
-      "specifications": [
-        {
-          "specType": "RelatedInstanceNodes",
-          "relationshipPaths": [
-            {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "GeometricElement3dIsInCategory"
-              },
-              "direction": "Backward"
-            }
-          ],
-          "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
-          "groupByClass": true,
-          "groupByLabel": false
-        }
-      ]
-    },
-    {
-      "ruleType": "ChildNodes",
-      "condition": "ParentNode.IsOfClass(\"DrawingCategory\", \"BisCore\")",
-      "specifications": [
-        {
-          "specType": "RelatedInstanceNodes",
-          "relationshipPaths": [
-            {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "GeometricElement2dIsInCategory"
-              },
-              "direction": "Backward"
-            }
-          ],
-          "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
+          "instanceFilter": "this.Parent = NULL",
           "groupByClass": true,
           "groupByLabel": false
         }
