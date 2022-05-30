@@ -39,14 +39,16 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
       <div className="rule-group-items">
         {group.items.map((item) => <PropertyFilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
       </div>
-      <ButtonGroup className="rule-group-actions">
-        <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
-          {UiComponents.translate("filterBuilder.rule")}
-        </Button>
-        <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>
-          {UiComponents.translate("filterBuilder.ruleGroup")}
-        </Button>
-      </ButtonGroup>
+      <div className="rule-group-actions">
+        <ButtonGroup>
+          <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+            {UiComponents.translate("filterBuilder.rule")}
+          </Button>
+          <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+            {UiComponents.translate("filterBuilder.ruleGroup")}
+          </Button>
+        </ButtonGroup>
+      </div>
     </div>
   </div>;
 }

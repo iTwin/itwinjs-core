@@ -19,12 +19,14 @@
     visibility: hidden;
   }
 
-  &:focus-within > .rule-group-remove-action {
+  &:focus-within > .rule-group-remove-action,
+  &:hover > .rule-group-remove-action  {
     visibility: visible;
   }
 
-  &:focus-within > .rule-group-content > .rule-group-actions {
-    visibility: visible;
+  &:focus-within > .rule-group-content > .rule-group-actions,
+  &:hover > .rule-group-content > .rule-group-actions {
+    display: block;
   }
 
   .rule-group-content {
@@ -53,7 +55,7 @@
 
     .rule-group-actions {
       padding-top: 5px;
-      visibility: hidden;
+      display: none;
     }
   }
 }
@@ -79,7 +81,8 @@
     visibility: hidden;
   }
 
-  &:focus-within .rule-remove-action {
+  &:focus-within .rule-remove-action,
+  &:hover .rule-remove-action {
     visibility: visible;
   }
 }
