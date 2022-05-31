@@ -76,6 +76,7 @@ const buggyIntelMatchers = [
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
 const buggyMaliMatchers = [
   /Mali-G71/,
+  /Mali-G72/,
   /Mali-G76/,
 ];
 
@@ -267,6 +268,7 @@ export class Capabilities {
     this._driverBugs = {};
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+
     if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.msaaWillHang = true;
 
