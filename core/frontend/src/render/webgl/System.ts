@@ -528,15 +528,15 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return PlanarGridGeometry.create(frustum, grid, this);
   }
 
-  public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform, disableTextureDisposal = false): RealityMeshGeometry | undefined {
-    return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform, disableTextureDisposal);
+  public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform, disableTextureDisposal = false, isMapTile = false): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform, disableTextureDisposal, isMapTile);
   }
 
-  public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
-    return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
+  public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false, isMapTile = false): RenderGraphic | undefined {
+    return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal, isMapTile);
   }
-  public override createRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RenderGraphic | undefined {
-    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
+  public override createRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false, isMapTile = false): RenderGraphic | undefined {
+    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal, isMapTile);
     return geom ? Primitive.create(geom) : undefined;
   }
 

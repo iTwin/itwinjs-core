@@ -234,7 +234,22 @@ function addColorOverrideMix(frag: FragmentShaderBuilder) {
       uniform.setUniform1f(params.geometry.asRealityMesh!.overrideColorMix);
     });
   });
+}
 
+const getProjectedSceneDepth = `
+float getProjectedSceneDepth(vec3 initialPoint, vec3 sphereOrigin, float sphereRadius) {
+  return length(normalize(initialPoint - sphereOrigin) * sphereRadius + sphereOrigin);
+}
+`;
+
+function addAtmosphericScatteringToRealityMesh(builder: ProgramBuilder) {
+  builder.frag.addUniform("u_isMapTile", VariableType.Boolean, (program) => {
+    program.addGraphicUniform("u_isMapTile", (uniform, params) => {
+      uniform.setUniform1i(params.geometry.asRealityMesh!.isMapTile ? 1 : 0);
+    });
+  });
+  builder.frag.addFunction(getProjectedSceneDepth);
+  addAtmosphericScattering(builder, false, true);
 }
 
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
@@ -336,7 +351,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   if (flags.isWiremesh)
     addWiremesh(builder);
 
-  addAtmosphericScattering(builder);
+  addAtmosphericScatteringToRealityMesh(builder);
 
   return builder;
 }

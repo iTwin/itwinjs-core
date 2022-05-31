@@ -39,7 +39,7 @@ import { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { Viewport } from "./Viewport";
+import { Viewport, ViewportDecorator } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
@@ -179,7 +179,7 @@ export interface AttachToViewportArgs {
  * @public
  * @extensions
  */
-export abstract class ViewState extends ElementState {
+export abstract class ViewState extends ElementState implements ViewportDecorator {
   /** @internal */
   public static override get className() { return "ViewDefinition"; }
 
