@@ -71,7 +71,7 @@ export interface SampleAppState {
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  isIModelLocal: true,  // initialize to true to hide iModelIndex from enabling which should only occur if External iModel is open.
+  isIModelLocal: true,
   initialViewIds: [],
 };
 
@@ -339,7 +339,7 @@ export class SampleAppIModelApp {
         SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
-        SampleAppIModelApp.setIsIModelLocal(true, true); // set to true to hide iModelIndex option which should only show if External imodel is open.
+        SampleAppIModelApp.setIsIModelLocal(true, true);
       }
     }
   }
