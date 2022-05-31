@@ -6,7 +6,7 @@
  * @module HubAccess
  */
 
-import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
@@ -44,6 +44,41 @@ export class LockConflict extends IModelError {
 }
 
 /**
+ * Controls cancellation.
+ * @note This is based on AbortController (https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+ * @beta
+ */
+export class CancelController {
+  private _cancelEvent = new BeEvent<() => void>();
+
+  /** Signal raised by this controller on cancellation. */
+  public get signal(): CancelSignal {
+    return {
+      addListener: (listener) => this._cancelEvent.addListener(listener),
+    };
+  }
+
+  /** Raises cancellation signal. */
+  public cancel() {
+    this._cancelEvent.raiseEvent();
+  }
+}
+
+/**
+ * Allows to add listener for cancellation.
+ * @note This is based on AbortSignal (https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal).
+ * @beta
+ */
+export interface CancelSignal {
+  /**
+   * Registers a Listener to be executed whenever this signal is raised.
+   * @param listener A listener to be executed whenever this signal is raised.
+   * @returns A function that will remove this listener.
+   */
+  addListener(listener: () => void): () => void;
+}
+
+/**
  * The properties to access a V2 checkpoint through a daemon.
  * @internal
  */
@@ -72,6 +107,36 @@ export interface LockProps {
   readonly id: Id64String;
   /** the lock state */
   readonly state: LockState;
+}
+
+/**
+ * Function used to indicate progress as the changeset is downloaded.
+ * @param loaded Bytes downloaded.
+ * @param total Total size of item(s) in bytes.
+ * @beta
+ */
+export type DownloadProgressFunction = (loaded: number, total: number) => void;
+
+/**
+ * Argument for tracking download progress.
+ * @beta
+ */
+export interface DownloadProgressArg {
+  progressCallback?: DownloadProgressFunction;
+}
+
+/**
+ * Event that is to be fired when download needs to be canceled.
+ * @beta
+ */
+export type CancelDownloadEvent = BeEvent<() => void>;
+
+/**
+ * Argument for cancelling download.
+ * @beta
+ */
+export interface CancelDownloadArg {
+  cancelSignal?: CancelSignal;
 }
 
 /**
@@ -127,6 +192,11 @@ export interface ChangesetArg extends IModelIdArg {
   readonly changeset: ChangesetIndexOrId;
 }
 
+/** Arguments for downloading a changeset.
+ * @public
+ */
+export type DownloadChangesetArg = ChangesetArg & { targetDir: LocalDirName } & DownloadProgressArg & CancelDownloadArg;
+
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
   readonly changeset: ChangesetIdWithIndex;
@@ -139,6 +209,11 @@ export interface ChangesetRangeArg extends IModelIdArg {
   /** the range of changesets desired. If is undefined, *all* changesets are returned. */
   readonly range?: ChangesetRange;
 }
+
+/** Arguments for downloading a changeset range.
+ * @public
+ */
+export type DownloadChangesetRangeArg = ChangesetRangeArg & { targetDir: LocalDirName } & DownloadProgressArg & CancelDownloadArg;
 
 /** @internal */
 export type CheckpointArg = DownloadRequest;
@@ -160,9 +235,9 @@ export interface CreateNewIModelProps extends IModelNameArg {
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
-  downloadChangesets: (arg: ChangesetRangeArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps[]>;
+  downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
-  downloadChangeset: (arg: ChangesetArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps>;
+  downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
   queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
