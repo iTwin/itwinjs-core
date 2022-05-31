@@ -575,7 +575,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.19.40
+      '@bentley/imodeljs-native': 2.19.41
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -626,7 +626,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.19.40
+      '@bentley/imodeljs-native': 2.19.41
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -9711,8 +9711,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.19.40:
-    resolution: {integrity: sha512-A3rT/KGAFgjmP9iHMDVjWeClPUbprZZtK+bZ7Q47/dRYxYHbk+sypz6iqCdRpFuq3/E51f9DpWsIv7yZXgVP0Q==}
+  /@bentley/imodeljs-native/2.19.41:
+    resolution: {integrity: sha512-K+v2lcHsWQO8uC27K+iRySk0HrLOft5hSUzHTBQ0cmd3bj6biUKpP5+xwIQqV8xran08C50J5qRohMB8SPg90Q==}
     requiresBuild: true
     dev: false
 
@@ -13566,7 +13566,7 @@ packages:
     dev: true
 
   /buffer-crc32/0.2.13:
-    resolution: {integrity: sha1-DTM+PwDqxQqhRUq9MO+MKl2ackI=}
+    resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
 
   /buffer-equal-constant-time/1.0.1:
     resolution: {integrity: sha1-+OcRMvf/5uAaXJaXpMbz5I1cyBk=}
