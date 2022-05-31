@@ -302,13 +302,13 @@ class MaterialAtlasRemapper {
   }
 
   private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
-    const rgbOverridden = (entry[1] & 1) !== 0;
-    const alphaOverridden = (entry[1] & 2) !== 0;
+    const rgbOverridden = (entry[1] &  0x1000000) !== 0;
+    const alphaOverridden = (entry[1] &  0x2000000) !== 0;
     const args: CreateRenderMaterialArgs = {
       alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
       diffuse: {
         color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
-        weight: (entry[1] >>> 24) / 255.0,
+        weight: (entry[1] >>> 8) / 255.0,
       },
       specular: {
         color: ColorDef.fromTbgr(entry[2]),
