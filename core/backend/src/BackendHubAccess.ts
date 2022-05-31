@@ -126,12 +126,6 @@ export interface DownloadProgressArg {
 }
 
 /**
- * Event that is to be fired when download needs to be canceled.
- * @beta
- */
-export type CancelDownloadEvent = BeEvent<() => void>;
-
-/**
  * Argument for cancelling download.
  * @beta
  */
@@ -192,10 +186,13 @@ export interface ChangesetArg extends IModelIdArg {
   readonly changeset: ChangesetIndexOrId;
 }
 
-/** Arguments for downloading a changeset.
- * @public
+/** Argument for downloading a changeset.
+ * @beta
  */
-export type DownloadChangesetArg = ChangesetArg & { targetDir: LocalDirName } & DownloadProgressArg & CancelDownloadArg;
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg, CancelDownloadArg {
+  /** Directory where the changeset should be downloaded. */
+  targetDir: LocalDirName;
+}
 
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
@@ -210,10 +207,13 @@ export interface ChangesetRangeArg extends IModelIdArg {
   readonly range?: ChangesetRange;
 }
 
-/** Arguments for downloading a changeset range.
- * @public
+/** Argument for downloading a changeset range.
+ * @beta
  */
-export type DownloadChangesetRangeArg = ChangesetRangeArg & { targetDir: LocalDirName } & DownloadProgressArg & CancelDownloadArg;
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg, CancelDownloadArg {
+  /** Directory where the changesets should be downloaded. */
+  targetDir: LocalDirName;
+}
 
 /** @internal */
 export type CheckpointArg = DownloadRequest;
