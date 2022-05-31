@@ -217,18 +217,10 @@ describe("Render Compatibility", () => {
 
   it("detects MSAA hang bug", () => {
     const renderers = [
-<<<<<<< HEAD
       ["Mali-G71", true],
       ["Mali-G76", true],
       ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
       ["Mali-G79", false],
-=======
-      [ "Mali-G71", true ],
-      [ "Mali-G72", true ],
-      [ "Mali-G76", true ],
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  false ],
-      [ "Mali-G79", false ],
->>>>>>> 67881e02f2 (Add workarounds for Mali-G72 GPU. (#3701))
     ];
 
     for (const renderer of renderers) {
