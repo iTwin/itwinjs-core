@@ -21,7 +21,8 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
 
-const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
+/** @internal */
+export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
 export class ResponseLike implements Response {
@@ -111,8 +112,13 @@ export abstract class RpcRequest<TResponse = any> {
   private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
-  private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
-  private _extendedStatus: string = "";
+
+  /** @internal */
+  public _status: RpcRequestStatus = RpcRequestStatus.Unknown;
+
+  /** @internal */
+  public _extendedStatus: string = "";
+
   private _connecting: boolean = false;
   private _active: boolean = true;
   private _hasRawListener = false;

@@ -204,6 +204,10 @@ describe("RpcInterface", () => {
   });
 
   it("should describe available RPC endpoints from the frontend", async () => {
+    // if (currentEnvironment !== "http") {
+    //  return;
+    // }
+
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;

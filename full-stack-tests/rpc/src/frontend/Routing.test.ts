@@ -5,10 +5,15 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { WebRoutingInterface } from "../common/TestRpcInterface";
+import { currentEnvironment } from "./_Setup.test";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Routing", () => {
     it("should honor retry-after", async () => {
+      if (currentEnvironment === "websocket") {
+        return;
+      }
+
       const client = WebRoutingInterface.getClient();
       const sent = Date.now();
 

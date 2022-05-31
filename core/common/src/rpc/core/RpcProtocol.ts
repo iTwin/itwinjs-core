@@ -37,6 +37,7 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
   caching: RpcResponseCacheControl;
   ip?: string;
   protocolVersion?: number;
+  parametersOverride?: any[];
 }
 
 /** An RPC operation request fulfillment.
@@ -81,6 +82,16 @@ export namespace RpcRequestFulfillment {
  * @internal
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
+
+/**
+ * A backend response that is handled internally by the RPC system.
+ * @internal
+ */
+export interface RpcManagedStatus {
+  iTwinRpcCoreResponse: true;
+  managedStatus: "pending" | "notFound" | "noContent";
+  responseValue: string;
+}
 
 /** An application protocol for an RPC interface.
  * @internal

@@ -17,7 +17,7 @@ import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
@@ -155,7 +155,7 @@ export class RpcInvocation {
     try {
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-      const parameters = RpcMarshaling.deserialize(this.protocol, request.parameters);
+      const parameters = request.parametersOverride || RpcMarshaling.deserialize(this.protocol, request.parameters);
       this.applyPolicies(parameters);
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       (impl as any)[CURRENT_INVOCATION] = this;
@@ -257,6 +257,8 @@ export class RpcInvocation {
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
 
+    this.transformResponseStatus(fulfillment);
+
     try {
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;
       if (impl[CURRENT_INVOCATION] === this) {
@@ -273,5 +275,22 @@ export class RpcInvocation {
       throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
 
     return func;
+  }
+
+  private transformResponseStatus(fulfillment: RpcRequestFulfillment) {
+    let managedStatus: "noContent" | "notFound" | "pending" | undefined;
+    if (this._pending) {
+      managedStatus = "pending";
+    } else if (this._notFound) {
+      managedStatus = "notFound";
+    } else if (this._noContent) {
+      managedStatus = "noContent";
+    }
+
+    if (managedStatus) {
+      const responseValue = fulfillment.rawResult;
+      const status: RpcManagedStatus = { iTwinRpcCoreResponse: true, managedStatus, responseValue };
+      fulfillment.rawResult = status;
+    }
   }
 }

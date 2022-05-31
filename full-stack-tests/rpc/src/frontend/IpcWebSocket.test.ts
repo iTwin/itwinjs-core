@@ -7,17 +7,26 @@ import { IpcWebSocketFrontend } from "@itwin/core-common";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { currentEnvironment } from "./_Setup.test";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {
     let socket: IpcWebSocketFrontend;
 
     before(async () => {
+      if (currentEnvironment === "websocket") {
+        return;
+      }
+
       assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
       socket = new IpcWebSocketFrontend();
     });
 
     it("should support send/receive", async () => {
+      if (currentEnvironment === "websocket") {
+        return;
+      }
+
       return new Promise(async (resolve) => {
         socket.addListener("test", (_evt: Event, ...arg: any[]) => {
           assert.equal(arg[0], 4);
@@ -33,6 +42,10 @@ if (!ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should support invoke", async () => {
+      if (currentEnvironment === "websocket") {
+        return;
+      }
+
       return new Promise(async (resolve) => {
         const invoked = await socket.invoke("testinvoke", "hi", 1, 2, 3);
         assert.equal(invoked[0], "hi");
