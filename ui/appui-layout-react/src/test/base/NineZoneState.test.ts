@@ -405,7 +405,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         (!!newState.floatingWidgets.byId.fw1).should.true;
@@ -432,7 +432,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "w1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         newState.floatingWidgets.byId.w1.bounds.should.eql({

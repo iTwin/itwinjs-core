@@ -13,7 +13,7 @@ import { Point, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { isTabTarget, isWidgetTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetTargetState } from "../base/NineZoneState";
+import { WidgetDropTargetState } from "../base/NineZoneState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -50,8 +50,8 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
   const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
     floatingWidgetId !== undefined && handleActionAreaClick();
 
-    let target: WidgetTargetState = {
-      type: "floatingWidget",
+    let target: WidgetDropTargetState = {
+      type: "window",
     };
     if (dragTarget) {
       if (isTabTarget(dragTarget)) {

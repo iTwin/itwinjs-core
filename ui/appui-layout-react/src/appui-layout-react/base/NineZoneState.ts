@@ -89,21 +89,27 @@ export interface PopoutWidgetsState {
 }
 
 /** @internal future */
-export interface TabTargetTabState {
+export interface TabTargetState {
   readonly widgetId: WidgetState["id"];
-  readonly tabIndex: number; // -1 to append the tabs.
+  readonly tabIndex: number;
   readonly type: "tab";
 }
 
 /** @internal future */
-export interface TabTargetPanelState {
+export interface WidgetTargetState {
+  readonly widgetId: WidgetState["id"];
+  readonly type: "widget";
+}
+
+/** @internal future */
+export interface PanelTargetState {
   readonly side: PanelSide;
   readonly newWidgetId: WidgetState["id"];
   readonly type: "panel";
 }
 
 /** @internal future */
-export interface TabTargetSectionState {
+export interface SectionTargetState {
   readonly side: PanelSide;
   readonly newWidgetId: WidgetState["id"];
   readonly sectionIndex: number;
@@ -111,31 +117,22 @@ export interface TabTargetSectionState {
 }
 
 /** @internal future */
-export interface TabTargetFloatingWidgetState {
+export interface FloatingWidgetTargetState {
   readonly type: "floatingWidget";
   readonly newFloatingWidgetId: FloatingWidgetState["id"];
   readonly size: SizeProps;
 }
 
 /** @internal future */
-export type TabTargetState = TabTargetPanelState | TabTargetSectionState | TabTargetTabState | TabTargetFloatingWidgetState;
+export type TabDropTargetState = PanelTargetState | SectionTargetState | TabTargetState | FloatingWidgetTargetState;
 
 /** @internal future */
-export type WidgetTargetPanelState = TabTargetPanelState;
-
-/** @internal future */
-export type WidgetTargetSectionState = TabTargetSectionState;
-
-/** @internal future */
-export type WidgetTargetTabState = TabTargetTabState;
-
-/** @internal future */
-export interface WidgetTargetFloatingWidgetState {
-  readonly type: "floatingWidget";
+export interface WindowTargetState {
+  readonly type: "window";
 }
 
 /** @internal future */
-export type WidgetTargetState = WidgetTargetPanelState | WidgetTargetSectionState | WidgetTargetTabState | WidgetTargetFloatingWidgetState;
+export type WidgetDropTargetState = PanelTargetState | SectionTargetState | TabTargetState | WindowTargetState;
 
 /** @internal future */
 export interface PanelsState {
@@ -307,7 +304,7 @@ export interface WidgetDragAction {
 export interface WidgetDragEndAction {
   readonly type: "WIDGET_DRAG_END";
   readonly floatingWidgetId: FloatingWidgetState["id"];
-  readonly target: WidgetTargetState;
+  readonly target: WidgetDropTargetState;
 }
 
 /** @internal future */
@@ -354,7 +351,7 @@ export interface WidgetTabDragAction {
 export interface WidgetTabDragEndAction {
   readonly type: "WIDGET_TAB_DRAG_END";
   readonly id: TabState["id"];
-  readonly target: TabTargetState;
+  readonly target: TabDropTargetState;
 }
 
 /** @internal future */
@@ -496,7 +493,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const target = action.target;
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       const draggedWidget = state.widgets[action.floatingWidgetId];
-      if (isWidgetTargetFloatingWidgetState(target)) {
+      if (isWindowTargetState(target)) {
         const nzBounds = Rectangle.createFromSize(state.size);
         if (draggedWidget.minimized) {
           const bounds = Rectangle.create(floatingWidget.bounds);
@@ -510,14 +507,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         floatingWidgetBringToFront(state, action.floatingWidgetId);
         return;
       }
-      if (isWidgetTargetTabState(target)) {
+      if (isTabTargetState(target)) {
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
         }
         const targetWidget = state.widgets[target.widgetId];
         const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
         targetWidget.tabs.splice(tabIndex, 0, ...draggedWidget.tabs);
-      } else if (isWidgetTargetSectionState(target)) {
+      } else if (isSectionTargetState(target)) {
         state.panels[target.side].widgets.splice(target.sectionIndex, 0, target.newWidgetId);
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
@@ -711,7 +708,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "WIDGET_TAB_DRAG_END": {
       assert(!!state.draggedTab);
       const target = action.target;
-      if (isTabTargetTabState(target)) {
+      if (isTabTargetState(target)) {
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           const floatingWidget = state.floatingWidgets.byId[target.widgetId];
           floatingWidget.home = state.draggedTab.home;
@@ -719,7 +716,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const targetWidget = state.widgets[target.widgetId];
         const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
         targetWidget.tabs.splice(tabIndex, 0, action.id);
-      } else if (isTabTargetPanelState(target)) {
+      } else if (isPanelTargetState(target)) {
         state.panels[target.side].widgets.push(target.newWidgetId);
         state.widgets[target.newWidgetId] = {
           activeTabId: action.id,
@@ -727,7 +724,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           minimized: false,
           tabs: [action.id],
         };
-      } else if (isTabTargetSectionState(target)) {
+      } else if (isSectionTargetState(target)) {
         const newWidgetPanelId = `${target.side}${0 === target.sectionIndex ? "Start" : "End"}`;
         const section = state.panels[target.side].widgets.find((sectionId) => sectionId === newWidgetPanelId);
         // Add WidgetTab to existing  WidgetSection
@@ -1143,28 +1140,20 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
   return isHorizontalPanelSide(state.side);
 }
 
-function isTabTargetTabState(state: TabTargetState): state is TabTargetTabState {
+function isTabTargetState(state: TabDropTargetState | WidgetDropTargetState): state is TabTargetState {
   return state.type === "tab";
 }
 
-function isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState {
+function isPanelTargetState(state: TabDropTargetState | WidgetDropTargetState): state is PanelTargetState {
   return state.type === "panel";
 }
 
-function isTabTargetSectionState(state: TabTargetState): state is TabTargetSectionState {
+function isSectionTargetState(state: TabDropTargetState | WidgetDropTargetState): state is SectionTargetState {
   return state.type === "section";
 }
 
-function isWidgetTargetFloatingWidgetState(state: WidgetTargetState): state is WidgetTargetFloatingWidgetState {
-  return state.type === "floatingWidget";
-}
-
-function isWidgetTargetTabState(state: WidgetTargetState): state is WidgetTargetTabState {
-  return state.type === "tab";
-}
-
-function isWidgetTargetSectionState(state: WidgetTargetState): state is WidgetTargetSectionState {
-  return state.type === "section";
+function isWindowTargetState(state: WidgetDropTargetState): state is WindowTargetState {
+  return state.type === "window";
 }
 
 function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState {

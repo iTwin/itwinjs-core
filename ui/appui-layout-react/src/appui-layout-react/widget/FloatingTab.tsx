@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { isPanelTarget, isTabTarget, isWidgetTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
 import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { getWidgetPanelSectionId, TabTargetState } from "../base/NineZoneState";
+import { getWidgetPanelSectionId, TabDropTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";
 
 /** Component that displays a floating tab.
@@ -29,7 +29,7 @@ export function FloatingTab() {
     });
   }, [dispatch, id]);
   const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((dragTarget, size) => {
-    let target: TabTargetState;
+    let target: TabDropTargetState;
     if (dragTarget) {
       if (isTabTarget(dragTarget)) {
         target = {
