@@ -21,7 +21,7 @@ async function init() {
 
   // create a basic express web server
   const webEditServer = new WebEditServer(rpcConfig.protocol);
-  await webEditServer.initialize(port);
+  const httpServer = await webEditServer.initialize(port);
 
   await LocalhostIpcHost.startup({ localhostIpcHost: { noServer: true } });
 
@@ -29,6 +29,10 @@ async function init() {
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
+
+  return () => {
+    httpServer.close();
+  };
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {

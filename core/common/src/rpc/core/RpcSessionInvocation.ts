@@ -22,6 +22,7 @@ class SessionConfiguration extends RpcConfiguration {
 class SessionProtocol extends RpcProtocol {
   public static instance = new SessionProtocol();
   public requestType = RpcRequest;
+  public override supportsStatusCategory = true;
   constructor() { super(new SessionConfiguration()); }
 }
 

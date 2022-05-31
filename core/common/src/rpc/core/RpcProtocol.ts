@@ -101,7 +101,7 @@ export enum RpcProtocolVersion {
  */
 export interface RpcManagedStatus {
   iTwinRpcCoreResponse: true;
-  managedStatus: "pending" | "notFound";
+  managedStatus: "pending" | "notFound" | "noContent";
   responseValue: string;
 }
 

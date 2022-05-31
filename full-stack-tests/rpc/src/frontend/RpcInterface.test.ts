@@ -437,6 +437,10 @@ describe("RpcInterface", () => {
   });
 
   it("should be able to send large requests as get requests", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
     RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
