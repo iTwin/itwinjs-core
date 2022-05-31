@@ -4,9 +4,8 @@
 
 ```ts
 
-import { SpanAttributes } from '@opentelemetry/api';
+import { Attributes } from '@opentelemetry/api';
 import { SpanContext } from '@opentelemetry/api';
-import { SpanKind } from '@opentelemetry/api';
 import { SpanOptions } from '@opentelemetry/api';
 import { Tracer } from '@opentelemetry/api';
 
@@ -1136,7 +1135,6 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
-    static enableOpenTelemetry(tracer: Tracer, api: typeof Logger._openTelemetry): void;
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
     static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
@@ -1157,7 +1155,6 @@ export class Logger {
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
     static parseLogLevel(str: string): LogLevel;
-    static setAttributes(attributes: SpanAttributes): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     // @internal
@@ -1166,7 +1163,6 @@ export class Logger {
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
     static validateProps(config: any): void;
-    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
@@ -1495,7 +1491,19 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     remove(value: T): number;
 }
 
-export { SpanKind }
+// @alpha
+export enum SpanKind {
+    // (undocumented)
+    CLIENT = 2,
+    // (undocumented)
+    CONSUMER = 4,
+    // (undocumented)
+    INTERNAL = 0,
+    // (undocumented)
+    PRODUCER = 3,
+    // (undocumented)
+    SERVER = 1
+}
 
 // @alpha
 export abstract class StatusCategory {
@@ -1540,6 +1548,13 @@ export class StopWatch {
 export abstract class SuccessCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
+}
+
+// @alpha (undocumented)
+export class Tracing {
+    static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
+    static setAttributes(attributes: Attributes): void;
+    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public

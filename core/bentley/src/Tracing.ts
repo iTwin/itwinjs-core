@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
+import type { Attributes, AttributeValue, ContextAPI, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
 import { LogFunction, Logger } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
@@ -18,13 +18,13 @@ export enum SpanKind {
   CONSUMER = 4
 }
 
-function isValidPrimitive(val: unknown): val is SpanAttributeValue {
+function isValidPrimitive(val: unknown): val is AttributeValue {
   return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
 }
 
 // Only _homogenous_ arrays of strings, numbers, or booleans are supported as OpenTelemetry Attribute values.
 // Per the spec (https://opentelemetry.io/docs/reference/specification/common/common/#attribute), empty arrays and null values are supported too.
-function isValidPrimitiveArray(val: unknown): val is SpanAttributeValue {
+function isValidPrimitiveArray(val: unknown): val is AttributeValue {
   if (!Array.isArray(val))
     return false;
 
@@ -49,7 +49,7 @@ function isPlainObject(obj: unknown): obj is object {
   return typeof obj === "object" && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
-function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttributeValue]> {
+function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, AttributeValue]> {
   if (isValidPrimitiveArray(obj)) {
     yield [path, obj];
     return;
@@ -71,12 +71,13 @@ function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttribu
     yield* getFlatEntries(val, (path === "") ? key : `${path}.${key}`);
 }
 
-function flattenObject(obj: object): SpanAttributes {
+function flattenObject(obj: object): Attributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
 
 /**
- *
+ * Enables OpenTelemetry tracing in addition to traditional logging.
+ * @alpha
  */
 export class Tracing {
   private static _tracer?: Tracer;
@@ -142,7 +143,7 @@ export class Tracing {
   /** Set attributes on currently active openTelemetry span. Doesn't do anything if openTelemetry logging is not initialized.
    * @param attributes  The attributes to set
    */
-  public static setAttributes(attributes: SpanAttributes) {
+  public static setAttributes(attributes: Attributes) {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
   }
 }
