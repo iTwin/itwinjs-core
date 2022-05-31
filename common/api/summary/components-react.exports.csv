@@ -78,6 +78,7 @@ public;class DataControllerBase
 internal;DataRowItem 
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
+public;DateFormatOptions
 alpha;DatePicker(props: DatePickerProps): JSX.Element
 alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
@@ -396,7 +397,7 @@ deprecated;ThemedEnumPropertyEditor
 internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
 internal;TimeFieldProps
 internal;TimeSpec
-public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 public;ToggleEditor 
 public;TogglePropertyEditor 
 public;Toolbar(props: ToolbarProps): JSX.Element
@@ -418,7 +419,7 @@ public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
-public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 public;TreeActions
 public;TreeCheckboxStateChangeEventArgs
