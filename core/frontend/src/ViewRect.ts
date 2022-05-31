@@ -13,7 +13,6 @@ import { LowAndHighXY, XAndY } from "@bentley/geometry-core";
  * [[left]], [[top]], [[right]], and [[bottom]] are required to be non-negative integers; any negative inputs are treated as
  * zero and any non-integer inputs are rounded down to the nearest integer.
  * @public
- * @extensions
  */
 export class ViewRect {
   private _left!: number;
