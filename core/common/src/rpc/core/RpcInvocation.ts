@@ -17,7 +17,7 @@ import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
