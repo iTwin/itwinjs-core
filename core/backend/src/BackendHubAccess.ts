@@ -219,6 +219,15 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 export type CheckpointArg = DownloadRequest;
 
 /**
+ * Argument for downloading checkpoint.
+ * @beta
+ */
+export interface DownloadCheckpointArg extends CheckpointProps, DownloadProgressArg, CancelDownloadArg {
+  /** Name of local file to hold the downloaded checkpoint. */
+  localFile: LocalFileName;
+}
+
+/**
  * Arguments to create a new iModel in iModelHub
  *  @public
  */
@@ -261,22 +270,16 @@ export interface BackendHubAccess {
   /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
 
-  /**
-   * download a v1 checkpoint
-   * @internal
-   */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+  /** Download a v1 checkpoint. */
+  downloadV1Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
    * @internal
    */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-  /**
-   * download a v2 checkpoint
-   * @internal
-   */
-  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+  /** Download a v2 checkpoint. */
+  downloadV2Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
