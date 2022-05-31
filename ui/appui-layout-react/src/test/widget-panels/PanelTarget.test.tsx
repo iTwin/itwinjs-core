@@ -11,7 +11,7 @@ import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
 } from "../../appui-layout-react";
 import { PanelTarget, useAllowedPanelTarget } from "../../appui-layout-react/target/PanelTarget";
-import { createDragItemInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
+import { createDragInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {
@@ -125,7 +125,7 @@ describe("useAllowedPanelTarget", () => {
       });
 
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "widget",
           id: "w1",
@@ -149,7 +149,7 @@ describe("useAllowedPanelTarget", () => {
       });
 
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "widget",
           id: "w1",

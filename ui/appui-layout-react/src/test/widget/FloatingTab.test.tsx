@@ -10,7 +10,7 @@ import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
 } from "../../appui-layout-react";
-import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
+import { createDragInfo, TestNineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
   it("should render", () => {
@@ -54,7 +54,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -89,7 +89,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -128,7 +128,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -167,7 +167,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -211,7 +211,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -255,7 +255,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",

@@ -6,14 +6,14 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
 import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useTarget } from "../../appui-layout-react";
-import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
+import { createDragInfo, createDragStartArgs, setRefValue } from "../Providers";
 
 describe("DragManager", () => {
   describe("isDraggedType", () => {
     it("should return true", () => {
       const sut = new DragManager();
       sut.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "",
@@ -157,7 +157,7 @@ describe("useIsDraggedType", () => {
     });
 
     dragManager.handleDragStart({
-      info: createDragItemInfo(),
+      info: createDragInfo(),
       item: {
         type: "tab",
         id: "",
