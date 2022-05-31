@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { LowAndHighXY, XAndY } from "@bentley/core-geometry";
+import { LowAndHighXY, XAndY } from "@bentley/geometry-core";
 
 /** A rectangle in unsigned integer view coordinates with (0,0) corresponding to the top-left corner of the view.
  * Increasing **x** moves from left to right, and increasing **y** moves from top to bottom.
