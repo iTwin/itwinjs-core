@@ -8,7 +8,7 @@
 
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
-import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
+import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
@@ -67,12 +67,12 @@ export class MeshBuilder {
    * @param isDisjoint if true add point string, else add polyline
    * @param fillColor
    */
-  public addStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number): void {
+  public addStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number, feature: Feature | undefined): void {
     for (const strokePoints of strokes) {
       if (isDisjoint)
-        this.addPointString(strokePoints.points, fillColor);
+        this.addPointString(strokePoints.points, fillColor, feature);
       else
-        this.addPolyline(strokePoints.points, fillColor);
+        this.addPolyline(strokePoints.points, fillColor, feature);
     }
   }
 
@@ -81,12 +81,12 @@ export class MeshBuilder {
    * @param polyface the indexed polyface to iterate the facets of to load each facet's triangles' vertices
    * @param props the properties required for this operation
    */
-  public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
+  public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions, feature: Feature | undefined): void {
     this.beginPolyface(polyface, props.edgeOptions);
     const visitor = polyface.createVisitor();
 
     while (visitor.moveToNextFacet()) {
-      this.addFromPolyfaceVisitor(visitor, props);
+      this.addFromPolyfaceVisitor(visitor, props, feature);
     }
 
     this.endPolyface();
@@ -96,7 +96,7 @@ export class MeshBuilder {
    * @param visitor the PolyfaceVisitor containing the face data to be added
    * @param props the properties required for this operation:
    */
-  public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceOptions): void {
+  public addFromPolyfaceVisitor(visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceOptions, feature: Feature | undefined): void {
     const { pointCount, normalCount, paramCount, requireNormals } = visitor;
     const { includeParams, mappedTexture } = options;
 
@@ -115,13 +115,13 @@ export class MeshBuilder {
     // The face represented by this visitor should be convex (we request that in facet options) - so we do a simple fan triangulation.
     const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
-      const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions);
+      const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions, feature);
       if (undefined !== triangle)
         this.addTriangle(triangle);
     }
   }
 
-  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyPropsWithIndex[] | undefined {
+  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
 
@@ -142,7 +142,7 @@ export class MeshBuilder {
       const position = point.getPoint3dAtUncheckedPointIndex(vertexIndex);
       const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
-      vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex };
+      vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex, feature };
     }
 
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
@@ -156,9 +156,9 @@ export class MeshBuilder {
     return vertices;
   }
 
-  public createTriangle(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): Triangle | undefined {
+  public createTriangle(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): Triangle | undefined {
     // generate vertex key properties for each of the three sides of the triangle
-    const vertices = this.createTriangleVertices(triangleIndex, visitor, options);
+    const vertices = this.createTriangleVertices(triangleIndex, visitor, options, feature);
 
     // avoid creating degenerate triangles
     if (undefined === vertices)
@@ -196,23 +196,23 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPolyline(points: Point3d[], fillColor: number): void {
+  public addPolyline(points: Point3d[], fillColor: number, feature: Feature | undefined): void {
     const { mesh } = this;
 
     const poly = new MeshPolyline();
     for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor }));
+      poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }
 
   /** removed Feature for now */
-  public addPointString(points: Point3d[], fillColor: number): void {
+  public addPointString(points: Point3d[], fillColor: number, feature: Feature | undefined): void {
     const { mesh } = this;
     const poly = new MeshPolyline();
 
     for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor }));
+      poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }

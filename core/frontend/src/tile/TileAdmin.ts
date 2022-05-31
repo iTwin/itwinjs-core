@@ -10,7 +10,7 @@ import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeType, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -79,6 +79,7 @@ export interface SelectedAndReadyTiles {
  * @see [[TileAdmin.gpuMemoryLimit]] to adjust the limit after startup.
  * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
  * @public
+ * @extensions
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
@@ -86,6 +87,7 @@ export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | num
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @public
+ * @extensions
  */
 export interface GpuMemoryLimits {
   /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */
@@ -99,6 +101,7 @@ export interface GpuMemoryLimits {
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
  * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
  * @public
+ * @extensions
  */
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;
@@ -113,6 +116,7 @@ export class TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _enableIndexedEdges: boolean;
+  private _generateAllPolyfaceEdges: boolean;
   /** @internal */
   public readonly enableImprovedElision: boolean;
   /** @internal */
@@ -214,6 +218,7 @@ export class TileAdmin {
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
+    this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
@@ -287,6 +292,16 @@ export class TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   /** @internal */
   public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  /** @internal */
+  public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
+  public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
+  /** @internal */
+  public get edgeOptions(): EdgeOptions {
+    return {
+      indexed: this.enableIndexedEdges,
+      smooth: this.generateAllPolyfaceEdges,
+    };
+  }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -640,7 +655,7 @@ export class TileAdmin {
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
-      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed };
+      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
@@ -858,12 +873,6 @@ export class TileAdmin {
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
-
-    // Ugh this is all so gross and stupid. Can't we just ensure rpc interfaces get registered deterministically?
-    IModelTileRpcInterface.getClient().isUsingExternalTileCache().then((usingCache) => {
-      if (usingCache)
-        this.channels.enableCloudStorageCache();
-    }).catch(() => { });
   }
 }
 
@@ -937,6 +946,15 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: true
      */
     enableIndexedEdges?: boolean;
+
+    /** If true then if a [Polyface]($geometry) lacks edge visibility information, the display system will display the edges of all of its faces.
+     * Otherwise, the display system will attempt to infer the visibility of each interior edge based on the angle between the two adjacent faces.
+     * Edge inference can produce less visually useful results.
+     *
+     * Default value: true
+     * @beta
+     */
+    generateAllPolyfaceEdges?: boolean;
 
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.

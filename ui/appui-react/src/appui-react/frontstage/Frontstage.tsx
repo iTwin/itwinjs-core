@@ -677,3 +677,11 @@ export function useActiveFrontstageDef() {
   }, []);
   return def;
 }
+
+/** Hook that returns the widgetDef for a specific widgetId within the active frontstage.
+ * @public
+ */
+export function useSpecificWidgetDef(widgetId: string) {
+  const frontstageDef = useActiveFrontstageDef();
+  return frontstageDef?.findWidgetDef(widgetId);
+}

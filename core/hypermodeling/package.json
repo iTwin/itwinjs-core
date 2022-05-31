@@ -1,11 +1,10 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "3.2.0-dev.6",
+  "version": "3.3.0-dev.18",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
   "typings": "lib/cjs/hypermodeling-frontend",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs",
@@ -38,10 +37,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.6",
-    "@itwin/core-common": "workspace:^3.2.0-dev.6",
-    "@itwin/core-frontend": "workspace:^3.2.0-dev.6",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.6"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.18",
+    "@itwin/core-common": "workspace:^3.3.0-dev.18",
+    "@itwin/core-frontend": "workspace:^3.3.0-dev.18",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.18"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -53,12 +52,12 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "glob": "^7.1.2",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",

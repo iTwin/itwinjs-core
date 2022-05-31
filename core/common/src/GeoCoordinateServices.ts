@@ -16,6 +16,7 @@ import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].
  * @see the [[PointWithStatus]] included in an [[IModelCoordinatesResponseProps]] or [[GeoCoordinatesResponseProps]].
  * @public
+ * @extensions
  */
 export enum GeoCoordStatus {
   /** Indicates successful coordinate conversion. */

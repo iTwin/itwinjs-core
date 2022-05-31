@@ -943,7 +943,7 @@ export function Icon(props: IconProps): JSX.Element | null;
 
 // @public
 export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconData(iconSpec: IconSpec, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
     // (undocumented)
     static get reactIconKey(): string;
@@ -2017,13 +2017,13 @@ export interface SvgPathProps extends CommonProps {
     viewBoxWidth: number;
 }
 
-// @public
+// @public @deprecated
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
@@ -2442,6 +2442,9 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
+// @beta
+export function useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void;
+
 // @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
 
@@ -2450,6 +2453,9 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 
 // @internal
 export function useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void;
+
+// @beta
+export function useInterval(callback: (...args: any[]) => void, delay: number | undefined): void;
 
 // @internal
 export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];

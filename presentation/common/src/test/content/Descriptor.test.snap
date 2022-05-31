@@ -130,6 +130,32 @@ Object {
         "valueFormat": "Struct",
       },
     },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Properties Field With Navigation Property Info",
+      "name": "test-properties-field-with-navigation-property-info",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x2",
+            "name": "PropertyName",
+            "navigationPropertyInfo": Object {
+              "classInfo": "0x4",
+              "isForwardRelationship": true,
+            },
+            "type": "TestPropertyType",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "navigation",
+        "valueFormat": "Primitive",
+      },
+    },
   ],
   "inputKeysHash": "",
   "selectClasses": Array [

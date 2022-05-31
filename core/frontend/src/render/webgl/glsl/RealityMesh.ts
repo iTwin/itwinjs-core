@@ -130,8 +130,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-      const textureCount = params.geometry.asRealityMesh!.textureParams?.params.length;
-      uniform.setUniform1i(textureCount ? 1 : 0);
+      uniform.setUniform1i(params.geometry.asRealityMesh!.hasTextures ? 1 : 0);
     });
   });
 
@@ -187,8 +186,11 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
 
   return `
-  if (!u_texturesPresent)
-    return u_baseColor;
+  if (!u_texturesPresent) {
+    vec4 col = u_baseColor;
+    ${applyFeatureColor}
+    return col;
+  }
 
   bool doDiscard = true;
   vec4 col = u_baseColor;

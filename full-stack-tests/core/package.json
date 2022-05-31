@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "copy:config": "internal-tools copy-config",
-    "build": "tsc 1>&2 && npm run -s webpack:frontend",
-    "build:ci": "npm run -s build",
+    "build": "tsc 1>&2",
+    "build:ci": "npm run -s build && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
@@ -18,7 +18,7 @@
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "webpack:frontend": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {},
   "dependencies": {
@@ -44,7 +44,7 @@
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/imodels-client-management": "^1.0.1",
-    "@itwin/reality-data-client": "^0.7.0",
+    "@itwin/reality-data-client": "0.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",
@@ -60,7 +60,7 @@
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "chai": "^4.1.2",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",

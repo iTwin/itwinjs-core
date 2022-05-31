@@ -171,3 +171,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description Workspace
  * APIs for loading and using Settings and Workspace resources
  */
+/**
+ * @docs-group-description ViewStateHydrater
+ * Class responsible for loading ViewStates.
+ */

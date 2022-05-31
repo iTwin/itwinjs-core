@@ -306,7 +306,9 @@ deprecated;Subheading2(props: TextProps): JSX.Element
 public;SvgPath 
 public;SvgPathProps 
 public;SvgSprite 
+deprecated;SvgSprite 
 public;SvgSpriteProps 
+deprecated;SvgSpriteProps 
 public;TabLabel
 public;Tabs 
 public;TabsProps 
@@ -363,9 +365,11 @@ public;UiStateStorageResult
 public;UiStateStorageStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
+beta;useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
 internal;useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void
+beta;useInterval(callback: (...args: any[]) => void, delay: number | undefined): void
 internal;useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[]
 public;useOptionalDisposable
 internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number

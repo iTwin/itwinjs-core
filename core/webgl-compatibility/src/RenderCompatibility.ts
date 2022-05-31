@@ -89,6 +89,13 @@ export interface GraphicsDriverBugs {
    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
    */
   fragDepthDoesNotDisableEarlyZ?: true;
+  /** If true, the graphics driver will hang when applying MSAA to a viewport.
+   *
+   * Known to affect certain mobile Mali chipsets (G71 and G76). May affect more.
+   *
+   * The workaround for this bug means MSAA cannot be enabled on those devices.
+   */
+  msaaWillHang?: true;
 }
 
 /** Describes the level of compatibility of a client device/browser with the iTwin.js rendering system.
@@ -109,6 +116,10 @@ export interface WebGLRenderCompatibilityInfo {
   unmaskedRenderer?: string;
   /** The vendor string reported by this client's graphics driver. */
   unmaskedVendor?: string;
+  /** If true, there is a likelihood that integrated graphics are being used. This can be used to warn users on systems with both integrated graphics and dedicated graphics that they should try to switch to their dedicated graphics for better performance.
+   * @note This property has the possibility of providing false positives and negatives. A user should use this property mainly as a hint and manually verify what graphics chip is being used.
+   */
+  usingIntegratedGraphics?: boolean;
   /** If WebGL context creation failed, an error message supplied by the browser. */
   contextErrorMessage?: string;
   /** The WebGL context created by the browser and used to generate the compatibility report. */

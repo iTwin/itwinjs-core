@@ -11,12 +11,10 @@ import { RelationshipPathSpecification } from "../RelationshipPathSpecification"
 import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule to override labels for instances of specific ECClasses.
+ * Instance label override rule provides a way to set instance label to one of its property values,
+ * other attributes and/or combination of them.
  *
- * **Important:** Prefer this rule over [[LabelOverride]] when possible as it
- * has better performance.
- *
- * @see [More details]($docs/presentation/Customization/InstanceLabelOverride.md)
+ * @see [Instance label override reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md)
  * @public
  */
 export interface InstanceLabelOverride extends RuleBase {
@@ -24,19 +22,18 @@ export interface InstanceLabelOverride extends RuleBase {
   ruleType: RuleTypes.InstanceLabelOverride;
 
   /**
-   * Specification of the ECClass to apply this rule to.
+   * Specifies the ECClass to apply this rule to.
    */
   class: SingleSchemaClassSpecification;
 
   /**
-   * Specifications for the label value. The first non-empty value
-   * is used as the actual label.
+   * Specifications of values used to override label. The first non-empty value is used as the actual label.
    */
   values: InstanceLabelOverrideValueSpecification[];
 }
 
 /**
- * Types of possible [[InstanceLabelOverride]] label value.
+ * Types of possible [[InstanceLabelOverride]] label values.
  * @public
  */
 export enum InstanceLabelOverrideValueSpecificationType {
@@ -60,9 +57,9 @@ export interface InstanceLabelOverrideValueSpecificationBase {
 }
 
 /**
- * Specification that allows creating a label value composited using
- * multiple other specifications.
+ * Specification allows creating a label value composited using multiple other specifications.
  *
+ * @see [Composite value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#composite-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -81,7 +78,9 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
 }
 
 /**
- * Specification that uses property value as the label content.
+ * Specification uses property value as the label content.
+ *
+ * @see [Property value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#property-value-specification)
  * @public
  */
 export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -94,15 +93,17 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
   propertyName: string;
 
   /**
-   * Path from `InstanceLabelOverride.class` to the property class. If omitted,
-   * `InstanceLabelOverride.class` is used as property class.
+   * [Specification of the relationship path]($docs/presentation/RelationshipPathSpecification.md) from `InstanceLabelOverride.class`
+   * to class of the property. If omitted, `InstanceLabelOverride.class` is used as property class.
    * @beta
    */
   propertySource?: RelationshipPathSpecification;
 }
 
 /**
- * Specification that uses ECClass name as the label content.
+ * Specification uses ECClass name as the label content.
+ *
+ * @see [Class name value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-name-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -113,7 +114,9 @@ export interface InstanceLabelOverrideClassNameSpecification extends InstanceLab
 }
 
 /**
- * Specification that uses ECClass display label as the label content.
+ * Specification uses ECClass display label as the label content.
+ *
+ * @see [Class label value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-label-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -121,7 +124,9 @@ export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLa
 }
 
 /**
- * Specification that returns ECInstance's briefcase ID in base36 format.
+ * Specification returns ECInstance's briefcase ID in base36 format.
+ *
+ * @see [BriefcaseId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#briefcaseid-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -129,7 +134,9 @@ export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceL
 }
 
 /**
- * Specification that returns ECInstance's local ID in base36 format.
+ * Specification returns ECInstance's local ID in base36 format.
+ *
+ * @see [LocalId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#localid-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -137,7 +144,9 @@ export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabel
 }
 
 /**
- * Specification that uses the specified value as the label content.
+ * Specification uses the specified value as the label content.
+ *
+ * @see [String value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#string-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
@@ -148,15 +157,17 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
 }
 
 /**
- * Specification that uses label of a related instance as the label content.
+ * Specification uses label of another related instance as the label content.
+ *
+ * @see [Related instance label value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#related-instance-label-value-specification)
  * @public
  */
 export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
   specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
 
   /**
-   * Path from `InstanceLabelOverride.class` to the class of related instance whose label
-   * should be returned.
+   * [Specification of the relationship path]($docs/presentation/RelationshipPathSpecification.md) from `InstanceLabelOverride.class`
+   * to class of the related instance.
    */
   pathToRelatedInstance: RelationshipPathSpecification;
 }

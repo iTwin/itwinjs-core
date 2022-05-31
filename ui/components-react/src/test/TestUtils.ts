@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType, ImageCheckBoxParams,
+  MessagePresenter, MessageSeverity, ParseResults, Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
+} from "@itwin/appui-abstract";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import {
-  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
-  ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
-  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
-} from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
+  AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents,
+} from "../components-react";
 import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup
@@ -86,6 +87,28 @@ export class TestUtils {
     property.autoExpand = autoExpand;
     if (property.autoExpand === undefined)
       delete property.autoExpand;
+
+    return property;
+  }
+
+  public static createPrimitiveDoubleProperty(name: string, rawValue: number, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
+    const value: PrimitiveValue = {
+      displayValue,
+      value: rawValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: StandardTypeNames.Double,
+    };
+
+    if (editorInfo)
+      description.editor = editorInfo;
+
+    const property = new PropertyRecord(value, description);
+    property.isReadonly = false;
 
     return property;
   }

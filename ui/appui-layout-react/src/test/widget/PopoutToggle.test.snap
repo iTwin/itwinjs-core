@@ -7,16 +7,11 @@ exports[`PopoutToggle should render 1`] = `
   <i
     class="icon core-svg-icon"
   >
-    <svg
-      class="core-icons-svgSprite"
-      height="100%"
-      width="100%"
-    >
-      <use
-        xlink:href="undefined"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
+    <div>
+      <svg-loader
+        src="undefined"
       />
-    </svg>
+    </div>
   </i>
 </button>
 `;

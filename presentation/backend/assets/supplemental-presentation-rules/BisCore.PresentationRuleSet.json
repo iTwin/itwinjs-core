@@ -192,6 +192,30 @@
       "onlyIfNotHandled": true,
       "class": {
         "schemaName": "BisCore",
+        "className": "RepositoryModel"
+      },
+      "values": [
+        {
+          "specType": "RelatedInstanceLabel",
+          "pathToRelatedInstance": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ModelModelsElement"
+            },
+            "direction": "Forward",
+            "targetClass": {
+              "schemaName": "BisCore",
+              "className": "Subject"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "InstanceLabelOverride",
+      "onlyIfNotHandled": true,
+      "class": {
+        "schemaName": "BisCore",
         "className": "Model"
       },
       "values": [
@@ -379,6 +403,7 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": [
             {
               "name": "Identifier",
@@ -436,6 +461,7 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": "_none_",
           "autoExpand": true,
           "nestedRelatedProperties": [

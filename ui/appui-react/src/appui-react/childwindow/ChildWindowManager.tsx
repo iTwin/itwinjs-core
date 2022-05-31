@@ -99,7 +99,7 @@ export class ChildWindowManager {
 
       setTimeout(() => {
         copyStyles(childWindow.document);
-        setImmediate(() => {
+        setTimeout(() => {
           ReactDOM.render(
             <Provider store={StateManager.store} >
               <UiStateStorageHandler>
@@ -202,7 +202,7 @@ export class ChildWindowManager {
       }, false);
     }
 
-    window.addEventListener("beforeunload", () => {
+    window.addEventListener("unload", () => {
       const frontStageDef = FrontstageManager.activeFrontstageDef;
       if (frontStageDef) {
         this.closeChildWindow(childWindowId, true);

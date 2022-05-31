@@ -386,7 +386,9 @@ export enum BackendLoggerCategory {
     NativeApp = "core-backend.NativeApp",
     PromiseMemoizer = "core-backend.PromiseMemoizer",
     Relationship = "core-backend.Relationship",
-    Schemas = "core-backend.Schemas"
+    Schemas = "core-backend.Schemas",
+    // @internal
+    ViewStateHydrater = "core-backend.ViewStateHydrater"
 }
 
 // @internal
@@ -1405,6 +1407,8 @@ export class Element extends Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
+    // @beta
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -1979,6 +1983,8 @@ export abstract class GeometricElement extends Element {
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     toJSON(): GeometricElementProps;
 }
 
@@ -2200,10 +2206,14 @@ export class IModelCloneContext {
     importFont(sourceFontNumber: number): void;
     get isBetweenIModels(): boolean;
     isSubCategoryFiltered(subCategoryId: Id64String): boolean;
+    // @internal
+    loadStateFromDb(db: SQLiteDb): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     removeElement(sourceId: Id64String): void;
+    // @internal
+    saveStateToDb(db: SQLiteDb): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
 }
@@ -3912,6 +3922,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
@@ -4389,6 +4401,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     loadDisplayStyle(): DisplayStyle;
     // @internal (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;

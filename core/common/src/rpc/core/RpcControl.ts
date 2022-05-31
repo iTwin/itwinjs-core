@@ -7,6 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";

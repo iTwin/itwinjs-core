@@ -21,20 +21,22 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
-import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
+import { assert, Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider,NativeApp, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
-import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
+import { ArcGisAccessClient, ArcGisEnterpriseClientId } from "@itwin/map-layers-auth";
+import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -67,6 +69,7 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { InspectUiItemInfoTool } from "./tools/InspectTool";
 
 // Initialize my application gateway configuration for the frontend
@@ -84,6 +87,13 @@ export enum SampleAppUiActionId {
   setIsIModelLocal = "sampleapp:setisimodellocal",
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
+
+/* ----------------------------------------------------------------------------
+* The following variable is used to test initializing UiFramework to use UI 1.0
+* and using that initial value in ui-test-app. By default UiFramework initializes
+* the Redux state to UI 2.0 mode.
+----------------------------------------------------------------------------- */
+const useUi1Mode = false;
 
 export interface SampleAppState {
   testProperty: string;
@@ -192,7 +202,7 @@ export class SampleAppIModelApp {
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts);
+      await IOSApp.startup(opts as IOSAppOpts);
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
@@ -260,7 +270,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined);
+    await UiFramework.initialize(undefined, undefined, useUi1Mode);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -317,27 +327,55 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit }});
+    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults: InitialAppUiSettings = {
-      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-      dragInteraction: false,
-      frameworkVersion: "2",
-      widgetOpacity: 0.8,
-      showWidgetIcon: true,
-    };
+    if (!useUi1Mode) {
+      const defaults: InitialAppUiSettings = {
+        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+        dragInteraction: false,
+        frameworkVersion: "2",
+        widgetOpacity: 0.8,
+        showWidgetIcon: true,
+        autoCollapseUnpinnedPanels: false,
+      };
 
-    // initialize any settings providers that may need to have defaults set by iModelApp
-    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+      // initialize any settings providers that may need to have defaults set by iModelApp
+      UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+    } else {
+      window.localStorage.removeItem("AppUiSettings.FrameworkVersion");
+    }
 
     UiFramework.useDefaultPopoutUrl = true;
 
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
+
+    // ArcGIS Oauth setup
+    if ((SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
+      || SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId) {
+      let enterpriseClientIds: ArcGisEnterpriseClientId[]|undefined;
+      if (SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
+        enterpriseClientIds = [{
+          serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
+          clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
+        }];
+
+      const accessClient = new ArcGisAccessClient();
+
+      const initStatus = accessClient.initialize({
+        redirectUri: "http://localhost:3000/esri-oauth2-callback",
+        clientIds: {
+          arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+          enterpriseClientIds,
+        }});
+
+      IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+      assert(initStatus === true);
+    }
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -716,9 +754,24 @@ const SampleAppViewer2 = () => {
 };
 
 // If we are using a browser, close the current iModel before leaving
-window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
+window.addEventListener("unload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
   await SampleAppIModelApp.closeCurrentIModel();
 });
+
+export function CustomRouter() {
+  return (
+    <React.StrictMode>
+      <React.Suspense fallback="Loading...">
+        <BrowserRouter>
+          <Switch>
+            <Route exact path="/" component={SampleAppViewer2} />
+            <Route exact path="/esri-oauth2-callback" component={ArcGisOauthRedirect} />
+          </Switch>
+        </BrowserRouter>
+      </React.Suspense>
+    </React.StrictMode>
+  );
+}
 
 // main entry point.
 async function main() {
@@ -739,7 +792,10 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
   SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
-  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_USE_LOCAL_SETTINGS");
+  SampleAppIModelApp.testAppConfiguration.arcGisOnlineClientId = process.env.IMJS_UITESTAPP_ARCGIS_ENT_CLIENTID;
+  SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl = process.env.IMJS_UITESTAPP_ARCGIS_ENT_BASEURL;
+  SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseClientId = process.env.IMJS_UITESTAPP_ARCGIS_ONLINE_CLIENTID;
+
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   const mapLayerOpts = {
@@ -780,7 +836,7 @@ async function main() {
   // register new QuantityType
   await BearingQuantityType.registerQuantityType();
 
-  ReactDOM.render(<SampleAppViewer2 />, document.getElementById("root") as HTMLElement);
+  ReactDOM.render(<CustomRouter />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function

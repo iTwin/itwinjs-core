@@ -21,6 +21,7 @@ export type IpcListener = (evt: Event, ...args: any[]) => void;
 /**
  * Function returned when establishing an Ipc `receive` listener or `invoke` handler. Call this method to remove the listener/handler.
  * @public
+ * @extensions
  */
 export type RemoveFunction = () => void;
 

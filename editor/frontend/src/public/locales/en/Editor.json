@@ -8,6 +8,13 @@
       "keyin": "editor move elements",
       "flyover": "Move Elements"
     },
+    "CopyElements": {
+      "keyin": "editor copy elements",
+      "flyover": "Copy Elements",
+      "Label": {
+        "NumCopies": "Copies"
+      }
+    },
     "RotateElements": {
       "keyin": "editor rotate elements",
       "flyover": "Rotate Elements",
@@ -101,6 +108,31 @@
       "flyover": "Create Rectangle",
       "Label": {
         "CornerRadius": "Corner Radius"
+      }
+    },
+    "OffsetCurve": {
+      "keyin": "editor offset curve",
+      "flyover": "Offset planar paths and regions",
+      "Label": {
+        "Distance": "Distance",
+        "MakeCopy": "Make Copy"
+      },
+      "Prompts": {
+        "DefineOffset": "Define offset distance"
+      }
+    },
+    "BreakCurve": {
+      "keyin": "editor break curve",
+      "flyover": "Split an open path or open a closed loop",
+      "Prompts": {
+        "IdentifyBreak": "Identify break location"
+      }
+    },
+    "ExtendCurve": {
+      "keyin": "editor extend curve",
+      "flyover": "Extend or shorten a curve",
+      "Prompts": {
+        "IdentifyEnd": "Identify end to modify"
       }
     },
     "UniteSolids": {

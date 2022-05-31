@@ -1219,10 +1219,10 @@ export enum FlatGridItemType {
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
-}
+    }
 
 // @internal
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
@@ -1573,10 +1573,10 @@ export class IntlFormatter implements DateFormatter {
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Int): string;
-}
+    }
 
 // @public
 export interface IPropertyDataFilterer {
@@ -2912,7 +2912,7 @@ export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     protected getTimeFormat(): TimeFormat;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
     // @internal (undocumented)
@@ -2923,17 +2923,17 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
     readonly state: ShowHideDialogState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
     onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-// @public
+// @public @deprecated
 export type ShowHideID = string | number | symbol;
 
-// @public
+// @public @deprecated
 export interface ShowHideItem<T extends ShowHideID> {
     // (undocumented)
     id: T;
@@ -2941,7 +2941,7 @@ export interface ShowHideItem<T extends ShowHideID> {
     label: string;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
     constructor(props: ShowHideMenuProps<T>);
@@ -2953,7 +2953,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
     readonly state: ShowHideMenuState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;

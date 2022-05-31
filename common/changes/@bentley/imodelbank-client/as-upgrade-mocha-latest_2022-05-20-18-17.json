@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelbank-client",
+      "comment": "upgrade mocha to version 10.0.0",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelbank-client"
+}
