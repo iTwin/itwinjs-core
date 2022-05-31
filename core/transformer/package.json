@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-transformer",
-  "version": "3.3.0-dev.5",
+  "version": "3.3.0-dev.18",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/cjs/core-transformer.js",
   "typings": "lib/cjs/core-transformer",
@@ -36,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.3.0-dev.5",
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.5",
-    "@itwin/core-common": "workspace:^3.3.0-dev.5",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.5",
-    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.5"
+    "@itwin/core-backend": "workspace:^3.3.0-dev.18",
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.18",
+    "@itwin/core-common": "workspace:^3.3.0-dev.18",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.18",
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.18"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -64,7 +64,7 @@
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

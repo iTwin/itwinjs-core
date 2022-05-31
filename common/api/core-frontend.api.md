@@ -1133,6 +1133,8 @@ export enum ArcGisErrorCode {
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addLogoCards(cards: HTMLTableElement): void;
+    // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
@@ -1142,8 +1144,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
-    // (undocumented)
-    getLogo(): HTMLTableRowElement;
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
@@ -1307,9 +1307,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(y: number, x: number, zoom: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
-    getLogo(): HTMLTableRowElement;
+    constructUrl(y: number, x: number, zoom: number): Promise<string>;
 }
 
 // @internal
@@ -1579,9 +1579,9 @@ export class BingLocationProvider {
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
-    getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -4551,11 +4551,11 @@ export class ImageryMapTile extends RealityTile {
 export class ImageryMapTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams, _imageryLoader: ImageryTileLoader);
     // (undocumented)
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
+    // (undocumented)
     cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle;
     // (undocumented)
     draw(_args: TileDrawArgs): void;
-    // (undocumented)
-    getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     getTileRectangle(quadId: QuadId): MapCartoRectangle;
     // (undocumented)
@@ -5547,9 +5547,9 @@ export enum ManipulatorToolEvent {
 export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
-    getLogo(): HTMLTableRowElement | undefined;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -5707,6 +5707,8 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // (undocumented)
+    addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
+    // (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
     cartoRange?: MapCartoRectangle;
@@ -5744,8 +5746,6 @@ export abstract class MapLayerImageryProvider {
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
-    // (undocumented)
-    getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     getPotentialChildIds(tile: ImageryMapTile): QuadId[];
     // (undocumented)
@@ -9580,6 +9580,8 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
 // @alpha
 export interface ServiceExtensionProviderProps {
+    // @internal (undocumented)
+    getAccessToken?: () => Promise<AccessToken>;
     iTwinId: string;
     name: string;
     version: string;
@@ -10483,13 +10485,13 @@ export class TerrainDisplayOverrides {
 export abstract class TerrainMeshProvider {
     constructor(_iModel: IModelConnection, _modelId: Id64String);
     // (undocumented)
+    addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
+    // (undocumented)
     constructUrl(_row: number, _column: number, _zoomLevel: number): string;
     // (undocumented)
     forceTileLoad(_tile: Tile): boolean;
     // (undocumented)
     abstract getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // (undocumented)
-    getLogo(): HTMLTableRowElement | undefined;
     // (undocumented)
     getMesh(_tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined>;
     // (undocumented)

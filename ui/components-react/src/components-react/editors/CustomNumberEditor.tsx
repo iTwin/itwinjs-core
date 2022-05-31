@@ -83,7 +83,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         }
 
         const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : /* istanbul ignore next */ (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
-        propertyValue = this._lastValidValue ? { ...this._lastValidValue } : {
+        propertyValue = this._lastValidValue ? { ...this._lastValidValue } : /* istanbul ignore next */ {
           valueFormat: PropertyValueFormat.Primitive,
           value: record.value.value,
           displayValue,
@@ -227,14 +227,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   private _resetToLastValidDisplayValue() {
-    const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? this._getInitialDisplayValue();
+    const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? (/* istanbul ignore next */ this._getInitialDisplayValue());
     this.setState({ inputValue: initialDisplayValue });
   }
 
   private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
-      const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? this._getInitialDisplayValue();
+      const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? (/* istanbul ignore next */ this._getInitialDisplayValue());
       if (initialDisplayValue !== this.state.inputValue) {
         e.preventDefault();
         e.stopPropagation();

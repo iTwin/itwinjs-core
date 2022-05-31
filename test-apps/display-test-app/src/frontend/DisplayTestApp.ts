@@ -7,6 +7,7 @@ import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, Tile
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";
 import { signIn } from "./signIn";
@@ -17,7 +18,7 @@ import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
 
-const getFrontendConfig = () => {
+const getFrontendConfig = async (useRPC = false) => {
   if (ProcessDetector.isMobileAppFrontend) {
     if (window) {
       const urlParams = new URLSearchParams(window.location.hash);
@@ -26,7 +27,8 @@ const getFrontendConfig = () => {
       });
     }
   } else {
-    Object.assign(configuration, getConfig());
+    const config: DtaConfiguration = useRPC ? await DtaRpcInterface.getClient().getEnvConfig() : getConfig();
+    Object.assign(configuration, config);
   }
 
   // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
@@ -65,15 +67,7 @@ class FakeTileCache extends CloudStorageTileCache {
   }
 }
 
-// main entry point.
-const dtaFrontendMain = async () => {
-  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
-  RpcConfiguration.disableRoutingValidation = true;
-
-  // retrieve, set, and output the global configuration variable
-  getFrontendConfig();
-
-  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
@@ -128,6 +122,21 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
+  return [renderSystemOptions, tileAdminProps];
+}
+
+// main entry point.
+const dtaFrontendMain = async () => {
+  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+  RpcConfiguration.disableRoutingValidation = true;
+
+  // retrieve, set, and output the global configuration variable
+  await getFrontendConfig();
+
+  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+  let tileAdminProps: TileAdmin.Props;
+  let renderSystemOptions: RenderSystem.Options;
+  [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
@@ -135,6 +144,24 @@ const dtaFrontendMain = async () => {
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
+  }
+
+  // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
+  // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
+  // (All that to workaround the fact that we can't call RPC before we start to get the true env first.)
+  if (!ProcessDetector.isMobileAppFrontend) {
+    Object.assign(configuration, await getFrontendConfig(true));
+    // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
+    await IModelApp.shutdown();
+    [renderSystemOptions, tileAdminProps] = setConfigurationResults();
+    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    if (false !== configuration.enableDiagnostics)
+      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+
+    if (!configuration.standalone && !configuration.customOrchestratorUri) {
+      alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
+      return;
+    }
   }
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT

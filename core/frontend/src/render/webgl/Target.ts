@@ -984,7 +984,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   * If wantRect is null, that means "read the entire image".
    */
   public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
@@ -992,7 +992,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;

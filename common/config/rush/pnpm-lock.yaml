@@ -36,7 +36,7 @@ importers:
       got: ~11.8.2
       js-base64: ^3.6.1
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nock: ^12.0.3
       proper-lockfile: ^4.1.2
       qs: ^6.5.1
@@ -80,7 +80,7 @@ importers:
       chai: 4.3.6
       eslint: 7.32.0
       fs-extra: 8.1.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nock: 12.0.3
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -118,7 +118,7 @@ importers:
       internal-tools: workspace:*
       js-base64: ^3.6.1
       json5: ^2.2.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       multiparty: ^4.2.1
       null-loader: ^0.1.1
       nyc: ^15.1.0
@@ -164,7 +164,7 @@ importers:
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
-      mocha: 8.4.0
+      mocha: 10.0.0
       null-loader: 0.1.1
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -184,7 +184,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -198,7 +198,7 @@ importers:
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -219,7 +219,7 @@ importers:
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
       js-base64: ^3.6.1
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -243,7 +243,7 @@ importers:
       '@types/semver': 5.5.0
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -270,7 +270,7 @@ importers:
       chai-as-promised: ^7
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -296,7 +296,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -319,7 +319,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -340,7 +340,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -366,7 +366,7 @@ importers:
       chai-as-promised: ^7
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -392,7 +392,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -499,7 +499,7 @@ importers:
       eslint: ^7.11.0
       express: ^4.16.3
       express-ws: ^5.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -523,7 +523,7 @@ importers:
       '@types/supertest': 2.0.12
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -581,7 +581,7 @@ importers:
       fuse.js: ^3.3.0
       glob: ^7.1.2
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       qs: ^6.5.1
       rimraf: ^3.0.2
@@ -632,7 +632,7 @@ importers:
       cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -684,7 +684,7 @@ importers:
       debug: ^2.6.9
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -702,7 +702,7 @@ importers:
       chai: 4.3.6
       debug: 2.6.9
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 5.7.1
@@ -725,7 +725,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
@@ -748,7 +748,7 @@ importers:
       cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
@@ -805,7 +805,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
@@ -828,7 +828,7 @@ importers:
       cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
@@ -861,7 +861,7 @@ importers:
       eslint: ^7.11.0
       js-base64: ^3.6.1
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       qs: ^6.5.1
       rimraf: ^3.0.2
       superagent: ^7.0.1
@@ -896,7 +896,7 @@ importers:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -912,7 +912,7 @@ importers:
       cpx2: ^3.0.0
       debug: ^2.6.9
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -928,7 +928,7 @@ importers:
       cpx2: 3.0.2
       debug: 2.6.9
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       semver: 5.7.1
@@ -948,7 +948,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -966,7 +966,7 @@ importers:
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -984,7 +984,7 @@ importers:
       '@types/node': 16.11.7
       chai: ^4.1.2
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
@@ -1001,7 +1001,7 @@ importers:
       '@types/node': 16.11.7
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.4
@@ -1026,7 +1026,7 @@ importers:
       chai-as-promised: ^7
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -1053,7 +1053,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -1072,7 +1072,7 @@ importers:
       chai: ^4.1.2
       eslint: ^7.11.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
@@ -1089,7 +1089,7 @@ importers:
       chai: 4.3.6
       eslint: 7.32.0
       glob: 7.2.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.4
@@ -1110,7 +1110,7 @@ importers:
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -1131,7 +1131,7 @@ importers:
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1151,7 +1151,7 @@ importers:
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -1169,7 +1169,7 @@ importers:
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1185,7 +1185,7 @@ importers:
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -1199,7 +1199,7 @@ importers:
       '@types/mocha': 8.2.3
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1217,7 +1217,7 @@ importers:
       '@types/node': 16.11.7
       chai: ^4.1.2
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -1233,7 +1233,7 @@ importers:
       '@types/node': 16.11.7
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1276,7 +1276,7 @@ importers:
       '@types/semver': ^5.5.0
       chai: ^4.1.2
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     devDependencies:
@@ -1291,7 +1291,7 @@ importers:
       '@types/semver': 5.5.0
       chai: 4.3.6
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -1344,7 +1344,7 @@ importers:
       cpx2: ^3.0.0
       electron: ^14.0.0
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
@@ -1365,7 +1365,7 @@ importers:
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -1392,7 +1392,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
@@ -1418,7 +1418,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -1489,7 +1489,7 @@ importers:
       eslint: ^7.11.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
@@ -1540,7 +1540,7 @@ importers:
       eslint: 7.32.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -1565,7 +1565,7 @@ importers:
       eslint: ^7.11.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -1586,7 +1586,7 @@ importers:
       eslint: 7.32.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -1664,7 +1664,7 @@ importers:
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       mkdirp: ^1.0.4
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -1707,7 +1707,7 @@ importers:
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       fs-extra: 8.1.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
     devDependencies:
@@ -1866,7 +1866,7 @@ importers:
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       openid-client: ^4.7.4
@@ -1898,7 +1898,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       openid-client: 4.9.1
       puppeteer: 5.3.1
     devDependencies:
@@ -1976,7 +1976,7 @@ importers:
       internal-tools: workspace:*
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       react: ^17.0.0
       react-dom: ^17.0.0
       react-test-renderer: ^17.0.0
@@ -2025,7 +2025,7 @@ importers:
       faker: 4.1.0
       fast-sort: 3.1.3
       immer: 9.0.6
-      mocha: 8.4.0
+      mocha: 10.0.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-test-renderer: 17.0.2_react@17.0.2
@@ -2146,7 +2146,7 @@ importers:
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       openid-client: ^4.7.4
@@ -2177,7 +2177,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       openid-client: 4.9.1
       puppeteer: 5.3.1
     devDependencies:
@@ -2233,7 +2233,7 @@ importers:
       eslint: ^7.11.0
       faker: ^4.1.0
       lolex: ^2.7.1
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       object-hash: ^1.3.1
       rimraf: ^3.0.2
@@ -2276,7 +2276,7 @@ importers:
       eslint: 7.32.0
       faker: 4.1.0
       lolex: 2.7.5
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2311,7 +2311,7 @@ importers:
       eslint: ^7.11.0
       faker: ^4.1.0
       json-schema-faker: 0.5.0-rc16
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2346,7 +2346,7 @@ importers:
       eslint: 7.32.0
       faker: 4.1.0
       json-schema-faker: 0.5.0-rc16
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2400,7 +2400,7 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       micro-memoize: ^4.0.9
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       react: ^17.0.0
       react-dom: ^17.0.0
@@ -2457,7 +2457,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -2498,7 +2498,7 @@ importers:
       faker: ^4.1.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2534,7 +2534,7 @@ importers:
       faker: 4.1.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2577,7 +2577,7 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       make-dir: ^1.3.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2616,7 +2616,7 @@ importers:
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
       make-dir: 1.3.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2859,7 +2859,7 @@ importers:
       '@types/yargs': ^12.0.5
       chai: ^4.1.2
       eslint: ^7.11.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
       yargs: ^16.0.0
@@ -2878,7 +2878,7 @@ importers:
       '@types/node': 16.11.7
       '@types/yargs': 12.0.20
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -3009,7 +3009,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
       yargs: ^16.0.0
@@ -3038,7 +3038,7 @@ importers:
       cross-env: 5.2.1
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -3419,7 +3419,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       mocha-junit-reporter: ^1.16.0
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
@@ -3436,8 +3436,8 @@ importers:
       cross-spawn: 7.0.3
       fs-extra: 8.1.0
       glob: 7.2.0
-      mocha: 8.4.0
-      mocha-junit-reporter: 1.23.3_mocha@8.4.0
+      mocha: 10.0.0
+      mocha-junit-reporter: 1.23.3_mocha@10.0.0
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
@@ -3470,7 +3470,7 @@ importers:
       express: ^4.16.3
       jsonc-parser: ~2.0.3
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       puppeteer: chrome-86
       rimraf: ^3.0.2
@@ -3483,7 +3483,7 @@ importers:
       express: 4.18.1
       jsonc-parser: 2.0.3
       lodash: 4.17.21
-      mocha: 8.4.0
+      mocha: 10.0.0
       puppeteer: 5.3.1
       source-map-support: 0.5.21
       uuid: 7.0.3
@@ -3529,7 +3529,7 @@ importers:
       cpx2: ^3.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
@@ -3557,7 +3557,7 @@ importers:
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       source-map-support: 0.5.21
@@ -3582,7 +3582,7 @@ importers:
       eslint-plugin-prefer-arrow: 1.2.3
       eslint-plugin-react: 7.24.0
       eslint-plugin-react-hooks: 4.2.0
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       require-dir: ^1.2.0
       typescript: ~4.4.0
     dependencies:
@@ -3605,19 +3605,19 @@ importers:
       '@types/node': 16.11.7
       '@typescript-eslint/typescript-estree': 4.31.2_typescript@4.4.4
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       typescript: 4.4.4
 
   ../../tools/internal:
     specifiers:
       '@itwin/build-tools': workspace:*
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       yargs: ^16.0.0
     dependencies:
       yargs: 16.2.0
     devDependencies:
       '@itwin/build-tools': link:../build
-      mocha: 8.4.0
+      mocha: 10.0.0
 
   ../../tools/perf-tools:
     specifiers:
@@ -3664,7 +3664,7 @@ importers:
       glob: ^7.1.2
       lodash: ^4.17.10
       memfs: ^3.2.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       resolve: 1.19.0
       rimraf: ^3.0.2
@@ -3703,7 +3703,7 @@ importers:
       cpx2: 3.0.2
       eslint: 7.32.0
       memfs: 3.4.1
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3732,7 +3732,7 @@ importers:
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       raf: ^3.4.0
       rimraf: ^3.0.2
@@ -3764,7 +3764,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       raf: 3.4.1
       rimraf: 3.0.2
@@ -3811,7 +3811,7 @@ importers:
       immer: 9.0.6
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^17.0.0
@@ -3864,7 +3864,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       raf: 3.4.1
       react: 17.0.2
@@ -3935,7 +3935,7 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       raf: ^3.4.0
@@ -4015,7 +4015,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       npm-run-all: 4.1.5
       nyc: 15.1.0
       raf: 3.4.1
@@ -4090,7 +4090,7 @@ importers:
       jsdom-global: 3.0.2
       linkify-it: ~2.2.0
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^17.0.0
@@ -4181,7 +4181,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       raf: 3.4.1
       react: 17.0.2
@@ -4242,7 +4242,7 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       lodash: ^4.17.10
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^17.0.0
@@ -4307,7 +4307,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       raf: 3.4.1
       react: 17.0.2
@@ -4374,7 +4374,7 @@ importers:
       immutable: ^3.8.2
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^17.0.0
@@ -4441,7 +4441,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       nyc: 15.1.0
       raf: 3.4.1
       react: 17.0.2
@@ -4468,7 +4468,7 @@ importers:
       '@types/yargs': ^12.0.5
       eslint: ^7.11.0
       glob: ^7.1.2
-      mocha: ^8.3.2
+      mocha: ^10.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
       yargs: ^16.0.0
@@ -4486,7 +4486,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/yargs': 12.0.20
       eslint: 7.32.0
-      mocha: 8.4.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -10143,7 +10143,7 @@ packages:
     dev: true
 
   /buffer-crc32/0.2.13:
-    resolution: {integrity: sha1-DTM+PwDqxQqhRUq9MO+MKl2ackI=}
+    resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
 
   /buffer-equal-constant-time/1.0.1:
     resolution: {integrity: sha1-+OcRMvf/5uAaXJaXpMbz5I1cyBk=}
@@ -11464,6 +11464,18 @@ packages:
         optional: true
     dependencies:
       ms: 2.1.2
+
+  /debug/4.3.4_supports-color@8.1.1:
+    resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+    dependencies:
+      ms: 2.1.2
+      supports-color: 8.1.1
 
   /decamelize/1.2.0:
     resolution: {integrity: sha1-9lNNFRSCabIDUue+4m9QH5oZEpA=}
@@ -14804,6 +14816,10 @@ packages:
   /is-typedarray/1.0.0:
     resolution: {integrity: sha1-5HnICFjfDBsR3dppQPlgEfzaSpo=}
 
+  /is-unicode-supported/0.1.0:
+    resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
+    engines: {node: '>=10'}
+
   /is-weakref/1.0.2:
     resolution: {integrity: sha512-qctsuLZmIQ0+vSSMfoVvyFe2+GSEvnmZ2ezTup1SBse9+twCCeial6EEi3Nc2KFcf6+qz2FBPnjXsk8xhKSaPQ==}
     dependencies:
@@ -15565,7 +15581,6 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
-    dev: true
 
   /jsbi/3.2.5:
     resolution: {integrity: sha512-aBE4n43IPvjaddScbvWRA2YlTzKEynHzu7MqOyTipdHucf/VxS63ViCjxYRg86M8Rxwbt/GfzHl1kKERkt45fQ==}
@@ -16138,6 +16153,13 @@ packages:
     dependencies:
       chalk: 4.1.2
 
+  /log-symbols/4.1.0:
+    resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
+    engines: {node: '>=10'}
+    dependencies:
+      chalk: 4.1.2
+      is-unicode-supported: 0.1.0
+
   /logform/2.4.0:
     resolution: {integrity: sha512-CPSJw4ftjf517EhXZGGvTHHkYobo7ZCc0kvwUoOYcjfR2UVrI66RHj8MCrfAdEitdmFqbu2BYdYs8FHHZSb6iw==}
     dependencies:
@@ -16606,7 +16628,7 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /mocha-junit-reporter/1.23.3_mocha@8.4.0:
+  /mocha-junit-reporter/1.23.3_mocha@10.0.0:
     resolution: {integrity: sha512-ed8LqbRj1RxZfjt/oC9t12sfrWsjZ3gNnbhV1nuj9R/Jb5/P3Xb4duv2eCfCDMYH+fEu0mqca7m4wsiVjsxsvA==}
     peerDependencies:
       mocha: '>=2.2.5'
@@ -16614,10 +16636,38 @@ packages:
       debug: 2.6.9
       md5: 2.3.0
       mkdirp: 0.5.6
-      mocha: 8.4.0
+      mocha: 10.0.0
       strip-ansi: 4.0.0
       xml: 1.0.1
     dev: false
+
+  /mocha/10.0.0:
+    resolution: {integrity: sha512-0Wl+elVUD43Y0BqPZBzZt8Tnkw9CMUdNYnUsTfOM1vuhJVZL+kiesFYsqwBkEEuEixaiPe5ZQdqDgX2jddhmoA==}
+    engines: {node: '>= 14.0.0'}
+    hasBin: true
+    dependencies:
+      '@ungap/promise-all-settled': 1.1.2
+      ansi-colors: 4.1.1
+      browser-stdout: 1.3.1
+      chokidar: 3.5.3
+      debug: 4.3.4_supports-color@8.1.1
+      diff: 5.0.0
+      escape-string-regexp: 4.0.0
+      find-up: 5.0.0
+      glob: 7.2.0
+      he: 1.2.0
+      js-yaml: 4.1.0
+      log-symbols: 4.1.0
+      minimatch: 5.0.1
+      ms: 2.1.3
+      nanoid: 3.3.3
+      serialize-javascript: 6.0.0
+      strip-json-comments: 3.1.1
+      supports-color: 8.1.1
+      workerpool: 6.2.1
+      yargs: 16.2.0
+      yargs-parser: 20.2.4
+      yargs-unparser: 2.0.0
 
   /mocha/8.4.0:
     resolution: {integrity: sha512-hJaO0mwDXmZS4ghXsvPVriOhsxQ7ofcpQdm8dE+jISUOKopitvnXFQmpRR7jd2K6VBG6E26gU3IAbXXGIbu4sQ==}
@@ -16755,6 +16805,11 @@ packages:
 
   /nanoid/3.1.20:
     resolution: {integrity: sha512-a1cQNyczgKbLX9jwbS/+d7W8fX/RfgYR7lVWwWOGIPNgK2m0MWvrGF6/m4kk6U3QcFMnZf3RIhL0v2Jgh/0Uxw==}
+    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  /nanoid/3.3.3:
+    resolution: {integrity: sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -19955,7 +20010,6 @@ packages:
     resolution: {integrity: sha512-Qr3TosvguFt8ePWqsvRfrKyQXIiW+nGbYpy8XK24NQHE83caxWt+mIymTT19DGFbNWNLfEwsrkSmN64lVWB9ag==}
     dependencies:
       randombytes: 2.1.0
-    dev: true
 
   /serve-index/1.9.1:
     resolution: {integrity: sha1-03aNabHn2C5c4FD/9bRTvqEqkjk=}
@@ -22317,6 +22371,9 @@ packages:
 
   /workerpool/6.1.0:
     resolution: {integrity: sha512-toV7q9rWNYha963Pl/qyeZ6wG+3nnsyvolaNUS8+R5Wtw6qJPTxIlOP1ZSvcGhEJw+l3HMMmtiNo9Gl61G4GVg==}
+
+  /workerpool/6.2.1:
+    resolution: {integrity: sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==}
 
   /wrap-ansi/5.1.0:
     resolution: {integrity: sha512-QC1/iN/2/RPVJ5jYK8BGttj5z83LmSKmvbvrXPNCLZSEb32KKVDJDl/MOt2N01qU2H/FkzEa9PKto1BqDjtd7Q==}

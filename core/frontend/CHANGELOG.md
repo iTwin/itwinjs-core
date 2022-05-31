@@ -1,6 +1,38 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Dispose reality mesh textures when disposing the tiles are dispose
+- Use a function constructor to avoid webpack warnings when dynamically importing extension files.
+- Fixed visibility of edges when using Ambient Occlusion
+- Added documentation for MapLayerKey.
+- MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods.
+- Improve RealityTile loading priority calculation
+- Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size.
+- ViewState3d.lookAtGlobalLocation should account for orthographic view points.
+- Mark animateFrustumChange public.
+- Added public method IModelConnection.getMassPropertiesPerCandidate.
+- bugfix for viewstate2d's hydrateViewState
+- Add preload, postload functions to ViewStates. Use hydrateViewState in load function
+- Fix bug in which DisplayStyleState.changeBackgroundMapProvider failed to preserve previous values as advertised.
+- Prevent calls to readPixels from being enqueued when mousing over canvas decorations.
+- Fix scaled monochrome mode not applying to instanced geometry.
+- Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic.
+- Added connectViewports and related functions to enable synchronizing the states of any number of viewports.
+- Do not produce mip-maps for reality tile textures.
+- Make Viewport.readPixels return undefined if the viewport has been disposed.
+- Ensure the render loop is processed immediately after the selection set changes.
+- Reduce number of OnMotionSnap call
+- Use zoom target on reality tile priority calculation
+- Add support for remote extensions
+- Catch snap abandoned exception.
+- Add extension API generation
+- Fix view zoom jumps on touch devices
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT
