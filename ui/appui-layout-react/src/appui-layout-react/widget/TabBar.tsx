@@ -11,9 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { isTabTarget, isWidgetTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetDropTargetState } from "../base/NineZoneState";
+import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
+import { NineZoneDispatchContext } from "../base/NineZone";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -47,29 +46,8 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
       floatingWidgetId,
     });
   }, [dispatch, floatingWidgetId]);
-  const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
+  const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((target) => {
     floatingWidgetId !== undefined && handleActionAreaClick();
-
-    let target: WidgetDropTargetState = {
-      type: "window",
-    };
-    if (dragTarget) {
-      if (isTabTarget(dragTarget)) {
-        target = dragTarget;
-      } else if (isWidgetTarget(dragTarget)) {
-        target = {
-          type: "tab",
-          tabIndex: -1,
-          widgetId: dragTarget.widgetId,
-        };
-      } else {
-        target = {
-          ...dragTarget,
-          type: "panel",
-          newWidgetId: getUniqueId(),
-        };
-      }
-    }
     floatingWidgetId !== undefined && dispatch({
       type: "WIDGET_DRAG_END",
       floatingWidgetId,

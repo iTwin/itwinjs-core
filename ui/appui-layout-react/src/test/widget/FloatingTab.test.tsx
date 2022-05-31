@@ -220,6 +220,7 @@ describe("FloatingTab", () => {
       dragManager.current!.handleTargetChanged({
         type: "panel",
         side: "left",
+        newWidgetId: "",
       });
       fireEvent.mouseUp(document);
     });

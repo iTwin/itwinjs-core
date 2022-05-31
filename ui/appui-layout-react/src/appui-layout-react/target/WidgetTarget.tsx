@@ -9,11 +9,11 @@
 import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DraggedWidgetIdContext, DragTarget, useTarget } from "../base/DragManager";
+import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { Target, TargetProps } from "./Target";
-import { WidgetState } from "../base/NineZoneState";
+import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 
 /** @internal */
@@ -59,8 +59,8 @@ export function useTargetDirection(): TargetProps["direction"] {
   return "vertical";
 }
 
-function useWidgetTargetArgs(widgetId: WidgetState["id"]): DragTarget {
-  return React.useMemo<DragTarget>(() => {
+function useWidgetTargetArgs(widgetId: WidgetState["id"]) {
+  return React.useMemo<WidgetTargetState>(() => {
     return {
       type: "widget",
       widgetId,

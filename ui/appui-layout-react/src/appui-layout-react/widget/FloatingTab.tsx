@@ -9,9 +9,8 @@
 import "./FloatingTab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { isPanelTarget, isTabTarget, isWidgetTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
-import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { getWidgetPanelSectionId, TabDropTargetState } from "../base/NineZoneState";
+import { useDragTab, UseDragTabArgs } from "../base/DragManager";
+import { DraggedTabStateContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
 import { CssProperties } from "../utilities/Css";
 
 /** Component that displays a floating tab.
@@ -28,37 +27,7 @@ export function FloatingTab() {
       dragBy,
     });
   }, [dispatch, id]);
-  const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((dragTarget, size) => {
-    let target: TabDropTargetState;
-    if (dragTarget) {
-      if (isTabTarget(dragTarget)) {
-        target = {
-          ...dragTarget,
-        };
-      } else if (isWidgetTarget(dragTarget)) {
-        target = {
-          type: "tab",
-          tabIndex: -1,
-          widgetId: dragTarget.widgetId,
-        };
-      } else if (isPanelTarget(dragTarget)) {
-        target = {
-          ...dragTarget,
-          newWidgetId: getWidgetPanelSectionId(dragTarget.side, 0),
-        };
-      } else {
-        target = {
-          ...dragTarget,
-          newWidgetId: getWidgetPanelSectionId(dragTarget.side, dragTarget.sectionIndex),
-        };
-      }
-    } else {
-      target = {
-        type: "floatingWidget",
-        newFloatingWidgetId: id ? id : /* istanbul ignore next */ getUniqueId(),
-        size,
-      };
-    }
+  const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((target) => {
     id && dispatch({
       type: "WIDGET_TAB_DRAG_END",
       id,

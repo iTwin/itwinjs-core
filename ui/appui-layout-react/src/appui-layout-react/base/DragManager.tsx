@@ -11,7 +11,8 @@ import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";
-import { TabState, WidgetState } from "./NineZoneState";
+import { DropTargetState, isTabDropTargetState, isWidgetDropTargetState, PanelTargetState, TabDropTargetState, TabState, TabTargetState, WidgetDropTargetState, WidgetState } from "./NineZoneState";
+import { getUniqueId } from "./NineZone";
 
 /** @internal */
 export interface DragItemDragStartArgs {
@@ -27,7 +28,7 @@ export interface DragTabDragStartArgs extends DragItemDragStartArgs {
 export interface UseDragTabArgs {
   tabId: TabState["id"];
   onDrag?: (dragBy: PointProps) => void;
-  onDragEnd?: (target: DragTarget | undefined, widgetSize: SizeProps) => void;
+  onDragEnd?: (target: TabDropTargetState) => void;
 }
 
 /** @internal */
@@ -44,8 +45,23 @@ export function useDragTab(args: UseDragTabArgs) {
     onDrag && onDrag(dragBy);
   }, [onDrag]);
   const handleDragEnd = React.useCallback<DragEventHandler>((_, info, target) => {
-    const tabInfo = info as TabDragItemInfo;
-    onDragEnd && onDragEnd(target, tabInfo.widgetSize);
+    if (!onDragEnd)
+      return;
+
+    let tabTarget: TabDropTargetState;
+    if (target && isTabDropTargetState(target)) {
+      tabTarget = target;
+    } else {
+      const tabInfo = info as TabDragItemInfo;
+      const newFloatingWidgetId = getUniqueId();
+      const size = tabInfo.widgetSize;
+      tabTarget = {
+        type: "floatingWidget",
+        newFloatingWidgetId,
+        size,
+      };
+    }
+    onDragEnd(tabTarget);
   }, [onDragEnd]);
   const onDragStart = useDragItem({
     item,
@@ -70,7 +86,7 @@ export interface UseDragWidgetArgs {
   widgetId: WidgetState["id"];
   onDragStart?: (updateWidgetId: UpdateWidgetDragItemFn, initialPointerPosition: PointProps) => void;
   onDrag?: (dragBy: PointProps) => void;
-  onDragEnd?: (target: DragTarget | undefined) => void;
+  onDragEnd?: (target: WidgetDropTargetState) => void;
 }
 
 /** @internal */
@@ -92,7 +108,18 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     onDrag && onDrag(dragBy);
   }, [onDrag]);
   const handleDragEnd = React.useCallback<DragEventHandler>((_, __, target) => {
-    onDragEnd && onDragEnd(target);
+    if (!onDragEnd)
+      return;
+
+    let widgetTarget: WidgetDropTargetState;
+    if (target && isWidgetDropTargetState(target)) {
+      widgetTarget = target;
+    } else {
+      widgetTarget = {
+        type: "window",
+      };
+    }
+    onDragEnd(widgetTarget);
   }, [onDragEnd]);
   const isDragItem = React.useCallback<NonNullable<UseDragItemArgs<WidgetDragItem>["isDragItem"]>>((item, dragged) => {
     return !!item && defaultIsDragItem(item, dragged);
@@ -217,7 +244,7 @@ export function useDragToolSettings(args: UseDragToolSettingsArgs) {
 }
 
 /** @internal */
-export function useTarget<T extends Element>(target: DragTarget): [
+export function useTarget<T extends Element>(target: DropTargetState): [
   React.Ref<T>,
   boolean,  // targeted
 ] {
@@ -230,7 +257,7 @@ export function useTarget<T extends Element>(target: DragTarget): [
   const targetedRef = React.useRef(false);
   const ref = React.useRef<T>(null);
   React.useEffect(() => {
-    const listener = (_item: DragItem, info: DragItemInfo, _target: DragTarget | undefined) => {
+    const listener = (_item: DragItem, info: DragItemInfo, _target: DropTargetState | undefined) => {
       const targetedElement = document.elementFromPoint(info.pointerPosition.x, info.pointerPosition.y);
       const newTargeted = targetedElement === ref.current;
       newTargeted !== targetedRef.current && onTargeted(newTargeted);
@@ -266,7 +293,7 @@ export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
   boolean,  // targeted
 ] {
   const { tabIndex, widgetId } = args;
-  const target = React.useMemo<DragTarget>(() => ({
+  const target = React.useMemo<TabTargetState>(() => ({
     type: "tab",
     tabIndex,
     widgetId,
@@ -277,6 +304,7 @@ export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
 /** @internal */
 export interface UsePanelTargetArgs {
   side: PanelSide;
+  newWidgetId: WidgetState["id"];
 }
 
 /** @internal */
@@ -284,11 +312,12 @@ export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
   React.Ref<T>,
   boolean,  // targeted
 ] {
-  const { side } = args;
-  const target = React.useMemo<DragTarget>(() => ({
+  const { side, newWidgetId } = args;
+  const target = React.useMemo<PanelTargetState>(() => ({
     type: "panel",
     side,
-  }), [side]);
+    newWidgetId,
+  }), [side, newWidgetId]);
   return useTarget(target);
 }
 
@@ -503,51 +532,6 @@ function isResizeHandleDragItem(item: DragItem): item is ResizeHandleDragItem {
   return item.type === "resizeHandle";
 }
 
-interface TabTarget {
-  type: "tab";
-  widgetId: WidgetState["id"];
-  tabIndex: number;
-}
-
-interface PanelTarget {
-  type: "panel";
-  side: PanelSide;
-}
-
-interface WidgetTarget {
-  type: "widget";
-  widgetId: WidgetState["id"];
-}
-
-interface SectionTarget {
-  type: "section";
-  side: PanelSide;
-  sectionIndex: number;
-}
-
-/** @internal */
-export type DragTarget = TabTarget | PanelTarget | WidgetTarget | SectionTarget;
-
-/** @internal */
-export function isTabTarget(target: DragTarget): target is TabTarget {
-  return target.type === "tab";
-}
-
-/** @internal */
-export function isPanelTarget(target: DragTarget): target is PanelTarget {
-  return target.type === "panel";
-}
-
-/** @internal */
-export function isWidgetTarget(target: DragTarget): target is WidgetTarget {
-  return target.type === "widget";
-}
-
-/** @internal */
-export function isSectionTarget(target: DragTarget): target is SectionTarget {
-  return target.type === "section";
-}
-
 interface BaseDragItemInfo {
   initialPointerPosition: Point;
   lastPointerPosition: Point;
@@ -568,10 +552,10 @@ interface HandleDragStartArgs {
 interface Dragged {
   item: DragItem;
   info: DragItemInfo;
-  target: DragTarget | undefined;
+  target: DropTargetState | undefined;
 }
 
-type DragEventHandler = (item: DragItem, info: DragItemInfo, target: DragTarget | undefined) => void;
+type DragEventHandler = (source: DragItem, info: DragItemInfo, target: DropTargetState | undefined) => void;
 
 /** @internal */
 export class DragManager {
@@ -635,7 +619,7 @@ export class DragManager {
     }
   }
 
-  public handleTargetChanged(target: DragTarget | undefined) {
+  public handleTargetChanged(target: DropTargetState | undefined) {
     if (!this._dragged)
       return;
     this._dragged.target = target;

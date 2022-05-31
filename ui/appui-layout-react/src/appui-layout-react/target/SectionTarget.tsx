@@ -10,12 +10,13 @@ import "./SectionTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@itwin/core-bentley";
-import { DraggedWidgetIdContext, DragTarget, useTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
+import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
+import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { Target } from "./Target";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { useTargetDirection } from "./WidgetTarget";
+import { SectionTargetState } from "../base/NineZoneState";
 
 /** @internal */
 export interface SectionTargetProps {
@@ -47,14 +48,15 @@ export const SectionTarget = React.memo<SectionTargetProps>(function SectionTarg
   );
 });
 
-function useSectionTargetArgs(sectionIndex: number): DragTarget {
+function useSectionTargetArgs(sectionIndex: number) {
   const side = React.useContext(PanelSideContext);
-  return React.useMemo<DragTarget>(() => {
+  return React.useMemo<SectionTargetState>(() => {
     assert(!!side);
     return {
       type: "section",
       side,
       sectionIndex,
+      newWidgetId: getUniqueId(),
     };
   }, [side, sectionIndex]);
 }

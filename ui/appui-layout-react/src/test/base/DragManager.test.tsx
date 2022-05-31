@@ -29,6 +29,7 @@ describe("DragManager", () => {
       sut.handleTargetChanged({
         type: "panel",
         side: "left",
+        newWidgetId: "w1",
       });
       const spy = sinon.stub<Parameters<DragManager["onDragStart"]["add"]>[0]>();
       sut.onDragStart.add(spy);
@@ -100,6 +101,7 @@ describe("usePanelTarget", () => {
     const spy = sinon.spy(dragManager, "handleTargetChanged");
     const { result } = renderHook(() => usePanelTarget({
       side: "left",
+      newWidgetId: "w1",
     }), {
       wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
+import { CursorTypeContext, DraggedTabStateContext, getUniqueId, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { Target } from "./Target";
@@ -30,6 +30,7 @@ export const PanelTarget = React.memo<PanelTargetProps>(function PanelTarget(pro
   const allowedTarget = useAllowedPanelTarget();
   const [ref, targeted] = usePanelTarget<HTMLDivElement>({
     side,
+    newWidgetId: getUniqueId(),
   });
   const visible = (!!draggedTab || !!draggedWidget) && allowedTarget;
   const className = classnames(
