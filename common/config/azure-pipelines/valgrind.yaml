@@ -1,9 +1,13 @@
 # iTwin.js Valgrind Testing
 
-trigger:
-  branches:
-    include:
-      - master
+trigger: none
+pr: none
+schedules:
+  - cron: "0 5 * * *"
+    displayName: Daily midnight Valgrind Testing
+    branches:
+      include:
+        - master
 
 jobs:
   - job:
@@ -22,9 +26,9 @@ jobs:
         clean: true
 
       - task: NodeTool@0
-        displayName: "Use Node 14.17.4"
+        displayName: "Use Node 16"
         inputs:
-          versionSpec: 14.17.4
+          versionSpec: 16.15.0
           checkLatest: true
 
       - script: |
