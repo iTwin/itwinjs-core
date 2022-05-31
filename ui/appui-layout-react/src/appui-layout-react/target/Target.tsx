@@ -9,35 +9,43 @@
 import "./Target.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@itwin/core-react";
 
 /** @internal */
-export interface TargetProps {
-  type: "start" | "end" | "fill" | "panel";
+export interface TargetProps extends CommonProps {
+  section: "start" | "end" | "fill";
   direction: "horizontal" | "vertical";
+  targeted?: boolean;
 }
 
 /** @internal */
-export function Target(props: TargetProps) { // TODO: split into multiple components
+export const Target = React.forwardRef<HTMLDivElement, TargetProps>(function Target(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const className = classnames(
     "nz-target-target",
-    `nz-${props.type}`,
+    `nz-${props.section}`,
     `nz-${props.direction}`,
+    props.targeted && "nz-targeted",
+    props.className,
   );
   return (
     <div
       className={className}
+      style={props.style}
+      ref={ref}
     >
-      <div className={classnames(
-        "nz-section",
-        "nz-start",
-        "start" === props.type && "nz-target",
-      )} />
-      <div className="nz-border" />
-      <div className={classnames(
-        "nz-section",
-        "nz-end",
-        "end" === props.type && "nz-target",
-      )}/>
+      {props.section !== "fill" && <>
+        <div className={classnames(
+          "nz-section",
+          "nz-start",
+          "start" === props.section && "nz-target",
+        )} />
+        <div className="nz-border" />
+        <div className={classnames(
+          "nz-section",
+          "nz-end",
+          "end" === props.section && "nz-target",
+        )}/>
+      </>}
     </div>
   );
-}
+});

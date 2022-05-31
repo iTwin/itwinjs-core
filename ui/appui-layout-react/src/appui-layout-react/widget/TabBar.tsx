@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
+import { isTabTarget, isWidgetTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { WidgetTargetState } from "../base/NineZoneState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
@@ -53,13 +53,22 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     let target: WidgetTargetState = {
       type: "floatingWidget",
     };
-    if (dragTarget && isTabTarget(dragTarget)) {
-      target = dragTarget;
-    } else if (dragTarget) {
-      target = {
-        ...dragTarget,
-        newWidgetId: getUniqueId(),
-      };
+    if (dragTarget) {
+      if (isTabTarget(dragTarget)) {
+        target = dragTarget;
+      } else if (isWidgetTarget(dragTarget)) {
+        target = {
+          type: "tab",
+          tabIndex: -1,
+          widgetId: dragTarget.widgetId,
+        };
+      } else {
+        target = {
+          ...dragTarget,
+          type: "panel",
+          newWidgetId: getUniqueId(),
+        };
+      }
     }
     floatingWidgetId !== undefined && dispatch({
       type: "WIDGET_DRAG_END",

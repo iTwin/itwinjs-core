@@ -18,6 +18,7 @@ import { WidgetContentContainer } from "./ContentContainer";
 import { useTabTransientState } from "./ContentRenderer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetComponent, WidgetProvider } from "./Widget";
+import { WidgetTargets } from "../target/WidgetTargets";
 
 /** @internal */
 export interface PanelWidgetProps {
@@ -93,6 +94,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
           >
             <WidgetTabBar separator={isHorizontalPanelSide(panel.side) ? true : !widget.minimized} />
             <WidgetContentContainer />
+            <WidgetTargets />
           </Widget>
         </WidgetProvider>
       );

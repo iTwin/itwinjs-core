@@ -10,16 +10,15 @@ import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
+import { RectangleProps, SizeProps} from "@itwin/core-react";
+import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
-import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
-import { PanelTarget } from "./PanelTarget";
-import { RectangleProps, SizeProps} from "@itwin/core-react";
-import { assert } from "@itwin/core-bentley";
 import { WidgetComponent } from "../widget/Widget";
+import { PanelTargets } from "../target/PanelTargets";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -115,8 +114,6 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
   );
 }
 
-// <WebFontIcon iconName={isHorizontal ? "icon-more-vertical-2" : "icon-more-2"}/>
-
 /** Properties of [[WidgetPanelProvider]] component.
  * @internal
  */
@@ -130,14 +127,14 @@ export interface WidgetPanelProviderProps {
 export const WidgetPanelProvider = React.memo<WidgetPanelProviderProps>(function WidgetPanelProvider({ side }) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panels = React.useContext(PanelsStateContext);
   const panel = panels[side];
-  const element = panel.widgets.length === 0 ? <PanelTarget /> : <WidgetPanel
-    spanTop={panels.top.span}
-    spanBottom={panels.bottom.span}
-  />;
   return (
     <PanelStateContext.Provider value={panel}>
       <PanelSideContext.Provider value={side}>
-        {element}
+        {panel.widgets.length > 0 && <WidgetPanel
+          spanTop={panels.top.span}
+          spanBottom={panels.bottom.span}
+        />}
+        <PanelTargets />
       </PanelSideContext.Provider>
     </PanelStateContext.Provider>
   );
@@ -313,7 +310,6 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
       getBounds,
     };
   }, [getBounds]);
-  const showTargets = panel.widgets.length < panel.maxWidgetCount;
   const className = classnames(
     "nz-widgetPanels-panel",
     `nz-${panel.side}`,
@@ -392,10 +388,6 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
             return (
               <React.Fragment key={widgetId}>
                 <div className={panelClassName} style={panelStyle}>
-                  {index === 0 && (widgetId.endsWith("End")) && showTargets && <WidgetTarget
-                    position="first"
-                    widgetIndex={0}
-                  />}
                   <PanelWidget
                     onBeforeTransition={handleBeforeTransition}
                     onPrepareTransition={handlePrepareTransition}
@@ -405,10 +397,6 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     widgetId={widgetId}
                     ref={getRef(widgetId)}
                   />
-                  {showTargets && (widgetId.endsWith("Start")) && <WidgetTarget
-                    position={last ? "last" : undefined}
-                    widgetIndex={index + 1}
-                  />}
                   {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
                 </div>
               </React.Fragment>

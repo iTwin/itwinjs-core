@@ -10,10 +10,11 @@ import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
-  PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
+  useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";
+import { PanelTarget } from "../../appui-layout-react/target/PanelTarget";
 
 describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END", () => {
@@ -161,7 +162,7 @@ describe("WidgetTitleBar", () => {
           widget={nineZone.widgets.w1}
         />
         <PanelStateContext.Provider value={nineZone.panels.right}>
-          <PanelTarget />
+          <PanelTarget side="right" />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
     );

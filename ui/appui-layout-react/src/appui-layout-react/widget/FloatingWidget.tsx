@@ -20,6 +20,7 @@ import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
+import { WidgetTargets } from "../target/WidgetTargets";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
 type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
@@ -108,6 +109,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     >
       <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer />
+      <WidgetTargets />
       {isResizable && <>
         <FloatingWidgetHandle handle="left" />
         <FloatingWidgetHandle handle="top" />

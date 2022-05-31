@@ -216,16 +216,25 @@ export function useDragToolSettings(args: UseDragToolSettingsArgs) {
   return handleDragStart;
 }
 
-function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void) {
+/** @internal */
+export function useTarget<T extends Element>(target: DragTarget): [
+  React.Ref<T>,
+  boolean,  // targeted
+] {
   const dragManager = React.useContext(DragManagerContext);
-  const targeted = React.useRef(false);
+  const [targeted, setTargeted] = React.useState(false);
+  const onTargeted = React.useCallback((isTargeted: boolean) => {
+    dragManager.handleTargetChanged(isTargeted ? target : undefined);
+    setTargeted(isTargeted);
+  }, [dragManager, target]);
+  const targetedRef = React.useRef(false);
   const ref = React.useRef<T>(null);
   React.useEffect(() => {
     const listener = (_item: DragItem, info: DragItemInfo, _target: DragTarget | undefined) => {
       const targetedElement = document.elementFromPoint(info.pointerPosition.x, info.pointerPosition.y);
       const newTargeted = targetedElement === ref.current;
-      newTargeted !== targeted.current && onTargeted(newTargeted);
-      targeted.current = newTargeted;
+      newTargeted !== targetedRef.current && onTargeted(newTargeted);
+      targetedRef.current = newTargeted;
     };
     dragManager.onDrag.add(listener);
     return () => {
@@ -234,15 +243,15 @@ function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void) {
   }, [onTargeted, dragManager]);
   React.useEffect(() => {
     const listener = () => {
-      targeted.current && onTargeted(false);
-      targeted.current = false;
+      targetedRef.current && onTargeted(false);
+      targetedRef.current = false;
     };
     dragManager.onDragEnd.add(listener);
     return () => {
       dragManager.onDragEnd.remove(listener);
     };
   }, [onTargeted, dragManager]);
-  return ref;
+  return [ref, targeted];
 }
 
 /** @internal */
@@ -257,18 +266,12 @@ export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
   boolean,  // targeted
 ] {
   const { tabIndex, widgetId } = args;
-  const dragManager = React.useContext(DragManagerContext);
-  const [targeted, setTargeted] = React.useState(false);
-  const onTargeted = React.useCallback((isTargeted: boolean) => {
-    dragManager.handleTargetChanged(isTargeted ? {
-      type: "tab",
-      tabIndex,
-      widgetId,
-    } : undefined);
-    setTargeted(isTargeted);
-  }, [dragManager, tabIndex, widgetId]);
-  const ref = useTarget<T>(onTargeted);
-  return [ref, targeted];
+  const target = React.useMemo<DragTarget>(() => ({
+    type: "tab",
+    tabIndex,
+    widgetId,
+  }), [tabIndex, widgetId]);
+  return useTarget(target);
 }
 
 /** @internal */
@@ -282,43 +285,11 @@ export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
   boolean,  // targeted
 ] {
   const { side } = args;
-  const dragManager = React.useContext(DragManagerContext);
-  const [targeted, setTargeted] = React.useState(false);
-  const onTargeted = React.useCallback((isTargeted: boolean) => {
-    dragManager.handleTargetChanged(isTargeted ? {
-      type: "panel",
-      side,
-    } : undefined);
-    setTargeted(isTargeted);
-  }, [dragManager, side]);
-  const ref = useTarget<T>(onTargeted);
-  return [ref, targeted];
-}
-
-/** @internal */
-export interface UseWidgetTargetArgs {
-  side: PanelSide;
-  widgetIndex: number;
-}
-
-/** @internal */
-export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [
-  React.Ref<T>,
-  boolean,  // targeted
-] {
-  const { side, widgetIndex } = args;
-  const dragManager = React.useContext(DragManagerContext);
-  const [targeted, setTargeted] = React.useState(false);
-  const onTargeted = React.useCallback((isTargeted: boolean) => {
-    dragManager.handleTargetChanged(isTargeted ? {
-      type: "widget",
-      side,
-      widgetIndex,
-    } : undefined);
-    setTargeted(isTargeted);
-  }, [dragManager, side, widgetIndex]);
-  const ref = useTarget<T>(onTargeted);
-  return [ref, targeted];
+  const target = React.useMemo<DragTarget>(() => ({
+    type: "panel",
+    side,
+  }), [side]);
+  return useTarget(target);
 }
 
 /** @internal */
@@ -545,16 +516,26 @@ interface PanelTarget {
 
 interface WidgetTarget {
   type: "widget";
+  widgetId: WidgetState["id"];
+}
+
+interface SectionTarget {
+  type: "section";
   side: PanelSide;
-  widgetIndex: number;
+  sectionIndex: number;
 }
 
 /** @internal */
-export type DragTarget = TabTarget | PanelTarget | WidgetTarget;
+export type DragTarget = TabTarget | PanelTarget | WidgetTarget | SectionTarget;
 
 /** @internal */
 export function isTabTarget(target: DragTarget): target is TabTarget {
   return target.type === "tab";
+}
+
+/** @internal */
+export function isPanelTarget(target: DragTarget): target is PanelTarget {
+  return target.type === "panel";
 }
 
 /** @internal */
@@ -563,8 +544,8 @@ export function isWidgetTarget(target: DragTarget): target is WidgetTarget {
 }
 
 /** @internal */
-export function isPanelTarget(target: DragTarget): target is PanelTarget {
-  return target.type === "panel";
+export function isSectionTarget(target: DragTarget): target is SectionTarget {
+  return target.type === "section";
 }
 
 interface BaseDragItemInfo {

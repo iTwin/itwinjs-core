@@ -30,22 +30,28 @@ export function FloatingTab() {
   }, [dispatch, id]);
   const onDragEnd = React.useCallback<NonNullable<UseDragTabArgs["onDragEnd"]>>((dragTarget, size) => {
     let target: TabTargetState;
-    if (dragTarget && isTabTarget(dragTarget)) {
-      target = {
-        ...dragTarget,
-      };
-    } else if (dragTarget) {
-      let newWidgetId = id ? id : /* istanbul ignore next */ getUniqueId();
-      if (isWidgetTarget(dragTarget)) {
-        newWidgetId = getWidgetPanelSectionId(dragTarget.side, dragTarget.widgetIndex);
-      } else /* istanbul ignore else */ if (isPanelTarget(dragTarget)) {
-        newWidgetId = getWidgetPanelSectionId(dragTarget.side, 0);
+    if (dragTarget) {
+      if (isTabTarget(dragTarget)) {
+        target = {
+          ...dragTarget,
+        };
+      } else if (isWidgetTarget(dragTarget)) {
+        target = {
+          type: "tab",
+          tabIndex: -1,
+          widgetId: dragTarget.widgetId,
+        };
+      } else if (isPanelTarget(dragTarget)) {
+        target = {
+          ...dragTarget,
+          newWidgetId: getWidgetPanelSectionId(dragTarget.side, 0),
+        };
+      } else {
+        target = {
+          ...dragTarget,
+          newWidgetId: getWidgetPanelSectionId(dragTarget.side, dragTarget.sectionIndex),
+        };
       }
-
-      target = {
-        ...dragTarget,
-        newWidgetId,
-      };
     } else {
       target = {
         type: "floatingWidget",

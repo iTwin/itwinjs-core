@@ -64,8 +64,13 @@ export * from "./appui-layout-react/stage-panels/manager/NestedStagePanels";
 export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 
+/*
+export * from "./appui-layout-react/target/PanelTarget";
+export * from "./appui-layout-react/target/PanelTargets";
 export * from "./appui-layout-react/target/Target";
 export * from "./appui-layout-react/target/TargetContainer";
+export * from "./appui-layout-react/target/WidgetTargets";
+*/
 
 export * from "./appui-layout-react/tool-settings/Docked";
 export * from "./appui-layout-react/tool-settings/Handle";
@@ -123,7 +128,6 @@ export * from "./appui-layout-react/widget/Tools";
 export * from "./appui-layout-react/widget/ToolsArea";
 export * from "./appui-layout-react/widget/ToolSettings";
 export * from "./appui-layout-react/widget/Widget";
-export * from "./appui-layout-react/widget/WidgetTarget";
 
 export * from "./appui-layout-react/widget/tools/button/App";
 export * from "./appui-layout-react/widget/tools/button/Back";
@@ -148,7 +152,6 @@ export * from "./appui-layout-react/widget-panels/Expander";
 export * from "./appui-layout-react/widget-panels/Grip";
 export * from "./appui-layout-react/widget-panels/Panel";
 export * from "./appui-layout-react/widget-panels/Panels";
-export * from "./appui-layout-react/widget-panels/PanelTarget";
 
 export * from "./appui-layout-react/zones/Outline";
 export * from "./appui-layout-react/zones/Zone";

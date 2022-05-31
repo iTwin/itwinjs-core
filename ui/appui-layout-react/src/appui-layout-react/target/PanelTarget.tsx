@@ -12,33 +12,38 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState } from "../base/NineZoneState";
-import { getCursorClassName } from "./CursorOverlay";
-import { PanelSide, PanelStateContext } from "./Panel";
+import { getCursorClassName } from "../widget-panels/CursorOverlay";
+import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "../widget-panels/Panel";
+import { Target } from "./Target";
 
 /** @internal */
-export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const panel = React.useContext(PanelStateContext);
+export interface PanelTargetProps {
+  side: PanelSide;
+}
+
+/** @internal */
+export const PanelTarget = React.memo<PanelTargetProps>(function PanelTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+  const { side } = props;
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabStateContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
-  assert(!!panel);
   const allowedTarget = useAllowedPanelTarget();
   const [ref, targeted] = usePanelTarget<HTMLDivElement>({
-    side: panel.side,
+    side,
   });
   const visible = (!!draggedTab || !!draggedWidget) && allowedTarget;
   const className = classnames(
-    "nz-widgetPanels-panelTarget",
+    "nz-target-panelTarget",
     !visible && "nz-hidden",
-    targeted && "nz-targeted",
-    isHorizontalPanelState(panel) && panel.span && "nz-span",
-    `nz-${panel.side}`,
     cursorType && getCursorClassName(cursorType),
   );
+  const isHorizontal = isHorizontalPanelSide(side);
   return (
-    <div
+    <Target
       className={className}
+      section="fill"
+      direction={isHorizontal ? "horizontal" : "vertical"}
+      targeted={targeted}
       ref={ref}
     />
   );

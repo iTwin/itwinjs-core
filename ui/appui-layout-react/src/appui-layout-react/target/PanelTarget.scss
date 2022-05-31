@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.nz-target-panelTarget {
+  $length: 6em;
+
+  &.nz-horizontal {
+    width: $length;
+  }
+
+  &.nz-vertical {
+    height: $length;
+  }
+
+  &.nz-hidden {
+    display: none;
+  }
+}

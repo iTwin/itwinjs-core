@@ -262,8 +262,7 @@ describe("FloatingTab", () => {
       });
       dragManager.current!.handleTargetChanged({
         type: "widget",
-        side: "right",
-        widgetIndex: 0,
+        widgetId: "0",
       });
       fireEvent.mouseUp(document);
     });

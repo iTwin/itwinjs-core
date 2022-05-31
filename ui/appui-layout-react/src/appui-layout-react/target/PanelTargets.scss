@@ -34,6 +34,10 @@
   &.nz-bottom {
     grid-column: 2/3;
     width: 100%;
+
+    &.nz-span {
+      grid-column: 1/4;
+    }
   }
 
   &.nz-top {

@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../appui-layout-react";
+import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useTarget } from "../../appui-layout-react";
 import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
 
 describe("DragManager", () => {
@@ -124,9 +124,9 @@ describe("useWidgetTarget", () => {
   it("should clear target", () => {
     const dragManager = new DragManager();
     const spy = sinon.spy(dragManager, "handleTargetChanged");
-    const { result } = renderHook(() => useWidgetTarget({
-      side: "left",
-      widgetIndex: 0,
+    const { result } = renderHook(() => useTarget({
+      type: "widget",
+      widgetId: "0",
     }), {
       wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });

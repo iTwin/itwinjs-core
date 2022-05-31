@@ -8,50 +8,44 @@
 
 import "./WidgetTargets.scss";
 import * as React from "react";
-import { isHorizontalPanelSide, PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
-import { Target, TargetProps } from "./Target";
+import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
+import { useTargetDirection, WidgetTarget } from "./WidgetTarget";
+import { WidgetIdContext } from "../widget/Widget";
+import { SectionTarget } from "./SectionTarget";
 
 /** @internal */
 export const WidgetTargets = React.memo(function WidgetTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const targets = useWidgetTargets();
-  const direction = useWidgetTargetsDirection();
+  const type = useWidgetTargetsType();
+  const direction = useTargetDirection();
+  const widgetId = React.useContext(WidgetIdContext);
+  let targets;
+  if (type === "merge") {
+    targets = <WidgetTarget widgetId={widgetId} />;
+  } else {
+    targets = <>
+      <SectionTarget sectionIndex={0}  />
+      <WidgetTarget widgetId={widgetId} />
+      <SectionTarget sectionIndex={1} />
+    </>;
+  }
   return (
     <TargetContainer
       className="nz-target-widgetTargets"
       direction={direction}
     >
-      {targets.map((section) => <Target
-        key={section}
-        direction={direction}
-        type={section}
-      />)}
+      {targets}
     </TargetContainer>
   );
 });
 
-const fill = ["fill"] as const;
-const dock = ["start", "fill", "end"] as const;
-
-function useWidgetTargetsDirection(): TargetProps["direction"] {
-  const panelSide = React.useContext(PanelSideContext);
-  if (!panelSide)
-    return "horizontal";
-
-  if (isHorizontalPanelSide(panelSide)) {
-    return "horizontal";
-  }
-
-  return "vertical";
-}
-
-function useWidgetTargets(): typeof fill | typeof dock {
+function useWidgetTargetsType(): "merge" | "sections" {
   const panelState = React.useContext(PanelStateContext);
   if (!panelState)
-    return fill;
+    return "merge";
 
   if (panelState.widgets.length === 1)
-    return dock;
+    return "sections";
 
-  return fill;
+  return "merge";
 }

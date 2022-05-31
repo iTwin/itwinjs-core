@@ -91,7 +91,7 @@ export interface PopoutWidgetsState {
 /** @internal future */
 export interface TabTargetTabState {
   readonly widgetId: WidgetState["id"];
-  readonly tabIndex: number;
+  readonly tabIndex: number; // -1 to append the tabs.
   readonly type: "tab";
 }
 
@@ -103,11 +103,11 @@ export interface TabTargetPanelState {
 }
 
 /** @internal future */
-export interface TabTargetWidgetState {
+export interface TabTargetSectionState {
   readonly side: PanelSide;
   readonly newWidgetId: WidgetState["id"];
-  readonly widgetIndex: number;
-  readonly type: "widget";
+  readonly sectionIndex: number;
+  readonly type: "section";
 }
 
 /** @internal future */
@@ -118,13 +118,13 @@ export interface TabTargetFloatingWidgetState {
 }
 
 /** @internal future */
-export type TabTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState | TabTargetFloatingWidgetState;
+export type TabTargetState = TabTargetPanelState | TabTargetSectionState | TabTargetTabState | TabTargetFloatingWidgetState;
 
 /** @internal future */
 export type WidgetTargetPanelState = TabTargetPanelState;
 
 /** @internal future */
-export type WidgetTargetWidgetState = TabTargetWidgetState;
+export type WidgetTargetSectionState = TabTargetSectionState;
 
 /** @internal future */
 export type WidgetTargetTabState = TabTargetTabState;
@@ -135,7 +135,7 @@ export interface WidgetTargetFloatingWidgetState {
 }
 
 /** @internal future */
-export type WidgetTargetState = WidgetTargetPanelState | WidgetTargetWidgetState | WidgetTargetTabState | WidgetTargetFloatingWidgetState;
+export type WidgetTargetState = WidgetTargetPanelState | WidgetTargetSectionState | WidgetTargetTabState | WidgetTargetFloatingWidgetState;
 
 /** @internal future */
 export interface PanelsState {
@@ -515,9 +515,10 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
         }
         const targetWidget = state.widgets[target.widgetId];
-        targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
-      } else if (isWidgetTargetWidgetState(target)) {
-        state.panels[target.side].widgets.splice(target.widgetIndex, 0, target.newWidgetId);
+        const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
+        targetWidget.tabs.splice(tabIndex, 0, ...draggedWidget.tabs);
+      } else if (isWidgetTargetSectionState(target)) {
+        state.panels[target.side].widgets.splice(target.sectionIndex, 0, target.newWidgetId);
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
           id: target.newWidgetId,
@@ -716,7 +717,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           floatingWidget.home = state.draggedTab.home;
         }
         const targetWidget = state.widgets[target.widgetId];
-        targetWidget.tabs.splice(target.tabIndex, 0, action.id);
+        const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
+        targetWidget.tabs.splice(tabIndex, 0, action.id);
       } else if (isTabTargetPanelState(target)) {
         state.panels[target.side].widgets.push(target.newWidgetId);
         state.widgets[target.newWidgetId] = {
@@ -725,15 +727,15 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           minimized: false,
           tabs: [action.id],
         };
-      } else if (isTabTargetWidgetState(target)) {
-        const newWidgetPanelId = `${target.side}${0 === target.widgetIndex ? "Start" : "End"}`;
+      } else if (isTabTargetSectionState(target)) {
+        const newWidgetPanelId = `${target.side}${0 === target.sectionIndex ? "Start" : "End"}`;
         const section = state.panels[target.side].widgets.find((sectionId) => sectionId === newWidgetPanelId);
         // Add WidgetTab to existing  WidgetSection
         if (section) {
           state.widgets[newWidgetPanelId].tabs.push(action.id);
         } else {
           // insert new panel section and add widget tab
-          const index = !state.panels[target.side].widgets.length ? /* istanbul ignore next */ 0 : target.widgetIndex;
+          const index = !state.panels[target.side].widgets.length ? /* istanbul ignore next */ 0 : target.sectionIndex;
           state.panels[target.side].widgets.splice(index, 0, newWidgetPanelId);
           state.widgets[newWidgetPanelId] = {
             activeTabId: action.id,
@@ -1149,8 +1151,8 @@ function isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelSt
   return state.type === "panel";
 }
 
-function isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState {
-  return state.type === "widget";
+function isTabTargetSectionState(state: TabTargetState): state is TabTargetSectionState {
+  return state.type === "section";
 }
 
 function isWidgetTargetFloatingWidgetState(state: WidgetTargetState): state is WidgetTargetFloatingWidgetState {
@@ -1161,8 +1163,8 @@ function isWidgetTargetTabState(state: WidgetTargetState): state is WidgetTarget
   return state.type === "tab";
 }
 
-function isWidgetTargetWidgetState(state: WidgetTargetState): state is WidgetTargetWidgetState {
-  return state.type === "widget";
+function isWidgetTargetSectionState(state: WidgetTargetState): state is WidgetTargetSectionState {
+  return state.type === "section";
 }
 
 function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState {
