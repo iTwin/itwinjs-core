@@ -612,59 +612,110 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("getContentDescriptor", () => {
+      describe("with unparsed-json transport", () => {
+        it("calls manager", async () => {
+          const keys = new KeySet();
+          const descriptor = createTestContentDescriptor({ fields: [] });
+          const rpcOptions: ContentDescriptorRpcRequestOptions = {
+            ...defaultRpcParams,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys: keys.toJSON(),
+            transport: "unparsed-json",
+          };
+          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+            imodel: testData.imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys,
+            transport: "unparsed-json",
+          };
+          const presentationManagerDetailStub = {
+            getContentDescriptor: sinon.spy(async () => JSON.stringify(descriptor.toJSON())),
+          };
+          presentationManagerMock
+            .setup((x) => x.getDetail())
+            .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+          const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+          expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
+          expect(actualResult.result).to.be.equal(JSON.stringify(descriptor.toJSON()));
+        });
 
-      it("calls manager", async () => {
-        const keys = new KeySet();
-        const descriptor = createTestContentDescriptor({ fields: [] });
-        const rpcOptions: ContentDescriptorRpcRequestOptions = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys: keys.toJSON(),
-        };
-        const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys,
-        };
-        const presentationManagerDetailStub = {
-          getContentDescriptor: sinon.spy(async () => JSON.stringify(descriptor.toJSON())),
-        };
-        presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
-        expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
-        expect(actualResult.result).to.be.equal(JSON.stringify(descriptor.toJSON()));
+        it("handles undefined descriptor response", async () => {
+          const keys = new KeySet();
+          const rpcOptions: ContentDescriptorRpcRequestOptions = {
+            ...defaultRpcParams,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys: keys.toJSON(),
+            transport: "unparsed-json",
+          };
+          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+            imodel: testData.imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys,
+            transport: "unparsed-json",
+          };
+          const presentationManagerDetailStub = {
+            getContentDescriptor: sinon.spy(async () => undefined),
+          };
+          presentationManagerMock
+            .setup((x) => x.getDetail())
+            .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+          const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+          expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
+          presentationManagerMock.verifyAll();
+          expect(actualResult.result).to.be.undefined;
+        });
       });
 
-      it("handles undefined descriptor response", async () => {
-        const keys = new KeySet();
-        const rpcOptions: ContentDescriptorRpcRequestOptions = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys: keys.toJSON(),
-        };
-        const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys,
-        };
-        const presentationManagerDetailStub = {
-          getContentDescriptor: sinon.spy(async () => undefined),
-        };
-        presentationManagerMock
-          .setup((x) => x.getDetail())
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
-        expect(presentationManagerDetailStub.getContentDescriptor).to.have.been.calledOnceWithExactly(managerOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
-      });
+      describe("with legacy unspecified transport", () => {
+        it("calls manager", async () => {
+          const keys = new KeySet();
+          const descriptor = createTestContentDescriptor({ fields: [] });
+          const rpcOptions: ContentDescriptorRpcRequestOptions = {
+            ...defaultRpcParams,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys: keys.toJSON(),
+          };
+          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+            imodel: testData.imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys,
+          };
+          presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
+            .returns(async () => descriptor)
+            .verifiable();
+          const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+          presentationManagerMock.verifyAll();
+          expect(actualResult.result).to.deep.eq(descriptor.toJSON());
+        });
 
+        it("handles undefined descriptor response", async () => {
+          const keys = new KeySet();
+          const rpcOptions: ContentDescriptorRpcRequestOptions = {
+            ...defaultRpcParams,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys: keys.toJSON(),
+          };
+          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+            imodel: testData.imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys,
+          };
+          presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
+            .returns(async () => undefined)
+            .verifiable();
+          const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+          presentationManagerMock.verifyAll();
+          expect(actualResult.result).to.be.undefined;
+        });
+      });
     });
 
     describe("getContentSetSize", () => {
@@ -1504,7 +1555,7 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string } = {
+        const managerOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string; } = {
           imodel: testData.imodelMock.object,
           ids,
           scopeId: scope.id,

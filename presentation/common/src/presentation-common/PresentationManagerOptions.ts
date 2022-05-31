@@ -34,6 +34,13 @@ export interface RequestOptions<TIModel> {
 
   /** @alpha */
   diagnostics?: DiagnosticsOptionsWithHandler;
+
+  /**
+   * Expected form of response. This property is set automatically on newer frontends.
+   * `unparsed-json` — deliver response from native addon without parsing it.
+   * @internal
+   */
+  transport?: "unparsed-json";
 }
 
 /**

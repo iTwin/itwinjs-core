@@ -171,8 +171,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
   public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
-    const response: PresentationRpcResponseData<string | undefined> = await this.forward(arguments);
-    if (response.statusCode === PresentationStatus.Success && response.result) {
+    arguments[1].transport = "unparsed-json";
+    const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
+    if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
       response.result = JSON.parse(response.result);
     }
 
