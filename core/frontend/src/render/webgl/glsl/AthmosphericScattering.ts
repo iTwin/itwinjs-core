@@ -373,6 +373,7 @@ vec3 getPositionAsIfAlongSphere(vec3 position, float sphereRadius) {
 }
 `;
 // #endregion MISC
+
 // #region MAIN
 const applyAtmosphericScattering = `
   // return baseColor if atmospheric scattering is disabled
@@ -393,7 +394,7 @@ const applyAtmosphericScattering = `
 `;
 
 /** @internal */
-export function addAtmosphericScattering(builder: ProgramBuilder, isSky = false, isRealityMesh = false) {
+export function _addAtmosphericScattering(builder: ProgramBuilder, isSky = false, isRealityMesh = false) {
   assert(!(isSky && isRealityMesh));
   const frag = builder.frag;
   frag.addDefine("PI", "3.1415926538");
@@ -509,3 +510,23 @@ export function addAtmosphericScattering(builder: ProgramBuilder, isSky = false,
   frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
 }
 // #endregion MAIN
+
+// #region DEBUG
+export function addAtmosphericScattering(builder: ProgramBuilder, isSky = false, _isRealityMesh = false) {
+  addEyeSpace(builder);
+  builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, debugAtmosphericScattering);
+  builder.frag.addConstant("kIsSky", VariableType.Boolean, isSky ? "true" : "false");
+  builder.frag.addFunction(getAngle);
+  if (isSky) {
+    builder.frag.addFunction(computeRayDirSky);
+  } else {
+    builder.frag.addFunction(computeRayDirDefault);
+  }
+}
+
+const debugAtmosphericScattering = `
+  float angle = getAngle(vec3(0.0, 0.0, -1.0), computeRayDir());
+  float val = angle / 90.0;
+  return vec4(val, val, val, 1.0);
+`;
+// #endregion DEBUG
