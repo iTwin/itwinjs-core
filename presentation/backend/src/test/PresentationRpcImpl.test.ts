@@ -1555,7 +1555,7 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string; } = {
+        const managerOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string } = {
           imodel: testData.imodelMock.object,
           ids,
           scopeId: scope.id,

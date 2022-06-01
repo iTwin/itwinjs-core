@@ -14,12 +14,14 @@ import {
   DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
   ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition,
-  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, Prioritized, Ruleset, SelectClassInfo, SelectionScope,
-  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
+  Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { bisElementInstanceKeysProcessor, getKeysForContentRequest, PresentationManagerDetail } from "./PresentationManagerDetail";
+import {
+  bisElementInstanceKeysProcessor, getKeysForContentRequest, getRulesetIdObject, PresentationManagerDetail,
+} from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -629,8 +631,33 @@ export class PresentationManager {
    * @public
    */
   public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
+    if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
+      return { changes: [] };
+    }
+
+    const { rulesetOrId, prev, rulesetVariables, ...options } = requestOptions;
+    this._detail.registerRuleset(rulesetOrId);
+
+    const currRulesetId = getRulesetIdObject(requestOptions.rulesetOrId);
+    const prevRulesetId = prev.rulesetOrId ? getRulesetIdObject(prev.rulesetOrId) : currRulesetId;
+    if (prevRulesetId.parts.id !== currRulesetId.parts.id)
+      throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
+
+    const currRulesetVariables = rulesetVariables ?? [];
+    const prevRulesetVariables = prev.rulesetVariables ?? currRulesetVariables;
+
+    const params = {
+      requestId: NativePlatformRequestTypes.CompareHierarchies,
+      ...options,
+      prevRulesetId: prevRulesetId.uniqueId,
+      currRulesetId: currRulesetId.uniqueId,
+      prevRulesetVariables: JSON.stringify(prevRulesetVariables),
+      currRulesetVariables: JSON.stringify(currRulesetVariables),
+      expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
+    };
+
     const reviver = (key: string, value: any) => (key === "") ? HierarchyCompareInfo.fromJSON(value) : value;
-    return JSON.parse(await this._detail.compareHierarchies(requestOptions), reviver);
+    return JSON.parse(await this._detail.request(params), reviver);
   }
 }
 

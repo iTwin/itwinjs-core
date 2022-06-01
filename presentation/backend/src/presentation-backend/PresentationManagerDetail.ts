@@ -8,8 +8,8 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, DiagnosticsOptionsWithHandler, HierarchyCompareInfo, HierarchyCompareOptions, InstanceKey, Key, KeySet, NodeKey,
-  PresentationError, PresentationStatus, Prioritized, Ruleset,
+  ContentDescriptorRequestOptions, DiagnosticsOptionsWithHandler, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized,
+  Ruleset,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
@@ -116,35 +116,6 @@ export class PresentationManagerDetail implements IDisposable {
     return this.request(params);
   }
 
-  public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<string> {
-    if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
-      const noChanges: HierarchyCompareInfo = { changes: [] };
-      return JSON.stringify(noChanges);
-    }
-
-    const { rulesetOrId, prev, rulesetVariables, ...options } = requestOptions;
-    this.registerRuleset(rulesetOrId);
-
-    const currRulesetId = getRulesetIdObject(requestOptions.rulesetOrId);
-    const prevRulesetId = prev.rulesetOrId ? getRulesetIdObject(prev.rulesetOrId) : currRulesetId;
-    if (prevRulesetId.parts.id !== currRulesetId.parts.id)
-      throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
-
-    const currRulesetVariables = rulesetVariables ?? [];
-    const prevRulesetVariables = prev.rulesetVariables ?? currRulesetVariables;
-
-    const params = {
-      requestId: NativePlatformRequestTypes.CompareHierarchies,
-      ...options,
-      prevRulesetId: prevRulesetId.uniqueId,
-      currRulesetId: currRulesetId.uniqueId,
-      prevRulesetVariables: JSON.stringify(prevRulesetVariables),
-      currRulesetVariables: JSON.stringify(currRulesetVariables),
-      expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
-    };
-    return this.request(params);
-  }
-
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */
   public registerRuleset(rulesetOrId: Ruleset | string): string {
     if (typeof rulesetOrId === "object") {
@@ -222,7 +193,8 @@ interface RulesetIdObject {
   };
 }
 
-function getRulesetIdObject(rulesetOrId: Ruleset | string): RulesetIdObject {
+/** @internal */
+export function getRulesetIdObject(rulesetOrId: Ruleset | string): RulesetIdObject {
   if (typeof rulesetOrId === "object") {
     if (IpcHost.isValid) {
       // in case of native apps we don't want to enforce ruleset id uniqueness as ruleset variables
