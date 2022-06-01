@@ -1550,7 +1550,7 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @alpha (undocumented)
+// @alpha
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
     static setAttributes(attributes: Attributes): void;
