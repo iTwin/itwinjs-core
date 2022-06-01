@@ -20,8 +20,8 @@ import {
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, StandaloneOpenOptions, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -598,6 +598,32 @@ export abstract class IModelDb extends IModel {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;
+  }
+
+  /**
+   * query iModelDb for subcategories given categoryIds.
+   * @param categoryIds categoryIds to query
+   * @returns array of SubCategoryResultRow
+   */
+  public async queryCategoryIds(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]> {
+    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
+    const maxCategoriesPerQuery = 200;
+    const result = [];
+    while (categoryIds.length !== 0) {
+      const end = (categoryIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : categoryIds.length;
+      const where = categoryIds.splice(0, end).join(",");
+      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+      try {
+        for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          result.push(row);
+        }
+      } catch {
+        // ###TODO: detect cases in which retry is warranted
+        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
+        // incomplete results. Since we're not retrying, that's the best we can do.
+      }
+    }
+    return result;
   }
 
   /** Query for a set of entity ids, given an EntityQueryParams

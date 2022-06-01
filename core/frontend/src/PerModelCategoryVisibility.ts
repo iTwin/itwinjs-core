@@ -115,13 +115,14 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   /**
    *
    * @param perModelCategoryVisibility array of model category visibility overrides
-   * @param viewState Optional param viewState. If no viewState is provided, then the viewState associated with the viewport (used to construct this class) is used. This param is WIP, not sure if necessary.
-   * Messaged OCP team to figure this one out. Waiting on response.
+   * @param viewState Optional param viewState. If no viewState is provided, then the viewState associated with the viewport (used to construct this class) is used.
+   * This optional viewState param is useful for apps which may show multiple iModels with multiple viewStates at once. Passing in a viewState ensures that the subcategories cache for the
+   * iModel associated with the provided viewState is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
    * @returns void promise
    */
   public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibilityProps[], viewState?: ViewState): Promise<void> {
     let anyChanged = false;
-    const addedCategoryIds: string[] = [];
+    const catIdsToLoad: string[] = [];
     const viewStateToUse = viewState ? viewState : this._vp.view;
     for (const override of perModelCategoryVisibility) {
       const modelId = override.modelId;
@@ -131,24 +132,15 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
           anyChanged = true;
           if (PerModelCategoryVisibility.Override.None !== visOverride) {
-          // Ensure subcategories loaded. Temporarily add them to the viewState's categorySelector to take advantage of viewState.load().
-            if (!viewStateToUse.categorySelector.has(categoryId)) {
-              viewStateToUse.categorySelector.addCategories(categoryId);
-              addedCategoryIds.push(categoryId);
-            }
+            catIdsToLoad.push(categoryId);
           }
         }
       }
     }
     if (anyChanged) {
       this._vp.setViewedCategoriesPerModelChanged();
-      // as long as the viewstate's imodel is correct then calling load should populate the correct subcategories.
-      // this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories); is called in viewstate.load.
-      if (addedCategoryIds.length !== 0) {
-        return viewStateToUse.load().then(() => {
-          viewStateToUse.categorySelector.dropCategories(addedCategoryIds);
-          this._vp.setViewedCategoriesPerModelChanged();
-        });
+      if (catIdsToLoad.length !== 0) {
+        this._vp.subcategories.push(viewStateToUse.iModel.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
       }
     }
     return;
