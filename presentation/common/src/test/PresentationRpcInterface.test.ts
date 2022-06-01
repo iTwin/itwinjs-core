@@ -124,9 +124,10 @@ describe("PresentationRpcInterface", () => {
         keys: new KeySet().toJSON(),
       };
 
-      it("forwards call", async () => {
+      it("forwards call without modifying options", async () => {
         await rpcInterface.getContentDescriptor(token, options);
-        expect(spy).to.be.calledOnceWith(toArguments(token, options));
+        expect(spy).to.be.calledOnceWith([token, { ...options, transport: "unparsed-json" }]);
+        expect(options.transport).to.be.undefined;
       });
 
       it("parses string response into DescriptorJSON", async () => {

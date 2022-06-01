@@ -171,7 +171,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
   public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
-    arguments[1].transport = "unparsed-json";
+    arguments[1] = { ...arguments[1], transport: "unparsed-json" };
     const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
     if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
       response.result = JSON.parse(response.result);
@@ -180,7 +180,7 @@ export class PresentationRpcInterface extends RpcInterface {
     return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
   }
   public async getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
-  public async getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> { return this.forward(arguments); }
+  public async getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON>; } | undefined> { return this.forward(arguments); }
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
   /** @beta */
