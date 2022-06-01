@@ -3411,7 +3411,7 @@ importers:
   ../../tools/build:
     specifiers:
       '@itwin/eslint-plugin': workspace:*
-      '@microsoft/api-extractor': ^7.24.2
+      '@microsoft/api-extractor': 7.23.2
       '@types/node': 16.11.7
       chalk: ^3.0.0
       cpx2: ^3.0.0
@@ -3430,7 +3430,7 @@ importers:
       wtfnode: ^0.9.1
       yargs: ^16.0.0
     dependencies:
-      '@microsoft/api-extractor': 7.24.2
+      '@microsoft/api-extractor': 7.23.2
       chalk: 3.0.0
       cpx2: 3.0.2
       cross-spawn: 7.0.3
@@ -7244,8 +7244,8 @@ packages:
       '@rushstack/node-core-library': 3.45.5
     dev: false
 
-  /@microsoft/api-extractor/7.24.2:
-    resolution: {integrity: sha512-QWZh9aQZvBAdRVK+Go8NiW8YNMN//OGiNqgA3iZ2sEy8imUqkRBCybXgmw2HkEYyPnn55CFoMKvnAHvV9+4B/A==}
+  /@microsoft/api-extractor/7.23.2:
+    resolution: {integrity: sha512-0LABOAmsHDomKihjoqLvY0mR1dh7R7fqB0O6qrjqAgQGBPxlRJCDH1tzFzlDS2OdeCxhMtFB3xd8EAr44huujg==}
     hasBin: true
     dependencies:
       '@microsoft/api-extractor-model': 7.17.3
@@ -17311,7 +17311,7 @@ packages:
     engines: {node: '>= 0.8'}
 
   /once/1.4.0:
-    resolution: {integrity: sha1-WDsap3WWHUsROsF9nFC6753Xa9E=}
+    resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
     dependencies:
       wrappy: 1.0.2
 
@@ -17658,7 +17658,7 @@ packages:
       sha.js: 2.4.11
 
   /pend/1.2.0:
-    resolution: {integrity: sha1-elfrVQpng/kRUzH89GY9XI4AelA=}
+    resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
   /performance-now/2.1.0:
     resolution: {integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=}
