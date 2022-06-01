@@ -3,11 +3,12 @@
 trigger: none
 pr: none
 schedules:
-  - cron: "0 5 * * *"
-    displayName: Daily midnight Valgrind Testing
+  - cron: "0 5 * * Sat"
+    displayName: Weekly Saturday Valgrind Testing
     branches:
       include:
         - master
+    always: false
 
 jobs:
   - job:
