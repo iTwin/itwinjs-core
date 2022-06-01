@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rbac-client",
-  "version": "2.19.38",
+  "version": "2.19.39",
   "description": "iModel.js RBAC Client",
   "main": "lib/rbac-client.js",
   "typings": "lib/rbac-client",
@@ -39,7 +39,7 @@
     "@bentley/bentleyjs-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^2.19.38"
+    "@bentley/itwin-client": "workspace:^2.19.39"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

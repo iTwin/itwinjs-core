@@ -1,6 +1,13 @@
 # Change Log - @bentley/webgl-compatibility
 
-This log was last generated on Fri, 06 May 2022 16:24:59 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Jun 2022 12:32:31 GMT and should not be manually modified.
+
+## 2.19.39
+Wed, 01 Jun 2022 12:32:31 GMT
+
+### Updates
+
+- Apply workarounds for transparency and anti-aliasing bugs on Mali-G72 graphics chips.
 
 ## 2.19.38
 Fri, 06 May 2022 16:24:59 GMT

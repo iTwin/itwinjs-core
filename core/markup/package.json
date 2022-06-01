@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "2.19.38",
+  "version": "2.19.39",
   "description": "iModel.js markup package",
   "main": "lib/imodeljs-markup.js",
   "typings": "lib/imodeljs-markup",
@@ -40,11 +40,11 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.38",
-    "@bentley/geometry-core": "workspace:^2.19.38",
-    "@bentley/imodeljs-common": "workspace:^2.19.38",
-    "@bentley/imodeljs-frontend": "workspace:^2.19.38",
-    "@bentley/imodeljs-i18n": "workspace:^2.19.38"
+    "@bentley/bentleyjs-core": "workspace:^2.19.39",
+    "@bentley/geometry-core": "workspace:^2.19.39",
+    "@bentley/imodeljs-common": "workspace:^2.19.39",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.39",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.39"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

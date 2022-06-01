@@ -2,6 +2,12 @@
   "name": "@bentley/extension-cli",
   "entries": [
     {
+      "version": "2.19.39",
+      "tag": "@bentley/extension-cli_v2.19.39",
+      "date": "Wed, 01 Jun 2022 12:32:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.38",
       "tag": "@bentley/extension-cli_v2.19.38",
       "date": "Fri, 06 May 2022 16:24:59 GMT",

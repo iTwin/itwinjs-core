@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 06 May 2022 16:24:59 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Jun 2022 12:32:31 GMT and should not be manually modified.
+
+## 2.19.39
+Wed, 01 Jun 2022 12:32:31 GMT
+
+### Updates
+
+- Models Tree: Fix performance of determining Subject nodes' display state.
 
 ## 2.19.38
 Fri, 06 May 2022 16:24:59 GMT
