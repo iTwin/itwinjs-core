@@ -19,13 +19,14 @@ import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
+import { IModelRpcProps } from "../../IModel";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";
   public static readonly interfaceVersion = "1.0.0";
-  public async initialize() { return this.forward(arguments); }
+  public async initialize(_token?: IModelRpcProps) { return this.forward(arguments); }
 
-  public static createRequest(protocol: WebAppRpcProtocol) {
+  public static createRequest(protocol: WebAppRpcProtocol, token?: IModelRpcProps) {
     const routing = RpcRoutingToken.generate();
 
     const config = class extends RpcConfiguration {
@@ -39,7 +40,7 @@ class InitializeInterface extends RpcInterface {
     RpcConfiguration.initializeInterfaces(instance);
 
     const client = RpcManager.getClientForInterface(InitializeInterface, routing);
-    return new (protocol.requestType)(client, "initialize", []);
+    return new (protocol.requestType)(client, "initialize", [token]);
   }
 }
 
@@ -91,14 +92,14 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public allowedHeaders: Set<string> = new Set();
 
   /** @internal */
-  public async initialize() {
+  public override async initialize(token?: IModelRpcProps) {
     if (this._initialized) {
       return this._initialized;
     }
 
     return this._initialized = new Promise(async (resolve) => {
       try {
-        const request = InitializeInterface.createRequest(this);
+        const request = InitializeInterface.createRequest(this, token);
         const response = await request.preflight();
         if (response && response.ok) {
           (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
