@@ -183,10 +183,6 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Sends the request. */
   protected async send(): Promise<number> {
-    if (this.method !== "options") {
-      await this.protocol.initialize();
-    }
-
     this._loading = true;
     await this.setupTransport();
 
