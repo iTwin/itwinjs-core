@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.2.0-dev.65",
+  "version": "3.3.0-dev.18",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -32,7 +32,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.65"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.18"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -43,7 +43,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "eslint": "^7.11.0",

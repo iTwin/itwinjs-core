@@ -26,8 +26,6 @@ Since load-bearing walls (the responsibility of the structural engineer) are oft
 
 In different contexts (like different lifecycle phases), responsibilities will change, and domain schemas should have enough flexibility to handle those cases. During design, the architect and structural engineer have legal responsibilities for the system they design. During operations, the architecture and structure are both the responsibility of the facilities manager. Theoretically the architectural and structural Models could be merged into one when transforming a Design Digital Twin into an Operations Digital Twin. In practice, that may be uncommon, because the segregation of the `Model`s is not a real problem for the facilities manager, and keeping them segregated will make it easier to kick off a new renovation capital project. In any case, **software should not be too “rigid” in its expectations of how `Element`s are organized into `Model`s**.
 
-See [Overlapping Systems](./overlapping-systems.md) for guidance on dealing with `PhysicalElement`s that are part of two physical systems.
-
 ---
-| Next: [Overlapping Systems](./overlapping-systems.md)
+| Next: [Organizing Definition Elements](./organizing-definition-elements.md)
 |:---

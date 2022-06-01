@@ -31,8 +31,7 @@
 - [Organizing Models and Elements](./guide/data-organization/organizing-models-and-elements.md)
 - [Spatial Composition](./guide/data-organization/spatial-composition.md)
 - [Modeling Systems](./guide/data-organization/modeling-systems.md)
-- [Overlapping Systems](./guide/data-organization/overlapping-systems.md)
-- [Organizing Repository-global Definition Elements](./guide/data-organization/organizing-definition-elements.md)
+- [Organizing Definition Elements](./guide/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
 - [3D Guidance](./guide/physical-perspective/3d-guidance.md)

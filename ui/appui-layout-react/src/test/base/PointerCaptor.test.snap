@@ -8,6 +8,7 @@ exports[`<PointerCaptor /> renders correctly 1`] = `
 >
   <div
     className="nz-overlay"
+    onDragStart={[Function]}
   />
 </div>
 `;
@@ -20,6 +21,7 @@ exports[`<PointerCaptor /> should respect isPointerDown prop over state 1`] = `
 >
   <div
     className="nz-overlay"
+    onDragStart={[Function]}
   />
 </div>
 `;

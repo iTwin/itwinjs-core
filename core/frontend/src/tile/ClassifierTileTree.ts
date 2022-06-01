@@ -52,14 +52,13 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
-    const options = {
-      edgesRequired: false,
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, {
+      edges: false,
       allowInstancing: false,
       is3d: true,
       batchType: id.type,
-    };
+    });
 
-    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     return new IModelTileTree(params, id);
   }
 
