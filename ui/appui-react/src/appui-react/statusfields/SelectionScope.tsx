@@ -41,7 +41,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
   constructor(props: SelectionScopeFieldProps) {
     super(props);
     this._scopeOptions = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
-      const label = UiFramework.translate(`selectionScopeLabels.${scope.id}`);
+      const label = !!scope.label ? scope.label : UiFramework.translate(`selectionScopeLabels.${scope.id}`);
       return { value: scope.id, label };
     });
   }
