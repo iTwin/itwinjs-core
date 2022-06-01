@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
@@ -1425,7 +1425,7 @@ export abstract class GltfReader {
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
       displayParams,
-      features: undefined !== featureTable ? new Mesh.Features(featureTable) : undefined,
+      features: featureTable,
       type: primitiveType,
       range: Range3d.createNull(),
       is2d: !this._is3d,
@@ -2072,7 +2072,7 @@ export interface ReadGltfGraphicsArgs {
    * Only the [[PickableGraphicOptions.id]] property is required to make the graphics pickable. If a `modelId` is also supplied and differs from the `id`,
    * the graphics will also be selectable.
    */
-  pickableOptions?: PickableGraphicOptions & { modelId?: Id64String };
+  pickableOptions?: PickableGraphicOptions;
   /** The base URL for any relative URIs in the glTF. Typically, this is the same as the URL for the glTF asset itself.
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */

@@ -1,6 +1,14 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Deprecated StyleOverrideRule, ImageIdOverrideRule, CheckboxRule and LabelOverrideRule
+- Documentation updates.
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT

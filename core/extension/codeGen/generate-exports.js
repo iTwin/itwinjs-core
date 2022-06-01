@@ -64,25 +64,21 @@ function generateDeclarationCode(exportList) {
 
   // Make real and type exports for each package
   for (const packageName in exportList) {
-    let realExports = "export {\n";
-    let typeExports = "export type {\n";
-    const exportTrailer = `} from "${packageName}";\n\n`;
+    const realExports = "export {";
+    const typeExports = "export type {";
+    const exportTrailer = `\n} from "${packageName}";\n\n`;
 
-    exportList[packageName].enum.forEach((enumExport) => {
-      realExports += `\t${enumExport},\n`;
-    });
-    exportList[packageName].real.forEach((realExport) => {
-      realExports += `\t${realExport},\n`;
-    });
+    let reals = [...exportList[packageName].enum, ...exportList[packageName].real]
+      .sort()
+      .join(",\n\t");
 
-    exportList[packageName].interface.forEach((interfaceExport) => {
-      typeExports += `\t${interfaceExport},\n`;
-    });
-    exportList[packageName].type.forEach((typeExport) => {
-      typeExports += `\t${typeExport},\n`;
-    });
+    let types = [...exportList[packageName].interface, ...exportList[packageName].type]
+      .sort()
+      .join(",\n\t");
 
-    exportCode += realExports + exportTrailer + typeExports + exportTrailer;
+    reals = reals ? `\n\t${reals}` : '';
+    types = types ? `\n\t${types}` : "";
+    exportCode += realExports + reals + exportTrailer + typeExports + types + exportTrailer;
   };
 
   return exportCode;
@@ -90,18 +86,16 @@ function generateDeclarationCode(exportList) {
 
 // Create the export code for the .js file
 function generateJsCode(exportList) {
-  let exportCode = "export const {\n";
-  const exportTrailer = "} = ext.exports;\n";
+  let exportCode = "export const {";
+  const exportTrailer = "\n} = ext.exports;\n";
 
   // Only make exports for reals in each package
   for (const packageName in exportList) {
-    exportCode += `// ${packageName}:\n`;
-    exportList[packageName].enum.forEach((enumExport) => {
-      exportCode += `\t${enumExport},\n`;
-    });
-    exportList[packageName].real.forEach((realExport) => {
-      exportCode += `\t${realExport},\n`;
-    });
+    exportCode += `\n// ${packageName}:`;
+    const _exports = [...exportList[packageName].enum, ...exportList[packageName].real]
+      .sort()
+      .join(",\n\t");
+    exportCode += _exports ? `\n\t${_exports},` : '';
   };
 
   return exportCode + exportTrailer;
@@ -109,11 +103,12 @@ function generateJsCode(exportList) {
 
 // Create the export code for the .ts file
 function generateRuntimeCode(exportListPreview, exportList) {
-  let exportCode = "";
-  let exports = "const extensionExports = {\n";
-  const exportTrailer = `};\n\n`;
-  const addComment = (packageName, release, kind) => `  // @${release} ${kind}(s) from ${packageName}\n`;
   const tab = "  "; // two space tab
+  let importCode = "";
+  let exportsApi = `const extensionExports = {\n${tab}`;
+  const _exports = [];
+  const exportTrailer = `\n};\n\n`;
+  const addComment = (packageName, release, kind) => `  // @${release} ${kind}(s) from ${packageName}\n`;
 
   for (const packageName in exportList) {
     let imports = "import {\n";
@@ -123,33 +118,35 @@ function generateRuntimeCode(exportListPreview, exportList) {
       importTrailer = `} from "../core-frontend";\n\n`;
 
     imports += exportListPreview[packageName].enum.length > 0 ? addComment(packageName, 'preview', 'enum') : "";
-    exportListPreview[packageName].enum.forEach((enumExport) => {
+    exportListPreview[packageName].enum.sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
-      exports += `${tab}${enumExport},\n`;
+      _exports.push(enumExport);
     });
 
     imports += exportListPreview[packageName].real.length > 0 ? addComment(packageName, 'preview', 'real') : "";
-    exportListPreview[packageName].real.forEach((realExport) => {
+    exportListPreview[packageName].real.sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
-      exports += `${tab}${realExport},\n`;
+      _exports.push(realExport);
     });
 
     imports += exportList[packageName].enum.length > 0 ? addComment(packageName, 'public', 'enum') : "";
-    exportList[packageName].enum.forEach((enumExport) => {
+    exportList[packageName].enum.sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
-      exports += `${tab}${enumExport},\n`;
+      _exports.push(enumExport);
     });
 
     imports += exportList[packageName].real.length > 0 ? addComment(packageName, 'public', 'real') : "";
-    exportList[packageName].real.forEach((realExport) => {
+    exportList[packageName].real.sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
-      exports += `${tab}${realExport},\n`;
+      _exports.push(realExport);
     });
 
-    exportCode += imports + importTrailer;
+    importCode += imports + importTrailer;
   };
 
-  return exportCode + exports + exportTrailer;
+  exportsApi += _exports.sort().join(`,\n${tab}`) + ",";
+
+  return importCode + exportsApi + exportTrailer;
 }
 
 // Find the extension linter's output file and convert to a set of useful lists
