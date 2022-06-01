@@ -392,7 +392,8 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
 /** import a WorkspaceDb to a cloud WorkspaceContainer. */
 async function importWorkspaceDb(args: UploadOptions) {
   const container = getCloudContainer(args);
-  args.localFileName = `${args.localFileName}.${ITwinWorkspaceDb.fileExt}`;
+  if ("" === extname(args.localFileName))
+    args.localFileName = `${args.localFileName}.${ITwinWorkspaceDb.fileExt}`;
   if (!IModelJsFs.existsSync(args.localFileName))
     args.localFileName = join(args.directory ?? IModelHost.appWorkspace.containerDir, args.localFileName);
 
