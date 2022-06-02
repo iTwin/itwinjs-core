@@ -8,15 +8,14 @@
 
 import { join } from "path";
 import { UserCancelledError } from "./itwin-client/FileHandler";
-import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
+import { ProgressCallback } from "./itwin-client/Request";
 import {
-  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
-  CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
+  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointProps, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, DownloadCheckpointArg, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
   V2CheckpointAccessProps,
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
 import { IModelClient } from "./IModelClient";
@@ -204,7 +203,7 @@ export class IModelHubBackend implements BackendHubAccess {
     return csProps;
   }
 
-  public async downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps> {
+  public async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
 
     // NEEDS_WORK - allow download by index
@@ -289,7 +288,7 @@ export class IModelHubBackend implements BackendHubAccess {
   }
 
   /** Downloads change sets in the specified range. */
-  public async downloadChangesets(arg: ChangesetRangeArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps[]> {
+  public async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
     const val: ChangesetFileProps[] = [];
     const query = await this.getQueryFromRange(arg);
     if (query) {
@@ -302,22 +301,26 @@ export class IModelHubBackend implements BackendHubAccess {
     return val;
   }
 
-  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
-    const checkpoint = arg.checkpoint;
+  public async downloadV1Checkpoint(arg: DownloadCheckpointArg): Promise<ChangesetIndexAndId> {
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
-    const accessToken = await this.getAccessToken(checkpoint);
-    const checkpoints = await this.iModelClient.checkpoints.get(accessToken, checkpoint.iModelId, checkpointQuery);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(arg.changeset.id);
+    const accessToken = await this.getAccessToken(arg);
+    const checkpoints = await this.iModelClient.checkpoints.get(accessToken, arg.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
-    const cancelRequest: any = {};
-    const progressCallback: ProgressCallback = (progress: ProgressInfo) => {
-      if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
-        cancelRequest.cancel?.();
+    const progressCallback: ProgressCallback = (progress) => {
+      if (arg.progressCallback && progress.total)
+        arg.progressCallback(progress.loaded, progress.total);
     };
 
+    const cancelRequest: any = {};
+    const removeCancelListener = arg.cancelSignal?.addListener(() => cancelRequest.cancel?.());
+
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
+    if (removeCancelListener)
+      removeCancelListener();
+
     return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
@@ -341,14 +344,13 @@ export class IModelHubBackend implements BackendHubAccess {
     };
   }
 
-  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
-    const checkpoint = arg.checkpoint;
+  public async downloadV2Checkpoint(arg: DownloadCheckpointArg): Promise<ChangesetIndexAndId> {
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
-    const accessToken = await this.getAccessToken(checkpoint);
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(arg.changeset.id).selectContainerAccessKey();
+    const accessToken = await this.getAccessToken(arg);
     let checkpoints: CheckpointV2[] = [];
     try {
-      checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, checkpoint.iModelId, checkpointQuery);
+      checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, arg.iModelId, checkpointQuery);
     } catch (error) {
       if (error instanceof BentleyError && error.errorNumber === IModelHubStatus.Unknown)
         throw new IModelError(IModelStatus.NotFound, "V2 checkpoints not supported");
@@ -372,20 +374,24 @@ export class IModelHubBackend implements BackendHubAccess {
       localFile: arg.localFile,
     });
 
+    const removeCancelListener = arg.cancelSignal?.addListener(() => transfer.cancelTransfer());
+
     let timer: NodeJS.Timeout | undefined;
     try {
-      let total = 0;
-      const onProgress = arg.onProgress;
+      const onProgress = arg.progressCallback;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
           const progress = transfer.getProgress();
-          total = progress.total;
-          if (onProgress(progress.loaded, progress.total))
-            transfer.cancelTransfer();
+          onProgress(progress.loaded, progress.total);
         }, 250);
       }
       await transfer.promise;
-      onProgress?.(total, total); // make sure we call progress func one last time when download completes
+
+      if (removeCancelListener)
+        removeCancelListener();
+
+      const progressResult = transfer.getProgress();
+      onProgress?.(progressResult.loaded, progressResult.total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {
