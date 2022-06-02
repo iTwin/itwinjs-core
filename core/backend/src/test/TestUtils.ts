@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
@@ -104,3 +104,24 @@ after(async () => {
   await TestUtils.shutdownBackend();
 });
 
+/**
+ * Generate SHA1 Hash of Schema XML
+ * @param schemaXmlPath: Path where schema xml file is located.
+ * @param referencePaths: Schema reference paths.
+ * @param isExactMatch: Schema references are located by exact scheme version comparisons
+ */
+export function getSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string {
+  const ecSchemaOpsNative = NativeLibrary.load();
+
+  try {
+    if (isExactMatch)
+      return ecSchemaOpsNative.computeSchemaChecksumWithExactRefMatch(schemaXmlPath, referencePaths);
+    else
+      return ecSchemaOpsNative.computeSchemaChecksum(schemaXmlPath, referencePaths);
+  } catch (err) {
+    throw Error(`Error while generating SHA1 Hash:  ${err}`);
+  } finally {
+    const name = require.resolve(NativeLibrary.libraryName);
+    delete require.cache[name];
+  }
+}
