@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, OrderedId64Array, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
@@ -257,9 +257,14 @@ export abstract class IModelConnection extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  public async queryCategoryIds(categoryIds: Id64Arg): Promise<SubCategoryResultRow[]> {
-    const compressedIds: CompressedId64Set = CompressedId64Set.sortAndCompress(categoryIds);
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryCategoryIds(this.getRpcProps(), compressedIds);
+  /**
+   * queries every passed categoryId for its parentId, id, and appearance.
+   * @param compressedCategoryIds compressed category Ids
+   * @returns array of SubCategoryResultRow
+   *
+   */
+  public async queryCategoryIds(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryCategoryIds(this.getRpcProps(), compressedCategoryIds);
   }
 
   /** Execute a query and stream its results

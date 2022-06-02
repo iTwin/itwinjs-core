@@ -48,7 +48,7 @@ export interface CustomViewState3dCreatorOptions {
 }
 
 /**
- * A result row from querying for subcategories during hydrateViewState
+ * A result row from querying for subcategories
  * @internal
  */
 export interface SubCategoryResultRow {

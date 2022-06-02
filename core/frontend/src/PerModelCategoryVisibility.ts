@@ -88,11 +88,13 @@ function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: 
 }
 
 // TODO: I know the saved-views package defines an interface with the same exact name... Will this cause problems? Maybe I should define these props as part of the PerModelCategoryVisibility namespace.
+/** PerModelCategoryVisibilityProps to describe per model category visibility. */
 export interface PerModelCategoryVisibilityProps {
   modelId: string;
   categoryIds: Id64Arg;
   visOverride: PerModelCategoryVisibility.Override;
 }
+
 /** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides. */
 class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
   private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Array, OrderedId64Iterable } from "@itwin/core-bentley";
 import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
@@ -126,7 +126,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
   export class Request {
     private readonly _imodel: IModelConnection;
-    private readonly _categoryIds: string[][] = [];
+    private readonly _categoryIds: CompressedId64Set[] = [];
     private readonly _result: Result = [];
     private _canceled = false;
     private _curCategoryIdsIndex = 0;
@@ -137,9 +137,11 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       this._imodel = imodel;
 
       const catIds = [...categoryIds];
+      OrderedId64Iterable.sortArray(catIds); // sort categories, so that given the same set of categoryIds we will always create the same batches.
       while (catIds.length !== 0) {
         const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
-        this._categoryIds.push(catIds.splice(0, end));
+        const compressedIds = CompressedId64Set.compressArray(catIds.splice(0, end));
+        this._categoryIds.push(compressedIds);
       }
     }
 
@@ -161,7 +163,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
         // incomplete results. Since we're not retrying, that's the best we can do.
       }
 
-      // Finished with current ECSql query. Dispatch the next if one exists.
+      // Finished with current batch of categoryIds. Dispatch the next batch if one exists.
       if (++this._curCategoryIdsIndex < this._categoryIds.length) {
         if (this.wasCanceled)
           return undefined;
