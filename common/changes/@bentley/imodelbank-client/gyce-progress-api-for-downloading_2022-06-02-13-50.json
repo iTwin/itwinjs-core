@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelbank-client",
+      "comment": "Implement new 'BackendHubAccess' interface.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelbank-client"
+}
