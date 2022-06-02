@@ -3,18 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { BentleyError, Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import {
-  ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d,
-} from "@itwin/core-common";
+import { Code, ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import {
-  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp,
-  IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
-  ToolAssistanceInstruction,
-} from "@itwin/core-frontend";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
+import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, ToolAssistanceInstruction } from "@itwin/core-frontend";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
 import { EditTools } from "./EditTool";
 
 /** @alpha */
@@ -177,7 +171,8 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected override get controlKeyContinuesSelection(): boolean { return true; }
   protected override get wantAccuSnap(): boolean { return true; }
   protected override get wantDynamics(): boolean { return true; }
-  protected get wantMakeCopy(): boolean { return false; } // For testing repeat vs. restart...
+  protected get wantMakeCopy(): boolean { return false; }
+  protected get wantRepeatOperation(): boolean { return this.wantMakeCopy && !this.agenda.isEmpty; }
   protected _graphicsProvider?: TransformGraphicsProvider;
   protected _startedCmd?: string;
 
@@ -255,6 +250,29 @@ export abstract class TransformElementsTool extends ElementSetTool {
     return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
+  protected async replaceAgenda(newIds: Id64Arg | undefined): Promise<void> {
+    this.agenda.clear();
+
+    if (undefined !== newIds)
+      this.agenda.add(newIds);
+
+    if (this.isSelectionSetModify) {
+      if (this.agenda.isEmpty)
+        this.iModel.selectionSet.emptyAll();
+      else
+        this.iModel.selectionSet.replace(this.agenda.elements);
+
+      this.agenda.setSource(ModifyElementSource.SelectionSet);
+      this.setPreferredElementSource(); // Update "use selection set" flag...
+    }
+
+    return this.onAgendaModified();
+  }
+
+  protected async transformAndCopyAgenda(_transform: Transform): Promise<Id64Arg | undefined> {
+    return undefined;
+  }
+
   protected async transformAgenda(transform: Transform): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
@@ -269,13 +287,18 @@ export abstract class TransformElementsTool extends ElementSetTool {
     const transform = this.calculateTransform(ev);
     if (undefined === transform)
       return;
-    await this.transformAgenda(transform);
+
+    if (this.wantMakeCopy)
+      await this.replaceAgenda(await this.transformAndCopyAgenda(transform));
+    else
+      await this.transformAgenda(transform);
+
     this.updateAnchorLocation(transform);
   }
 
   public override async onProcessComplete(): Promise<void> {
-    if (this.wantMakeCopy)
-      return; // TODO: Update agenda to hold copies, replace current selection set with copies, etc...
+    if (this.wantRepeatOperation)
+      return; // Continue with current agenda instead of restarting (ex. create additional copies)
     return super.onProcessComplete();
   }
 
@@ -307,6 +330,129 @@ export class MoveElementsTool extends TransformElementsTool {
     const tool = new MoveElementsTool();
     if (!await tool.run())
       return this.exitTool();
+  }
+}
+
+/** Create new elements with translation applied to placement.
+ * This is a brute force implementation strictly for example and testing purposes.
+ * The new elements are Generic:PhysicalObject or BisCore:DrawingGraphic using the model and category of original.
+ * Does not preserve assemblies and geometric elements without geometry are not copied.
+ * Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
+ * Applications that wish to support copy are expected to sub-class TransformElementsTool and register their
+ * own EditCommand that can correctly copy their application elements.
+ * @alpha
+ */
+export class CopyElementsTool extends MoveElementsTool {
+  public static override toolId = "CopyElements";
+  public static override iconSpec = "icon-move"; // Need better icon...
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  private _numCopiesProperty: DialogProperty<number> | undefined;
+  public get numCopiesProperty() {
+    if (!this._numCopiesProperty)
+      this._numCopiesProperty = new DialogProperty<number>(
+        PropertyDescriptionHelper.buildNumberEditorDescription("numCopies", EditTools.translate("CopyElements.Label.NumCopies"),
+          { type: PropertyEditorParamTypes.Range, minimum: 1 } as RangeEditorParams), 1);
+    return this._numCopiesProperty;
+  }
+
+  public get numCopies(): number { return this.numCopiesProperty.value; }
+  public set numCopies(value: number) { this.numCopiesProperty.value = value; }
+
+  protected override get wantMakeCopy(): boolean { return this.numCopies > 0; }
+
+  protected override updateAnchorLocation(transform: Transform): void {
+    // Account for additional copies for repeat operation anchor point...
+    for (let iCopy = 0; iCopy < this.numCopies; ++iCopy)
+      super.updateAnchorLocation(transform);
+  }
+
+  protected async doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
+    if (numCopies < 1 || 0 === ids.length)
+      return undefined;
+
+    this._startedCmd = await this.startCommand();
+    const newIds: Id64Array = [];
+
+    for (const id of ids) {
+      // NOTE: For testing only. Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
+      const props = await this.iModel.elements.loadProps(id, { wantGeometry: true, wantBRepData: true }) as GeometricElementProps;
+      if (undefined === props.placement)
+        continue;
+
+      const placement = isPlacement2dProps(props.placement) ? Placement2d.fromJSON(props.placement) : Placement3d.fromJSON(props.placement);
+      if (!placement.isValid)
+        continue; // Ignore assembly parents w/o geometry, etc...
+
+      const classFullName = (placement.is3d ? "Generic:PhysicalObject" : "BisCore:DrawingGraphic");
+      const newProps: GeometricElementProps = { classFullName, model: props.model, category: props.category, code: Code.createEmpty(), placement, geom: props.geom };
+      let newId;
+
+      for (let iCopy = 0; iCopy < numCopies; ++iCopy) {
+        placement.multiplyTransform(transform);
+        newId = await CopyElementsTool.callCommand("insertGeometricElement", newProps);
+      }
+
+      if (undefined !== newId)
+        newIds.push(newId); // When numCopies > 1 ids are return for just the final copy...
+    }
+
+    return (0 === newIds.length ? undefined : newIds);
+  }
+
+  protected override async transformAndCopyAgenda(transform: Transform): Promise<Id64Arg | undefined> {
+    try {
+      const newIds = await this.doTranformedCopy(this.agenda.elements, transform, this.numCopies);
+      if (undefined !== newIds)
+        await this.saveChanges();
+      return newIds;
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      return undefined;
+    }
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    // NOTE: Don't call changeToolSettingPropertyValue, value of numCopies should not be saved...
+    if (updatedValue.propertyName !== this.numCopiesProperty.name || undefined === updatedValue.value.value)
+      return false;
+    this.numCopies = updatedValue.value.value as number;
+    return true;
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    // NOTE: Don't call initializeToolSettingPropertyValues, value of numCopies is not saved...
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.numCopiesProperty.toDialogItem({ rowPriority: 1, columnIndex: 2 }));
+    return toolSettings;
+  }
+
+  public override async onRestartTool(): Promise<void> {
+    const tool = new CopyElementsTool();
+    tool.numCopies = this.numCopies; // Preserve numCopies on restart...
+    if (!await tool.run())
+      return this.exitTool();
+  }
+
+  /** The keyin takes the following arguments, all of which are optional:
+   *  - `numCopies=number` Number of copies of each element to create, default is 1.
+   */
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
+    for (const arg of inputArgs) {
+      const parts = arg.split("=");
+      if (2 !== parts.length)
+        continue;
+
+      if (parts[0].toLowerCase().startsWith("num")) {
+        const copies = Number.parseInt(parts[1], 10);
+        if (copies >= 1)
+          this.numCopies = copies; // NOTE: Don't call saveToolSettingPropertyValue, always default to single copy...
+      }
+    }
+
+    return this.run();
   }
 }
 

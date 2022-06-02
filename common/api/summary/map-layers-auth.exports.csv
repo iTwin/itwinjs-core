@@ -1,0 +1,15 @@
+sep=;
+Release Tag;API Item
+beta;ArcGisAccessClient 
+beta;ArcGisEnterpriseClientId
+internal;ArcGisGenerateTokenOptions
+internal;ArcGisOAuth2Endpoint 
+internal;ArcGisOAuth2EndpointType
+internal;ArcGisOAuth2Token 
+beta;ArcGisOAuthClientIds
+beta;ArcGisOAuthConfig
+internal;ArcGisToken 
+internal;ArcGisTokenClientType
+internal;ArcGisTokenGenerator
+internal;ArcGisTokenManager
+internal;ArcGisUrl

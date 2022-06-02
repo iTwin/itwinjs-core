@@ -25,13 +25,24 @@
       "ignoreDependencyOrder": true
     },
     {
+      "name": "build",
+      "commandKind": "bulk",
+      "summary": "Run build script for each package",
+      "description": "Runs the 'build' script for each package in the monorepo. Used in some ci jobs to only build cjs.",
+      "enableParallelism": true,
+      "ignoreMissingScript": false,
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "build:ci",
       "commandKind": "bulk",
       "summary": "Run build:ci script for each package",
       "description": "Runs the 'build:ci' script for each package in the monorepo. Used in the ci to build both cjs and esm variants of packages, whereas build will only build cjs.",
       "enableParallelism": true,
       "ignoreMissingScript": false,
-      "ignoreDependencyOrder": false
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "name": "cover",
@@ -88,6 +99,16 @@
       "description": "Iterates through each package in the monorepo and runs the 'test' script",
       "enableParallelism": true,
       "ignoreMissingScript": false,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "webpack:test",
+      "commandKind": "bulk",
+      "summary": "Run webpack:test script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpack:test' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
       "ignoreDependencyOrder": true,
       "allowWarningsInSuccessfulBuild": true
     },

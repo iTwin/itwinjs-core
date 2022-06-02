@@ -22,6 +22,9 @@ export class IconWebComponent extends HTMLElement {
   }
 
   private async loadSvg() {
+    // if svg was already appended don't request it again
+    if (this.childNodes.length)
+      return;
     await fetch(this.getAttribute("src") || "")
       .catch((_error) => {
         Logger.logError(UiCore.loggerCategory(this), "Unable to load icon.");
@@ -40,6 +43,6 @@ export class IconWebComponent extends HTMLElement {
           throw new UiError (UiCore.loggerCategory(this), "Unable to load icon.");
         }
       })
-      .then((data) => this.append(data.documentElement));
+      .then((data) => !this.childNodes.length && this.append(data.documentElement));
   }
 }

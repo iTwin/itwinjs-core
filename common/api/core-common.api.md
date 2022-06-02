@@ -13,6 +13,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BriefcaseStatus } from '@itwin/core-bentley';
+import { Buffer } from 'buffer';
 import { ByteStream } from '@itwin/core-bentley';
 import { ChangeSetStatus } from '@itwin/core-bentley';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -2394,11 +2395,10 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha
-export enum EdgeType {
-    Indexed = 2,
-    None = 0,
-    NonIndexed = 1
+// @internal
+export interface EdgeOptions {
+    indexed: boolean;
+    smooth: boolean;
 }
 
 // @internal
@@ -3818,13 +3818,15 @@ export interface GraphicsRequestProps {
     // @alpha
     readonly contentFlags?: ContentFlags;
     // @internal
-    readonly edgeType?: EdgeType;
+    readonly edgeType?: 1 | 2;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
     readonly sectionCut?: string;
+    // @internal
+    readonly smoothPolyfaceEdges?: boolean;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -3965,14 +3967,13 @@ export namespace HiddenLine {
         // (undocumented)
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
-        // (undocumented)
         get transThreshold(): number;
         readonly visible: Style;
     }
     export interface SettingsProps {
-        readonly hidden?: StyleProps;
-        readonly transThreshold?: number;
-        readonly visible?: StyleProps;
+        hidden?: StyleProps;
+        transThreshold?: number;
+        visible?: StyleProps;
     }
     export class Style {
         readonly color?: ColorDef;
@@ -3994,11 +3995,11 @@ export namespace HiddenLine {
         readonly width?: number;
     }
     export interface StyleProps {
-        readonly color?: ColorDefProps;
+        color?: ColorDefProps;
         // @internal
-        readonly ovrColor?: boolean;
-        readonly pattern?: LinePixels;
-        readonly width?: number;
+        ovrColor?: boolean;
+        pattern?: LinePixels;
+        width?: number;
     }
 }
 
@@ -5860,13 +5861,20 @@ export class PackedFeatureTable {
     unpack(): FeatureTable;
 }
 
-// @internal (undocumented)
-export function parseTileTreeIdAndContentId(treeId: string, contentId: string): {
-    modelId: Id64String;
-    treeId: IModelTileTreeId;
+// @internal
+export interface ParsedTileTreeIdAndContentId {
+    // (undocumented)
     contentId: ContentIdSpec;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
     options: TileOptions;
-};
+    // (undocumented)
+    treeId: IModelTileTreeId;
+}
+
+// @internal (undocumented)
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId;
 
 // @public
 export interface PartReference {
@@ -6157,7 +6165,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    edges: EdgeType;
+    edges: EdgeOptions | false;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -7416,6 +7424,16 @@ export class RpcInvocation {
     }
 
 // @internal
+export interface RpcManagedStatus {
+    // (undocumented)
+    iTwinRpcCoreResponse: true;
+    // (undocumented)
+    managedStatus: "pending" | "notFound";
+    // (undocumented)
+    responseValue: string;
+}
+
+// @internal
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -7480,6 +7498,7 @@ export namespace RpcOperation {
 // @internal
 export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
+    allowResponseCompression: boolean;
     allowTokenMismatch: boolean;
     forceStrictMode: boolean;
     requestCallback: RpcRequestCallback_T;
@@ -7535,13 +7554,14 @@ export abstract class RpcProtocol {
     // (undocumented)
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     preserveStreams: boolean;
-    static readonly protocolVersion = 1;
+    static readonly protocolVersion: number;
     protocolVersionHeaderName: string;
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
     serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
+    supportsStatusCategory: boolean;
     transferChunkThreshold: number;
 }
 
@@ -7577,6 +7597,16 @@ export enum RpcProtocolEvent {
 
 // @internal
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
+
+// @internal
+export enum RpcProtocolVersion {
+    // (undocumented)
+    IntroducedNoContent = 1,
+    // (undocumented)
+    IntroducedStatusCategory = 2,
+    // (undocumented)
+    None = 0
+}
 
 // @internal
 export class RpcPushChannel<T> {
@@ -7730,6 +7760,8 @@ export abstract class RpcRequest<TResponse = any> {
     readonly response: Promise<TResponse | undefined>;
     // (undocumented)
     protected _response: Response | undefined;
+    // (undocumented)
+    protected responseProtocolVersion: number;
     get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
@@ -7740,6 +7772,8 @@ export abstract class RpcRequest<TResponse = any> {
     get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
+    // (undocumented)
+    protected supportsStatusCategory(): boolean;
     }
 
 // @internal
@@ -7766,6 +7800,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 
 // @internal
 export interface RpcRequestFulfillment {
+    allowCompression?: boolean;
     id: string;
     interfaceName: string;
     rawResult: any;
@@ -8950,6 +8985,8 @@ export interface TileOptions {
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
+    readonly generateAllPolyfaceEdges: boolean;
+    // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
@@ -9497,6 +9534,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
+    // (undocumented)
+    supportsStatusCategory: boolean;
 }
 
 // @internal
@@ -9522,7 +9561,7 @@ export class WebAppRpcRequest extends RpcRequest {
     preflight(): Promise<Response | undefined>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
-    static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
+    static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;
