@@ -50,13 +50,20 @@ export namespace PerModelCategoryVisibility {
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     /** Changes multiple overrides, given an array of overrides */
-    setOverrides(perModelCategoryVisibility: PerModelCategoryVisibilityProps[], viewState?: ViewState): Promise<void>;
+    setOverrides(perModelCategoryVisibility: Props[], viewState?: ViewState): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */
     [Symbol.iterator]: () => Iterator<OverrideEntry>;
     /** Populate the symbology overrides based on the per-model category visibility. */
     addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+  }
+
+  /** Props to describe per model category visibility. */
+  export interface Props {
+    modelId: string;
+    categoryIds: Id64Arg;
+    visOverride: PerModelCategoryVisibility.Override;
   }
 
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
@@ -87,14 +94,6 @@ function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: 
   return 0 === cmp ? compareStrings(lhs.categoryId, rhs.categoryId) : cmp;
 }
 
-// TODO: I know the saved-views package defines an interface with the same exact name... Will this cause problems? Maybe I should define these props as part of the PerModelCategoryVisibility namespace.
-/** PerModelCategoryVisibilityProps to describe per model category visibility. */
-export interface PerModelCategoryVisibilityProps {
-  modelId: string;
-  categoryIds: Id64Arg;
-  visOverride: PerModelCategoryVisibility.Override;
-}
-
 /** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides. */
 class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
   private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);
@@ -122,7 +121,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
    * iModel associated with the provided viewState is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
    * @returns void promise
    */
-  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibilityProps[], viewState?: ViewState): Promise<void> {
+  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], viewState?: ViewState): Promise<void> {
     let anyChanged = false;
     const catIdsToLoad: string[] = [];
     const viewStateToUse = viewState ? viewState : this._vp.view;
