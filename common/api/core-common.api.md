@@ -4185,8 +4185,6 @@ export interface HydrateViewStateRequestProps {
     // (undocumented)
     baseModelId?: Id64String;
     // (undocumented)
-    notLoadedCategoryIds?: CompressedId64Set;
-    // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
     // (undocumented)
     sheetViewAttachmentIds?: CompressedId64Set;
@@ -4202,8 +4200,6 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // (undocumented)
-    categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
     // (undocumented)
@@ -4559,6 +4555,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
+    // (undocumented)
+    queryCategoryIds(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)

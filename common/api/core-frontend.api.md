@@ -4835,6 +4835,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get projectCenterAltitude(): number | undefined;
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    queryCategoryIds(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
@@ -7589,6 +7590,15 @@ export namespace PerModelCategoryVisibility {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+        setOverrides(perModelCategoryVisibility: Props[], viewState?: ViewState): Promise<void>;
+    }
+    export interface Props {
+        // (undocumented)
+        categoryIds: Id64Arg;
+        // (undocumented)
+        modelId: string;
+        // (undocumented)
+        visOverride: PerModelCategoryVisibility.Override;
     }
 }
 
@@ -10083,8 +10093,6 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
-    postload(options: HydrateViewStateResponseProps): void;
-    preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
     }
 
 // @internal
