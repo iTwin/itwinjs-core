@@ -138,7 +138,7 @@ describe("Schema Context", () => {
 
     const schemas = context.getKnownSchemas();
     expect(schemas.length).to.equal(2);
-    expect(schemas[1].schemaKey.matches(schema1.schemaKey)).to.be.true;
+    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
     expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
   });
 });
