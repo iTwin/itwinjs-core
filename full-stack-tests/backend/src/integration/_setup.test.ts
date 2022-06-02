@@ -33,7 +33,7 @@ before(async () => {
   const cfg = new IModelHostConfiguration();
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-  cfg.hubAccess = new BackendIModelsAccess(iModelClient);
+  cfg.hubAccess = new BackendIModelsAccess(iModelClient) as any;
 
   await TestUtils.startBackend(cfg);
 });

@@ -208,7 +208,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     iModelHost.hubAccess = new IModelHubBackend(hubClient);
   } else {
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient) as any;
   }
 
   if (dtaConfig.useFakeCloudStorageTileCache)

@@ -86,7 +86,7 @@ async function init() {
     iModelHost.hubAccess = getIModelBankAccess();
   } else {
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient) as any;
   }
 
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir

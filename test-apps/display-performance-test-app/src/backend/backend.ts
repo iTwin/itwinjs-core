@@ -35,7 +35,7 @@ export async function initializeBackend() {
 
   const iModelHost = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-  iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  iModelHost.hubAccess = new BackendIModelsAccess(iModelClient) as any;
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];

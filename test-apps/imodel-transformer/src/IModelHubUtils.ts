@@ -18,7 +18,7 @@ export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
     IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
+    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient) as any;
     await IModelHost.startup(iModelHost);
   }
 
