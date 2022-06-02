@@ -14,7 +14,7 @@ There are several mechanisms available in BIS that domain authors can take advan
 * A Model can contain Elements.
 * An Element can be sub-modeled by a Model.
 * An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of the spatial structure of a *Facility*, in light of a specific discipline.
+* A *Spatial Organizer* can hold an Element as part of the spatial structure of a *Facility*, from the perspective of a specific discipline.
 * A *Physical System* can group member Elements.
 * The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
