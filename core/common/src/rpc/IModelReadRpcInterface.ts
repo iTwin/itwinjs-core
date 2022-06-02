@@ -37,6 +37,7 @@ import { RpcRoutingToken } from "./core/RpcRoutingToken";
  */
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
   public isIModelNotFoundResponse: boolean = true;
+  public override message = "iModel not found";
 }
 
 /** The RPC interface for reading from an iModel.
