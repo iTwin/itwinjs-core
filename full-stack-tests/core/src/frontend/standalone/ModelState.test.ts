@@ -123,8 +123,8 @@ describe("ModelState", () => {
 
     testSpatial = imodel2.models.getLoaded("0x1c") as SpatialModelState;
     range = await testSpatial.queryModelRange();
-    assert.isTrue(range.low.isAlmostEqual({ x: 288874.1174466432, y: 3803761.1888925503, z: -0.0005 }));
-    assert.isTrue(range.high.isAlmostEqual({ x: 289160.8417204395, y: 3803959.118535, z: 0.0005 }));
+    assert.isTrue(range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 }));
+    assert.isTrue(range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 }));
   });
 
   it("view thumbnails", async () => {
