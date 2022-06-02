@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Array, OrderedId64Iterable } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
+import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
