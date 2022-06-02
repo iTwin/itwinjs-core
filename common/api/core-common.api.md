@@ -4497,6 +4497,8 @@ export class IModelError extends BentleyError {
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
     // (undocumented)
     isIModelNotFoundResponse: boolean;
+    // (undocumented)
+    message: string;
 }
 
 // @public
@@ -7319,6 +7321,8 @@ export class RpcControlChannel {
 
 // @public
 export abstract class RpcControlResponse {
+    // (undocumented)
+    message: string;
 }
 
 // @internal
@@ -7460,6 +7464,8 @@ export class RpcMultipart {
 
 // @public
 export class RpcNotFoundResponse extends RpcControlResponse {
+    // (undocumented)
+    message: string;
 }
 
 // @internal
@@ -7542,6 +7548,8 @@ export abstract class RpcProtocol {
     getOperationFromPath(path: string): SerializedRpcOperation;
     getStatus(code: number): RpcRequestStatus;
     inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps;
+    // (undocumented)
+    initialize(_token?: IModelRpcProps): Promise<void>;
     readonly invocationType: typeof RpcInvocation;
     // (undocumented)
     onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
@@ -9524,7 +9532,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     abstract info: OpenAPIInfo;
     // (undocumented)
-    initialize(): Promise<void>;
+    initialize(token?: IModelRpcProps): Promise<void>;
     isTimeout(code: number): boolean;
     get openAPIDescription(): RpcOpenAPIDescription;
     pathPrefix: string;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Ensure selection scope override labels are honored.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
