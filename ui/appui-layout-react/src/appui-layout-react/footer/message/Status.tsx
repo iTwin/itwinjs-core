@@ -50,6 +50,7 @@ export class StatusHelpers {
 
     switch (severity) {
       case MessageSeverity.None:
+      case MessageSeverity.Success:
         status = Status.Success;
         break;
       case MessageSeverity.Information:
