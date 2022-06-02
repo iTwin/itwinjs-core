@@ -58,10 +58,6 @@ describe("StatusBar", () => {
     TestUtils.terminateUiFramework();
   });
 
-  beforeEach(() => {
-    MessageManager.activeMessageManager.initialize();
-  });
-
   it("StatusBar should mount", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();
@@ -243,6 +239,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusMessageRenderer should render empty correctly", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessagesContainer
       messages={[]}
       activityMessageInfo={undefined}
@@ -303,6 +300,7 @@ describe("StatusBar", () => {
         return new DOMRect();
       });
 
+      // eslint-disable-next-line deprecation/deprecation
       const renderedComponent = render(<StatusMessagesContainer
         messages={messages}
         activityMessageInfo={undefined}
@@ -326,6 +324,7 @@ describe("StatusBar", () => {
         return new DOMRect();
       });
 
+      // eslint-disable-next-line deprecation/deprecation
       const renderedComponent = render(<StatusMessagesContainer
         messages={messages}
         activityMessageInfo={undefined}

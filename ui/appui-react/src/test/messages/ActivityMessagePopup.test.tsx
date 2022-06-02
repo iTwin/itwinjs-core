@@ -9,7 +9,7 @@ import { ActivityMessageDetails, ActivityMessageEndReason } from "@itwin/core-fr
 import { MessageHyperlink, MessageProgress } from "@itwin/appui-layout-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
-import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../appui-react";
+import { ActivityMessagePopup, AppNotificationManager, CustomActivityMessageContent, MessageManager } from "../../appui-react";
 import { mount, TestUtils } from "../TestUtils";
 
 describe("ActivityMessagePopup", () => {
@@ -34,13 +34,13 @@ describe("ActivityMessagePopup", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageProgress).length).to.eq(1);
 
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
 
     wrapper.unmount();
@@ -55,13 +55,13 @@ describe("ActivityMessagePopup", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.find(MessageHyperlink).simulate("click");
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
     spy.calledOnce.should.true;
 
@@ -76,22 +76,22 @@ describe("ActivityMessagePopup", () => {
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.find(IconButton).simulate("click");
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
     spy.calledOnce.should.true;
 
     notifications.outputActivityMessage("Message text", 60);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
 
     MessageManager.setupActivityMessageValues("Test message text", 75, true);   // restore
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.unmount();

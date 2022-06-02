@@ -9,7 +9,7 @@ import { ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails,
 import { MessageHyperlink, MessageProgress } from "@itwin/appui-layout-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
-import { ActivityMessage, AppNotificationManager, MessageManager, StatusMessageRenderer, StickyMessage, ToastMessage } from "../../appui-react";
+import { AppNotificationManager, CustomActivityMessageContent, MessageManager, StatusMessageRenderer } from "../../appui-react";
 import { mount, TestUtils } from "../TestUtils";
 
 describe("StatusMessageRenderer", () => {
@@ -26,31 +26,27 @@ describe("StatusMessageRenderer", () => {
     TestUtils.terminateUiFramework();
   });
 
-  beforeEach(() => {
-    MessageManager.activeMessageManager.initialize();
-  });
-
   it("Renderer should render a Toast message", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Toast);
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(ToastMessage).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.unmount();
   });
 
   it("Renderer should render a Sticky  message", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Sticky);
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(StickyMessage).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.unmount();
@@ -59,6 +55,7 @@ describe("StatusMessageRenderer", () => {
   it("Sticky message should close on button click", () => {
     const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.spy();
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer closeMessage={spy} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
@@ -77,6 +74,7 @@ describe("StatusMessageRenderer", () => {
   });
 
   it("Renderer should render an Activity message", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, false);
@@ -84,13 +82,13 @@ describe("StatusMessageRenderer", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageProgress).length).to.eq(1);
 
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
 
     wrapper.unmount();
@@ -98,6 +96,7 @@ describe("StatusMessageRenderer", () => {
 
   it("Activity message should be canceled", () => {
     const spy = sinon.spy();
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, true);
@@ -105,13 +104,13 @@ describe("StatusMessageRenderer", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.find(MessageHyperlink).simulate("click");
     wrapper.update();
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
     spy.calledOnce.should.true;
 
@@ -120,34 +119,36 @@ describe("StatusMessageRenderer", () => {
 
   it("Activity message should be dismissed & restored", () => {
     const spy = sinon.spy();
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.find(IconButton).simulate("click");
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
     expect(wrapper.find(ToastPresentation).length).to.eq(0);
     spy.calledOnce.should.true;
 
     notifications.outputActivityMessage("Message text", 60);
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(0);
 
     MessageManager.setupActivityMessageValues("Test message text", 75, true);   // restore
     wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
+    expect(wrapper.find(CustomActivityMessageContent).length).to.eq(1);
     expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.unmount();
   });
 
   it("Renderer should clear messages", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);

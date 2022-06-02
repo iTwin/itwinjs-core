@@ -901,7 +901,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Toast", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.displayMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", undefined, OutputMessageType.Toast), undefined, {placement: "top"})
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", undefined, OutputMessageType.Toast))
           }>Toast message</UnderlinedButton>),
         createComponentExample("Toast with link", undefined,
           <UnderlinedButton onActivate={
@@ -909,7 +909,7 @@ export class ComponentExamplesProvider {
             )}>Toast with link</UnderlinedButton>),
         createComponentExample("Sticky", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.displayMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky), undefined, {placement: "top"})
+            () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky))
           }>Sticky message</UnderlinedButton>),
         createComponentExample("Activity", undefined,
           <UnderlinedButton onActivate={this._activityTool}>Activity message</UnderlinedButton>),
