@@ -11,8 +11,8 @@
  * @public
  */
 export interface DateFormatOptions {
-	locales?: string | string[] | undefined,
-	options?: Intl.DateTimeFormatOptions | undefined,
+  locales?: string | string[] | undefined;
+  options?: Intl.DateTimeFormatOptions | undefined;
 }
 
 /**
