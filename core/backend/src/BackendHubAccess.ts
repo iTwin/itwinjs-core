@@ -122,6 +122,7 @@ export type DownloadProgressFunction = (loaded: number, total: number) => void;
  * @beta
  */
 export interface DownloadProgressArg {
+  /** Callback for reporting download progress. */
   progressCallback?: DownloadProgressFunction;
 }
 
@@ -130,6 +131,7 @@ export interface DownloadProgressArg {
  * @beta
  */
 export interface CancelDownloadArg {
+  /** Signal which should be raised on cancel. */
   cancelSignal?: CancelSignal;
 }
 

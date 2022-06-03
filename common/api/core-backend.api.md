@@ -532,7 +532,6 @@ export class CancelController {
 
 // @beta
 export interface CancelDownloadArg {
-    // (undocumented)
     cancelSignal?: CancelSignal;
 }
 
@@ -1058,7 +1057,6 @@ export interface DownloadJob {
 
 // @beta
 export interface DownloadProgressArg {
-    // (undocumented)
     progressCallback?: DownloadProgressFunction;
 }
 
