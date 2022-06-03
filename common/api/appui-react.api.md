@@ -1813,6 +1813,11 @@ export interface CursorUpdatedEventArgs {
 }
 
 // @internal
+export function CustomActivityMessageContent({ initialActivityMessageInfo }: {
+    initialActivityMessageInfo?: ActivityMessageEventArgs;
+}): JSX.Element;
+
+// @internal
 export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element;
 
 // @public

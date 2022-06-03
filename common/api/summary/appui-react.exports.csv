@@ -192,6 +192,7 @@ internal;CursorPopupUpdatePositionEventArgs
 internal;CursorPrompt
 public;CursorUpdatedEvent 
 public;CursorUpdatedEventArgs
+internal;CustomActivityMessageContent({ initialActivityMessageInfo }:
 internal;CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element
 public;CustomItemDef 
 public;CustomItemProps 
