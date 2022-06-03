@@ -177,19 +177,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
 
-  /** @internal */
+  /** @public */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @beta */
+  /** @public */
   public get backgroundMapBase(): BaseLayerSettings {
     return this.settings.mapImagery.backgroundBase;
   }
+
+  /** @public */
   public set backgroundMapBase(base: BaseLayerSettings) {
     this.settings.mapImagery.backgroundBase = base;
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
+  /** @public */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -209,6 +211,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ``` ts
    *  style.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
+   * @public
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
@@ -388,10 +391,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
   }
 
-  /** @internal */
+  /** @public */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
-  /** @internal */
+  /** @public */
   public attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex = -1): void {
     const layerSettings = settings.clone({});
     if (undefined === layerSettings)
@@ -408,7 +411,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
+  /** @public */
   public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
     const layerSettings = MapLayerSettings.fromJSON(props);
     if (undefined === layerSettings)
@@ -417,12 +420,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.attachMapLayerSettings(layerSettings, isOverlay, insertIndex);
   }
 
-  /** @internal */
+  /** @public */
   public hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean {
     return -1 !== this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
   }
 
-  /** @internal */
+  /** @public */
   public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
     const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
     if (- 1 !== index)
@@ -430,7 +433,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Detach map layer at index (-1 to remove all layers)
-   * @internal
+   * @public
    */
   public detachMapLayerByIndex(index: number, isOverlay: boolean): void {
     const layers = this.getMapLayers(isOverlay);
@@ -442,25 +445,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
+  /** @public */
   public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
     return this.getMapLayers(isOverlay).findIndex((layer) => layer.matchesNameAndSource(name, source));
   }
 
-  /** @internal */
+  /** @public */
   public mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined {
     const layers = this.getMapLayers(isOverlay);
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
   /** Return map base transparency as a number between 0 and 1.
-   * @internal
+   * @public
    */
   public get baseMapTransparency(): number {
     return this.settings.mapImagery.baseTransparency;
   }
 
-  /** @internal  */
+  /** @public  */
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
@@ -470,7 +473,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
+  /** @public */
   public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
@@ -479,6 +482,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
+  /** @public */
   public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
@@ -490,6 +494,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
+  /** @public */
   public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
@@ -508,7 +513,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.changeMapLayerProps({ subLayers }, layerIndex, isOverlay);
   }
 
-  /** @internal */
+  /** @public */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
@@ -547,7 +552,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** change viewport to include range of map layer.
-   * @internal
+   * @public
    */
   public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
     const range = await this.getMapLayerRange(layerIndex, isOverlay);
@@ -571,7 +576,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Move map layer to top.
    * @param index index of layer to move.
    * @param isOverlay true if layer is overlay.
-   * @internal
+   * @public
    *
    */
   public moveMapLayerToTop(index: number, isOverlay: boolean) {
@@ -587,7 +592,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Move map layer to bottom.
    * @param index index of layer to move.
    * @param isOverlay true if layer is overlay.
-   * @internal
+   * @public
    */
   public moveMapLayerToBottom(index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
@@ -602,7 +607,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Reorder map layers
    * @param fromIndex index of map layer to move
    * @param toIndex insert index. If equal to length of map array the map layer is moved to end of array.
-   * @internal
+   * @public
    */
   public moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
