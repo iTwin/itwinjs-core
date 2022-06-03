@@ -29,6 +29,8 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
     actions.setRuleProperty(path, newProperty);
+    // invoke 'onRulePropertySelected' when new property is selected. There is no way to deselect property
+    // so 'newProperty' will be 'undefined' only if selected property is no longer in 'properties' list.
     if (onRulePropertySelected && newProperty)
       onRulePropertySelected(newProperty);
   }, [path, onRulePropertySelected, actions]);
