@@ -522,6 +522,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
   const hasLocalMsg = container.hasLocalChanges ? ", has local changes" : "";
   const nGarbage = container.garbageBlocks;
   const garbageMsg = nGarbage ? `, ${nGarbage} garbage block${nGarbage > 1 ? "s" : ""}` : "";
+  const blockSize = container.blockSize;
   showMessage(`WorkspaceDbs in ${sayContainer(args)}${writeLockMsg}${hasLocalMsg}${garbageMsg}`);
 
   const dbs = container.queryDatabases(args.glob);
@@ -530,7 +531,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
     if (db) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      showMessage(` "${dbName}", size=${db.totalBlocks * 4}M, ${db.localBlocks * 4}M downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}`);
+      showMessage(` "${dbName}", size=${friendlyFileSize(db.totalBlocks * blockSize)}, ${friendlyFileSize(db.localBlocks * blockSize)} downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}`);
     }
   }
 }
