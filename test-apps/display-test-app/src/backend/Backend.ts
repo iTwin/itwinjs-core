@@ -158,6 +158,10 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return fileName;
   }
 
+  public override async getEnvConfig(): Promise<DtaConfiguration> {
+    return getConfig();
+  }
+
   public override async terminate() {
     await IModelHost.shutdown();
 

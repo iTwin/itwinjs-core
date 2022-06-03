@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-transformer",
-      "comment": "",
+      "comment": "Fix assertion on valid case in mapId64.",
       "type": "none"
     }
   ],

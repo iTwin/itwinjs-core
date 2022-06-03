@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Use a function constructor to avoid webpack warnings when dynamically importing extension files.",
+      "comment": "Prevent an assertion when creating a pickable graphic with an empty FeatureTable.",
       "type": "none"
     }
   ],

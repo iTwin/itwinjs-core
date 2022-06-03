@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-transformer",
-      "comment": "always close transformer resumption state db even on errors",
+      "comment": "upgrade mocha to version 10.0.0",
       "type": "none"
     }
   ],
