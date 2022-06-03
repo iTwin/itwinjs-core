@@ -24,7 +24,6 @@ import { MutableProperty } from "./Mutable/MutableProperty";
  * Acts as a base class for schema class creation. Enables property creation.
  */
 export class ECClasses {
-  public readonly properties = new Properties(this);
 
   protected constructor(protected _schemaEditor: SchemaContextEditor) { }
 
