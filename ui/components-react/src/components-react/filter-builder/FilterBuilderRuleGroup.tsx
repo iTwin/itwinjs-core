@@ -114,12 +114,12 @@ function useIsHovered() {
   const onMouseOver: React.MouseEventHandler<HTMLDivElement> = (e) => {
     e.stopPropagation();
     setIsHovered(true);
-  }
+  };
 
   const onMouseOut: React.MouseEventHandler<HTMLDivElement> = (e) => {
     e.stopPropagation();
     setIsHovered(false);
-  }
+  };
 
   return { isHovered, onMouseOver, onMouseOut };
 }
@@ -135,7 +135,7 @@ function useIsFocused() {
     clearTimeout(timeout.current);
     timeout.current = undefined;
     setIsFocused(true);
-  }
+  };
 
   const onBlur: React.FocusEventHandler<HTMLDivElement> = (e) => {
     e.stopPropagation();
@@ -145,7 +145,7 @@ function useIsFocused() {
       setIsFocused(false);
       timeout.current = undefined;
     });
-  }
+  };
 
   return { isFocused, onFocus, onBlur };
 }
