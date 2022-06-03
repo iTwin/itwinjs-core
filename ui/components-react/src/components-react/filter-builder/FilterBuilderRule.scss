@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+.rule {
+  display: grid;
+  grid-template-columns: min-content auto;
+
+  .rule-condition {
+    display: grid;
+    grid-template-columns: minmax(auto, 400px) 150px auto;
+    grid-column-gap: 5px;
+
+    .rule-property .iui-input {
+      padding-top: 1.5px;
+      padding-bottom: 1.5px;
+      min-height: 27px;
+    }
+  }
+
+  .rule-remove-action {
+    padding-right: 5px;
+    visibility: hidden;
+  }
+
+  &:focus-within .rule-remove-action,
+  &:hover .rule-remove-action {
+    visibility: visible;
+  }
+}

@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
+import { fireEvent } from "@testing-library/react";
 import {
   PropertyFilterBuilderRuleGroupRenderer, PropertyFilterBuilderRuleGroupRendererProps,
 } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
@@ -45,6 +46,55 @@ describe("PropertyFilterBuilderRuleGroupRenderer", () => {
       group={{id: "id", groupId: "parentId", items: [], operator: PropertyFilterRuleGroupOperator.And}}
     />);
     getByTestId("rule-group-remove");
+  });
+
+  it("renders group as active while it is focused", () => {
+    const timer = sinon.useFakeTimers();
+    const {container} = renderWithContext(<PropertyFilterBuilderRuleGroupRenderer
+      {...defaultProps}
+      group={{id: "id", groupId: "parentId", items: [], operator: PropertyFilterRuleGroupOperator.And}}
+    />);
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    const ruleOperator = container.querySelector(".rule-group-operator");
+    expect(ruleOperator).to.not.be.null;
+    fireEvent.focus(ruleOperator!);
+
+    timer.next();
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
+    fireEvent.blur(ruleOperator!);
+
+    timer.next();
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    timer.restore();
+  });
+
+  it("renders group as active while it is hovered", () => {
+    const timer = sinon.useFakeTimers();
+    const {container} = renderWithContext(<PropertyFilterBuilderRuleGroupRenderer
+      {...defaultProps}
+      group={{id: "id", groupId: "parentId", items: [], operator: PropertyFilterRuleGroupOperator.And}}
+    />);
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    const ruleOperator = container.querySelector(".rule-group-operator");
+    expect(ruleOperator).to.not.be.null;
+    fireEvent.mouseOver(ruleOperator!);
+
+    timer.next();
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
+    fireEvent.mouseOut(ruleOperator!);
+
+    timer.next();
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+    timer.restore();
   });
 
   it("renders child rule", () => {

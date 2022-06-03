@@ -12,6 +12,7 @@ import { PropertyFilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
 import { PropertyFilterBuilderRuleValue } from "./FilterBuilderRuleValue";
 import { PropertyFilterBuilderRule } from "./FilterBuilderState";
 import { propertyFilterOperatorNeedsValue, PropertyFilterRuleOperator } from "./Operators";
+import "./FilterBuilderRule.scss";
 
 /** @alpha */
 export interface PropertyFilterBuilderRuleRendererProps {

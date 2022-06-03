@@ -19,14 +19,14 @@
     visibility: hidden;
   }
 
-  &:focus-within > .rule-group-remove-action,
-  &:hover > .rule-group-remove-action  {
+  &[data-isactive=true] > .rule-group-remove-action {
     visibility: visible;
   }
 
-  &:focus-within > .rule-group-content > .rule-group-actions,
-  &:hover > .rule-group-content > .rule-group-actions {
-    display: block;
+  &[data-isactive=true] > .rule-group-content {
+    @include themed {
+      border-color: t(iui-color-background-1--light);
+    }
   }
 
   .rule-group-content {
@@ -55,34 +55,6 @@
 
     .rule-group-actions {
       padding-top: 5px;
-      display: none;
     }
-  }
-}
-
-.rule {
-  display: grid;
-  grid-template-columns: min-content auto;
-
-  .rule-condition {
-    display: grid;
-    grid-template-columns: minmax(auto, 400px) 150px auto;
-    grid-column-gap: 5px;
-
-    .rule-property .iui-input {
-      padding-top: 1.5px;
-      padding-bottom: 1.5px;
-      min-height: 27px;
-    }
-  }
-
-  .rule-remove-action {
-    padding-right: 5px;
-    visibility: hidden;
-  }
-
-  &:focus-within .rule-remove-action,
-  &:hover .rule-remove-action {
-    visibility: visible;
   }
 }

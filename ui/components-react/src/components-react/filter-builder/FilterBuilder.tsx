@@ -13,7 +13,6 @@ import {
 } from "./FilterBuilderState";
 import { propertyFilterOperatorNeedsValue } from "./Operators";
 import { PropertyFilter } from "./Types";
-import "./FilterBuilder.scss";
 
 /** @alpha */
 export interface PropertyFilterBuilderProps {
