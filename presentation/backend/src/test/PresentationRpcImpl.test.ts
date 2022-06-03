@@ -16,8 +16,8 @@ import {
   ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions,
   ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions,
   HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectionScopeRequestOptions,
-  VariableValueTypes,
+  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectionScopeParams,
+  SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -1620,21 +1620,23 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager", async () => {
         const scope = createRandomSelectionScope();
+        const scopeParams = { level: 123 };
         const ids = [createRandomId()];
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }> = {
+        const managerOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams }> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           ids,
           scopeId: scope.id,
+          scopeParams,
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
+        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id, scopeParams);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result.toJSON());
       });

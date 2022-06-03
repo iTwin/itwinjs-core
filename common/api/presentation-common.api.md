@@ -241,6 +241,19 @@ export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "f
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
+// @alpha (undocumented)
+export interface ComputeElementSelectionScopeProps {
+    // (undocumented)
+    id: "element";
+    // (undocumented)
+    params?: ElementSelectionScopeParams;
+}
+
+// @alpha (undocumented)
+export type ComputeSelectionScopeProps = ComputeElementSelectionScopeProps | {
+    id: string;
+};
+
 // @public
 export interface ConditionContainer {
     condition?: string;
@@ -835,6 +848,12 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
         [memberLabel: string]: ElementPropertiesPropertyItem;
     };
     type: "struct";
+}
+
+// @alpha (undocumented)
+export interface ElementSelectionScopeParams {
+    // (undocumented)
+    level?: number;
 }
 
 // @public
@@ -1962,7 +1981,7 @@ export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     compareHierarchiesPaged(_token: IModelRpcProps, _options: HierarchyCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON>;
     // (undocumented)
-    computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
+    computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string, _scopeParams?: any): PresentationRpcResponse<KeySetJSON>;
     // @deprecated (undocumented)
     getContent(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined>;
     // @deprecated (undocumented)
@@ -2550,7 +2569,7 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     compareHierarchiesPaged(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<HierarchyCompareInfoJSON>;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
+    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -2766,6 +2785,9 @@ export interface SelectionScope {
     id: string;
     label: string;
 }
+
+// @alpha (undocumented)
+export type SelectionScopeParams = ElementSelectionScopeParams;
 
 // @public
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {

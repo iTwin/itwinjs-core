@@ -141,7 +141,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.10.0";
+  public static interfaceVersion = "2.11.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -218,7 +218,7 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   // TODO: need to enforce paging on this
-  public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
+  public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string, _scopeParams?: any): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 
   /** @alpha @deprecated Use [[compareHierarchiesPaged]] */
   public async compareHierarchies(_token: IModelRpcProps, _options: HierarchyCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> { return this.forward(arguments); }

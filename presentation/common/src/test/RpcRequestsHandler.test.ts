@@ -501,9 +501,10 @@ describe("RpcRequestsHandler", () => {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
+      const scopeParams = { level: 123 };
       const result = new KeySet().toJSON();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(handlerOptions, ids, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId, scopeParams)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(handlerOptions, ids, scopeId, scopeParams)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

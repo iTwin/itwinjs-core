@@ -41,6 +41,7 @@ import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
+import { SelectionScopeParams } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
 import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
@@ -162,6 +163,7 @@ export class PresentationManager {
     computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
+        scopeParams?: SelectionScopeParams;
     }>): Promise<KeySet>;
     dispose(): void;
     // @deprecated

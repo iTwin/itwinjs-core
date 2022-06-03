@@ -18,7 +18,7 @@ import {
   isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
   NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
   PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset,
-  RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  RulesetVariable, RulesetVariableJSON, SelectionInfo, SelectionScope, SelectionScopeParams, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -369,8 +369,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     );
   }
 
-  public override async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySetJSON> {
-    return this.makeRequest(token, "computeSelection", { ...requestOptions, ids, scopeId }, async (options) => {
+  public override async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams): PresentationRpcResponse<KeySetJSON> {
+    return this.makeRequest(token, "computeSelection", { ...requestOptions, ids, scopeId, scopeParams }, async (options) => {
       const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });

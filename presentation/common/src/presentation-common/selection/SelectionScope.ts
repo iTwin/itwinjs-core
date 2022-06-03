@@ -19,3 +19,20 @@ export interface SelectionScope {
   /** Description */
   description?: string;
 }
+
+/** @alpha */
+export interface ElementSelectionScopeParams {
+  level?: number;
+}
+
+/** @alpha */
+export type SelectionScopeParams = ElementSelectionScopeParams;
+
+/** @alpha */
+export interface ComputeElementSelectionScopeProps {
+  id: "element";
+  params?: ElementSelectionScopeParams;
+}
+
+/** @alpha */
+export type ComputeSelectionScopeProps = ComputeElementSelectionScopeProps | { id: string };

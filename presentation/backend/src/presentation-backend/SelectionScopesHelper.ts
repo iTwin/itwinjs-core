@@ -9,7 +9,7 @@
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { GeometricElement, GeometricElement3d, IModelDb } from "@bentley/imodeljs-backend";
 import {
-  InstanceKey, KeySet, PresentationError, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
+  InstanceKey, KeySet, PresentationError, PresentationStatus, SelectionScope, SelectionScopeParams, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { getElementKey } from "./Utils";
 
@@ -40,56 +40,22 @@ export class SelectionScopesHelper {
     ];
   }
 
-  private static computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = getElementKey(requestOptions.imodel, id);
-      if (key)
-        keys.add(key);
-    }));
-    return keys;
-  }
-
-  private static getParentInstanceKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
-    const elementProps = imodel.elements.tryGetElementProps(id);
-    if (!elementProps?.parent)
-      return undefined;
-    return getElementKey(imodel, elementProps.parent.id);
-  }
-
-  private static getAssemblyKey(imodel: IModelDb, id: Id64String) {
-    const parentKey = this.getParentInstanceKey(imodel, id);
-    if (parentKey)
-      return parentKey;
-    return getElementKey(imodel, id);
-  }
-
-  private static computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const parentKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = this.getAssemblyKey(requestOptions.imodel, id);
-      if (key)
-        parentKeys.add(key);
-    }));
-    return parentKeys;
-  }
-
-  private static getTopAssemblyKey(imodel: IModelDb, id: Id64String) {
-    let currKey: InstanceKey | undefined;
-    let parentKey = this.getParentInstanceKey(imodel, id);
-    while (parentKey) {
-      currKey = parentKey;
-      parentKey = this.getParentInstanceKey(imodel, currKey.id);
+  private static getElementKey(iModel: IModelDb, elementId: Id64String, ancestorLevel: number) {
+    let currId = elementId;
+    let parentId = iModel.elements.tryGetElementProps(currId)?.parent?.id;
+    while (parentId && ancestorLevel !== 0) {
+      currId = parentId;
+      parentId = iModel.elements.tryGetElementProps(currId)?.parent?.id;
+      --ancestorLevel;
     }
-    return currKey ?? getElementKey(imodel, id);
+    return getElementKey(iModel, currId);
   }
 
-  private static computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+  private static computeElementSelection(params: ComputeElementSelectionScopeProps) {
     const parentKeys = new KeySet();
-    ids.forEach(skipTransients((id) => {
-      const key = this.getTopAssemblyKey(requestOptions.imodel, id);
-      if (key)
-        parentKeys.add(key);
+    params.elementIds.forEach(skipTransients((id) => {
+      const key = this.getElementKey(params.iModel, id, params.level);
+      key && parentKeys.add(key);
     }));
     return parentKeys;
   }
@@ -147,7 +113,7 @@ export class SelectionScopesHelper {
       const relatedFunctionalKey = this.getRelatedFunctionalElementKey(imodel, currId);
       if (relatedFunctionalKey)
         return relatedFunctionalKey;
-      currId = this.getParentInstanceKey(imodel, currId)?.id;
+      currId = imodel.elements.tryGetElementProps(currId)?.parent?.id;
     }
     return undefined;
   }
@@ -155,11 +121,11 @@ export class SelectionScopesHelper {
   private static elementClassDerivesFrom(imodel: IModelDb, elementId: Id64String, baseClassFullName: string): boolean {
     const query = `
       SELECT 1
-        FROM bis.Element e
-        INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.SourceECInstanceId = e.ECClassId
-        INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
-        INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-       WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
+      FROM bis.Element e
+      INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.SourceECInstanceId = e.ECClassId
+      INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
+      INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
+      WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
       `;
     return imodel.withPreparedStatement(query, (stmt): boolean => {
       stmt.bindId(1, elementId);
@@ -204,7 +170,7 @@ export class SelectionScopesHelper {
           idToGetAssemblyFor = firstFunctionalKey.id;
       }
       // find the assembly of either the given element or the functional element
-      const assemblyKey = this.getAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
+      const assemblyKey = this.getElementKey(requestOptions.imodel, idToGetAssemblyFor, 1);
       let keyToAdd = assemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
@@ -229,7 +195,7 @@ export class SelectionScopesHelper {
           idToGetAssemblyFor = firstFunctionalKey.id;
       }
       // find the top assembly of either the given element or the functional element
-      const topAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
+      const topAssemblyKey = this.getElementKey(requestOptions.imodel, idToGetAssemblyFor, Number.MAX_SAFE_INTEGER);
       let keyToAdd = topAssemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
@@ -247,12 +213,13 @@ export class SelectionScopesHelper {
    * @param requestOptions Options for the request
    * @param keys Keys of elements to get the content for.
    * @param scopeId ID of selection scope to use for computing selection
+   * @param scopeParams Scope-specific params.
    */
-  public static async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
+  public static async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams): Promise<KeySet> {
     switch (scopeId) {
-      case "element": return this.computeElementSelection(requestOptions, ids);
-      case "assembly": return this.computeAssemblySelection(requestOptions, ids);
-      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
+      case "element": return this.computeElementSelection(createElementSelectionScopeProps(requestOptions, ids, scopeParams));
+      case "assembly": return this.computeElementSelection(createElementSelectionScopeProps(requestOptions, ids, { level: 1 }));
+      case "top-assembly": return this.computeElementSelection(createElementSelectionScopeProps(requestOptions, ids, { level: Number.MAX_SAFE_INTEGER }));
       case "category": return this.computeCategorySelection(requestOptions, ids);
       case "model": return this.computeModelSelection(requestOptions, ids);
       case "functional":
@@ -272,3 +239,17 @@ const skipTransients = (callback: (id: Id64String) => void) => {
       callback(id);
   };
 };
+
+interface ComputeElementSelectionScopeProps {
+  iModel: IModelDb;
+  elementIds: Id64String[];
+  level: number;
+}
+function createElementSelectionScopeProps(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeParams?: SelectionScopeParams) {
+  const level = (scopeParams && typeof scopeParams === "object" && typeof scopeParams.level === "number") ? scopeParams.level : 0;
+  return {
+    iModel: requestOptions.imodel,
+    elementIds: ids,
+    level,
+  };
+}

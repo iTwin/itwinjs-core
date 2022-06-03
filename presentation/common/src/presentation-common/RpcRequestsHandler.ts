@@ -27,7 +27,7 @@ import {
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
-import { SelectionScope } from "./selection/SelectionScope";
+import { SelectionScope, SelectionScopeParams } from "./selection/SelectionScope";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
 import { PagedResponse } from "./Utils";
 
@@ -185,9 +185,9 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
+  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams): Promise<KeySetJSON> {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
-      this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
+      this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId, scopeParams);
   }
   public async compareHierarchies(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<PartialHierarchyModificationJSON[]> {
     return this.request<PartialHierarchyModificationJSON[], HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>(

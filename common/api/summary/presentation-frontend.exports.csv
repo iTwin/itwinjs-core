@@ -10,6 +10,8 @@ public;FavoritePropertiesOrderInfo
 public;FavoritePropertiesScope
 internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
+deprecated;getScopeId(scope: SelectionScope | string | undefined): string
+internal;getScopeRequestProps(scope: ComputeSelectionScopeProps | SelectionScope | string | undefined):
 internal;HILITE_RULESET: Ruleset
 public;HiliteSet
 public;HiliteSetProvider

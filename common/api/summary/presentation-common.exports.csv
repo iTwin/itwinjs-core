@@ -27,6 +27,8 @@ internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;CompressedDescriptorJSON = Omit
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
+alpha;ComputeElementSelectionScopeProps
+alpha;ComputeSelectionScopeProps = ComputeElementSelectionScopeProps |
 public;ConditionContainer
 public;Content
 public;ContentDescriptorRequestOptions
@@ -120,6 +122,7 @@ beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
+alpha;ElementSelectionScopeParams
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -366,6 +369,7 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
+alpha;SelectionScopeParams = ElementSelectionScopeParams
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
