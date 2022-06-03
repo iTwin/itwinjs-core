@@ -404,15 +404,10 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 }
 
-interface ModelInfo {
-  id: Id64String;
-  isHidden: boolean;
-}
-
 class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
-  private _subjectModels: Map<Id64String, ModelInfo[]> | undefined;
+  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
   private _init: Promise<void> | undefined;
 
   constructor(imodel: IModelConnection) {
@@ -427,9 +422,9 @@ class SubjectModelIdsCache {
       `;
       return this._imodel.query(subjectsQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     };
-    const queryModels = (): AsyncIterableIterator<{ id: Id64String, parentId: Id64String, content?: string }> => {
+    const queryModels = (): AsyncIterableIterator<{ id: Id64String, parentId: Id64String }> => {
       const modelsQuery = `
-        SELECT p.ECInstanceId id, p.Parent.Id parentId, json_extract(p.JsonProperties, '$.PhysicalPartition.Model.Content') content
+        SELECT p.ECInstanceId id, p.Parent.Id parentId
         FROM bis.InformationPartitionElement p
         INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
         WHERE NOT m.IsPrivate
@@ -461,9 +456,8 @@ class SubjectModelIdsCache {
       if (!subjectIds.includes(model.parentId))
         subjectIds.push(model.parentId);
 
-      const v = { id: model.id, isHidden: (model.content !== undefined) };
       subjectIds.forEach((subjectId) => {
-        pushToMap(this._subjectModels!, subjectId, v);
+        pushToMap(this._subjectModels!, subjectId, model.id);
       });
     }
   }
@@ -478,7 +472,7 @@ class SubjectModelIdsCache {
   private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
     const subjectModelIds = this._subjectModels!.get(subjectId);
     if (subjectModelIds)
-      modelIds.push(...subjectModelIds.map((info) => info.id));
+      modelIds.push(...subjectModelIds);
 
     const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
     if (childSubjectIds)

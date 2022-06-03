@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodelbank-client",
   "private": true,
-  "version": "3.3.0-dev.18",
+  "version": "3.3.0-dev.21",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -48,7 +48,7 @@
     "superagent": "^7.0.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.18"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.21"
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
