@@ -31,8 +31,8 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    const iModelClient = new  IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient) as any;
 
     // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
     RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
