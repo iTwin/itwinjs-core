@@ -331,16 +331,10 @@ export interface BackendHubAccess {
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
-    downloadChangeset: (arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps[]>;
-    // @internal
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
-    // @internal
-    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+    downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
+    downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
+    downloadV1Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
+    downloadV2Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -528,6 +522,23 @@ export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class CancelController {
+    cancel(): void;
+    get signal(): CancelSignal;
+}
+
+// @beta
+export interface CancelDownloadArg {
+    // (undocumented)
+    cancelSignal?: CancelSignal;
+}
+
+// @beta
+export interface CancelSignal {
+    addListener(listener: () => void): () => void;
 }
 
 // @public
@@ -1022,6 +1033,21 @@ export class DocumentPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @beta
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg, CancelDownloadArg {
+    targetDir: LocalDirName;
+}
+
+// @beta
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg, CancelDownloadArg {
+    targetDir: LocalDirName;
+}
+
+// @beta
+export interface DownloadCheckpointArg extends CheckpointProps, DownloadProgressArg, CancelDownloadArg {
+    localFile: LocalFileName;
+}
+
 // @internal (undocumented)
 export interface DownloadJob {
     // (undocumented)
@@ -1030,12 +1056,22 @@ export interface DownloadJob {
     request: DownloadRequest;
 }
 
+// @beta
+export interface DownloadProgressArg {
+    // (undocumented)
+    progressCallback?: DownloadProgressFunction;
+}
+
+// @beta
+export type DownloadProgressFunction = (loaded: number, total: number) => void;
+
 // @internal
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
+    readonly cancelSignal?: CancelSignal;
     readonly checkpoint: CheckpointProps;
     localFile: LocalFileName;
-    readonly onProgress?: ProgressFunction;
+    readonly onProgress?: DownloadProgressFunction;
 }
 
 // @internal (undocumented)
