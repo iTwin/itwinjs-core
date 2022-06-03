@@ -3581,6 +3581,7 @@ export class RpcTrace {
     static get currentActivity(): RpcActivity | undefined;
     static get expectCurrentActivity(): RpcActivity;
     static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
+    static runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
     }
 
 // @public
