@@ -271,7 +271,7 @@ describe("usePropertyFilterBuilderState", () => {
     expect(state).to.be.eq(newState);
   });
 
-  describe("nested rule", () => {
+  describe("rule group", () => {
     function getStateWithNestedRule() {
       const {result} = renderHook(() => usePropertyFilterBuilderState());
       const {actions} = result.current;
@@ -287,55 +287,67 @@ describe("usePropertyFilterBuilderState", () => {
       return {result, getNestingRule, getNestedRule, getNestedRulePath};
     }
 
-    it("sets property", () => {
-      const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
-      const {actions} = result.current;
+    describe("nested rule", () => {
+      it("sets property", () => {
+        const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
+        const {actions} = result.current;
 
-      const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
-      actions.setRuleProperty(getNestedRulePath(), property);
+        const property: PropertyDescription = {name: "prop", displayLabel: "Prop", typename: "string"};
+        actions.setRuleProperty(getNestedRulePath(), property);
 
-      const rule = getNestedRule();
-      expect(rule).to.containSubset({
-        groupId: getNestingRule().id,
-        property,
+        const rule = getNestedRule();
+        expect(rule).to.containSubset({
+          groupId: getNestingRule().id,
+          property,
+        });
+      });
+
+      it("sets operator", () => {
+        const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
+        const {actions} = result.current;
+
+        actions.setRuleOperator(getNestedRulePath(), PropertyFilterRuleOperator.IsEqual);
+
+        const rule = getNestedRule();
+        expect(rule).to.containSubset({
+          groupId: getNestingRule().id,
+          operator: PropertyFilterRuleOperator.IsEqual,
+        });
+      });
+
+      it("sets value", () => {
+        const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
+        const {actions} = result.current;
+
+        const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
+        actions.setRuleValue(getNestedRulePath(), value);
+
+        const rule = getNestedRule();
+        expect(rule).to.containSubset({
+          groupId: getNestingRule().id,
+          value,
+        });
       });
     });
 
-    it("sets operator", () => {
-      const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
+    it("adds and removes rule", () => {
+      const {result, getNestingRule} = getStateWithNestedRule();
       const {actions} = result.current;
 
-      actions.setRuleOperator(getNestedRulePath(), PropertyFilterRuleOperator.IsEqual);
+      actions.addItem([getNestingRule().id], "RULE");
+      expect(getNestingRule().items).to.have.lengthOf(2);
 
-      const rule = getNestedRule();
-      expect(rule).to.containSubset({
-        groupId: getNestingRule().id,
-        operator: PropertyFilterRuleOperator.IsEqual,
-      });
+      actions.removeItem([getNestingRule().id, getNestingRule().items[1].id]);
+      expect(getNestingRule().items).to.have.lengthOf(1);
     });
 
-    it("sets value", () => {
-      const {result, getNestingRule, getNestedRule, getNestedRulePath} = getStateWithNestedRule();
-      const {actions} = result.current;
-
-      const value: PropertyValue = {valueFormat: PropertyValueFormat.Primitive, value: "test string", displayValue: "TEST STRING"};
-      actions.setRuleValue(getNestedRulePath(), value);
-
-      const rule = getNestedRule();
-      expect(rule).to.containSubset({
-        groupId: getNestingRule().id,
-        value,
-      });
-    });
-
-    it("removes", () => {
+    it("removes group when last rule is removed", () => {
       const {result, getNestingRule, getNestedRulePath} = getStateWithNestedRule();
       const {actions} = result.current;
 
       actions.removeItem(getNestedRulePath());
 
-      const nestingRule = getNestingRule();
-      expect(nestingRule.items).to.be.empty;
+      expect(getNestingRule()).to.be.undefined;
     });
   });
 });

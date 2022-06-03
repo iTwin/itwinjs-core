@@ -52,15 +52,21 @@ export class PropertyFilterBuilderActions {
   }
 
   public removeItem(path: string[]) {
-    this.updateState((state) => {
-      const itemId = path.pop();
-      const parentGroup = findRuleGroup(state.rootGroup, path);
+    function removeItemFromGroup(state: Draft<PropertyFilterBuilderState>, pathToItem: string[]) {
+      const itemId = pathToItem.pop();
+      const parentGroup = findRuleGroup(state.rootGroup, pathToItem);
       if (!parentGroup)
         return;
       const itemIndex = parentGroup.items.findIndex((item) => item.id === itemId);
       if (itemIndex === -1)
         return;
       parentGroup.items.splice(itemIndex, 1);
+      if (parentGroup.items.length === 0)
+        removeItemFromGroup(state, pathToItem);
+    }
+
+    this.updateState((state) => {
+      removeItemFromGroup(state, path);
     });
   }
 
