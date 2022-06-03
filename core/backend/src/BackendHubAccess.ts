@@ -44,35 +44,35 @@ export class LockConflict extends IModelError {
 }
 
 /**
- * Controls cancellation.
+ * Controls cancellation by raising [[CancelSignal]] on cancel.
  * @note This is based on AbortController (https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
  * @beta
  */
 export class CancelController {
   private _cancelEvent = new BeEvent<() => void>();
 
-  /** Signal raised by this controller on cancellation. */
+  /** Signal raised by this controller on cancel. */
   public get signal(): CancelSignal {
     return {
       addListener: (listener) => this._cancelEvent.addListener(listener),
     };
   }
 
-  /** Raises cancellation signal. */
+  /** Raises cancel signal. */
   public cancel() {
     this._cancelEvent.raiseEvent();
   }
 }
 
 /**
- * Allows to add listener for cancellation.
+ * Signal raised on cancel.
  * @note This is based on AbortSignal (https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal).
  * @beta
  */
 export interface CancelSignal {
   /**
-   * Registers a Listener to be executed whenever this signal is raised.
-   * @param listener A listener to be executed whenever this signal is raised.
+   * Registers a Listener to be executed whenever signal is raised.
+   * @param listener A listener to be executed whenever signal is raised.
    * @returns A function that will remove this listener.
    */
   addListener(listener: () => void): () => void;

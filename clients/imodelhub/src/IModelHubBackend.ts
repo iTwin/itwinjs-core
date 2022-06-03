@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { UserCancelledError } from "./itwin-client/FileHandler";
+import { CancelRequest, UserCancelledError } from "./itwin-client/FileHandler";
 import { ProgressCallback } from "./itwin-client/Request";
 import {
   AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointProps, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, DownloadCheckpointArg, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
@@ -314,12 +314,11 @@ export class IModelHubBackend implements BackendHubAccess {
         arg.progressCallback(progress.loaded, progress.total);
     };
 
-    const cancelRequest: any = {};
+    const cancelRequest: CancelRequest = { cancel: () => false };
     const removeCancelListener = arg.cancelSignal?.addListener(() => cancelRequest.cancel?.());
 
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
-    if (removeCancelListener)
-      removeCancelListener();
+    removeCancelListener?.();
 
     return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
@@ -387,8 +386,7 @@ export class IModelHubBackend implements BackendHubAccess {
       }
       await transfer.promise;
 
-      if (removeCancelListener)
-        removeCancelListener();
+      removeCancelListener?.();
 
       const progressResult = transfer.getProgress();
       onProgress?.(progressResult.loaded, progressResult.total); // make sure we call progress func one last time when download completes
