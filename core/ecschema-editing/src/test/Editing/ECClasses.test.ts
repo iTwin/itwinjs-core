@@ -363,7 +363,7 @@ describe("Property creation tests", () => {
     expect(property).to.be.undefined;
   });
 
-  it.only("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
+  it("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "ValidSchema",
@@ -391,7 +391,7 @@ describe("Property creation tests", () => {
     expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).to.be.true;
   });
 
-  it.only("CustomAttribute defined in different schema, instance added to class successfully.", async () => {
+  it("CustomAttribute defined in different schema, instance added to class successfully.", async () => {
     const schemaAJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "SchemaA",
@@ -435,7 +435,7 @@ describe("Property creation tests", () => {
     expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
   });
 
-  it.only("CustomAttribute defined in same schema, instance added to property successfully.", async () => {
+  it("CustomAttribute defined in same schema, instance added to property successfully.", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "ValidSchema",
@@ -471,7 +471,7 @@ describe("Property creation tests", () => {
     expect(property!.customAttributes && property!.customAttributes.has("testCustomAttribute")).to.be.true;
   });
 
-  it.only("CustomAttribute defined in different schema, instance added property successfully.", async () => {
+  it("CustomAttribute defined in different schema, instance added property successfully.", async () => {
     const schemaAJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "SchemaA",
