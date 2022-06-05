@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Assertion, expect, util } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
-import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
@@ -25,20 +25,13 @@ import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer 
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubMock } from "./HubMock";
 
-interface DeepEqualWithFpToleranceOpts {
-  tolerance?: number;
-  /** e.g. consider {x: undefined} and {} as deeply equal */
-  considerNonExistingAndUndefinedEqual?: boolean;
+
+export class HubWrappers extends BackendTestUtils.HubWrappers {
+  protected static override get hubMock() { return HubMock; }
 }
 
-declare global {
-  namespace Chai {
-    interface Deep {
-      // might be better to implement .approximately.deep.equal, but this is simpler
-      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
-    }
-  }
-}
+export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils {
+  protected static override get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
 const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
 
@@ -362,7 +355,7 @@ export async function assertIdentityTransformation(
           );
         } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
-          const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          const _propEq = BackendTestUtils.deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
@@ -412,7 +405,7 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
@@ -481,7 +474,7 @@ export async function assertIdentityTransformation(
       targetModelIds.add(targetModelId);
       targetToSourceModelsMap.set(targetModel, sourceModel);
       const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
       );
