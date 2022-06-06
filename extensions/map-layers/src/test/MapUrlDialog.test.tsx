@@ -107,7 +107,7 @@ describe("MapUrlDialog", () => {
       assert.fail("Invalid layer settings");
 
     if (!isOAuth) {
-      displayStyleMock.verify((x) => x.attachMapLayerSettings(sampleLayerSettings, false, undefined), moq.Times.once());
+      displayStyleMock.verify((x) => x.attachMapLayer(sampleLayerSettings, false, undefined), moq.Times.once());
 
       spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
     }
@@ -131,7 +131,7 @@ describe("MapUrlDialog", () => {
 
   beforeEach(() => {
     displayStyleMock.reset();
-    displayStyleMock.setup((ds) => ds.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
+    displayStyleMock.setup((ds) => ds.attachMapLayer(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
     imodelMock.reset();
     imodelMock.setup((iModel) => iModel.iModelId).returns(() => "fakeGuid");
     imodelMock.setup((iModel) => iModel.iTwinId).returns(() => "fakeGuid");
@@ -189,7 +189,7 @@ describe("MapUrlDialog", () => {
 
     if (!sampleWmsLayerSettings)
       assert.fail("Invalid layer settings");
-    displayStyleMock.verify((x) => x.attachMapLayerSettings(sampleWmsLayerSettings, false, undefined), moq.Times.once());
+    displayStyleMock.verify((x) => x.attachMapLayer(sampleWmsLayerSettings, false, undefined), moq.Times.once());
 
     spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
 

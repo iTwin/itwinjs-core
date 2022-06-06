@@ -126,7 +126,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                 const layerSettings = mapLayerSettings.toLayerSettings(subLayers);
 
                 if (layerSettings) {
-                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
+                  activeViewport.displayStyle.attachMapLayer(layerSettings, isOverlay);
 
                   activeViewport.invalidateRenderPlan();
 

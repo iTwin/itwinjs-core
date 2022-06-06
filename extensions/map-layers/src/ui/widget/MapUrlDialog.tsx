@@ -263,7 +263,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
     const layerSettings = source.toLayerSettings(validation.subLayers);
     if (layerSettings) {
-      vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
+      vp.displayStyle.attachMapLayer(layerSettings, isOverlay, undefined);
 
       const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));

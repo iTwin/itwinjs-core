@@ -32,7 +32,7 @@ class AttachMapLayerBaseTool extends Tool {
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {
-            vp.displayStyle.attachMapLayerSettings(layerSettings, !this._isBackground);
+            vp.displayStyle.attachMapLayer(layerSettings, !this._isBackground);
           }
         }
 
@@ -81,7 +81,7 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      vp.displayStyle.attachMapLayerSettings(ModelMapLayerSettings.fromJSON({ name, modelId }), false);
+      vp.displayStyle.attachMapLayer(ModelMapLayerSettings.fromJSON({ name, modelId }), false);
     }
     return true;
   }

@@ -382,7 +382,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
           toIndexInDisplayStyle = overlayMapLayers.length - destination.index;
         }
 
-        activeViewport.displayStyle.attachMapLayerSettings(layerSettings, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
+        activeViewport.displayStyle.attachMapLayer(layerSettings, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
       }
     } else {
       if (undefined === destination.index) {

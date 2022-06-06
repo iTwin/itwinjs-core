@@ -2433,14 +2433,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
+    attachMapLayer(settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number): void;
     // @internal (undocumented)
-    attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
-    // @internal (undocumented)
-    attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
+    attachMapLayerProps(props: MapLayerProps, isOverlay?: boolean, insertIndex?: number): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
-    // @beta (undocumented)
     get backgroundMapBase(): BaseLayerSettings;
     set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
@@ -2449,17 +2447,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // @internal
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
     // (undocumented)
     changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    // @internal (undocumented)
     changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    // (undocumented)
     changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
@@ -2467,7 +2461,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
@@ -2476,7 +2469,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
-    // @internal (undocumented)
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
@@ -2492,7 +2484,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
-    // @internal (undocumented)
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
@@ -2508,15 +2499,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // @internal (undocumented)
+    // (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    // @internal
     moveMapLayerToBottom(index: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
@@ -5562,7 +5550,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     get tileWidth(): number;
     }
 
-// @internal
+// @public
 export class MapCartoRectangle extends Range2d {
     constructor(west?: number, south?: number, east?: number, north?: number);
     // (undocumented)
@@ -5580,7 +5568,7 @@ export class MapCartoRectangle extends Range2d {
     fractionFromCartographic(carto: Cartographic): Point2d | undefined;
     // (undocumented)
     getCenter(result?: Cartographic): Cartographic;
-    // (undocumented)
+    // @internal (undocumented)
     getTileFractionRange(tilingScheme: MapTilingScheme): Range2d;
     // (undocumented)
     get globalLocation(): GlobalLocation;
