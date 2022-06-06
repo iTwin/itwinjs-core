@@ -49,7 +49,12 @@ export class RemoteExtensionProvider implements ExtensionProvider {
   public async getManifest(): Promise<ExtensionManifest> {
     const options: RequestOptions = { method: "GET" };
     const response = await request(this._props.manifestUrl, options);
-    return response.body;
+    const data = response.body || (() => {
+      if (!response.text)
+        throw new Error("Manifest file was empty.");
+      return JSON.parse(response.text);
+    })();
+    return data;
   }
 
 }
