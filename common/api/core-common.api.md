@@ -3824,6 +3824,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    quantizePositions?: boolean;
     readonly sectionCut?: string;
     // @internal
     readonly smoothPolyfaceEdges?: boolean;
