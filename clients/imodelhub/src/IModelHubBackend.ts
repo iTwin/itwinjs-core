@@ -315,7 +315,7 @@ export class IModelHubBackend implements BackendHubAccess {
     };
 
     const cancelRequest: CancelRequest = { cancel: () => false };
-    const removeCancelListener = arg.cancelSignal?.addListener(() => cancelRequest.cancel?.());
+    const removeCancelListener = arg.cancelSignal?.addListener(() => cancelRequest.cancel());
 
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
     removeCancelListener?.();
