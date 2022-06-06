@@ -21,9 +21,9 @@ import type { AccessToken } from "@itwin/core-bentley";
 export interface ServiceExtensionProviderProps {
   /** Name of the uploaded extension */
   name: string;
-  /** Version number (Semantic Versioning) */
-  version: string;
-  /** iTwin Id */
+  /** Version number (optional - if undefined, assumes the latest version) */
+  version?: string;
+  /** iTwin Id (optional - if undefined, assumes the extension is public) */
   iTwinId?: string;
   /** @internal */
   getAccessToken?: () => Promise<AccessToken>;
@@ -49,7 +49,12 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
     const options: RequestOptions = { method: "GET" };
     const response = await request(loadedExtensionProps.manifest.url, options);
-    return response.body;
+    const data = response.body || (() => {
+      if (!response.text)
+        throw new Error("Manifest file was empty.");
+      return JSON.parse(response.text);
+    })();
+    return data;
   }
 
   /** Executes the javascript main file (the bundled index.js) of an extension from the Extension Service.
