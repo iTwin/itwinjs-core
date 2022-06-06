@@ -143,6 +143,7 @@ export interface OpenDbKey {
   readonly key?: string;
 }
 
+/** @beta TODO documentation */
 export interface CloudContainerUri {
   readonly uriParams: string;
 }
