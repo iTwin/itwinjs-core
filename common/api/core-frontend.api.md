@@ -9584,7 +9584,7 @@ export interface ServiceExtensionProviderProps {
     getAccessToken?: () => Promise<AccessToken>;
     iTwinId?: string;
     name: string;
-    version: string;
+    version?: string;
 }
 
 // @public
