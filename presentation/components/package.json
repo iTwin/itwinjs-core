@@ -79,7 +79,7 @@
     "@itwin/presentation-frontend": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
     "@types/chai-subset": "1.3.1",
