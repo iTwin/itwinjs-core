@@ -282,12 +282,9 @@ export class ECClasses {
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
-    if (schema === undefined)
-      throw new Error(`Schema ${classKey.schemaKey.toString(true)} could not be found`);
-
     const ecClass = await schema.getItem<MutableClass>(classKey.name);
     if (ecClass === undefined)
-      throw new Error(`Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
 
     switch (ecClass.schemaItemType) {
       case SchemaItemType.EntityClass:
@@ -297,7 +294,7 @@ export class ECClasses {
       case SchemaItemType.RelationshipClass:
         break;
       default:
-        throw new Error(`Schema item type not supported`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Schema item type not supported`);
     }
 
     return ecClass;
