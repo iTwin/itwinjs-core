@@ -28,20 +28,27 @@ export namespace Id64 {
   export function getLocalId(id: Id64String): number {
     if (isInvalid(id))
       return 0;
-    return (id.charCodeAt(1) <<  0) &
-           (id.charCodeAt(2) <<  8) &
-           (id.charCodeAt(3) << 16) &
-           (id.charCodeAt(4) << 24) &
-           (id.charCodeAt(5) << 32);
+    const _0_1 = id.charCodeAt(1);
+    const _2_3 = id.charCodeAt(2);
+    const _4_5 = id.charCodeAt(3);
+    const _0 = _0_1 & 0xff00 >> 8;
+    const _1 = _0_1 & 0x00ff >> 0;
+    const _2 = _2_3 & 0xff00 >> 8;
+    const _3 = _2_3 & 0x00ff >> 0;
+    const _4 = _4_5 & 0xff00 >> 8;
+    return _4 << 32 | _3 << 24 | _2 << 16 | _1 << 8 | _0;
   }
 
   /** Extract the briefcase Id portion of an Id64String, contained in the upper 24 bits of the 64-bit value. */
   export function getBriefcaseId(id: Id64String): number {
     if (isInvalid(id))
       return 0;
-    return (id.charCodeAt(6) <<  0) &
-           (id.charCodeAt(7) <<  8) &
-           (id.charCodeAt(8) << 16);
+    const _4_5 = id.charCodeAt(3);
+    const _6_7 = id.charCodeAt(4);
+    const _5 = _4_5 & 0x00ff >> 8;
+    const _6 = _6_7 & 0xff00 >> 0;
+    const _7 = _6_7 & 0x00ff >> 8;
+    return _7 << 16 | _6 << 8 | _5;
   }
 
   /** Create an Id64String from its JSON representation.
@@ -84,16 +91,21 @@ export namespace Id64 {
     if (typeof localId !== "number" || typeof briefcaseId !== "number")
       return invalid;
 
+    const _0 = localId     >>>  0 & 0xff;
+    const _1 = localId     >>>  8 & 0xff;
+    const _2 = localId     >>> 16 & 0xff;
+    const _3 = localId     >>> 24 & 0xff;
+    const _4 = localId     >>> 32 & 0xff;
+    const _5 = briefcaseId >>>  0 & 0xff;
+    const _6 = briefcaseId >>>  8 & 0xff;
+    const _7 = briefcaseId >>> 16 & 0xff;
+
     return `L${
       String.fromCharCode(
-        localId >>> 16,
-        localId >>> 8,
-        localId >>> 0,
-        briefcaseId >>> 32,
-        briefcaseId >>> 24,
-        briefcaseId >>> 16,
-        briefcaseId >>> 8,
-        briefcaseId >>> 0
+        _0 << 8 | _1,
+        _2 << 8 | _3,
+        _4 << 8 | _5,
+        _6 << 8 | _7,
       )
     }`;
   }
@@ -101,21 +113,26 @@ export namespace Id64 {
   /** Create an Id64String from a pair of unsigned 32-bit integers.
    * @param lowBytes The lower 4 bytes of the Id
    * @param highBytes The upper 4 bytes of the Id
-   * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
+   * @returns an Id64String containing the little-endian latin1 encoding of the unsigned 64-bit integer which would result from the
    * operation `lowBytes | (highBytes << 32)`.
    * @see [[Id64.fromUint32PairObject]] if you have a [[Id64.Uint32Pair]] object.
    */
   export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
+    const _0 = lowBytes  >>>  0 & 0xff;
+    const _1 = lowBytes  >>>  8 & 0xff;
+    const _2 = lowBytes  >>> 16 & 0xff;
+    const _3 = lowBytes  >>> 24 & 0xff;
+    const _4 = highBytes >>>  0 & 0xff;
+    const _5 = highBytes >>>  8 & 0xff;
+    const _6 = highBytes >>> 16 & 0xff;
+    const _7 = highBytes >>> 24 & 0xff;
+
     return `L${
       String.fromCharCode(
-        lowBytes >>> 24,
-        lowBytes >>> 16,
-        lowBytes >>> 8,
-        lowBytes >>> 0,
-        highBytes >>> 24,
-        highBytes >>> 16,
-        highBytes >>> 8,
-        highBytes >>> 0
+        _0 << 8 | _1,
+        _2 << 8 | _3,
+        _4 << 8 | _5,
+        _6 << 8 | _7,
       )
     }`;
   }
@@ -165,10 +182,13 @@ export namespace Id64 {
     if (isInvalid(id))
       return 0;
 
-    return (id.charCodeAt(1) <<  0) &
-           (id.charCodeAt(2) <<  8) &
-           (id.charCodeAt(3) << 16) &
-           (id.charCodeAt(4) << 24);
+    const _0_1 = id.charCodeAt(1);
+    const _2_3 = id.charCodeAt(2);
+    const _0 = _0_1 & 0xff00 >> 8;
+    const _1 = _0_1 & 0x00ff >> 0;
+    const _2 = _2_3 & 0xff00 >> 8;
+    const _3 = _2_3 & 0x00ff >> 0;
+    return _3 << 24 | _2 << 16 | _1 << 8 | _0;
   }
 
   /** Extract an unsigned 32-bit integer from the upper 4 bytes of an Id64String. */
@@ -176,10 +196,13 @@ export namespace Id64 {
     if (!isId64(id))
       return 0;
 
-    return (id.charCodeAt(5) <<  0) &
-           (id.charCodeAt(6) <<  8) &
-           (id.charCodeAt(7) << 16) &
-           (id.charCodeAt(8) << 24);
+    const _4_5 = id.charCodeAt(3);
+    const _6_7 = id.charCodeAt(4);
+    const _4 = _4_5 & 0xff00 >> 8;
+    const _5 = _4_5 & 0x00ff >> 8;
+    const _6 = _6_7 & 0xff00 >> 0;
+    const _7 = _6_7 & 0x00ff >> 8;
+    return _7 << 24 | _6 << 16 | _5 << 8 | _4;
   }
 
   /** Convert an [[Id64Arg]] into an [[Id64Set]].
@@ -257,8 +280,8 @@ export namespace Id64 {
     return arg.has(id);
   }
 
-  /** The string representation of an invalid Id. */
-  export const invalid = "L\0\0\0\0\0\0\0\0";
+  /** The string representation of an invalid Id, an L followed by 4 NUL characters (the little-endian integer 0 encoded at UTF-16) */
+  export const invalid = "L\0\0\0\0";
 
   /** Determine if the supplied id string represents a transient Id.
    * @param id A well-formed Id string.
@@ -269,7 +292,7 @@ export namespace Id64 {
    */
   export function isTransient(id: Id64String): boolean {
     // A transient Id is of the format `L${localIdPortion}\xff\xff\xff` where '\xff\xff\xff' indicates an invalid briefcase Id.
-    return id.charCodeAt(8) === 255 && id.charCodeAt(7) === 255 && id.charCodeAt(6) === 255;
+    return id.charCodeAt(4) === 0xffff && (id.charCodeAt(3) & 0xff00) === 0xff;
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
@@ -287,8 +310,8 @@ export namespace Id64 {
    * @see [[Id64.isValidId64]]
    */
   export function isId64(id: string): boolean {
-    // FIXME: verify the length is always 9, even as constructed from native with a null terminator
-    return id.length === 9 && id[0] === "L";
+    // FIXME: verify the length is always 5, even as constructed from native with a null terminator
+    return id.length === 5 && id[0] === "L";
   }
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
