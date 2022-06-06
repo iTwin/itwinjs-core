@@ -209,20 +209,17 @@ function getAllElemMetaDataProperties(elem: Element) {
 
 /**
  * Assert that an identity (no changes) transformation has occurred between two IModelDbs
- * @note If you do not pass a transformer or custom implemention of an id remapping context, it defaults to assuming
+ * @note If you do not pass a transformer or custom implementation of an id remapping context, it defaults to assuming
  *       no remapping occurred and therefore can be used as a general db-content-equivalence check
  */
 export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
-  remapper:
-    | IModelTransformer
-    | ((id: Id64String) => Id64String)
-    | {
-      findTargetCodeSpecId: (id: Id64String) => Id64String;
-      findTargetElementId: (id: Id64String) => Id64String;
-    } = (id: Id64String) => id,
+  remapper: IModelTransformer | ((id: Id64String) => Id64String) | {
+    findTargetCodeSpecId: (id: Id64String) => Id64String;
+    findTargetElementId: (id: Id64String) => Id64String;
+  } = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option

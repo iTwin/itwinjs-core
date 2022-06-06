@@ -126,17 +126,6 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  /* private function for use by tests which resets the state of the v2checkpointmanager. all dbs should be closed before calling this function. */
-  private static cleanup(): void {
-    for (const [_, value] of this.containers.entries()) {
-      if (value.isConnected)
-        value.detach();
-    }
-    this._cloudCache?.destroy();
-    this._cloudCache = undefined;
-    this.containers.clear();
-  }
-
   private static get cloudCache(): IModelJsNative.CloudCache {
     if (!this._cloudCache) {
       let rootDir = process.env.BLOCKCACHE_DIR;
