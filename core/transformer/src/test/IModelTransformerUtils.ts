@@ -17,79 +17,13 @@ import {
 } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import {
-  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
-  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
+  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
+  GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
+  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubMock } from "./HubMock";
-
-
-export class HubWrappers extends BackendTestUtils.HubWrappers {
-  protected static override get hubMock() { return HubMock; }
-}
-
-export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils {
-  protected static override get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
-
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
-
-export function deepEqualWithFpTolerance(
-  a: any,
-  b: any,
-  options: DeepEqualWithFpToleranceOpts = {},
-): boolean {
-  if (options.tolerance === undefined) options.tolerance = 1e-10;
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  switch (typeof a) {
-    case "number":
-      return isAlmostEqualNumber(a, b, options.tolerance);
-    case "string":
-    case "boolean":
-    case "function":
-    case "symbol":
-    case "undefined":
-      return false; // these objects can only be strict equal which was already tested
-    case "object":
-      if ((a === null) !== (b === null)) return false;
-      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
-      const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
-      return aSize === bSize && Object.keys(a).every(
-        (key) =>
-          (key in b || options.considerNonExistingAndUndefinedEqual) &&
-          deepEqualWithFpTolerance(a[key], b[key], options)
-      );
-    default: // bigint unhandled
-      throw Error("unhandled deep compare type");
-  }
-}
-
-Assertion.addMethod(
-  "equalWithFpTolerance",
-  function equalWithFpTolerance(
-    expected: any,
-    options: DeepEqualWithFpToleranceOpts = {}
-  ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
-    const actual = this._obj;
-    const isDeep = util.flag(this, "deep");
-    this.assert(
-      isDeep
-        ? deepEqualWithFpTolerance(expected, actual, options)
-        : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${
-        isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${
-        isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      expected,
-      actual
-    );
-  }
-);
 
 export class HubWrappers extends BackendTestUtils.HubWrappers {
   protected static override get hubMock() { return HubMock; }
@@ -374,9 +308,7 @@ export async function assertIdentityTransformation(
         }
       }
       if (sourceElem instanceof DisplayStyle3d) {
-        const styles = expectedSourceElemJsonProps.styles as
-          | DisplayStyle3dSettingsProps
-          | undefined;
+        const styles = expectedSourceElemJsonProps.styles ;
         if (styles?.environment?.sky) {
           const sky = styles.environment.sky;
           if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
@@ -384,14 +316,14 @@ export async function assertIdentityTransformation(
           if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
           if (image?.texture) image.texture = remapElem(image.texture);
           if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-          if ((sky as any).file === "") delete (sky as any).file;
+          if ((sky ).file === "") delete (sky ).file;
         }
         const excludedElements = typeof styles?.excludedElements === "string"
           ? CompressedId64Set.decompressArray(styles.excludedElements)
           : styles?.excludedElements;
         for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
-          const id = excludedElements![i];
-          excludedElements![i] = remapElem(id);
+          const id = excludedElements[i];
+          excludedElements[i] = remapElem(id);
         }
         for (const ovr of styles?.subCategoryOvr ?? []) {
           if (ovr.subCategory)
@@ -399,7 +331,7 @@ export async function assertIdentityTransformation(
         }
       }
       if (sourceElem instanceof SpatialViewDefinition) {
-        const viewProps = expectedSourceElemJsonProps.viewDetails as ViewDetails3dProps | undefined;
+        const viewProps = expectedSourceElemJsonProps.viewDetails ;
         if (viewProps && viewProps.acs)
           viewProps.acs = remapElem(viewProps.acs);
       }
@@ -767,10 +699,10 @@ export class TransformerExtensiveTestScenario {
     const informationRecordId1 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" }));
     const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
     const informationRecordId3 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" }));
-    assert.isTrue(Id64.isValidId64(informationRecordId1!));
-    assert.isTrue(Id64.isValidId64(informationRecordId2!));
-    assert.isTrue(Id64.isValidId64(informationRecordId3!));
-    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    assert.isTrue(Id64.isValidId64(informationRecordId1));
+    assert.isTrue(Id64.isValidId64(informationRecordId2));
+    assert.isTrue(Id64.isValidId64(informationRecordId3));
+    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2);
     assert.equal(informationRecord2.commonString, "Common2");
     assert.equal(informationRecord2.targetString, "Two");
     // DisplayStyle
@@ -817,7 +749,7 @@ export class TransformerExtensiveTestScenario {
     const element: Element = targetDb.elements.getElement(targetElementId);
     assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
     const aspects: ElementAspect[] = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] as ExternalSourceAspect;
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] ;
     assert.exists(aspect);
     assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
     assert.equal(aspect.scope.id, IModel.rootSubjectId);
@@ -833,7 +765,7 @@ export class TransformerExtensiveTestScenario {
     const targetRelationship: Relationship = targetDb.relationships.getInstance(targetRelClassFullName, { sourceId: targetRelSourceId, targetId: targetRelTargetId });
     assert.exists(targetRelationship);
     const aspects: ElementAspect[] = targetDb.elements.getAspects(targetRelSourceId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] as ExternalSourceAspect;
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] ;
     assert.exists(aspect);
     const sourceRelationship: Relationship = sourceDb.relationships.getInstance(ElementRefersToElements.classFullName, aspect.identifier);
     assert.exists(sourceRelationship);
@@ -856,10 +788,10 @@ export class IModelTransformer3d extends IModelTransformer {
   public override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
-      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
+      const placement = Placement3d.fromJSON((targetElementProps ).placement);
       if (placement.isValid) {
         placement.multiplyTransform(this._transform3d);
-        (targetElementProps as GeometricElement3dProps).placement = placement;
+        (targetElementProps ).placement = placement;
       }
     }
     return targetElementProps;
