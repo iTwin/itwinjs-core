@@ -18,9 +18,9 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  addPanelWidget, addTab, addWidgetTabToDraftFloatingPanel, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, FloatingWidgetState, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
+  isHorizontalPanelSide, isPopoutLocation, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -832,11 +832,21 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
   });
   nineZone.tabs[newTab.id] = newTab;
-  if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
+   if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
     // Add to existing widget (by widget id).
     const widgetId = widgetDef.tabLocation.widgetId;
     const newTabWidget = nineZone.widgets[widgetId];
     newTabWidget.tabs.splice(widgetDef.tabLocation.tabIndex, 0, newTab.id);
+  } else if (widgetDef.tabLocation.floating) {
+    const id = widgetDef.tabLocation.widgetId;
+    if (id in nineZone.floatingWidgets.byId){
+      nineZone.floatingWidgets.allIds.push(id);
+      nineZone.floatingWidgets.byId[id].hidden = false;
+    } else {
+      const home: FloatingWidgetHomeState = { side: widgetDef.tabLocation.side, widgetId: widgetDef.floatingContainerId, widgetIndex: 0 };
+      addWidgetTabToDraftFloatingPanel (nineZone, widgetDef.floatingContainerId ?? widgetDef.id, widgetDef.id, home, newTab);
+    }
+
   } else {
     const newTabPanel = nineZone.panels[widgetDef.tabLocation.side];
     if (newTabPanel.maxWidgetCount === newTabPanel.widgets.length) {
@@ -867,6 +877,9 @@ export const setWidgetState = produce((
       addRemovedTab(nineZone, widgetDef);
       location = findTab(nineZone, id);
       assert(!!location);
+    }
+    if (!!widgetDef.tabLocation.floating) {
+      nineZone.floatingWidgets.byId[widgetDef.floatingContainerId!].hidden = false;
     }
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
@@ -905,6 +918,18 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const location = findTab(state, widgetDef.id);
   if (!location)
     return;
+  if (isFloatingLocation(location)) {
+      const widget = state.floatingWidgets.byId[location.widgetId];
+      widgetDef.setFloatingContainerId(location.floatingWidgetId);
+      widgetDef.tabLocation = {
+        side: widget.home.side,
+        tabIndex: widget.home.widgetIndex,
+        widgetId: widgetDef.id,
+        widgetIndex: widget.home.widgetIndex,
+        floating: true,
+      };
+      // istanbul ignore else
+  } else if (!isPopoutLocation(location)) {
   const widgetId = location.widgetId;
   const side = "side" in location ? location.side : "left";
   const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
@@ -915,6 +940,7 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
     widgetId,
     widgetIndex,
   };
+}
   removeTab(state, widgetDef.id);
 }
 
