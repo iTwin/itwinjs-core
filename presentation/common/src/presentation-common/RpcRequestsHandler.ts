@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Guid, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import { DescriptorJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
@@ -21,9 +21,9 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions,
-  SelectionScopeRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  HierarchyCompareOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
@@ -185,9 +185,9 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
-      this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
+  public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps>): Promise<KeySetJSON> {
+    return this.request<KeySetJSON, ComputeSelectionRequestOptions<IModelRpcProps>>(
+      this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
   public async compareHierarchies(options: HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<PartialHierarchyModificationJSON[]> {
     return this.request<PartialHierarchyModificationJSON[], HierarchyCompareOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>(

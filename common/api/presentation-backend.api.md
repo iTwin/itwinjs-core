@@ -5,6 +5,7 @@
 ```ts
 
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ComputeSelectionRequestOptions } from '@bentley/presentation-common';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
@@ -163,6 +164,8 @@ export class PresentationManager {
         ids: Id64String[];
         scopeId: string;
     }>): Promise<KeySet>;
+    // @alpha (undocumented)
+    computeSelection(requestOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>>): Promise<KeySet>;
     dispose(): void;
     // @deprecated
     getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;

@@ -8,11 +8,11 @@
 
 import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@bentley/presentation-common";
+import { AsyncTasksTracker, Keys, KeySet, SelectionScope, SelectionScopeProps } from "@bentley/presentation-common";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
-import { getScopeId, SelectionScopesManager } from "./SelectionScopesManager";
+import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionScopesManager";
 
 /**
  * Properties for creating [[SelectionManager]].
@@ -234,7 +234,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.addToSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -248,7 +248,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.removeFromSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -262,7 +262,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
-  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
+  public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.replaceSelection(source, imodel, scopedKeys, level, rulesetId);
   }
@@ -372,13 +372,11 @@ export class ToolSelectionSyncHandler implements IDisposable {
         break;
     }
 
-    const scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
-
     // we're always using scoped selection changer even if the scope is set to "element" - that
     // makes sure we're adding to selection keys with concrete classes and not "BisCore:Element", which
     // we can't because otherwise our keys compare fails (presentation components load data with
     // concrete classes)
-    const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId);
+    const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, createSelectionScopeProps(this._logicalSelection.scopes.activeScope));
 
     // we know what to do immediately on `clear` events
     if (SelectionSetEventType.Clear === ev.type) {
@@ -447,8 +445,8 @@ class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;
   public readonly manager: SelectionManager;
-  public readonly scope: SelectionScope | string;
-  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager, scope: SelectionScope | string) {
+  public readonly scope: SelectionScopeProps | SelectionScope | string;
+  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager, scope: SelectionScopeProps | SelectionScope | string) {
     this.name = name;
     this.imodel = imodel;
     this.manager = manager;

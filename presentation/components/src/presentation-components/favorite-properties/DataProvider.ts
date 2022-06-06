@@ -9,7 +9,7 @@
 import { Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
-import { getScopeId, Presentation } from "@bentley/presentation-frontend";
+import { createSelectionScopeProps, Presentation } from "@bentley/presentation-frontend";
 import { PropertyData } from "@bentley/ui-components";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
@@ -108,7 +108,7 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
       });
     }
 
-    const keys = await Presentation.selection.scopes.computeSelection(imodel, elementIds, getScopeId(Presentation.selection.scopes.activeScope));
+    const keys = await Presentation.selection.scopes.computeSelection(imodel, elementIds, createSelectionScopeProps(Presentation.selection.scopes.activeScope));
     return this.getData(imodel, keys);
   }
 }

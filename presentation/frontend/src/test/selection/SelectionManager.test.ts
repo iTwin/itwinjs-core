@@ -511,7 +511,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = undefined`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -522,7 +522,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = \"element\"`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => "element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -555,9 +555,9 @@ describe("SelectionManager", () => {
           selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
           scopesMock.setup((x) => x.activeScope).returns(() => scope);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString()))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny()))
             .returns(async () => new KeySet());
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAnyString()))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAny()))
             .returns(async () => new KeySet([scopedKey]));
         });
 
@@ -740,7 +740,7 @@ describe("SelectionManager", () => {
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);
 
       scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString())).returns(async () => new KeySet());
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny())).returns(async () => new KeySet());
 
       selectionManager.setSyncWithIModelToolSelection(imodelMock.object, true);
     });
