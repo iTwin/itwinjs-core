@@ -17,7 +17,6 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { CancelSignal, DownloadCheckpointArg, DownloadProgressFunction } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -65,10 +64,7 @@ export interface DownloadRequest {
   /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this
    * function returns a non-zero value, the download is aborted.
    */
-  readonly onProgress?: DownloadProgressFunction;
-
-  /** Signal indicating download cancel. */
-  readonly cancelSignal?: CancelSignal;
+  readonly onProgress?: ProgressFunction;
 }
 
 /** @internal */
@@ -144,28 +140,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV2.raiseEvent(job);
-
-    // Since full-stack-tests and test-apps use latest (workspace) version of BackendHubAccess interface and BackendIModelsAccess
-    // implementation from "@itwin/imodels-access-backend" (version 1.0.1), interface and implementation doesn't match. To avoid
-    // runtime errors we pass downloadArg which matches both old and new versions of BackendHubAccess interface.
-    // TODO: Remove support for old interface once full-stack-tests and test-apps consume "@itwin/imodels-access-backend" version
-    //       with new implementation.
-    let cancelDownload = 0;
-    job.request.cancelSignal?.addListener(() => cancelDownload = 1);
-    const oldProgressFunction: ProgressFunction = (loaded: number, total: number) => {
-      if (job.request.onProgress)
-        job.request.onProgress(loaded, total);
-      return cancelDownload;
-    };
-
-    const downloadArg: DownloadRequest & DownloadCheckpointArg = {
-      ...job.request.checkpoint,
-      ...job.request,
-      progressCallback: job.request.onProgress,
-      onProgress: oldProgressFunction,
-    };
-
-    return (await IModelHost.hubAccess.downloadV2Checkpoint(downloadArg)).id;
+    return (await IModelHost.hubAccess.downloadV2Checkpoint(job.request)).id;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -211,28 +186,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-
-    // Since full-stack-tests and test-apps use latest (workspace) version of BackendHubAccess interface and BackendIModelsAccess
-    // implementation from "@itwin/imodels-access-backend" (version 1.0.1), interface and implementation doesn't match. To avoid
-    // runtime errors we pass downloadArg which matches both old and new versions of BackendHubAccess interface.
-    // TODO: Remove support for old interface once full-stack-tests and test-apps consume "@itwin/imodels-access-backend" version
-    //       with new implementation.
-    let cancelDownload = 0;
-    job.request.cancelSignal?.addListener(() => cancelDownload = 1);
-    const oldProgressFunction: ProgressFunction = (loaded: number, total: number) => {
-      if (job.request.onProgress)
-        job.request.onProgress(loaded, total);
-      return cancelDownload;
-    };
-
-    const downloadArg: DownloadRequest & DownloadCheckpointArg & { onProgress?: ProgressFunction } = {
-      ...job.request.checkpoint,
-      ...job.request,
-      progressCallback: job.request.onProgress,
-      onProgress: oldProgressFunction,
-    };
-
-    return (await IModelHost.hubAccess.downloadV1Checkpoint(downloadArg)).id;
+    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
 

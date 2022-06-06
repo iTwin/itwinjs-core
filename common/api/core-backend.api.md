@@ -333,8 +333,10 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    downloadV1Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
-    downloadV2Checkpoint: (arg: DownloadCheckpointArg) => Promise<ChangesetIndexAndId>;
+    // @internal
+    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+    // @internal
+    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -1042,11 +1044,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
     targetDir: LocalDirName;
 }
 
-// @beta
-export interface DownloadCheckpointArg extends CheckpointProps, DownloadProgressArg, CancelDownloadArg {
-    localFile: LocalFileName;
-}
-
 // @internal (undocumented)
 export interface DownloadJob {
     // (undocumented)
@@ -1066,10 +1063,9 @@ export type DownloadProgressFunction = (loaded: number, total: number) => void;
 // @internal
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
-    readonly cancelSignal?: CancelSignal;
     readonly checkpoint: CheckpointProps;
     localFile: LocalFileName;
-    readonly onProgress?: DownloadProgressFunction;
+    readonly onProgress?: ProgressFunction;
 }
 
 // @internal (undocumented)

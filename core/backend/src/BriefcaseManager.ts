@@ -17,7 +17,7 @@ import {
   LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
 import { TelemetryEvent } from "@itwin/core-telemetry";
-import { AcquireNewBriefcaseIdArg, CancelController, DownloadProgressFunction } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
@@ -210,19 +210,7 @@ export class BriefcaseManager {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
     const checkpoint: CheckpointProps = { ...arg, changeset };
 
-    const cancelController = new CancelController();
-    const progressCallback: DownloadProgressFunction = (loaded, total) => {
-      if (arg.onProgress && arg.onProgress(loaded, total))
-        cancelController.cancel();
-    };
-
-    await CheckpointManager.downloadCheckpoint({
-      localFile: fileName,
-      checkpoint,
-      onProgress: progressCallback,
-      cancelSignal: cancelController.signal,
-    });
-
+    await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
     const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,

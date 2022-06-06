@@ -40,7 +40,7 @@ const settings = new Settings(process.env);
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-  hostConfig.hubAccess = new BackendIModelsAccess(iModelClient) as any;
+  hostConfig.hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();
