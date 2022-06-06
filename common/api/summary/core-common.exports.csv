@@ -101,6 +101,7 @@ public;ChannelRootAspectProps
 internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
+beta;CloudContainerUri
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -356,6 +357,7 @@ public;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
+deprecated;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 
 public;IModelProps

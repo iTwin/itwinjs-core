@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add option to quantize positions in GraphicsRequestProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
