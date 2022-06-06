@@ -1,0 +1,62 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { Guid } from "@itwin/core-bentley";
+import { PersistentGraphicsRequestProps } from "@itwin/core-common";
+import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../../TestUtility";
+
+describe.only("requestElementGraphics", () => {
+  let imodel: SnapshotConnection;
+
+  before(async () => {
+    await TestUtility.startFrontend(undefined, true);
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.close();
+
+    await TestUtility.shutdownFrontend();
+  });
+
+  async function expectQuantized(requestQuantized: boolean | undefined, expected: boolean): Promise<void> {
+    const requestProps: PersistentGraphicsRequestProps = {
+      elementId: "0x29",
+      id: Guid.createValue(),
+      toleranceLog10: -3,
+    };
+
+    if (undefined !== requestQuantized)
+      requestProps.quantizePositions = requestQuantized;
+
+    const bytes = await IModelApp.tileAdmin.requestElementGraphics(imodel, requestProps);
+    expect(bytes).not.to.be.undefined;
+
+    let createdMesh = false;
+    IModelApp.renderSystem.createMesh = (params, _instances) => {
+      expect(params.vertices.usesUnquantizedPositions).to.equal(!expected);
+      createdMesh = true;
+      return new MockRender.Graphic();
+    };
+
+    const gfx = await readElementGraphics(bytes!, imodel, "0", true);
+    expect(gfx).not.to.be.undefined;
+    expect(createdMesh).to.be.true;
+  }
+
+  it.only("does not quantize positions by default", async () => {
+    await expectQuantized(undefined, false);
+  });
+
+  it.only("quantizes positions if explicitly requested", async () => {
+    await expectQuantized(true, true);
+  });
+
+  it.only("produces unquantized positions if explicitly requested", async () => {
+    await expectQuantized(false, false);
+  });
+});
