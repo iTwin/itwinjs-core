@@ -323,6 +323,7 @@ export abstract class RpcRequest<TResponse = any> {
       this._connecting = true;
       RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
+      await this.protocol.initialize(this.operation.policy.token(this));
       this._sending = new Cancellable(this.setHeaders().then(async () => this.send()));
       this.operation.policy.sentCallback(this);
 
