@@ -22,9 +22,9 @@ export interface SelectionScope {
 
 /** @alpha */
 export interface ElementSelectionScopeProps {
-  scopeId: "element";
+  id: "element";
   ancestorLevel?: number;
 }
 
 /** @alpha */
-export type SelectionScopeProps = ElementSelectionScopeProps | { scopeId: string };
+export type SelectionScopeProps = ElementSelectionScopeProps | { id: string };

@@ -223,12 +223,12 @@ export class SelectionScopesHelper {
       return this.computeSelection({
         ...requestOptions,
         elementIds: elementIds!,
-        scopeId: scopeId!,
+        scope: { id: scopeId! },
       });
     }
 
-    switch (requestOptions.scopeId) {
-      case "element": return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, (requestOptions as ElementSelectionScopeProps).ancestorLevel ?? 0);
+    switch (requestOptions.scope.id) {
+      case "element": return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, (requestOptions.scope as ElementSelectionScopeProps).ancestorLevel ?? 0);
       case "assembly": return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, 1);
       case "top-assembly": return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, Number.MAX_SAFE_INTEGER);
       case "category": return this.computeCategorySelection(requestOptions.imodel, requestOptions.elementIds);

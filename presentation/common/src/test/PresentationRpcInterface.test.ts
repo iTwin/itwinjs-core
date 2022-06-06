@@ -311,7 +311,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards computeSelection call", async () => {
       const options: ComputeSelectionRpcRequestOptions = {
         elementIds: new Array<Id64String>(),
-        scopeId: faker.random.uuid(),
+        scope: { id: faker.random.uuid() },
       };
       await rpcInterface.computeSelection(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));

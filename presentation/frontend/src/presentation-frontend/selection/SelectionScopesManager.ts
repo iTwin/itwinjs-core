@@ -78,7 +78,7 @@ export class SelectionScopesManager {
       const batchStart = batchSize * batchIndex;
       const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
-      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, ...createSelectionScopeProps(scope) }));
+      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, scope: createSelectionScopeProps(scope) }));
     }
     const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));
@@ -94,17 +94,10 @@ export class SelectionScopesManager {
  */
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope)
-    return { scopeId: "element" };
+    return { id: "element" };
   if (typeof scope === "string")
-    return { scopeId: scope };
-  if (isSelectionScope(scope)) {
-    return { scopeId: scope.id };
-  }
+    return { id: scope };
   return scope;
-}
-
-function isSelectionScope(param: SelectionScopeProps | SelectionScope): param is SelectionScope {
-  return !!(param as SelectionScope).id;
 }
 
 /**
@@ -115,5 +108,5 @@ function isSelectionScope(param: SelectionScopeProps | SelectionScope): param is
  */
 // istanbul ignore next
 export function getScopeId(scope: SelectionScope | string | undefined): string {
-  return createSelectionScopeProps(scope).scopeId;
+  return createSelectionScopeProps(scope).id;
 }

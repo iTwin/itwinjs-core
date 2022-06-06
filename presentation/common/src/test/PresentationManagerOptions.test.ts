@@ -132,7 +132,7 @@ describe("isComputeSelectionRequestOptions ", () => {
     const opts: ComputeSelectionRequestOptions<any> = {
       imodel: undefined,
       elementIds: [createRandomId(), createRandomId()],
-      scopeId: "test",
+      scope: { id: "test" },
     };
     expect(isComputeSelectionRequestOptions(opts)).to.be.true;
   });

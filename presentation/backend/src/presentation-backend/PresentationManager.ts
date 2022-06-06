@@ -907,14 +907,14 @@ export class PresentationManager {
   public async computeSelection(requestOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>>): Promise<KeySet>;
   public async computeSelection(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>> | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>, deprecatedIds?: Id64String[], deprecatedScopeId?: string): Promise<KeySet> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, elementIds: deprecatedIds!, scopeId: deprecatedScopeId! });
+      return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, elementIds: deprecatedIds!, scope: { id: deprecatedScopeId! } });
     }
     const { requestContext, ...requestOptions } = requestContextOrOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     return SelectionScopesHelper.computeSelection(isComputeSelectionRequestOptions(requestOptions)
       ? requestOptions
       : (function () {
-        const { ids, ...rest } = requestOptions;
-        return { ...rest, elementIds: ids };
+        const { ids, scopeId, ...rest } = requestOptions;
+        return { ...rest, elementIds: ids, scope: { id: scopeId } };
       })());
   }
 

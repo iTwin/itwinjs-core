@@ -1628,7 +1628,7 @@ describe("PresentationRpcImpl", () => {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           elementIds: ids,
-          scopeId: scope.id,
+          scope: { id: scope.id },
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
@@ -1646,15 +1646,19 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: ComputeSelectionRpcRequestOptions = {
           ...defaultRpcParams,
           elementIds,
-          scopeId,
-          ancestorLevel,
-        } as any;
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
+        };
         const managerOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           elementIds,
-          scopeId,
-          ancestorLevel,
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))

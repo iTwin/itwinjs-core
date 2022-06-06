@@ -511,7 +511,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = undefined`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { scopeId: "element" }))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -522,7 +522,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = \"element\"`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => "element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { scopeId: "element" }))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());

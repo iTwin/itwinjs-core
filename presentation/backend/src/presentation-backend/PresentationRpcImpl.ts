@@ -375,7 +375,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
         options = {
           ...options,
           elementIds: ids!,
-          scopeId: scopeId!,
+          scope: { id: scopeId! },
         };
       }
       const keys = await this.getManager(requestOptions.clientId).computeSelection(options);

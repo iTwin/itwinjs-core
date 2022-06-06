@@ -497,12 +497,12 @@ describe("RpcRequestsHandler", () => {
       const handlerOptions: ComputeSelectionRequestOptions<IModelRpcProps> = {
         imodel: token,
         elementIds: [Id64.invalid],
-        scopeId: "test scope",
+        scope: { id: "test scope" },
       };
       const rpcOptions: PresentationRpcRequestOptions<ComputeSelectionRequestOptions<any>> = {
         clientId,
         elementIds: [Id64.invalid],
-        scopeId: "test scope",
+        scope: { id: "test scope" },
       };
       const result = new KeySet().toJSON();
       rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();

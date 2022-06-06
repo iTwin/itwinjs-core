@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScopeProps } from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, RpcRequestsHandler } from "@bentley/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
 
@@ -102,7 +102,11 @@ describe("SelectionScopesManager", () => {
       const scope = createRandomSelectionScope();
       const result = new KeySet();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken, elementIds: ids, scopeId: scope.id })))
+        .setup(async (x) => x.computeSelection(moq.It.is((options) => {
+          return options.imodel === imodelToken
+            && options.elementIds.length === 1 && options.elementIds[0] === ids[0]
+            && options.scope.id === scope.id;
+        })))
         .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope);
@@ -116,7 +120,11 @@ describe("SelectionScopesManager", () => {
       const scope = createRandomSelectionScope();
       const result = new KeySet();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken, elementIds: ids, scopeId: scope.id })))
+        .setup(async (x) => x.computeSelection(moq.It.is((options) => {
+          return options.imodel === imodelToken
+            && options.elementIds.length === 1 && options.elementIds[0] === ids[0]
+            && options.scope.id === scope.id;
+        })))
         .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope.id);
@@ -127,16 +135,21 @@ describe("SelectionScopesManager", () => {
 
     it("forwards request to RpcRequestsHandler with element scope and params", async () => {
       const elementIds = [createRandomId()];
-      const selectionScopeProps: SelectionScopeProps = {
-        scopeId: "element",
+      const scope: ElementSelectionScopeProps = {
+        id: "element",
         ancestorLevel: 123,
       };
       const result = new KeySet();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken, elementIds, ...selectionScopeProps })))
+        .setup(async (x) => x.computeSelection(moq.It.is((options) => {
+          return options.imodel === imodelToken
+            && options.elementIds.length === 1 && options.elementIds[0] === elementIds[0]
+            && options.scope.id === scope.id
+            && (options.scope as ElementSelectionScopeProps).ancestorLevel === scope.ancestorLevel;
+        })))
         .returns(async () => result.toJSON())
         .verifiable();
-      const computedResult = await getManager().computeSelection(imodelMock.object, elementIds, selectionScopeProps);
+      const computedResult = await getManager().computeSelection(imodelMock.object, elementIds, scope);
       rpcRequestsHandlerMock.verifyAll();
       expect(computedResult.size).to.eq(result.size);
       expect(computedResult.hasAll(result)).to.be.true;
@@ -153,7 +166,7 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.is((options) => {
           return options.imodel === imodelToken
             && options.elementIds.length === DEFAULT_KEYS_BATCH_SIZE
-            && options.scopeId === scope.id;
+            && options.scope.id === scope.id;
         })))
         .returns(async () => result1.toJSON())
         .verifiable();
@@ -161,7 +174,7 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.is((options) => {
           return options.imodel === imodelToken
             && options.elementIds.length === 1
-            && options.scopeId === scope.id;
+            && options.scope.id === scope.id;
         })))
         .returns(async () => result2.toJSON())
         .verifiable();
@@ -177,7 +190,11 @@ describe("SelectionScopesManager", () => {
       const scope = createRandomSelectionScope();
       const result = new KeySet();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken, elementIds: [id], scopeId: scope.id })))
+        .setup(async (x) => x.computeSelection(moq.It.is((options) => {
+          return options.imodel === imodelToken
+            && options.elementIds.length === 1 && options.elementIds[0] === id
+            && options.scope.id === scope.id;
+        })))
         .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, id, scope);
@@ -191,7 +208,11 @@ describe("SelectionScopesManager", () => {
       const scope = createRandomSelectionScope();
       const result = new KeySet();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken, elementIds: [id], scopeId: scope.id })))
+        .setup(async (x) => x.computeSelection(moq.It.is((options) => {
+          return options.imodel === imodelToken
+            && options.elementIds.length === 1 && options.elementIds[0] === id
+            && options.scope.id === scope.id;
+        })))
         .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, new Set([id]), scope);

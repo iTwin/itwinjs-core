@@ -43,7 +43,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'element' 1st parent level selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { scopeId: "element", ancestorLevel: 1 });
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 1 });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(27, 0) }));
@@ -59,7 +59,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'element' 2nd parent level selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { scopeId: "element", ancestorLevel: 2 });
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 2 });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(1, 0) }));
@@ -67,7 +67,7 @@ describe("Selection Scopes", () => {
 
   it("sets correct selection with 'element' exceeding parent level selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
-    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { scopeId: "element", ancestorLevel: 999 });
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 999 });
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(1, 0) }));

@@ -242,9 +242,12 @@ export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "f
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
 // @alpha
-export type ComputeSelectionRequestOptions<TIModel> = RequestOptions<TIModel> & SelectionScopeProps & {
+export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
+    // (undocumented)
     elementIds: Id64String[];
-};
+    // (undocumented)
+    scope: SelectionScopeProps;
+}
 
 // @alpha (undocumented)
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
@@ -850,7 +853,7 @@ export interface ElementSelectionScopeProps {
     // (undocumented)
     ancestorLevel?: number;
     // (undocumented)
-    scopeId: "element";
+    id: "element";
 }
 
 // @public
@@ -2790,7 +2793,7 @@ export interface SelectionScope {
 
 // @alpha (undocumented)
 export type SelectionScopeProps = ElementSelectionScopeProps | {
-    scopeId: string;
+    id: string;
 };
 
 // @public

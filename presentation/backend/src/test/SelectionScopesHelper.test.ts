@@ -194,7 +194,7 @@ describe("SelectionScopesHelper", () => {
         const element = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent1.key });
         setupIModelForElementKey(parent2.key);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [element.key.id], scopeId: "element", ancestorLevel: 2 });
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [element.key.id], scope: { id: "element", ancestorLevel: 2 } });
         expect(result.size).to.eq(1);
         expect(result.has(parent2.key)).to.be.true;
       });

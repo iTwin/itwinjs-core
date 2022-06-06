@@ -218,9 +218,10 @@ export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TI
  * Request options used for calculating selection based on picked instance ksy and selection scope
  * @alpha
  */
-export type ComputeSelectionRequestOptions<TIModel> = RequestOptions<TIModel> & SelectionScopeProps & {
+export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
-};
+  scope: SelectionScopeProps;
+}
 /** @internal */
 export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel> {
   return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
