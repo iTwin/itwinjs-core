@@ -2,7 +2,7 @@
   "cloud/accounts": [
     {
       "name": "gcs/account",
-      "accessName": "http://gcs-data.itwin.org/",
+      "accessName": "https://gcs-data.itwin.org/",
       "storageType": "azure?customuri=1&sas=1"
     }
   ],
