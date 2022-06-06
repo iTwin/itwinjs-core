@@ -5,7 +5,8 @@
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement3dProps, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
+  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
 import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
@@ -763,14 +764,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
       imodel.saveChanges();
 
-      const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({id: objId, wantGeometry: true}, PhysicalObject);
+      const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(inMemoryCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
 
       // reload db since there is a different path for loading properties not in memory that we want to force
       imodel.close();
       imodel = SnapshotDb.openFile(imodelPath);
 
-      const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({id: objId, wantGeometry: true}, PhysicalObject);
+      const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(readFromDbCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
 
       imodel.close();

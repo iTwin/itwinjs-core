@@ -176,7 +176,7 @@ describe("IModelBranchingOperations", () => {
   before(async () => {
     HubMock.startup("IModelBranchingOperations");
     if (!fs.existsSync(version0Path))
-      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" }});
+      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" } });
   });
 
   after(() => {
@@ -197,5 +197,7 @@ describe("IModelBranchingOperations", () => {
     await forwardSyncMasterToBranch(masterDb, branchDb, myAccessToken);
     await arbitraryEdit(branchDb, myAccessToken, "edit branch");
     await reverseSyncBranchToMaster(branchDb, masterDb, myAccessToken);
+    masterDb.close();
+    branchDb.close();
   });
 });
