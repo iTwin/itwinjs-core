@@ -37,10 +37,10 @@ describe.only("requestElementGraphics", () => {
     expect(bytes).not.to.be.undefined;
 
     let createdMesh = false;
-    IModelApp.renderSystem.createMesh = (params, _instances) => {
+    IModelApp.renderSystem.createMeshGeometry = (params, _origin) => {
       expect(params.vertices.usesUnquantizedPositions).to.equal(!expected);
       createdMesh = true;
-      return new MockRender.Graphic();
+      return new MockRender.Geometry();
     };
 
     const gfx = await readElementGraphics(bytes!, imodel, "0", true);
