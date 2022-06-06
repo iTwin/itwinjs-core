@@ -12,12 +12,12 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
-  DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, getLocalesDirectory,
-  HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey,
-  NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
-  Ruleset, SelectionInfo, SelectionScope, SelectionScopeParams, SelectionScopeRequestOptions,
+  ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes,
+  Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus,
+  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -901,13 +901,21 @@ export class PresentationManager {
    * Computes selection set based on provided selection scope.
    * @public
    */
-  public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams }>): Promise<KeySet>;
-  public async computeSelection(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string, scopeParams?: SelectionScopeParams }>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>, deprecatedIds?: Id64String[], deprecatedScopeId?: string): Promise<KeySet> {
+  public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>): Promise<KeySet>;
+  /** @alpha */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public async computeSelection(requestOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>>): Promise<KeySet>;
+  public async computeSelection(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>> | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>, deprecatedIds?: Id64String[], deprecatedScopeId?: string): Promise<KeySet> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, ids: deprecatedIds!, scopeId: deprecatedScopeId! });
+      return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, elementIds: deprecatedIds!, scopeId: deprecatedScopeId! });
     }
-    const { requestContext, ids, scopeId, scopeParams, ...requestOptions } = requestContextOrOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
-    return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId, scopeParams);
+    const { requestContext, ...requestOptions } = requestContextOrOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
+    return SelectionScopesHelper.computeSelection(isComputeSelectionRequestOptions(requestOptions)
+      ? requestOptions
+      : (function () {
+        const { ids, ...rest } = requestOptions;
+        return { ...rest, elementIds: ids };
+      })());
   }
 
   private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {

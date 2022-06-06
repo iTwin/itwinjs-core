@@ -8,9 +8,7 @@
 
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import {
-  ComputeSelectionScopeProps, DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeParams,
-} from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeProps } from "@bentley/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].
@@ -34,7 +32,7 @@ export class SelectionScopesManager {
 
   private _rpcRequestsHandler: RpcRequestsHandler;
   private _getLocale: () => string | undefined;
-  private _activeScope: ComputeSelectionScopeProps | SelectionScope | string | undefined;
+  private _activeScope: SelectionScopeProps | SelectionScope | string | undefined;
 
   public constructor(props: SelectionScopesManagerProps) {
     this._rpcRequestsHandler = props.rpcRequestsHandler;
@@ -46,7 +44,7 @@ export class SelectionScopesManager {
 
   /** The active selection scope or its id */
   public get activeScope() { return this._activeScope; }
-  public set activeScope(scope: ComputeSelectionScopeProps | SelectionScope | string | undefined) { this._activeScope = scope; }
+  public set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined) { this._activeScope = scope; }
 
   /**
    * Get available selection scopes.
@@ -64,9 +62,7 @@ export class SelectionScopesManager {
    * @param ids Element IDs to compute selection for
    * @param scope Selection scope to apply
    */
-  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: ComputeSelectionScopeProps | SelectionScope | string): Promise<KeySet> {
-    const { id: scopeId, params: scopeParams } = getScopeRequestProps(scope);
-
+  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string): Promise<KeySet> {
     // convert ids input to array
     if (typeof ids === "string")
       ids = [ids];
@@ -82,7 +78,7 @@ export class SelectionScopesManager {
       const batchStart = batchSize * batchIndex;
       const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
-      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps() }, batchIds, scopeId, scopeParams));
+      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, ...createSelectionScopeProps(scope) }));
     }
     const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));
@@ -96,14 +92,19 @@ export class SelectionScopesManager {
  *
  * @internal
  */
-export function getScopeRequestProps(scope: ComputeSelectionScopeProps | SelectionScope | string | undefined): { id: string, params?: SelectionScopeParams } {
+export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope)
-    return { id: "element" };
+    return { scopeId: "element" };
   if (typeof scope === "string")
-    return { id: scope };
-  return {
-    ...scope,
-  };
+    return { scopeId: scope };
+  if (isSelectionScope(scope)) {
+    return { scopeId: scope.id };
+  }
+  return scope;
+}
+
+function isSelectionScope(param: SelectionScopeProps | SelectionScope): param is SelectionScope {
+  return !!(param as SelectionScope).id;
 }
 
 /**
@@ -114,5 +115,5 @@ export function getScopeRequestProps(scope: ComputeSelectionScopeProps | Selecti
  */
 // istanbul ignore next
 export function getScopeId(scope: SelectionScope | string | undefined): string {
-  return getScopeRequestProps(scope).id;
+  return createSelectionScopeProps(scope).scopeId;
 }

@@ -9,11 +9,12 @@ import { InstanceKey } from "../presentation-common/EC";
 import { NodeKey } from "../presentation-common/hierarchy/Key";
 import { KeySet } from "../presentation-common/KeySet";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, HierarchyRequestOptions, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
-  isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, LabelRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyRequestOptions, isComputeSelectionRequestOptions,
+  isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions, isExtendedContentRequestOptions,
+  isExtendedHierarchyRequestOptions, LabelRequestOptions, SelectionScopeRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
-import { createRandomBaseNodeKey, createRandomECInstanceKey } from "./_helpers/random";
+import { createRandomBaseNodeKey, createRandomECInstanceKey, createRandomId } from "./_helpers/random";
 
 describe("isContentDescriptorRequestOptions", () => {
 
@@ -114,6 +115,26 @@ describe("isDisplayLabelsRequestOptions ", () => {
       keys: [createRandomECInstanceKey(), createRandomECInstanceKey()],
     };
     expect(isDisplayLabelsRequestOptions(opts)).to.be.true;
+  });
+
+});
+
+describe("isComputeSelectionRequestOptions ", () => {
+
+  it("returns `false` for `SelectionScopeRequestOptions`", () => {
+    const opts: SelectionScopeRequestOptions<any> = {
+      imodel: undefined,
+    };
+    expect(isComputeSelectionRequestOptions(opts)).to.be.false;
+  });
+
+  it("returns `true` for `ComputeSelectionRequestOptions`", () => {
+    const opts: ComputeSelectionRequestOptions<any> = {
+      imodel: undefined,
+      elementIds: [createRandomId(), createRandomId()],
+      scopeId: "test",
+    };
+    expect(isComputeSelectionRequestOptions(opts)).to.be.true;
   });
 
 });

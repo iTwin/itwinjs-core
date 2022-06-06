@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions,
-  HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationRpcInterface,
-  SelectionScopeRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions,
+  ExtendedHierarchyRpcRequestOptions, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged,
+  PresentationRpcInterface, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
@@ -299,13 +299,22 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards computeSelection call", async () => {
+    it("[deprecated] forwards computeSelection call", async () => {
       const options: SelectionScopeRpcRequestOptions = {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
+    });
+
+    it("forwards computeSelection call", async () => {
+      const options: ComputeSelectionRpcRequestOptions = {
+        elementIds: new Array<Id64String>(),
+        scopeId: faker.random.uuid(),
+      };
+      await rpcInterface.computeSelection(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("[deprecated] forwards compareHierarchies call", async () => {

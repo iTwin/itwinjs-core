@@ -21,18 +21,10 @@ export interface SelectionScope {
 }
 
 /** @alpha */
-export interface ElementSelectionScopeParams {
-  level?: number;
+export interface ElementSelectionScopeProps {
+  scopeId: "element";
+  ancestorLevel?: number;
 }
 
 /** @alpha */
-export type SelectionScopeParams = ElementSelectionScopeParams;
-
-/** @alpha */
-export interface ComputeElementSelectionScopeProps {
-  id: "element";
-  params?: ElementSelectionScopeParams;
-}
-
-/** @alpha */
-export type ComputeSelectionScopeProps = ComputeElementSelectionScopeProps | { id: string };
+export type SelectionScopeProps = ElementSelectionScopeProps | { scopeId: string };

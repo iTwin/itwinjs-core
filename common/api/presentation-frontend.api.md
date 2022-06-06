@@ -5,7 +5,6 @@
 ```ts
 
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { ComputeSelectionScopeProps } from '@bentley/presentation-common';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
@@ -52,7 +51,7 @@ import { Ruleset } from '@bentley/presentation-common';
 import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
-import { SelectionScopeParams } from '@bentley/presentation-common';
+import { SelectionScopeProps } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
 import { UnsetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
@@ -69,6 +68,9 @@ export function createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[])
 
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
+
+// @internal
+export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
 export class FavoritePropertiesManager implements IDisposable {
@@ -127,12 +129,6 @@ export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 
 // @public @deprecated
 export function getScopeId(scope: SelectionScope | string | undefined): string;
-
-// @internal
-export function getScopeRequestProps(scope: ComputeSelectionScopeProps | SelectionScope | string | undefined): {
-    id: string;
-    params?: SelectionScopeParams;
-};
 
 // @internal (undocumented)
 export const HILITE_RULESET: Ruleset;
@@ -485,15 +481,15 @@ export class SelectionHelper {
 export class SelectionManager implements ISelectionProvider {
     constructor(props: SelectionManagerProps);
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-    addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: ComputeSelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+    addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-    removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: ComputeSelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+    removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
-    replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: ComputeSelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
+    replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
@@ -509,9 +505,9 @@ export interface SelectionManagerProps {
 export class SelectionScopesManager {
     constructor(props: SelectionScopesManagerProps);
     get activeLocale(): string | undefined;
-    get activeScope(): ComputeSelectionScopeProps | SelectionScope | string | undefined;
-    set activeScope(scope: ComputeSelectionScopeProps | SelectionScope | string | undefined);
-    computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: ComputeSelectionScopeProps | SelectionScope | string): Promise<KeySet>;
+    get activeScope(): SelectionScopeProps | SelectionScope | string | undefined;
+    set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined);
+    computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string): Promise<KeySet>;
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
     }
 

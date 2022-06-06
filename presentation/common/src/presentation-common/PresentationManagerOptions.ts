@@ -12,6 +12,7 @@ import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
+import { SelectionScopeProps } from "./selection/SelectionScope";
 
 /**
  * Enumeration of standard request priorities.
@@ -212,6 +213,18 @@ export const isDisplayLabelsRequestOptions = <TIModel, TInstanceKey>(opts: Label
  * @public
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+
+/**
+ * Request options used for calculating selection based on picked instance ksy and selection scope
+ * @alpha
+ */
+export type ComputeSelectionRequestOptions<TIModel> = RequestOptions<TIModel> & SelectionScopeProps & {
+  elementIds: Id64String[];
+};
+/** @internal */
+export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel> {
+  return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
+}
 
 /**
  * Data structure for comparing presentation data after ruleset or ruleset variable changes.

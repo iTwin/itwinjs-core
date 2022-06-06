@@ -27,8 +27,8 @@ internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;CompressedDescriptorJSON = Omit
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
-alpha;ComputeElementSelectionScopeProps
-alpha;ComputeSelectionScopeProps = ComputeElementSelectionScopeProps |
+alpha;ComputeSelectionRequestOptions
+alpha;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
 public;ConditionContainer
 public;Content
 public;ContentDescriptorRequestOptions
@@ -122,7 +122,7 @@ beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
-alpha;ElementSelectionScopeParams
+alpha;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -192,6 +192,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+internal;isComputeSelectionRequestOptions
 internal;isContentDescriptorRequestOptions: 
 internal;isDisplayLabelRequestOptions: 
 internal;isDisplayLabelsRequestOptions: 
@@ -369,7 +370,7 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
-alpha;SelectionScopeParams = ElementSelectionScopeParams
+alpha;SelectionScopeProps = ElementSelectionScopeProps |
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
