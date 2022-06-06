@@ -216,13 +216,6 @@ public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
 public;NoCategoryIdentifier
-public;Node
-public;Node
-internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
-internal;listFromJSON(json: NodeJSON[] | string): Node[]
-internal;listReviver(key: string, value: any): any
-internal;reviver(key: string, value: any): any
-internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
@@ -244,7 +237,6 @@ public;NodePathFilteringData
 public;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
-public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions

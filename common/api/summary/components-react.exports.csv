@@ -4,7 +4,7 @@ public;class AbstractTreeNodeLoader
 public;class AbstractTreeNodeLoaderWithProvider
 public;ActionButtonList 
 public;ActionButtonListProps
-public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React_2.ReactNode
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
@@ -34,7 +34,7 @@ beta;BreadcrumbNode
 deprecated;BreadcrumbNode 
 beta;BreadcrumbNodeProps
 deprecated;BreadcrumbNodeProps
-internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
+internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React_2.ReactNode
 beta;BreadcrumbPath
 deprecated;BreadcrumbPath
 beta;BreadcrumbProps 
@@ -136,7 +136,7 @@ beta;GridCategoryItem
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
-public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;hasSelectionModeFlag: (selectionMode: SelectionMode_2, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
 public;HighlightableTreeProps
@@ -152,7 +152,6 @@ alpha;IconPickerProps
 deprecated;IconPickerProps 
 alpha;IconPropertyEditor 
 public;IImageLoader
-public;Image = LoadedImage | LoadedBinaryImage
 public;ImageCheckBoxEditor 
 public;ImageCheckBoxPropertyEditor 
 public;ImageFileFormat = "png" | "jpg" | "jpge"
@@ -199,7 +198,7 @@ public;LoadedNodeHierarchy
 public;LoadedNodeHierarchyItem
 public;MergedPropertyValueRenderer 
 internal;MultilineTextPropertyValueRenderer 
-internal;MultilineTextRenderer: React.FC
+internal;MultilineTextRenderer: React_2.FC
 internal;MultiSelectionHandler
 beta;MutableCategorizedArrayProperty 
 beta;MutableCategorizedPrimitiveProperty 
@@ -218,7 +217,6 @@ public;MutableTreeModelNode
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 public;NextObserver
-internal;Node
 public;NonPrimitivePropertyLabelRenderer 
 public;NonPrimitivePropertyLabelRendererProps 
 public;NonPrimitivePropertyRenderer 
@@ -259,7 +257,7 @@ public;PropertyCategoryBlock
 public;PropertyCategoryBlockProps 
 public;class PropertyCategoryDataFiltererBase 
 public;PropertyCategoryLabelFilterer 
-beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React_2.ComponentType
 beta;PropertyCategoryRendererManager
 beta;PropertyCategoryRendererProps
 public;PropertyContainerType
@@ -305,7 +303,7 @@ public;PropertyViewProps
 public;ReactDataGridColumn 
 deprecated;ReactDataGridColumn 
 beta;RenderedItemsRange
-public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
+public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
@@ -315,7 +313,6 @@ public;SelectableContent(props: SelectableContentProps): JSX.Element
 public;SelectableContentDefinition
 public;SelectableContentProps
 internal;SelectionHandler
-public;SelectionMode
 public;SelectionModeFlags
 public;SharedRendererProps
 public;SharedTableNonPrimitiveValueRendererProps
@@ -400,22 +397,22 @@ public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
 public;ToggleEditor 
 public;TogglePropertyEditor 
 public;Toolbar(props: ToolbarProps): JSX.Element
-public;ToolbarButtonItem: React.MemoExoticComponent
+public;ToolbarButtonItem: React_2.MemoExoticComponent
 public;ToolbarButtonItemProps 
 public;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
 internal;ToolbarItemComponent({ item, addGroupSeparator }:
-internal;ToolbarItemContext: React.Context
+internal;ToolbarItemContext: React_2.Context
 internal;ToolbarItemContextArgs
 public;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 public;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
-public;ToolbarPopupAutoHideContext: React.Context
-public;ToolbarPopupContext: React.Context
+public;ToolbarPopupAutoHideContext: React_2.Context
+public;ToolbarPopupContext: React_2.Context
 public;ToolbarPopupContextProps
 public;ToolbarProps 
 public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
-internal;ToolbarWithOverflowDirectionContext: React.Context
+internal;ToolbarWithOverflowDirectionContext: React_2.Context
 public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
 public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
@@ -445,13 +442,13 @@ public;TreeModelRootNode
 public;TreeModelSource
 public;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
 public;TreeNodeEditorProps
-public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
+public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React_2.ReactNode
 public;TreeNodeEventArgs
 public;TreeNodeItem
 public;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 public;TreeNodeLoader
 public;TreeNodeLoadResult
-public;TreeNodeRenderer: React.MemoExoticComponent
+public;TreeNodeRenderer: React_2.MemoExoticComponent
 public;TreeNodeRendererProps 
 public;TreeRenderer 
 public;TreeRendererAttributes
@@ -487,5 +484,5 @@ beta;VirtualizedPropertyGridProps
 beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
 beta;VirtualizedPropertyGridWithDataProviderProps 
 public;VisibleTreeNodes 
-public;withContextStyle: (node: React.ReactNode, context?: PropertyValueRendererContext | undefined) => React.ReactNode
-public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
+public;withContextStyle: (node: React_2.ReactNode, context?: PropertyValueRendererContext | undefined) => React_2.ReactNode
+public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode

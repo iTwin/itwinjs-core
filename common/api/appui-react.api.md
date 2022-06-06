@@ -1003,13 +1003,13 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     static enableCategory(viewManager: ViewManager, imodel: IModelConnection, ids: string[], enabled: boolean, forAllViewports: boolean, enableAllSubCategories?: boolean): void;
     static enableSubCategory(viewManager: ViewManager, key: string, enabled: boolean, forAllViewports?: boolean): void;
     // (undocumented)
-    getCategoryVisibility(id: string): "hidden" | "visible";
+    getCategoryVisibility(id: string): "visible" | "hidden";
     // (undocumented)
     static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey): string;
     // (undocumented)
     getParent(key: string): Category | undefined;
     // (undocumented)
-    getSubCategoryVisibility(id: string): "hidden" | "visible";
+    getSubCategoryVisibility(id: string): "visible" | "hidden";
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
     // (undocumented)
@@ -2230,11 +2230,6 @@ export const expandWidget: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React_2.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React_2.Key | null;
@@ -2251,6 +2246,11 @@ export const expandWidget: (base: {
                 } | any | null | undefined;
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -4962,11 +4962,6 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -4983,6 +4978,11 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5154,11 +5154,6 @@ export const setWidgetLabel: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React_2.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React_2.Key | null;
@@ -5175,6 +5170,11 @@ export const setWidgetLabel: (base: {
                 } | any | null | undefined;
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5327,11 +5327,6 @@ export const setWidgetState: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React_2.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React_2.Key | null;
@@ -5348,6 +5343,11 @@ export const setWidgetState: (base: {
                 } | any | null | undefined;
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5564,11 +5564,6 @@ export const showWidget: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React_2.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React_2.Key | null;
@@ -5585,6 +5580,11 @@ export const showWidget: (base: {
                 } | any | null | undefined;
                 readonly type: string | React_2.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -6359,7 +6359,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "widgetOpacity" | "theme">>;
+export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
 
 // @public
 export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {

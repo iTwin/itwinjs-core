@@ -68,7 +68,6 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions 
-public;class Document 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
@@ -93,7 +92,6 @@ public;ECSqlStatement
 public;ECSqlValue
 public;ECSqlValueIterator 
 beta;EditableWorkspaceDb 
-public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
