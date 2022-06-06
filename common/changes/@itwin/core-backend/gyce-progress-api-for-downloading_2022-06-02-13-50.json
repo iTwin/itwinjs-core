@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Progress API for downloading changesets and checkpoints.",
+      "comment": "Progress API for downloading changesets.",
       "type": "none"
     }
   ],
