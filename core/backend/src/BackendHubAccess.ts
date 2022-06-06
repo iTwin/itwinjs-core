@@ -217,7 +217,10 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
   targetDir: LocalDirName;
 }
 
-/** @internal */
+/**
+ * @deprecated
+ * @internal
+ */
 export type CheckpointArg = DownloadRequest;
 
 /**
@@ -265,6 +268,7 @@ export interface BackendHubAccess {
 
   /**
    * download a v1 checkpoint
+   * @deprecated
    * @internal
    */
   downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
@@ -276,6 +280,7 @@ export interface BackendHubAccess {
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
   /**
    * download a v2 checkpoint
+   * @deprecated
    * @internal
    */
   downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;

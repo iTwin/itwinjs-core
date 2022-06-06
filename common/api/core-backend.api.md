@@ -333,9 +333,9 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal
+    // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
-    // @internal
+    // @internal @deprecated
     downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -673,7 +673,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     toJSON(): ChannelRootAspectProps;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
