@@ -7,11 +7,12 @@
  */
 
 import { join } from "path";
-import { CancelRequest, UserCancelledError } from "./itwin-client/FileHandler";
-import { ProgressCallback } from "./itwin-client/Request";
+import { UserCancelledError } from "./itwin-client/FileHandler";
+import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
 import {
-  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointProps, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, DownloadCheckpointArg, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
-  V2CheckpointAccessProps,
+  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg,
+  CheckpointArg, CheckpointProps, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelDb, IModelHost, IModelIdArg,
+  IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg, V2CheckpointAccessProps,
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
@@ -301,25 +302,23 @@ export class IModelHubBackend implements BackendHubAccess {
     return val;
   }
 
-  public async downloadV1Checkpoint(arg: DownloadCheckpointArg): Promise<ChangesetIndexAndId> {
+  // eslint-disable-next-line deprecation/deprecation
+  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
+    const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(arg.changeset.id);
-    const accessToken = await this.getAccessToken(arg);
-    const checkpoints = await this.iModelClient.checkpoints.get(accessToken, arg.iModelId, checkpointQuery);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
+    const accessToken = await this.getAccessToken(checkpoint);
+    const checkpoints = await this.iModelClient.checkpoints.get(accessToken, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
-    const progressCallback: ProgressCallback = (progress) => {
-      if (arg.progressCallback && progress.total)
-        arg.progressCallback(progress.loaded, progress.total);
+    const cancelRequest: any = {};
+    const progressCallback: ProgressCallback = (progress: ProgressInfo) => {
+      if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
+        cancelRequest.cancel?.();
     };
 
-    const cancelRequest: CancelRequest = { cancel: () => false };
-    const removeCancelListener = arg.cancelSignal?.addListener(() => cancelRequest.cancel());
-
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
-    removeCancelListener?.();
-
     return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
@@ -343,13 +342,15 @@ export class IModelHubBackend implements BackendHubAccess {
     };
   }
 
-  public async downloadV2Checkpoint(arg: DownloadCheckpointArg): Promise<ChangesetIndexAndId> {
+  // eslint-disable-next-line deprecation/deprecation
+  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
+    const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(arg.changeset.id).selectContainerAccessKey();
-    const accessToken = await this.getAccessToken(arg);
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
+    const accessToken = await this.getAccessToken(checkpoint);
     let checkpoints: CheckpointV2[] = [];
     try {
-      checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, arg.iModelId, checkpointQuery);
+      checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, checkpoint.iModelId, checkpointQuery);
     } catch (error) {
       if (error instanceof BentleyError && error.errorNumber === IModelHubStatus.Unknown)
         throw new IModelError(IModelStatus.NotFound, "V2 checkpoints not supported");
@@ -373,23 +374,20 @@ export class IModelHubBackend implements BackendHubAccess {
       localFile: arg.localFile,
     });
 
-    const removeCancelListener = arg.cancelSignal?.addListener(() => transfer.cancelTransfer());
-
     let timer: NodeJS.Timeout | undefined;
     try {
-      const onProgress = arg.progressCallback;
+      let total = 0;
+      const onProgress = arg.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
           const progress = transfer.getProgress();
-          onProgress(progress.loaded, progress.total);
+          total = progress.total;
+          if (onProgress(progress.loaded, progress.total))
+            transfer.cancelTransfer();
         }, 250);
       }
       await transfer.promise;
-
-      removeCancelListener?.();
-
-      const progressResult = transfer.getProgress();
-      onProgress?.(progressResult.loaded, progressResult.total); // make sure we call progress func one last time when download completes
+      onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {

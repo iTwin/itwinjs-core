@@ -140,6 +140,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV2.raiseEvent(job);
+    // eslint-disable-next-line deprecation/deprecation
     return (await IModelHost.hubAccess.downloadV2Checkpoint(job.request)).id;
   }
 
@@ -186,6 +187,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
+    // eslint-disable-next-line deprecation/deprecation
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
