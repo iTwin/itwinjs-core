@@ -8,7 +8,7 @@ import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
-describe.only("requestElementGraphics", () => {
+describe("requestElementGraphics", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
@@ -48,15 +48,15 @@ describe.only("requestElementGraphics", () => {
     expect(createdMesh).to.be.true;
   }
 
-  it.only("does not quantize positions by default", async () => {
+  it("does not quantize positions by default", async () => {
     await expectQuantized(undefined, false);
   });
 
-  it.only("quantizes positions if explicitly requested", async () => {
+  it("quantizes positions if explicitly requested", async () => {
     await expectQuantized(true, true);
   });
 
-  it.only("produces unquantized positions if explicitly requested", async () => {
+  it("produces unquantized positions if explicitly requested", async () => {
     await expectQuantized(false, false);
   });
 });
