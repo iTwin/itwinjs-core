@@ -582,6 +582,39 @@ describe("Property creation tests", () => {
     expect(result.errorMessage).to.eql(`Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
   });
 
+  it("Adding a CustomAttribute to a non-existent property fails as expected.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "testProperty",
+            },
+          ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await testSchema.getItem<UnitSystem>("testEntity");
+
+    const result = await testEditor.entities.addCustomAttributeToProperty(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" });
+    expect(result.errorMessage).to.eql(`Property with the name badPropertyName could not be found in the class ${testClass?.key.fullName}.`);
+  });
+
   it("Adding a CustomAttribute to a class with an unsupported SchemaItemType fails as expected.", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
