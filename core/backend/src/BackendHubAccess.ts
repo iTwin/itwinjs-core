@@ -51,7 +51,7 @@ export class LockConflict extends IModelError {
 export class CancelController {
   private _cancelEvent = new BeEvent<() => void>();
 
-  /** Signal raised by this controller on cancel. */
+  /** Signal raised on cancel. */
   public get signal(): CancelSignal {
     return {
       addListener: (listener) => this._cancelEvent.addListener(listener),
@@ -110,7 +110,7 @@ export interface LockProps {
 }
 
 /**
- * Function used to indicate progress as the changeset is downloaded.
+ * Function used to indicate download progress in bytes.
  * @param loaded Bytes downloaded.
  * @param total Total size of item(s) in bytes.
  * @beta
@@ -131,7 +131,7 @@ export interface DownloadProgressArg {
  * @beta
  */
 export interface CancelDownloadArg {
-  /** Signal which should be raised on cancel. */
+  /** Signal raised on cancel. */
   cancelSignal?: CancelSignal;
 }
 
