@@ -101,13 +101,11 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     const {container, getByText} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, {actions, properties: [defaultProperty]});
     const setRulePropertySpy = sinon.stub(actions, "setRuleProperty");
 
-    const selector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
+    const selector = container.querySelector<HTMLInputElement>(".rule-property input");
     expect(selector).to.not.be.null;
+    fireEvent.focus(selector!);
 
-    selector?.focus();
-
-    getByText(defaultProperty.displayLabel).click();
-
+    fireEvent.click(getByText(defaultProperty.displayLabel));
     expect(setRulePropertySpy).to.be.calledOnceWith(defaultProps.path, defaultProperty);
   });
 
@@ -126,13 +124,11 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     const spy = sinon.spy();
     const {container, getByText} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, {properties: [defaultProperty], onRulePropertySelected: spy});
 
-    const selector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
+    const selector = container.querySelector<HTMLInputElement>(".rule-property input");
     expect(selector).to.not.be.null;
+    fireEvent.focus(selector!);
 
-    selector?.focus();
-
-    getByText(defaultProperty.displayLabel).click();
-
+    fireEvent.click(getByText(defaultProperty.displayLabel));
     expect(spy).to.be.calledOnceWith(defaultProperty);
   });
 
