@@ -854,9 +854,9 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     contextAttributes?: WebGLContextAttributes;
 
-    /** If true, will cause exception when a shader uniform is missing (usually optimized out), otherwise will ignore these.
+    /** If true, will cause exception when a shader uniform is missing (usually optimized out), otherwise will only log these.
      * Default value: false
-     * @internal
+     * @public
      */
     errorOnMissingUniform?: boolean;
 
