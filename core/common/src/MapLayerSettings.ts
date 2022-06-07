@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module DisplayStyles
+ * @module MapLayers
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
-/** @beta */
+/** @public */
 export type SubLayerId = string | number;
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * @see [[MapLayerProps]]
- * @beta
+ * @public
  */
 export interface MapSubLayerProps {
   name: string;
@@ -34,7 +34,7 @@ export interface MapSubLayerProps {
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
  * This class can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
- * @beta
+ * @public
  */
 export class MapSubLayerSettings {
   /** Typically Name is a single word used for machine-to-machine communication while the Title is for the benefit of humans (WMS) */
@@ -118,7 +118,7 @@ export class MapSubLayerSettings {
 
 /** JSON representation of properties common to both [[ImageMapLayerProps]] and [[ModelMapLayerProps]].
  * @see [[MapImageryProps]]
- * @beta
+ * @public
  */
 export interface CommonMapLayerProps {
   /** Controls visibility of layer. Defaults to 'true'. */
@@ -139,7 +139,7 @@ export interface CommonMapLayerProps {
 
 /** JSON representation of an [[ImageMapLayerSettings]].
  * @see [[MapImagerySettings]].
- * @beta
+ * @public
  */
 export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** URL */
@@ -151,6 +151,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** Access Key for the Layer, like a subscription key or access token.
    * ###TODO This does not belong in the props object. It should never be persisted.
    */
+  /** @internal */
   accessKey?: MapLayerKey;
 
   /** @internal */
@@ -159,7 +160,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 
 /** JSON representation of a [[ModelMapLayerSettings]].
  * @see [[MapImagerySettings]].
- * @beta
+ * @public
  */
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
@@ -177,13 +178,13 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
 
 /** JSON representation of a [[MapLayerSettings]].
  * @see [[MapImagerySettings]].
- * @beta
+ * @public
  */
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
 
 /**
  * stores key-value pair to be added to all requests made involving map layer.
- * @beta
+ * @public
  */
 export interface MapLayerKey {
   key: string;
@@ -194,7 +195,7 @@ export interface MapLayerKey {
  * This class is extended by [[ImageMapLayerSettings]] and [ModelMapLayerSettings]] to create the settings for image and model based layers.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
- * @beta
+ * @public
  */
 export abstract class MapLayerSettings {
   public readonly visible: boolean;
@@ -264,7 +265,7 @@ export abstract class MapLayerSettings {
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
  * @see [[ModelMapLayerSettings]] for model based map layer settings.
- * @beta
+ * @public
  */
 export class ImageMapLayerSettings extends MapLayerSettings {
   public readonly formatId: string;
@@ -426,7 +427,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
  * @see [[ImageMapLayerSettings]] for image based map layer settings.
- * @beta
+ * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
   public readonly modelId: Id64String;
@@ -482,7 +483,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 }
 
 /** JSON representation of a [[BaseMapLayerSettings]].
- * @beta
+ * @public
  */
 export interface BaseMapLayerProps extends ImageMapLayerProps {
   provider?: BackgroundMapProviderProps;
@@ -494,7 +495,7 @@ export interface BaseMapLayerProps extends ImageMapLayerProps {
  * If the base layer was configured from such a provider, that information will be preserved and can be queried; this allows
  * the imagery provider and/or type to be easily modified.
  * @see [[MapImagerySettings.backgroundBase]].
- * @beta
+ * @public
  */
 export class BaseMapLayerSettings extends ImageMapLayerSettings {
   private _provider?: BackgroundMapProvider;
