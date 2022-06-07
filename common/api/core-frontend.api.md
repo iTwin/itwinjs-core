@@ -5802,13 +5802,13 @@ export interface MapLayerOptions {
     MapboxImagery?: MapLayerKey;
 }
 
-// @internal
+// @public
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
     formatId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
     static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
@@ -5855,25 +5855,19 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @beta (undocumented)
+// @public
 export enum MapLayerSourceStatus {
-    // (undocumented)
     InvalidCredentials = 1,
-    // (undocumented)
     InvalidFormat = 2,
-    // (undocumented)
     InvalidTileTree = 3,
-    // (undocumented)
     InvalidUrl = 4,
-    // (undocumented)
     RequireAuth = 5,
-    // (undocumented)
     Valid = 0
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface MapLayerSourceValidation {
-    // (undocumented)
+    // @beta (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
     // (undocumented)
     status: MapLayerSourceStatus;

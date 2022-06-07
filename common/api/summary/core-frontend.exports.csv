@@ -357,10 +357,10 @@ beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
-internal;MapLayerSource
+public;MapLayerSource
 internal;MapLayerSources
-beta;MapLayerSourceStatus
-beta;MapLayerSourceValidation
+public;MapLayerSourceStatus
+public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
