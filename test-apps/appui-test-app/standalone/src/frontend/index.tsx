@@ -40,7 +40,7 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { AppUiTestProviders, CustomContentFrontstage, AbstractUiItemsProvider } from "@itwin/appui-test-providers";
+import { AbstractUiItemsProvider, AppUiTestProviders, CustomContentFrontstage, WidgetApiStage } from "@itwin/appui-test-providers";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -240,12 +240,13 @@ export class SampleAppIModelApp {
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
 
-    // register the localized strings for the package that contains the sample UiItems providers
-    await IModelApp.localization.registerNamespace(AppUiTestProviders.localizationNamespace);
+    // register the localized strings for the package and set up that contains the sample UiItems providers
+    await AppUiTestProviders.initializeLocalizationAndState();
 
     // initialize UI Item providers
     UiItemsManager.register(new AbstractUiItemsProvider(AppUiTestProviders.localizationNamespace));
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

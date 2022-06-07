@@ -27,7 +27,6 @@ import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDa
 export class CustomContentStageUiProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:CustomContentStageUiProvider";
   public readonly id = CustomContentStageUiProvider.providerId;
-  public static syncEventIdHideCustomDialogButton = "appui-test-providers:sync-custom-dialog-button";
 
   /** method that updates the value in redux store and dispatches a sync event so items are refreshed. */
   public toggleCustomDialogTool = () => {
@@ -35,7 +34,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
 
     // tell the toolbar to reevaluate state of any item with this event Id
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(
-      CustomContentStageUiProvider.syncEventIdHideCustomDialogButton
+      AppUiTestProviders.syncEventIdHideCustomDialogButton
     );
   };
 
@@ -73,7 +72,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
           (): boolean => {
             return getTestProviderState().hideCustomDialogButton;
           },
-          [CustomContentStageUiProvider.syncEventIdHideCustomDialogButton],
+          [AppUiTestProviders.syncEventIdHideCustomDialogButton],
           getTestProviderState().hideCustomDialogButton
         );
 

@@ -14,7 +14,6 @@ import {
 import { ContentLayoutProps, StageUsage, StandardContentLayouts, UiItemsManager } from "@itwin/appui-abstract";
 import { CustomContentStageUiProvider } from "../providers/CustomContentStageUiProvider";
 import { SampleContentControl } from "../content/SampleContentControl";
-import { providerSlice, TestProviderSliceName } from "../../store";
 
 export class CustomContentGroupProvider extends ContentGroupProvider {
   public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
@@ -68,9 +67,6 @@ export class CustomContentFrontstage {
       usage: StageUsage.General,
       applicationData: undefined,
     };
-
-    /** Register a slice of state into the iModelApp Redux store. - this should only be called once */
-    ReducerRegistryInstance.registerReducer(TestProviderSliceName, providerSlice.reducer);
 
     CustomContentFrontstage.registerToolProviders(localizationNamespace);
     ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(customStageProps));

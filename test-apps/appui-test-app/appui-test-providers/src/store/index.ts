@@ -14,19 +14,23 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
  * Setting value
  * ```ts
  * StateManager.store.dispatch(setHideCustomDialogButton(true));
+ * StateManager.store.dispatch(setShowCustomViewOverlay(true));
  * ```
  * Getting value
  * ```ts
  * const isAvailable = getTestProviderState().hideCustomDialogButton;
+ * const showCustomViewOverlay = getTestProviderState().showCustomViewOverlay;
  * ```
  */
 
 interface TestProviderState {
   hideCustomDialogButton: boolean;
+  showCustomViewOverlay: boolean;
 }
 
 const initialState = {
   hideCustomDialogButton: false,
+  showCustomViewOverlay: false,
 } as TestProviderState;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -40,9 +44,12 @@ export const providerSlice = createSlice({
     setHideCustomDialogButton: (state: TestProviderState, action: PayloadAction<boolean>) => {
       state.hideCustomDialogButton = action.payload;
     },
+    setShowCustomViewOverlay: (state: TestProviderState, action: PayloadAction<boolean>) => {
+      state.showCustomViewOverlay = action.payload;
+    },
   },
 });
-export const { setHideCustomDialogButton } = providerSlice.actions;
+export const { setHideCustomDialogButton, setShowCustomViewOverlay} = providerSlice.actions;
 
 /** Get the slice of the redux state that is specific to this UI provider */
 export function getTestProviderState(): TestProviderState {
