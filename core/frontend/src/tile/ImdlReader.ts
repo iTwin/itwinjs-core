@@ -1018,15 +1018,6 @@ export class ImdlReader {
     return undefined !== bytes ? new VertexIndices(bytes) : undefined;
   }
 
-  private createPointStringGeometry(primitive: ImdlPointStringPrimitive, displayParams: DisplayParams, vertices: VertexTable, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const indices = this.readVertexIndices(primitive.indices);
-    if (undefined === indices)
-      return undefined;
-
-    const params = new PointStringParams(vertices, indices, displayParams.width);
-    return this._system.createPointStringGeometry(params, viewIndependentOrigin);
-  }
-
   private readTesselatedPolyline(json: ImdlPolyline): TesselatedPolyline | undefined {
     const indices = this.readVertexIndices(json.indices);
     const prevIndices = this.readVertexIndices(json.prevIndices);
@@ -1036,19 +1027,6 @@ export class ImdlReader {
       return undefined;
 
     return { indices, prevIndices, nextIndicesAndParams };
-  }
-
-  private createPolylineGeometry(primitive: ImdlPolylinePrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const polyline = this.readTesselatedPolyline(primitive);
-    if (undefined === polyline)
-      return undefined;
-
-    let flags = PolylineTypeFlags.Normal;
-    if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
-      flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
-
-    const params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
-    return this._system.createPolylineGeometry(params, viewIndependentOrigin);
   }
 
   private readSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): SurfaceParams | undefined {
@@ -1157,26 +1135,7 @@ export class ImdlReader {
     return { succeeded, params };
   }
 
-  private createMeshGeometry(primitive: ImdlMeshPrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const surface = this.readSurface(primitive, displayParams);
-    if (undefined === surface)
-      return undefined;
-
-    // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
-    let edgeParams: EdgeParams | undefined;
-    if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
-      const edgeResult = this.readEdges(primitive.edges, displayParams);
-      if (!edgeResult.succeeded)
-        return undefined;
-      else
-        edgeParams = edgeResult.params;
-    }
-
-    const params = new MeshParams(vertices, surface, edgeParams, isPlanar, auxChannels);
-    return this._system.createMeshGeometry(params, viewIndependentOrigin);
-  }
-
-  private readPrimitiveGeometry(primitive: AnyImdlPrimitive): RenderGeometry | undefined {
+  private readPrimitiveParams(primitive: AnyImdlPrimitive): { params: MeshParams | PointStringParams | PolylineParams, viOrigin?: Point3d } | undefined {
     const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
@@ -1191,17 +1150,68 @@ export class ImdlReader {
 
     const viOrigin = primitive.viewIndependentOrigin ? Point3d.fromJSON(primitive.viewIndependentOrigin) : undefined;
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
+
+    let params;
     switch (primitive.type) {
-      case Mesh.PrimitiveType.Mesh:
-        return this.createMeshGeometry(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), viOrigin);
-      case Mesh.PrimitiveType.Polyline:
-        return this.createPolylineGeometry(primitive, displayParams, vertices, isPlanar, viOrigin);
-      case Mesh.PrimitiveType.Point:
-        return this.createPointStringGeometry(primitive, displayParams, vertices, viOrigin);
+      case Mesh.PrimitiveType.Mesh: {
+        const surface = this.readSurface(primitive, displayParams);
+        if (!surface)
+          return undefined;
+
+        // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
+        let edgeParams: EdgeParams | undefined;
+        if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
+          const edgeResult = this.readEdges(primitive.edges, displayParams);
+          if (!edgeResult.succeeded)
+            return undefined;
+          else
+            edgeParams = edgeResult.params;
+        }
+
+        params = new MeshParams(vertices, surface, edgeParams, isPlanar, this.readAuxChannelTable(primitive));
+        break;
+      }
+      case Mesh.PrimitiveType.Polyline: {
+        const polyline = this.readTesselatedPolyline(primitive);
+        if (!polyline)
+          return undefined;
+
+        let flags = PolylineTypeFlags.Normal;
+        if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
+          flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
+
+        params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
+        break;
+      }
+      case Mesh.PrimitiveType.Point: {
+        const indices = this.readVertexIndices(primitive.indices);
+        if (undefined === indices)
+          return undefined;
+
+        params = new PointStringParams(vertices, indices, displayParams.width);
+        break;
+      }
       default:
         assert(false, "unhandled primitive type");
         return undefined;
     }
+
+    return { params, viOrigin };
+  }
+
+  private readPrimitiveGeometry(primitive: AnyImdlPrimitive): RenderGeometry | undefined {
+    const prim = this.readPrimitiveParams(primitive);
+    return prim ? this.createPrimitiveGeometry(prim) : undefined;
+  }
+
+  private createPrimitiveGeometry(prim: { params: MeshParams | PolylineParams | PointStringParams, viOrigin?: Point3d }): RenderGeometry | undefined {
+    if (prim.params instanceof MeshParams)
+      return this._system.createMeshGeometry(prim.params, prim.viOrigin);
+    else if (prim.params instanceof PolylineParams)
+      return this._system.createPolylineGeometry(prim.params, prim.viOrigin);
+
+    assert(prim.params instanceof PointStringParams)
+    return this._system.createPointStringGeometry(prim.params, prim.viOrigin);
   }
 
   private getPatternGeometry(patternName: string): RenderGeometry[] | undefined {
@@ -1224,7 +1234,7 @@ export class ImdlReader {
     return geometry;
   }
 
-  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh): void {
+  private readAnimationBranches(_output: RenderGraphic[], mesh: ImdlMesh): void {
     assert(undefined !== this._computeNodeId);
 
     const primitives = mesh.primitives;
@@ -1232,11 +1242,11 @@ export class ImdlReader {
       return;
 
     const branchesByNodeId = new Map<number, GraphicBranch>();
-    const getBranch = (nodeId: number) => GraphicBranch {
+    const getBranch = (nodeId: number): GraphicBranch => {
       let branch = branchesByNodeId.get(nodeId);
       if (!branch) {
         branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
-        branch.nodeId = nodeId;
+        branch.animationNodeId = nodeId;
         branch.animationId =  `${this._modelId}_Node_${nodeId}`;
       }
 
@@ -1252,6 +1262,7 @@ export class ImdlReader {
       } else {
         // ###TODO
       }
+    }
   }
 
   private readBranch(output: RenderGraphic[], primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
