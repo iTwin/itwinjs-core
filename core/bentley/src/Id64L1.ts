@@ -28,14 +28,11 @@ export namespace Id64 {
   export function getLocalId(id: Id64String): number {
     if (isInvalid(id))
       return 0;
-    const _0_1 = id.charCodeAt(1);
-    const _2_3 = id.charCodeAt(2);
-    const _4_5 = id.charCodeAt(3);
-    const _0 = (_0_1 & 0xff00) >>> 8;
-    const _1 = (_0_1 & 0x00ff) >>> 0;
-    const _2 = (_2_3 & 0xff00) >>> 8;
-    const _3 = (_2_3 & 0x00ff) >>> 0;
-    const _4 = (_4_5 & 0xff00) >>> 8;
+    const _0 = id.charCodeAt(1);
+    const _1 = id.charCodeAt(2);
+    const _2 = id.charCodeAt(3);
+    const _3 = id.charCodeAt(4);
+    const _4 = id.charCodeAt(5);
     // javascript bitwise operators discard the high 32 bits so we need to use multiplication to SHIFT and addition to OR
     // and hope the interpreter will notice it's a power of two and optimize it into a native shift
     return ((_4 << 24) * 2**8) + (_3 << 24 | _2 << 16 | _1 << 8 | _0);
@@ -45,11 +42,9 @@ export namespace Id64 {
   export function getBriefcaseId(id: Id64String): number {
     if (isInvalid(id))
       return 0;
-    const _4_5 = id.charCodeAt(3);
-    const _6_7 = id.charCodeAt(4);
-    const _5 = (_4_5 & 0x00ff) >>> 0;
-    const _6 = (_6_7 & 0xff00) >>> 8;
-    const _7 = (_6_7 & 0x00ff) >>> 0;
+    const _5 = id.charCodeAt(6);
+    const _6 = id.charCodeAt(7);
+    const _7 = id.charCodeAt(8);
     return _7 << 16 | _6 << 8 | _5;
   }
 
@@ -104,14 +99,8 @@ export namespace Id64 {
     const _6 = briefcaseId >>>  8 & 0xff;
     const _7 = briefcaseId >>> 16 & 0xff;
 
-    return `L${
-      String.fromCharCode(
-        _0 << 8 | _1,
-        _2 << 8 | _3,
-        _4 << 8 | _5,
-        _6 << 8 | _7,
-      )
-    }`;
+    // need to make sure node will never try to normalize latin encoded
+    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7)}`;
   }
 
   /** Create an Id64String from a pair of unsigned 32-bit integers.
@@ -131,14 +120,7 @@ export namespace Id64 {
     const _6 = highBytes >>> 16 & 0xff;
     const _7 = highBytes >>> 24 & 0xff;
 
-    return `L${
-      String.fromCharCode(
-        _0 << 8 | _1,
-        _2 << 8 | _3,
-        _4 << 8 | _5,
-        _6 << 8 | _7,
-      )
-    }`;
+    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7)}`;
   }
 
   /** Create an Id64String from a [[Id64.Uint32Pair]].
@@ -186,12 +168,10 @@ export namespace Id64 {
     if (isInvalid(id))
       return 0;
 
-    const _0_1 = id.charCodeAt(1);
-    const _2_3 = id.charCodeAt(2);
-    const _0 = (_0_1 & 0xff00) >>> 8;
-    const _1 = (_0_1 & 0x00ff) >>> 0;
-    const _2 = (_2_3 & 0xff00) >>> 8;
-    const _3 = (_2_3 & 0x00ff) >>> 0;
+    const _0 = id.charCodeAt(1);
+    const _1 = id.charCodeAt(2);
+    const _2 = id.charCodeAt(3);
+    const _3 = id.charCodeAt(4);
     return _3 << 24 | _2 << 16 | _1 << 8 | _0;
   }
 
@@ -200,12 +180,10 @@ export namespace Id64 {
     if (!isId64(id))
       return 0;
 
-    const _4_5 = id.charCodeAt(3);
-    const _6_7 = id.charCodeAt(4);
-    const _4 = (_4_5 & 0xff00) >> 8;
-    const _5 = (_4_5 & 0x00ff) >> 0;
-    const _6 = (_6_7 & 0xff00) >> 8;
-    const _7 = (_6_7 & 0x00ff) >> 0;
+    const _4 = id.charCodeAt(5);
+    const _5 = id.charCodeAt(6);
+    const _6 = id.charCodeAt(7);
+    const _7 = id.charCodeAt(8);
     return _7 << 24 | _6 << 16 | _5 << 8 | _4;
   }
 
@@ -284,8 +262,8 @@ export namespace Id64 {
     return arg.has(id);
   }
 
-  /** The string representation of an invalid Id, an L followed by 4 NUL characters (the little-endian integer 0 encoded at UTF-16) */
-  export const invalid = "L\0\0\0\0";
+  /** The string representation of an invalid Id, an L followed by 8 NUL characters (the little-endian integer 0 encoded at UTF-8) */
+  export const invalid = "L\0\0\0\0\0\0\0\0";
 
   /** Determine if the supplied id string represents a transient Id.
    * @param id A well-formed Id string.
@@ -296,7 +274,7 @@ export namespace Id64 {
    */
   export function isTransient(id: Id64String): boolean {
     // A transient Id is of the format `L${localIdPortion}\xff\xff\xff` where '\xff\xff\xff' indicates an invalid briefcase Id.
-    return id.charCodeAt(4) === 0xffff && (id.charCodeAt(3) & 0xff00) === 0xff;
+    return id.charCodeAt(7) === 0xff && id.charCodeAt(6) === 0xff && id.charCodeAt(5) === 0xff;
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
@@ -314,8 +292,7 @@ export namespace Id64 {
    * @see [[Id64.isValidId64]]
    */
   export function isId64(id: string): boolean {
-    // FIXME: verify the length is always 5, even as constructed from native with a null terminator
-    return id.length === 5 && id[0] === "L";
+    return id.length === 9 && id[0] === "L";
   }
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
