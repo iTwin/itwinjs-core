@@ -1,7 +1,7 @@
 {
   "Dialogs": {
     "SampleModal": {
-      "title": "Sample Modal (ui items providers test supplied)"
+      "title": "Sample Modal"
     }
   },
   "backstage": {

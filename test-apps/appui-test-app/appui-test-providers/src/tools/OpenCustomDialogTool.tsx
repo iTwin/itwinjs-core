@@ -11,7 +11,7 @@ import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
 import { ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { AppUiTestProviders } from "../appui-test-providers";
+import { AppUiTestProviders } from "../AppUiTestProviders";
 import connectedQuerySvg from "../ui/icons/connected-query.svg";
 
 /**

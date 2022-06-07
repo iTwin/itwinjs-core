@@ -10,7 +10,7 @@ import {
 import { SampleTool } from "../../tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
-import { AppUiTestProviders } from "../../appui-test-providers";
+import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
 import statusFieldSvg from "../icons/StatusField.svg";
 

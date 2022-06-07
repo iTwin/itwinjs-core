@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  // AbstractWidgetProps,
+  AbstractWidgetProps,
   BackstageItem,
   BackstageItemUtilities, CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
-  // StagePanelLocation, StagePanelSection,
+  StagePanelLocation, StagePanelSection, StageUsage,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
-  // WidgetState,
+  WidgetState,
 } from "@itwin/appui-abstract";
 import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-// import React from "react";
-import { AppUiTestProviders } from "../../appui-test-providers";
+import * as React from "react";
+import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getTestProviderState, setHideCustomDialogButton } from "../../store";
 import { OpenCustomDialogTool } from "../../tools/OpenCustomDialogTool";
 import { CustomContentFrontstage } from "../frontstages/CustomContent";
 import visibilitySemiTransparentSvg from "../icons/visibility-semi-transparent.svg";
-// import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
+import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
 
 /**
  * Test UiItemsProvider that provide buttons, and backstage item to stage.
@@ -92,28 +92,25 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
     return [];
   }
 
-  // public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation,
-  //   section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
-  //   const widgets: AbstractWidgetProps[] = [];
-  //
-  //   if (location === StagePanelLocation.Right && section === StagePanelSection.Start) {
-  //     /** This widget when only be displayed when there is an element selected. */
-  //     const widget: AbstractWidgetProps = {
-  //       id: "ui-item-provider-test:elementDataListWidget",
-  //       label: "Data",
-  //       icon: "icon-flag-2",
-  //       defaultState: WidgetState.Hidden,
-  //       isFloatingStateSupported: true,
-  //       // eslint-disable-next-line react/display-name
-  //       getWidgetContent: () => {
-  //         return <SelectedElementDataWidgetComponent />;
-  //       },
-  //     };
-  //     widgets.push(widget);
-  //   }
-  //
-  //   return widgets;
-  // }
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
+    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+      const widget: AbstractWidgetProps = {
+        id: "appui-test-providers:elementDataListWidget",
+        label: "Data",
+        icon: "icon-flag-2",
+        defaultState: WidgetState.Hidden,
+        isFloatingStateSupported: true,
+        floatingContainerId: "ui-item-provider-test:ViewAttributesWidget",
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => <SelectedElementDataWidgetComponent />,
+      };
+
+      widgets.push(widget);
+    }
+    return widgets;
+  }
 
   public provideBackstageItems(): BackstageItem[] {
     const label = AppUiTestProviders.translate("backstage.customContentFrontstageLabel");

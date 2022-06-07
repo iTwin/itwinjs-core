@@ -9,7 +9,7 @@
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { AbstractDialogDataProvider } from "../ui/dialogs/TestUiProviderDialog";
 import { ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { AppUiTestProviders } from "../appui-test-providers";
+import { AppUiTestProviders } from "../AppUiTestProviders";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user

@@ -23,7 +23,7 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
-import { AppUiTestProviders } from "../appui-test-providers";
+import { AppUiTestProviders } from "../AppUiTestProviders";
 import sampleToolSvg from "./SampleTool.svg";
 
 enum ToolOptions {

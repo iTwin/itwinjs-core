@@ -9,7 +9,7 @@ import { Presentation } from "@itwin/presentation-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
 } from "@itwin/appui-abstract";
-import { AppUiTestProviders } from "../../appui-test-providers";
+import { AppUiTestProviders } from "../../AppUiTestProviders";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
  * in an iTwin.js app and to apply changes only when the user hits the OK button.
