@@ -1224,8 +1224,34 @@ export class ImdlReader {
     return geometry;
   }
 
-  private readAnimationBranches(_output: RenderGraphic[], _primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): void {
-    // ###TODO
+  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh): void {
+    assert(undefined !== this._computeNodeId);
+
+    const primitives = mesh.primitives;
+    if (!primitives)
+      return;
+
+    const branchesByNodeId = new Map<number, GraphicBranch>();
+    const getBranch = (nodeId: number) => GraphicBranch {
+      let branch = branchesByNodeId.get(nodeId);
+      if (!branch) {
+        branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
+        branch.nodeId = nodeId;
+        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+      }
+
+      return branch;
+    };
+
+    for (const primitive of primitives) {
+      if (primitive.type === "areaPattern") {
+        // ###TODO animated area patterns.
+        const gf = this.readAreaPattern(primitive);
+        if (gf)
+          getBranch(AnimationNodeId.Untransformed).add(gf);
+      } else {
+        // ###TODO
+      }
   }
 
   private readBranch(output: RenderGraphic[], primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
