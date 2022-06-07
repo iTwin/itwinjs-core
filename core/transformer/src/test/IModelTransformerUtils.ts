@@ -18,7 +18,7 @@ import {
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
-  GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
+  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
@@ -699,6 +699,9 @@ export class TransformerExtensiveTestScenario {
     const informationRecordId1 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" }));
     const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
     const informationRecordId3 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" }));
+    assert(informationRecordId1 !== undefined);
+    assert(informationRecordId2 !== undefined);
+    assert(informationRecordId3 !== undefined);
     assert.isTrue(Id64.isValidId64(informationRecordId1));
     assert.isTrue(Id64.isValidId64(informationRecordId2));
     assert.isTrue(Id64.isValidId64(informationRecordId3));
@@ -749,7 +752,7 @@ export class TransformerExtensiveTestScenario {
     const element: Element = targetDb.elements.getElement(targetElementId);
     assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
     const aspects: ElementAspect[] = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] ;
+    const aspect = aspects.filter((esa: any): esa is ExternalSourceAspect => esa.kind === ExternalSourceAspect.Kind.Element)[0];
     assert.exists(aspect);
     assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
     assert.equal(aspect.scope.id, IModel.rootSubjectId);
@@ -765,7 +768,7 @@ export class TransformerExtensiveTestScenario {
     const targetRelationship: Relationship = targetDb.relationships.getInstance(targetRelClassFullName, { sourceId: targetRelSourceId, targetId: targetRelTargetId });
     assert.exists(targetRelationship);
     const aspects: ElementAspect[] = targetDb.elements.getAspects(targetRelSourceId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] ;
+    const aspect = aspects.filter((esa: any): esa is ExternalSourceAspect => esa.kind === ExternalSourceAspect.Kind.Relationship)[0];
     assert.exists(aspect);
     const sourceRelationship: Relationship = sourceDb.relationships.getInstance(ElementRefersToElements.classFullName, aspect.identifier);
     assert.exists(sourceRelationship);
@@ -788,10 +791,10 @@ export class IModelTransformer3d extends IModelTransformer {
   public override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
-      const placement = Placement3d.fromJSON((targetElementProps ).placement);
+      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
       if (placement.isValid) {
         placement.multiplyTransform(this._transform3d);
-        (targetElementProps ).placement = placement;
+        (targetElementProps as GeometricElement3dProps).placement = placement;
       }
     }
     return targetElementProps;
