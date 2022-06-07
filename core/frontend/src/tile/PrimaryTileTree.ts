@@ -77,6 +77,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       allowInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
+      computeNodeId: undefined, // ###TODO
     };
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);

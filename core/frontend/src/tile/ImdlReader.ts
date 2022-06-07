@@ -23,6 +23,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
 import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
 import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
+import { ComputeNodeId } from "../render/primitives/VertexTableSplitter";
 import { PointStringParams } from "../render/primitives/PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -470,6 +471,7 @@ export interface ImdlReaderCreateArgs {
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
+  computeNodeId?: ComputeNodeId;
 }
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
@@ -497,6 +499,7 @@ export class ImdlReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
+  private readonly _computeNodeId?: ComputeNodeId;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -567,6 +570,7 @@ export class ImdlReader {
     this._loadEdges = args.loadEdges ?? true;
     this._options = args.options ?? {};
     this._containsTransformNodes = args.containsTransformNodes ?? false;
+    this._computeNodeId = args.computeNodeId;
   }
 
   /** Attempt to deserialize the tile data */
@@ -873,13 +877,21 @@ export class ImdlReader {
     return this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
   }
 
+  private readMeshGeometry(primitive: AnyImdlPrimitive): { geometry: RenderGeometry, instances?: InstancedGraphicParams } | undefined {
+    const geometry = this.readPrimitiveGeometry(primitive);
+    if (!geometry)
+      return undefined;
+
+    const instances = this.readInstances(primitive);
+    return { geometry, instances };
+  }
+
   private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
     if (primitive.type === "areaPattern")
       return this.readAreaPattern(primitive);
 
-    const instances = this.readInstances(primitive);
-    const geometry = this.readPrimitiveGeometry(primitive);
-    return geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+    const geom = this.readMeshGeometry(primitive);
+    return geom ? this._system.createRenderGraphic(geom.geometry, geom.instances) : undefined;
   }
 
   private findBuffer(bufferViewId: string): Uint8Array | undefined {
@@ -1212,6 +1224,25 @@ export class ImdlReader {
     return geometry;
   }
 
+  private readAnimationBranches(_output: RenderGraphic[], _primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): void {
+    // ###TODO
+  }
+
+  private readBranch(output: RenderGraphic[], primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
+    const branch = new GraphicBranch(true);
+    branch.animationId = animationId;
+    branch.animationNodeId = nodeId;
+
+    for (const primitive of primitives) {
+      const graphic = this.readMeshGraphic(primitive);
+      if (graphic)
+        branch.add(graphic);
+    }
+
+    if (!branch.isEmpty)
+      output.push(this._system.createBranch(branch, Transform.createIdentity()));
+  }
+
   private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
@@ -1230,21 +1261,6 @@ export class ImdlReader {
         }
       }
     } else {
-      const readBranch = (primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined) => {
-        const branch = new GraphicBranch(true);
-        branch.animationId = animationId;
-        branch.animationNodeId = nodeId;
-
-        for (const primitive of primitives) {
-          const graphic = this.readMeshGraphic(primitive);
-          if (graphic)
-            branch.add(graphic);
-        }
-
-        if (!branch.isEmpty)
-          graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
-      };
-
       for (const nodeKey of Object.keys(this._nodes)) {
         const nodeValue = this._nodes[nodeKey];
         const meshValue = undefined !== nodeValue ? this._meshes[nodeValue] : undefined;
@@ -1257,7 +1273,7 @@ export class ImdlReader {
           // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
           // any node in the schedule script can be grouped together.
           if (this._containsTransformNodes) {
-            readBranch(primitives, AnimationNodeId.Untransformed, undefined);
+            this.readBranch(graphics, primitives, AnimationNodeId.Untransformed, undefined);
           } else {
             for (const primitive of primitives) {
               const graphic = this.readMeshGraphic(primitive);
@@ -1266,7 +1282,7 @@ export class ImdlReader {
             }
           }
         } else if (undefined === layerId) {
-          readBranch(primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
+          this.readBranch(graphics, primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
         } else {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {

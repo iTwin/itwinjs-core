@@ -17,6 +17,7 @@ import { IModelConnection } from "../IModelConnection";
 import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
+import { ComputeNodeId } from "../render/primitives/VertexTableSplitter";
 import {
   DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
   TileRequestChannel, TileTree, TileTreeParams,
@@ -28,6 +29,7 @@ export interface IModelTileTreeOptions {
   readonly edges: EdgeOptions | false;
   readonly batchType: BatchType;
   readonly is3d: boolean;
+  readonly computeNodeId: ComputeNodeId | undefined;
 }
 
 // Overrides nothing.
@@ -387,6 +389,7 @@ export class IModelTileTree extends TileTree {
 
   public get batchType(): BatchType { return this._options.batchType; }
   public get edgeOptions(): EdgeOptions | false { return this._options.edges; }
+  public get computeNodeId(): ComputeNodeId | undefined { return this._options.computeNodeId; }
 
   public override get loadPriority(): TileLoadPriority {
     // If the model has been modified, we want to prioritize keeping its graphics up to date.
