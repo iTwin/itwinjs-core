@@ -31,12 +31,14 @@ export namespace Id64 {
     const _0_1 = id.charCodeAt(1);
     const _2_3 = id.charCodeAt(2);
     const _4_5 = id.charCodeAt(3);
-    const _0 = _0_1 & 0xff00 >> 8;
-    const _1 = _0_1 & 0x00ff >> 0;
-    const _2 = _2_3 & 0xff00 >> 8;
-    const _3 = _2_3 & 0x00ff >> 0;
-    const _4 = _4_5 & 0xff00 >> 8;
-    return _4 << 32 | _3 << 24 | _2 << 16 | _1 << 8 | _0;
+    const _0 = (_0_1 & 0xff00) >>> 8;
+    const _1 = (_0_1 & 0x00ff) >>> 0;
+    const _2 = (_2_3 & 0xff00) >>> 8;
+    const _3 = (_2_3 & 0x00ff) >>> 0;
+    const _4 = (_4_5 & 0xff00) >>> 8;
+    // javascript bitwise operators discard the high 32 bits so we need to use multiplication to SHIFT and addition to OR
+    // and hope the interpreter will notice it's a power of two and optimize it into a native shift
+    return ((_4 << 24) * 2**8) + (_3 << 24 | _2 << 16 | _1 << 8 | _0);
   }
 
   /** Extract the briefcase Id portion of an Id64String, contained in the upper 24 bits of the 64-bit value. */
@@ -45,9 +47,9 @@ export namespace Id64 {
       return 0;
     const _4_5 = id.charCodeAt(3);
     const _6_7 = id.charCodeAt(4);
-    const _5 = _4_5 & 0x00ff >> 8;
-    const _6 = _6_7 & 0xff00 >> 0;
-    const _7 = _6_7 & 0x00ff >> 8;
+    const _5 = (_4_5 & 0x00ff) >>> 0;
+    const _6 = (_6_7 & 0xff00) >>> 8;
+    const _7 = (_6_7 & 0x00ff) >>> 0;
     return _7 << 16 | _6 << 8 | _5;
   }
 
@@ -95,7 +97,9 @@ export namespace Id64 {
     const _1 = localId     >>>  8 & 0xff;
     const _2 = localId     >>> 16 & 0xff;
     const _3 = localId     >>> 24 & 0xff;
-    const _4 = localId     >>> 32 & 0xff;
+    // javascript bitwise operators discard the high 32 bits so we need to use multiplication to shift,
+    // and hope the interpreter will notice it's a power of two and optimize it into a native shift
+    const _4 = (localId / 2**8) >> 24 & 0xff;
     const _5 = briefcaseId >>>  0 & 0xff;
     const _6 = briefcaseId >>>  8 & 0xff;
     const _7 = briefcaseId >>> 16 & 0xff;
@@ -184,10 +188,10 @@ export namespace Id64 {
 
     const _0_1 = id.charCodeAt(1);
     const _2_3 = id.charCodeAt(2);
-    const _0 = _0_1 & 0xff00 >> 8;
-    const _1 = _0_1 & 0x00ff >> 0;
-    const _2 = _2_3 & 0xff00 >> 8;
-    const _3 = _2_3 & 0x00ff >> 0;
+    const _0 = (_0_1 & 0xff00) >>> 8;
+    const _1 = (_0_1 & 0x00ff) >>> 0;
+    const _2 = (_2_3 & 0xff00) >>> 8;
+    const _3 = (_2_3 & 0x00ff) >>> 0;
     return _3 << 24 | _2 << 16 | _1 << 8 | _0;
   }
 
@@ -198,10 +202,10 @@ export namespace Id64 {
 
     const _4_5 = id.charCodeAt(3);
     const _6_7 = id.charCodeAt(4);
-    const _4 = _4_5 & 0xff00 >> 8;
-    const _5 = _4_5 & 0x00ff >> 8;
-    const _6 = _6_7 & 0xff00 >> 0;
-    const _7 = _6_7 & 0x00ff >> 8;
+    const _4 = (_4_5 & 0xff00) >> 8;
+    const _5 = (_4_5 & 0x00ff) >> 0;
+    const _6 = (_6_7 & 0xff00) >> 8;
+    const _7 = (_6_7 & 0x00ff) >> 0;
     return _7 << 24 | _6 << 16 | _5 << 8 | _4;
   }
 

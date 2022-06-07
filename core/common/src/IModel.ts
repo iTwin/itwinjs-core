@@ -334,11 +334,11 @@ export abstract class IModel implements IModelProps {
   private _iModelId?: GuidString;
 
   /** The Id of the repository model. */
-  public static readonly repositoryModelId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0x1);
+  public static readonly repositoryModelId: Id64String = Id64.fromLocalAndBriefcaseIds(0x1, 0);
   /** The Id of the root subject element. */
-  public static readonly rootSubjectId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0x1);
+  public static readonly rootSubjectId: Id64String = Id64.fromLocalAndBriefcaseIds(0x1, 0);
   /** The Id of the dictionary model. */
-  public static readonly dictionaryId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0x10);
+  public static readonly dictionaryId: Id64String = Id64.fromLocalAndBriefcaseIds(0x10, 0);
 
   /** Event raised after [[name]] changes. */
   public readonly onNameChanged = new BeEvent<(previousName: string) => void>();
