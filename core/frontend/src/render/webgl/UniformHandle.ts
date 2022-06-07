@@ -50,7 +50,6 @@ export class UniformHandle {
         throw new Error(errMsg);
       } else {
         Logger.logError(FrontendLoggerCategory.Render, errMsg);
-        // console.log(errMsg); // eslint-disable-line no-console
       }
     }
     return new UniformHandle(location);
