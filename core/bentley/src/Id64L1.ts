@@ -100,7 +100,7 @@ export namespace Id64 {
     const _7 = briefcaseId >>> 16 & 0xff;
 
     // need to make sure node will never try to normalize latin encoded
-    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7)}`;
+    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7, 0)}`;
   }
 
   /** Create an Id64String from a pair of unsigned 32-bit integers.
@@ -120,7 +120,7 @@ export namespace Id64 {
     const _6 = highBytes >>> 16 & 0xff;
     const _7 = highBytes >>> 24 & 0xff;
 
-    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7)}`;
+    return `L${String.fromCharCode(_0, _1, _2, _3, _4, _5, _6, _7, 0)}`;
   }
 
   /** Create an Id64String from a [[Id64.Uint32Pair]].
@@ -262,8 +262,8 @@ export namespace Id64 {
     return arg.has(id);
   }
 
-  /** The string representation of an invalid Id, an L followed by 8 NUL characters (the little-endian integer 0 encoded at UTF-8) */
-  export const invalid = "L\0\0\0\0\0\0\0\0";
+  /** The string representation of an invalid Id, an 'L' followed by 9 NUL characters (the little-endian integer 0 encoded at UTF-8) and then a NUL terminator */
+  export const invalid = "L\0\0\0\0\0\0\0\0\0";
 
   /** Determine if the supplied id string represents a transient Id.
    * @param id A well-formed Id string.
@@ -273,7 +273,7 @@ export namespace Id64 {
    * @see [[TransientIdSequence]]
    */
   export function isTransient(id: Id64String): boolean {
-    // A transient Id is of the format `L${localIdPortion}\xff\xff\xff` where '\xff\xff\xff' indicates an invalid briefcase Id.
+    // A transient Id is of the format `L${localIdPortion}\xff\xff\xff\0` where '\xff\xff\xff' indicates an invalid briefcase Id.
     return id.charCodeAt(7) === 0xff && id.charCodeAt(6) === 0xff && id.charCodeAt(5) === 0xff;
   }
 
@@ -292,7 +292,8 @@ export namespace Id64 {
    * @see [[Id64.isValidId64]]
    */
   export function isId64(id: string): boolean {
-    return id.length === 9 && id[0] === "L";
+    // FIXME: make sure native code never returns any length but 10
+    return id.length >= 10 && id[0] === "L";
   }
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
