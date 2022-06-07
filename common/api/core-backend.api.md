@@ -3592,6 +3592,7 @@ export class Schema {
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
+    static getSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string;
 }
 
 // @internal (undocumented)
