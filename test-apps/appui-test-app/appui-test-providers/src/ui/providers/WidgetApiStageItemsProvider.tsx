@@ -12,7 +12,7 @@ import {
 import { ToolbarHelper } from "@itwin/appui-react";
 import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
-import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
+import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 
 export class WidgetApiStageItemsProvider implements UiItemsProvider {
@@ -291,9 +291,8 @@ export class WidgetApiStageItemsProvider implements UiItemsProvider {
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];
-
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(12, getToggleCustomOverlayCommandItemDef(), { groupPriority: 3000 }));
-        // items.push(ToolbarHelper.createToolbarItemFromItemDef(15, this.splitSingleViewportCommandDef, { groupPriority: 3000 }));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(15, getSplitSingleViewportCommandDef(), { groupPriority: 3000 }));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(17, getToggleCustomOverlayCommandItemDef(), { groupPriority: 3000 }));
         return items;
       } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
         const items: CommonToolbarItem[] = [];

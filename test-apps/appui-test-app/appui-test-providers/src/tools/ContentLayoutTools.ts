@@ -3,14 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager,
-  StageContentLayout, StageContentLayoutProps, ToolItemDef, UiFramework } from "@itwin/appui-react";
+import { ConditionalStringValue, IconSpecUtilities, StandardContentLayouts } from "@itwin/appui-abstract";
+import { CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, FrontstageManager,
+  IModelViewportControl,
+  StageContentLayout, StageContentLayoutProps, SyncUiEventId, ToolItemDef, UiFramework } from "@itwin/appui-react";
 import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { LocalStateStorage } from "@itwin/core-react/lib/cjs/core-react";
 
 import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg";
 import layoutSaveIconSvg from "@bentley/icons-generic/icons/upload.svg";
+import splitVerticalIconSvg from "@bentley/icons-generic/icons/window-split-vertical.svg";
+import singlePaneIconSvg from "@bentley/icons-generic/icons/window.svg";
 
 function getIModelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
   const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
@@ -143,80 +146,80 @@ export class RestoreSavedContentLayoutTool extends Tool {
   }
 }
 
-// public get splitSingleViewportCommandDef() {
-//   const commandId = "splitSingleViewportCommandDef";
-//   return new CommandItemDef({
-//     commandId,
-//     iconSpec: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
-//     label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
-//     execute: async () => {
-//       // if the active frontstage is only showing an single viewport then split it and have two copies of it
-//       const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-//       if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
-//         activeFrontstageDef.contentControls[0].viewport) {
-//         const vp = activeFrontstageDef.contentControls[0].viewport;
-//         if (vp) {
-//           const contentPropsArray: ContentProps[] = [];
-//           contentPropsArray.push({
-//             id: "imodel-view-0",
-//             classId: IModelViewportControl.id,
-//             applicationData:
-//             {
-//               viewState: vp.view.clone(),
-//               iModelConnection: vp.view.iModel,
-//
-//             },
-//           });
-//           contentPropsArray.push({
-//             id: "imodel-view-1",
-//             classId: IModelViewportControl.id,
-//             applicationData:
-//             {
-//               viewState: vp.view.clone(),
-//               iModelConnection: vp.view.iModel,
-//             },
-//           });
-//
-//           let contentGroupProps: ContentGroupProps = {
-//             id: "split-vertical-group",
-//             layout: StandardContentLayouts.twoVerticalSplit,
-//             contents: contentPropsArray,
-//           };
-//
-//           if (activeFrontstageDef.contentGroupProvider)
-//             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
-//
-//           const contentGroup = new ContentGroup(contentGroupProps);
-//           await FrontstageManager.setActiveContentGroup(contentGroup);
-//         }
-//       } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
-//         activeFrontstageDef.contentControls[0].viewport) {
-//         const vp = activeFrontstageDef.contentControls[0].viewport;
-//         if (vp) {
-//           const contentPropsArray: ContentProps[] = [];
-//           contentPropsArray.push({
-//             id: "imodel-view-0",
-//             classId: IModelViewportControl.id,
-//             applicationData:
-//             {
-//               viewState: vp.view.clone(),
-//               iModelConnection: vp.view.iModel,
-//             },
-//           });
-//
-//           let contentGroupProps: ContentGroupProps = {
-//             id: "single-content",
-//             layout: StandardContentLayouts.singleView,
-//             contents: contentPropsArray,
-//           };
-//           if (activeFrontstageDef.contentGroupProvider)
-//             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
-//
-//           const contentGroup = new ContentGroup(contentGroupProps);
-//           await FrontstageManager.setActiveContentGroup(contentGroup);
-//         }
-//       }
-//     },
-//   });
-// }
+export function getSplitSingleViewportCommandDef() {
+  const commandId = "splitSingleViewportCommandDef";
+  return new CommandItemDef({
+    commandId,
+    iconSpec: new ConditionalStringValue(() => IconSpecUtilities.createWebComponentIconSpec(1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? splitVerticalIconSvg :singlePaneIconSvg), [SyncUiEventId.ActiveContentChanged]),
+    label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+    execute: async () => {
+      // if the active frontstage is only showing an single viewport then split it and have two copies of it
+      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+      if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
+         activeFrontstageDef.contentControls[0].viewport) {
+        const vp = activeFrontstageDef.contentControls[0].viewport;
+        if (vp) {
+          const contentPropsArray: ContentProps[] = [];
+          contentPropsArray.push({
+            id: "imodel-view-0",
+            classId: IModelViewportControl.id,
+            applicationData:
+             {
+               viewState: vp.view.clone(),
+               iModelConnection: vp.view.iModel,
+
+             },
+          });
+          contentPropsArray.push({
+            id: "imodel-view-1",
+            classId: IModelViewportControl.id,
+            applicationData:
+             {
+               viewState: vp.view.clone(),
+               iModelConnection: vp.view.iModel,
+             },
+          });
+
+          let contentGroupProps: ContentGroupProps = {
+            id: "split-vertical-group",
+            layout: StandardContentLayouts.twoVerticalSplit,
+            contents: contentPropsArray,
+          };
+
+          if (activeFrontstageDef.contentGroupProvider)
+            contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+          const contentGroup = new ContentGroup(contentGroupProps);
+          await FrontstageManager.setActiveContentGroup(contentGroup);
+        }
+      } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
+         activeFrontstageDef.contentControls[0].viewport) {
+        const vp = activeFrontstageDef.contentControls[0].viewport;
+        if (vp) {
+          const contentPropsArray: ContentProps[] = [];
+          contentPropsArray.push({
+            id: "imodel-view-0",
+            classId: IModelViewportControl.id,
+            applicationData:
+             {
+               viewState: vp.view.clone(),
+               iModelConnection: vp.view.iModel,
+             },
+          });
+
+          let contentGroupProps: ContentGroupProps = {
+            id: "single-content",
+            layout: StandardContentLayouts.singleView,
+            contents: contentPropsArray,
+          };
+          if (activeFrontstageDef.contentGroupProvider)
+            contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+          const contentGroup = new ContentGroup(contentGroupProps);
+          await FrontstageManager.setActiveContentGroup(contentGroup);
+        }
+      }
+    },
+  });
+}
 
