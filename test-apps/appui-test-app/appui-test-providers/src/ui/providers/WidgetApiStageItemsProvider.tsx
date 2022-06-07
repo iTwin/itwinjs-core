@@ -14,6 +14,7 @@ import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontst
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
+import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
 
 export class WidgetApiStageItemsProvider implements UiItemsProvider {
   public static providerId = "sampleApp:widget-api-stage-stage-widget-provider";
@@ -298,6 +299,7 @@ export class WidgetApiStageItemsProvider implements UiItemsProvider {
         const items: CommonToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, SaveContentLayoutTool.toolItemDef, { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(15, RestoreSavedContentLayoutTool.toolItemDef, { groupPriority: 3000 }));
+        items.push(getCustomViewSelectorPopupItem(20, 3000));
         return items;
       }
     }
