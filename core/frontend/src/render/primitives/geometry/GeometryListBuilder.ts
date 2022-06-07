@@ -174,7 +174,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const tolerance = this.computeTolerance(accum);
       meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
-        featureTable = meshes.features;
+        if (meshes.features?.anyDefined)
+          featureTable = meshes.features;
+
         range = meshes.range;
       }
     }

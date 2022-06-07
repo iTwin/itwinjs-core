@@ -109,11 +109,13 @@ beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
+alpha;SpanKind
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
 beta;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
+alpha;Tracing
 public;TransientIdSequence
 public;UnexpectedErrors
 public;using
