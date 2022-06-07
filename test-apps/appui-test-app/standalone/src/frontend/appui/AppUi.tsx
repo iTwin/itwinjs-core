@@ -69,7 +69,6 @@ export class AppUi {
     ];
 
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
-
     ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 

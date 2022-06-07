@@ -8,10 +8,8 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-// import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-// import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
-import { getClassName } from "@itwin/appui-abstract";
+import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
@@ -24,7 +22,6 @@ import {
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-// import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
@@ -36,7 +33,6 @@ import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
-// import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
@@ -44,9 +40,7 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
-// cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
+import { AppUiTestProviders, CustomContentFrontstage, AbstractUiItemsProvider } from "@itwin/appui-test-providers";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -151,74 +145,23 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static async startup(opts: NativeAppOpts, hubClient?: IModelsClient): Promise<void> {
-
-    this.hubClient = hubClient;
+  public static async startup(opts: NativeAppOpts): Promise<void> {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
     };
 
-    if (hubClient) {
-      //      // set up OIDC authorization if hubClient is specified
-      //      if (ProcessDetector.isElectronAppFrontend) {
-      //        const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
-      //        iModelAppOpts.authorizationClient = authClient;
-      //        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
-      //        NativeAppLogger.initialize();
-      //      } else if (ProcessDetector.isIOSAppFrontend) {
-      //        await IOSApp.startup(opts);
-      //      } else if (ProcessDetector.isAndroidAppFrontend) {
-      //        await AndroidApp.startup(opts);
-      //      } else {
-      //        // if an auth client has not already been configured, use a default Browser client
-      //        const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
-      //        const urlObj = new URL(redirectUri);
-      //        if (urlObj.pathname === window.location.pathname) {
-      //          await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
-      //          return;
-      //        }
-      //
-      //        if (undefined === process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID && undefined === process.env.IMJS_OIDC_BROWSER_TEST_SCOPES) {
-      //          Logger.logWarning(loggerCategory, "Missing IMJS_OIDC_BROWSER_TEST_CLIENT_ID and IMJS_OIDC_BROWSER_TEST_SCOPES environment variables. Authentication will not be possible if not properly set.");
-      //          await IModelApp.startup(iModelAppOpts);
-      //          return;
-      //        }
-      //
-      //        const auth = new BrowserAuthorizationClient({
-      //          clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
-      //          redirectUri,
-      //          scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
-      //          responseType: "code",
-      //        });
-      //        try {
-      //          await auth.signInSilent();
-      //        } catch (err) { }
-      //
-      //        const rpcParams: BentleyCloudRpcParams =
-      //          undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-      //            { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
-      //            : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      //        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
-      //
-      //        await IModelApp.startup({
-      //          ...iModelAppOpts,
-      //          authorizationClient: auth,
-      //        });
-      //      }
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+    BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
+    if (ProcessDetector.isElectronAppFrontend) {
+      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
+      NativeAppLogger.initialize();
+    } else if (ProcessDetector.isIOSAppFrontend) {
+      await IOSApp.startup(opts as IOSAppOpts);
+    } else if (ProcessDetector.isAndroidAppFrontend) {
+      await AndroidApp.startup(opts);
     } else {
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
-      if (ProcessDetector.isElectronAppFrontend) {
-        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
-        NativeAppLogger.initialize();
-      } else if (ProcessDetector.isIOSAppFrontend) {
-        await IOSApp.startup(opts as IOSAppOpts);
-      } else if (ProcessDetector.isAndroidAppFrontend) {
-        await AndroidApp.startup(opts);
-      } else {
-        await IModelApp.startup(iModelAppOpts);
-      }
+      await IModelApp.startup(iModelAppOpts);
     }
 
     window.onerror = function (error) {
@@ -297,6 +240,13 @@ export class SampleAppIModelApp {
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
 
+    // register the localized strings for the package that contains the sample UiItems providers
+    await IModelApp.localization.registerNamespace(AppUiTestProviders.localizationNamespace);
+
+    // initialize UI Item providers
+    UiItemsManager.register(new AbstractUiItemsProvider(AppUiTestProviders.localizationNamespace));
+    CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -306,31 +256,6 @@ export class SampleAppIModelApp {
     const category = `appui-test-app.${className}`;
     return category;
   }
-
-  // public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
-  //   // Close the current iModelConnection
-  //   await SampleAppIModelApp.closeCurrentIModel();
-  //
-  //   Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-  //     `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
-  //
-  //   let iModelConnection: IModelConnection | undefined;
-  //   if (ProcessDetector.isMobileAppFrontend) {
-  //     const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-  //       Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-  //     });
-  //     await req.downloadPromise;
-  //     iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
-  //     SampleAppIModelApp.setIsIModelLocal(true, true);
-  //   } else {
-  //     const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-  //     await iModel.openIModel();
-  //     iModelConnection = iModel.iModelConnection!;
-  //     SampleAppIModelApp.setIsIModelLocal(false, true);
-  //   }
-  //
-  //   await this.setViewIdAndOpenMainStage(iModelConnection, viewIdsSelected);
-  // }
 
   public static async closeCurrentIModel() {
     if (SampleAppIModelApp.isIModelLocal) {
@@ -469,7 +394,7 @@ function mapFrameworkVersionStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-const SampleAppViewer2 = () => {
+const SampleAppViewer = () => {
   React.useEffect(() => {
     AppUi.initialize();
   }, []);
@@ -569,12 +494,10 @@ async function main() {
   };
 
   // Start the app.
-  // await SampleAppIModelApp.startup(opts, iModelClient);
   await SampleAppIModelApp.startup(opts);
-
   await SampleAppIModelApp.initialize();
 
-  ReactDOM.render(<SampleAppViewer2 />, document.getElementById("root") as HTMLElement);
+  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function
