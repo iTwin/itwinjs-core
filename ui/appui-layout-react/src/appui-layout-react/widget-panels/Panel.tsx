@@ -19,6 +19,7 @@ import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
 import { WidgetComponent } from "../widget/Widget";
 import { PanelTargets } from "../target/PanelTargets";
+import { SectionOutline } from "../outline/SectionOutline";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -403,6 +404,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
             );
           })}
         </div>
+        <SectionOutlines />
         {panel.resizable &&
           <div className="nz-grip-container">
             <WidgetPanelGrip className="nz-grip" />
@@ -645,4 +647,13 @@ function getSize(horizontal: boolean, size: SizeProps) {
 
 function getPanelSize(horizontal: boolean, size: SizeProps) {
   return horizontal ? size.height : size.width;
+}
+
+function SectionOutlines() { // eslint-disable-line @typescript-eslint/naming-convention
+  return (
+    <>
+      <SectionOutline sectionIndex={0} />
+      <SectionOutline sectionIndex={1} />
+    </>
+  );
 }

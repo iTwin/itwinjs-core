@@ -534,6 +534,7 @@ interface Dragged {
 }
 
 type DragEventHandler = (item: DragItem, info: DragInfo, target: DropTargetState | undefined) => void;
+type TargetChangedEventHandler = (target: DropTargetState | undefined) => void;
 
 /** @internal */
 export class DragManager {
@@ -541,6 +542,7 @@ export class DragManager {
   private _onDragStartEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEndEmitter = new EventEmitter<DragEventHandler>();
+  private _onTargetChangedEmitter = new EventEmitter<TargetChangedEventHandler>();
 
   public isDragged(item: DragItem) {
     return !!this._dragged && this._dragged.item.id === item.id && this._dragged.item.type === item.type;
@@ -569,6 +571,10 @@ export class DragManager {
     return this._onDragEndEmitter;
   }
 
+  public get onTargetChanged(): Event<TargetChangedEventHandler> {
+    return this._onTargetChangedEmitter;
+  }
+
   public handleDragStart({ item, info }: HandleDragStartArgs) {
     this._dragged = {
       item,
@@ -588,19 +594,22 @@ export class DragManager {
   }
 
   public handleDragEnd() {
-    if (this._dragged) {
-      const item = this._dragged.item;
-      const info = this._dragged.info;
-      const target = this._dragged.target;
-      this._dragged = undefined;
-      this._onDragEndEmitter.emit(item, info, target);
-    }
+    if (!this._dragged)
+      return;
+
+    const item = this._dragged.item;
+    const info = this._dragged.info;
+    const target = this._dragged.target;
+    this._dragged = undefined;
+    this._onDragEndEmitter.emit(item, info, target);
+    target && this._onTargetChangedEmitter.emit(undefined);
   }
 
   public handleTargetChanged(target: DropTargetState | undefined) {
     if (!this._dragged)
       return;
     this._dragged.target = target;
+    this._onTargetChangedEmitter.emit(target);
   }
 }
 
@@ -619,3 +628,15 @@ DraggedPanelSideContext.displayName = "nz:DraggedPanelSideContext";
 /** @internal */
 export const DraggedResizeHandleContext = React.createContext<FloatingWidgetResizeHandle | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 DraggedResizeHandleContext.displayName = "nz:DraggedResizeHandleContext";
+
+/** @internal */
+export function useTargeted() {
+  const dragManager = React.useContext(DragManagerContext);
+  const [targeted, setTargeted] = React.useState<DropTargetState>();
+  React.useEffect(() => {
+    return dragManager.onTargetChanged.add((t) => {
+      setTargeted(t);
+    });
+  }, [dragManager]);
+  return targeted;
+}

@@ -1155,7 +1155,8 @@ function isPanelTargetState(state: DropTargetState): state is PanelTargetState {
   return state.type === "panel";
 }
 
-function isSectionTargetState(state: DropTargetState): state is SectionTargetState {
+/** @internal */
+export function isSectionTargetState(state: DropTargetState): state is SectionTargetState {
   return state.type === "section";
 }
 
