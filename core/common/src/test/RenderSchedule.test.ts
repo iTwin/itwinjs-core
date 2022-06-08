@@ -404,18 +404,18 @@ describe.only("RenderSchedule", () => {
 
   describe("ElementTimeline", () => {
     it("compares for equality", () => {
-      const ids = ["0x1", "0x5", "0xabc"];
-      const compressedIds = CompressedId64Set.compressArray(ids);
+      const elementIds = ["0x1", "0x5", "0xabc"];
+      const compressedIds = CompressedId64Set.compressArray(elementIds);
 
-      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }));
+      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }));
       expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
-      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
+      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
 
-      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 5, elementIds: ids }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 5, elementIds }));
 
-      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0xabc"] }));
-      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5"] }));
-      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5", "0xdef"] }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0xabc"] }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5"] }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5", "0xdef"] }));
 
       const v1 = { time: 3, interpolation: 1, value: 1 };
       const v2 = { time: 4, interpolation: 2, value: 2 };
@@ -430,10 +430,29 @@ describe.only("RenderSchedule", () => {
       const colorTimeline = [c1, c2];
       const transformTimeline = [t1, t2];
       const cuttingPlaneTimeline = [p1, p2];
-      const elementIds = ids;
-      expectEqual(RS.ElementTimeline.fromJSON({ visibilityTimeline, colorTimeline, transformTimeline, cuttingPlaneTimeline, batchId: 1, elementIds }),
-        RS.ElementTimeline.fromJSON({ visibilityTimeline, colorTimeline, transformTimeline, cuttingPlaneTimeline, batchId: 1, elementIds }));
 
+      const timelineProps = { visibilityTimeline, colorTimeline, transformTimeline, cuttingPlaneTimeline, batchId: 1, elementIds };
+      const timeline = RS.ElementTimeline.fromJSON(timelineProps);
+      expectEqual(timeline, RS.ElementTimeline.fromJSON(timelineProps));
+
+      const stringifiedProps = JSON.stringify(timelineProps);
+      const keys = ["visibilityTimeline", "colorTimeline", "transformTimeline", "cuttingPlaneTimeline"] as const;
+      for (const key of keys) {
+        let props = { ...timelineProps };
+        delete props[key];
+        expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
+
+        props = JSON.parse(stringifiedProps);
+        props[key].pop();
+        expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
+
+        props = JSON.parse(stringifiedProps);
+        props[key].push(props[key][1] as any);
+        expectUnequal(timeline, RS.ElementTimeline.fromJSON(props));
+        expectEqual(RS.ElementTimeline.fromJSON(props), RS.ElementTimeline.fromJSON(props));
+      }
     });
 
     it("considers the same element Ids equal only if in the same order", () => {
