@@ -84,13 +84,15 @@ interface PropertyFilterBuilderGroupOrRuleProps {
   item: PropertyFilterBuilderRuleGroupItem;
 }
 
-function PropertyFilterBuilderGroupOrRule({path, item}: PropertyFilterBuilderGroupOrRuleProps) {
-  const itemPath = React.useMemo(() => ([...path, item.id]), [path, item]);
+const PropertyFilterBuilderGroupOrRule = React.memo(
+  function PropertyFilterBuilderGroupOrRule({path, item}: PropertyFilterBuilderGroupOrRuleProps) {
+    const itemPath = [...path, item.id];
 
-  if (isPropertyFilterBuilderRuleGroup(item))
-    return <PropertyFilterBuilderRuleGroupRenderer path={itemPath} group={item} />;
-  return <PropertyFilterBuilderRuleRenderer path={itemPath} rule={item} />;
-}
+    if (isPropertyFilterBuilderRuleGroup(item))
+      return <PropertyFilterBuilderRuleGroupRenderer path={itemPath} group={item} />;
+    return <PropertyFilterBuilderRuleRenderer path={itemPath} rule={item} />;
+  }
+);
 
 function useIsActive() {
   const { isFocused, onBlur, onFocus } = useIsFocused();
