@@ -23,7 +23,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
 import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
 import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
-import { ComputeNodeId } from "../render/primitives/VertexTableSplitter";
+import { ComputeNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { PointStringParams } from "../render/primitives/PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -1255,7 +1255,7 @@ export class ImdlReader {
     return geometry;
   }
 
-  private readAnimationBranches(_output: RenderGraphic[], mesh: ImdlMesh): void {
+  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: PackedFeatureTable): void {
     assert(undefined !== this._computeNodeId);
 
     const primitives = mesh.primitives;
@@ -1274,6 +1274,12 @@ export class ImdlReader {
       return branch;
     };
 
+    const splitArgs = {
+      maxDimension: this._system.maxTextureSize,
+      computeNodeId: this._computeNodeId,
+      featureTable,
+    };
+
     for (const primitive of primitives) {
       if (primitive.type === "areaPattern") {
         // ###TODO animated area patterns.
@@ -1281,8 +1287,54 @@ export class ImdlReader {
         if (gf)
           getBranch(AnimationNodeId.Untransformed).add(gf);
       } else {
-        // ###TODO
+        const prim = this.readPrimitiveParams(primitive);
+        if (!prim)
+          continue;
+
+        const viOrigin = prim.viOrigin;
+        switch (prim.type) {
+          case "mesh": {
+            const split = splitMeshParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "mesh" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+
+            break;
+          }
+          case "point": {
+            const split = splitPointStringParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "point" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+
+            break;
+          }
+          case "polyline": {
+            const split = splitPolylineParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "polyline" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+            break;
+          }
+        }
       }
+    }
+
+    for (const branch of branchesByNodeId.values()) {
+      assert(!branch.isEmpty)
+      output.push(this._system.createBranch(branch, Transform.createIdentity()));
     }
   }
 
@@ -1328,9 +1380,12 @@ export class ImdlReader {
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
-          // any node in the schedule script can be grouped together.
-          if (this._containsTransformNodes) {
+          if (this._computeNodeId) {
+            // Split up the root node into transform nodes.
+            this.readAnimationBranches(graphics, meshValue, featureTable);
+          } else if (this._containsTransformNodes) {
+            // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
+            // any node in the schedule script can be grouped together.
             this.readBranch(graphics, primitives, AnimationNodeId.Untransformed, undefined);
           } else {
             for (const primitive of primitives) {
