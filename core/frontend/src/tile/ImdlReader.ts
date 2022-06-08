@@ -474,6 +474,20 @@ export interface ImdlReaderCreateArgs {
   computeNodeId?: ComputeNodeId;
 }
 
+type PrimitiveParams = {
+  params: MeshParams;
+  viOrigin?: Point3d;
+  type: "mesh";
+} | {
+  params: PointStringParams;
+  viOrigin?: Point3d;
+  type: "point";
+} | {
+  params: PolylineParams;
+  viOrigin?: Point3d;
+  type: "polyline";
+};
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -1135,7 +1149,7 @@ export class ImdlReader {
     return { succeeded, params };
   }
 
-  private readPrimitiveParams(primitive: AnyImdlPrimitive): { params: MeshParams | PointStringParams | PolylineParams, viOrigin?: Point3d } | undefined {
+  private readPrimitiveParams(primitive: AnyImdlPrimitive): PrimitiveParams | undefined {
     const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
@@ -1151,7 +1165,6 @@ export class ImdlReader {
     const viOrigin = primitive.viewIndependentOrigin ? Point3d.fromJSON(primitive.viewIndependentOrigin) : undefined;
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
 
-    let params;
     switch (primitive.type) {
       case Mesh.PrimitiveType.Mesh: {
         const surface = this.readSurface(primitive, displayParams);
@@ -1168,8 +1181,11 @@ export class ImdlReader {
             edgeParams = edgeResult.params;
         }
 
-        params = new MeshParams(vertices, surface, edgeParams, isPlanar, this.readAuxChannelTable(primitive));
-        break;
+        return {
+          params: new MeshParams(vertices, surface, edgeParams, isPlanar, this.readAuxChannelTable(primitive)),
+          type: "mesh",
+          viOrigin,
+        };
       }
       case Mesh.PrimitiveType.Polyline: {
         const polyline = this.readTesselatedPolyline(primitive);
@@ -1180,23 +1196,27 @@ export class ImdlReader {
         if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
           flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
 
-        params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
-        break;
+        return {
+          params: new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags),
+          type: "polyline",
+          viOrigin,
+        };
       }
       case Mesh.PrimitiveType.Point: {
         const indices = this.readVertexIndices(primitive.indices);
         if (undefined === indices)
           return undefined;
 
-        params = new PointStringParams(vertices, indices, displayParams.width);
-        break;
+        return {
+          params: new PointStringParams(vertices, indices, displayParams.width),
+          type: "point",
+          viOrigin,
+        };
       }
       default:
         assert(false, "unhandled primitive type");
         return undefined;
     }
-
-    return { params, viOrigin };
   }
 
   private readPrimitiveGeometry(primitive: AnyImdlPrimitive): RenderGeometry | undefined {
@@ -1204,14 +1224,15 @@ export class ImdlReader {
     return prim ? this.createPrimitiveGeometry(prim) : undefined;
   }
 
-  private createPrimitiveGeometry(prim: { params: MeshParams | PolylineParams | PointStringParams, viOrigin?: Point3d }): RenderGeometry | undefined {
-    if (prim.params instanceof MeshParams)
-      return this._system.createMeshGeometry(prim.params, prim.viOrigin);
-    else if (prim.params instanceof PolylineParams)
-      return this._system.createPolylineGeometry(prim.params, prim.viOrigin);
-
-    assert(prim.params instanceof PointStringParams)
-    return this._system.createPointStringGeometry(prim.params, prim.viOrigin);
+  private createPrimitiveGeometry(prim: PrimitiveParams): RenderGeometry | undefined {
+    switch (prim.type) {
+      case "mesh":
+        return this._system.createMeshGeometry(prim.params, prim.viOrigin);
+      case "polyline":
+        return this._system.createPolylineGeometry(prim.params, prim.viOrigin);
+      case "point":
+        return this._system.createPointStringGeometry(prim.params, prim.viOrigin);
+    }
   }
 
   private getPatternGeometry(patternName: string): RenderGeometry[] | undefined {
