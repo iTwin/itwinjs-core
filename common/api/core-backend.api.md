@@ -3595,7 +3595,7 @@ export class Schema {
 }
 
 // @public
-export function getSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string;
+export function generateSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string;
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;

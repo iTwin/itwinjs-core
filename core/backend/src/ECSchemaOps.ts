@@ -15,7 +15,7 @@ import { IModelHost } from "./IModelHost";
  * @param isExactMatch: Schema references are located by exact scheme version comparisons
  * @public
  */
-export function getSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string {
+export function generateSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string {
   try {
     if (isExactMatch)
       return IModelHost.platform.computeSchemaChecksumWithExactRefMatch(schemaXmlPath, referencePaths);
