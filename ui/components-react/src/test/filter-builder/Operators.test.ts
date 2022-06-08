@@ -5,7 +5,7 @@
 import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
 import {
-  getPropertyFilterOperators, propertyFilterOperatorNeedsValue, PropertyFilterRuleOperator,
+  getPropertyFilterOperators, isUnaryPropertyFilterOperator, PropertyFilterRuleOperator,
 } from "../../components-react/filter-builder/Operators";
 
 chai.use(chaiSubset);
@@ -62,18 +62,18 @@ describe("getPropertyFilterOperators", () => {
   });
 });
 
-describe("filterRuleOperatorNeedsValue", () => {
+describe("isUnaryPropertyFilterOperator", () => {
   it("returns correct values", () => {
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsTrue)).to.be.false;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsFalse)).to.be.false;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsNull)).to.be.false;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsNotNull)).to.be.false;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsEqual)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.IsNotEqual)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.Greater)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.GreaterOrEqual)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.Less)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.LessOrEqual)).to.be.true;
-    expect(propertyFilterOperatorNeedsValue(PropertyFilterRuleOperator.Like)).to.be.true;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsTrue)).to.be.true;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsFalse)).to.be.true;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsNull)).to.be.true;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsNotNull)).to.be.true;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsEqual)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.IsNotEqual)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.Greater)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.GreaterOrEqual)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.Less)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.LessOrEqual)).to.be.false;
+    expect(isUnaryPropertyFilterOperator(PropertyFilterRuleOperator.Like)).to.be.false;
   });
 });

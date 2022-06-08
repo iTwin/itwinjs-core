@@ -187,6 +187,7 @@ public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDa
 public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
 public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
 public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+alpha;isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
@@ -304,7 +305,6 @@ alpha;PropertyFilterBuilderRuleValueProps
 alpha;PropertyFilterBuilderState
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
-alpha;propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator): boolean
 alpha;PropertyFilterRule
 alpha;PropertyFilterRuleGroup
 alpha;PropertyFilterRuleGroupOperator

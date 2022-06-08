@@ -1671,6 +1671,9 @@ export function isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): 
 // @public
 export function isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode;
 
+// @alpha (undocumented)
+export function isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean;
+
 // @public
 export interface ItemColorOverrides {
     backgroundColor?: number;
@@ -2664,9 +2667,6 @@ export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesList
 
 // @public
 export type PropertyFilterChangesListener = () => void;
-
-// @alpha (undocumented)
-export function propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator): boolean;
 
 // @alpha (undocumented)
 export interface PropertyFilterRule {

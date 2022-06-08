@@ -11,7 +11,7 @@ import {
   isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
   PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
 } from "./FilterBuilderState";
-import { propertyFilterOperatorNeedsValue } from "./Operators";
+import { isUnaryPropertyFilterOperator } from "./Operators";
 import { PropertyFilter } from "./Types";
 
 /** @alpha */
@@ -100,7 +100,7 @@ function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyF
   if (!property || operator === undefined)
     return undefined;
 
-  if (propertyFilterOperatorNeedsValue(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
+  if (!isUnaryPropertyFilterOperator(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
     return undefined;
 
   return {property, operator, value};

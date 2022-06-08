@@ -6,7 +6,7 @@ import { Draft, produce } from "immer";
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { Guid } from "@itwin/core-bentley";
-import { propertyFilterOperatorNeedsValue, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
+import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
 
 /** @alpha */
 export interface PropertyFilterBuilderState {
@@ -95,7 +95,7 @@ export class PropertyFilterBuilderActions {
       const rule = findRule(state.rootGroup, path);
       if (!rule)
         return;
-      if (!propertyFilterOperatorNeedsValue(operator))
+      if (isUnaryPropertyFilterOperator(operator))
         rule.value = undefined;
       rule.operator = operator;
     });

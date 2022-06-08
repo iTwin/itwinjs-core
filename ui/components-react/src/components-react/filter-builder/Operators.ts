@@ -106,13 +106,13 @@ export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOpera
 }
 
 /** @alpha */
-export function propertyFilterOperatorNeedsValue(operator: PropertyFilterRuleOperator) {
+export function isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator) {
   switch (operator) {
     case PropertyFilterRuleOperator.IsTrue:
     case PropertyFilterRuleOperator.IsFalse:
     case PropertyFilterRuleOperator.IsNull:
     case PropertyFilterRuleOperator.IsNotNull:
-      return false;
+      return true;
   }
-  return true;
+  return false;
 }

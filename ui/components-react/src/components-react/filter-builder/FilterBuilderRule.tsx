@@ -11,7 +11,7 @@ import { PropertyFilterBuilderRuleOperator } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
 import { PropertyFilterBuilderRuleValue } from "./FilterBuilderRuleValue";
 import { PropertyFilterBuilderRule } from "./FilterBuilderState";
-import { propertyFilterOperatorNeedsValue, PropertyFilterRuleOperator } from "./Operators";
+import { isUnaryPropertyFilterOperator, PropertyFilterRuleOperator } from "./Operators";
 import "./FilterBuilderRule.scss";
 
 /** @alpha */
@@ -70,7 +70,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         onSelectedPropertyChanged={onSelectedPropertyChanged}
       />
       {property && operatorRenderer(property)}
-      {property && operator && propertyFilterOperatorNeedsValue(operator) && valueRenderer(property)}
+      {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}
     </div>
   </div>;
 }
