@@ -176,6 +176,10 @@ export namespace RenderSchedule {
 
       return props;
     }
+
+    public equals(other: TimelineEntry): boolean {
+      return this.interpolation === other.interpolation && this.time === other.time;
+    }
   }
 
   /** A timeline entry that controls the visibility of the associated geometry. */
@@ -199,6 +203,10 @@ export namespace RenderSchedule {
         props.value = this.value;
 
       return props;
+    }
+
+    public override equals(other: TimelineEntry): boolean {
+      return other instanceof VisibilityEntry && super.equals(other) && this.value === other.value;
     }
   }
 
@@ -224,6 +232,16 @@ export namespace RenderSchedule {
       }
 
       return props;
+    }
+
+    public override equals(other: TimelineEntry): boolean {
+      if (!(other instanceof ColorEntry) || !super.equals(other))
+        return false;
+
+      if (!this.value)
+        return !other.value;
+
+      return !!other.value && this.value.equals(other.value);
     }
   }
 
@@ -256,6 +274,10 @@ export namespace RenderSchedule {
         orientation: [this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w],
       };
     }
+
+    public equals(other: TransformComponents): boolean {
+      return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) && this.orientation.isAlmostEqual(other.orientation);
+    }
   }
 
   /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
@@ -282,6 +304,16 @@ export namespace RenderSchedule {
       }
 
       return props;
+    }
+
+    public override equals(other: TimelineEntry): boolean {
+      if (!(other instanceof TransformEntry) || !super.equals(other))
+        return false;
+
+      if (this.components)
+        return !!other.components && this.components.equals(other.components);
+
+      return !other.components && this.value.isAlmostEqual(other.value);
     }
   }
 
@@ -317,6 +349,11 @@ export namespace RenderSchedule {
 
       return props;
     }
+
+    public equals(other: CuttingPlane): boolean {
+      return this.visible === other.visible && this.hidden === other.hidden
+        && XYAndZ.almostEqual(this.position, other.position) && XYAndZ.almostEqual(this.direction, other.direction);
+    }
   }
 
   /** A timeline entry that applies a [ClipPlane]($core-geometry) to the affected geometry. */
@@ -336,6 +373,16 @@ export namespace RenderSchedule {
         props.value = this.value.toJSON();
 
       return props;
+    }
+
+    public override equals(other: TimelineEntry): boolean {
+      if (!(other instanceof CuttingPlaneEntry) || !super.equals(other))
+        return false;
+
+      if (!this.value)
+        return !other.value;
+
+      return !!other.value && this.value.equals(other.value);
     }
   }
 
@@ -402,6 +449,17 @@ export namespace RenderSchedule {
 
     public toJSON(): P[] {
       return this._entries.map((x) => x.toJSON() as P);
+    }
+
+    public equals(other: TimelineEntryList<T, P, V>): boolean {
+      if (this.length !== other.length || !this.duration.isAlmostEqual(other.duration))
+        return false;
+
+      for (let i = 0; i < this.length; i++)
+        if (!this._entries[i].equals(other._entries[i]))
+          return false;
+
+      return true;
     }
 
     /** @internal */
@@ -505,6 +563,29 @@ export namespace RenderSchedule {
         transformTimeline: this.transform?.toJSON(),
         cuttingPlaneTimeline: this.cuttingPlane?.toJSON(),
       };
+    }
+
+    private equalEntries(key: "visibility" | "color" | "transform" | "cuttingPlane", other: Timeline): boolean {
+      const a = this[key];
+      const b = other[key];
+      if (!a) {
+        assert(!b);
+        return true;
+      }
+
+      assert(undefined !== b);
+      return a.equals(b as any); // compiler not smart enough...
+    }
+
+    public equals(other: Timeline): boolean {
+      if (!this.duration.isAlmostEqual(other.duration))
+        return false;
+
+      // Do cheaper checks before iterating through timeline entries.
+      if (!this.visibility !== !other.visibility || !this.color !== !other.color || !this.transform !== !other.transform || !this.cuttingPlane !== !other.cuttingPlane)
+        return false;
+
+      return this.equalEntries("visibility", other) && this.equalEntries("color", other) && this.equalEntries("transform", other) && this.equalEntries("cuttingPlane", other);
     }
 
     /** Get the visibility of the geometry at the specified time point. */
@@ -643,6 +724,38 @@ export namespace RenderSchedule {
       };
     }
 
+    private equalElementIds(other: ElementTimeline): boolean {
+      if (typeof this._elementIds === typeof other._elementIds) {
+        if (this._elementIds.length !== other._elementIds.length)
+          return false;
+
+        if (typeof this._elementIds === "string") {
+          assert(typeof other._elementIds === "string");
+          return this._elementIds === other._elementIds;
+        }
+      }
+
+      // One or both are stored as arrays, in which case they might contain the same Ids in different orders. We will consider them different in that case.
+      const mine = this.elementIds[Symbol.iterator]();
+      const theirs = other.elementIds[Symbol.iterator]();
+      while (true) {
+        const a = mine.next();
+        const b = theirs.next();
+        if (a.done !== b.done)
+          return false;
+        else if (a.done)
+          return true;
+        else if (a.value !== b.value)
+          return false;
+      }
+
+      assert(false, "unreachable code"); // the loop above always returns unless we have an infinite iterator in which case it never exits.
+    }
+
+    public override equals(other: Timeline): boolean {
+      return other instanceof ElementTimeline && this.batchId === other.batchId && this.equalElementIds(other) && super.equals(other);
+    }
+
     /** @internal */
     public static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String> {
       if (typeof ids === "string")
@@ -767,6 +880,25 @@ export namespace RenderSchedule {
       };
     }
 
+    public override equals(other: Timeline): boolean {
+      if (!(other instanceof ModelTimeline))
+        return false;
+
+      if (this.modelId !== other.modelId || this.realityModelUrl !== other.realityModelUrl || this.elementTimelines.length !== other.elementTimelines.length
+        || this.containsFeatureOverrides !== other.containsFeatureOverrides || this.containsModelClipping !== other.containsModelClipping
+        || this.containsTransform !== other.containsTransform)
+        return false;
+
+      if (!super.equals(other))
+        return false;
+
+      for (let i = 0; i < this.elementTimelines.length; i++)
+        if (!this.elementTimelines[i].equals(other.elementTimelines[i]))
+          return false;
+
+      return true;
+    }
+
     /** Look up the element timeline with the specified batch Id. */
     public findByBatchId(batchId: number): ElementTimeline | undefined {
       return this.elementTimelines.find((x) => x.batchId === batchId);
@@ -814,6 +946,22 @@ export namespace RenderSchedule {
      * @internal
      */
     public readonly transformBatchIds: ReadonlySet<number>;
+
+    public equals(other: Script): boolean {
+      if (this === other)
+        return true;
+
+      if (this.modelTimelines.length !== other.modelTimelines.length || this.containsModelClipping !== other.containsModelClipping ||
+        this.requiresBatching !== other.requiresBatching || this.containsTransform !== other.containsTransform ||
+        this.containsFeatureOverrides !== other.containsFeatureOverrides || !this.duration.isAlmostEqual(other.duration))
+        return false;
+
+      for (let i = 0; i < this.modelTimelines.length; i++)
+        if (!this.modelTimelines[i].equals(other.modelTimelines[i]))
+          return false;
+
+      return true;
+    }
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
