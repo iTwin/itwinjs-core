@@ -9,10 +9,18 @@ import {
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
 import { Geometry } from "@itwin/core-geometry";
+import { GeoCoordConfig } from "../../GeoCoordConfig";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { SettingsPriority } from "../../core-backend";
 
 // spell-checker: disable
 
 describe("GeoServices", () => {
+  before(() => {
+    // TEMPORARY until gcs workspaces are available
+    IModelHost.appWorkspace.settings.addFile(IModelTestUtils.resolveAssetFile("gcs.setting.json5"), SettingsPriority.application);
+    GeoCoordConfig.loadDefaultDatabases();
+  });
 
   it("should be able to interpret to completion an incomplete GeographicCRS", async () => {
 
