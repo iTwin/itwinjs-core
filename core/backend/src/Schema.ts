@@ -6,7 +6,6 @@
  * @module Schema
  */
 
-import { IModelHost } from "./IModelHost";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "./ClassRegistry";
@@ -41,24 +40,6 @@ export class Schema {
     if (noWriteVersion)
       tuple.splice(1, 0, 0); // insert 0 before the second element
     return tuple.join(".");
-  }
-
-  /**
-   * Generate SHA1 Hash of Schema XML
-   * @param schemaXmlPath: Path where schema xml file is located.
-   * @param referencePaths: Schema reference paths.
-   * @param isExactMatch: Schema references are located by exact scheme version comparisons
-   * @beta
-   */
-  public static getSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string {
-    try {
-      if (isExactMatch)
-        return IModelHost.platform.computeSchemaChecksumWithExactRefMatch(schemaXmlPath, referencePaths);
-      else
-        return IModelHost.platform.computeSchemaChecksum(schemaXmlPath, referencePaths);
-    } catch (err) {
-      throw Error(`Error while generating SHA1 Hash:  ${err}`);
-    }
   }
 
   /** Schemas may not be instantiated. The method is not private only because that precludes subclassing. It throws an
