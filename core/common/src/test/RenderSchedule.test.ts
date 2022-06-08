@@ -491,5 +491,43 @@ describe.only("RenderSchedule", () => {
       expectEqual(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m1, m2, m3])!);
       expectUnequal(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m3, m2, m1])!);
     });
+
+    it("weakly caches previous comparisons", () => {
+      const elementTimelines: RS.ElementTimelineProps[] = [];
+      const s1 = RS.Script.fromJSON([{modelId: "0x1", elementTimelines}])!;
+      const s2 = RS.Script.fromJSON([{modelId: "0x2", elementTimelines}])!;
+
+      function spy(timeline: any): void {
+        timeline.compared = false;
+        const impl = timeline.compareTo;
+        timeline.compareTo = (other: RS.ModelTimeline) => {
+          timeline.compared = true;
+          return impl.call(timeline, other);
+        };
+      }
+
+      const m1 = s1.modelTimelines[0] as any;
+      const m2 = s2.modelTimelines[0] as any;
+      spy(m1);
+      spy(m2);
+
+      // Nothing yet in cache.
+      expect(s1.compareTo(s2)).to.equal(-1);
+      expect(m1.compared).to.be.true;
+      expect(m2.compared).to.be.false;
+
+      // Reset
+      m1.compared = false;
+
+      // *Both* scripts cache the results of the comparison (the result, if non-zero, is inverted for the argument to compareTo).
+      expect(s2.compareTo(s1)).to.equal(1);
+      expect(m1.compared).to.be.false;
+      expect(m2.compared).to.be.false;
+
+      // The forward comparison is still cached.
+      expect(s1.compareTo(s2)).to.equal(-1);
+      expect(m1.compared).to.be.false;
+      expect(m2.compared).to.be.false;
+    });
   });
 });

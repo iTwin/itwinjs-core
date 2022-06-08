@@ -981,10 +981,16 @@ export namespace RenderSchedule {
      * @internal
      */
     public readonly transformBatchIds: ReadonlySet<number>;
+    /** Tile tree suppliers perform **very** frequent ordered comparisons of Scripts. They need to be fast. */
+    private readonly _cachedComparisons = new WeakMap<Script, number>();
 
     public compareTo(other: Script): number {
       if (this === other)
         return 0;
+
+      const cached = this._cachedComparisons.get(other);
+      if (undefined !== cached)
+        return cached;
 
       let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) || compareBooleans(this.containsModelClipping, other.containsModelClipping)
         || compareBooleans(this.requiresBatching, other.requiresBatching) || compareBooleans(this.containsTransform, other.containsTransform)
@@ -996,6 +1002,8 @@ export namespace RenderSchedule {
             break;
       }
 
+      this._cachedComparisons.set(other, cmp);
+      other._cachedComparisons.set(this, -cmp);
       return cmp;
     }
     public equals(other: Script): boolean {
