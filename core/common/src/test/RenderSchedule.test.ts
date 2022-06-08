@@ -5,12 +5,12 @@
 
 import { expect } from "chai";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
-import { RenderSchedule } from "../RenderSchedule";
+import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 
-describe("RenderSchedule", () => {
+describe.only("RenderSchedule", () => {
   it("interpolates transforms", () => {
-    const props: RenderSchedule.ScriptProps = [{
+    const props: RS.ScriptProps = [{
       modelId: "0x123",
       elementTimelines: [{
         batchId: 1,
@@ -128,7 +128,7 @@ describe("RenderSchedule", () => {
       }],
     }];
 
-    const script = RenderSchedule.Script.fromJSON(props)!;
+    const script = RS.Script.fromJSON(props)!;
     expect(script).not.to.be.undefined;
 
     function expectTransform(timepoint: number, expected: TransformProps): void {
@@ -153,7 +153,7 @@ describe("RenderSchedule", () => {
   });
 
   it("interpolates visibility", () => {
-    const props: RenderSchedule.TimelineProps = {
+    const props: RS.TimelineProps = {
       visibilityTimeline: [{
         interpolation: 2, time: 1254330000, value: undefined,
       }, {
@@ -165,7 +165,7 @@ describe("RenderSchedule", () => {
       }],
     };
 
-    const timeline = new RenderSchedule.Timeline(props);
+    const timeline = new RS.Timeline(props);
     const vis = timeline.visibility!;
     let i = 0;
     for (const entry of vis)
@@ -188,7 +188,7 @@ describe("RenderSchedule", () => {
   describe("ScriptBuilder", () => {
     it("sorts and compresses element Ids", () => {
       function expectIds(input: string | string[], expected: string): void {
-        const script = new RenderSchedule.ScriptBuilder();
+        const script = new RS.ScriptBuilder();
         const model = script.addModelTimeline("0x123");
         const element = model.addElementTimeline(input);
         expect(element.elementIds).to.equal(expected);
@@ -200,7 +200,7 @@ describe("RenderSchedule", () => {
     });
 
     it ("assigns unique consecutive batch Ids", () => {
-      const script = new RenderSchedule.ScriptBuilder();
+      const script = new RS.ScriptBuilder();
       const modelA = script.addModelTimeline("0xa");
       const modelB = script.addModelTimeline("0xb");
 
@@ -216,8 +216,8 @@ describe("RenderSchedule", () => {
     });
 
     it("produces expected JSON", () => {
-      const linear = RenderSchedule.Interpolation.Linear;
-      const expected: RenderSchedule.ScriptProps = [{
+      const linear = RS.Interpolation.Linear;
+      const expected: RS.ScriptProps = [{
         modelId: "0x1",
         visibilityTimeline: [{
           time: 100,
@@ -233,7 +233,7 @@ describe("RenderSchedule", () => {
           batchId: 1,
           colorTimeline: [{
             time: 300,
-            interpolation: RenderSchedule.Interpolation.Step,
+            interpolation: RS.Interpolation.Step,
             value: { red: 1, green: 2, blue: 3 },
           }],
         }],
@@ -274,13 +274,13 @@ describe("RenderSchedule", () => {
         }],
       }];
 
-      const script = new RenderSchedule.ScriptBuilder();
+      const script = new RS.ScriptBuilder();
       const model1 = script.addModelTimeline("0x1");
       model1.addVisibility(100, undefined);
       model1.addVisibility(200, 50);
 
       const elem1 = model1.addElementTimeline("+1+4");
-      elem1.addColor(300, new RgbColor(1, 2, 3), RenderSchedule.Interpolation.Step);
+      elem1.addColor(300, new RgbColor(1, 2, 3), RS.Interpolation.Step);
 
       const model2 = script.addModelTimeline("0x2");
       model2.realityModelUrl = "https://google.com";
@@ -293,6 +293,81 @@ describe("RenderSchedule", () => {
       elem3.addCuttingPlane(600, { position: new Point3d(1, 2, 3), direction: new Point3d(0, 0, -1), visible: true });
 
       expect(script.finish()).to.deep.equal(expected);
+    });
+  });
+
+  interface HasEquals<T> {
+    equals(other: T): boolean;
+  }
+
+  function expectEquality<T extends HasEquals<T>>(a: T, b: T, expected: boolean): void {
+    expect(a.equals(b)).to.equal(expected);
+  }
+
+  function expectEqual<T extends HasEquals<T>>(a: T, b: T): void {
+    expectEquality(a, b, true);
+  }
+
+  function expectUnequal<T extends HasEquals<T>>(a: T, b: T): void {
+    expectEquality(a, b, false);
+  }
+
+  describe("VisibilityEntry", () => {
+    it("compares for equality", () => {
+      expectEqual(new RS.VisibilityEntry({ time: 1 }), new RS.VisibilityEntry({ time: 1 }));
+      expectUnequal(new RS.VisibilityEntry({ time: 1 }), new RS.VisibilityEntry({ time: 2 }));
+      expectEqual(new RS.VisibilityEntry({ time: 1, interpolation: 1 }), new RS.VisibilityEntry({ time: 1, interpolation: 1 }));
+      expectUnequal(new RS.VisibilityEntry({ time: 1, interpolation: 1 }), new RS.VisibilityEntry({ time: 1, interpolation: 2 }));
+      expectEqual(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 2 }));
+      expectUnequal(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 3 }));
+    });
+  });
+
+  describe("ColorEntry", () => {
+    it("compares for equality", () => {
+      expectEqual(new RS.ColorEntry({ time: 1 }), new RS.ColorEntry({ time: 1 }));
+      expectUnequal(new RS.ColorEntry({ time: 1 }), new RS.ColorEntry({ time: 2 }));
+      expectEqual(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 1 }));
+      expectUnequal(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 2 }));
+    });
+  });
+
+  describe("TransformEntry", () => {
+    it("compares for equality", () => {
+      expectEqual(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 1 }));
+      expectUnequal(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 2 }));
+      expectEqual(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 1 }));
+      expectUnequal(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 2 }));
+    });
+  });
+
+  describe("CuttingPlaneEntry", () => {
+    it("compares for equality", () => {
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1 }), new RS.CuttingPlaneEntry({ time: 1 }));
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1 }), new RS.CuttingPlaneEntry({ time: 2 }));
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }));
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 2 }));
+    });
+  });
+
+  describe("ElementTimeline", () => {
+    it("compares for equality", () => {
+    });
+
+    it("considers the same element Ids in differing orders to be unequal", () => {
+    });
+  });
+
+  describe("ModelTimeline", () => {
+    it("compares for equality", () => {
+    });
+
+    it("considers the same model Ids in differing orders to be unequal", () => {
+    });
+  });
+
+  describe("Script", () => {
+    it("compares for equality", () => {
     });
   });
 });
