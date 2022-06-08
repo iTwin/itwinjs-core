@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { ComboBox } from "@itwin/itwinui-react";
+import { ComboBox, SelectOption } from "@itwin/itwinui-react";
 
 /** @alpha */
 export interface PropertyFilterBuilderRulePropertyProps {
@@ -17,7 +17,8 @@ export interface PropertyFilterBuilderRulePropertyProps {
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
   const { selectedProperty, properties, onSelectedPropertyChanged } = props;
 
-  const selectOptions = React.useMemo(() => properties.map((property) => ({
+  const selectOptions = React.useMemo<SelectOption<string>[]>(() => properties.map((property) => ({
+    id: property.name,
     label: property.displayLabel,
     value: property.name,
   })), [properties]);
