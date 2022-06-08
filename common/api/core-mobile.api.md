@@ -13,6 +13,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
+import { Listener } from '@itwin/core-bentley';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
