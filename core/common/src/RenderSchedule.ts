@@ -6,7 +6,10 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import {
+  assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined,
+  CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable,
+} from "@itwin/core-bentley";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@itwin/core-geometry";
@@ -19,6 +22,26 @@ function interpolate(start: number, end: number, fraction: number): number {
 
 function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbColor {
   return new RgbColor(interpolate(start.r, end.r, fraction), interpolate(start.g, end.g, fraction), interpolate(start.b, end.b, fraction));
+}
+
+function compareXYZ(lhs: XYAndZ, rhs: XYAndZ): number {
+  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
+}
+
+function compare4d(lhs: Point4d, rhs: Point4d): number {
+  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z) || compareNumbers(lhs.w, rhs.w);
+}
+
+const scratchVec3a = new Vector3d();
+const scratchVec3b = new Vector3d();
+function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
+  return compareXYZ(lhs.columnX(scratchVec3a), rhs.columnX(scratchVec3b))
+    || compareXYZ(lhs.columnY(scratchVec3a), rhs.columnY(scratchVec3b))
+    || compareXYZ(lhs.columnZ(scratchVec3a), rhs.columnZ(scratchVec3b));
+}
+
+function compareDurations(lhs: Range1d, rhs: Range1d): number {
+  return compareNumbers(lhs.low, rhs.low) || compareNumbers(lhs.high, rhs.high);
 }
 
 /** Namespace containing types that collectively define a script that animates the contents of a view by adjusting the visibility, position,
@@ -177,8 +200,13 @@ export namespace RenderSchedule {
       return props;
     }
 
+    public compareTo(other: TimelineEntry): number {
+      let cmp = compareNumbers(this.interpolation, other.interpolation);
+      return cmp || compareNumbers(this.time, other.time);
+    }
+
     public equals(other: TimelineEntry): boolean {
-      return this.interpolation === other.interpolation && this.time === other.time;
+      return 0 === this.compareTo(other);
     }
   }
 
@@ -205,8 +233,9 @@ export namespace RenderSchedule {
       return props;
     }
 
-    public override equals(other: TimelineEntry): boolean {
-      return other instanceof VisibilityEntry && super.equals(other) && this.value === other.value;
+    public override compareTo(other: VisibilityEntry): number {
+      assert(other instanceof VisibilityEntry)
+      return super.compareTo(other) || compareNumbers(this.value, other.value);
     }
   }
 
@@ -234,14 +263,9 @@ export namespace RenderSchedule {
       return props;
     }
 
-    public override equals(other: TimelineEntry): boolean {
-      if (!(other instanceof ColorEntry) || !super.equals(other))
-        return false;
-
-      if (!this.value)
-        return !other.value;
-
-      return !!other.value && this.value.equals(other.value);
+    public override compareTo(other: ColorEntry): number {
+      assert(other instanceof ColorEntry);
+      return super.compareTo(other) || comparePossiblyUndefined((lhs, rhs) => lhs.compareTo(rhs), this.value, other.value);
     }
   }
 
@@ -275,6 +299,10 @@ export namespace RenderSchedule {
       };
     }
 
+    public compareTo(other: TransformComponents): number {
+      return compareXYZ(this.pivot, other.pivot) || compareXYZ(this.position, other.position) || compare4d(this.orientation, other.orientation);
+    }
+
     public equals(other: TransformComponents): boolean {
       return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) && this.orientation.isAlmostEqual(other.orientation);
     }
@@ -306,14 +334,20 @@ export namespace RenderSchedule {
       return props;
     }
 
-    public override equals(other: TimelineEntry): boolean {
-      if (!(other instanceof TransformEntry) || !super.equals(other))
-        return false;
+    public override compareTo(other: TransformEntry): number {
+      assert(other instanceof TransformEntry);
+      let cmp = super.compareTo(other);
+      if (0 !== cmp)
+        return cmp;
 
-      if (this.components)
-        return !!other.components && this.components.equals(other.components);
+      if (this.components || other.components) {
+        if (!this.components || !other.components)
+          return this.components ? 1 : -1;
 
-      return !other.components && this.value.isAlmostEqual(other.value);
+        return this.components.compareTo(other.components);
+      }
+
+      return compareXYZ(this.value.origin, other.value.origin) || compareMatrices(this.value.matrix, other.value.matrix);
     }
   }
 
@@ -350,9 +384,12 @@ export namespace RenderSchedule {
       return props;
     }
 
+    public compareTo(other: CuttingPlane): number {
+      return compareXYZ(this.position, other.position) || compareXYZ(this.direction, other.direction) || compareBooleans(this.visible, other.visible) || compareBooleans(this.hidden, other.hidden);
+    }
+
     public equals(other: CuttingPlane): boolean {
-      return this.visible === other.visible && this.hidden === other.hidden
-        && XYAndZ.almostEqual(this.position, other.position) && XYAndZ.almostEqual(this.direction, other.direction);
+      return 0 === this.compareTo(other);
     }
   }
 
@@ -375,14 +412,9 @@ export namespace RenderSchedule {
       return props;
     }
 
-    public override equals(other: TimelineEntry): boolean {
-      if (!(other instanceof CuttingPlaneEntry) || !super.equals(other))
-        return false;
-
-      if (!this.value)
-        return !other.value;
-
-      return !!other.value && this.value.equals(other.value);
+    public override compareTo(other: CuttingPlaneEntry): number {
+      assert(other instanceof CuttingPlaneEntry);
+      return super.compareTo(other) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.value, other.value);
     }
   }
 
@@ -451,15 +483,19 @@ export namespace RenderSchedule {
       return this._entries.map((x) => x.toJSON() as P);
     }
 
+    public compareTo(other: TimelineEntryList<T, P, V>): number {
+      let cmp = compareNumbers(this._entries.length, other._entries.length) || compareDurations(this.duration, other.duration);
+      if (0 === cmp) {
+        for (let i = 0; i < this.length; i++)
+          if (0 !== (cmp = this._entries[i].compareTo(other._entries[i])))
+            break;
+      }
+
+      return cmp;
+    }
+
     public equals(other: TimelineEntryList<T, P, V>): boolean {
-      if (this.length !== other.length || !this.duration.isAlmostEqual(other.duration))
-        return false;
-
-      for (let i = 0; i < this.length; i++)
-        if (!this._entries[i].equals(other._entries[i]))
-          return false;
-
-      return true;
+      return 0 === this.compareTo(other);
     }
 
     /** @internal */
@@ -565,27 +601,27 @@ export namespace RenderSchedule {
       };
     }
 
-    private equalEntries(key: "visibility" | "color" | "transform" | "cuttingPlane", other: Timeline): boolean {
-      const a = this[key];
-      const b = other[key];
-      if (!a) {
-        assert(!b);
-        return true;
-      }
+    public compareTo(other: Timeline): number {
+      const cmp = compareDurations(this.duration, other.duration);
+      if (0 !== cmp)
+        return cmp;
 
-      assert(undefined !== b);
-      return a.equals(b as any); // compiler not smart enough...
+      // Do cheaper checks before iterating through timeline entries
+      if (!!this.visibility !== !!other.visibility)
+        return this.visibility ? 1 : -1;
+      else if (!!this.color !== !!other.color)
+        return this.color ? 1 : -1;
+      else if (!!this.transform !== !!other.transform)
+        return this.transform ? 1 : -1;
+      else if (!!this.cuttingPlane !== !!other.cuttingPlane)
+        return this.cuttingPlane ? 1 : -1;
+
+      return comparePossiblyUndefined((x, y) => x.compareTo(y), this.visibility, other.visibility) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.color, other.color)
+        || comparePossiblyUndefined((x, y) => x.compareTo(y), this.transform, other.transform) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.cuttingPlane, other.cuttingPlane);
     }
 
     public equals(other: Timeline): boolean {
-      if (!this.duration.isAlmostEqual(other.duration))
-        return false;
-
-      // Do cheaper checks before iterating through timeline entries.
-      if (!this.visibility !== !other.visibility || !this.color !== !other.color || !this.transform !== !other.transform || !this.cuttingPlane !== !other.cuttingPlane)
-        return false;
-
-      return this.equalEntries("visibility", other) && this.equalEntries("color", other) && this.equalEntries("transform", other) && this.equalEntries("cuttingPlane", other);
+      return 0 === this.compareTo(other);
     }
 
     /** Get the visibility of the geometry at the specified time point. */
@@ -724,14 +760,15 @@ export namespace RenderSchedule {
       };
     }
 
-    private equalElementIds(other: ElementTimeline): boolean {
+    private compareElementIds(other: ElementTimeline): number {
       if (typeof this._elementIds === typeof other._elementIds) {
-        if (this._elementIds.length !== other._elementIds.length)
-          return false;
+        const cmp = compareNumbers(this._elementIds.length, other._elementIds.length);
+        if (0 !== cmp)
+          return cmp;
 
         if (typeof this._elementIds === "string") {
           assert(typeof other._elementIds === "string");
-          return this._elementIds === other._elementIds;
+          return compareStrings(this._elementIds, other._elementIds);
         }
       }
 
@@ -742,18 +779,19 @@ export namespace RenderSchedule {
         const a = mine.next();
         const b = theirs.next();
         if (a.done !== b.done)
-          return false;
+          return compareBooleans(!!a.done, !!b.done);
         else if (a.done)
-          return true;
-        else if (a.value !== b.value)
-          return false;
-      }
+          return 0;
 
-      assert(false, "unreachable code"); // the loop above always returns unless we have an infinite iterator in which case it never exits.
+        const cmp = compareStrings(a.value, b.value);
+        if (0 !== cmp)
+          return cmp;
+      }
     }
 
-    public override equals(other: Timeline): boolean {
-      return other instanceof ElementTimeline && this.batchId === other.batchId && this.equalElementIds(other) && super.equals(other);
+    public override compareTo(other: ElementTimeline): number {
+      assert(other instanceof ElementTimeline);
+      return compareNumbers(this.batchId, other.batchId) || this.compareElementIds(other) || super.compareTo(other);
     }
 
     /** @internal */
@@ -880,23 +918,20 @@ export namespace RenderSchedule {
       };
     }
 
-    public override equals(other: Timeline): boolean {
-      if (!(other instanceof ModelTimeline))
-        return false;
+    public override compareTo(other: ModelTimeline): number {
+      assert(other instanceof ModelTimeline);
+      let cmp = compareStrings(this.modelId, other.modelId) || compareStringsOrUndefined(this.realityModelUrl, other.realityModelUrl)
+        || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
+        || compareBooleans(this.containsModelClipping, other.containsModelClipping) || compareBooleans(this.containsTransform, other.containsTransform)
+        || super.compareTo(other);
 
-      if (this.modelId !== other.modelId || this.realityModelUrl !== other.realityModelUrl || this.elementTimelines.length !== other.elementTimelines.length
-        || this.containsFeatureOverrides !== other.containsFeatureOverrides || this.containsModelClipping !== other.containsModelClipping
-        || this.containsTransform !== other.containsTransform)
-        return false;
+      if (0 === cmp) {
+        for (let i = 0; i < this.elementTimelines.length; i++)
+          if (0 !== (cmp = this.elementTimelines[i].compareTo(other.elementTimelines[i])))
+            break;
+      }
 
-      if (!super.equals(other))
-        return false;
-
-      for (let i = 0; i < this.elementTimelines.length; i++)
-        if (!this.elementTimelines[i].equals(other.elementTimelines[i]))
-          return false;
-
-      return true;
+      return cmp;
     }
 
     /** Look up the element timeline with the specified batch Id. */
@@ -947,20 +982,24 @@ export namespace RenderSchedule {
      */
     public readonly transformBatchIds: ReadonlySet<number>;
 
-    public equals(other: Script): boolean {
+    public compareTo(other: Script): number {
       if (this === other)
-        return true;
+        return 0;
 
-      if (this.modelTimelines.length !== other.modelTimelines.length || this.containsModelClipping !== other.containsModelClipping ||
-        this.requiresBatching !== other.requiresBatching || this.containsTransform !== other.containsTransform ||
-        this.containsFeatureOverrides !== other.containsFeatureOverrides || !this.duration.isAlmostEqual(other.duration))
-        return false;
+      let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) || compareBooleans(this.containsModelClipping, other.containsModelClipping)
+        || compareBooleans(this.requiresBatching, other.requiresBatching) || compareBooleans(this.containsTransform, other.containsTransform)
+        || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides) || compareDurations(this.duration, other.duration);
 
-      for (let i = 0; i < this.modelTimelines.length; i++)
-        if (!this.modelTimelines[i].equals(other.modelTimelines[i]))
-          return false;
+      if (0 === cmp) {
+        for (let i = 0; i < this.modelTimelines.length; i++)
+          if (0 !== (cmp = this.modelTimelines[i].compareTo(other.modelTimelines[i])))
+            break;
+      }
 
-      return true;
+      return cmp;
+    }
+    public equals(other: Script): boolean {
+      return 0 === this.compareTo(other);
     }
 
     protected constructor(props: Readonly<ScriptProps>) {
