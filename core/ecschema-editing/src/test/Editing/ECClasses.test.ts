@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ECClassModifier, ECObjectsError, ECVersion, EntityClass, Enumeration, EnumerationProperty, NavigationProperty,
+  ECClassModifier, EntityClass, Enumeration, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
