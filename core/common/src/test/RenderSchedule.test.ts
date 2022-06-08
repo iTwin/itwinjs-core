@@ -472,14 +472,24 @@ describe.only("RenderSchedule", () => {
 
   describe("ModelTimeline", () => {
     it("compares for equality", () => {
-    });
+      const elementTimelines: RS.ElementTimelineProps[] = [];
+      expectEqual(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }));
+      expectEqual(RS.ModelTimeline.fromJSON({ modelId: "0x2", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x2", elementTimelines }));
 
-    it("considers the same model Ids equal only if in the same order", () => {
+      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }));
+      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x2", realityModelUrl: "blah", elementTimelines }));
+      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines: [{ batchId: 0, elementIds: ["0x2"] }] }));
     });
   });
 
   describe("Script", () => {
-    it("compares for equality", () => {
+    it("considers the same model Ids equal only if in the same order", () => {
+      const elementTimelines: RS.ElementTimelineProps[] = [];
+      const m1 = { modelId: "0x1", elementTimelines };
+      const m2 = { modelId: "0x2", elementTimelines };
+      const m3 = { modelId: "0x3", elementTimelines };
+      expectEqual(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m1, m2, m3])!);
+      expectUnequal(RS.Script.fromJSON([m1, m2, m3])!, RS.Script.fromJSON([m3, m2, m1])!);
     });
   });
 });
