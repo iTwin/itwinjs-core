@@ -14,11 +14,11 @@ import {
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
 import { CheckpointProps } from "../CheckpointManager";
-import { IModelHost } from "../IModelHost";
 import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
+import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
+import { LocalHub } from "../LocalHub";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { LocalHub } from "./LocalHub";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -55,7 +55,7 @@ import { LocalHub } from "./LocalHub";
 export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
-  private static _saveHubAccess: BackendHubAccess;
+  private static _saveHubAccess: BackendHubAccess | undefined;
   private static _iTwinId: GuidString | undefined;
 
   /** Determine whether a test us currently being run under HubMock */
@@ -82,11 +82,8 @@ export class HubMock {
     this.mockRoot = join(this.knownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
-    try {
-      this._saveHubAccess = IModelHost.hubAccess;
-    } catch (error) {
-      // See note in IModelHost.hubAccess. hubAccess can in fact be undefined, but that is not annotated in type system.
-    }
+    this._saveHubAccess = IModelHost.getHubAccess();
+
     IModelHost.setHubAccess(this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
   }
