@@ -1,6 +1,16 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jun 2022 15:02:56 GMT and should not be manually modified.
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Ensure selection scope override labels are honored.
+- Models Tree: Fix performance of determining Subject nodes' display state.
+- Models Tree: Optimize creating subjects hierarchy
+- Remove cached frontstageDef if associated FrontstageProvider is re-registered.
 
 ## 3.2.0
 Fri, 20 May 2022 13:10:54 GMT
