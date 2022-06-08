@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { CompressedId64Set } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
 import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
@@ -318,6 +319,7 @@ describe.only("RenderSchedule", () => {
       expectUnequal(new RS.VisibilityEntry({ time: 1 }), new RS.VisibilityEntry({ time: 2 }));
       expectEqual(new RS.VisibilityEntry({ time: 1, interpolation: 1 }), new RS.VisibilityEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.VisibilityEntry({ time: 1, interpolation: 1 }), new RS.VisibilityEntry({ time: 1, interpolation: 2 }));
+
       expectEqual(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 2 }));
       expectUnequal(new RS.VisibilityEntry({ time: 1, value: 2 }), new RS.VisibilityEntry({ time: 1, value: 3 }));
     });
@@ -329,6 +331,9 @@ describe.only("RenderSchedule", () => {
       expectUnequal(new RS.ColorEntry({ time: 1 }), new RS.ColorEntry({ time: 2 }));
       expectEqual(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 2 }));
+
+      expectEqual(new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }), new RS.ColorEntry({time: 1, value: { red: 1, green: 2, blue: 3 } }));
+      expectUnequal(new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }), new RS.ColorEntry({time: 1, value: { red: 3, green: 2, blue: 1 } }));
     });
   });
 
@@ -338,6 +343,33 @@ describe.only("RenderSchedule", () => {
       expectUnequal(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 2 }));
       expectEqual(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 2 }));
+
+      function tf(aa: number, bb: number, cc: number, dd: number) {
+        return {
+          transform: [
+            [aa, 0, 0, 0],
+            [0, bb, 0, 0],
+            [0, 0, cc, 0],
+            [0, 0, 0, dd],
+          ],
+        };
+      }
+
+      expectEqual(new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }));
+      expectUnequal(new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: tf(5, 6, 7, 8) }));
+
+      function cmp(pos: number, rot: number, pivot: number) {
+        return {
+          position: [pos, 0, 0],
+          orientation: [0, rot, 0, 0],
+          pivot: [0, 0, pivot],
+        };
+      }
+
+      expectEqual(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
+      expectUnequal(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(3, 2, 1) }));
+
+      expectUnequal(new RS.TransformEntry({time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
     });
   });
 
@@ -347,6 +379,23 @@ describe.only("RenderSchedule", () => {
       expectUnequal(new RS.CuttingPlaneEntry({ time: 1 }), new RS.CuttingPlaneEntry({ time: 2 }));
       expectEqual(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 2 }));
+
+      function cp(pos: number, dir: number, vis?: "vis" | "hid") {
+        return {
+          position: [pos, 0, 0],
+          direction: [0, dir, 0],
+          visible: vis === "vis",
+          hidden: vis === "hid",
+        };
+      }
+
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }));
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2) }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2) }));
+      expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }));
+
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(3, 2, "vis") }));
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 3, "hid") }));
+      expectUnequal(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }));
     });
   });
 
@@ -354,7 +403,18 @@ describe.only("RenderSchedule", () => {
     it("compares for equality", () => {
     });
 
-    it("considers the same element Ids in differing orders to be unequal", () => {
+    it("considers the same element Ids equal only if in the same order", () => {
+      const sortedIds = ["0x1", "0x5", "0xabc"];
+      const unsortedIds = ["0x5", "0xabc", "0x1"];
+      const compressedIds = CompressedId64Set.compressArray(sortedIds);
+
+      const sorted = RS.ElementTimeline.fromJSON({ batchId: 0, elementIds: sortedIds });
+      const unsorted = RS.ElementTimeline.fromJSON({ batchId: 0, elementIds: unsortedIds });
+      const compressed = RS.ElementTimeline.fromJSON({ batchId: 0, elementIds: compressedIds });
+
+      expectEqual(sorted, compressed);
+      expectUnequal(sorted, unsorted);
+      expectUnequal(compressed, unsorted);
     });
   });
 
@@ -362,7 +422,7 @@ describe.only("RenderSchedule", () => {
     it("compares for equality", () => {
     });
 
-    it("considers the same model Ids in differing orders to be unequal", () => {
+    it("considers the same model Ids equal only if in the same order", () => {
     });
   });
 
