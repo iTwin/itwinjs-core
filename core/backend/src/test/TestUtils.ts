@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { IModelJsNative, NativeLibrary, NativeLoggerCategory } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
