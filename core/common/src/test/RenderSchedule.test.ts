@@ -337,6 +337,25 @@ describe.only("RenderSchedule", () => {
     });
   });
 
+  function makeTransform(aa: number, bb: number, cc: number, dd: number) {
+    return {
+      transform: [
+        [aa, 0, 0, 0],
+        [0, bb, 0, 0],
+        [0, 0, cc, 0],
+        [0, 0, 0, dd],
+      ],
+    };
+  }
+
+  function makeTransformComponents(pos: number, rot: number, pivot: number) {
+    return {
+      position: [pos, 0, 0],
+      orientation: [0, rot, 0, 0],
+      pivot: [0, 0, pivot],
+    };
+  }
+
   describe("TransformEntry", () => {
     it("compares for equality", () => {
       expectEqual(new RS.TransformEntry({ time: 1 }), new RS.TransformEntry({ time: 1 }));
@@ -344,34 +363,26 @@ describe.only("RenderSchedule", () => {
       expectEqual(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.TransformEntry({ time: 1, interpolation: 1 }), new RS.TransformEntry({ time: 1, interpolation: 2 }));
 
-      function tf(aa: number, bb: number, cc: number, dd: number) {
-        return {
-          transform: [
-            [aa, 0, 0, 0],
-            [0, bb, 0, 0],
-            [0, 0, cc, 0],
-            [0, 0, 0, dd],
-          ],
-        };
-      }
-
+      const tf = makeTransform;
       expectEqual(new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }));
       expectUnequal(new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: tf(5, 6, 7, 8) }));
 
-      function cmp(pos: number, rot: number, pivot: number) {
-        return {
-          position: [pos, 0, 0],
-          orientation: [0, rot, 0, 0],
-          pivot: [0, 0, pivot],
-        };
-      }
-
+      const cmp = makeTransformComponents;
       expectEqual(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
       expectUnequal(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(3, 2, 1) }));
 
       expectUnequal(new RS.TransformEntry({time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
     });
   });
+
+  function makeCuttingPlane(pos: number, dir: number, vis?: "vis" | "hid") {
+    return {
+      position: [pos, 0, 0],
+      direction: [0, dir, 0],
+      visible: vis === "vis",
+      hidden: vis === "hid",
+    };
+  }
 
   describe("CuttingPlaneEntry", () => {
     it("compares for equality", () => {
@@ -380,15 +391,7 @@ describe.only("RenderSchedule", () => {
       expectEqual(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.CuttingPlaneEntry({ time: 1, interpolation: 1 }), new RS.CuttingPlaneEntry({ time: 1, interpolation: 2 }));
 
-      function cp(pos: number, dir: number, vis?: "vis" | "hid") {
-        return {
-          position: [pos, 0, 0],
-          direction: [0, dir, 0],
-          visible: vis === "vis",
-          hidden: vis === "hid",
-        };
-      }
-
+      const cp = makeCuttingPlane;
       expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "vis") }));
       expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2) }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2) }));
       expectEqual(new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }), new RS.CuttingPlaneEntry({ time: 1, value: cp(1, 2, "hid") }));
@@ -401,6 +404,36 @@ describe.only("RenderSchedule", () => {
 
   describe("ElementTimeline", () => {
     it("compares for equality", () => {
+      const ids = ["0x1", "0x5", "0xabc"];
+      const compressedIds = CompressedId64Set.compressArray(ids);
+
+      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }));
+      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
+      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
+
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 5, elementIds: ids }));
+
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0xabc"] }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5"] }));
+      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ids }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5", "0xdef"] }));
+
+      const v1 = { time: 3, interpolation: 1, value: 1 };
+      const v2 = { time: 4, interpolation: 2, value: 2 };
+      const c1 = { time: 3, interpolation: 2, value: { red: 0, green: 1, blue: 2 } };
+      const c2 = { time: 4, interpolation: 2, value: { red: 255, green: 254, blue: 253 } };
+      const t1 = { time: 3, value: makeTransform(-1, 0, 1, 2) };
+      const t2 = { time: 4, value: makeTransformComponents(8, 9, -10) };
+      const p1 = { time: 3, interpolation: 2, value: makeCuttingPlane(1, 2) };
+      const p2 = { time: 4, interpolation: 1, value: makeCuttingPlane(-1, -2, "hid") };
+
+      const visibilityTimeline = [v1, v2];
+      const colorTimeline = [c1, c2];
+      const transformTimeline = [t1, t2];
+      const cuttingPlaneTimeline = [p1, p2];
+      const elementIds = ids;
+      expectEqual(RS.ElementTimeline.fromJSON({ visibilityTimeline, colorTimeline, transformTimeline, cuttingPlaneTimeline, batchId: 1, elementIds }),
+        RS.ElementTimeline.fromJSON({ visibilityTimeline, colorTimeline, transformTimeline, cuttingPlaneTimeline, batchId: 1, elementIds }));
+
     });
 
     it("considers the same element Ids equal only if in the same order", () => {
