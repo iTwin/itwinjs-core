@@ -1441,6 +1441,8 @@ export class ProjectExtentsDecoration {
     // (undocumented)
     protected _extents: AxisAlignedBox3d;
     // (undocumented)
+    static get isActive(): boolean;
+    // (undocumented)
     protected _removeDecorationListener?: () => void;
     // (undocumented)
     protected stop(): void;

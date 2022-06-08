@@ -46,7 +46,7 @@ export class Uniform {
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = UniformHandle.create(prog.glProgram, this._name);
+      this._handle = UniformHandle.create(prog, this._name);
     }
 
     return this.isValid;

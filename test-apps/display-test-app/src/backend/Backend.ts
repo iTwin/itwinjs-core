@@ -16,7 +16,7 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -246,10 +246,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     if (authClient)
       await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
-  } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup(opts);
-  } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup(opts);
+  } else if (ProcessDetector.isIOSAppBackend || ProcessDetector.isAndroidAppBackend) {
+    await MobileHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);
