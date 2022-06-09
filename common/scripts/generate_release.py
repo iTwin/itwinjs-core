@@ -1,4 +1,5 @@
 import os, subprocess
+from platform import release
 
 # Validate arguments
 # command = "npm view " + packageName + " dist-tags.previous"
@@ -31,6 +32,25 @@ def createRelease(previousTag, currentTag):
   previousVer = previousTag.split("/")[1]
   currentVer = currentTag.split("/")[1]
 
+  parsedVer = [int(i) for i in currentVer.split(".")]
+  print(parsedVer)
+
+
+  # Determine if this is a patch release
+  releaseType = ""
+  if parsedVer[2] > 0:
+    releaseType = "Patch"
+  elif parsedVer[1] > 0:
+    releaseType = "Minor"
+  else:
+    releaseType = "Major"
+
+  # If patch release, get previous tag
+  if releaseType == "Patch":
+    print("Patch release")
+
+  # If major/minor release
+
   # Get SHAs for both tags
   previousSHA = getSHAFromTag(previousTag)
   currentSHA = getSHAFromTag(currentTag)
@@ -42,7 +62,9 @@ def createRelease(previousTag, currentTag):
 
   # Write release to file to preview
   f = open("release.md", "w")
-  f.write("# " + currentVer + "\n\n")
+  f.write("# {0} {1} Release\n\n".format(currentVer, releaseType))
+  if releaseType != "Patch":
+    f.write("For detailed list of changes see the [detailed changelog.](./docs/changehistory/{0}.md)".format(currentVer))
   f.write("## Changes\n\n")
   for commit in commits[::-1]:
     f.write("- {0}\n".format(getCommitMessage(commit)))
@@ -54,6 +76,7 @@ def createRelease(previousTag, currentTag):
 if os.path.exists("release.md"):
   os.remove("release.md")
 
-createRelease("release/3.0.1", "release/3.0.2")
+createRelease("release/3.2.0", "release/3.2.1")
+# createRelease("release/3.2.1")
 
 # getCommitInfo("640a0436b5272253d1ad03ade8d845a898205c12")
