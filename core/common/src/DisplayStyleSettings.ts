@@ -357,7 +357,8 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
       return;
 
     for (const props of ovrs) {
-      const id = this._idFromProps(props);
+      const hexId = this._idFromProps(props);
+      const id = Id64.hexToL1();
       if (undefined !== id && Id64.isValidId64(id)) {
         const ovr = this._overrideFromProps(props);
         if (ovr)

@@ -6,7 +6,9 @@
  * @module Ids
  */
 
+import { assert } from "console";
 import { Id64 as Id64L1 } from "./Id64L1";
+import { Id64 as Id64Hex } from "./Id64Hex";
 
 /** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
@@ -212,6 +214,19 @@ export namespace Id64 {
    * @public
    */
   export class Uint32Map<T> extends Id64L1.Uint32Map<T> {}
+
+  export const Hex = Id64Hex;  // eslint-disable-line @typescript-eslint/naming-convention
+  export const L1 = Id64L1;  // eslint-disable-line @typescript-eslint/naming-convention
+
+  export function l1ToHex(from: Id64String): Id64String {
+    assert(() => Id64L1.isId64(from));
+    return Id64Hex.fromLocalAndBriefcaseIds(Id64L1.getLocalId(from), Id64L1.getBriefcaseId(from));
+  }
+
+  export function hexToL1(from: Id64String): Id64String {
+    assert(() => Id64Hex.isId64(from));
+    return Id64L1.fromLocalAndBriefcaseIds(Id64Hex.getLocalId(from), Id64Hex.getBriefcaseId(from));
+  }
 }
 
 /**
