@@ -36,65 +36,65 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     if (section === StagePanelSection.Start) {
       widgets.push(
         {
-          id: "LeftStart1",
-          label: "Start1",
+          id: "WL-A",
+          label: "WL-A",
           icon: "icon-app-1",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left Start1 widget</h2>,
+          getWidgetContent: () => <h2>Left WL-A</h2>,
           isFloatingStateSupported: true,
         });
       widgets.push(
         {
-          id: "LeftStart2",
-          label: "Start2",
+          id: "WL-B",
+          label: "WL-B",
           canPopout: true,
           icon: "icon-app-2",
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left Start2 widget</h2>,
+          getWidgetContent: () => <h2>Left WL-B</h2>,
           isFloatingStateSupported: true,
         }
       );
       // eslint-disable-next-line deprecation/deprecation
-    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
-      widgets.push(
-        {
-          id: "LeftMiddle1",
-          label: "Middle1",
-          icon: "icon-smiley-happy",
-          canPopout: false,
-          getWidgetContent: () => <h2>Left Middle1 widget</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "LeftMiddle2",
-          label: "Middle2",
-          icon: "icon-smiley-sad",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Left Middle2 widget</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
     } else if (section === StagePanelSection.End) {
       widgets.push(
         {
-          id: "LeftEnd1",
-          label: "End1",
-          icon: "icon-smiley-happy-very",
-          canPopout: true,
-          getWidgetContent: () => <h2>Left  End1 widget</h2>,
+          id: "WL-1",
+          label: "WL-1",
+          icon: "icon-smiley-happy",
+          canPopout: false,
+          getWidgetContent: () => <h2>Left WL-1</h2>,
           isFloatingStateSupported: true,
         });
       widgets.push(
         {
-          id: "LeftEnd2",
-          label: "End2",
+          id: "WL-2",
+          label: "WL-2",
+          icon: "icon-smiley-sad",
+          defaultState: WidgetState.Open,
+          canPopout: true,
+          getWidgetContent: () => <h2>Left WL-2</h2>,
+          isFloatingStateSupported: true,
+        }
+      );
+
+      widgets.push(
+        {
+          id: "WL-3",
+          label: "WL-3",
+          icon: "icon-smiley-happy-very",
+          canPopout: true,
+          getWidgetContent: () => <h2>Left WL-3</h2>,
+          isFloatingStateSupported: true,
+        });
+      widgets.push(
+        {
+          id: "WL-4",
+          label: "WL-4",
           icon: "icon-smiley-sad-very",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left End2 widget</h2>,
+          getWidgetContent: () => <h2>Left WL-4</h2>,
           isFloatingStateSupported: true,
         }
       );
@@ -108,65 +108,65 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     if (section === StagePanelSection.Start) {
       widgets.push(
         {
-          id: "RightStart1",
-          label: "Start1",
+          id: "WR-A",
+          label: "WR-A",
           icon: "icon-text-align-text-align-left",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Right Start1 widget</h2>,
+          getWidgetContent: () => <h2>Right WR-A</h2>,
           isFloatingStateSupported: true,
         });
       widgets.push(
         {
-          id: "RightStart2",
-          label: "Start2",
+          id: "WR-B",
+          label: "WR-B",
           icon: "icon-text-align-text-align-right",
           canPopout: true,
           defaultState: WidgetState.Hidden,
-          getWidgetContent: () => <h2>Right Start2 widget</h2>,
+          getWidgetContent: () => <h2>Right WR-B</h2>,
           isFloatingStateSupported: true,
         }
       );
       // eslint-disable-next-line deprecation/deprecation
-    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
-      widgets.push(
-        {
-          id: "RightMiddle1",
-          label: "Middle1",
-          icon: "icon-text-align-text-align-center",
-          canPopout: false,
-          getWidgetContent: () => <h2>Right Middle1 widget</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "RightMiddle2",
-          label: "Middle2",
-          icon: "icon-text-align-text-align-justify",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Right Middle2 widget</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
     } else if (section === StagePanelSection.End) {
       widgets.push(
         {
-          id: "RightEnd1",
-          label: "End1",
-          icon: "icon-user",
-          canPopout: true,
-          getWidgetContent: () => <h2>Right  End1 widget</h2>,
+          id: "WR-1",
+          label: "WR-1",
+          icon: "icon-text-align-text-align-center",
+          canPopout: false,
+          getWidgetContent: () => <h2>Right WR-1</h2>,
           isFloatingStateSupported: true,
         });
       widgets.push(
         {
-          id: "RightEnd2",
-          label: "End2",
+          id: "WR-2",
+          label: "WR-2",
+          icon: "icon-text-align-text-align-justify",
+          defaultState: WidgetState.Open,
+          canPopout: true,
+          getWidgetContent: () => <h2>Right WR-2</h2>,
+          isFloatingStateSupported: true,
+        }
+      );
+
+      widgets.push(
+        {
+          id: "WR-3",
+          label: "WR-3",
+          icon: "icon-user",
+          canPopout: true,
+          getWidgetContent: () => <h2>Right WR-3</h2>,
+          isFloatingStateSupported: true,
+        });
+      widgets.push(
+        {
+          id: "WR-4",
+          label: "WR-4",
           icon: "icon-users",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Right End2 widget</h2>,
+          getWidgetContent: () => <h2>Right WR-4</h2>,
           isFloatingStateSupported: true,
         }
       );
@@ -180,40 +180,40 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     if (section === StagePanelSection.Start) {
       widgets.push(
         {
-          id: "TopStart1",
-          label: "Start1",
+          id: "WT-A",
+          label: "WT-A",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Top Start1 widget</h2>,
+          getWidgetContent: () => <h2>Top WT-A</h2>,
           isFloatingStateSupported: true,
           defaultFloatingSize: { width: 400, height: 600 },
           isFloatingStateWindowResizable: true,
         });
       widgets.push(
         {
-          id: "TopStart2",
-          label: "Start2",
+          id: "WT-B",
+          label: "WT-B",
           canPopout: true,
-          getWidgetContent: () => <h2>Top Start2 widget</h2>,
+          getWidgetContent: () => <h2>Top WT-B</h2>,
           isFloatingStateSupported: true,
         }
       );
     } else if (section === StagePanelSection.End) {
       widgets.push(
         {
-          id: "TopEnd1",
-          label: "End1",
+          id: "WT-1",
+          label: "WT-1",
           canPopout: true,
-          getWidgetContent: () => <h2>Top  End1 widget</h2>,
+          getWidgetContent: () => <h2>Top WT-1</h2>,
           isFloatingStateSupported: true,
         });
       widgets.push(
         {
-          id: "TopEnd2",
-          label: "End2",
+          id: "WT-2",
+          label: "WT-2",
           canPopout: true,
           defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Top End2 widget</h2>,
+          getWidgetContent: () => <h2>Top WT-2</h2>,
           isFloatingStateSupported: true,
         }
       );
@@ -227,7 +227,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     if (section === StagePanelSection.Start) {
       widgets.push(
         {
-          id: "BottomStart1",
+          id: "widget-info-Floating",
           label: "Floating Info",
           canPopout: true,
           defaultState: WidgetState.Open,
@@ -236,7 +236,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         });
       widgets.push(
         {
-          id: "BottomStart2",
+          id: "widget-layout-info",
           label: "Layout Info",
           canPopout: true,
           getWidgetContent: () => <LayoutInfo />,
@@ -246,15 +246,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     } else if (section === StagePanelSection.End) {
       widgets.push(
         {
-          id: "BottomEnd1",
-          label: "End1",
-          canPopout: true,
-          getWidgetContent: () => <h2>Bottom  End1 widget</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "BottomEnd2",
+          id: "widget-layout-controls",
           label: "Layout Controls",
           canPopout: true,
           defaultState: WidgetState.Open,

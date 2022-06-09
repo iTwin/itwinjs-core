@@ -5,10 +5,10 @@
 import * as React from "react";
 import {
   BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
-  IModelViewportControl, ReducerRegistryInstance,
-  StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
-  StandardNavigationToolsProvider,
-  StandardStatusbarItemsProvider,
+  IModelViewportControl,
+  StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  StandardNavigationToolsUiItemsProvider,
+  StandardStatusbarUiItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
 import { ContentLayoutProps, StageUsage, StandardContentLayouts, UiItemsManager } from "@itwin/appui-abstract";
@@ -54,8 +54,9 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
  * it is simply used as a test defining a stage that provides custom content along with imodel content.
  */
 export class CustomContentFrontstage {
-  public static stageId = "appui-test-providers:Custom";
+  public static stageId = "appui-test-providers:CustomContent";
   private static _contentGroupProvider = new CustomContentGroupProvider();
+
   public static register(localizationNamespace: string) {
     const cornerButton = <BackstageAppButton />;
     const customStageProps: StandardFrontstageProps = {
@@ -73,28 +74,23 @@ export class CustomContentFrontstage {
   }
 
   private static registerToolProviders(localizationNamespace: string) {
-    // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register("customContentTools", {
-      horizontal: {
-        clearSelection: true,
-        clearDisplayOverrides: true,
-        hide: "group",
-        isolate: "group",
-        emphasize: "element",
-      },
-    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomContentFrontstage.stageId;
-    });
+    // Provides standard tools for ToolWidget
+    UiItemsManager.register(new StandardContentToolsUiItemsProvider(
+      {
+        horizontal: {
+          clearSelection: true,
+          clearDisplayOverrides: true,
+          hide: "group",
+          isolate: "group",
+          emphasize: "element",
+        },
+      }), { providerId: "customContentTools", stageIds: [CustomContentFrontstage.stageId] });
 
     /** Provides standard tools for NavigationWidget */
-    StandardNavigationToolsProvider.register("customNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomContentFrontstage.stageId;
-    });
+    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), { providerId: "customNavigationTools", stageIds: [CustomContentFrontstage.stageId] });
 
     /** Provides standard status fields */
-    StandardStatusbarItemsProvider.register("customStatusFields", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomContentFrontstage.stageId;
-    });
+    UiItemsManager.register(new StandardStatusbarUiItemsProvider(), { providerId: "customStatusFields", stageIds: [CustomContentFrontstage.stageId] });
 
     // register stage specific items provider
     UiItemsManager.register(new CustomContentStageUiProvider(localizationNamespace), { providerId: "customStageTools", stageIds: [CustomContentFrontstage.stageId] });
