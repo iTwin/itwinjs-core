@@ -33,7 +33,7 @@ describe("Diagnostics", async () => {
         handler: (logs) => {
           diagnostics = logs;
         },
-      }
+      },
     });
     expect(diagnostics).to.be.undefined;
   });
@@ -48,7 +48,7 @@ describe("Diagnostics", async () => {
         handler: (logs) => {
           diagnostics = logs;
         },
-      }
+      },
     });
     expect(diagnostics!.backendVersion).to.match(/\d+\.\d+\.\d+/);
   });

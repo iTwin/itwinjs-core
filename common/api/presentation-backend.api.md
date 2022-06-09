@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
 import { ContentRequestOptions } from '@itwin/presentation-common';
@@ -193,10 +194,12 @@ export class PresentationManager {
     activeLocale: string | undefined;
     activeUnitSystem: UnitSystemKey | undefined;
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
-    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute & {
+    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
-    }): Promise<KeySet>;
+    } & BackendDiagnosticsAttribute): Promise<KeySet>;
+    // @alpha (undocumented)
+    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     dispose(): void;
     getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;

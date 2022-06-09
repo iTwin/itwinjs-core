@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { Id64, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -19,9 +19,9 @@ import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
-  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
@@ -565,17 +565,19 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards computeSelection call", async () => {
-      const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
+      const handlerOptions: ComputeSelectionRequestOptions<IModelRpcProps> = {
         imodel: token,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>> = {
+      const rpcOptions: PresentationRpcRequestOptions<ComputeSelectionRequestOptions<any>> = {
         clientId,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const ids = new Array<Id64String>();
-      const scopeId = faker.random.uuid();
       const result = new KeySet().toJSON();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(handlerOptions, ids, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

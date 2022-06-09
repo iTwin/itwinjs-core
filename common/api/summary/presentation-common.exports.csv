@@ -33,6 +33,8 @@ alpha;ClientDiagnosticsOptions
 internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
+alpha;ComputeSelectionRequestOptions
+alpha;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
 public;ConditionContainer
 deprecated;ConditionContainer
 public;Content
@@ -114,6 +116,7 @@ beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
+alpha;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -181,6 +184,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+internal;isComputeSelectionRequestOptions
 beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
@@ -354,6 +358,7 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
+alpha;SelectionScopeProps = ElementSelectionScopeProps |
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams

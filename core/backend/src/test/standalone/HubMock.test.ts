@@ -14,7 +14,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
+import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
