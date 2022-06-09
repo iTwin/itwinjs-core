@@ -10,15 +10,15 @@ import {
   ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
+  AcquireNewBriefcaseIdArg,
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
-} from "../BackendHubAccess";
-import { CheckpointProps } from "../CheckpointManager";
-import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
-import { IModelHost } from "../IModelHost";
-import { IModelJsFs } from "../IModelJsFs";
-import { LocalHub } from "../LocalHub";
-import { KnownTestLocations } from "./KnownTestLocations";
+} from "./BackendHubAccess";
+import { CheckpointProps } from "./CheckpointManager";
+import { IModelHost } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
+import { LocalHub } from "./LocalHub";
+import { TokenArg } from "./IModelDb";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -67,19 +67,17 @@ export class HubMock {
     return this._iTwinId;
   }
 
-  protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
-
   /**
    * Begin mocking IModelHub access. After this call, all access to IModelHub will be directed to a [[LocalHub]].
    * @param mockName a unique name (e.g. "MyTest") for this HubMock to disambiguate tests when more than one is simultaneously active.
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
-  public static startup(mockName: LocalDirName) {
+  public static startup(mockName: LocalDirName, outputDir: string) {
     if (this.isValid)
       throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
 
     this.hubs.clear();
-    this.mockRoot = join(this.knownTestLocations.outputDir, "HubMock", mockName);
+    this.mockRoot = join(outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.getHubAccess();
@@ -100,7 +98,9 @@ export class HubMock {
       hub[1].cleanup();
 
     this.hubs.clear();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     IModelJsFs.purgeDirSync(this.mockRoot!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     IModelJsFs.removeSync(this.mockRoot!);
     sinon.restore();
     IModelHost.setHubAccess(this._saveHubAccess);

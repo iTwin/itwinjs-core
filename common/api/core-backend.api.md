@@ -2188,6 +2188,69 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
+// @internal
+export class HubMock {
+    // (undocumented)
+    static acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
+    // (undocumented)
+    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
+    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+    // (undocumented)
+    static deleteIModel(arg: IModelIdArg & {
+        iTwinId: GuidString;
+    }): Promise<void>;
+    static destroy(iModelId: GuidString): void;
+    // (undocumented)
+    static downloadChangeset(arg: ChangesetArg & {
+        targetDir: LocalDirName;
+    }): Promise<ChangesetFileProps>;
+    // (undocumented)
+    static downloadChangesets(arg: ChangesetRangeArg & {
+        targetDir: LocalDirName;
+    }): Promise<ChangesetFileProps[]>;
+    // (undocumented)
+    static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
+    // (undocumented)
+    static downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
+    // (undocumented)
+    static findLocalHub(iModelId: GuidString): LocalHub;
+    static getChangesetFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangesetProps>;
+    // (undocumented)
+    static getChangesetFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangesetProps>;
+    // (undocumented)
+    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
+    // (undocumented)
+    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    static get isValid(): boolean;
+    // (undocumented)
+    static get iTwinId(): string;
+    // (undocumented)
+    static pushChangeset(arg: IModelIdArg & {
+        changesetProps: ChangesetFileProps;
+    }): Promise<ChangesetIndex>;
+    // (undocumented)
+    static queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]>;
+    // (undocumented)
+    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+    // (undocumented)
+    static queryChangesets(arg: IModelIdArg & {
+        range?: ChangesetRange;
+    }): Promise<ChangesetProps[]>;
+    // (undocumented)
+    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    // (undocumented)
+    static queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    // (undocumented)
+    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
+    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+    static shutdown(): void;
+    static startup(mockName: LocalDirName, outputDir: string): void;
+}
+
 // @beta
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
@@ -3024,6 +3087,111 @@ export interface LocalhostIpcHostOpts {
     socketPort?: number;
 }
 
+// @internal
+export class LocalHub {
+    constructor(rootDir: LocalDirName, arg: LocalHubProps);
+    // (undocumented)
+    acquireLock(props: LockProps, briefcase: BriefcaseIdAndChangeset): void;
+    acquireLocks(locks: LockMap, briefcase: BriefcaseIdAndChangeset): void;
+    acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId;
+    addChangeset(changeset: ChangesetFileProps): ChangesetIndex;
+    addNamedVersion(arg: {
+        versionName: string;
+        csIndex: ChangesetIndex;
+    }): void;
+    // (undocumented)
+    get changesetDir(): string;
+    // (undocumented)
+    get checkpointDir(): string;
+    // (undocumented)
+    checkpointNameFromIndex(csIndex: ChangesetIndex): string;
+    // (undocumented)
+    cleanup(): void;
+    // (undocumented)
+    countLocks(): number;
+    // (undocumented)
+    countSharedLocks(): number;
+    deleteNamedVersion(versionName: string): void;
+    // (undocumented)
+    readonly description?: string;
+    downloadChangeset(arg: {
+        index: ChangesetIndex;
+        targetDir: LocalDirName;
+    }): ChangesetFileProps;
+    downloadChangesets(arg: {
+        range?: ChangesetRange;
+        targetDir: LocalDirName;
+    }): ChangesetFileProps[];
+    downloadCheckpoint(arg: {
+        changeset: ChangesetIndexOrId;
+        targetFile: LocalFileName;
+    }): {
+        index: number;
+        id: string;
+    };
+    findNamedVersion(versionName: string): ChangesetProps;
+    // (undocumented)
+    getBriefcase(id: BriefcaseId): MockBriefcaseIdProps;
+    getBriefcaseIds(user: string): BriefcaseId[];
+    getBriefcases(onlyAssigned?: boolean): MockBriefcaseIdProps[];
+    getChangesetById(id: ChangesetId): ChangesetProps;
+    getChangesetByIndex(index: ChangesetIndex): ChangesetProps;
+    // (undocumented)
+    getChangesetId(index: ChangesetIndex): ChangesetId;
+    getChangesetIndex(id: ChangesetId): ChangesetIndex;
+    getCheckpoints(range?: ChangesetRange): ChangesetIndex[];
+    // (undocumented)
+    getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex;
+    // (undocumented)
+    getLatestChangeset(): ChangesetProps;
+    // (undocumented)
+    getParentId(index: ChangesetIndex): ChangesetId;
+    // (undocumented)
+    getPreviousIndex(index: ChangesetIndex): number;
+    // (undocumented)
+    readonly iModelId: GuidString;
+    // (undocumented)
+    readonly iModelName: string;
+    // (undocumented)
+    readonly iTwinId: GuidString;
+    // (undocumented)
+    get latestChangesetIndex(): number;
+    // (undocumented)
+    get mockDbName(): string;
+    // (undocumented)
+    queryAllLocks(briefcaseId: BriefcaseId): LockProps[];
+    // (undocumented)
+    queryAllSharedLocks(): {
+        id: Id64String;
+        briefcaseId: BriefcaseId;
+    }[];
+    queryChangesets(range?: ChangesetRange): ChangesetProps[];
+    // (undocumented)
+    queryLocks(): LocksEntry[];
+    // (undocumented)
+    queryLockStatus(elementId: Id64String): LockStatus;
+    queryPreviousCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex;
+    // (undocumented)
+    releaseAllLocks(arg: {
+        briefcaseId: BriefcaseId;
+        changesetIndex: ChangesetIndex;
+    }): void;
+    releaseBriefcaseId(id: BriefcaseId): void;
+    // (undocumented)
+    releaseLocks(locks: LockProps[], arg: {
+        briefcaseId: BriefcaseId;
+        changesetIndex: ChangesetIndex;
+    }): void;
+    // (undocumented)
+    removeDir(dirName: string): void;
+    // (undocumented)
+    readonly rootDir: LocalDirName;
+    uploadCheckpoint(arg: {
+        changesetIndex: ChangesetIndex;
+        localFile: LocalFileName;
+    }): string;
+}
+
 // @beta
 export class LockConflict extends IModelError {
     constructor(
@@ -3067,6 +3235,26 @@ export enum LockState {
     Exclusive = 2,
     None = 0,
     Shared = 1
+}
+
+// @internal (undocumented)
+export interface LockStatusExclusive {
+    // (undocumented)
+    briefcaseId: BriefcaseId;
+    // (undocumented)
+    lastCsIndex?: ChangesetIndex;
+    // (undocumented)
+    state: LockState.Exclusive;
+}
+
+// @internal (undocumented)
+export interface LockStatusShared {
+    // (undocumented)
+    lastCsIndex?: ChangesetIndex;
+    // (undocumented)
+    sharedBy: Set<BriefcaseId>;
+    // (undocumented)
+    state: LockState.Shared;
 }
 
 // @internal
