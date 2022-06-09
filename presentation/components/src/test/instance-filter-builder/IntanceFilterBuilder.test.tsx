@@ -10,7 +10,7 @@ import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { ClassInfo } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { act, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { InstanceFilterBuilder } from "../../presentation-components/instance-filter-builder/InstanceFilterBuilder";
 import { stubRaf } from "./Common";
 
@@ -52,7 +52,7 @@ describe("InstanceFilter", () => {
     const option = container.querySelector(".iui-menu-item");
     expect(option).to.not.be.null;
 
-    act(() => {fireEvent.click(option!);});
+    fireEvent.click(option!);
     expect(spy).to.be.calledOnceWith(classInfos[0]);
   });
 

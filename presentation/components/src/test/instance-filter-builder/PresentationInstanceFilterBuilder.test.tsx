@@ -14,7 +14,7 @@ import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
-import { act, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
@@ -75,9 +75,7 @@ describe("PresentationInstanceFilter", () => {
     const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(propertySelector).to.not.be.null;
     propertySelector?.focus();
-    act(() => {
-      getByText(propertiesField.label).click();
-    });
+    fireEvent.click(getByText(propertiesField.label));
 
     // wait until property is selected
     await waitFor(() => getByDisplayValue(propertiesField.label));
@@ -85,10 +83,9 @@ describe("PresentationInstanceFilter", () => {
     // select operator
     const operatorSelector = container.querySelector<HTMLInputElement>(".rule-operator .iui-select-button");
     expect(operatorSelector).to.not.be.null;
-    operatorSelector?.click();
-    act(() => {
-      getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)).click();
-    });
+    fireEvent.click(operatorSelector!);
+
+    fireEvent.click(getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
 
     // wait until operator is selected
     await waitFor(() => getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
