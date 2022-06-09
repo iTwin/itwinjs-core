@@ -11,7 +11,7 @@ import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
-import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
+import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
 import { CompressedClassInfoJSON, InstanceKeyJSON } from "./EC";
 import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
@@ -37,7 +37,7 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
   /** @internal ID of the client requesting data */
   clientId?: string;
   /** @alpha */
-  diagnostics?: DiagnosticsOptions;
+  diagnostics?: RpcDiagnosticsOptions;
 };
 
 /**
@@ -52,8 +52,11 @@ export interface PresentationRpcResponseData<TResult = undefined> {
   /** In case of a success response, the result */
   result?: TResult;
   /** @alpha */
-  diagnostics?: DiagnosticsScopeLogs[];
+  diagnostics?: ClientDiagnostics;
 }
+
+/** @alpha */
+export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
 
 /**
  * A promise of [[PresentationRpcResponseData]].

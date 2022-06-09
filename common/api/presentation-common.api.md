@@ -219,6 +219,29 @@ export interface ClassInfoJSON {
     name: string;
 }
 
+// @alpha (undocumented)
+export interface ClientDiagnostics extends Diagnostics {
+    // (undocumented)
+    backendVersion?: string;
+}
+
+// @public (undocumented)
+export interface ClientDiagnosticsAttribute {
+    // @alpha (undocumented)
+    diagnostics?: ClientDiagnosticsOptions;
+}
+
+// @alpha (undocumented)
+export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
+
+// @alpha (undocumented)
+export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
+    // (undocumented)
+    backendVersion?: boolean;
+    // (undocumented)
+    handler: ClientDiagnosticsHandler;
+}
+
 // @internal (undocumented)
 export interface CommonIpcParams {
     // (undocumented)
@@ -520,7 +543,10 @@ export interface DescriptorSource {
 }
 
 // @alpha (undocumented)
-export type DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void;
+export interface Diagnostics {
+    // (undocumented)
+    logs?: DiagnosticsScopeLogs[];
+}
 
 // @alpha (undocumented)
 export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
@@ -556,12 +582,6 @@ export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
     perf?: boolean;
-}
-
-// @alpha (undocumented)
-export interface DiagnosticsOptionsWithHandler extends DiagnosticsOptions {
-    // (undocumented)
-    handler: DiagnosticsHandler;
 }
 
 // @alpha (undocumented)
@@ -1958,7 +1978,7 @@ export class PresentationRpcInterface extends RpcInterface {
 // @public
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
     clientId?: string;
-    diagnostics?: DiagnosticsOptions;
+    diagnostics?: RpcDiagnosticsOptions;
 };
 
 // @public
@@ -1967,7 +1987,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
 // @public
 export interface PresentationRpcResponseData<TResult = undefined> {
     // @alpha (undocumented)
-    diagnostics?: DiagnosticsScopeLogs[];
+    diagnostics?: ClientDiagnostics;
     errorMessage?: string;
     result?: TResult;
     statusCode: PresentationStatus;
@@ -2424,8 +2444,6 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 
 // @public
 export interface RequestOptions<TIModel> {
-    // @alpha (undocumented)
-    diagnostics?: DiagnosticsOptionsWithHandler;
     imodel: TIModel;
     locale?: string;
     unitSystem?: UnitSystemKey;
@@ -2455,53 +2473,56 @@ export interface RootNodeRule extends NavigationRuleBase {
     ruleType: RuleTypes.RootNodes;
 }
 
+// @alpha (undocumented)
+export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
+
 // @internal
 export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
+    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<DescriptorJSON | undefined>;
+    getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<{
+    getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<{
         total: number;
         items: KeySetJSON;
     }>;
     // (undocumented)
-    getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<number>;
+    getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
     // (undocumented)
-    getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps>): Promise<ContentSourcesRpcResult>;
+    getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult>;
     // (undocumented)
-    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
+    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<LabelDefinitionJSON>;
     // (undocumented)
-    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
+    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // (undocumented)
-    getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
+    getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
+    getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
     // (undocumented)
-    getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>): Promise<{
+    getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<{
         descriptor: DescriptorJSON;
         contentSet: PagedResponse<ItemJSON>;
     } | undefined>;
     // (undocumented)
-    getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>): Promise<PagedResponse<ItemJSON>>;
+    getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<PagedResponse<ItemJSON>>;
     // (undocumented)
-    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<PagedResponse<LabelDefinitionJSON>>;
+    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<LabelDefinitionJSON>>;
     // (undocumented)
-    getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<PagedResponse<DisplayValueGroupJSON>>;
+    getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
-    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>>;
+    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
-    getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
+    getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
     // (undocumented)
     readonly maxRequestRepeatCount: number;
-    request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+    request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
     }
 
 // @internal

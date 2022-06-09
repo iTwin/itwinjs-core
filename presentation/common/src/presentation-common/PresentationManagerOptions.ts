@@ -10,7 +10,6 @@ import { Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
-import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
@@ -31,9 +30,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /** @alpha */
-  diagnostics?: DiagnosticsOptionsWithHandler;
 }
 
 /**
