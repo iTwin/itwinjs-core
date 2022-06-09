@@ -17,7 +17,7 @@ import {
   StageUsage, StandardContentLayouts, UiItemsManager, UiSyncEventArgs,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
-import { WidgetApiStageItemsProvider } from "../providers/WidgetApiStageItemsProvider";
+import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";
 import { getTestProviderState, setShowCustomViewOverlay } from "../../store";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
@@ -139,7 +139,7 @@ export class WidgetApiStage {
     UiItemsManager.register(new StandardStatusbarUiItemsProvider(), { providerId: "widget-api-stage-standardStatusItems", stageIds: [WidgetApiStage.stageId] });
 
     // Provides example widgets stage
-    WidgetApiStageItemsProvider.register(localizationNamespace);
+    WidgetApiStageUiItemsProvider.register(localizationNamespace);
   }
 }
 

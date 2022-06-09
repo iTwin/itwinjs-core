@@ -40,7 +40,7 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { AbstractUiItemsProvider, AppUiTestProviders, CustomContentFrontstage, WidgetApiStage } from "@itwin/appui-test-providers";
+import { AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage, WidgetApiStage } from "@itwin/appui-test-providers";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -126,12 +126,6 @@ interface SampleIModelParams {
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
-}
-
-interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
 }
 
 export class SampleAppIModelApp {
@@ -247,6 +241,7 @@ export class SampleAppIModelApp {
     UiItemsManager.register(new AbstractUiItemsProvider(AppUiTestProviders.localizationNamespace));
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

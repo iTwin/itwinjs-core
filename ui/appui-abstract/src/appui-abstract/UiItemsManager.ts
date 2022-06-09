@@ -227,7 +227,7 @@ export class UiItemsManager {
       const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
       // istanbul ignore else
-      if (uiProvider.provideBackstageItems && this.allowItemsFromProvider(entry)) {
+      if (uiProvider.provideBackstageItems) { // && this.allowItemsFromProvider(entry)
         uiProvider.provideBackstageItems()
           .forEach((item: BackstageItem) => {
             // ignore duplicate ids

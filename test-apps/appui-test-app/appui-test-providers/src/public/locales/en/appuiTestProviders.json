@@ -5,7 +5,8 @@
     }
   },
   "backstage": {
-    "customContentFrontstageLabel": "Custom",
+    "customContentFrontstageLabel": "Custom Content",
+    "contentLayoutFrontstageLabel": "Content Layout",
     "widgetApiTestFrontstageLabel": "Exercise Widget Api"
   },
   "StatusBar": {

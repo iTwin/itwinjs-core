@@ -24,7 +24,7 @@ export interface AbstractUiItemsProviderProps {
  * The AbstractUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
  */
 export class AbstractUiItemsProvider implements UiItemsProvider {
-  public readonly id = "AbstractUiItemsProvider";
+  public readonly id = "appui-test-providers:AbstractUiItemsProvider";
 
   constructor(localizationNamespace: string, public props?: AbstractUiItemsProviderProps) {
     // register tools that will be returned via this provider

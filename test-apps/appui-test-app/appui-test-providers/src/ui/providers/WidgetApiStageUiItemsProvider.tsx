@@ -12,25 +12,22 @@ import {
 import { ToolbarHelper } from "@itwin/appui-react";
 import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
-import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
-import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
 
-export class WidgetApiStageItemsProvider implements UiItemsProvider {
-  public static providerId = "sampleApp:widget-api-stage-stage-widget-provider";
-  public readonly id = WidgetApiStageItemsProvider.providerId;
-
-  constructor(localizationNamespace: string) {
-    RestoreSavedContentLayoutTool.register(localizationNamespace);
-    SaveContentLayoutTool.register(localizationNamespace);
-  }
+export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
+  public static providerId = "appui-test-providers:widget-api-stage";
+  public readonly id = WidgetApiStageUiItemsProvider.providerId;
 
   public static register(localizationNamespace: string) {
-    UiItemsManager.register(new WidgetApiStageItemsProvider(localizationNamespace), { stageIds: [WidgetApiStage.stageId] });
+    UiItemsManager.register(new WidgetApiStageUiItemsProvider(localizationNamespace), { stageIds: [WidgetApiStage.stageId] });
+  }
+
+  constructor(_localizationNamespace: string) {
+    // register any tools here
   }
 
   public static unregister() {
-    UiItemsManager.unregister(WidgetApiStageItemsProvider.providerId);
+    UiItemsManager.unregister(WidgetApiStageUiItemsProvider.providerId);
   }
 
   private getLeftPanelWidgets(section?: StagePanelSection | undefined) {
@@ -292,14 +289,7 @@ export class WidgetApiStageItemsProvider implements UiItemsProvider {
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(15, getSplitSingleViewportCommandDef(), { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(17, getToggleCustomOverlayCommandItemDef(), { groupPriority: 3000 }));
-        return items;
-      } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
-        const items: CommonToolbarItem[] = [];
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, SaveContentLayoutTool.toolItemDef, { groupPriority: 3000 }));
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(15, RestoreSavedContentLayoutTool.toolItemDef, { groupPriority: 3000 }));
-        items.push(getCustomViewSelectorPopupItem(20, 3000));
         return items;
       }
     }
