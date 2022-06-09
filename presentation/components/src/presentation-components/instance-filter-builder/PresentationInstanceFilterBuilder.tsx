@@ -145,26 +145,18 @@ function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableC
 
 function useECClassHierarchyProvider(imodel: IModelConnection) {
   const [classHierarchyProvider, setClassHierarchyProvider] = React.useState<ECClassHierarchyProvider | undefined>();
-  const currentImodel = React.useRef(imodel);
-  /* istanbul ignore if */
-  if (currentImodel.current !== imodel)
-    currentImodel.current = imodel;
-
-  const isMounted = React.useRef(true);
-  React.useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   React.useEffect(() => {
+    let disposed = false;
     void (async () => {
       const hierarchyProvider = await ECClassHierarchyProvider.create(imodel);
-      // ignore setting hierarchy provider if imodel changed while initializing it
       /* istanbul ignore else */
-      if (currentImodel.current === imodel && isMounted.current)
+      if (!disposed)
         setClassHierarchyProvider(hierarchyProvider);
+
     })();
+    return () => { disposed = true; };
   }, [imodel]);
+
   return classHierarchyProvider;
 }
