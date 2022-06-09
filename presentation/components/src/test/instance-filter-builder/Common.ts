@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// need to stub global RAF and CAF for 'react-select' component
+/**
+ * Stubs global 'requestAnimationFrame' and 'cancelAnimationFrame' functions.
+ * This is needed for tests using 'react-select' component.
+ */
 export function stubRaf() {
   const raf = global.requestAnimationFrame;
   const caf = global.cancelAnimationFrame;
