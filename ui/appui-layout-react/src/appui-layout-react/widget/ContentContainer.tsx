@@ -13,6 +13,7 @@ import { assert } from "@itwin/core-bentley";
 import { WidgetContentManagerContext } from "./ContentManager";
 import { WidgetStateContext } from "./Widget";
 import { PanelSideContext } from "../widget-panels/Panel";
+import { WidgetOutline } from "../outline/WidgetOutline";
 
 /** @internal */
 export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
@@ -31,7 +32,11 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
   return (
     <div
       className={className}
-      ref={ref}
-    />
+    >
+      <div
+        ref={ref}
+      />
+      <WidgetOutline />
+    </div>
   );
 });

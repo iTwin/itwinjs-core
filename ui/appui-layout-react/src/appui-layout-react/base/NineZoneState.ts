@@ -1160,7 +1160,8 @@ export function isSectionTargetState(state: DropTargetState): state is SectionTa
   return state.type === "section";
 }
 
-function isWidgetTargetState(state: DropTargetState): state is WidgetTargetState {
+/** @internal */
+export function isWidgetTargetState(state: DropTargetState): state is WidgetTargetState {
   return state.type === "widget";
 }
 

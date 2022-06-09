@@ -5,41 +5,16 @@
 @import "~@itwin/itwinui-css/scss/style/speed";
 @import "variables";
 
-.nz-outline-sectionOutline {
+.nz-outline-widgetOutline {
   background-color: $nz-outline-color;
   position: absolute;
-  transition: transform $iui-speed-fast ease-in;
   transform: scale(1);
+  transition: transform $iui-speed-fast ease-in;
+  width: 100%;
+  height: 100%;
 
   &.nz-hidden {
     transform: scale(0);
-  }
-
-  &.nz-horizontal {
-    height: 100%;
-    width: 50%;
-    top: 0;
-
-    &.nz-0 {
-      left: 0;
-    }
-
-    &.nz-1 {
-      right: 0;
-    }
-  }
-
-  &.nz-vertical {
-    width: 100%;
-    height: 50%;
-    left: 0;
-
-    &.nz-0 {
-      top: 0;
-    }
-
-    &.nz-1 {
-      bottom: 0;
-    }
+    transition: none;
   }
 }
