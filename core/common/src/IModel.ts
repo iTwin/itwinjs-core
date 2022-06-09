@@ -258,9 +258,13 @@ export class EcefLocation implements EcefLocationProps {
     const eastCarto = Cartographic.fromRadians({ longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height });
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
-    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
-    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize();
-    const matrix = Matrix3d.createRigidFromColumns(xVector!, yVector!, AxisOrder.XYZ)!;
+    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
+    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
+    const xVectorNorm = xVector;
+    xVectorNorm.normalizeInPlace();
+    const yVectorNorm = yVector;
+    yVectorNorm.normalizeInPlace();
+    const matrix = Matrix3d.createRigidFromColumns(xVectorNorm!, yVectorNorm!, AxisOrder.XYZ)!;
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
@@ -270,7 +274,7 @@ export class EcefLocation implements EcefLocationProps {
       ecefOrigin.addInPlace(delta);
     }
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+    return new EcefLocation({ origin: ecefOrigin, xVector, yVector, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
   }
 
   /** Get the location center of the earth in the iModel coordinate system. */
