@@ -9,7 +9,9 @@ import * as moq from "typemoq";
 import { Id64, Id64Arg, Id64String, using } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, SelectionScope } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs } from "@itwin/presentation-common/lib/cjs/test";
+import {
+  createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
@@ -508,7 +510,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = undefined`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -519,7 +521,7 @@ describe("SelectionManager", () => {
 
         it("uses \"element\" scope when `activeScope = \"element\"`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => "element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), { id: "element" }))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
           ss.add(createRandomId());
@@ -552,9 +554,9 @@ describe("SelectionManager", () => {
           selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
           scopesMock.setup((x) => x.activeScope).returns(() => scope);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString()))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny()))
             .returns(async () => new KeySet());
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAnyString()))
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAny()))
             .returns(async () => new KeySet([scopedKey]));
         });
 
@@ -737,7 +739,7 @@ describe("SelectionManager", () => {
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);
 
       scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString())).returns(async () => new KeySet());
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAny())).returns(async () => new KeySet());
 
       selectionManager.setSyncWithIModelToolSelection(imodelMock.object, true);
     });

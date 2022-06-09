@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { Guid, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
@@ -22,9 +22,10 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, Paged, RequestOptions, RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RequestOptions,
+  RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
   ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
@@ -199,13 +200,13 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
-      this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
+  public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps>): Promise<KeySetJSON> {
+    return this.request<KeySetJSON, ComputeSelectionRequestOptions<IModelRpcProps>>(
+      this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
 }
 
-function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset} {
+function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset } {
   return (typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object");
 }
 
