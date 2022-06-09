@@ -20,6 +20,7 @@ import { WidgetPanelGrip } from "./Grip";
 import { WidgetComponent } from "../widget/Widget";
 import { PanelTargets } from "../target/PanelTargets";
 import { SectionOutline } from "../outline/SectionOutline";
+import { PanelOutline } from "../outline/PanelOutline";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -136,6 +137,7 @@ export const WidgetPanelProvider = React.memo<WidgetPanelProviderProps>(function
           spanBottom={panels.bottom.span}
         />}
         <PanelTargets />
+        <PanelOutline />
       </PanelSideContext.Provider>
     </PanelStateContext.Provider>
   );
