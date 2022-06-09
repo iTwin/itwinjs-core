@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Prevent an assertion when creating a pickable graphic with an empty FeatureTable.",
+      "comment": "added errorOnMissingUniform render option",
       "type": "none"
     }
   ],
