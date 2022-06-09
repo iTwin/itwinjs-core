@@ -2469,6 +2469,8 @@ export class IModelHost {
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @beta
+    static getHubAccess(): BackendHubAccess | undefined;
+    // @beta
     static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     // @internal (undocumented)
@@ -2490,7 +2492,7 @@ export class IModelHost {
     // @alpha
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
-    static setHubAccess(hubAccess: BackendHubAccess): void;
+    static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
