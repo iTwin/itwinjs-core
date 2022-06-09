@@ -2704,6 +2704,7 @@ importers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
+      '@itwin/appui-test-providers': workspace:*
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
@@ -2746,7 +2747,6 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/ui-items-providers-test': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 16.11.7
       '@types/react': ^17.0.37
@@ -2787,6 +2787,7 @@ importers:
       '@itwin/appui-abstract': link:../../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
       '@itwin/appui-react': link:../../../ui/appui-react
+      '@itwin/appui-test-providers': link:../appui-test-providers
       '@itwin/browser-authorization': 0.5.1
       '@itwin/components-react': link:../../../ui/components-react
       '@itwin/core-backend': link:../../../core/backend
@@ -2825,7 +2826,6 @@ importers:
       '@itwin/presentation-components': link:../../../presentation/components
       '@itwin/presentation-frontend': link:../../../presentation/frontend
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/ui-items-providers-test': link:../../ui-items-providers-test
       classnames: 2.3.1
       lorem-ipsum: 2.0.4
       react: 17.0.2
@@ -2919,7 +2919,6 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/ui-items-providers-test': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 16.11.7
       '@types/react': ^17.0.37
@@ -2998,7 +2997,6 @@ importers:
       '@itwin/presentation-components': link:../../../presentation/components
       '@itwin/presentation-frontend': link:../../../presentation/frontend
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/ui-items-providers-test': link:../../ui-items-providers-test
       classnames: 2.3.1
       lorem-ipsum: 2.0.4
       react: 17.0.2

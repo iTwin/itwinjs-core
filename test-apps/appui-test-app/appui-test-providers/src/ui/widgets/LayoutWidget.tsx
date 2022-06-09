@@ -62,6 +62,7 @@ function usePanelInfo(location: StagePanelLocation) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelInfo({
   location,
 }: {
@@ -78,6 +79,7 @@ function PanelInfo({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelSelect({
   location,
   onChange,
@@ -104,6 +106,7 @@ function PanelSelect({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetSelect({
   id,
   onChange,
@@ -139,6 +142,7 @@ function WidgetSelect({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectPanelInfo() {
   const [location, setLocation] = React.useState(StagePanelLocation.Right);
   return (
@@ -153,6 +157,7 @@ function SelectPanelInfo() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectWidgetInfo() {
   const [id, setId] = React.useState("RightStart2");
   return (
@@ -188,6 +193,7 @@ function useWidgetState(id: string) {
   return state;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetInfo({
   id,
 }: {
@@ -257,6 +263,7 @@ function WidgetInfo({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function FrontstageControls() {
   return (
     <>
@@ -270,6 +277,7 @@ function FrontstageControls() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelStateSelect({
   state,
   onChange,
@@ -296,6 +304,7 @@ function PanelStateSelect({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetStateSelect({
   state,
   onChange,
@@ -323,6 +332,7 @@ function WidgetStateSelect({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelControls({
   location,
 }: {
@@ -391,6 +401,7 @@ function PanelControls({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetControls({
   id,
 }: {
@@ -423,6 +434,7 @@ function WidgetControls({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectPanelControls() {
   const [location, setLocation] = React.useState(StagePanelLocation.Right);
   return (
@@ -438,6 +450,7 @@ function SelectPanelControls() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectWidgetControls() {
   const [id, setId] = React.useState("RightStart2");
   return (
@@ -458,6 +471,7 @@ const widgetContentStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetContent(props: React.PropsWithChildren<{}>) {
   return (
     <div style={widgetContentStyle}>
@@ -466,6 +480,7 @@ function WidgetContent(props: React.PropsWithChildren<{}>) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function LayoutControls() {
   return (
     <WidgetContent>
@@ -480,6 +495,7 @@ export function LayoutControls() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function LayoutInfo() {
   return (
     <WidgetContent>
@@ -490,6 +506,7 @@ export function LayoutInfo() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function FloatingWidgetSelect({
   id,
   onChange,
@@ -531,6 +548,7 @@ function getFloatingWidgetContainerBounds(frontstageDef: FrontstageDef | undefin
   return foundBounds ?? defaultBounds;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function FloatingLayoutInfo() {
   const frontstageDef = useActiveFrontstageDef();
   const [floatingIds, setFloatingIds] = React.useState(() => frontstageDef ? frontstageDef.getFloatingWidgetContainerIds() : []);

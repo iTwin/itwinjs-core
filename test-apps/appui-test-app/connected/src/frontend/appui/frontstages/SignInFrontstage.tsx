@@ -9,7 +9,6 @@ import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Fronts
 import { IModelApp } from "@itwin/core-frontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { Centered } from "@itwin/core-react";
-import { SampleAppIModelApp } from "../../index";
 import { SignIn } from "../oidc/SignIn";
 
 class SignInControl extends ContentControl {

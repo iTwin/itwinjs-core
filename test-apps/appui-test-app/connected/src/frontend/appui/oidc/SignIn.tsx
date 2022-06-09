@@ -13,7 +13,6 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
 import { IModelApp } from "@itwin/core-frontend";
 import { Button } from "@itwin/itwinui-react";
-import { UiFramework } from "@itwin/appui-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 // cspell:ignore signingin
@@ -35,6 +34,7 @@ interface SignInState {
   signInButton: string;
   profilePrompt: string;
   registerAnchor: string;
+  signingInMessage: string;
 }
 
 /**
@@ -53,6 +53,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
       signInButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.signInButton"),
       profilePrompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.profilePrompt"),
       registerAnchor: IModelApp.localization.getLocalizedString("SampleApp:signIn.register"),
+      signingInMessage: (ProcessDetector.isElectronAppFrontend) ? IModelApp.localization.getLocalizedString("SampleApp:signIn.signingInMessage") : "",
     };
   }
 
@@ -85,18 +86,16 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
      * See https://authguidance.com/2018/01/11/desktop-apps-overview/ for the pattern
      */
     let disableSignInOnClick = true;
-    let signingInMessage: string | undefined;
     if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
-      signingInMessage = IModelApp.localization.getLocalizedString("SampleApp:signIn.signingInMessage");
     }
 
     return (
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
-          {(this.state.isSigningIn && signingInMessage !== undefined) ?
-            <span className="components-signin-prompt">{signingInMessage}</span> :
+          {this.state.isSigningIn ?
+            <span className="components-signin-prompt">{this.state.signingInMessage}</span> :
             <span className="components-signin-prompt">{this.state.prompt}</span>
           }
           <Button className="components-signin-button" styleType="cta" disabled={this.state.isSigningIn && disableSignInOnClick}

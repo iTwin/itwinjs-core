@@ -11,7 +11,7 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
-import { getClassName } from "@itwin/appui-abstract";
+import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
@@ -22,12 +22,12 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelVersion, RpcConfiguration, SyncMode, ViewQueryParams } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, SpatialViewState, ToolAdmin, ViewClipByPlaneTool, ViewState3d,
+  AccuSnap, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeAppLogger,
+  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -43,6 +43,7 @@ import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTa
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage, WidgetApiStage } from "@itwin/appui-test-providers";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -131,12 +132,6 @@ interface SampleIModelParams {
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
-}
-
-interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
 }
 
 export class SampleAppIModelApp {
@@ -279,6 +274,15 @@ export class SampleAppIModelApp {
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
 
+    // register the localized strings for the package and set up that contains the sample UiItems providers
+    await AppUiTestProviders.initializeLocalizationAndState();
+
+    // initialize UI Item providers
+    UiItemsManager.register(new AbstractUiItemsProvider(AppUiTestProviders.localizationNamespace));
+    CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -311,8 +315,7 @@ export class SampleAppIModelApp {
       }
       if (viewIdsSelected) {
         await this.openViews(iModelConnection, viewIdsSelected);
-      }
-      else {
+      } else {
         alert(`Unable to find view to open in selected iModel`);
         await this.showIModelOpen();
         return;
@@ -402,7 +405,7 @@ export class SampleAppIModelApp {
 
         // store the IModelConnection in the sample app store
         UiFramework.setIModelConnection(iModelConnection, true);
-        await this.openViews(iModelConnection, [iModel.viewId!]);
+        await this.openViews(iModelConnection, [iModel.viewId]);
       } catch (e: any) {
         alert(`Error opening selected iModel: ${e.message} `);
         await this.showIModelOpen();

@@ -102,9 +102,6 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
   }
 
   private renderDropdown() {
-    const liStyle: React.CSSProperties = {
-      height: `${this._itemHeight}em`,
-    };
     return (
       <Popup isOpen={this.state.isDropdownOpen} position={RelativePosition.Bottom} onClose={this._handleOnOutsideClick} target={this._target}>
         <div className="ip-dropdown">
