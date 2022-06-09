@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Wed, 01 Jun 2022 12:32:31 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Jun 2022 16:22:03 GMT and should not be manually modified.
+
+## 2.19.40
+Thu, 09 Jun 2022 16:22:03 GMT
+
+### Updates
+
+- Add support for nth level element selection scopes.
 
 ## 2.19.39
 Wed, 01 Jun 2022 12:32:31 GMT

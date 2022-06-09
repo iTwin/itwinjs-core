@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.19.39",
+  "version": "2.19.40",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,20 +36,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.39",
-    "@bentley/frontend-authorization-client": "workspace:^2.19.39",
-    "@bentley/geometry-core": "workspace:^2.19.39",
-    "@bentley/imodelhub-client": "workspace:^2.19.39",
-    "@bentley/imodeljs-common": "workspace:^2.19.39",
-    "@bentley/imodeljs-i18n": "workspace:^2.19.39",
-    "@bentley/imodeljs-quantity": "workspace:^2.19.39",
-    "@bentley/itwin-client": "workspace:^2.19.39",
-    "@bentley/orbitgt-core": "workspace:^2.19.39",
-    "@bentley/product-settings-client": "workspace:^2.19.39",
-    "@bentley/rbac-client": "workspace:^2.19.39",
-    "@bentley/telemetry-client": "workspace:^2.19.39",
-    "@bentley/ui-abstract": "workspace:^2.19.39",
-    "@bentley/webgl-compatibility": "workspace:^2.19.39"
+    "@bentley/bentleyjs-core": "workspace:^2.19.40",
+    "@bentley/frontend-authorization-client": "workspace:^2.19.40",
+    "@bentley/geometry-core": "workspace:^2.19.40",
+    "@bentley/imodelhub-client": "workspace:^2.19.40",
+    "@bentley/imodeljs-common": "workspace:^2.19.40",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.40",
+    "@bentley/imodeljs-quantity": "workspace:^2.19.40",
+    "@bentley/itwin-client": "workspace:^2.19.40",
+    "@bentley/orbitgt-core": "workspace:^2.19.40",
+    "@bentley/product-settings-client": "workspace:^2.19.40",
+    "@bentley/rbac-client": "workspace:^2.19.40",
+    "@bentley/telemetry-client": "workspace:^2.19.40",
+    "@bentley/ui-abstract": "workspace:^2.19.40",
+    "@bentley/webgl-compatibility": "workspace:^2.19.40"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
