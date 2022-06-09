@@ -44,8 +44,11 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     return url;
   }
 
-  public override getLogo(): HTMLTableRowElement | undefined {
-    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.mapboxLogoCard) {
+      cards.dataset.mapboxLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));
+    }
   }
 
   // no initialization needed for MapBoxImageryProvider.

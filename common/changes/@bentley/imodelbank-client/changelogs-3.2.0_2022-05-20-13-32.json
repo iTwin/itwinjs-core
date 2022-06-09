@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/imodelbank-client"
+    }
+  ],
+  "packageName": "@bentley/imodelbank-client",
+  "email": "aruniverse@users.noreply.github.com"
+}

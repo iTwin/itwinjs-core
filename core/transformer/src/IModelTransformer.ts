@@ -186,7 +186,11 @@ function mapId64<R>(
   idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
-  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
+  const isId64String = (arg: any): arg is Id64String => {
+    const isString = typeof arg === "string";
+    assert(() => !isString || Id64.isValidId64(arg));
+    return isString;
+  };
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
 
@@ -1206,8 +1210,11 @@ export class IModelTransformer extends IModelExportHandler {
     const transformer = new this(...constructorArgs);
     const db = new SQLiteDb();
     db.openDb(statePath, OpenMode.Readonly);
-    transformer.loadStateFromDb(db);
-    db.closeDb();
+    try {
+      transformer.loadStateFromDb(db);
+    } finally {
+      db.closeDb();
+    }
     return transformer as InstanceType<SubClass>;
   }
 
@@ -1285,9 +1292,12 @@ export class IModelTransformer extends IModelExportHandler {
     if (IModelJsFs.existsSync(nativeStatePath))
       IModelJsFs.unlinkSync(nativeStatePath);
     db.createDb(nativeStatePath);
-    this.saveStateToDb(db);
-    db.saveChanges();
-    db.closeDb();
+    try {
+      this.saveStateToDb(db);
+      db.saveChanges();
+    } finally {
+      db.closeDb();
+    }
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.

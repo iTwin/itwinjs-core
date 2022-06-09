@@ -11,7 +11,6 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
-import { IModelAppOptions } from '@itwin/core-frontend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
@@ -22,27 +21,6 @@ import { RpcProtocol } from '@itwin/core-common';
 import { RpcRequest } from '@itwin/core-common';
 import { RpcRequestFulfillment } from '@itwin/core-common';
 import { RpcSerializedValue } from '@itwin/core-common';
-
-// @beta (undocumented)
-export class AndroidApp {
-    // (undocumented)
-    static get isValid(): boolean;
-    // (undocumented)
-    static startup(opts?: {
-        mobileApp?: {
-            rpcInterfaces?: RpcInterfaceDefinition[];
-        };
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
-}
-
-// @beta (undocumented)
-export class AndroidHost extends MobileHost {
-    static startup(opt?: AndroidHostOpts): Promise<void>;
-}
-
-// @beta (undocumented)
-export type AndroidHostOpts = MobileHostOpts;
 
 // @beta (undocumented)
 export enum BatteryState {
@@ -96,29 +74,6 @@ export interface DownloadTask {
 }
 
 // @beta (undocumented)
-export class IOSApp {
-    // (undocumented)
-    static get isValid(): boolean;
-    // (undocumented)
-    static startup(opts?: IOSAppOpts): Promise<void>;
-}
-
-// @beta (undocumented)
-export type IOSAppOpts = NativeAppOpts & {
-    iModelApp: {
-        authorizationClient?: never;
-    };
-};
-
-// @beta (undocumented)
-export class IOSHost extends MobileHost {
-    static startup(opt?: IOSHostOpts): Promise<void>;
-}
-
-// @beta (undocumented)
-export type IOSHostOpts = MobileHostOpts;
-
-// @beta (undocumented)
 export class MobileApp {
     // (undocumented)
     static callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>): Promise<PromiseReturnType<MobileAppFunctions[T]>>;
@@ -136,8 +91,8 @@ export class MobileApp {
     static onOrientationChanged: BeEvent<() => void>;
     // (undocumented)
     static onWillTerminate: BeEvent<() => void>;
-    // @internal
-    static startup(opts?: NativeAppOpts): Promise<void>;
+    // (undocumented)
+    static startup(opts?: MobileAppOpts): Promise<void>;
 }
 
 // @beta
@@ -147,6 +102,13 @@ export interface MobileAppFunctions {
     // (undocumented)
     reconnect: (connection: number) => Promise<void>;
 }
+
+// @beta (undocumented)
+export type MobileAppOpts = NativeAppOpts & {
+    iModelApp: {
+        authorizationClient?: never;
+    };
+};
 
 // @internal
 export class MobileAuthorizationBackend implements AuthorizationClient {

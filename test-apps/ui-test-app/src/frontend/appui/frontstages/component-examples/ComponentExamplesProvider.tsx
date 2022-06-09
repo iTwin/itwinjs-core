@@ -392,7 +392,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function ColorPickerToggle() {
+export function ColorPickerToggle({ hideRgb }: { hideRgb?: boolean }) {
   const [colorDialogTitle] = React.useState("Select Color");
   const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
   const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
@@ -428,8 +428,8 @@ export function ColorPickerToggle() {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
-      colorInputType="rgb" />);
-  }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
+      colorInputType={!!hideRgb ? undefined : "rgb"} />);
+  }, [colorDialogTitle, handleBackgroundColorDialogOk, handleBackgroundColorDialogCancel, hideRgb]);
 
   return (
     <ColorSwatch className="map-manager-base-item-color" colorDef={selectedColor} round={false} onColorPick={handleBgColorClick} />
@@ -565,6 +565,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Button", "Round with Caret",
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} round showCaret />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
+        createComponentExample("Color Picker Dialog no rgb", undefined, <ColorPickerToggle hideRgb />),
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),

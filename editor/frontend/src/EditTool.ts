@@ -66,6 +66,9 @@ export class EditTools {
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
 
@@ -151,5 +154,9 @@ export class EditTools {
     }
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }
