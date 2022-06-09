@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -23,7 +23,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
 import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
 import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
-import { ComputeNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
+import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { PointStringParams } from "../render/primitives/PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -471,7 +471,8 @@ export interface ImdlReaderCreateArgs {
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
-  computeNodeId?: ComputeNodeId;
+  /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
+  timeline?: RenderSchedule.ModelTimeline;
 }
 
 type PrimitiveParams = {
@@ -513,7 +514,7 @@ export class ImdlReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
-  private readonly _computeNodeId?: ComputeNodeId;
+  private readonly _timeline?: RenderSchedule.ModelTimeline;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -584,7 +585,7 @@ export class ImdlReader {
     this._loadEdges = args.loadEdges ?? true;
     this._options = args.options ?? {};
     this._containsTransformNodes = args.containsTransformNodes ?? false;
-    this._computeNodeId = args.computeNodeId;
+    this._timeline = args.timeline;
   }
 
   /** Attempt to deserialize the tile data */
@@ -1256,7 +1257,8 @@ export class ImdlReader {
   }
 
   private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: PackedFeatureTable): void {
-    assert(undefined !== this._computeNodeId);
+    const timeline = this._timeline;
+    assert(undefined !== timeline);
 
     const primitives = mesh.primitives;
     if (!primitives)
@@ -1274,9 +1276,30 @@ export class ImdlReader {
       return branch;
     };
 
+    // ###TODO optimize this lookup?
+    featureTable.populateAnimationNodeIds((elemIdPair) => {
+      const id = Id64.fromUint32PairObject(elemIdPair);
+      for (const elemTimeline of timeline.elementTimelines)
+        for (const elemId of elemTimeline.elementIds)
+          if (elemId === id)
+            return elemTimeline.batchId;
+
+      return 0;
+    }, timeline.maxBatchId);
+
+    let discreteNodeIds = new Set<number>(timeline.transformBatchIds);
+    for (const elemTimeline of timeline.elementTimelines)
+      if (!elemTimeline.containsTransform && undefined !== elemTimeline.cuttingPlane)
+        discreteNodeIds.add(elemTimeline.batchId);
+
+    const computeNodeId: ComputeNodeId = (_id, featureIndex) => {
+      const nodeId = featureTable.getAnimationNodeId(featureIndex);
+      return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
+    };
+
     const splitArgs = {
       maxDimension: this._system.maxTextureSize,
-      computeNodeId: this._computeNodeId,
+      computeNodeId: computeNodeId,
       featureTable,
     };
 
@@ -1380,7 +1403,7 @@ export class ImdlReader {
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          if (this._computeNodeId) {
+          if (this._timeline) {
             // Split up the root node into transform nodes.
             this.readAnimationBranches(graphics, meshValue, featureTable);
           } else if (this._containsTransformNodes) {

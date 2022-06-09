@@ -866,6 +866,7 @@ export namespace RenderSchedule {
     public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
+    private _maxBatchId?: number;
 
     private constructor(props: ModelTimelineProps) {
       super(props);
@@ -952,6 +953,17 @@ export namespace RenderSchedule {
     /** Obtain the transform applied to the model at the specified time point, if any. */
     public getTransform(batchId: number, time: number): Readonly<Transform> | undefined {
       return this.findByBatchId(batchId)?.getAnimationTransform(time);
+    }
+
+    /** Get the highest batchId of any ElementTimeline in this timeline. */
+    public get maxBatchId(): number {
+      if (undefined === this._maxBatchId) {
+        this._maxBatchId = 0;
+        for (const elem of this.elementTimelines)
+          this._maxBatchId = Math.max(this._maxBatchId, elem.batchId);
+      }
+
+      return this._maxBatchId;
     }
   }
 

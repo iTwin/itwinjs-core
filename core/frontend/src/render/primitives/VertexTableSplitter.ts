@@ -7,7 +7,7 @@
  */
 
 import { assert, Constructor, Id64 } from "@itwin/core-bentley";
-import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
@@ -17,8 +17,6 @@ import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } fr
 import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
 import { IModelApp } from "../../IModelApp";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
-
-export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
 interface TypedArrayBuilderOptions {
   growthFactor?: number;
@@ -406,6 +404,7 @@ class VertexTableSplitter {
     const vertex = new Uint32Array(vertSize);
     const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
 
+    const elemIdPair = { lower: 0, upper: 0 };
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.
       const vertexOffset = index * vertSize;
@@ -416,8 +415,8 @@ class VertexTableSplitter {
       const featureIndex = vertex[2] & 0x00ffffff;
       if (curState.featureIndex !== featureIndex) {
         curState.featureIndex = featureIndex;
-        const elemId = this._input.featureTable.getElementIdPair(featureIndex);
-        const nodeId = this._computeNodeId(elemId);
+        this._input.featureTable.getElementIdPair(featureIndex, elemIdPair);
+        const nodeId = this._computeNodeId(elemIdPair, featureIndex);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
           this._nodes.set(nodeId, node = new Node(this._input.vertices, this._input.atlasOffset));
