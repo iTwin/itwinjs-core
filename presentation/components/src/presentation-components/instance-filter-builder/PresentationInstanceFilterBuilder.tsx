@@ -63,7 +63,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     setSelectedClasses([...selectedClasses, classInfo]);
   }, [selectedClasses]);
 
-  const onClassDeSelected = React.useCallback((classInfo: ClassInfo) => {
+  const onClassDeselected = React.useCallback((classInfo: ClassInfo) => {
     setSelectedClasses(selectedClasses.filter((info) => info.id !== classInfo.id));
   }, [selectedClasses]);
 
@@ -86,7 +86,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
   return {
     onPropertySelected,
     onClearClasses,
-    onClassDeSelected,
+    onClassDeselected,
     onClassSelected,
     properties,
     classes,

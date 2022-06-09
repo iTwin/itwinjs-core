@@ -41,7 +41,7 @@ describe("InstanceFilter", () => {
       classes={classInfos}
       selectedClasses={[]}
       properties={[]}
-      onClassDeSelected={() => {}}
+      onClassDeselected={() => {}}
       onClassSelected={spy}
       onClearClasses={() => {}}
       onFilterChanged={() => {}}
@@ -62,7 +62,7 @@ describe("InstanceFilter", () => {
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
-      onClassDeSelected={spy}
+      onClassDeselected={spy}
       onClassSelected={() => {}}
       onClearClasses={() => {}}
       onFilterChanged={() => {}}
@@ -83,7 +83,7 @@ describe("InstanceFilter", () => {
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
-      onClassDeSelected={spy}
+      onClassDeselected={spy}
       onClassSelected={() => {}}
       onClearClasses={() => {}}
       onFilterChanged={() => {}}
@@ -102,7 +102,7 @@ describe("InstanceFilter", () => {
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
-      onClassDeSelected={() => {}}
+      onClassDeselected={() => {}}
       onClassSelected={() => {}}
       onClearClasses={spy}
       onFilterChanged={() => {}}

@@ -23,14 +23,14 @@ export interface InstanceFilterBuilderProps {
   properties: PropertyDescription[];
   onFilterChanged: (filter?: PropertyFilter) => void;
   onClassSelected: (selectedClass: ClassInfo) => void;
-  onClassDeSelected: (selectedClass: ClassInfo) => void;
+  onClassDeselected: (selectedClass: ClassInfo) => void;
   onClearClasses: () => void;
   onPropertySelected?: (property: PropertyDescription) => void;
 }
 
 /** @alpha */
 export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
-  const {selectedClasses, classes, properties, onFilterChanged, onPropertySelected, onClassSelected, onClassDeSelected, onClearClasses} = props;
+  const {selectedClasses, classes, properties, onFilterChanged, onPropertySelected, onClassSelected, onClassDeselected, onClearClasses} = props;
 
   const onSelectChange = React.useCallback((_, action: ActionMeta<ClassInfo>) => {
     switch (action.action) {
@@ -38,16 +38,16 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         action.option && onClassSelected(action.option);
         break;
       case "deselect-option":
-        action.option && onClassDeSelected(action.option);
+        action.option && onClassDeselected(action.option);
         break;
       case "remove-value":
-        action.removedValue && onClassDeSelected(action.removedValue);
+        action.removedValue && onClassDeselected(action.removedValue);
         break;
       case "clear":
         onClearClasses();
         break;
     }
-  }, [onClassSelected, onClassDeSelected, onClearClasses]);
+  }, [onClassSelected, onClassDeselected, onClearClasses]);
 
   return <div className="presentation-instance-filter">
     <div className="presentation-instance-filter-class-selector">

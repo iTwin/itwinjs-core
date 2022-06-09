@@ -178,7 +178,7 @@ describe("usePresentationInstanceFilteringProps", () => {
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
       concreteClass1,
     ]);
-    result.current.onClassDeSelected(concreteClass1);
+    result.current.onClassDeselected(concreteClass1);
     expect(result.current.selectedClasses).to.be.empty;
   });
 
@@ -190,7 +190,7 @@ describe("usePresentationInstanceFilteringProps", () => {
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
       concreteClass1,
     ]);
-    result.current.onClassDeSelected(concreteClass2);
+    result.current.onClassDeselected(concreteClass2);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
       concreteClass1,
     ]);
