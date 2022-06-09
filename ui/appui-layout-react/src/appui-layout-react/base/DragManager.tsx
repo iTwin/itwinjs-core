@@ -92,6 +92,7 @@ export interface UseDragWidgetArgs {
 /** @internal */
 export function useDragWidget(args: UseDragWidgetArgs) {
   const { widgetId, onDragStart, onDrag, onDragEnd } = args;
+  const dragManager = React.useContext(DragManagerContext);
   const widgetItem = React.useMemo<WidgetDragItem>(() => {
     return {
       type: "widget",
@@ -101,8 +102,9 @@ export function useDragWidget(args: UseDragWidgetArgs) {
   const handleDragStart = React.useCallback<DragEventHandler>((item, info) => {
     onDragStart && onDragStart((id) => {
       item.id = id;
+      dragManager.handleDragUpdate();
     }, info.initialPointerPosition);
-  }, [onDragStart]);
+  }, [dragManager, onDragStart]);
   const handleDrag = React.useCallback<DragEventHandler>((_, info) => {
     const dragBy = info.lastPointerPosition.getOffsetTo(info.pointerPosition);
     onDrag && onDrag(dragBy);
@@ -377,6 +379,11 @@ export function useIsDragged(callback: () => boolean) {
       setDragged(callback());
     });
   }, [callback, dragManager]);
+  React.useEffect(() => {
+    return dragManager.onDragUpdate.add(() => {
+      setDragged(callback());
+    });
+  }, [callback, dragManager]);
   return dragged;
 }
 
@@ -411,6 +418,11 @@ export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] |
   }, [dragManager, type]);
   React.useEffect(() => {
     return dragManager.onDragEnd.add(() => {
+      setDragged(dragManager.getDraggedIdOfType(type));
+    });
+  }, [dragManager, type]);
+  React.useEffect(() => {
+    return dragManager.onDragUpdate.add(() => {
       setDragged(dragManager.getDraggedIdOfType(type));
     });
   }, [dragManager, type]);
@@ -540,6 +552,7 @@ type TargetChangedEventHandler = (target: DropTargetState | undefined) => void;
 export class DragManager {
   private _dragged: Dragged | undefined;
   private _onDragStartEmitter = new EventEmitter<DragEventHandler>();
+  private _onDragUpdateEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEndEmitter = new EventEmitter<DragEventHandler>();
   private _onTargetChangedEmitter = new EventEmitter<TargetChangedEventHandler>();
@@ -563,6 +576,10 @@ export class DragManager {
     return this._onDragStartEmitter;
   }
 
+  public get onDragUpdate(): Event<DragEventHandler> {
+    return this._onDragUpdateEmitter;
+  }
+
   public get onDrag(): Event<DragEventHandler> {
     return this._onDragEmitter;
   }
@@ -584,13 +601,21 @@ export class DragManager {
     this._onDragStartEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
   }
 
-  public handleDrag(x: number, y: number) {
-    if (this._dragged) {
-      this._dragged.info.lastPointerPosition = this._dragged.info.pointerPosition;
-      this._dragged.info.pointerPosition = new Point(x, y);
+  public handleDragUpdate() {
+    if (!this._dragged)
+      return;
 
-      this._onDragEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
-    }
+    this._onDragUpdateEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
+  }
+
+  public handleDrag(x: number, y: number) {
+    if (!this._dragged)
+      return;
+
+    this._dragged.info.lastPointerPosition = this._dragged.info.pointerPosition;
+    this._dragged.info.pointerPosition = new Point(x, y);
+
+    this._onDragEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
   }
 
   public handleDragEnd() {
