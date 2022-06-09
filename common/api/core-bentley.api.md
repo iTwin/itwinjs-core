@@ -41,16 +41,6 @@ export class AsyncMutex {
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
 
-// @beta
-export enum AuthStatus {
-    // (undocumented)
-    AUTHSTATUS_BASE = 139264,
-    // (undocumented)
-    Error = 139264,
-    // (undocumented)
-    Success = 0
-}
-
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
 
