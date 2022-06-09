@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
 import { ContentRequestOptions } from '@itwin/presentation-common';
@@ -179,6 +180,8 @@ export class PresentationManager {
         ids: Id64String[];
         scopeId: string;
     }): Promise<KeySet>;
+    // @alpha (undocumented)
+    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb>): Promise<KeySet>;
     dispose(): void;
     getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
