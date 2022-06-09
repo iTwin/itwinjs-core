@@ -7,17 +7,17 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { Guid, Id64String, using } from "@itwin/core-bentley";
+import { Guid, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
-  ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor,
-  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor,
-  FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError,
-  PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
+  ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions,
+  ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions,
+  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions,
+  DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions,
+  DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement,
+  Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
+  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
@@ -1490,22 +1490,51 @@ describe("PresentationRpcImpl", () => {
 
     describe("computeSelection", () => {
 
-      it("calls manager", async () => {
+      it("[deprecated] calls manager", async () => {
         const scope = createRandomSelectionScope();
         const ids = [createRandomId()];
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string } = {
+        const managerOptions: ComputeSelectionRequestOptions<IModelDb> = {
           imodel: testData.imodelMock.object,
-          ids,
-          scopeId: scope.id,
+          elementIds: ids,
+          scope: { id: scope.id },
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result.toJSON());
+      });
+
+      it("calls manager", async () => {
+        const scopeId = "element";
+        const ancestorLevel = 123;
+        const elementIds = [createRandomId()];
+        const rpcOptions: ComputeSelectionRpcRequestOptions = {
+          ...defaultRpcParams,
+          elementIds,
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
+        };
+        const managerOptions: ComputeSelectionRequestOptions<IModelDb> = {
+          imodel: testData.imodelMock.object,
+          elementIds,
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
+        };
+        const result = new KeySet();
+        presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result.toJSON());
       });

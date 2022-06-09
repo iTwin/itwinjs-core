@@ -6,11 +6,11 @@
  * @module FavoriteProperties
  */
 
+import { PropertyData } from "@itwin/components-react";
 import { Id64Arg, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@itwin/presentation-common";
-import { getScopeId, Presentation } from "@itwin/presentation-frontend";
-import { PropertyData } from "@itwin/components-react";
+import { createSelectionScopeProps, Presentation } from "@itwin/presentation-frontend";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 
@@ -112,7 +112,7 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
       });
     }
 
-    const keys = await Presentation.selection.scopes.computeSelection(imodel, elementIds, getScopeId(Presentation.selection.scopes.activeScope));
+    const keys = await Presentation.selection.scopes.computeSelection(imodel, elementIds, createSelectionScopeProps(Presentation.selection.scopes.activeScope));
     return this.getData(imodel, keys);
   }
 }
