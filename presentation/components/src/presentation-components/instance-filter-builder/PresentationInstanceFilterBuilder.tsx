@@ -64,12 +64,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
   }, [selectedClasses]);
 
   const onClassDeSelected = React.useCallback((classInfo: ClassInfo) => {
-    const removedClassIndex = selectedClasses.findIndex((info) => info.id === classInfo.id);
-    if (removedClassIndex === -1)
-      return;
-
-    selectedClasses.splice(removedClassIndex, 1);
-    setSelectedClasses([...selectedClasses]);
+    setSelectedClasses(selectedClasses.filter((info) => info.id !== classInfo.id));
   }, [selectedClasses]);
 
   const onClearClasses = React.useCallback(() => {
