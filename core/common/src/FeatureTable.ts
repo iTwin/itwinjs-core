@@ -157,6 +157,7 @@ export class PackedFeatureTable {
   private _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
 
   public get byteLength(): number { return this._data.byteLength; }
+  public get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined { return this._animationNodeIds; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -261,7 +262,7 @@ export class PackedFeatureTable {
 
   /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
-    return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
+    return undefined !== this._animationNodeIds && featureIndex < this.numFeatures ? this._animationNodeIds[featureIndex] : 0;
   }
 
   /** @internal */
@@ -317,10 +318,12 @@ export class PackedFeatureTable {
 
     const pair = { lower: 0, upper: 0 };
     let haveNodes = false;
-    const nodeIds = maxNodeId < 0x100 ? new Uint8Array(maxNodeId) : (maxNodeId < 0x10000 ? new Uint16Array(maxNodeId) : new Uint32Array(maxNodeId));
+    const size = this.numFeatures;
+    const nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
     for (let i = 0; i < this.numFeatures; i++) {
       this.getElementIdPair(i, pair);
       const nodeId = computeNodeId(pair, i);
+      assert(nodeId <= maxNodeId);
       if (0 !== nodeId) {
         nodeIds[i] = nodeId;
         haveNodes = true;

@@ -9,7 +9,7 @@ import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/co
 import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 
-describe.only("RenderSchedule", () => {
+describe("RenderSchedule", () => {
   it("interpolates transforms", () => {
     const props: RS.ScriptProps = [{
       modelId: "0x123",
