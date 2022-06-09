@@ -867,6 +867,8 @@ export namespace RenderSchedule {
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
     private _maxBatchId?: number;
+    /** Tile tree suppliers perform **very** frequent ordered comparisons of ModelTimelines. They need to be fast. */
+    private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
 
     private constructor(props: ModelTimelineProps) {
       super(props);
@@ -920,6 +922,13 @@ export namespace RenderSchedule {
     }
 
     public override compareTo(other: ModelTimeline): number {
+      if (this === other)
+        return 0;
+
+      const cached = this._cachedComparisons.get(other);
+      if (undefined !== cached)
+        return cached;
+
       assert(other instanceof ModelTimeline);
       let cmp = compareStrings(this.modelId, other.modelId) || compareStringsOrUndefined(this.realityModelUrl, other.realityModelUrl)
         || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
@@ -932,6 +941,8 @@ export namespace RenderSchedule {
             break;
       }
 
+      this._cachedComparisons.set(other, cmp);
+      other._cachedComparisons.set(this, -cmp);
       return cmp;
     }
 
@@ -993,7 +1004,7 @@ export namespace RenderSchedule {
      * @internal
      */
     public readonly transformBatchIds: ReadonlySet<number>;
-    /** Tile tree suppliers perform **very** frequent ordered comparisons of Scripts. They need to be fast. */
+    /** Tile tree references perform **very** frequent ordered comparisons of Scripts. They need to be fast. */
     private readonly _cachedComparisons = new WeakMap<Script, number>();
 
     public compareTo(other: Script): number {
