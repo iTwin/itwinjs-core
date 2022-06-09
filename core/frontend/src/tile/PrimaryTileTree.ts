@@ -6,7 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import {
+  assert, compareBooleans, comparePossiblyUndefined, compareStrings, Id64String,
+} from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
@@ -33,7 +35,7 @@ interface PrimaryTreeId {
   is3d: boolean;
   isPlanProjection: boolean;
   forceNoInstancing: boolean;
-  scheduleScript?: RenderSchedule.ScriptReference;
+  timeline?: RenderSchedule.ModelTimeline;
 }
 
 class PlanProjectionTileTree extends IModelTileTree {
@@ -51,17 +53,8 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
-    let cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 === cmp) {
-      cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
-      if (0 === cmp) {
-        cmp = compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing);
-        if (0 === cmp)
-          cmp = compareStringsOrUndefined(lhs.scheduleScript?.sourceId, rhs.scheduleScript?.sourceId);
-      }
-    }
-
-    return cmp;
+    return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
+      || compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing) || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
@@ -70,7 +63,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     // ###TODO remove restriction that animated tile trees can't contained instanced geometry.
-    const isAnimated = undefined !== treeId.animationId || undefined !== id.scheduleScript;
+    const isAnimated = undefined !== treeId.animationId || undefined !== id.timeline;
     const allowInstancing = !isAnimated && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing;
     const options = {
       edges: treeId.edges,
@@ -106,8 +99,9 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   }
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    // ###TODO handle ModelTimeline; accept Script instead of scriptSourceId.
     for (const tree of trees)
-      if (scriptSourceId === (tree.id.treeId.animationId ?? tree.id.scheduleScript?.sourceId))
+      if (scriptSourceId === tree.id.treeId.animationId)
         modelIds.add(tree.id.modelId);
   }
 
@@ -178,7 +172,7 @@ class PrimaryTreeReference extends TileTreeReference {
       treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
       forceNoInstancing: this._forceNoInstancing,
-      scheduleScript: scriptInfo?.scheduleScript,
+      timeline: scriptInfo?.timeline,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);

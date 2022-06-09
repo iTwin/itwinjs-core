@@ -727,11 +727,16 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public getScriptInfoForTreeId(modelId: Id64String, script: RenderScheduleState | undefined): { scheduleScript?: RenderSchedule.ScriptReference, animationId?: Id64String } | undefined {
-    if (!script || !script.modelRequiresBatching(modelId))
+  public getScriptInfoForTreeId(modelId: Id64String, script: RenderScheduleState | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
+    if (!script || !script.script.requiresBatching)
       return undefined;
 
-    return this.enableFrontendScheduleScripts ? { scheduleScript: script } : { animationId: script.sourceId };
+    if (this.enableFrontendScheduleScripts) {
+      const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
+      return timeline && timeline.requiresBatching ? { timeline } : undefined;
+    }
+
+    return script.modelRequiresBatching(modelId) ? { animationId: script.sourceId } : undefined;
   }
 
   private dispatchTileTreePropsRequests(): void {
