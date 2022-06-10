@@ -236,6 +236,17 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
+// @alpha
+export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
+    // (undocumented)
+    elementIds: Id64String[];
+    // (undocumented)
+    scope: SelectionScopeProps;
+}
+
+// @alpha (undocumented)
+export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
+
 // @public @deprecated
 export interface ConditionContainer {
     condition?: string;
@@ -796,6 +807,14 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
+// @alpha (undocumented)
+export interface ElementSelectionScopeProps {
+    // (undocumented)
+    ancestorLevel?: number;
+    // (undocumented)
+    id: "element";
+}
+
 // @public
 export interface EnumerationChoice {
     label: string;
@@ -1300,6 +1319,9 @@ export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
     // (undocumented)
     value: number[];
 }
+
+// @internal (undocumented)
+export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel>;
 
 // @beta
 export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel>;
@@ -1915,6 +1937,8 @@ export interface PresentationIpcInterface {
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
+    // @alpha (undocumented)
+    computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
     // @beta (undocumented)
@@ -2460,7 +2484,7 @@ export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
+    computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps>): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -2685,6 +2709,11 @@ export interface SelectionScope {
     id: string;
     label: string;
 }
+
+// @alpha (undocumented)
+export type SelectionScopeProps = ElementSelectionScopeProps | {
+    id: string;
+};
 
 // @public
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {

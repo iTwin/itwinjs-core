@@ -10,13 +10,14 @@ import { IModelDb } from "@itwin/core-backend";
 import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
-  ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON,
-  SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions,
+  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  isComputeSelectionRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, Node, NodeJSON, NodeKey, NodeKeyJSON,
+  NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
+  PresentationRpcResponseData, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScope,
+  SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -358,8 +359,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     );
   }
 
-  public override async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySetJSON> {
-    return this.makeRequest(token, "computeSelection", { ...requestOptions, ids, scopeId }, async (options) => {
+  public override async computeSelection(token: IModelRpcProps, requestOptions: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions, ids?: Id64String[], scopeId?: string): PresentationRpcResponse<KeySetJSON> {
+    return this.makeRequest(token, "computeSelection", requestOptions, async (options) => {
+      if (!isComputeSelectionRequestOptions(options)) {
+        options = {
+          ...options,
+          elementIds: ids!,
+          scope: { id: scopeId! },
+        };
+      }
       const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });
