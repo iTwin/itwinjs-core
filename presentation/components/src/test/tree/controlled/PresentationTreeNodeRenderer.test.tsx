@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
@@ -140,13 +141,13 @@ describe("TreeNodeRenderer", () => {
     const testLabel = "testLabel";
     const node = createTreeModelNode(undefined, testLabel);
 
-    const renderedNode = render(
+    const { getByText } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
       />);
 
-    renderedNode.getByText(testLabel);
+    getByText(testLabel);
   });
 
   it("renders too many children tree node", () => {
@@ -160,12 +161,27 @@ describe("TreeNodeRenderer", () => {
     };
     const node = createTreeModelNode(undefined, testLabel, item);
 
-    const renderedNode = render(
+    const { getByText } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
       />);
 
-    renderedNode.getByText(translate("tree.presentation-custom-node-label"));
+    getByText(translate("tree.presentation-custom-node-label"));
+  });
+
+  it("renders using provided node renderer", () => {
+    const testLabel = "testLabel";
+    const nodeRendererSpy = sinon.spy();
+    const node = createTreeModelNode(undefined, testLabel);
+
+    render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        nodeRenderer={nodeRendererSpy}
+      />);
+
+    expect(nodeRendererSpy).to.be.called;
   });
 });

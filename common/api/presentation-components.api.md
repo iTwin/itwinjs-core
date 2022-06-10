@@ -526,7 +526,13 @@ export interface PresentationTreeNodeLoaderResult {
 }
 
 // @alpha (undocumented)
-export function PresentationTreeNodeRenderer(props: TreeNodeRendererProps): JSX.Element;
+export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
+    // (undocumented)
+    nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+}
 
 // @alpha (undocumented)
 export function PresentationTreeRenderer(props: TreeRendererProps): JSX.Element;
