@@ -870,7 +870,7 @@ export namespace RenderSchedule {
     public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
-    public readonly containsElementIds: boolean;
+    public readonly isMissingElementIds: boolean;
     private _maxBatchId?: number;
     /** Tile tree suppliers perform **very** frequent ordered comparisons of ModelTimelines. They need to be fast. */
     private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
@@ -888,7 +888,7 @@ export namespace RenderSchedule {
 
       const transformBatchIds: number[] = [];
       const elementTimelines: ElementTimeline[] = [];
-      let containsElementIds = false;
+      let isMissingElementIds = false;
       for (const elProps of props.elementTimelines) {
         const el = ElementTimeline.fromJSON(elProps);
         elementTimelines.push(el);
@@ -903,12 +903,12 @@ export namespace RenderSchedule {
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
         requiresBatching ||= el.requiresBatching;
-        containsElementIds = containsElementIds || el.containsElementIds;
+        isMissingElementIds = isMissingElementIds || !el.containsElementIds;
       }
 
       this.elementTimelines = elementTimelines;
       this.transformBatchIds = transformBatchIds;
-      this.containsElementIds = containsElementIds;
+      this.isMissingElementIds = isMissingElementIds;
 
       this.containsFeatureOverrides = containsFeatureOverrides;
       this.requiresBatching = requiresBatching;
@@ -1089,8 +1089,8 @@ export namespace RenderSchedule {
       return this.modelTimelines.find((x) => x.modelId === modelId);
     }
 
-    public get containsElementIds(): boolean {
-      return this.modelTimelines.some((x) => x.containsElementIds);
+    public get isMissingElementIds(): boolean {
+      return this.modelTimelines.some((x) => x.isMissingElementIds);
     }
 
     /** @internal */
