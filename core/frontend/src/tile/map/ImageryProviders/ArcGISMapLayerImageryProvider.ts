@@ -16,6 +16,8 @@ import {
   MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import { Range2d } from "@itwin/core-geometry";
+import { isArray } from "lodash";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -110,7 +112,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
   protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     const childIds = this.getPotentialChildIds(tile);
-    if (!this._tileMap || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
+    if (tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
       resolveChildren(childIds);
       return;
     }
@@ -125,6 +127,21 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
         resolveChildren (availableChildIds);
       });
+    } else if (this._usesCachedTiles && this.cartoRange) {
+      // Filter children by range
+      const availableChildIds = new Array<QuadId>();
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < childIds.length; i++) {
+        const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
+        // const childRange = new Range2d(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+        const childRange = MapCartoRectangle.createFromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+        if (childRange.containsRange(this.cartoRange) || childRange.intersectsRange(this.cartoRange)) {
+          availableChildIds.push(childIds[i]);
+        }
+      }
+      resolveChildren (availableChildIds);
+    } else {
+      resolveChildren (childIds);   // Resolve all children
     }
   }
 
@@ -152,6 +169,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
     if (json !== undefined) {
       this.serviceJson = json;
+
       if (json.capabilities) {
 
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
@@ -180,11 +198,37 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         }
       }
 
+      // Sometimes footprint request doesnt work, fallback to dataset fullextent
+      if (this.cartoRange === undefined && json.fullExtent) {
+        if (json.fullExtent.spatialReference.latestWkid === 3857) {
+          const range3857 = Range2d.createFrom({
+            low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
+            high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+
+          const west = this.getEPSG4326Lon(range3857.xLow);
+          const south = this.getEPSG4326Lat(range3857.yLow);
+          const east = this.getEPSG4326Lon(range3857.xHigh);
+          const north = this.getEPSG4326Lat(range3857.yHigh);
+          this.cartoRange = MapCartoRectangle.createFromDegrees(west, south, east, north);
+        }
+      }
+
       // Read minLOD if available
       if (json.minLOD !== undefined) {
         const minLod = parseInt(json.minLOD, 10);
         if (!Number.isNaN(minLod)) {
           this._minDepthFromLod = minLod;
+        }
+      } else if (json.minScale) {
+        // Read min LOD using minScale
+        const minScale = json.minScale;
+        if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
+          for (const lod of json.tileInfo.lods) {
+            if (lod.scale < minScale) {
+              this._minDepthFromLod = lod.level;
+              break;
+            }
+          }
         }
       }
     }
