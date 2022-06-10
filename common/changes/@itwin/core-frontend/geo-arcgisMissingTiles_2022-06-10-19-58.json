@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix tile display issues for layer tiles not convering the entire tile tree and TileMap service is not available.  Derive minimum LOD from the minimum scale.  Use 'fullExtent' metadata to get cartoRange of layer when getFootPrints request doesnt include data extent.",
+      "comment": "Fix tile display issues for layer tiles not covering the entire tile tree and TileMap service is not available.  Derive minimum LOD from the minimum scale.  Use 'fullExtent' metadata to get cartoRange of layer when getFootPrints request doesnt include data extent.",
       "type": "none"
     }
   ],
