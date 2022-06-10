@@ -8945,6 +8945,7 @@ export namespace RenderSystem {
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
+        errorOnMissingUniform?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
         // @internal

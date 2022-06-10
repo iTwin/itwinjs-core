@@ -132,6 +132,14 @@ export class SchemaCache implements ISchemaLocater {
       }
     }
   }
+
+  /**
+   * Gets all the schemas from the schema cache.
+   * @returns An array of Schema objects.
+   */
+  public getAllSchemas(): Schema [] {
+    return this._schema;
+  }
 }
 
 /**
@@ -253,5 +261,15 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 
   public getSchemaItems(): IterableIterator<SchemaItem> {
     return this._knownSchemas.getSchemaItems();
+  }
+
+  /**
+   * Gets all the Schemas known by the context. This includes schemas added to the
+   * context using [[SchemaContext.addSchema]]. This does not include schemas that
+   * can be located by an ISchemaLocater instance added to the context.
+   * @returns An array of Schema objects.
+   */
+  public getKnownSchemas(): Schema [] {
+    return this._knownSchemas.getAllSchemas();
   }
 }
