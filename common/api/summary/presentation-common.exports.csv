@@ -26,6 +26,10 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+alpha;ClientDiagnostics 
+public;ClientDiagnosticsAttribute
+alpha;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
+alpha;ClientDiagnosticsOptions 
 internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
@@ -66,13 +70,12 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
-alpha;DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void
+alpha;Diagnostics
 alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
 alpha;DiagnosticsLogEntry
 alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
 alpha;DiagnosticsLogMessage
 alpha;DiagnosticsOptions
-alpha;DiagnosticsOptionsWithHandler 
 alpha;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 public;DisplayLabelRequestOptions
@@ -332,6 +335,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
+alpha;RpcDiagnosticsOptions = Omit
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride

@@ -14,7 +14,7 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
-import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
@@ -40,8 +40,8 @@ describe("RpcRequestsHandler", () => {
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
   const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
-  const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
-  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
+  const successResponse = async <TResult>(result: TResult, diagnostics?: ClientDiagnostics): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: ClientDiagnostics): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -94,7 +94,7 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const diagnosticsResult: ClientDiagnostics = {};
         await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
@@ -147,7 +147,7 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const diagnosticsResult: ClientDiagnostics = {};
         const func = sinon.fake(async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
@@ -168,10 +168,10 @@ describe("RpcRequestsHandler", () => {
           handler: sinon.spy(),
         };
         let funcCallCount = 0;
-        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, [{ scope: `${funcCallCount++}` }]));
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${funcCallCount++}` }] }));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler.callCount).to.eq(handler.maxRequestRepeatCount);
-        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith([{ scope: `${callIndex}` }]));
+        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex}` }] }));
       });
 
     });
