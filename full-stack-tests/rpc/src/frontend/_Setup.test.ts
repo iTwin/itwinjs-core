@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
+import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces, TestRpcInterface } from "../common/TestRpcInterface";
+import { assert } from "chai";
 
-RpcConfiguration.disableRoutingValidation = true;
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Warning);
+RpcConfiguration.disableRoutingValidation = false;
 
 function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
@@ -61,4 +65,19 @@ before(async () => {
     case "electron":
       return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
   }
+});
+
+describe("BentleyCloudRpcManager", () => {
+  it("should initialize correctly when routing validation is enabled", async () => {
+    if (currentEnvironment === "http") {
+      const protocol = TestRpcInterface.getClient().configuration.protocol as WebAppRpcProtocol;
+      assert.equal(protocol.allowedHeaders.size, 0);
+      await TestRpcInterface.getClient().op16({ iModelId: "foo", key: "bar" }, { iModelId: "foo", key: "bar" });
+      assert.isAtLeast(protocol.allowedHeaders.size, 1);
+    }
+  });
+
+  after(() => {
+    RpcConfiguration.disableRoutingValidation = true;
+  });
 });

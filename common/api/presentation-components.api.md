@@ -7,14 +7,14 @@
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
+import { ClientDiagnosticsHandler } from '@itwin/presentation-common';
+import { ClientDiagnosticsOptions } from '@itwin/presentation-common';
 import { ColumnDescription } from '@itwin/components-react';
 import { Content } from '@itwin/presentation-common';
 import { DelayLoadedTreeNodeItem } from '@itwin/components-react';
 import { Descriptor } from '@itwin/presentation-common';
 import { DescriptorOverrides } from '@itwin/presentation-common';
-import { DiagnosticsHandler } from '@itwin/presentation-common';
 import { DiagnosticsLoggerSeverity } from '@itwin/presentation-common';
-import { DiagnosticsOptionsWithHandler } from '@itwin/presentation-common';
 import { EditorDescription } from '@itwin/presentation-common';
 import { EnumerationInfo } from '@itwin/presentation-common';
 import { FavoritePropertiesScope } from '@itwin/presentation-frontend';
@@ -146,7 +146,7 @@ export interface ControlledPresentationTreeFilteringProps {
 }
 
 // @alpha
-export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
+export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
 
 // @internal (undocumented)
 export function createFieldInfo(field: Field, namePrefix?: string): {
@@ -183,12 +183,13 @@ export interface DiagnosticsProps {
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
         perf?: boolean;
-        handler: DiagnosticsHandler;
+        backendVersion?: boolean;
+        handler: ClientDiagnosticsHandler;
     };
     // @alpha
     ruleDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        handler: DiagnosticsHandler;
+        handler: ClientDiagnosticsHandler;
     };
 }
 
