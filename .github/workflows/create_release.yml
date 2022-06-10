@@ -1,0 +1,19 @@
+# This is a basic workflow that is manually triggered
+
+name: Manual release workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Name of tag for release'
+        default: ''
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create release
+      run: python ./common/scripts/create-release.py ${{ github.event.inputs.tag }}
