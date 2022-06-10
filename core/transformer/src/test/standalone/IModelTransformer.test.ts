@@ -7,20 +7,22 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { DbResult, Guid, Id64, Id64String, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { Arc3d, Box, Loop, Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { createBRepDataProps } from "@itwin/core-backend/lib/cjs/test/standalone/GeometryStream.test";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
+  GeometryPart,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
+  AxisAlignedBox3d, BRepGeometryCreate, BRepGeometryOperation, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementGeometry, ElementGeometryOpcode, ElementProps,
+  ExternalSourceAspectProps, GeometryStreamBuilder, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -1871,6 +1873,40 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("roundtrip brep geometry", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "RoundtripBrep.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "brep-roundtrip" }});
+
+    const builder = new GeometryStreamBuilder();
+    builder.appendBRepData(createBRepDataProps(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0)));
+    const geomPart = new GeometryPart({
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: builder.geometryStream,
+    }, sourceDb);
+
+    const geomPartId = geomPart.insert();
+    assert(Id64.isValidId64(geomPartId));
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "RoundtripBrepTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb, { loadSourceGeometry: true, cloneUsingBinaryGeometry: false });
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+
+    const geomPartInTargetId = transformer.context.findTargetElementId(geomPartId);
+    const geomPartInTarget = targetDb.elements.getElement<GeometryPart>({ id: geomPartInTargetId, wantGeometry: true, wantBRepData: true}, GeometryPart);
+
+    assert(geomPartInTarget.geom !== undefined);
+    assert(geomPartInTarget.geom[1]?.brep?.data !== undefined);
 
     sourceDb.close();
     targetDb.close();

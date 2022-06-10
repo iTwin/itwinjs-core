@@ -112,7 +112,7 @@ function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angl
   return polyBuilder.claimPolyface();
 }
 
-function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {
+export function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {
   // This brep has a face symbology attribute attached to one face, make it green.
   const faceSymb: BRepEntity.FaceSymbologyProps[] = [
     { color: ColorDef.blue.toJSON() }, // base symbology should match appearance...
