@@ -572,13 +572,7 @@ export class IModelHost {
     }
   }
 
-  /**
-   * Generate SHA1 Hash of Schema XML
-   * @param schemaXmlPath: Path where schema XML file is located
-   * @param referencePaths: Schema reference paths
-   * @param exactMatch: Schema references are located by exact scheme version comparisons
-   * @internal
-   */
+  /** @internal */
   public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
     return this.platform.computeSchemaChecksum(arg);
   }
