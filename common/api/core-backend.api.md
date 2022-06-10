@@ -2506,6 +2506,8 @@ export class IModelHost {
     static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
+    // @internal (undocumented)
+    static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string;
     }
 
 // @public
@@ -3593,9 +3595,6 @@ export class Schema {
     // @beta
     static toSemverString(paddedVersion: string): string;
 }
-
-// @public
-export function generateSchemaSha1Hash(schemaXmlPath: string, referencePaths: string[], isExactMatch: boolean = false): string;
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;

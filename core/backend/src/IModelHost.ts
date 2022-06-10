@@ -571,6 +571,17 @@ export class IModelHost {
       throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
     }
   }
+
+  /**
+   * Generate SHA1 Hash of Schema XML
+   * @param schemaXmlPath: Path where schema XML file is located
+   * @param referencePaths: Schema reference paths
+   * @param exactMatch: Schema references are located by exact scheme version comparisons
+   * @internal
+   */
+  public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
+    return this.platform.computeSchemaChecksum(arg);
+  }
 }
 
 /** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]].
