@@ -28,7 +28,7 @@ export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
   const direction = useTargetDirection();
-  const [ref, targeted] = useTarget<HTMLDivElement>(useWidgetTargetArgs(widgetId));
+  const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
   const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
     "nz-target-widgetTarget",
@@ -59,7 +59,7 @@ export function useTargetDirection(): TargetProps["direction"] {
   return "vertical";
 }
 
-function useWidgetTargetArgs(widgetId: WidgetState["id"]) {
+function useTargetArgs(widgetId: WidgetState["id"]) {
   return React.useMemo<WidgetTargetState>(() => {
     return {
       type: "widget",

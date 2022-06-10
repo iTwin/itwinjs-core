@@ -16,6 +16,7 @@ import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel"
 import { WidgetOverflow } from "./Overflow";
 import { WidgetTabProvider } from "./Tab";
 import { WidgetStateContext } from "./Widget";
+import { TitleBarTarget } from "../target/TitleBarTarget";
 
 /** @internal */
 export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -92,6 +93,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
           />
         );
       })}
+      <TitleBarTarget />
       <WidgetOverflow
         hidden={overflown && panelChildren.length === 0}
         onResize={handleOverflowResize}
