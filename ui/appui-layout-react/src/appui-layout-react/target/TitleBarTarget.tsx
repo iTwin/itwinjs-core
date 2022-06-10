@@ -14,6 +14,7 @@ import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
+import { TabOutline } from "../outline/TabOutline";
 
 /** @internal */
 export const TitleBarTarget = React.memo(function TitleBarTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -32,7 +33,9 @@ export const TitleBarTarget = React.memo(function TitleBarTarget() { // eslint-d
     <div
       className={className}
       ref={ref}
-    />
+    >
+      <TabOutline />
+    </div>
   );
 });
 
