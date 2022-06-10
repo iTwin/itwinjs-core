@@ -21,6 +21,7 @@ import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { WidgetOverflowContext } from "./Overflow";
 import { TabIdContext } from "./ContentRenderer";
+import { TabTarget } from "../target/TabTarget";
 
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
@@ -205,6 +206,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       {props.badge && <div className="nz-badge">
         {props.badge}
       </div>}
+      <TabTarget />
     </div>
   );
 });
