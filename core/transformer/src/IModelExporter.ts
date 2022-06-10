@@ -137,8 +137,8 @@ export class IModelExporter {
   public readonly sourceDb: IModelDb;
   /** A flag that indicates whether element GeometryStreams are loaded or not.
    * @note As an optimization, exporters that don't need geometry can set this flag to `false`. The default is `true`.
-   * @note the transformer by default sets this to false as an optimization
-   * @note this implies wantBRepData when loading elements
+   * @note The transformer by default sets this to `false` as an optimization.
+   * @note This implies the `wantBRepData` option when loading elements.
    * @see [ElementLoadProps.wantGeometry]($common)
    */
   public wantGeometry: boolean = true;
