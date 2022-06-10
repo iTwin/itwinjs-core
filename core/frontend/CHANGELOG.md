@@ -1,6 +1,95 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jun 2022 15:02:56 GMT and should not be manually modified.
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Add option to quantize positions in TileAdmin.requestElementGraphics.
+- Prevent an assertion when creating a pickable graphic with an empty FeatureTable.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Dispose reality mesh textures when disposing the tiles are dispose
+- Use a function constructor to avoid webpack warnings when dynamically importing extension files.
+- Fixed visibility of edges when using Ambient Occlusion
+- Added documentation for MapLayerKey.
+- MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods.
+- Improve RealityTile loading priority calculation
+- Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size.
+- ViewState3d.lookAtGlobalLocation should account for orthographic view points.
+- Mark animateFrustumChange public.
+- Added public method IModelConnection.getMassPropertiesPerCandidate.
+- bugfix for viewstate2d's hydrateViewState
+- Add preload, postload functions to ViewStates. Use hydrateViewState in load function
+- Fix bug in which DisplayStyleState.changeBackgroundMapProvider failed to preserve previous values as advertised.
+- Prevent calls to readPixels from being enqueued when mousing over canvas decorations.
+- Fix scaled monochrome mode not applying to instanced geometry.
+- Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic.
+- Added connectViewports and related functions to enable synchronizing the states of any number of viewports.
+- Do not produce mip-maps for reality tile textures.
+- Make Viewport.readPixels return undefined if the viewport has been disposed.
+- Ensure the render loop is processed immediately after the selection set changes.
+- Reduce number of OnMotionSnap call
+- Use zoom target on reality tile priority calculation
+- Add support for remote extensions
+- Catch snap abandoned exception.
+- Add extension API generation
+- Fix view zoom jumps on touch devices
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+### Updates
+
+- Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects."
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+### Updates
+
+- Improved support for WMS 1.1.1 servers.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Non-pickable decorations used to fail to render if Ambient Occlusion was enabled.
+- Add support for map layers using model geometry.
+- Fix overlay map layers that were displayed at the wrong elevation
+- Deprecate IModelReadRpcInterface.getViewThumbnail
+- Add support for decoding draco-compressed point clouds and glTF meshes.
+- Add support for obtaining polyfaces from tile geometry using TileGeometryCollector and GeometryTileTreeReference.
+- Fix openImageDataUrlInNewWindow displaying an empty window in Electron.
+- Dynamically import approximate terrain heights instead of fetching as JSON.
+- Expose iTwin.js Core Version for extensions
+- Fixed interaction between linear elements and planar elements when antialiasing is turned on.
+- Supplied missing 'iModelJs' namespace in some calls to getLocalizedString.
+- Added new getMapFeatureInfo API to Viewport.
+- Simplify RenderMaterial creation by deprecating RenderSystem.createMaterial in favor of RenderSystem.createRenderMaterial.
+- Change the type of ToolAdmin.idleTool from IdleTool to InteractiveTool
+- Add RealityDataError in  RealityDataSource API
+- Fully implement the point cloud 3d tile specification.
+- Promote QuantityFormatter from beta to public.
+- Now initializing Unit alternate display labels from UNIT_EXTRA_DATA. Minimal changes to support Units schema retrieval from backend iModels.
+- Functions that fit a view to a volume accept an optional MarginOptions specifying how tightly to fit.
+- Defaulting to the internal BasicUnitsProvider if QuantityFormatter units provider initialization fails. 
+- Ensure view attachments referencing section drawings transform the spatial view's clip into sheet coordinates.
+- Switched to more flexible extension api
+- Generalize the concept of a TileUser to include types other than Viewports.
+- Web IPC fix (when reloading frontend).
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT

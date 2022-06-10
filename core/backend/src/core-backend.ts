@@ -17,6 +17,8 @@ export * from "./ElementAspect";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./LocalHub";
+export * from "./HubMock";
 export * from "./IModelJsFs";
 export * from "./BackendHubAccess";
 export * from "./Relationship";
@@ -170,4 +172,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Workspace
  * APIs for loading and using Settings and Workspace resources
+ */
+/**
+ * @docs-group-description ViewStateHydrater
+ * Class responsible for loading ViewStates.
  */

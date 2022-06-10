@@ -17,7 +17,6 @@ exports[`Frontstage local storage wrapper ModalFrontstageComposer ActiveFrontsta
         "handleChangeWrapper": [Function],
         "isSubscribed": [Function],
         "notifyNestedSubs": [Function],
-        "onStateChange": [Function],
         "trySubscribe": [Function],
         "tryUnsubscribe": [Function],
       },

@@ -40,7 +40,7 @@
     "@bentley/cif-subsurface-schema": "^1.0.3",
     "@bentley/cif-subsurface-conflict-analysis-schema": "^1.0.3",
     "@bentley/cif-units-schema": "^1.0.1",
-    "@bentley/imodeljs-native": "3.2.3",
+    "@bentley/imodeljs-native": "3.2.8",
     "@bentley/plant-custom-attributes-schema": "^1.0.1",
     "@bentley/process-functional-schema": "^1.0.1",
     "@bentley/process-physical-schema": "^1.0.2",
@@ -64,7 +64,7 @@
     "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2"
   },

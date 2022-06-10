@@ -1,6 +1,55 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jun 2022 15:02:57 GMT and should not be manually modified.
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:57 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- maplayers widget has been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process. When process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+- Use iTwinUI-react components to get consistent styling. Alos fixed bug with elevation correction control.
+- Fix a display issue with background color's ColorPicker where part of the dialog was missing.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+### Updates
+
+- Adjusted the map-layers package's peer dependencies to no longer lock down core packages.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add support for map layers using model geometry.
+- User Preferences is now supported for Blank Connection configurations.
+- Fixed issue that would close the new maplayer dialog when a new layer type was picked.
+- Fix 'ResizeObserver loop limit exceeded' error in MapLayers widget
+- Added FeatureInfo Widget.
+- Bug fix: Right click on the new map layer dialog would close it.
+- Refactored MapLayersUI initialization, and will always use UiProviders
+- Fix style on select
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT
