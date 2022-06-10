@@ -20,7 +20,7 @@ Each of these class inherit from the abstract class `func.FunctionalElement`.
 The Functional schema is part of the domain schemas but delivered with DgnPlatform.
 -->
 
-![Class Hierarchy](../media/FuncClassHier.png)
+![Class Hierarchy](../media/role-element.png)
 
 FunctionalBreakdownElements are used to defined breakdown structures in a functional model. These elements group other FunctionalBreakdownElements or FunctionComponentElements. For example, a Plant Unit would groups Plant Sub-Units. A Plant Sub-Unit groups Equipment and Pipeline. Or a BuildingRequirement groups BuildingStoryRequirements. BuildingStoryRequirements groups SpaceRequirements.
 
@@ -54,7 +54,7 @@ In most cases today, the functional model models a partition related to the root
 
 In the Plant functional domain there is a complete set of classes that define the functional requirements for the processes in a plant. There are Equipment, Piping and Instrument functional component class. There are functional breakdown classes. These classes can vary per project type. Power plant projects have Units, Sub-Units, Building and Systems. A refinery project has Units, Areas, Services and Systems. The plant applications allow user to define these functional breakdown class to suit their needs. This hierarchy is defined by the groups relationship. The order of the tree is defined in presentation rules. Functional Components maybe grouped in more then one Functional Breakdown hierarchy. For example, a pump could exist in the S1 sub-unit and the NSSS plant System.
 
-Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. **See diagram.
+Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. **See class-diagram below. See [Class-diagram Conventions](../references/class-diagram-conventions.md) for details about the conventions used.
 
 ![Model Hierarchy](../media/plantfuncmodel.png)
 

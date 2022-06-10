@@ -10,7 +10,7 @@ BIS defines a set of InformationContentElement subclasses to further classify an
 
 ## Key Information Element Classes
 
-<!-- TODO - add class hierarchy diagram -->
+![Key information Classes](../media/information-element-classes.png)
 
 ### InformationContentElement
 

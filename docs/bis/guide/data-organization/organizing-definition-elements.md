@@ -44,6 +44,8 @@ Only User-rank definitions should be placed in Subject-specific `DictionaryModel
 
 ### Example organization of definitions
 
+The following instance-diagram depicts the organization of definition elements of various ranks and scopes. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+
 &nbsp;
 ![Repository-Global DefinitionElements](../media/repository-global-definitions.png)
 &nbsp;

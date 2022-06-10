@@ -32,7 +32,7 @@ Using Types allows easier and clearer Stair definition. As a Stair is a Physical
 
 ![Stair Inheritance](../media/stair-inheritance.png)
 
-The JsonProperties property that Stair inherited from Element is used to store whatever instance data is needed by the particular StairType instance (width, height and length are likely). This Type modeling is likely to used extensively in both the preliminary design and design phases.
+This Type modeling is likely to used extensively in both the preliminary design and design phases.
 
 <!-- TODO: Future proposal, not yet implemented
 ## Using Form

@@ -39,9 +39,11 @@ From the Element's perspective, the lower-level Model is knows as the *SubModel*
 The *SubModel* term is just a way to refer to a relative position in the information hierarchy.
 There is no special class for a *SubModel*, only the standard `Model` subclasses.
 
-For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing.
+For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
+&nbsp;
 ![DrawingModel Break-down](../media/drawing-breakdown.png)
+&nbsp;
 
 ### Element Owns Child Elements
 
@@ -60,7 +62,7 @@ These concepts are part of the rules and patterns introduced by the [SpatialComp
 
 The resulting hierarchy can define as many levels as needed. These Spatial Composition hierarchies can co-exist with the other organization mechanisms listed above.
 
-For example, a `Building` is modeled as a subclass of `spcomp:SpatialStructureElement`, which spatially aggregates other Spatial Organizers such as `Stories` and `Spaces`. Physical elements such as `Wall`s, `Column`s and `Door`s are associated to (held or referenced by depending on the case) those concepts from the Building decomposition.
+For example, a `Building` is modeled as a subclass of `spcomp:SpatialStructureElement`, which spatially aggregates other Spatial Organizers such as `Stories` and `Spaces`. Physical elements such as `Wall`s, `Column`s and `Door`s are associated to (held or referenced by depending on the case) those concepts from the Building decomposition. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 ![Building decomposition](../media/building-decomposition.png)
 
@@ -78,7 +80,7 @@ An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it,
 External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository.
 These External Source hierarchies can co-exist with the other organization mechanisms listed above.
 
-For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files.
+For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 ![External Sources Example](../media/external-sources.png)
 
@@ -94,7 +96,7 @@ Two examples of repository organizations are described below. It should be noted
 
 ## Example Information Hierarchy
 
-The following instance diagram depicts the information hierarchy for an hypothetical campus. It shows the organization of data in two modeling perspectives: Physical and Functional, as well as catalog-data in Definition models.
+The following instance-diagram depicts the information hierarchy for an hypothetical campus. It shows the organization of data in two modeling perspectives: Physical and Functional, as well as catalog-data in Definition models. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 &nbsp;
 ![Information Hierarchy](../media/information-hierarchy.png)
