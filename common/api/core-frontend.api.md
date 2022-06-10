@@ -5743,6 +5743,10 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
     // (undocumented)
+    getEPSG4326Lat(y3857: number): number;
+    // (undocumented)
+    getEPSG4326Lon(x3857: number): number;
+    // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
