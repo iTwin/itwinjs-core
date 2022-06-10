@@ -104,4 +104,9 @@ export interface RelatedPropertiesSpecification {
    * List of names or definitions of relationship class properties that should be included in the content.
    */
   relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+
+  /**
+   * Specifies whether a relationship category should be created regardless of whether relationship properties were added.
+   */
+  forceCreateRelationshipCategory?: boolean;
 }

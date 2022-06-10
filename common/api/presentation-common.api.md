@@ -2364,6 +2364,7 @@ export enum RelatedPropertiesSpecialValues {
 // @public
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
+    forceCreateRelationshipCategory?: boolean;
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
