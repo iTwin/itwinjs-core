@@ -41,12 +41,36 @@ describe("Selection Scopes", () => {
     expect(selection.has({ className: elementProps[0].classFullName, id: elementProps[0].id! }));
   });
 
+  it("sets correct selection with 'element' 1st parent level selection scope", async () => {
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 1 });
+    const selection = Presentation.selection.getSelection(imodel);
+    expect(selection.size).to.eq(1);
+    expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(27, 0) }));
+  });
+
   it("sets correct selection with 'assembly' selection scope", async () => {
     const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
     await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, "assembly");
     const selection = Presentation.selection.getSelection(imodel);
     expect(selection.size).to.eq(1);
     expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(27, 0) }));
+  });
+
+  it("sets correct selection with 'element' 2nd parent level selection scope", async () => {
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 2 });
+    const selection = Presentation.selection.getSelection(imodel);
+    expect(selection.size).to.eq(1);
+    expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(1, 0) }));
+  });
+
+  it("sets correct selection with 'element' exceeding parent level selection scope", async () => {
+    const elementProps = await imodel.elements.getProps(Id64.fromUint32Pair(28, 0));
+    await Presentation.selection.addToSelectionWithScope("", imodel, elementProps[0].id!, { id: "element", ancestorLevel: 999 });
+    const selection = Presentation.selection.getSelection(imodel);
+    expect(selection.size).to.eq(1);
+    expect(selection.has({ className: "BisCore:Subject", id: Id64.fromUint32Pair(1, 0) }));
   });
 
   it("sets correct selection with 'top-assembly' selection scope", async () => {
