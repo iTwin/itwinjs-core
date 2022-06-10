@@ -10,7 +10,7 @@ import "./WidgetOutline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useTargeted } from "../base/DragManager";
-import { isWidgetTargetState } from "../base/NineZoneState";
+import { isTabTargetState, isWidgetTargetState } from "../base/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
 
 /** @internal */
@@ -34,12 +34,12 @@ function useHidden() {
     if (!targeted)
       return true;
 
-    if (!isWidgetTargetState(targeted))
-      return true;
+    if (isWidgetTargetState(targeted) && targeted.widgetId === widgetId)
+      return false;
 
-    if (targeted.widgetId !== widgetId)
-      return true;
+    if (isTabTargetState(targeted) && targeted.widgetId === widgetId)
+      return false;
 
-    return false;
+    return true;
   }, [targeted,  widgetId]);
 }
