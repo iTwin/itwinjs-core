@@ -662,11 +662,13 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const script = this._view.displayStyle.scheduleState;
-    if (script !== this._scheduleScript) {
-      this._scheduleScript = script;
-      for (const ref of this._refs.values())
-        ref.updateAnimated(script);
+    const curScript = this._view.displayStyle.scheduleState;
+    const prevScript = this._scheduleScript;
+    if (curScript !== prevScript) {
+      this._scheduleScript = curScript;
+      if (!curScript || !prevScript || !curScript.script.equals(prevScript.script))
+        for (const ref of this._refs.values())
+          ref.updateAnimated(curScript);
     }
 
     const sectionCut = this.getSectionCutFromView();
