@@ -99,7 +99,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   }
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
-    // ###TODO handle ModelTimeline; accept Script instead of scriptSourceId.
+    // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
     for (const tree of trees)
       if (scriptSourceId === tree.id.treeId.animationId)
         modelIds.add(tree.id.modelId);
