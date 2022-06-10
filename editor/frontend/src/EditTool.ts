@@ -13,7 +13,7 @@ import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSo
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -100,6 +100,7 @@ export class EditTools {
       const tools = [
         DeleteElementsTool,
         MoveElementsTool,
+        CopyElementsTool,
         RotateElementsTool,
       ];
 

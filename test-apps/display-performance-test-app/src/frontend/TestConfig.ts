@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
@@ -164,6 +163,7 @@ export interface TestConfigProps {
 export const defaultHilite = new Hilite.Settings();
 export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
+export const separator = isWindows ? "\\" : "/";
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
@@ -350,8 +350,7 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
 function combineFilePaths(additionalPath: string, initialPath: string): string {
   if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
     return additionalPath;
-
-  return path.join(initialPath, additionalPath);
+  return `${initialPath}${separator}${additionalPath}`;
 }
 
 /** Compare two values for equality, recursing into arrays and object fields. */

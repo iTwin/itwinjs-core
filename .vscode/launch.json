@@ -205,6 +205,23 @@
         "${workspaceFolder}/extensions/map-layers/lib/**/*.js"
       ]
     },
+    {
+      "name": "MapLayers Auth Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-auth/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
@@ -777,13 +794,19 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "download",
-        "usa-nsrs2011",
-        "-l=d:/temp/abc.d"
+        "listDb",
+        "allEarth",
+        "--prefetch",
+        "--logging",
+        "--config=s:/realAzure.json"
       ],
       "outFiles": [
-        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"
-      ]
+        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
+        "${workspaceFolder}/core/*/lib/**/*.js",
+      ],
+      "env": {
+        "WORKSPACE_EDITOR_LOGGING": "true",
+      }
     },
     {
       "name": "imodel-transformer (app)",

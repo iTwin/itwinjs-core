@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "use refactored internal extractChangedIdsFromChangesets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

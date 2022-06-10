@@ -101,6 +101,7 @@ public;ChannelRootAspectProps
 internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
+beta;CloudContainerUri
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -189,7 +190,7 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-alpha;EdgeType
+internal;EdgeOptions
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -356,6 +357,7 @@ public;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
+deprecated;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 
 public;IModelProps
@@ -484,7 +486,8 @@ public;OverrideModelAppearanceOptions
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
-internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
+internal;ParsedTileTreeIdAndContentId
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
 public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 

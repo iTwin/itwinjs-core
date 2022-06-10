@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.2.0-dev.63",
+  "version": "3.2.0-dev.72",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -36,7 +36,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^8.2.2",
@@ -56,7 +56,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.63"
+    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.72"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

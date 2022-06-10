@@ -15,14 +15,13 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  QueryOptions, QueryOptionsBuilder, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
+  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -48,6 +47,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -210,7 +210,7 @@ export abstract class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   /** @internal */
-  protected _workspace: Workspace;
+  private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
@@ -226,7 +226,11 @@ export abstract class IModelDb extends IModel {
    * Get the [[Workspace]] for this iModel.
    * @beta
    */
-  public get workspace(): Workspace { return this._workspace; }
+  public get workspace(): Workspace {
+    if (undefined === this._workspace)
+      this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+    return this._workspace;
+  }
 
   /** Acquire the exclusive schema lock on this iModel.
    * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
@@ -294,10 +298,12 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
+
+    this.loadSettingDictionaries();
+    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
+
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
-    this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -318,7 +324,7 @@ export abstract class IModelDb extends IModel {
 
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
-    this._workspace.close();
+    this._workspace?.close();
     this.locks.close();
     this._locks = undefined;
     this.nativeDb.closeIModel();
@@ -326,7 +332,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_accessToken: AccessToken): Promise<void> { }
+  public async refreshContainerSas(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -803,7 +809,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
@@ -814,10 +820,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
-      nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
-      throw new IModelError(err.errorNumber, `Could not open iModel [${err.message}], ${file.path}`);
+      throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
     }
   }
 
@@ -1459,7 +1465,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Read element data from the iModel as JSON
-     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
@@ -2084,11 +2090,15 @@ export interface TokenArg {
   readonly accessToken?: AccessToken;
 }
 
+export interface CloudContainerArgs { container?: IModelJsNative.CloudContainer }
+
+export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
+
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & { rpcActivity?: RpcActivity };
+export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs;
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2206,7 +2216,7 @@ export class BriefcaseDb extends IModelDb {
 
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const nativeDb = this.openDgnDb(file, openMode);
+    const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
     BriefcaseManager.logUsage(briefcaseDb);
@@ -2256,7 +2266,7 @@ export class BriefcaseDb extends IModelDb {
 /** Used to reattach Daemon from a user's accessToken for V2 checkpoints.
  * @note Reattach only happens if the previous access token either has expired or is about to expire within an application-supplied safety duration.
  */
-class DaemonReattach {
+class RefreshV2CheckpointSas {
   /** the time at which the current token should be refreshed (its expiry minus safetySeconds) */
   private _timestamp = 0;
   /** while a refresh is happening, all callers get this promise. */
@@ -2264,38 +2274,50 @@ class DaemonReattach {
   /** Time, in seconds, before the current token expires to obtain a new token. Default is 1 hour. */
   private _safetySeconds: number;
 
-  constructor(expiry: number, safetySeconds?: number) {
+  constructor(sasToken: string, safetySeconds?: number) {
     this._safetySeconds = safetySeconds ?? 60 * 60; // default to 1 hour
-    this.setTimestamp(expiry);
+    this.setTimestamp(sasToken);
   }
-  private async performReattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+
+  private async performRefresh(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     this._timestamp = 0; // everyone needs to wait until token is valid
 
     // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
-    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
+      const container = iModel.nativeDb.cloudContainer;
+      if (!container)
+        throw new Error("checkpoint is not from a cloud container");
+
       assert(undefined !== iModel.iTwinId);
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
-      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
-      this.setTimestamp(response.expiryTimestamp);
+      const props = await IModelHost.hubAccess.queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      if (!props)
+        throw new Error("can't reset checkpoint sas token");
+
+      container.accessToken = props.sasToken;
+      this.setTimestamp(props.sasToken);
+
+      Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {
       this._promise = undefined;
     }
   }
 
-  private setTimestamp(expiryTimestamp: number) {
-    this._timestamp = expiryTimestamp - (this._safetySeconds * 1000);
+  private setTimestamp(sasToken: string) {
+    const exp = new URLSearchParams(sasToken).get("se");
+    const sasTokenExpiry = exp ? Date.parse(exp) : 0;
+    this._timestamp = sasTokenExpiry - (this._safetySeconds * 1000);
     if (this._timestamp < Date.now())
       Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
   }
 
-  public async reattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+  public async refreshSas(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     if (this._timestamp > Date.now())
       return; // current token is fine
 
     if (undefined === this._promise) // has reattach already begun?
-      this._promise = this.performReattach(accessToken, iModel); // no, start it
+      this._promise = this.performRefresh(accessToken, iModel); // no, start it
 
     return this._promise;
   }
@@ -2308,7 +2330,7 @@ class DaemonReattach {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _daemonReattach: DaemonReattach | undefined;
+  private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2354,14 +2376,8 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
-    if (iModelDb.nativeDb.isEncrypted())
-      throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel");
-
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
     IModelHost.platform.DgnDb.vacuum(snapshotFile);
-
-    if (options?.password)
-      IModelHost.platform.DgnDb.encryptDb(snapshotFile, options);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
@@ -2385,7 +2401,7 @@ export class SnapshotDb extends IModelDb {
   /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
    * @internal
    */
-  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
+  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     assert(undefined !== file.key);
@@ -2398,7 +2414,7 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
+  public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
@@ -2420,20 +2436,18 @@ export class SnapshotDb extends IModelDb {
   /** Open a V2 *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
    * > Note: The checkpoint daemon must already be running and a checkpoint must already exist in iModelHub's storage *before* this function is called.
    * @param checkpoint The checkpoint to open
-   * @note The key is generated by this call is predictable and is formed from the IModelId and ChangeSetId.
+   * @note The key generated by this call is predictable and is formed from the IModelId and ChangeSetId.
    * This is so every backend working on the same checkpoint will use the same key, to permit multiple backends
    * servicing the same checkpoint.
    * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the checkpoint daemon is not supported in the current environment.
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
+    const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
-    // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
+    const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
-
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
@@ -2441,15 +2455,15 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._daemonReattach = new DaemonReattach(expiryTimestamp, checkpoint.reattachSafetySeconds);
+    snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the daemon's accessToken if this is a V2 checkpoint.
+  /** Used to refresh the container sasToken using the current user's accessToken
    * @internal
    */
-  public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
-    return this._daemonReattach?.reattach(accessToken, this);
+  public override async refreshContainerSas(userAccessToken: AccessToken): Promise<void> {
+    return this._refreshSas?.refreshSas(userAccessToken, this);
   }
 
   /** @internal */
@@ -2529,9 +2543,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
-  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
+  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: SnapshotDbOpenArgs): StandaloneDb {
     const file = { path: filePath, key: options?.key };
-    const nativeDb = this.openDgnDb(file, openMode);
+    const nativeDb = this.openDgnDb(file, openMode, undefined, options);
 
     try {
       const iTwinId = nativeDb.getITwinId();

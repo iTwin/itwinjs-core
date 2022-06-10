@@ -6,11 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -104,10 +104,17 @@ export interface BatchOptions {
  * @extensions
  */
 export interface PickableGraphicOptions extends BatchOptions {
-  /** Unique identifier for the graphic.
+  /** A unique identifier for the graphic.
    * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
+   * @see [[GraphicBuilder.activatePickableId]] or [[GraphicBuilder.activateFeature]] to change the pickable object while adding geometry.
    */
   id: Id64String;
+  /** Optional Id of the subcategory with which the graphic should be associated. */
+  subCategoryId?: Id64String;
+  /** Optional geometry class for the graphic - defaults to [GeometryClass.Primary]($common). */
+  geometryClass?: GeometryClass;
+  /** The optional Id of the model with which the graphic should be associated. */
+  modelId?: Id64String;
 }
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
@@ -303,6 +310,7 @@ export abstract class GraphicBuilder {
 
   /** The Id to be associated with the graphic for picking.
    * @see [[GraphicBuilderOptions.pickable]] for more options.
+   * @deprecated This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
    */
   public get pickId(): Id64String | undefined {
     return this.pickable?.id;
@@ -348,6 +356,31 @@ export abstract class GraphicBuilder {
    * @see [[GraphicBuilder.setSymbology]] for a convenient way to set common symbology options.
    */
   public abstract activateGraphicParams(graphicParams: GraphicParams): void;
+
+  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
+   * This default implementation does nothing.
+   */
+  protected _activateFeature(_feature: Feature): void { }
+
+  /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
+   * for more efficient rendering.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
+  public activateFeature(feature: Feature): void {
+    assert(undefined !== this._options.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
+    if (this._options.pickable)
+      this._activateFeature(feature);
+  }
+
+  /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
+   * for more efficient rendering. This method calls [[activateFeature]], using the subcategory Id and [GeometryClass]($common) specified in [[GraphicBuilder.pickable]]
+   * at construction, if any.
+   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   */
+  public activatePickableId(id: Id64String): void {
+    const pick = this._options.pickable;
+    this.activateFeature(new Feature(id, pick?.subCategoryId, pick?.geometryClass));
+  }
 
   /**
    * Appends a 3d line string to the builder.
