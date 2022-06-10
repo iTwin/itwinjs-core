@@ -57,7 +57,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
       allowInstancing: false,
       is3d: true,
       batchType: id.type,
-      timeline: undefined, // ###TODO
+      timeline: id.timeline,
     });
 
     return new IModelTileTree(params, id);
