@@ -1,6 +1,13 @@
 # Change Log - @itwin/components-react
 
-This log was last generated on Tue, 07 Jun 2022 15:02:56 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jun 2022 16:11:36 GMT and should not be manually modified.
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+### Updates
+
+- Fix `useTreeModel` returning stale model for the given model source
 
 ## 3.2.1
 Tue, 07 Jun 2022 15:02:56 GMT
