@@ -6,7 +6,7 @@
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
@@ -116,7 +116,7 @@ export class MobileHost {
   /**  @internal */
   public static async authGetAccessToken() {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
+      this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
           reject(error);
         }
@@ -193,6 +193,10 @@ export class MobileHost {
       // following will provide impl for device specific api.
       setupMobileRpc();
     }
+
+    const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
+    opt = { ...opt, mobileHost: { ...opt?.mobileHost }, ipcHost: { ...opt?.ipcHost, socket } };
+
     const iModelHostConfiguration = opt?.iModelHost ?? new IModelHostConfiguration();
     iModelHostConfiguration.authorizationClient = authorizationClient;
     await NativeHost.startup({ ...opt, iModelHost: iModelHostConfiguration });

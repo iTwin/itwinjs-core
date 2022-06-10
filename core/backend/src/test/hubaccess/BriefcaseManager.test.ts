@@ -6,10 +6,11 @@
 import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
-import { HubWrappers, TestChangeSetUtility } from "..";
 import { Element } from "../../Element";
-import { HubMock } from "../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { HubMock } from "../../HubMock";
+import { TestChangeSetUtility } from "../TestChangeSetUtility";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -20,7 +21,7 @@ describe("BriefcaseManager", async () => {
   afterEach(() => HubMock.shutdown());
 
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
-    HubMock.startup("bad names");
+    HubMock.startup("bad names", KnownTestLocations.outputDir);
     let iModelName = "iModel Name With Spaces";
     let iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
     const args = { accessToken, iTwinId: testITwinId, iModelId };
@@ -49,7 +50,7 @@ describe("BriefcaseManager", async () => {
   });
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
-    HubMock.startup("briefcaseIds");
+    HubMock.startup("briefcaseIds", KnownTestLocations.outputDir);
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
@@ -68,7 +69,7 @@ describe("BriefcaseManager", async () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
-    HubMock.startup("briefcaseIdsReopen");
+    HubMock.startup("briefcaseIdsReopen", KnownTestLocations.outputDir);
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
 
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: false };
@@ -85,7 +86,7 @@ describe("BriefcaseManager", async () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
-    HubMock.startup("workflow");
+    HubMock.startup("workflow", KnownTestLocations.outputDir);
     const userToken1 = "manager token";
     const userToken2 = "super manager token";
 
@@ -129,7 +130,7 @@ describe("BriefcaseManager", async () => {
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
-    HubMock.startup("pullPush");
+    HubMock.startup("pullPush", KnownTestLocations.outputDir);
     const userToken1 = "manager token"; // User1 is just used to create and update the iModel
     const userToken2 = "super manager token"; // User2 is used for the test
 
