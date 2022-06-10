@@ -4,11 +4,6 @@
 
 ```ts
 
-import { Attributes } from '@opentelemetry/api';
-import { SpanContext } from '@opentelemetry/api';
-import { SpanOptions } from '@opentelemetry/api';
-import { Tracer } from '@opentelemetry/api';
-
 // @beta (undocumented)
 export class AbandonedError extends Error {
 }
@@ -40,6 +35,16 @@ export class AsyncMutex {
 
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
+
+// @beta
+export enum AuthStatus {
+    // (undocumented)
+    AUTHSTATUS_BASE = 139264,
+    // (undocumented)
+    Error = 139264,
+    // (undocumented)
+    Success = 0
+}
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -510,12 +515,6 @@ export interface EntryContainer<K, V> {
     set(key: K, value: Entry<K, V>): void;
     // (undocumented)
     readonly size: number;
-}
-
-// @alpha
-export abstract class ErrorCategory extends StatusCategory {
-    // (undocumented)
-    error: boolean;
 }
 
 // @public
@@ -1481,37 +1480,6 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     remove(value: T): number;
 }
 
-// @alpha
-export enum SpanKind {
-    // (undocumented)
-    CLIENT = 2,
-    // (undocumented)
-    CONSUMER = 4,
-    // (undocumented)
-    INTERNAL = 0,
-    // (undocumented)
-    PRODUCER = 3,
-    // (undocumented)
-    SERVER = 1
-}
-
-// @alpha
-export abstract class StatusCategory {
-    // (undocumented)
-    abstract code: number;
-    // (undocumented)
-    abstract error: boolean;
-    // (undocumented)
-    static for(error: BentleyError): StatusCategory;
-    // (undocumented)
-    static handlers: Set<StatusCategoryHandler>;
-    // (undocumented)
-    abstract name: string;
-}
-
-// @alpha (undocumented)
-export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
-
 // @beta
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
@@ -1533,19 +1501,6 @@ export class StopWatch {
     start(): void;
     stop(): BeDuration;
     }
-
-// @alpha
-export abstract class SuccessCategory extends StatusCategory {
-    // (undocumented)
-    error: boolean;
-}
-
-// @alpha
-export class Tracing {
-    static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    static setAttributes(attributes: Attributes): void;
-    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
-}
 
 // @public
 export class TransientIdSequence {

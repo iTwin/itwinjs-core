@@ -7,14 +7,14 @@
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
-import { ClientDiagnosticsHandler } from '@itwin/presentation-common';
-import { ClientDiagnosticsOptions } from '@itwin/presentation-common';
 import { ColumnDescription } from '@itwin/components-react';
 import { Content } from '@itwin/presentation-common';
 import { DelayLoadedTreeNodeItem } from '@itwin/components-react';
 import { Descriptor } from '@itwin/presentation-common';
 import { DescriptorOverrides } from '@itwin/presentation-common';
+import { DiagnosticsHandler } from '@itwin/presentation-common';
 import { DiagnosticsLoggerSeverity } from '@itwin/presentation-common';
+import { DiagnosticsOptionsWithHandler } from '@itwin/presentation-common';
 import { EditorDescription } from '@itwin/presentation-common';
 import { EnumerationInfo } from '@itwin/presentation-common';
 import { FavoritePropertiesScope } from '@itwin/presentation-frontend';
@@ -79,6 +79,8 @@ import { TreeEventHandler } from '@itwin/components-react';
 import { TreeModelChanges } from '@itwin/components-react';
 import { TreeModelSource } from '@itwin/components-react';
 import { TreeNodeItem } from '@itwin/components-react';
+import { TreeNodeRendererProps } from '@itwin/components-react';
+import { TreeRendererProps } from '@itwin/components-react';
 import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { TypeDescription } from '@itwin/presentation-common';
@@ -146,7 +148,7 @@ export interface ControlledPresentationTreeFilteringProps {
 }
 
 // @alpha
-export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
+export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
 
 // @internal (undocumented)
 export function createFieldInfo(field: Field, namePrefix?: string): {
@@ -183,13 +185,12 @@ export interface DiagnosticsProps {
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
         perf?: boolean;
-        backendVersion?: boolean;
-        handler: ClientDiagnosticsHandler;
+        handler: DiagnosticsHandler;
     };
     // @alpha
     ruleDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        handler: ClientDiagnosticsHandler;
+        handler: DiagnosticsHandler;
     };
 }
 
@@ -523,6 +524,12 @@ export interface PresentationTreeNodeLoaderResult {
     onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
+// @alpha (undocumented)
+export function PresentationTreeNodeRenderer(props: TreeNodeRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export function PresentationTreeRenderer(props: TreeRendererProps): JSX.Element;
+
 // @public
 export interface PropertyDataProviderWithUnifiedSelectionProps {
     dataProvider: IPresentationPropertyDataProvider;
@@ -572,7 +579,7 @@ export abstract class PropertyRecordsBuilder implements IContentVisitor {
 // @internal (undocumented)
 export interface ReloadedHierarchyPart {
     // (undocumented)
-    nodeItems: DelayLoadedTreeNodeItem[];
+    nodeItems: TreeNodeItem[];
     // (undocumented)
     offset: number;
     // (undocumented)

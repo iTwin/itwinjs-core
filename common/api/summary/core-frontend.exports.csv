@@ -24,7 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActivationEvent = "onStartup"
+alpha;ActivationEvent
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -36,8 +36,13 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
+internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
+internal;ArcGisToken
+internal;ArcGisTokenClientType
+internal;ArcGisTokenGenerator
+internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -70,6 +75,8 @@ public;BriefcaseConnection
 alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+alpha;BuildExtensionManifest 
+alpha;BuiltInExtensionLoaderProps
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -89,9 +96,6 @@ public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
-public;connectViewportFrusta(viewports: Iterable
-public;connectViewports(viewports: Iterable
-public;connectViewportViews(viewports: Iterable
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -156,8 +160,12 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
+alpha;ExtensionAdmin
+alpha;ExtensionHost
+alpha;ExtensionImpl
+alpha;ExtensionLoader
+alpha;ExtensionLoaderProps
 alpha;ExtensionManifest
-alpha;ExtensionProvider
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -227,8 +235,6 @@ internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
-internal;GltfSampler 
-internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
@@ -321,8 +327,7 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-alpha;LocalExtensionProvider 
-alpha;LocalExtensionProviderProps
+alpha;LocalExtensionProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -344,25 +349,22 @@ internal;MapBoxLayerImageryProvider
 internal;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
-beta;MapLayerAccessClient
-beta;MapLayerAccessToken
-beta;MapLayerAccessTokenParams
-beta;MapLayerAuthenticationInfo
+internal;MapLayerAuthenticationInfo
+beta;MapLayerAuthType
 internal;MapLayerClassifiers = Map
 alpha;MapLayerFeatureInfo
-beta;MapLayerFormat
-internal;MapLayerFormatEntry
-beta;MapLayerFormatRegistry
-beta;MapLayerFormatType = typeof MapLayerFormat
+internal;MapLayerFormat
+internal;MapLayerFormatRegistry
+internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 internal;MapLayerSource
 internal;MapLayerSources
-beta;MapLayerSourceStatus
-beta;MapLayerSourceValidation
+internal;MapLayerSourceStatus
+internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
-beta;MapLayerTokenEndpoint
+internal;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
@@ -497,8 +499,6 @@ internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
-alpha;RemoteExtensionProvider 
-alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -524,7 +524,6 @@ internal;class RenderTerrainGeometry
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
-alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
@@ -554,8 +553,6 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;ServiceExtensionProvider 
-alpha;ServiceExtensionProviderProps
 public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
@@ -587,9 +584,6 @@ internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
-public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
-public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
-public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
@@ -657,6 +651,7 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
+alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState

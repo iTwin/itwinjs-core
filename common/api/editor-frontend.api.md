@@ -45,7 +45,6 @@ import { GraphicBranchOptions } from '@itwin/core-frontend';
 import { GraphicType } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { Id64Arg } from '@itwin/core-bentley';
-import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { JsonGeometryStream } from '@itwin/core-common';
@@ -236,38 +235,6 @@ export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius
 
 // @alpha (undocumented)
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
-
-// @alpha
-export class CopyElementsTool extends MoveElementsTool {
-    // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
-    // (undocumented)
-    protected doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
-    // (undocumented)
-    static iconSpec: string;
-    // (undocumented)
-    static get maxArgs(): number;
-    // (undocumented)
-    static get minArgs(): number;
-    // (undocumented)
-    get numCopies(): number;
-    set numCopies(value: number);
-    // (undocumented)
-    get numCopiesProperty(): DialogProperty<number>;
-    // (undocumented)
-    onRestartTool(): Promise<void>;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
-    // (undocumented)
-    supplyToolSettingsProperties(): DialogItem[] | undefined;
-    // (undocumented)
-    static toolId: string;
-    // (undocumented)
-    protected transformAndCopyAgenda(transform: Transform): Promise<Id64Arg | undefined>;
-    // (undocumented)
-    protected updateAnchorLocation(transform: Transform): void;
-    // (undocumented)
-    protected get wantMakeCopy(): boolean;
-}
 
 // @alpha
 export class CreateArcTool extends CreateOrContinuePathTool {
@@ -2166,8 +2133,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    protected replaceAgenda(newIds: Id64Arg | undefined): Promise<void>;
-    // (undocumented)
     protected startCommand(): Promise<string>;
     // (undocumented)
     protected _startedCmd?: string;
@@ -2176,8 +2141,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void;
     // (undocumented)
-    protected transformAndCopyAgenda(_transform: Transform): Promise<Id64Arg | undefined>;
-    // (undocumented)
     protected updateAnchorLocation(transform: Transform): void;
     // (undocumented)
     protected get wantAccuSnap(): boolean;
@@ -2185,8 +2148,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantMakeCopy(): boolean;
-    // (undocumented)
-    protected get wantRepeatOperation(): boolean;
 }
 
 // @alpha (undocumented)

@@ -42,9 +42,6 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
 // @internal
 export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState;
 
-// @internal (undocumented)
-export const AnimateDockedToolSettingsContext: React.Context<boolean>;
-
 // @internal
 export class AppButton extends React.PureComponent<AppButtonProps> {
     // (undocumented)
@@ -59,9 +56,6 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 
 // @internal
 export const AppContent: React.NamedExoticComponent<object>;
-
-// @internal (undocumented)
-export const AutoCollapseUnpinnedPanelsContext: React.Context<boolean>;
 
 // @internal
 export class BackArrow extends React.PureComponent<BackArrowProps> {
@@ -1037,9 +1031,6 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
 export function isPanelLocation(location: TabLocation): location is PanelLocation;
 
 // @internal (undocumented)
-export function isPanelTarget(target: DragTarget): target is PanelTarget_2;
-
-// @internal (undocumented)
 export function isPopoutLocation(location: TabLocation): location is PopoutLocation;
 
 // @internal (undocumented)
@@ -1047,9 +1038,6 @@ export function isPopoutWidgetLocation(location: WidgetLocation): location is Po
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
-
-// @internal (undocumented)
-export function isWidgetTarget(target: DragTarget): target is WidgetTarget_2;
 
 // @beta @deprecated
 export class Item extends React.PureComponent<ItemProps> {
@@ -1388,10 +1376,6 @@ export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanels
 // @internal
 export interface NineZoneProps {
     // (undocumented)
-    animateDockedToolSettings?: boolean;
-    // (undocumented)
-    autoCollapseUnpinnedPanels?: boolean;
-    // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
     dispatch: NineZoneDispatch;
@@ -1405,8 +1389,6 @@ export interface NineZoneProps {
     tab?: React.ReactNode;
     // (undocumented)
     toolSettingsContent?: React.ReactNode;
-    // (undocumented)
-    uiIsVisible?: boolean;
     // (undocumented)
     widgetContent?: React.ReactNode;
 }
@@ -2884,9 +2866,6 @@ export interface TooltipProps extends CommonProps {
 
 // @internal (undocumented)
 export type TopPanelSide = "top";
-
-// @internal (undocumented)
-export const UiIsVisibleContext: React.Context<boolean>;
 
 // @internal (undocumented)
 export class UpdateWindowResizeSettings implements ResizeStrategy {

@@ -1,8 +1,5 @@
 sep=;
 Release Tag;API Item
-public;BackendDiagnosticsAttribute
-alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
-alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
@@ -23,7 +20,6 @@ public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
-public;PresentationPropsBase 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions

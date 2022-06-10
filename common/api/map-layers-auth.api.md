@@ -110,6 +110,9 @@ export interface ArcGisOAuthConfig {
     tokenExpiration?: number;
 }
 
+// @beta (undocumented)
+export function ArcGisOauthRedirect(): JSX.Element;
+
 // @internal (undocumented)
 export interface ArcGisToken extends MapLayerAccessToken {
     // (undocumented)

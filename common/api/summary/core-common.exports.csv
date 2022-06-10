@@ -138,8 +138,6 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
-internal;CustomViewState3dCreatorOptions
-internal;CustomViewState3dProps
 public;CutStyle
 public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
@@ -189,7 +187,7 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-internal;EdgeOptions
+alpha;EdgeType
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -267,8 +265,6 @@ public;GeodeticEllipsoid
 public;GeodeticEllipsoidProps
 public;GeodeticTransform 
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
-public;GeodeticTransformPath 
-public;GeodeticTransformPathProps
 public;GeodeticTransformProps
 public;GeographicCRS 
 beta;GeographicCRSInterpretRequestProps
@@ -311,7 +307,7 @@ public;GraphicsRequestProps
 public;GridFileDefinition 
 public;GridFileDefinitionProps
 public;GridFileDirection = "Direct" | "Inverse"
-public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN" | "OSTN02" | "OSTN15"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
 public;GridFileTransform 
 public;GridFileTransformProps
 public;GridOrientationType
@@ -335,8 +331,6 @@ public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
-internal;HydrateViewStateRequestProps
-internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
 public;ImageBuffer
 public;ImageBufferFormat
@@ -419,8 +413,6 @@ public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 public;MassPropertiesOperation
-public;MassPropertiesPerCandidateRequestProps
-public;MassPropertiesPerCandidateResponseProps 
 public;MassPropertiesRequestProps
 public;MassPropertiesResponseProps
 public;MaterialProps
@@ -484,8 +476,7 @@ public;OverrideModelAppearanceOptions
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
-internal;ParsedTileTreeIdAndContentId
-internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
 public;PartReference
 public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 
@@ -594,7 +585,6 @@ internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
 internal;RpcInvocation
-internal;RpcManagedStatus
 internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
@@ -610,7 +600,6 @@ public;RpcPendingResponse
 internal;class RpcProtocol
 public;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
-internal;RpcProtocolVersion
 internal;RpcPushChannel
 internal;class RpcPushConnection
 internal;RpcPushMessageListener
@@ -688,7 +677,6 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryPlanarClipMaskArgs 
 public;SubCategoryProps 
-internal;SubCategoryResultRow
 public;SubjectProps 
 beta;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 

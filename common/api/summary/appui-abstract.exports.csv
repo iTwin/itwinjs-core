@@ -12,7 +12,6 @@ public;AbstractWidgetProps
 public;AbstractZoneLocation
 deprecated;AbstractZoneLocation
 public;ActionButton 
-public;AllowedUiItemProviderOverrides
 public;AlternateDateFormats
 public;ArrayValue 
 public;BackstageActionItem 

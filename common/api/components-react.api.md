@@ -1219,10 +1219,10 @@ export enum FlatGridItemType {
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number | undefined;
+    convertFromString(value: string): number;
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
-    }
+}
 
 // @internal
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
@@ -1573,10 +1573,10 @@ export class IntlFormatter implements DateFormatter {
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number | undefined;
+    convertFromString(value: string): number;
     // (undocumented)
     convertToString(value?: Primitives.Int): string;
-    }
+}
 
 // @public
 export interface IPropertyDataFilterer {
