@@ -6187,7 +6187,11 @@ packages:
       '@itwin/core-webpack-tools': 3.1.3_webpack@5.72.1
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.6_10e9430ea3cdfe32a913fa23525aceac
       '@svgr/webpack': 5.5.0
-
+      '@typescript-eslint/eslint-plugin': 4.31.2_8f0416aa8ec58a469909c5c0f73069bc
+      '@typescript-eslint/parser': 4.31.2_eslint@7.32.0+typescript@4.4.4
+      babel-eslint: 10.1.0_eslint@7.32.0
+      babel-jest: 26.6.3_@babel+core@7.12.3
+      babel-loader: 8.1.0_427212bc1158d185e577033f19ca0757
       babel-plugin-import-remove-resource-query: 1.0.0
       babel-plugin-named-asset-import: 0.3.8_@babel+core@7.17.10
       babel-preset-react-app: 10.0.1
@@ -6200,6 +6204,20 @@ packages:
       css-minimizer-webpack-plugin: 3.4.1_webpack@5.72.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
+      eslint: 7.32.0
+      eslint-config-react-app: 6.0.0_1aeedec7f5157d0e02e45ad499760247
+      eslint-plugin-flowtype: 5.10.0_eslint@7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-jest: 24.7.0_1597ebf22056641fa858351a9409f475
+      eslint-plugin-jsx-a11y: 6.4.1_eslint@7.32.0
+      eslint-plugin-react: 7.24.0_eslint@7.32.0
+      eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
+      eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.4.4
+      eslint-webpack-plugin: 2.6.0_eslint@7.32.0+webpack@4.44.2
+      fast-sass-loader: 2.0.1_sass@1.49.9+webpack@4.44.2
+      file-loader: 6.1.1_webpack@4.44.2
+      fs-extra: 9.1.0
+      html-webpack-plugin: 4.5.0_webpack@4.44.2
       identity-obj-proxy: 3.0.0
       jest: 27.5.1
       jest-resolve: 27.5.1
@@ -6281,7 +6299,11 @@ packages:
       '@itwin/core-webpack-tools': 3.1.3_webpack@5.72.1
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.6_10e9430ea3cdfe32a913fa23525aceac
       '@svgr/webpack': 5.5.0
-
+      '@typescript-eslint/eslint-plugin': 4.31.2_8f0416aa8ec58a469909c5c0f73069bc
+      '@typescript-eslint/parser': 4.31.2_eslint@7.32.0+typescript@4.4.4
+      babel-eslint: 10.1.0_eslint@7.32.0
+      babel-jest: 26.6.3_@babel+core@7.12.3
+      babel-loader: 8.1.0_427212bc1158d185e577033f19ca0757
       babel-plugin-import-remove-resource-query: 1.0.0
       babel-plugin-named-asset-import: 0.3.8_@babel+core@7.17.10
       babel-preset-react-app: 10.0.1
@@ -6294,7 +6316,20 @@ packages:
       css-minimizer-webpack-plugin: 3.4.1_webpack@5.72.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-
+      eslint: 7.32.0
+      eslint-config-react-app: 6.0.0_1aeedec7f5157d0e02e45ad499760247
+      eslint-plugin-flowtype: 5.10.0_eslint@7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-jest: 24.7.0_1597ebf22056641fa858351a9409f475
+      eslint-plugin-jsx-a11y: 6.4.1_eslint@7.32.0
+      eslint-plugin-react: 7.24.0_eslint@7.32.0
+      eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
+      eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.4.4
+      eslint-webpack-plugin: 2.6.0_eslint@7.32.0+webpack@4.44.2
+      fast-sass-loader: 2.0.1_sass@1.49.9+webpack@4.44.2
+      file-loader: 6.1.1_webpack@4.44.2
+      fs-extra: 9.1.0
+      html-webpack-plugin: 4.5.0_webpack@4.44.2
       identity-obj-proxy: 3.0.0
       jest: 27.5.1
       jest-resolve: 27.5.1
@@ -6806,9 +6841,9 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
-
-  /@itwin/
   
+  /@itwin/itwinui-css/0.57.0:
+  /@itwin/
   /0.57.0:
     resolution: {integrity: sha512-/UYRxVK6MqvGhy1ppRKIVRnpkypuZoFx+2szmN6q77aJ/ZJE/XGl73A6WxxhJ2FzF+XKznC8dJtogVTcOc92Zw==}
 
@@ -12289,10 +12324,25 @@ packages:
       optionator: 0.8.3
     optionalDependencies:
       source-map: 0.6.1
-
+      
+    /eslint-config-react-app/6.0.0_1aeedec7f5157d0e02e45ad499760247:
+    resolution: {integrity: sha512-bpoAAC+YRfzq0dsTk+6v9aHm/uqnDwayNAXleMypGl6CpxI9oXXscVHo4fk3eJPIn+rsbtNetB4r/ZIidFIE8A==}
+    engines: {node: ^10.12.0 || >=12.0.0}
     peerDependencies:
       eslint: ^8.0.0
     dependencies:
+    '@typescript-eslint/eslint-plugin': 4.31.2_8f0416aa8ec58a469909c5c0f73069bc
+      '@typescript-eslint/parser': 4.31.2_eslint@7.32.0+typescript@4.4.4
+      babel-eslint: 10.1.0_eslint@7.32.0
+      confusing-browser-globals: 1.0.11
+      eslint: 7.32.0
+      eslint-plugin-flowtype: 5.10.0_eslint@7.32.0
+      eslint-plugin-import: 2.23.4_eslint@7.32.0
+      eslint-plugin-jest: 24.7.0_1597ebf22056641fa858351a9409f475
+      eslint-plugin-jsx-a11y: 6.4.1_eslint@7.32.0
+      eslint-plugin-react: 7.24.0_eslint@7.32.0
+      eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
+      eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.4.4
     dev: true
 
   /eslint-import-resolver-node/0.3.4:
@@ -12416,7 +12466,10 @@ packages:
       has: 1.0.3
       requireindex: 1.1.0
     dev: false
-
+    
+     /eslint-plugin-jest/24.7.0_1597ebf22056641fa858351a9409f475:
+    resolution: {integrity: sha512-wUxdF2bAZiYSKBclsUMrYHH6WxiBreNjyDxbRv345TIvPeoCEgPNEn3Sa+ZrSqsf1Dl9SqqSREXMHExlMMu1DA==}
+    engines: {node: '>=10'}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ^4.0.0 || ^5.0.0
       eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
@@ -12427,7 +12480,9 @@ packages:
       jest:
         optional: true
     dependencies:
-
+      '@typescript-eslint/eslint-plugin': 4.31.2_8f0416aa8ec58a469909c5c0f73069bc
+      '@typescript-eslint/experimental-utils': 4.33.0_eslint@7.32.0+typescript@4.4.4
+      eslint: 7.32.0
     transitivePeerDependencies:
       - supports-color
       - typescript
