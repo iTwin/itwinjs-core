@@ -79,6 +79,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
+    "cheerio": "1.0.0-rc.3",
     "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "enzyme-to-json": "^3.3.4",
