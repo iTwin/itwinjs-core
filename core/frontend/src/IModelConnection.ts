@@ -1044,7 +1044,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       const options: ViewStateLoadProps = {
         displayStyle: {
-          omitScheduleScriptElementIds: true,
+          omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
           compressExcludedElementIds: true,
         },
       };
