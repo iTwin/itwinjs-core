@@ -198,23 +198,17 @@ describe("IModelHost", () => {
     expect(() => IModelHost.hubAccess).throws("IModelHost.hubAccess is undefined. Specify an implementation in your IModelHostConfiguration");
   });
 
-  it("compute schema checksum with default and exactMatch options", () => {
+  it("computeSchemaChecksum", () => {
     const assetsDir = path.join(KnownTestLocations.assetsDir, "ECSchemaOps");
     const schemaXmlPath = path.join(assetsDir, "SchemaA.ecschema.xml");
     let referencePaths = [assetsDir];
     let sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths });
     expect(sha1).equal("3ac6578060902aa0b8426b61d62045fdf7fa0b2b");
 
+    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws("Failed to read schema SchemaA.ecschema");
+
     referencePaths = [path.join(assetsDir, "exact-match")];
     sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });
     expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
   });
-
-  it("should throw if exactMatch option is wrongly consumed", () => {
-    const assetsDir = path.join(KnownTestLocations.assetsDir, "ECSchemaOps");
-    const schemaXmlPath = path.join(assetsDir, "SchemaA.ecschema.xml");
-    const referencePaths = [assetsDir];
-    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws("Failed to read schema SchemaA.ecschema");
-  });
-
 });
