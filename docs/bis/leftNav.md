@@ -64,7 +64,10 @@
 - [BIS Schema Units](./guide/other-topics/units.md)
 - [BIS Schema Validation](./guide/other-topics/bis-schema-validation.md)
 
-#### [BIS Glossary](./guide/glossary.md)
+#### References
+- [BIS Glossary](./guide/glossary.md)
+- [Class-diagram Conventions](./guide/references/class-diagram-conventions.md)
+- [Instance-diagram Conventions](./guide/references/instance-diagram-conventions.md)
 
 </div>
 
