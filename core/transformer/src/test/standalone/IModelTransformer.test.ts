@@ -1877,38 +1877,4 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
-
-  it.only("roundtrip brep geometry", async () => {
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "RoundtripBrep.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "brep-roundtrip" }});
-
-    const builder = new GeometryStreamBuilder();
-    builder.appendBRepData(createBRepDataProps(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0)));
-    const geomPart = new GeometryPart({
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      geom: builder.geometryStream,
-    }, sourceDb);
-
-    const geomPartId = geomPart.insert();
-    assert(Id64.isValidId64(geomPartId));
-
-    sourceDb.saveChanges();
-
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "RoundtripBrepTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-
-    const transformer = new IModelTransformer(sourceDb, targetDb, { loadSourceGeometry: true, cloneUsingBinaryGeometry: false });
-    await expect(transformer.processAll()).to.eventually.be.fulfilled;
-
-    const geomPartInTargetId = transformer.context.findTargetElementId(geomPartId);
-    const geomPartInTarget = targetDb.elements.getElement<GeometryPart>({ id: geomPartInTargetId, wantGeometry: true, wantBRepData: true}, GeometryPart);
-
-    assert(geomPartInTarget.geom !== undefined);
-    assert(geomPartInTarget.geom[1]?.brep?.data !== undefined);
-
-    sourceDb.close();
-    targetDb.close();
-  });
 });

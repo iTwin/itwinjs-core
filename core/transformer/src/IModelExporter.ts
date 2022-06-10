@@ -423,7 +423,7 @@ export class IModelExporter {
     if (model.isTemplate && !this.wantTemplateModels) {
       return;
     }
-    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
+    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
       await this.exportModelContainer(model);
@@ -570,7 +570,7 @@ export class IModelExporter {
         return this.exportChildElements(elementId);
       }
     }
-    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
+    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
