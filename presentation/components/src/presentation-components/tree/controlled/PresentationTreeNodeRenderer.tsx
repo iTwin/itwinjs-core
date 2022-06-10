@@ -6,11 +6,11 @@
  * @module Tree
  */
 
-import "./PresentationTreeNodeRenderer.scss";
+import * as React from "react";
 import { TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { TreeNode } from "@itwin/core-react";
-import * as React from "react";
 import { translate } from "../../common/Utils";
+import "./PresentationTreeNodeRenderer.scss";
 
 /**
  * @alpha

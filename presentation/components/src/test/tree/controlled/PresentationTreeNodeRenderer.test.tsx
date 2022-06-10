@@ -2,18 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render } from "@testing-library/react";
-import React from "react";
+import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PresentationTreeNodeRenderer, PresentationTreeRenderer } from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
-import { translate } from "../../../presentation-components/common/Utils";
-import { Presentation } from "@itwin/presentation-frontend";
-import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { ITreeNodeLoader, TreeActions, TreeModelNode, TreeNodeItem, TreeRendererProps, UiComponents, VisibleTreeNodes } from "@itwin/components-react";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { ITwinLocalization } from "@itwin/core-i18n";
+import {
+  ITreeNodeLoader, TreeActions, TreeModelNode, TreeNodeItem, TreeRendererProps, UiComponents, VisibleTreeNodes,
+} from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { Presentation } from "@itwin/presentation-frontend";
+import { render } from "@testing-library/react";
+import { translate } from "../../../presentation-components/common/Utils";
+import {
+  PresentationTreeNodeRenderer, PresentationTreeRenderer,
+} from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 
 const createTreeModelNode = (NodeId?: string, label?: string, NodeItem?: TreeNodeItem): TreeModelNode => {
   const nodeId = NodeId ?? "0";
