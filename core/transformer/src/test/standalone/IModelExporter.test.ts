@@ -49,7 +49,6 @@ describe("IModelExporter", () => {
     assert(Id64.isValidId64(geomPartId));
 
     const geomPartInSource = sourceDb.elements.getElement<GeometryPart>({id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
-    assert(geomPartInSource.geom !== undefined);
     assert(geomPartInSource.geom?.[1]?.brep?.data !== undefined);
 
     sourceDb.saveChanges();
@@ -70,7 +69,6 @@ describe("IModelExporter", () => {
     await expect(exporter.exportAll()).to.eventually.be.fulfilled;
 
     const geomPartInTarget = flatTargetDb.elements.getElement<GeometryPart>({id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
-    assert(geomPartInTarget.geom !== undefined);
     assert(geomPartInTarget.geom?.[1]?.brep?.data !== undefined);
 
     sourceDb.close();
