@@ -457,6 +457,81 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     }
 
 // @alpha
+export enum CreateConePhase {
+    AcceptBase = 0,
+    AcceptBaseRadius = 1,
+    AcceptLength = 2,
+    AcceptResult = 4,
+    AcceptTopRadius = 3
+}
+
+// @alpha
+export class CreateConeTool extends SolidPrimitiveTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get baseRadius(): number;
+    set baseRadius(value: number);
+    // (undocumented)
+    get baseRadiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected createPhase: CreateConePhase;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    get length(): number;
+    set length(value: number);
+    // (undocumented)
+    get lengthProperty(): DialogProperty<number>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    get orthogonal(): boolean;
+    set orthogonal(value: boolean);
+    // (undocumented)
+    get orthogonalProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get topRadius(): number;
+    set topRadius(value: number);
+    // (undocumented)
+    get topRadiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    get useBaseRadius(): boolean;
+    set useBaseRadius(value: boolean);
+    // (undocumented)
+    get useBaseRadiusProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useLength(): boolean;
+    set useLength(value: boolean);
+    // (undocumented)
+    get useLengthProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useTopRadius(): boolean;
+    set useTopRadius(value: boolean);
+    // (undocumented)
+    get useTopRadiusProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
 export enum CreateCurvePhase {
     DefineEnd = 1,
     DefineOther = 2,

@@ -13,6 +13,8 @@ alpha;CopyElementsTool
 alpha;CreateArcTool 
 alpha;CreateBCurveTool 
 alpha;CreateCircleTool 
+alpha;CreateConePhase
+alpha;CreateConeTool 
 alpha;CreateCurvePhase
 alpha;CreateCylinderPhase
 alpha;CreateCylinderTool 

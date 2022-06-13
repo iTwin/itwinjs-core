@@ -16,7 +16,7 @@ import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, C
 import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
-import { CreateCylinderTool, CreateSphereTool } from "./SolidPrimitiveTools";
+import { CreateConeTool, CreateCylinderTool, CreateSphereTool } from "./SolidPrimitiveTools";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
@@ -133,6 +133,7 @@ export class EditTools {
       const tools = [
         CreateSphereTool,
         CreateCylinderTool,
+        CreateConeTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,
