@@ -112,7 +112,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
   protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     const childIds = this.getPotentialChildIds(tile);
-    if (tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
+    if (tile.quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
       resolveChildren(childIds);
       return;
     }
