@@ -188,9 +188,15 @@ List of names or definitions of relationship class properties that should be inc
 | **Is Required**   | No                                                          |
 | **Default Value** | `[]`                                                        |
 
+```ts
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipProperties.Ruleset]]
+```
+
+![Example of using the "relationship properties" attribute](./media/relatedpropertiesspecification-with-relationshipproperties-attribute.png)
+
 ### Attribute: `forceCreateRelationshipCategory`
 
-Specifies whether a relationship category should be created regardless of whether relationship properties were added.
+Specifies whether a relationship category should be created regardless of whether any relationship properties were included.
 
 |                   |           |
 | ----------------- | --------- |
@@ -201,3 +207,5 @@ Specifies whether a relationship category should be created regardless of whethe
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.ForceCreateRelationshipCategory.Ruleset]]
 ```
+
+![Example of using the "force create relationship category" attribute](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute.png)

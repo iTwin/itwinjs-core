@@ -106,7 +106,7 @@ export interface RelatedPropertiesSpecification {
   relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
 
   /**
-   * Specifies whether a relationship category should be created regardless of whether relationship properties were added.
+   * Specifies whether a relationship category should be created regardless of whether any relationship properties were included.
    */
   forceCreateRelationshipCategory?: boolean;
 }

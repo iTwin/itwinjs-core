@@ -289,6 +289,10 @@ Previously, nested related properties of different intermediate classes were all
 | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | ![All properties fall under one category](./media/AllSpatialCategoriesUnderPhysicalObject.png) | ![Properties fall under different categories](./media/SpatialCategoriesUnderPhysicalObjectAndTestClass.png) |
 
+### Relationship properties
+
+It is now possible to display relationship properties using [`relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute of related properties specification. Related properties will be categorized under relationship category if any relationship properties are included. To force this behavior regardless of whether any relationship properties were included, use [`forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute.
+
 ## ColorDef validation
 
 [ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
@@ -361,7 +365,7 @@ For example:
     }});
   IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
 ```
-The hosting application must be registered in either the ArcGIS Online server (cloud offering) or an ArcGIS enterprise server (on-premise). The registered application must then provide it's associated clientID and redirectUri to the `ArcGgisAccessClient` object.  The ui-test-app application provides a complete sample configuration. 
+The hosting application must be registered in either the ArcGIS Online server (cloud offering) or an ArcGIS enterprise server (on-premise). The registered application must then provide it's associated clientID and redirectUri to the `ArcGgisAccessClient` object.  The ui-test-app application provides a complete sample configuration.
 
 The maplayers widget has also been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process with the remote ArcGIS server. When the process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
 

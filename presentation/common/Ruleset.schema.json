@@ -2076,7 +2076,7 @@
           "type": "boolean"
         },
         "forceCreateRelationshipCategory": {
-          "description": "Specifies whether a relationship category should be created regardless of whether relationship properties were added.",
+          "description": "Specifies whether a relationship category should be created regardless of whether any relationship properties were included.",
           "type": "boolean"
         },
         "handleTargetClassPolymorphically": {
