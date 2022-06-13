@@ -35,6 +35,14 @@ export class ContentLayoutStageContentGroupProvider extends ContentGroupProvider
         newContent.applicationData = {
           ...newContent.applicationData,
           isPrimaryView: true,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
         };
       }
       return newContent;
@@ -64,6 +72,14 @@ export class ContentLayoutStageContentGroupProvider extends ContentGroupProvider
             isPrimaryView: true,
             viewState: UiFramework.getDefaultViewState,
             iModelConnection: UiFramework.getIModelConnection,
+            featureOptions:
+            {
+              defaultViewOverlay: {
+                enableScheduleAnimationViewOverlay: true,
+                enableAnalysisTimelineViewOverlay: true,
+                enableSolarTimelineViewOverlay: true,
+              },
+            },
           },
         },
       ],

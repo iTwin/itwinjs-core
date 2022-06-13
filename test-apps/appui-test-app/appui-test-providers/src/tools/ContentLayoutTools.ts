@@ -167,7 +167,14 @@ export function getSplitSingleViewportCommandDef() {
              {
                viewState: vp.view.clone(),
                iModelConnection: vp.view.iModel,
-
+               featureOptions:
+               {
+                 defaultViewOverlay: {
+                   enableScheduleAnimationViewOverlay: true,
+                   enableAnalysisTimelineViewOverlay: true,
+                   enableSolarTimelineViewOverlay: true,
+                 },
+               },
              },
           });
           contentPropsArray.push({
@@ -177,6 +184,14 @@ export function getSplitSingleViewportCommandDef() {
              {
                viewState: vp.view.clone(),
                iModelConnection: vp.view.iModel,
+               featureOptions:
+               {
+                 defaultViewOverlay: {
+                   enableScheduleAnimationViewOverlay: true,
+                   enableAnalysisTimelineViewOverlay: true,
+                   enableSolarTimelineViewOverlay: true,
+                 },
+               },
              },
           });
 

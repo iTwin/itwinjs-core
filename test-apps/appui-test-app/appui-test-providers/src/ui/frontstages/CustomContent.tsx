@@ -38,6 +38,14 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
             supports: ["viewIdSelection", "3dModels", "2dModels"],
             viewState: UiFramework.getDefaultViewState,
             iModelConnection: UiFramework.getIModelConnection,
+            featureOptions:
+            {
+              defaultViewOverlay: {
+                enableScheduleAnimationViewOverlay: true,
+                enableAnalysisTimelineViewOverlay: true,
+                enableSolarTimelineViewOverlay: true,
+              },
+            },
           },
         },
         {

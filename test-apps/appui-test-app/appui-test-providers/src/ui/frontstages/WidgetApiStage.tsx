@@ -50,6 +50,14 @@ export class WidgetApiStageContentGroupProvider extends ContentGroupProvider {
           ...newContent.applicationData,
           supplyViewOverlay: index === 0 ? WidgetApiStageContentGroupProvider.supplyViewOverlay : undefined,
           isPrimaryView: true,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
         };
       }
       return newContent;
@@ -80,6 +88,14 @@ export class WidgetApiStageContentGroupProvider extends ContentGroupProvider {
             isPrimaryView: true,
             viewState: UiFramework.getDefaultViewState,
             iModelConnection: UiFramework.getIModelConnection,
+            featureOptions:
+            {
+              defaultViewOverlay: {
+                enableScheduleAnimationViewOverlay: true,
+                enableAnalysisTimelineViewOverlay: true,
+                enableSolarTimelineViewOverlay: true,
+              },
+            },
           },
         },
       ],
@@ -192,7 +208,7 @@ export function MyCustomViewOverlay() {
         justifyContent: "center",
         alignItems: "center",
         height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
       }}>
         <div>Hello From View Overlay</div>
         <div>(turn off using Hide/Show Overlay tool in horizontal toolbar at top-left)</div>
