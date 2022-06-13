@@ -14,12 +14,15 @@ alpha;CreateArcTool
 alpha;CreateBCurveTool 
 alpha;CreateCircleTool 
 alpha;CreateCurvePhase
+alpha;CreateCylinderPhase
+alpha;CreateCylinderTool 
 alpha;class CreateElementTool 
 alpha;class CreateElementWithDynamicsTool 
 alpha;CreateEllipseTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
+alpha;CreateSphereTool 
 alpha;CurveData
 alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
@@ -60,6 +63,7 @@ alpha;RotateElementsTool
 alpha;RotateMethod
 alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
+alpha;class SolidPrimitiveTool 
 alpha;SpinFacesTool 
 alpha;SubEntityData
 alpha;SubtractSolidElementsTool 

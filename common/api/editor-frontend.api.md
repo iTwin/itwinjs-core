@@ -464,6 +464,70 @@ export enum CreateCurvePhase {
 }
 
 // @alpha
+export enum CreateCylinderPhase {
+    AcceptBase = 0,
+    AcceptLength = 2,
+    AcceptRadius = 1,
+    AcceptResult = 3
+}
+
+// @alpha
+export class CreateCylinderTool extends SolidPrimitiveTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected createPhase: CreateCylinderPhase;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    get length(): number;
+    set length(value: number);
+    // (undocumented)
+    get lengthProperty(): DialogProperty<number>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    get orthogonal(): boolean;
+    set orthogonal(value: boolean);
+    // (undocumented)
+    get orthogonalProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    get useLength(): boolean;
+    set useLength(value: boolean);
+    // (undocumented)
+    get useLengthProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
 export abstract class CreateElementTool extends PrimitiveTool {
     protected abstract createElement(): Promise<void>;
     // (undocumented)
@@ -744,6 +808,45 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
+export class CreateSphereTool extends SolidPrimitiveTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
     get useRadius(): boolean;
     set useRadius(value: boolean);
@@ -1997,6 +2100,34 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     protected get requiredElementCount(): number;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
+    // (undocumented)
+    protected readonly accepted: Point3d[];
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    protected baseRotation?: Matrix3d;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected current?: GeometryQuery;
+    // (undocumented)
+    protected doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void>;
+    // (undocumented)
+    protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+    // (undocumented)
+    protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getPlacementProps(): PlacementProps | undefined;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
 }
 
 // @alpha
