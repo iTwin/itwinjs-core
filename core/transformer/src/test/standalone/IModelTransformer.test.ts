@@ -24,8 +24,10 @@ import {
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  assertIdentityTransformation, ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils,
-  PhysicalModelConsolidator, RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  assertIdentityTransformation,
+  AssertOrderTransformer,
+  ClassCounter, copyDbPreserveId, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  RecordingIModelImporter, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -42,7 +44,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.mkdirSync(outputDir);
     }
     // initialize logging
-    if (false) {
+    if (process.env.LOG_TRANSFORMER_IN_TESTS) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
@@ -51,34 +53,88 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("should transform changes from source to target", async () => {
-    // Source IModelDb
-    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
-    // Target IModelDb
-    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
-    await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
-    targetDb.saveChanges();
+  class ReusableSnapshots {
+    private static _extensiveTestScenarioPromise: undefined | Promise<{
+      sourceDb: IModelDb;
+      targetDb: IModelDb;
+      updatedSourceDb: IModelDb;
+      transformer: TestIModelTransformer;
+      importer: TestIModelImporter;
+    }>;
 
-    const numSourceUniqueAspects = count(sourceDb, ElementUniqueAspect.classFullName);
-    const numSourceMultiAspects = count(sourceDb, ElementMultiAspect.classFullName);
-    const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
-    assert.isAtLeast(numSourceUniqueAspects, 1);
-    assert.isAtLeast(numSourceMultiAspects, 1);
-    assert.isAtLeast(numSourceRelationships, 1);
+    public static get extensiveTestScenario() {
+      if (this._extensiveTestScenarioPromise === undefined) {
+        const asyncGet = async () => {
+          const sourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExtensiveTestScenario.bim");
+
+          const sourceDb = SnapshotDb.createEmpty(sourcePath, { rootSubject: { name: "ExtensiveTestScenarioSource" } });
+          await TransformerExtensiveTestScenario.prepareDb(sourceDb);
+          TransformerExtensiveTestScenario.populateDb(sourceDb);
+          sourceDb.saveChanges();
+
+          const targetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExtensiveTestScenarioTarget.bim");
+          const targetDb = SnapshotDb.createEmpty(targetPath, { rootSubject: { name: "ExtensiveTestScenarioTarget" } });
+          await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
+          targetDb.saveChanges();
+
+          const numSourceUniqueAspects = count(sourceDb, ElementUniqueAspect.classFullName);
+          const numSourceMultiAspects = count(sourceDb, ElementMultiAspect.classFullName);
+          const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
+          assert.isAtLeast(numSourceUniqueAspects, 1);
+          assert.isAtLeast(numSourceMultiAspects, 1);
+          assert.isAtLeast(numSourceRelationships, 1);
+
+          const importer = new TestIModelImporter(targetDb);
+          const transformer = new TestIModelTransformer(sourceDb, importer);
+          assert(transformer.context.isBetweenIModels);
+          await transformer.processAll();
+          targetDb.saveChanges();
+
+          const updatedSourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExtensiveTestScenarioUpdated.bim");
+          const updatedSourceDb = copyDbPreserveId(sourceDb, updatedSourcePath);
+          TransformerExtensiveTestScenario.updateDb(updatedSourceDb);
+          updatedSourceDb.saveChanges();
+
+          return { sourceDb, targetDb, transformer, importer, updatedSourceDb };
+        };
+        this._extensiveTestScenarioPromise = asyncGet();
+      }
+      return this._extensiveTestScenarioPromise;
+    }
+
+    public static async closeEntries() {
+      if (this._extensiveTestScenarioPromise) {
+        const result = await this._extensiveTestScenarioPromise;
+        result.sourceDb.close();
+        result.targetDb.close();
+        result.updatedSourceDb.close();
+        result.transformer.dispose();
+      }
+    }
+  }
+
+  after(async () => {
+    await ReusableSnapshots.closeEntries();
+  });
+
+  it("should transform changes from source to target", async () => {
+    const extensiveTestScenario = await ReusableSnapshots.extensiveTestScenario;
+
+    // have to copy since this test will mutate these
+    const sourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
+    const sourceDb = copyDbPreserveId(extensiveTestScenario.sourceDb, sourcePath);
+    // const updatedSourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Updated.bim");
+    // const updatedSourceDb = copyDbPreserveId(extensiveTestScenario.updatedSourceDb, updatedSourcePath);
+    const updatedSourceDb = extensiveTestScenario.updatedSourceDb;
+    const targetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
+    const targetDb = copyDbPreserveId(extensiveTestScenario.targetDb, targetPath);
 
     if (true) { // initial import
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Initial Import");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
-      const targetImporter = new RecordingIModelImporter(targetDb);
-      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
-      assert.isTrue(transformer.context.isBetweenIModels);
-      await transformer.processAll();
+      const targetImporter = extensiveTestScenario.importer;
+      const transformer = extensiveTestScenario.transformer;
       assert.isAtLeast(targetImporter.numModelsInserted, 1);
       assert.equal(targetImporter.numModelsUpdated, 0);
       assert.isAtLeast(targetImporter.numElementsInserted, 1);
@@ -96,8 +152,7 @@ describe("IModelTransformer", () => {
       assert.equal(3, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
-      transformer.context.dump(`${targetDbFile}.context.txt`);
-      transformer.dispose();
+      transformer.context.dump(`${targetPath}.context.txt`);
     }
 
     const numTargetElements = count(targetDb, Element.classFullName);
@@ -151,14 +206,12 @@ describe("IModelTransformer", () => {
     }
 
     if (true) { // update source db, then import again
-      BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
-      sourceDb.saveChanges();
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Reimport after sourceDb update");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
       const targetImporter = new RecordingIModelImporter(targetDb);
-      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+      const transformer = new TestIModelTransformer(updatedSourceDb, targetImporter);
       await transformer.processAll();
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
@@ -171,14 +224,15 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numRelationshipsUpdated, 1);
       assert.equal(targetImporter.numRelationshipsDeleted, 1);
       targetDb.saveChanges();
-      BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+      TransformerExtensiveTestScenario.assertUpdatesInDb(targetDb);
       assert.equal(numTargetRelationships + targetImporter.numRelationshipsInserted - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
       assert.equal(2, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       transformer.dispose();
     }
 
-    IModelTransformerTestUtils.dumpIModelInfo(sourceDb);
+    IModelTransformerTestUtils.dumpIModelInfo(updatedSourceDb);
     IModelTransformerTestUtils.dumpIModelInfo(targetDb);
+
     sourceDb.close();
     targetDb.close();
   });
@@ -187,8 +241,8 @@ describe("IModelTransformer", () => {
     // Simulate branching workflow by initializing branchDb to be a copy of the populated masterDb
     const masterDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
     const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(masterDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(masterDb);
+    await TransformerExtensiveTestScenario.prepareDb(masterDb);
+    TransformerExtensiveTestScenario.populateDb(masterDb);
     masterDb.saveChanges();
     const branchDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
     const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
@@ -222,8 +276,8 @@ describe("IModelTransformer", () => {
     });
 
     // Make changes to simulate working on the branch
-    BackendTestUtils.ExtensiveTestScenario.updateDb(branchDb);
-    BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(branchDb);
+    TransformerExtensiveTestScenario.updateDb(branchDb);
+    TransformerExtensiveTestScenario.assertUpdatesInDb(branchDb);
     branchDb.saveChanges();
 
     const numBranchElements = count(branchDb, Element.classFullName);
@@ -236,7 +290,7 @@ describe("IModelTransformer", () => {
     await branchToMasterTransformer.processAll();
     branchToMasterTransformer.dispose();
     masterDb.saveChanges();
-    BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
+    TransformerExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
     assert.equal(numBranchElements, count(masterDb, Element.classFullName) - 2); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(numBranchRelationships, count(masterDb, ElementRefersToElements.classFullName) - 1); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(0, count(masterDb, ExternalSourceAspect.classFullName));
@@ -253,13 +307,13 @@ describe("IModelTransformer", () => {
 
   it("should import everything below a Subject", async () => {
     // Source IModelDb
-    const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
+    const extensiveTestScenario = await ReusableSnapshots.extensiveTestScenario;
+    // have to copy since this test will mutate this
+    const sourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
+    const sourceDb = copyDbPreserveId(extensiveTestScenario.sourceDb, sourcePath);
+
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
-    sourceDb.saveChanges();
     // Target IModelDb
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TargetImportSubject.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TargetImportSubject" } });
@@ -278,7 +332,6 @@ describe("IModelTransformer", () => {
     const targetSubject: Subject = targetDb.elements.getElement<Subject>(targetSubjectId);
     assert.equal(targetSubject.description, "Target Subject Description");
     // Close
-    sourceDb.close();
     targetDb.close();
   });
 
@@ -286,8 +339,8 @@ describe("IModelTransformer", () => {
     // Set up the IModelDb with a populated source Subject and an "empty" target Subject
     const iModelFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
+    await TransformerExtensiveTestScenario.prepareDb(iModelDb);
+    TransformerExtensiveTestScenario.populateDb(iModelDb);
     const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
@@ -1870,6 +1923,109 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("handle out-of-order references in aspects during consolidations", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
+
+    // as a member of the repository model hierarchy, and not the root subject hierarchy, it will be exported after the element which is inserted later
+    const sourceRepositoryId = IModelTransformerTestUtils.insertRepositoryLink(sourceDb, "anything.dgn", "https://test.bentley.com/folder/anything.dgn", "DGN");
+
+    const elem1Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-in-target");
+    const extSrcAspect1: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: elem1Id },
+      kind: ExternalSourceAspect.Kind.Element,
+      identifier: Guid.empty, // doesn't matter, any identifier in the hypothetical source
+      scope: { id: sourceRepositoryId },
+    };
+    const _extSrcAspect1Id = sourceDb.elements.insertAspect(extSrcAspect1);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefsTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new AssertOrderTransformer([elem1Id, sourceRepositoryId], sourceDb, targetDb, { includeSourceProvenance: true });
+
+    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+
+    const elem1InTargetId = transformer.context.findTargetElementId(elem1Id);
+    const elem1AspectsInTarget = targetDb.elements.getAspects(elem1InTargetId);
+    expect(elem1AspectsInTarget).to.have.lengthOf(2);
+
+    const extSrcAspect1InTarget = elem1AspectsInTarget[1];
+    assert(extSrcAspect1InTarget instanceof ExternalSourceAspect);
+    expect(extSrcAspect1InTarget.identifier).to.equal(extSrcAspect1.identifier);
+
+    const sourceRepositoryInTargetId = transformer.context.findTargetElementId(sourceRepositoryId);
+    expect(extSrcAspect1InTarget?.scope?.id).to.equal(sourceRepositoryInTargetId);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
+    // TODO: choose a reusable scenario with more aspects
+    // confirm the assumption that there are multiple aspect classes
+    const { sourceDb, targetDb, importer, transformer } = await ReusableSnapshots.extensiveTestScenario;
+    const physicalObj1InSourceId = IModelTransformerTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
+    const physicalObj1InTargetId = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    assert(physicalObj1InSourceId !== Id64.invalid);
+    assert(physicalObj1InTargetId !== Id64.invalid);
+
+    const exportedAspectSourceIds = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
+    const importedAspectTargetIds = importer.importedAspectIdsByElement.get(physicalObj1InTargetId);
+    assert(exportedAspectSourceIds !== undefined);
+    assert(importedAspectTargetIds !== undefined);
+    assert(exportedAspectSourceIds.length === importedAspectTargetIds.length);
+
+    for (let i = 0; i < exportedAspectSourceIds.length; ++i) {
+      const sourceId = exportedAspectSourceIds[i];
+      const targetId = importedAspectTargetIds[i];
+      const mappedTarget = transformer.context.findTargetAspectId(sourceId);
+      assert(mappedTarget !== Id64.invalid);
+      const indexInResult = importedAspectTargetIds.findIndex((id) => id === mappedTarget);
+      assert(mappedTarget === targetId, `aspect ${i} (${sourceId} in source, ${mappedTarget} in target) but got ${targetId} and the expected id was at index ${indexInResult}`);
+    }
+  });
+
+  it("new bug test", async () => {
+    const seedDb = SnapshotDb.openFile("/tmp/bad-scope.bim");
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "phys-model-in-target");
+
+    targetDb.saveChanges();
+
+    class TestTransformer extends IModelTransformer {
+      public remapCount = 0;
+      public override shouldExportElement(sourceElement: Element): boolean {
+        if (sourceElement instanceof PhysicalPartition) {
+          this.remapCount++;
+          this.context.remapElement(sourceElement.id, targetModelId);
+        }
+        return super.shouldExportElement(sourceElement);
+      }
+    }
+
+    const transformer = new TestTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
+    transformer.importer.doNotUpdateElementIds.add(targetModelId);
+
+    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+    expect(transformer.remapCount).to.be.greaterThanOrEqual(2);
 
     sourceDb.close();
     targetDb.close();
