@@ -264,7 +264,7 @@ export class EcefLocation implements EcefLocationProps {
     xVectorNorm.normalizeInPlace();
     const yVectorNorm = yVector;
     yVectorNorm.normalizeInPlace();
-    const matrix = Matrix3d.createRigidFromColumns(xVectorNorm!, yVectorNorm!, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(xVectorNorm, yVectorNorm, AxisOrder.XYZ)!;
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
