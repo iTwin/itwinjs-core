@@ -1,4 +1,4 @@
-# Class-diagram conventions
+# Class-diagram Conventions
 
 ## **Introduction**
 

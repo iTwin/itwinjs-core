@@ -70,7 +70,7 @@ export interface EcefLocationProps {
   readonly yVector?: XYZProps;
 }
 
-/** Properties of the [Root Subject]($docs/bis/guide/glossary#subject-root).
+/** Properties of the [Root Subject]($docs/bis/guide/references/glossary#subject-root).
  * @public
  * @extensions
  */

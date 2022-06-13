@@ -6,7 +6,7 @@ BIS is a “conceptual schema” that expresses taxonomy, data structure, and re
 
 ## Open and Extensible
 
-BIS is an “open” and extensible family of schemas. It is modularized into [Domains](../glossary.md#Domain). The “BIS Core” Domain expresses the fundamental modeling concepts. Each Domain is expressed as a separate [ECSchema](../ec/ec-schema.md). Anyone can author a new Domain schema by following the rules and guidelines in this documentation. Users can also extend Domain schemas by adding custom classes, properties, and relationships.
+BIS is an “open” and extensible family of schemas. It is modularized into [Domains](../references/glossary.md#Domain). The “BIS Core” Domain expresses the fundamental modeling concepts. Each Domain is expressed as a separate [ECSchema](../ec/ec-schema.md). Anyone can author a new Domain schema by following the rules and guidelines in this documentation. Users can also extend Domain schemas by adding custom classes, properties, and relationships.
 
 ## BIS Repository
 

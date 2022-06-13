@@ -242,5 +242,5 @@ Relationship Constraint should not use abstract constraint which derives from a 
 Struct classes must not have base classes.
 
 ---
-| Next: [BIS Glossary](../glossary.md)
+| Next: [BIS Glossary](../references/glossary.md)
 |:---

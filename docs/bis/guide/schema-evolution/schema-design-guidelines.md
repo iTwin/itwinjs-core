@@ -17,6 +17,7 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
 - Study other schema ecosystems and formats covering the domain of interest for inspiration.
 - Create a list of the main terms and their definitions in your domain. They typically lead to the primary data-classification scheme, which translates into the main element-classes to be introduced.
+- Typically every primary data-classification concept defined as sub-classes of bis:GeometricElement3d can be further sub-classified. Therefore, consider to introduce a type-definition class for every concrete element-class defined under the bis:GeometricElement3d class-branch.
 - Keep in mind that lower-layer schemas can be targeted by both iModel Connectors and authoring apps. The former typically need more flexibility while organizing elements into models that are synchronized from external sources. That is due to the different degrees of semantical richness built into the external data that iModel Connectors have to deal with. Therefore, study the semantics available in external formats to applicable iModel Connectors in your domain before introducing rigid element-organization mandates. On the other hand, authoring BIS-based applications are typically designed with a high degree of semantical understanding over their domain data, which makes them more adaptable to rigid data-structures.
 
 ## iModel Connector schemas

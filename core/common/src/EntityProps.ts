@@ -22,7 +22,7 @@ export interface EntityProps {
    * @see [Entity.isInstanceOfEntity]($backend).
    */
   readonly isInstanceOfEntity?: never;
-  /** The full name of the [ECClass]($docs/bis/guide/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
+  /** The full name of the [ECClass]($docs/bis/guide/references/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
   id?: Id64String;

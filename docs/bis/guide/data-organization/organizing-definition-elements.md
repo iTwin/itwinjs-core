@@ -1,6 +1,6 @@
 # Organizing Definition Elements
 
-Instances of [DefinitionElement](../glossary.md#DefinitionElement) hold configuration-related information that is meant to be referenced and shared. They are expected to be contained in `DefinitionModel`s as explained in [Model Fundamentals](../fundamentals/model-fundamentals.md).
+Instances of [DefinitionElement](../references/glossary.md#DefinitionElement) hold configuration-related information that is meant to be referenced and shared. They are expected to be contained in `DefinitionModel`s as explained in [Model Fundamentals](../fundamentals/model-fundamentals.md).
 
 Examples of `DefinitionElement`s include instances of:
 
@@ -28,7 +28,7 @@ Each `Subject` can have 0 or 1 child `DefinitionPartition` element which is sub-
 
 ### DictionaryModel (for global-scoped definitions)
 
-The `DefinitionPartion` of the Root `Subject` always has a `CodeValue` of "BisCore.DictionaryModel". Its sub-model is called the "DictionaryModel". The [DictionaryModel](../glossary.md#DictionaryModel) is a singleton container of `DefinitionElement` instances. It *directly* holds User-rank definitions and holds Core, Discipline, and Application-standardized definitions organized under `DefinitionContainer`s.
+The `DefinitionPartion` of the Root `Subject` always has a `CodeValue` of "BisCore.DictionaryModel". Its sub-model is called the "DictionaryModel". The [DictionaryModel](../references/glossary.md#DictionaryModel) is a singleton container of `DefinitionElement` instances. It *directly* holds User-rank definitions and holds Core, Discipline, and Application-standardized definitions organized under `DefinitionContainer`s.
 
 * For Discipline-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{domain alias}:DomainDefinitions"_ (where {domain alias} is the schema alias for the domain that is doing the standardization - which *might be different* than the schema that defines the particular `DefinitionElement` subclass) - and a `CodeScope` that is the ElementId of the `DefinitionModel` that contains it. Domain-standardized definitions should go in the sub-model of that `DefinitionContainer`.
 * For standardized Application-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{application name}:ApplicationDefinitions"_ and a `CodeScope` that is the Id of the `DefinitionModel` that contains it. Application-standardized definitions should go in the sub-model of that `DefinitionContainer.

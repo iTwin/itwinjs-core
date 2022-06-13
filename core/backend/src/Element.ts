@@ -1258,7 +1258,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
  * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
- * @see [iModel Information Hierarchy]($docs/bis/fundamentals/data-organization/top-of-the-world), [[Subject]], [[Model]]
+ * @see [iModel Information Hierarchy]($docs/bis/guide/data-organization/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement {

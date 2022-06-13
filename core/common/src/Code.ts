@@ -223,7 +223,7 @@ export namespace CodeScopeSpec {
   }
 }
 
-/** A [Code Specification]($docs/bis/guide/glossary#codespec) captures the rules for encoding and decoding significant business information into
+/** A [Code Specification]($docs/bis/guide/references/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
  * A CodeSpec defines the format of a Code for a certain type of Element in an IModel.
