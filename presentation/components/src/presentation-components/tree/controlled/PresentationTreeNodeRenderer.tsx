@@ -25,14 +25,14 @@ export function PresentationTreeRenderer(props: TreeRendererProps) {
 /**
  * @alpha
  */
-export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps{
+export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
   nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
 }
 
 /**
  * @alpha
  */
-export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps){
+export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
   const { nodeRenderer, ...restProps } = props;
   if (restProps.node.item.extendedData !== undefined && restProps.node.item.extendedData.tooManyChildren === true)
     return <TooManyChildNodeRenderer
