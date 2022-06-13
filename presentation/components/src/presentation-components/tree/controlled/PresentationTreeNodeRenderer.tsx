@@ -43,7 +43,7 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
   />;
 }
 
-interface TooManyChildNodeRendererProps{
+interface TooManyChildNodeRendererProps {
   nodeDepth: number;
 }
 
