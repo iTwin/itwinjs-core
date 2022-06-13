@@ -80,7 +80,7 @@
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx2": "^3.0.0",
-    "enzyme": "^3.4.0",
+    "enzyme": "3.10.0",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
