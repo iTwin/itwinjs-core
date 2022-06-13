@@ -46,7 +46,6 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
-    "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/itwinui-react": "^1.38.1",
     "classnames": "^2.3.1",

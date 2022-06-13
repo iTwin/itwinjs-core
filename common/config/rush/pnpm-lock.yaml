@@ -2372,7 +2372,6 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
-      '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ^1.38.1
       '@itwin/presentation-common': workspace:*
@@ -2423,7 +2422,6 @@ importers:
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     dependencies:
-      '@itwin/itwinui-css': 0.58.0
       '@itwin/itwinui-icons-react': 1.10.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.38.1_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
@@ -13175,7 +13173,7 @@ packages:
     dev: true
 
   /fd-slicer/1.1.0:
-    resolution: {integrity: sha1-JcfInLH5B3+IkbvmHY85Dq4lbx4=}
+    resolution: {integrity: sha512-cE1qsB/VwyQozZ+q1dGxR8LBYNZeofhEdUNGSMbQD3Gw2lAzX9Zb3uIU6Ebc/Fmyjo9AWWfnn0AUCHqtevs/8g==}
     dependencies:
       pend: 1.2.0
 
@@ -17635,7 +17633,7 @@ packages:
       sha.js: 2.4.11
 
   /pend/1.2.0:
-    resolution: {integrity: sha1-elfrVQpng/kRUzH89GY9XI4AelA=}
+    resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
   /performance-now/2.1.0:
     resolution: {integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=}
