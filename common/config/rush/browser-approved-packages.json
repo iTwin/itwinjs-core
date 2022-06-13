@@ -200,7 +200,11 @@
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-locators",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
