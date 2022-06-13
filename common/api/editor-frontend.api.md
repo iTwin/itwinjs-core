@@ -28,6 +28,7 @@ import { DynamicsContext } from '@itwin/core-frontend';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EditManipulator } from '@itwin/core-frontend';
+import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryResultProps } from '@itwin/editor-common';
@@ -276,8 +277,6 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createConstructionCurve(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
-    protected get createCurvePhase(): CreateCurvePhase;
-    // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
@@ -319,6 +318,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     get sweepProperty(): DialogProperty<number>;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected updateCurvePhase(): void;
     // (undocumented)
     get useRadius(): boolean;
     set useRadius(value: boolean);
@@ -394,6 +395,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected updateCurvePhase(): void;
+    // (undocumented)
     protected get wantClosure(): boolean;
     // (undocumented)
     protected get wantPickableDynamics(): boolean;
@@ -405,8 +408,6 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -486,9 +487,53 @@ export abstract class CreateElementTool extends PrimitiveTool {
 }
 
 // @alpha
-export class CreateEllipseTool extends CreateOrContinuePathTool {
+export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     // (undocumented)
-    protected get createCurvePhase(): CreateCurvePhase;
+    protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected clearGraphics(): void;
+    // (undocumented)
+    protected createElement(): Promise<void>;
+    // (undocumented)
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void>;
+    // (undocumented)
+    protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+    // (undocumented)
+    protected abstract getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected abstract getPlacementProps(): PlacementProps | undefined;
+    // (undocumented)
+    protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected updateDynamicData(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+}
+
+// @alpha
+export class CreateEllipseTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -522,17 +567,17 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected updateCurvePhase(): void;
+    // (undocumented)
     protected get wantClosure(): boolean;
     // (undocumented)
     protected get wantPickableDynamics(): boolean;
 }
 
 // @alpha
-export abstract class CreateOrContinuePathTool extends CreateElementTool {
+export abstract class CreateOrContinuePathTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected readonly accepted: Point3d[];
-    // (undocumented)
-    protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
     // (undocumented)
@@ -546,10 +591,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
-    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    protected clearGraphics(): void;
-    // (undocumented)
     protected continuationData?: {
         props: GeometricElementProps;
         path: Path;
@@ -557,11 +598,10 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     };
     // (undocumented)
     protected continueExistingPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
-    protected createElement(): Promise<void>;
-    // (undocumented)
-    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    protected _createCurvePhase: CreateCurvePhase;
     // @internal
     protected abstract createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -570,6 +610,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected current?: CurvePrimitive;
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void>;
     // (undocumented)
     protected getCurrentRotation(ev: BeButtonEvent): Matrix3d;
     // (undocumented)
@@ -586,8 +628,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
     protected getUpVector(ev: BeButtonEvent): Vector3d;
-    // (undocumented)
-    protected _graphicsProvider?: DynamicGraphicsProvider;
     // (undocumented)
     protected isClosed: boolean;
     // (undocumented)
@@ -614,23 +654,15 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected isValidForJoin(): Promise<boolean>;
     // (undocumented)
-    onCleanup(): Promise<void>;
-    // (undocumented)
-    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
-    onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    onPostInstall(): Promise<void>;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
     protected setupAccuDraw(): void;
-    // (undocumented)
-    protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected get showClosure(): boolean;
     // (undocumented)
@@ -652,13 +684,14 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     testDecorationHit(id: Id64String): boolean;
     // (undocumented)
-    protected updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean, phase: CreateCurvePhase): Promise<void>;
+    protected updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    protected updateCurvePhase(): void;
     // (undocumented)
-    protected get wantAccuSnap(): boolean;
+    protected updateDynamicData(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
     protected get wantClosure(): boolean;
-    // (undocumented)
-    protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantJoin(): boolean;
     // (undocumented)
@@ -675,8 +708,6 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected cornerLocal?: Point3d;
-    // (undocumented)
-    protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)

@@ -15,6 +15,7 @@ alpha;CreateBCurveTool
 alpha;CreateCircleTool 
 alpha;CreateCurvePhase
 alpha;class CreateElementTool 
+alpha;class CreateElementWithDynamicsTool 
 alpha;CreateEllipseTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
