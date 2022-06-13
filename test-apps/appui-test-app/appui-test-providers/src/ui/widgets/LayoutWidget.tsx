@@ -565,7 +565,7 @@ export function FloatingLayoutInfo() {
           setFloatingWidgetId(widgetId);
         }
         // give time for DOM to be updated
-        setImmediate(() => {
+        setTimeout(() => {
           setBounds(getFloatingWidgetContainerBounds(frontstageDef, widgetId));
         });
       }

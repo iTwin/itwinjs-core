@@ -5,14 +5,18 @@
 /* eslint-disable react/display-name */
 
 import {
-  BackstageItem, BackstageItemUtilities, CommonToolbarItem,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  StageUsage,
+  StatusBarSection,
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
-import { ToolbarHelper } from "@itwin/appui-react";
+import * as React from "react";
+import { StatusBarItemUtilities, ToolbarHelper } from "@itwin/appui-react";
 import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
 import { ContentLayoutStage } from "../frontstages/ContentLayout";
+import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
 export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:content-layout-stage-items-provider";
@@ -49,6 +53,16 @@ export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
+  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    if (stageUsage === StageUsage.General) {
+
+      statusBarItems.push(
+        StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 400, <DisplayStyleField />),
+      );
+    }
+    return statusBarItems;
+  }
   public provideBackstageItems(): BackstageItem[] {
     const label = AppUiTestProviders.translate("backstage.contentLayoutFrontstageLabel");
     return [

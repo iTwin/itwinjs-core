@@ -17,6 +17,13 @@
     "UsCustomary": "US Customary",
     "UnitsFlyover": "Update the units system active in the user interface"
   },
+  "statusFields": {
+    "displayStyle": {
+      "label": "Display Style",
+      "tooltip": "Select Display Style",
+      "unnamedDisplayStyle": "Unnamed"
+    }
+  },
   "tools": {
     "open-custom-dialog-tool": "Open Custom Dialog",
     "open-abstract-dialog": "Open Abstract Dialog",
