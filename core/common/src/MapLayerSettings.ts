@@ -13,14 +13,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 /** Enum of imagery map layer formats Ids supported.
  * @public
  */
-export enum ImageryMapLayerFormatId {
-  ArcGIS = "ArcGIS",
-  BingMaps = "BingMaps",
-  MapboxImagery = "MapboxImagery",
-  TileURL = "TileURL",
-  WMS =  "WMS",
-  WMTS =  "WMTS"
-}
+export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
 
 /** Id of a map layer format.  In order to be displayed, a corresponding
  * format object must have been registered in the [[MapLayerFormatRegistry]]
