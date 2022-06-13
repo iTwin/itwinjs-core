@@ -12,11 +12,14 @@
 .rule-group {
   display: grid;
   grid-template-columns: min-content auto;
+  padding: 11px 0;
 
-  .rule-group-remove-action {
-    padding-top: 5px;
-    padding-right: 5px;
-    visibility: hidden;
+  &:last-child {
+    padding-bottom: 0px;
+  }
+
+  &:first-child {
+    padding-top: 0px;
   }
 
   &[data-isactive=true] > .rule-group-remove-action {
@@ -29,8 +32,14 @@
     }
   }
 
+  .rule-group-remove-action {
+    padding-top: 5px;
+    padding-right: 5px;
+    visibility: hidden;
+  }
+
   .rule-group-content {
-    padding: 5px 0 5px 10px;
+    padding: 5px 0 5px 11px;
     border-left: 1px solid;
     @include themed {
       border-color: t(iui-color-background-border);
@@ -42,10 +51,10 @@
 
     .rule-group-items > * {
       position: relative;
-      margin-bottom: 10px;
+      margin-bottom: 11px;
 
       &:first-child {
-        margin-top: 10px;
+        margin-top: 11px;
       }
 
       &:last-child {
@@ -54,7 +63,7 @@
     }
 
     .rule-group-actions {
-      padding-top: 5px;
+      padding-top: 11px;
     }
   }
 }

@@ -48,10 +48,10 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
       </div>
       <div className="rule-group-actions">
         <ButtonGroup>
-          <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+          <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="default" size="small" startIcon={<SvgAdd />} disabled={!active}>
             {UiComponents.translate("filterBuilder.rule")}
           </Button>
-          <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>
+          <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="default" size="small" startIcon={<SvgAdd />} disabled={!active}>
             {UiComponents.translate("filterBuilder.ruleGroup")}
           </Button>
         </ButtonGroup>

@@ -133,6 +133,7 @@
       "isNotNull": "Is Not Null",
       "and": "And",
       "or": "Or"
-    }
+    },
+    "chooseProperty": "Choose property"
   }
 }

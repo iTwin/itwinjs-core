@@ -5,6 +5,7 @@
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { ComboBox, SelectOption } from "@itwin/itwinui-react";
+import { UiComponents } from "../UiComponents";
 
 /** @alpha */
 export interface PropertyFilterBuilderRulePropertyProps {
@@ -38,6 +39,9 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       options={selectOptions}
       onChange={onPropertyChanged}
       value={selectedProperty?.name}
+      inputProps={{
+        placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
+      }}
     />
   </div>;
 }
