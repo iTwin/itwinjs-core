@@ -1795,4 +1795,53 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
+
+  it("new bug test", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, {rootSubject: {name: "newBug"}});
+
+    const [mainPhysModelId, ...otherPhysModelIds]  = new Array(3).fill(null).map((_, i) =>
+      PhysicalModel.insert(sourceDb, IModel.rootSubjectId, `M${i}`));
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class TestTransformer extends IModelTransformer {
+      public override shouldExportElement(sourceElement: Element): boolean {
+        const isMainPartition = mainPhysModelId === sourceElement.id;
+        const isOtherPartition = otherPhysModelIds.includes(sourceElement.id);
+        assert(isOtherPartition !== undefined);
+        assert(!(isMainPartition && isOtherPartition));
+        if (isOtherPartition) {
+          // this.context.remapElement(sourceElement.id, );
+          return false;
+        }
+        return super.shouldExportElement(sourceElement);
+      }
+    }
+
+    const transformer = new TestTransformer(sourceDb, targetDb, {includeSourceProvenance: true});
+    transformer.importer.doNotUpdateElementIds.add(mainPhysModelId);
+    await transformer.processSchemas();
+    /*
+    for (const otherPhysModelId of otherPhysModelIds) {
+      //this.context.remapElement(sourceElement.id, );
+      await transformer.processElement(otherPhysModelId);
+    }
+    */
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
+
+    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
+    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
+    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });
