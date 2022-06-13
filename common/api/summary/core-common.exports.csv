@@ -347,7 +347,7 @@ public;ImageGraphicProps
 public;ImageMapLayerProps 
 public;ImageMapLayerSettings 
 public;ImagePrimitive
-public;ImageryMapLayerFormatId
+public;ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS"
 public;ImageSource
 public;ImageSourceFormat
 internal;ImdlFlags

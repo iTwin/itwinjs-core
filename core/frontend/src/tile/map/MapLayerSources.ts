@@ -8,7 +8,7 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapLayerFormatId, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -40,7 +40,7 @@ export enum MapLayerSourceStatus {
  */
 interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
-  formatId?: string;
+  formatId?: MapLayerFormatId;
   /** Name */
   name: string;
   /** URL */
@@ -49,10 +49,6 @@ interface MapLayerSourceProps {
   transparentBackground?: boolean;
   /** Indicate if this source definition should be used as a base map. Defaults to false. */
   baseMap?: boolean;
-  /** UserName */
-  userName?: string;
-  /** Password */
-  password?: string;
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
@@ -67,21 +63,19 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, userName?: string, password?: string) {
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
-    this.userName = userName;
-    this.password = password;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.userName, json.password);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {

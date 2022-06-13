@@ -4366,20 +4366,7 @@ export interface ImagePrimitive {
 }
 
 // @public
-export enum ImageryMapLayerFormatId {
-    // (undocumented)
-    ArcGIS = "ArcGIS",
-    // (undocumented)
-    BingMaps = "BingMaps",
-    // (undocumented)
-    MapboxImagery = "MapboxImagery",
-    // (undocumented)
-    TileURL = "TileURL",
-    // (undocumented)
-    WMS = "WMS",
-    // (undocumented)
-    WMTS = "WMTS"
-}
+export type ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
 
 // @public
 export class ImageSource {

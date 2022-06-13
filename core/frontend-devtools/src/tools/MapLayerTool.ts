@@ -99,7 +99,13 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
   constructor(protected _formatId: string) { super(); }
 
   public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
-    this.doAttach(MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId, userName, password }));
+    const source = MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId });
+    if (source){
+      source.userName = userName;
+      source.password = password;
+    }
+
+    this.doAttach(source);
     return true;
   }
 

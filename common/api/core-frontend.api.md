@@ -167,6 +167,7 @@ import { Loop } from '@itwin/core-geometry';
 import { LowAndHighXY } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
+import { MapLayerFormatId } from '@itwin/core-common';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
