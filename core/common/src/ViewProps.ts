@@ -81,6 +81,8 @@ export interface HydrateViewStateResponseProps {
   sheetViewViews?: (ViewStateProps | undefined)[];
   baseModelProps?: ModelProps;
   spatialViewProps?: ViewStateProps;
+  /** @deprecated If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
+  categoryIdsResult?: SubCategoryResultRow[];
 }
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend).

@@ -20,6 +20,8 @@ export class ViewStateHydrater {
       promises.push(this.handleAcsId(response, options.acsId));
     if (options.sheetViewAttachmentIds)
       promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.viewStateLoadProps));
+    if (options.notLoadedCategoryIds)
+      promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
     if (options.spatialViewId)
       promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.viewStateLoadProps));
     if (options.notLoadedModelSelectorStateModels)
@@ -28,6 +30,28 @@ export class ViewStateHydrater {
       promises.push(this.handleBaseModelId(response, options.baseModelId));
     await Promise.all(promises);
     return response;
+  }
+
+  private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
+    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
+    const maxCategoriesPerQuery = 200;
+    const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
+    const result = [];
+    while (decompressedIds.length !== 0) {
+      const end = (decompressedIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : decompressedIds.length;
+      const where = decompressedIds.splice(0, end).join(",");
+      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+      try {
+        for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          result.push(row as SubCategoryResultRow);
+        }
+      } catch {
+        // ###TODO: detect cases in which retry is warranted
+        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
+        // incomplete results. Since we're not retrying, that's the best we can do.
+      }
+    }
+    response.categoryIdsResult = result;
   }
 
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
