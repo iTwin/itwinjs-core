@@ -26,7 +26,7 @@ import {
   AccuSnap, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
@@ -153,10 +153,8 @@ export class SampleAppIModelApp {
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
-    } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts as IOSAppOpts);
-    } else if (ProcessDetector.isAndroidAppFrontend) {
-      await AndroidApp.startup(opts);
+    } else if (ProcessDetector.isMobileAppFrontend) {
+      await MobileApp.startup(opts as MobileAppOpts);
     } else {
       await IModelApp.startup(iModelAppOpts);
     }

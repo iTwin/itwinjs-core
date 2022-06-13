@@ -315,21 +315,23 @@ export class IModelHost {
   /** @internal */
   public static tileUploader?: CloudStorageTileUploader;
 
-  private static _hubAccess: BackendHubAccess;
+  private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
+  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+
+  /** get the current hubAccess, if present.
+   * @beta
+   */
+  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
 
   /** Provides access to the IModelHub for this IModelHost
    * @beta
    * @note If [[IModelHostConfiguration.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
+   * To determine whether one is present, use [[getHubAccess]].
    */
   public static get hubAccess(): BackendHubAccess {
-    // Strictly speaking, _hubAccess should be marked as possibly undefined since it's not needed for Snapshot iModels.
-    // However, a decision was made to not provide that type annotation so callers aren't forced to constantly check for
-    // something that's required in all other workflows.
-    // This check is here to provide a better error message when hubAccess is inadvertently undefined.
     if (this._hubAccess === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "IModelHost.hubAccess is undefined. Specify an implementation in your IModelHostConfiguration");
+      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostConfiguration");
     return this._hubAccess;
   }
 
