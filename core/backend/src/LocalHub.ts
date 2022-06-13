@@ -9,15 +9,14 @@ import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelJsFs } from "../IModelJsFs";
-import { SQLiteDb } from "../SQLiteDb";
+import { LockConflict, LockMap, LockProps, LockState } from "./BackendHubAccess";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
+import { IModelJsFs } from "./IModelJsFs";
+import { SQLiteDb } from "./SQLiteDb";
 
 // cspell:ignore rowid
 
-/** @internal */
 interface MockBriefcaseIdProps {
   id: BriefcaseId;
   user: string; // Just an AccessToken that simulates a user
@@ -25,7 +24,6 @@ interface MockBriefcaseIdProps {
   assigned: boolean;
 }
 
-/** @internal */
 interface LocalHubProps {
   readonly iTwinId: GuidString;
   readonly iModelId: GuidString;
@@ -46,12 +44,14 @@ interface LockStatusNone {
   state: LockState.None;
   lastCsIndex?: ChangesetIndex;
 }
+/** @internal */
 export interface LockStatusExclusive {
   state: LockState.Exclusive;
   briefcaseId: BriefcaseId;
   lastCsIndex?: ChangesetIndex;
 }
 
+/** @internal */
 export interface LockStatusShared {
   state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;
@@ -66,7 +66,7 @@ interface BriefcaseIdAndChangeset {
 type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
 
 /**
- * A "local" mock for IModelHub to provide access to a single iModel. Used by HubMock.
+ * A "local" hub that records a timeline (changesets, checkpoints, and named versions) and manages briefcases for a single iModel.
  * @internal
  */
 export class LocalHub {
@@ -104,15 +104,11 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const version0Root =  `${rootDir}_version0`;
-
-    if (!arg.version0) {
-      IModelJsFs.recursiveMkDirSync(version0Root);
-    }
-
+    const version0Root = `${rootDir}_version0`;
     const version0 = arg.version0 ?? join(version0Root, "version0.bim");
 
     if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
+      IModelJsFs.recursiveMkDirSync(version0Root);
       IModelJsFs.removeSync(version0);
       const blank = SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
@@ -137,7 +133,8 @@ export class LocalHub {
     }
   }
 
-  private get db() { return this._hubDb!; } // eslint-disable-line @typescript-eslint/naming-convention
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  private get db(): SQLiteDb { return this._hubDb!; } // eslint-disable-line @typescript-eslint/naming-convention
   public get changesetDir() { return join(this.rootDir, "changesets"); }
   public get checkpointDir() { return join(this.rootDir, "checkpoints"); }
   public get mockDbName() { return join(this.rootDir, "localHub.db"); }
@@ -146,11 +143,10 @@ export class LocalHub {
   public acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId {
     const db = this.db;
     const newId = this._nextBriefcaseId++;
-    alias = alias ?? `${user} (${newId})`;
     db.withSqliteStatement("INSERT INTO briefcases(id,user,alias) VALUES (?,?,?)", (stmt) => {
       stmt.bindInteger(1, newId);
       stmt.bindString(2, user);
-      stmt.bindString(3, alias!);
+      stmt.bindString(3, alias ?? `${user} (${newId})`);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert briefcaseId in mock database");

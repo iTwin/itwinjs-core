@@ -16,9 +16,8 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
 import { IModelTestUtils, TestUtils } from "../index";
 import { IModelJsFs } from "../../IModelJsFs";
-
-import { HubMock } from "..";
 import { GeometricModel3d } from "../../Model";
+import { HubMock } from "../../HubMock";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",

@@ -194,7 +194,8 @@ describe("IModelHost", () => {
 
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup();
-    expect(() => IModelHost.hubAccess).throws("IModelHost.hubAccess is undefined. Specify an implementation in your IModelHostConfiguration");
+    expect(IModelHost.getHubAccess()).undefined;
+    expect(() => IModelHost.hubAccess).throws();
   });
 
 });
