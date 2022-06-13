@@ -28,9 +28,10 @@ export const PanelTarget = React.memo<PanelTargetProps>(function PanelTarget(pro
   const draggedTab = React.useContext(DraggedTabStateContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const allowedTarget = useAllowedPanelTarget();
+  const newWidgetId = React.useMemo(() => getUniqueId(), []);
   const [ref, targeted] = usePanelTarget<HTMLDivElement>({
     side,
-    newWidgetId: getUniqueId(),
+    newWidgetId,
   });
   const visible = (!!draggedTab || !!draggedWidget) && allowedTarget;
   const className = classnames(

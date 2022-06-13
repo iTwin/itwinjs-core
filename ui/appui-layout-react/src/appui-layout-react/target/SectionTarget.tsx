@@ -50,13 +50,14 @@ export const SectionTarget = React.memo<SectionTargetProps>(function SectionTarg
 
 function useSectionTargetArgs(sectionIndex: number) {
   const side = React.useContext(PanelSideContext);
+  const newWidgetId = React.useMemo(() => getUniqueId(), []);
   return React.useMemo<SectionTargetState>(() => {
     assert(!!side);
     return {
       type: "section",
       side,
       sectionIndex,
-      newWidgetId: getUniqueId(),
+      newWidgetId,
     };
-  }, [side, sectionIndex]);
+  }, [side, sectionIndex, newWidgetId]);
 }
