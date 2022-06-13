@@ -133,9 +133,9 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < childIds.length; i++) {
         const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
-        // const childRange = new Range2d(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+
         const childRange = MapCartoRectangle.createFromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
-        if (childRange.containsRange(this.cartoRange) || childRange.intersectsRange(this.cartoRange)) {
+        if (childRange.intersectsRange(this.cartoRange)) {
           availableChildIds.push(childIds[i]);
         }
       }
