@@ -7,6 +7,7 @@
  */
 
 import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
+import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
@@ -116,15 +117,15 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   /**
    *
    * @param perModelCategoryVisibility array of model category visibility overrides
-   * @param viewState Optional param viewState. If no viewState is provided, then the viewState associated with the viewport (used to construct this class) is used.
-   * This optional viewState param is useful for apps which may show multiple iModels with multiple viewStates at once. Passing in a viewState ensures that the subcategories cache for the
-   * iModel associated with the provided viewState is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
+   * @param iModel Optional param iModel. If no iModel is provided, then the iModel associated with the viewport (used to construct this class) is used.
+   * This optional iModel param is useful for apps which may show multiple iModels at once. Passing in an iModel ensures that the subcategories cache for the provided iModel
+   * is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
    * @returns void promise
    */
-  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], viewState?: ViewState): Promise<void> {
+  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], iModel?: IModelConnection): Promise<void> {
     let anyChanged = false;
     const catIdsToLoad: string[] = [];
-    const viewStateToUse = viewState ? viewState : this._vp.view;
+    const iModelToUse = iModel ? iModel : this._vp.iModel;
     for (const override of perModelCategoryVisibility) {
       const modelId = override.modelId;
       const categoryIds = override.categoryIds;
@@ -141,7 +142,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
     if (anyChanged) {
       this._vp.setViewedCategoriesPerModelChanged();
       if (catIdsToLoad.length !== 0) {
-        this._vp.subcategories.push(viewStateToUse.iModel.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._vp.subcategories.push(iModelToUse.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
       }
     }
     return;
