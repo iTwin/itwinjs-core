@@ -4314,7 +4314,7 @@ export interface ImageGraphicProps {
 export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: MapLayerKey;
-    formatId: string;
+    formatId: MapLayerFormatId;
     // @internal (undocumented)
     modelId?: never;
     subLayers?: MapSubLayerProps[];
@@ -4334,7 +4334,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
-    readonly formatId: string;
+    readonly formatId: MapLayerFormatId;
     // (undocumented)
     static fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
@@ -4363,6 +4363,22 @@ export interface ImagePrimitive {
     readonly image: ImageGraphic;
     // (undocumented)
     type: "image";
+}
+
+// @public
+export enum ImageryMapLayerFormatId {
+    // (undocumented)
+    ArcGIS = "ArcGIS",
+    // (undocumented)
+    BingMaps = "BingMaps",
+    // (undocumented)
+    MapboxImagery = "MapboxImagery",
+    // (undocumented)
+    TileURL = "TileURL",
+    // (undocumented)
+    WMS = "WMS",
+    // (undocumented)
+    WMTS = "WMTS"
 }
 
 // @public
@@ -5113,6 +5129,9 @@ export class MapImagerySettings {
     // (undocumented)
     toJSON(): MapImageryProps;
 }
+
+// @public
+export type MapLayerFormatId = string | ImageryMapLayerFormatId;
 
 // @public
 export interface MapLayerKey {

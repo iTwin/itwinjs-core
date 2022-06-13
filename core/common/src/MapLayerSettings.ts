@@ -10,6 +10,24 @@ import { assert, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
+/** Enum of imagery map layer formats Ids supported.
+ * @public
+ */
+export enum ImageryMapLayerFormatId {
+  ArcGIS = "ArcGIS",
+  BingMaps = "BingMaps",
+  MapboxImagery = "MapboxImagery",
+  TileURL = "TileURL",
+  WMS =  "WMS",
+  WMTS =  "WMTS"
+}
+
+/** Id of a map layer format.  In order to be displayed, a corresponding
+ * format object must have been registered in the [[MapLayerFormatRegistry]]
+ * @public
+ */
+export type MapLayerFormatId = string | ImageryMapLayerFormatId;
+
 /** @public */
 export type SubLayerId = string | number;
 
@@ -145,7 +163,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** URL */
   url: string;
   /** Identifies the map layers source.*/
-  formatId: string;
+  formatId: MapLayerFormatId;
   /** Source layers. If undefined all layers are displayed. */
   subLayers?: MapSubLayerProps[];
   /** Access Key for the Layer, like a subscription key or access token.
@@ -268,7 +286,7 @@ export abstract class MapLayerSettings {
  * @public
  */
 export class ImageMapLayerSettings extends MapLayerSettings {
-  public readonly formatId: string;
+  public readonly formatId: MapLayerFormatId;
   public readonly url: string;
   public userName?: string;
   public password?: string;
