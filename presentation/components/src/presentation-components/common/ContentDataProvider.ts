@@ -7,14 +7,14 @@
  */
 
 import memoize from "micro-memoize";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
+  ClientDiagnosticsOptions, Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, RegisteredRuleset,
   RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
 } from "@itwin/presentation-common";
 import { IModelContentChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@itwin/appui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
@@ -150,7 +150,7 @@ export class ContentDataProvider implements IContentDataProvider {
   private _previousKeysGuid: string;
   private _selectionInfo?: SelectionInfo;
   private _pagingSize?: number;
-  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
+  private _diagnosticsOptions?: ClientDiagnosticsOptions;
 
   /** Constructor. */
   constructor(props: ContentDataProviderProps) {
