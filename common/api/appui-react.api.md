@@ -643,7 +643,7 @@ export interface BackstageComposerItemProps {
 export interface BackstageComposerProps extends CommonProps {
     readonly header?: React.ReactNode;
     readonly hideSoloStageEntry?: boolean;
-    readonly items: BackstageItem[];
+    readonly items?: BackstageItem[];
     readonly showOverlay?: boolean;
 }
 
@@ -5908,6 +5908,7 @@ export interface StandardFrontstageProps {
     defaultTool?: ToolItemDef;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
+    hideToolSettings?: boolean;
     // (undocumented)
     id: string;
     leftPanelProps?: WidgetPanelProps;

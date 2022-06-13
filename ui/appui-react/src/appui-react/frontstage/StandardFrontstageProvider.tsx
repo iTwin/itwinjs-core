@@ -53,7 +53,7 @@ export interface StandardFrontstageProps {
   cornerButton?: React.ReactNode;
   /** Set to true if default Navigation aid is not desired */
   hideNavigationAid?: boolean;
-  /** Set to true if no tool setting dock is needed. Typically only for modal stagea */
+  /** Set to true if no tool setting dock is needed. Typically only used in modal stages. */
   hideToolSettings?: boolean;
   /** Set to true if no status bar is needed in stage */
   hideStatusBar?: boolean;
