@@ -1492,7 +1492,7 @@ importers:
       chai-spies: 1.0.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       jsdom: ^19.0.0
@@ -1537,14 +1537,14 @@ importers:
       '@types/react-beautiful-dnd': 12.1.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -2398,7 +2398,7 @@ importers:
       chai-subset: 1.6.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       faker: ^4.1.0
@@ -2451,15 +2451,15 @@ importers:
       '@types/react-dom': 17.0.17
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-subset: 1.6.0
       cpx2: 3.0.2
       cross-env: 5.2.1
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -3812,7 +3812,7 @@ importers:
       chai-spies: 1.0.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       ignore-styles: ^5.0.1
@@ -3860,14 +3860,14 @@ importers:
       '@types/react-transition-group': 4.4.4
       '@types/sinon': 9.0.11
       '@types/uuid': 7.0.5
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
@@ -3934,7 +3934,7 @@ importers:
       chai-spies: 1.0.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       faker: ^4.1.0
@@ -4010,14 +4010,14 @@ importers:
       '@types/rimraf': 2.0.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -4085,7 +4085,7 @@ importers:
       chai-string: ^1.5.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       eventemitter2: ^5.0.1
@@ -4175,15 +4175,15 @@ importers:
       '@types/react-window': 1.8.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       chai-string: 1.5.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -4243,7 +4243,7 @@ importers:
       classnames: ^2.3.1
       cpx2: ^3.0.0
       dompurify: ^2.0.12
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       ignore-styles: ^5.0.1
@@ -4303,14 +4303,14 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
@@ -4372,7 +4372,7 @@ importers:
       chai-string: ^1.5.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
-      enzyme: ^3.4.0
+      enzyme: 3.10.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       eventemitter2: ^5.0.1
@@ -4435,15 +4435,15 @@ importers:
       '@types/react-dom': 17.0.17
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_fae758709a8810ba97b4c03852dde4d0
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       chai-string: 1.5.0_chai@4.3.6
       cpx2: 3.0.2
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      enzyme: 3.10.0
+      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -9047,7 +9047,7 @@ packages:
       '@webassemblyjs/wast-parser': 1.8.5
       '@xtuc/long': 4.2.2
 
-  /@wojtekmaj/enzyme-adapter-react-17/0.6.7_fae758709a8810ba97b4c03852dde4d0:
+  /@wojtekmaj/enzyme-adapter-react-17/0.6.7_139404e387ad12a3919093d103c0dae6:
     resolution: {integrity: sha512-B+byiwi/T1bx5hcj9wc0fUL5Hlb5giSXJzcnEfJVl2j6dGV2NJfcxDBYX0WWwIxlzNiFz8kAvlkFWI2y/nscZQ==}
     peerDependencies:
       enzyme: ^3.0.0
@@ -9055,7 +9055,7 @@ packages:
       react-dom: ^17.0.0-0
     dependencies:
       '@wojtekmaj/enzyme-adapter-utils': 0.1.4_react@17.0.2
-      enzyme: 3.11.0
+      enzyme: 3.10.0
       enzyme-shallow-equal: 1.0.4
       has: 1.0.3
       prop-types: 15.8.1
@@ -12157,24 +12157,23 @@ packages:
       object-is: 1.1.5
     dev: true
 
-  /enzyme-to-json/3.6.2_enzyme@3.11.0:
+  /enzyme-to-json/3.6.2_enzyme@3.10.0:
     resolution: {integrity: sha512-Ynm6Z6R6iwQ0g2g1YToz6DWhxVnt8Dy1ijR2zynRKxTyBGA8rCDXU3rs2Qc4OKvUvc2Qoe1bcFK6bnPs20TrTg==}
     engines: {node: '>=6.0.0'}
     peerDependencies:
       enzyme: ^3.4.0
     dependencies:
       '@types/cheerio': 0.22.31
-      enzyme: 3.11.0
+      enzyme: 3.10.0
       lodash: 4.17.21
       react-is: 16.13.1
     dev: true
 
-  /enzyme/3.11.0:
-    resolution: {integrity: sha512-Dw8/Gs4vRjxY6/6i9wU0V+utmQO9kvh9XLnz3LIudviOnVYDEe2ec+0k+NQoMamn1VrjKgCUOWj5jG/5M5M0Qw==}
+  /enzyme/3.10.0:
+    resolution: {integrity: sha512-p2yy9Y7t/PFbPoTvrWde7JIYB2ZyGC+NgTNbVEGvZ5/EyoYSr9aG/2rSbVvyNvMHEhw9/dmGUJHWtfQIEiX9pg==}
     dependencies:
       array.prototype.flat: 1.3.0
       cheerio: 1.0.0-rc.11
-      enzyme-shallow-equal: 1.0.4
       function.prototype.name: 1.1.5
       has: 1.0.3
       html-element-map: 1.3.1
@@ -21266,7 +21265,7 @@ packages:
     dev: true
 
   /through/2.3.8:
-    resolution: {integrity: sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=}
+    resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
 
   /through2/2.0.5:
     resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
@@ -21865,7 +21864,7 @@ packages:
     dev: false
 
   /util-deprecate/1.0.2:
-    resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=}
+    resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   /util.promisify/1.0.0:
     resolution: {integrity: sha512-i+6qA2MPhvoKLuxnJNpXAGhg7HphQOSUq2LKMZD0m15EiskXUkMvKdF4Uui0WYeCUGea+o2cw/ZuwehtfsrNkA==}
@@ -22609,7 +22608,7 @@ packages:
       strip-ansi: 6.0.1
 
   /wrappy/1.0.2:
-    resolution: {integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=}
+    resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
   /write-file-atomic/3.0.3:
     resolution: {integrity: sha512-AvHcyZ5JnSfq3ioSyjrBkH9yW4m7Ayk8/9My/DD9onKeu/94fwrMocemO2QAJFAlnnDN+ZDS+ZjAR5ua1/PV/Q==}
@@ -22813,7 +22812,7 @@ packages:
       yargs-parser: 20.2.9
 
   /yauzl/2.10.0:
-    resolution: {integrity: sha1-x+sXyT4RLLEIb6bY5R+wZnt5pfk=}
+    resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
