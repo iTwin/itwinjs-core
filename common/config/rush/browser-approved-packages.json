@@ -475,10 +475,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cheerio",
-      "allowedCategories": [ "extensions", "frontend" ]
-    },
-    {
       "name": "child_process",
       "allowedCategories": [ "internal" ]
     },
