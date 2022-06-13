@@ -109,7 +109,7 @@ describe("PresentationTreeRenderer", () => {
 
     const { getByText } = render(<PresentationTreeRenderer {...defaultProps} />);
 
-    getByText(translate("tree.presentation-custom-node-label"));
+    getByText(translate("tree.presentation-components-muted-node-label"));
   });
 });
 
@@ -167,7 +167,7 @@ describe("TreeNodeRenderer", () => {
         node={node}
       />);
 
-    getByText(translate("tree.presentation-custom-node-label"));
+    getByText(translate("tree.presentation-components-muted-node-label"));
   });
 
   it("renders using provided node renderer", () => {

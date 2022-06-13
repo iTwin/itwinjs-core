@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/theme";
 
-.presentation-custom-node{
-  color: $iui-text-color-muted--light;
+.presentation-components-muted-node{
+  @include themed {
+    color: t(iui-text-color-muted);
+  }
 }

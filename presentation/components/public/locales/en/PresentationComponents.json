@@ -15,6 +15,6 @@
     "select-instance": "Select element"
   },
   "tree": {
-    "presentation-custom-node-label": "Too many child nodes."
+    "presentation-components-muted-node": "Too many child nodes."
   }
 }

@@ -50,9 +50,9 @@ interface TooManyChildNodeRendererProps {
 function TooManyChildNodeRenderer(props: TooManyChildNodeRendererProps) {
   return (
     <TreeNode
-      className="presentation-custom-node"
+      className="presentation-components-muted-node"
       isLeaf={true}
-      label={translate("tree.presentation-custom-node-label")}
+      label={translate("tree.presentation-components-muted-node-label")}
       level={props.nodeDepth}
       isHoverDisabled={true}
     />
