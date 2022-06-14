@@ -2484,6 +2484,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
+    // @internal
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
@@ -5550,7 +5551,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     get tileWidth(): number;
     }
 
-// @public
+// @internal
 export class MapCartoRectangle extends Range2d {
     constructor(west?: number, south?: number, east?: number, north?: number);
     // (undocumented)
@@ -5568,7 +5569,7 @@ export class MapCartoRectangle extends Range2d {
     fractionFromCartographic(carto: Cartographic): Point2d | undefined;
     // (undocumented)
     getCenter(result?: Cartographic): Cartographic;
-    // @internal (undocumented)
+    // (undocumented)
     getTileFractionRange(tilingScheme: MapTilingScheme): Range2d;
     // (undocumented)
     get globalLocation(): GlobalLocation;
@@ -6278,7 +6279,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)

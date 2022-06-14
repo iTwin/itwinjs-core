@@ -15,7 +15,7 @@ const scratchMercatorFractionRange = Range2d.createNull();
 const scratchPoint2d = Point2d.createZero();
 
 /** A specialization of Range2d that represents a cartographic range used by map tiles.
- * @public
+ * @internal
  */
 export class MapCartoRectangle extends Range2d {
   public constructor(west = 0, south = 0, east = 0, north = 0) {

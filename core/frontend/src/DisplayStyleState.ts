@@ -550,7 +550,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @param layerIndex of the map layer.
    * @param isOverlay true if the map layer is overlay, otherwise layer is background
    *
-   * @public
+   * @internal
    */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);

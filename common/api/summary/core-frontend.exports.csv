@@ -341,7 +341,7 @@ internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
-public;MapCartoRectangle 
+internal;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
