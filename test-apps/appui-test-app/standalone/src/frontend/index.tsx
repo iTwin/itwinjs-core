@@ -42,7 +42,7 @@ import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTa
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
-  FloatingWidgetsUiItemsProvider, WidgetApiStage,
+  FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 
 // Initialize my application gateway configuration for the frontend
@@ -241,6 +241,7 @@ export class SampleAppIModelApp {
     // initialize UI Item providers
     UiItemsManager.register(new AbstractUiItemsProvider(AppUiTestProviders.localizationNamespace));
     UiItemsManager.register(new FloatingWidgetsUiItemsProvider(), { providerId: "widget-api-stage-floating-widget", stageIds: [WidgetApiStage.stageId] });
+    UiItemsManager.register(new InspectUiItemInfoToolProvider(AppUiTestProviders.localizationNamespace));
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AppUiTestProviders";
 export * from "./ui/providers/AbstractUiItemsProvider";
+export * from "./ui/providers/InspectUiItemInfoToolProvider";
 export * from "./ui/providers/FloatingWidgetsUiItemsProvider";
 export * from "./ui/frontstages/CustomContent";
 export * from "./ui/frontstages/WidgetApiStage";

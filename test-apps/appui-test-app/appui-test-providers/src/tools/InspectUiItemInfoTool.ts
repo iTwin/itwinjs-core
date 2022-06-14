@@ -57,8 +57,8 @@ export class InspectUiItemInfoTool extends PrimitiveTool {
         const para = document.createElement("div");
         let out = "";
         const names = ["type", "id", "priority", "location", "group", "provider"];
-        ["data-item-type", "data-item-id", "data-item-priority", "data-item-location",
-          "data-item-group-priority", "data-item-provider-id"].forEach((value, index) => {
+        ["data-item-type", "data-item-id", "data-item-priority", "data-item-location", "data-item-group-priority",
+          "data-item-provider-id"].forEach((value, index) => {
           const attValue = item?.getAttribute(value);
           if (attValue)
             out += `${names[index]}: ${attValue}<br>`;
