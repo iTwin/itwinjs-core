@@ -9,7 +9,6 @@ exports[`PopoutToggle should render 1`] = `
   >
     <div>
       <svg-loader
-        id="svg-id"
         src="undefined"
       />
     </div>

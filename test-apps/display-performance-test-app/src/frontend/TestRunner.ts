@@ -16,11 +16,10 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
@@ -247,7 +246,7 @@ export class TestRunner {
           const context = await this.openIModel();
           await this.runTests(context);
           await context.iModel.close();
-        } catch(e) {
+        } catch (e) {
           await this.logError(`Failed to run tests for iModel ${iModelName}`);
         }
       }
@@ -654,7 +653,7 @@ export class TestRunner {
     const esvJson = await rpcClient.readExternalSavedViews(filepath);
     if (esvJson) {
       const json = JSON.parse(esvJson);
-      if(this.curConfig.iModelId) {
+      if (this.curConfig.iModelId) {
         externalSavedViews = json as ViewStateSpec[];
       } else {
         externalSavedViews = (json as ViewStateSpecProps[]).map((x) => {
@@ -807,8 +806,7 @@ export class TestRunner {
     const filename = `${this.getTestName(test, prefix, true)}.png`;
     if (ProcessDetector.isMobileAppFrontend)
       return filename; // on mobile we use device's Documents path as determined by mobile backend
-
-    return path.join(this.curConfig.outputPath, filename);
+    return `${this.curConfig.outputPath}${separator}${filename}`;
   }
 
   private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
@@ -1154,6 +1152,9 @@ function getTileProps(props: TileAdmin.Props): string {
         break;
       case "enableIndexedEdges":
         if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
+      case "generateAllPolyfaceEdges":
+        if (!props[key]) tilePropsStr += "-pfEdg";
         break;
     }
   }

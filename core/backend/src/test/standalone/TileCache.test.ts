@@ -8,7 +8,7 @@ import * as path from "path";
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
@@ -16,9 +16,8 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
 import { IModelTestUtils, TestUtils } from "../index";
 import { IModelJsFs } from "../../IModelJsFs";
-
-import { HubMock } from "..";
 import { GeometricModel3d } from "../../Model";
+import { HubMock } from "../../HubMock";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
@@ -49,7 +48,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       continue;
 
     iModelTileTreeIdToString;
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false as const }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)

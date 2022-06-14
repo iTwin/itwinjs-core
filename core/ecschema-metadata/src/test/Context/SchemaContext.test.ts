@@ -126,4 +126,19 @@ describe("Schema Context", () => {
     // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2
     expect(await context.getSchema(schema2.schemaKey)).to.equal(schema);
   });
+
+  it("getKnownSchemas should return all schemas from schema cache", async () => {
+    const context = new SchemaContext();
+
+    const schema1 = new Schema(context, new SchemaKey("TestSchema"), "ts");
+    await context.addSchema(schema1);
+
+    const schema2 = new Schema(context, new SchemaKey("TestSchema2"), "ts");
+    await context.addSchema(schema2);
+
+    const schemas = context.getKnownSchemas();
+    expect(schemas.length).to.equal(2);
+    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
+    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
+  });
 });
