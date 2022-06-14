@@ -26,7 +26,7 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
     widgetContentManager.setContainer(widget.activeTabId, instance);
   }, [widget.activeTabId, widgetContentManager]);
   const className = classnames(
-    "nz-widget-content-container",
+    "nz-widget-contentContainer",
     undefined === side && widget.minimized && "nz-minimized",
   );
   return (
@@ -34,6 +34,7 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
       className={className}
     >
       <div
+        className="nz-content"
         ref={ref}
       />
       <WidgetOutline />
