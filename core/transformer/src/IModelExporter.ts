@@ -137,6 +137,8 @@ export class IModelExporter {
   public readonly sourceDb: IModelDb;
   /** A flag that indicates whether element GeometryStreams are loaded or not.
    * @note As an optimization, exporters that don't need geometry can set this flag to `false`. The default is `true`.
+   * @note The transformer by default sets this to `false` as an optimization.
+   * @note This implies the `wantBRepData` option when loading elements.
    * @see [ElementLoadProps.wantGeometry]($common)
    */
   public wantGeometry: boolean = true;
@@ -421,7 +423,7 @@ export class IModelExporter {
     if (model.isTemplate && !this.wantTemplateModels) {
       return;
     }
-    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
+    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
     if (this.shouldExportElement(modeledElement)) {
       await this.exportModelContainer(model);
@@ -568,7 +570,7 @@ export class IModelExporter {
         return this.exportChildElements(elementId);
       }
     }
-    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
+    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry, wantBRepData: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
