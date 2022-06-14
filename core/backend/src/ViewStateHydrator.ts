@@ -20,8 +20,11 @@ export class ViewStateHydrator {
       promises.push(this.handleAcsId(response, options.acsId));
     if (options.sheetViewAttachmentIds)
       promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.viewStateLoadProps));
-    if (options.notLoadedCategoryIds)
+    // eslint-disable-next-line deprecation/deprecation
+    if (options.notLoadedCategoryIds) {
+      // eslint-disable-next-line deprecation/deprecation
       promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
+    }
     if (options.spatialViewId)
       promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.viewStateLoadProps));
     if (options.notLoadedModelSelectorStateModels)
@@ -51,6 +54,7 @@ export class ViewStateHydrator {
         // incomplete results. Since we're not retrying, that's the best we can do.
       }
     }
+    // eslint-disable-next-line deprecation/deprecation
     response.categoryIdsResult = result;
   }
 

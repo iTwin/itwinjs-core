@@ -10,7 +10,6 @@ import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/c
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
-import { ViewState } from "./ViewState";
 
 /** Per-model category visibility permits the visibility of categories within a [[Viewport]] displaying a [[SpatialViewState]] to be overridden in
  * the context of individual [[GeometricModelState]]s.
