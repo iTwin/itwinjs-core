@@ -261,9 +261,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
 	  }
     }
-    const layerSettings = source.toLayerSettings(validation.subLayers);
-    if (layerSettings) {
-      vp.displayStyle.attachMapLayer(layerSettings, isOverlay, undefined);
+    const settings = source.toLayerSettings(validation.subLayers);
+    if (settings) {
+      vp.displayStyle.attachMapLayer({settings, isOverlay});
 
       const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));

@@ -30,9 +30,9 @@ class AttachMapLayerBaseTool extends Tool {
           vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
           vp.invalidateRenderPlan();
         } else {
-          const layerSettings = source.toLayerSettings(validation.subLayers);
-          if (layerSettings) {
-            vp.displayStyle.attachMapLayer(layerSettings, !this._isBackground);
+          const settings = source.toLayerSettings(validation.subLayers);
+          if (settings) {
+            vp.displayStyle.attachMapLayer({settings, isOverlay: !this._isBackground});
           }
         }
 
@@ -81,7 +81,8 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      vp.displayStyle.attachMapLayer(ModelMapLayerSettings.fromJSON({ name, modelId }), false);
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
+      vp.displayStyle.attachMapLayer({settings, isOverlay:false});
     }
     return true;
   }

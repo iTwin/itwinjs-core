@@ -402,11 +402,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    *
    */
-  public attachMapLayer(settings: MapLayerSettings, isOverlay: boolean = false, insertIndex: number = -1) {
-    const layerSettings = settings.clone({});
+  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number}): void {
+    const layerSettings = options.settings.clone({});
     if (undefined === layerSettings)
       return;
 
+    const isOverlay = options.isOverlay ?? false;
+    const insertIndex = options.insertIndex ?? -1;
     const layers = this.getMapLayers(isOverlay);
 
     if (insertIndex < 0 || insertIndex > (layers.length - 1)) {
@@ -419,12 +421,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public attachMapLayerProps(props: MapLayerProps, isOverlay: boolean = false, insertIndex: number = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
-    if (undefined === layerSettings)
+  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number}): void {
+    const settings = MapLayerSettings.fromJSON(options.props);
+    if (undefined === settings)
       return;
 
-    this.attachMapLayer(layerSettings, isOverlay, insertIndex);
+    this.attachMapLayer({settings, isOverlay: options.isOverlay, insertIndex:options.insertIndex});
   }
 
   /** @internal */

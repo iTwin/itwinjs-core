@@ -123,14 +123,14 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
               if (status === MapLayerSourceStatus.Valid) {
-                const layerSettings = mapLayerSettings.toLayerSettings(subLayers);
+                const settings = mapLayerSettings.toLayerSettings(subLayers);
 
-                if (layerSettings) {
-                  activeViewport.displayStyle.attachMapLayer(layerSettings, isOverlay);
+                if (settings) {
+                  activeViewport.displayStyle.attachMapLayer({settings, isOverlay});
 
                   activeViewport.invalidateRenderPlan();
 
-                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: layerSettings.name, sourceUrl: layerSettings.url });
+                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: settings.name, sourceUrl: settings.url });
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
                 }
 

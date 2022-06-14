@@ -2433,9 +2433,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
-    attachMapLayer(settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number): void;
+    attachMapLayer(options: {
+        settings: MapLayerSettings;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     // @internal (undocumented)
-    attachMapLayerProps(props: MapLayerProps, isOverlay?: boolean, insertIndex?: number): void;
+    attachMapLayerProps(options: {
+        props: MapLayerProps;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
@@ -6279,7 +6287,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
