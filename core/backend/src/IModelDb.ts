@@ -601,7 +601,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * query iModelDb for subcategories given categoryIds.
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param categoryIds categoryIds to query
    * @returns array of SubCategoryResultRow
    */

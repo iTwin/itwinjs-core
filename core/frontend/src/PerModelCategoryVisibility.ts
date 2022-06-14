@@ -51,7 +51,7 @@ export namespace PerModelCategoryVisibility {
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     /** Changes multiple overrides, given an array of overrides */
-    setOverrides(perModelCategoryVisibility: Props[], viewState?: ViewState): Promise<void>;
+    setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */

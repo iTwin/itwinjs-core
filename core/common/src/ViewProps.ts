@@ -64,6 +64,8 @@ export interface SubCategoryResultRow {
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
+  /** @deprecated If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
+  notLoadedCategoryIds?: CompressedId64Set;
   sheetViewAttachmentIds?: CompressedId64Set;
   viewStateLoadProps?: ViewStateLoadProps;
   baseModelId?: Id64String;

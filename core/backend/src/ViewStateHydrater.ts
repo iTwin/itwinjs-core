@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 

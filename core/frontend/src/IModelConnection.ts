@@ -258,7 +258,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /**
-   * queries every passed categoryId for its parentId, id, and appearance.
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param compressedCategoryIds compressed category Ids
    * @returns array of SubCategoryResultRow
    * @internal
