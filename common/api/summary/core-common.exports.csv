@@ -411,7 +411,6 @@ public;LocalFileName = string
 public;Localization
 public;MapImageryProps
 public;MapImagerySettings
-public;MapLayerFormatId = string | ImageryMapLayerFormatId
 public;MapLayerKey
 public;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
 public;class MapLayerSettings

@@ -10,16 +10,11 @@ import { assert, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
-/** Enum of imagery map layer formats Ids supported.
+/** The current set of supported map layer formats.
+ * In order to be displayed, a corresponding format must have been registered in the [MapLayerFormatRegistry]($frontend)
  * @public
  */
 export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
-
-/** Id of a map layer format.  In order to be displayed, a corresponding
- * format object must have been registered in the [[MapLayerFormatRegistry]]
- * @public
- */
-export type MapLayerFormatId = string | ImageryMapLayerFormatId;
 
 /** @public */
 export type SubLayerId = string | number;
@@ -150,13 +145,14 @@ export interface CommonMapLayerProps {
 
 /** JSON representation of an [[ImageMapLayerSettings]].
  * @see [[MapImagerySettings]].
+ * @see [[ImageryMapLayerFormatId]].
  * @public
  */
 export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** URL */
   url: string;
   /** Identifies the map layers source.*/
-  formatId: MapLayerFormatId;
+  formatId: string;
   /** Source layers. If undefined all layers are displayed. */
   subLayers?: MapSubLayerProps[];
   /** Access Key for the Layer, like a subscription key or access token.
@@ -279,7 +275,7 @@ export abstract class MapLayerSettings {
  * @public
  */
 export class ImageMapLayerSettings extends MapLayerSettings {
-  public readonly formatId: MapLayerFormatId;
+  public readonly formatId: string;
   public readonly url: string;
   public userName?: string;
   public password?: string;

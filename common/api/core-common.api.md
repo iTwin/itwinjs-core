@@ -4314,7 +4314,7 @@ export interface ImageGraphicProps {
 export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: MapLayerKey;
-    formatId: MapLayerFormatId;
+    formatId: string;
     // @internal (undocumented)
     modelId?: never;
     subLayers?: MapSubLayerProps[];
@@ -4334,7 +4334,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
-    readonly formatId: MapLayerFormatId;
+    readonly formatId: string;
     // (undocumented)
     static fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
@@ -5116,9 +5116,6 @@ export class MapImagerySettings {
     // (undocumented)
     toJSON(): MapImageryProps;
 }
-
-// @public
-export type MapLayerFormatId = string | ImageryMapLayerFormatId;
 
 // @public
 export interface MapLayerKey {

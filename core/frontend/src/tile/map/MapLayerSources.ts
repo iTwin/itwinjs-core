@@ -8,7 +8,7 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapLayerFormatId, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -36,11 +36,12 @@ export enum MapLayerSourceStatus {
 }
 
 /** JSON representation of a map layer source.
+ *  * @see [ImageryMapLayerFormatId]($common)
  * @public
  */
 interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
-  formatId?: MapLayerFormatId;
+  formatId?: string;
   /** Name */
   name: string;
   /** URL */
