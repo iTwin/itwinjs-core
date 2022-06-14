@@ -2319,13 +2319,13 @@ export abstract class IModelDb extends IModel {
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    queryCategoryIds(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
+    querySubCategories(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]>;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)

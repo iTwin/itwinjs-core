@@ -4835,9 +4835,10 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get projectCenterAltitude(): number | undefined;
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    queryCategoryIds(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
+    // @internal
+    querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
@@ -7590,7 +7591,7 @@ export namespace PerModelCategoryVisibility {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
-        setOverrides(perModelCategoryVisibility: Props[], viewState?: ViewState): Promise<void>;
+        setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
     }
     export interface Props {
         // (undocumented)
