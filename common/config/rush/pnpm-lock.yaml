@@ -2636,7 +2636,6 @@ importers:
     specifiers:
       '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
-      '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -2646,12 +2645,12 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
@@ -2667,6 +2666,7 @@ importers:
       electron: ^14.0.0
       eslint: ^7.11.0
       express: ^4.16.3
+      got: ~11.8.2
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
@@ -2675,7 +2675,6 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/browser-authorization': 0.5.1
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2684,13 +2683,14 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.8.4
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
+      '@itwin/oidc-signin-tool': 3.4.1_electron@14.2.9
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.20.0
+      got: 11.8.3
     devDependencies:
       '@bentley/react-scripts': 5.0.0-dev.4_typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
@@ -6748,7 +6748,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/core-webpack-tools/3.1.3_webpack@5.72.1:
     resolution: {integrity: sha512-xCxvoX5QcuOh4FAhtQuVVL7l+GvOsqYCCBEx9D9+3D1LrvGctbF+Z0aTbuxgpdjnZMk6+Wf/T5D7Fx0jIFdOkg==}
@@ -6906,7 +6905,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
@@ -7910,7 +7908,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8155,6 +8153,10 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.16:

@@ -5,12 +5,10 @@
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -62,45 +60,10 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(): Promise<ElectronRendererAuthorization | BrowserAuthorizationClient> {
-  if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new ElectronRendererAuthorization();
-    return desktopClient;
-  } else {
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
-      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
-    };
-    const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
-    return browserClient;
-  }
-}
-
-// Wraps the signIn process
-// In the case of use in web applications:
-// - called the first time to start the signIn process - resolves to false
-// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
-// - called the third time as the application redirects back to complete the authorization - finally resolves to true
-// In the case of use in electron applications:
-// - promise wraps around a registered call back and resolves to true when the sign in is complete
-// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
-async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient();
-  await oidcClient.signIn();
-
-  IModelApp.authorizationClient = oidcClient;
-  return (await oidcClient.getAccessToken()) !== "";
-}
-
 async function main() {
   try {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
-
-    if (props.signIn)
-      await signIn();
-
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {

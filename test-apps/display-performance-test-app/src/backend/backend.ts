@@ -6,11 +6,11 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { TestBrowserAuthorizationClient, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -36,18 +36,11 @@ export async function initializeBackend() {
   const iModelHost = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
+  iModelHost.authorizationClient = await initializeAuthorizationClient();
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    let authClient: ElectronMainAuthorization | undefined;
-    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
-      authClient = new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
-      });
-      iModelHost.authorizationClient = authClient;
-    }
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -55,9 +48,25 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
-
-    if (authClient)
-      await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
+}
+
+async function initializeAuthorizationClient(): Promise<TestBrowserAuthorizationClient | undefined> {
+  const config: TestBrowserAuthorizationClientConfiguration = {
+    clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+    redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+    scope: process.env.IMJS_OIDC_SCOPE!,
+    authority: process.env.IMJS_OIDC_AUTHORITY,
+    clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
+  };
+  const user: TestUserCredentials = {
+    email: process.env.IMJS_OIDC_EMAIL!,
+    password: process.env.IMJS_OIDC_PASSWORD!,
+  };
+  if(Object.entries({...config, ...user}).every((e) => e === undefined))
+    return undefined;
+  const authorizationClient = new TestBrowserAuthorizationClient(config, user);
+  await authorizationClient.getAccessToken();
+  return authorizationClient;
 }

@@ -660,7 +660,7 @@
     },
     {
       "name": "got",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "i18next",
