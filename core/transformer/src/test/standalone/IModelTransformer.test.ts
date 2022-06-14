@@ -1797,21 +1797,17 @@ describe("IModelTransformer", () => {
   });
 
   it.only("new bug test", async () => {
+    const seedDb = SnapshotDb.openFile("/tmp/bad-scope.bim");
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, {rootSubject: {name: "newBug"}});
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
 
-    const physModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-in-source");
+    const sourcePhysModelId = sourceDb.withPreparedStatement("SELECT ECInstanceId FROM bis.PhysicalPartition LIMIT 1 OFFSET 1", (stmt) => {
+      const stepResult = stmt.step();
+      assert(stepResult === DbResult.BE_SQLITE_ROW);
+      return stmt.getValue(0).getId();
+    });
 
-    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
-    const _physObjId = new PhysicalObject({
-      classFullName: PhysicalObject.classFullName,
-      model: physModelId,
-      category: spatialCategId,
-      code: Code.createEmpty(),
-      userLabel: `MyPhysicalObject`,
-      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
-      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
-    }, sourceDb).insert();
+    expect(sourcePhysModelId).to.equal("0x20000000220");
 
     sourceDb.saveChanges();
 
@@ -1825,14 +1821,9 @@ describe("IModelTransformer", () => {
     class TestTransformer extends IModelTransformer {
       public hasTestedShouldExportPhysModel = false;
       public override shouldExportElement(sourceElement: Element): boolean {
-        const isPhysModel = physModelId === sourceElement.id;
-        const isPhysObj = _physObjId === sourceElement.id;
-        assert(isPhysObj !== undefined);
-        assert(!(isPhysModel && isPhysObj));
-        if (isPhysModel) {
-          transformer.context.remapElement(physModelId, targetModelId);
+        if (sourceElement.id === sourcePhysModelId) {
+          this.context.remapElement(sourceElement.id, targetModelId);
           this.hasTestedShouldExportPhysModel = true;
-          return false;
         }
         return super.shouldExportElement(sourceElement);
       }
