@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Store unnormalized directional vectors in the ECEFLocation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
