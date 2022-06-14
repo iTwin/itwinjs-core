@@ -1796,50 +1796,55 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("new bug test", async () => {
+  it.only("new bug test", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, {rootSubject: {name: "newBug"}});
 
-    const [mainPhysModelId, ...otherPhysModelIds]  = new Array(3).fill(null).map((_, i) =>
-      PhysicalModel.insert(sourceDb, IModel.rootSubjectId, `M${i}`));
+    const physModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-in-source");
+
+    const spatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const _physObjId = new PhysicalObject({
+      classFullName: PhysicalObject.classFullName,
+      model: physModelId,
+      category: spatialCategId,
+      code: Code.createEmpty(),
+      userLabel: `MyPhysicalObject`,
+      geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
+    }, sourceDb).insert();
 
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
+    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "phys-model-in-target");
+
+    targetDb.saveChanges();
+
     class TestTransformer extends IModelTransformer {
+      public hasTestedShouldExportPhysModel = false;
       public override shouldExportElement(sourceElement: Element): boolean {
-        const isMainPartition = mainPhysModelId === sourceElement.id;
-        const isOtherPartition = otherPhysModelIds.includes(sourceElement.id);
-        assert(isOtherPartition !== undefined);
-        assert(!(isMainPartition && isOtherPartition));
-        if (isOtherPartition) {
-          // this.context.remapElement(sourceElement.id, );
+        const isPhysModel = physModelId === sourceElement.id;
+        const isPhysObj = _physObjId === sourceElement.id;
+        assert(isPhysObj !== undefined);
+        assert(!(isPhysModel && isPhysObj));
+        if (isPhysModel) {
+          transformer.context.remapElement(physModelId, targetModelId);
+          this.hasTestedShouldExportPhysModel = true;
           return false;
         }
         return super.shouldExportElement(sourceElement);
       }
     }
 
-    const transformer = new TestTransformer(sourceDb, targetDb, {includeSourceProvenance: true});
-    transformer.importer.doNotUpdateElementIds.add(mainPhysModelId);
-    await transformer.processSchemas();
-    /*
-    for (const otherPhysModelId of otherPhysModelIds) {
-      //this.context.remapElement(sourceElement.id, );
-      await transformer.processElement(otherPhysModelId);
-    }
-    */
-    await transformer.processAll();
+    const transformer = new TestTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
+    transformer.importer.doNotUpdateElementIds.add(targetModelId);
+    // transformer.context.remapElement(physModelId, targetModelId);
 
-    targetDb.saveChanges();
-
-    await assertIdentityTransformation(sourceDb, targetDb, transformer, { compareElemGeom: true });
-
-    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
-    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
-    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
+    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+    expect(transformer.hasTestedShouldExportPhysModel).to.be.true;
 
     sourceDb.close();
     targetDb.close();
