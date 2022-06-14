@@ -14,7 +14,6 @@
   height: 100%;
 
   &.nz-hidden {
-    transform: scale(0);
     transition: none;
   }
 
@@ -26,11 +25,21 @@
 
   &.nz-left {
     grid-column: 1;
+    transform-origin: left;
+
+    &.nz-hidden {
+      transform: scale(0, 1);
+    }
   }
 
   &.nz-right {
     grid-column: 3;
     right: 0;
+    transform-origin: right;
+
+    &.nz-hidden {
+      transform: scale(0, 1);
+    }
   }
 
   &.nz-top,
@@ -45,10 +54,20 @@
 
   &.nz-top {
     grid-row: 1;
+    transform-origin: top;
+
+    &.nz-hidden {
+      transform: scale(1, 0);
+    }
   }
 
   &.nz-bottom {
     grid-row: 3;
     bottom: 0;
+    transform-origin: bottom;
+
+    &.nz-hidden {
+      transform: scale(1, 0);
+    }
   }
 }
