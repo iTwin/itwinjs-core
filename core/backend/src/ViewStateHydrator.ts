@@ -7,7 +7,7 @@ import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
-export class ViewStateHydrater {
+export class ViewStateHydrator {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
@@ -59,7 +59,7 @@ export class ViewStateHydrater {
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.ViewStateHydrater, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
+      Logger.logError(BackendLoggerCategory.ViewStateHydrator, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
     }
     response.baseModelProps = modelProps;
   }

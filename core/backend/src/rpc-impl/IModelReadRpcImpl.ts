@@ -25,7 +25,7 @@ import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
-import { ViewStateHydrater } from "../ViewStateHydrater";
+import { ViewStateHydrator } from "../ViewStateHydrator";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -46,7 +46,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewHydrater = new ViewStateHydrater(iModelDb);
+    const viewHydrater = new ViewStateHydrator(iModelDb);
     return viewHydrater.getHydrateResponseProps(options);
   }
 
