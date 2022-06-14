@@ -605,7 +605,7 @@ export abstract class IModelDb extends IModel {
    * @param categoryIds categoryIds to query
    * @returns array of SubCategoryResultRow
    */
-  public async queryCategoryIds(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]> {
     // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
     const maxCategoriesPerQuery = 200;
     const result = [];

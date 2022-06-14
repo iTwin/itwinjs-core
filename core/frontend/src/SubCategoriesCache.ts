@@ -153,7 +153,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
       try {
         const catIds = this._categoryIds[this._curCategoryIdsIndex];
-        const result = await this._imodel.queryCategoryIds(catIds);
+        const result = await this._imodel.querySubCategories(catIds);
         this._result.push(...result);
         if (this.wasCanceled)
           return undefined;

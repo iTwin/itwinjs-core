@@ -261,10 +261,10 @@ export abstract class IModelConnection extends IModel {
    * queries every passed categoryId for its parentId, id, and appearance.
    * @param compressedCategoryIds compressed category Ids
    * @returns array of SubCategoryResultRow
-   *
+   * @internal
    */
-  public async queryCategoryIds(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryCategoryIds(this.getRpcProps(), compressedCategoryIds);
+  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
   /** Execute a query and stream its results

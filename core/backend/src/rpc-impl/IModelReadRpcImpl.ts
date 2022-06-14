@@ -50,10 +50,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return viewHydrater.getHydrateResponseProps(options);
   }
 
-  public async queryCategoryIds(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
-    return iModelDb.queryCategoryIds(decompressedIds);
+    return iModelDb.querySubCategories(decompressedIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {

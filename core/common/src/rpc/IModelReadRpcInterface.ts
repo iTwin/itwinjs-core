@@ -66,7 +66,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
-  public async queryCategoryIds(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> { return this.forward(arguments); }
+  public async querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> { return this.forward(arguments); }
   public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
