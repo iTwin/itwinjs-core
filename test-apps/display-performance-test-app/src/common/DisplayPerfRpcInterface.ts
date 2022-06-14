@@ -6,6 +6,7 @@ import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
 import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
+import { ConfigRemoteIModel } from "./Interfaces";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
@@ -46,8 +47,7 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> { return this.forward(arguments); }
 
-  /** Downloads an iModel from the iTwinId project along with its saved views */
-  public async initializeRemoteIModel(_iTwinId: string, _iModelId: string, _savedViewNames?: string[]): Promise<void> { return this.forward(arguments); }
+  public async initializeRemoteIModels(_remoteIModels: Array<ConfigRemoteIModel>): Promise<void> { return this.forward(arguments); }
   /** Returns the filepath of a downloaded iModel */
   public async getInitializedRemoteIModelFilepath(_iModelId: string): Promise<string> { return this.forward(arguments); }
 }

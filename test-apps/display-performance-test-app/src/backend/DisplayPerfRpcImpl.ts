@@ -13,6 +13,7 @@ import { ViewStateSpec } from "../frontend/TestConfig";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 import { fetchSavedViews } from "./savedViewsAPI";
+import { ConfigRemoteIModel } from "../common/Interfaces";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
@@ -224,29 +225,31 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return fileNames;
   }
 
-  public override async initializeRemoteIModel(iTwinId: string, iModelId: string, savedViewNames?: string[]): Promise<void> {
-    const existing = BriefcaseManager.getCachedBriefcases(iModelId);
-    if(existing.length < 1) {
-      await this.consoleLog(`Downloading iModel "${iModelId}"`);
-      await BriefcaseManager.downloadBriefcase({
-        iTwinId,
-        iModelId,
-        accessToken: await IModelHost.getAccessToken(),
-        briefcaseId: BriefcaseIdValue.Unassigned,
-      });
-    }
-    if(savedViewNames !== undefined && savedViewNames.length > 0) {
-      await this.consoleLog(`Fetching saved views for iModel "${iModelId}"`);
-      const savedViews = await fetchSavedViews(iTwinId, iModelId, new Set(savedViewNames));
+  public override async initializeRemoteIModels(remoteIModels: Array<ConfigRemoteIModel>): Promise<void> {
+    for(const {iModelId, iTwinId, externalViewNames} of remoteIModels) {
+      const cached = BriefcaseManager.getCachedBriefcases(iModelId);
+      if(cached.length < 1) {
+        await this.consoleLog(`Downloading iModel "${iModelId}"`);
+        await BriefcaseManager.downloadBriefcase({
+          iTwinId,
+          iModelId,
+          accessToken: await IModelHost.getAccessToken(),
+          briefcaseId: BriefcaseIdValue.Unassigned,
+        });
+      }
+      if(externalViewNames !== undefined && externalViewNames.length > 0) {
+        await this.consoleLog(`Fetching saved views for iModel "${iModelId}"`);
+        const savedViews = await fetchSavedViews(iTwinId, iModelId, new Set(externalViewNames));
 
-      const esvFileName = this.createEsvFilename( await this.getInitializedRemoteIModelFilepath(iModelId) );
-      const esvFileData: ViewStateSpec[] = savedViews.map((sv) => ({
-        name: sv.displayName,
-        viewProps: sv.savedViewData.legacyView,
-        elementOverrides: undefined,
-        selectedElements: undefined,
-      }));
-      IModelJsFs.writeFileSync(esvFileName, JSON.stringify(esvFileData));
+        const esvFileName = this.createEsvFilename( await this.getInitializedRemoteIModelFilepath(iModelId) );
+        const esvFileData: ViewStateSpec[] = savedViews.map((sv) => ({
+          name: sv.displayName,
+          viewProps: sv.savedViewData.legacyView,
+          elementOverrides: undefined,
+          selectedElements: undefined,
+        }));
+        IModelJsFs.writeFileSync(esvFileName, JSON.stringify(esvFileData));
+      }
     }
   }
 

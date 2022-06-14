@@ -11,6 +11,7 @@ import {
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { ConfigRemoteIModel } from "../common/Interfaces";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -60,36 +61,36 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function downloadRemoteIModels(props: TestSetsProps): Promise<void> {
-  // Find remote iModels and their external views
-  /** iModelId -> savedViewNames */
-  const remoteModelsViews = new Map<string, Set<string>>();
+async function initializeRemoteIModels(props: TestSetsProps): Promise<void> {
+  const map: {
+    [iModelId: string]: {iTwinId: string, externalViewNames: Set<string>};
+  } = {};
   for(const testSet of props.testSet) {
-    if(testSet.iModelId === undefined)
-      continue; // Not remote
+    const iModelId = testSet.iModelId;
+    if(iModelId === undefined) continue; // Not remote
+    const iTwinId = testSet.iTwinId ?? props.iTwinId;
+    if(iTwinId === undefined) throw new Error("Missing iTwinId for remote iModel");
 
-    const externalViews: string[] = [];
+    const externalViewNames = new Set<string>();
     for(const test of testSet.tests)
       if(test.extViewName !== undefined)
-        externalViews.push(test.extViewName);
+        externalViewNames.add(test.extViewName);
 
-    const thisModelViews = remoteModelsViews.get(testSet.iModelId);
-    if(thisModelViews === undefined)
-      remoteModelsViews.set(testSet.iModelId, new Set(externalViews));
+    if(map[iModelId] === undefined)
+      map[iModelId] = { iTwinId, externalViewNames };
     else
-      externalViews.forEach((v) => { thisModelViews.add(v); });
+      externalViewNames.forEach((evn) => {
+        map[iModelId].externalViewNames.add(evn);
+      });
   }
-
-  if(remoteModelsViews.size < 1)
+  if(Object.keys(map).length < 1)
     return;
-  const iTwinId = props.iTwinId;
-  if(iTwinId === undefined)
-    throw new Error("Missing iTwinId in config for remote iModels");
-
-  const rpcClient = DisplayPerfRpcInterface.getClient();
-  await Promise.all(Array.from(remoteModelsViews).map(async ([iModelId, savedViewNames]) =>
-    rpcClient.initializeRemoteIModel(iTwinId, iModelId, Array.from(savedViewNames))
-  ));
+  const dataToSend: Array<ConfigRemoteIModel> = Object.entries(map).map(([iModelId, info]) => ({
+    iModelId,
+    iTwinId: info.iTwinId,
+    externalViewNames: Array.from(info.externalViewNames),
+  }));
+  await DisplayPerfRpcInterface.getClient().initializeRemoteIModels(dataToSend);
 }
 
 async function main() {
@@ -97,7 +98,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    await downloadRemoteIModels(props);
+    await initializeRemoteIModels(props);
 
     const runner = new TestRunner(props);
     await runner.run();

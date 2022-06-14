@@ -45,7 +45,7 @@ Performance tests on iOS have more restrictions than performance tests run on ot
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
 * IMJS_OIDC_...
-  * If using models from iModelHub, this is required for auth.
+  * If using iModels from iModelHub, this is required for auth.
   * See [backend.ts setupAuthorizationClient()](./src//backend/backend.ts) and [@itwin/oidc-signin-tool](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool) for details
   * IMJS_URL_PREFIX might be required as well
 
@@ -140,13 +140,13 @@ Specifying where the imodels are located:
 If given the option of using a local file path or using iModelHub, the program will first attempt to access the imodel using the local file path; if that fails, the program will then attempt to use the iModelHub location to access the imodel.
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
-* To specify an iModelHub project to use, set the `iTwinId` setting in the json configuration file. For every `iModelId` provided in a test set, the required model will be downloaded from the provided `iTwinId` project along with any `extViewName` saved views. Only one iTwin project is supported currently. This requires setting `IMJS_OIDC_...` env variables. For example:
+* To specify an iModelHub project to use, set the `iTwinId` setting in the json configuration file. For every `iModelId` provided in a test set, the required model will be downloaded from the provided `iTwinId` project along with any `extViewName` saved views. This requires setting `IMJS_OIDC_...` env variables. For example:
 
   ```json
   {
-    "iTwinId": "12345678-1234-1234-1234-123456781234",
     "testSet": [
       {
+         "iTwinId": "12345678-1234-1234-1234-123456781234",
         "iModelName": "My test model",
         "iModelId": "87654321-4321-4321-4321-432187654321",
         "tests": [
