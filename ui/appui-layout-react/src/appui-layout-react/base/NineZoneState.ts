@@ -1351,6 +1351,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
             widgetId: location.widgetId,
             widgetIndex,
           },
+          hidden: false,
         };
         draft.floatingWidgets.allIds.push(floatingWidgetId);
         draft.widgets[floatingWidgetId] = {
