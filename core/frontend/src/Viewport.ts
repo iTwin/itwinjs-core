@@ -3297,7 +3297,11 @@ export class ScreenViewport extends Viewport {
         _clear2dCanvas(this.canvas);
     }
 
-    this.target.updateViewRect();
+    const resized = this.target.updateViewRect();
+    if (resized) {
+      this.target.onResized();
+      this.invalidateController();
+    }
     this.invalidateRenderPlan();
   }
 }
