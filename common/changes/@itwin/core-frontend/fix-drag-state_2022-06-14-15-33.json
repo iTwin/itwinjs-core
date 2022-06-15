@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Omit authorization in RPC communication between mobile frontend and backend.",
+      "comment": "Clear drag state when button let up outside view. Don't send tools drag events if they didn't get button down event.",
       "type": "none"
     }
   ],
