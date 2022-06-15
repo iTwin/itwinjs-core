@@ -9,7 +9,7 @@ import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
@@ -81,6 +81,7 @@ describe("CloudSqlite", () => {
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
   const user = "CloudSqlite test";
+  const user2 = "CloudSqlite test2";
 
   before(async () => {
     testContainers = CloudSqliteTest.makeCloudSqliteContainers([["test1", false], ["test2", false], ["test3", true]]);
@@ -117,7 +118,7 @@ describe("CloudSqlite", () => {
     await uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
 
-  it("cloud containers", async () => {
+  it.only("cloud containers", async () => {
     expect(undefined !== caches[0]);
 
     const contain1 = testContainers[0];
@@ -226,8 +227,39 @@ describe("CloudSqlite", () => {
     // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
-      expect(() => cont2.acquireWriteLock(user)).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
+      expect(() => cont2.acquireWriteLock(user)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
+
+    let retries = 0;
+    await CloudSqlite.withWriteLock(user2, cont2, async () => {
+      await expect(CloudSqlite.withWriteLock(user, contain1, async () => { }, async (lockedBy: string, expires: string) => {
+        expect(lockedBy).equals(user2);
+        expect(expires.length).greaterThan(0);
+        return ++retries < 5;
+      })).rejectedWith("is currently locked");
+    });
+    expect(retries).equals(5); // retry handler should be called 5 times
+
+    // Logger.initializeToConsole();
+    // Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    // caches[1].setLogMask(0xff);
+
+    const timer = new StopWatch("lock", true);
+    let count = 0;
+    const db2 = new SQLiteDb();
+    for (let i = 0; i < 1000; ++i) {
+      await CloudSqlite.withWriteLock(user2, contain1, async () => {
+        db2.openDb("c0-db1:0", OpenMode.ReadWrite, contain1);
+        db2.withSqliteStatement(`INSERT INTO strings(id,value) VALUES(${i},"${i}")`, (stmt) => {
+          stmt.step();
+        });
+        db2.saveChanges();
+        db2.closeDb();
+        count++;
+      });
+    }
+
+    console.log(`lock took ${timer.elapsedSeconds} seconds for ${count} cycles (${timer.elapsedSeconds * 1000 / count} milliseconds per request)`);
 
     cont2.detach();
     contain1.detach();
