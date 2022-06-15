@@ -90,8 +90,8 @@ describe("MapManagerSettings", () => {
     displayStyleSettingsMock.reset();
     displayStyleSettingsMock.setup((styleSettings) => styleSettings.backgroundMap).returns(() => backgroundMapSettingsMock.object);
     displayStyleMock.reset();
-    displayStyleMock.setup((ds) => ds.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
-    displayStyleMock.setup((style) => style.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
+    displayStyleMock.setup((ds) => ds.attachMapLayer(moq.It.isAny()));
+    displayStyleMock.setup((style) => style.attachMapLayer(moq.It.isAny()));
     displayStyleMock.setup((style) => style.settings).returns(() => displayStyleSettingsMock.object);
     viewMock.reset();
     viewMock.setup((view) => view.iModel).returns(() => imodelMock.object);

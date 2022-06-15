@@ -404,7 +404,7 @@ export interface BackgroundMapProps {
     useDepthBuffer?: boolean;
 }
 
-// @beta
+// @public
 export class BackgroundMapProvider {
     clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider;
     equals(other: BackgroundMapProvider): boolean;
@@ -419,7 +419,7 @@ export class BackgroundMapProvider {
 // @public
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
-// @beta
+// @public
 export interface BackgroundMapProviderProps {
     name?: BackgroundMapProviderName;
     type?: BackgroundMapType;
@@ -472,24 +472,24 @@ export namespace Base64EncodedString {
     const replacer: (_name: string, value: any) => any;
 }
 
-// @beta
+// @public
 export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
-// @beta
+// @public
 export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 
-// @beta (undocumented)
+// @public (undocumented)
 export namespace BaseLayerSettings {
     export function fromJSON(props: BaseLayerProps): BaseLayerSettings;
 }
 
-// @beta
+// @public
 export interface BaseMapLayerProps extends ImageMapLayerProps {
     // (undocumented)
     provider?: BackgroundMapProviderProps;
 }
 
-// @beta
+// @public
 export class BaseMapLayerSettings extends ImageMapLayerSettings {
     clone(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerSettings;
     // @internal (undocumented)
@@ -1509,7 +1509,7 @@ export enum CommonLoggerCategory {
     RpcInterfaceFrontend = "core-frontend.RpcInterface"
 }
 
-// @beta
+// @public
 export interface CommonMapLayerProps {
     name: string;
     transparency?: number;
@@ -4311,8 +4311,9 @@ export interface ImageGraphicProps {
     textureId: Id64String;
 }
 
-// @beta
+// @public
 export interface ImageMapLayerProps extends CommonMapLayerProps {
+    // @internal (undocumented)
     accessKey?: MapLayerKey;
     formatId: string;
     // @internal (undocumented)
@@ -4321,7 +4322,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     url: string;
 }
 
-// @beta
+// @public
 export class ImageMapLayerSettings extends MapLayerSettings {
     // @internal
     protected constructor(props: ImageMapLayerProps);
@@ -4364,6 +4365,9 @@ export interface ImagePrimitive {
     // (undocumented)
     type: "image";
 }
+
+// @public
+export type ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
 
 // @public
 export class ImageSource {
@@ -5085,7 +5089,7 @@ export interface Localization {
 
 export { LogFunction }
 
-// @beta
+// @public
 export interface MapImageryProps {
     // (undocumented)
     backgroundBase?: BaseLayerProps;
@@ -5095,7 +5099,7 @@ export interface MapImageryProps {
     overlayLayers?: MapLayerProps[];
 }
 
-// @beta
+// @public
 export class MapImagerySettings {
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
@@ -5112,7 +5116,7 @@ export class MapImagerySettings {
     toJSON(): MapImageryProps;
 }
 
-// @beta
+// @public
 export interface MapLayerKey {
     // (undocumented)
     key: string;
@@ -5120,10 +5124,10 @@ export interface MapLayerKey {
     value: string;
 }
 
-// @beta
+// @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
 
-// @beta
+// @public
 export abstract class MapLayerSettings {
     // @internal
     protected constructor(name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean);
@@ -5153,7 +5157,7 @@ export abstract class MapLayerSettings {
     readonly visible: boolean;
 }
 
-// @beta
+// @public
 export interface MapSubLayerProps {
     // (undocumented)
     children?: SubLayerId[];
@@ -5169,7 +5173,7 @@ export interface MapSubLayerProps {
     visible?: boolean;
 }
 
-// @beta
+// @public
 export class MapSubLayerSettings {
     constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]);
     readonly children?: SubLayerId[];
@@ -5372,7 +5376,7 @@ export interface ModelLoadProps {
     id?: Id64String;
 }
 
-// @beta
+// @public
 export interface ModelMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: never;
@@ -5385,7 +5389,7 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
     url?: never;
 }
 
-// @beta
+// @public
 export class ModelMapLayerSettings extends MapLayerSettings {
     // @internal
     protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean);
@@ -8528,7 +8532,7 @@ export interface SubjectProps extends ElementProps {
     description?: string;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export type SubLayerId = string | number;
 
 // @beta
