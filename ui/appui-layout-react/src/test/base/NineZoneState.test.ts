@@ -717,6 +717,36 @@ describe("NineZoneStateReducer", () => {
       expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
       should().not.exist(newState.widgets.fw1);
     });
+    it("should find saved state when re-adding a floating widget", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "leftStart", ["t1"], {
+        tabs: ["t0"],
+      });
+      state = addFloatingWidget(state, "fw1", ["fwt1"], {
+        home: {
+          side: "left",
+          widgetId: "leftStart",
+          widgetIndex: 0,
+        },
+      }, {
+        tabs: ["t1", "t2"],
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw1",
+      });
+      newState.widgets.leftStart.tabs.should.eql(["t0", "t1", "t2"]);
+      should().not.exist(newState.widgets.fw1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
+
+      const floatedState = addFloatingWidget(newState, "fw1", ["fwt1"], {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+      });
+
+      should().exist (floatedState?.widgets.fw1);
+      expect(floatedState?.floatingWidgets.byId.fw1.hidden).to.be.false;
+    });
+
   });
 
   describe("FLOATING_WIDGET_RESIZE", () => {
