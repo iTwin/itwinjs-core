@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/index";
+@import "~@itwin/itwinui-css/scss/button/disabled";
 
 .filter-builder > .rule-group > .rule-group-content {
   border-left: 0;
@@ -30,6 +31,10 @@
     @include themed {
       border-color: t(iui-color-background-1--light);
     }
+  }
+
+  &[data-isactive=false] > .rule-group-content > .rule-group-actions .iui-button {
+    @include iui-button-disabled;
   }
 
   .rule-group-remove-action {
