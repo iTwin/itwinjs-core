@@ -23,7 +23,9 @@ interface TypedArrayBuilderOptions {
   initialCapacity?: number;
 }
 
-/** Incrementally builds an array of unsigned 8-, 16-, or 32-bit integers. */
+/** Incrementally builds an array of unsigned 8-, 16-, or 32-bit integers.
+ * ###TODO move to core-bentley package?
+ */
 class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
   protected readonly _constructor: Constructor<T>;
   protected _data: T;
