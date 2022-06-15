@@ -832,7 +832,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
   });
   nineZone.tabs[newTab.id] = newTab;
-   if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
+  if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
     // Add to existing widget (by widget id).
     const widgetId = widgetDef.tabLocation.widgetId;
     const newTabWidget = nineZone.widgets[widgetId];
@@ -842,6 +842,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     if (id in nineZone.floatingWidgets.byId){
       nineZone.floatingWidgets.allIds.push(id);
       nineZone.floatingWidgets.byId[id].hidden = false;
+      addWidgetTabToDraftFloatingPanel (nineZone, widgetDef.floatingContainerId ?? widgetDef.id, widgetDef.id, nineZone.floatingWidgets.byId[id].home, newTab);
     } else {
       const home: FloatingWidgetHomeState = { side: widgetDef.tabLocation.side, widgetId: widgetDef.floatingContainerId, widgetIndex: 0 };
       addWidgetTabToDraftFloatingPanel (nineZone, widgetDef.floatingContainerId ?? widgetDef.id, widgetDef.id, home, newTab);
