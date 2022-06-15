@@ -16,13 +16,15 @@ The Model contents are driven by:
 
 | Model subclass            | Type of Elements contained        |
 |---------------------------|-----------------------------------------------|
-| `PhysicalModel`           | PhysicalElements and SpatialLocationElements  |
-| `SpatialLocationModel`    | SpatialLocationElements                       |
-| `DrawingModel`            | GeometricElement2d elements                   |
-| `DefinitionModel`         | DefinitionElements                            |
-| `InformationRecordModel`  | InformationRecordElements                     |
-| `GroupInformationModel`   | GroupInformationElements                      |
-| `DocumentListModel`       | Document elements                             |
+| `PhysicalModel`           | PhysicalElements, SpatialLocationElements, GraphicalElement3d and InformationContentElements |
+| `SpatialLocationModel`    | SpatialLocationElements, GraphicalElement3d and InformationContentElements |
+| `DrawingModel`            | GeometricElement2d elements                       |
+| `GraphicalModel3d`        | GraphicalElement3d elements                       |
+| `DefinitionModel`         | DefinitionElements and InformationContentElements |
+| `InformationRecordModel`  | InformationRecordElements                         |
+| `GroupInformationModel`   | GroupInformationElements                          |
+| `DocumentListModel`       | Document elements                                 |
+| `RoleModel`               | RoleElements and InformationContentElements       |
 
 ### Model Identity
 
