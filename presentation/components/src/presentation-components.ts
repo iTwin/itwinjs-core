@@ -75,6 +75,7 @@ export * from "./presentation-components/tree/FilteredDataProvider";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export * from "./presentation-components/tree/controlled/TreeHooks";
+export * from "./presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 export { PRESENTATION_TREE_NODE_KEY };
 
 /**

@@ -11,6 +11,7 @@ export * from "./EditTool";
 export * from "./ElementGeometryTool";
 export * from "./ModifyCurveTools";
 export * from "./SketchTools";
+export * from "./SolidPrimitiveTools";
 export * from "./SolidModelingTools";
 export * from "./TransformElementsTool";
 export * from "./UndoRedoTool";

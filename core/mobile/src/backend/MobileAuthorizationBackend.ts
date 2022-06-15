@@ -28,26 +28,17 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
       return Promise.reject(); // short-circuits any recursive use of this function
     }
 
-    return new Promise<AccessToken>((resolve, reject) => {
-      if (this._accessToken && !this._hasExpired) {
-        resolve(this._accessToken);
-      } else {
-        this._fetchingToken = true;
-        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
-          if (error) {
-            this._accessToken = "";
-            reject(error);
-          }
-
-          this._accessToken = tokenString ?? "";
-          if (expirationDate !== undefined)
-            this._expirationDate = new Date(expirationDate);
-
-          resolve(this._accessToken);
-        });
-        this._fetchingToken = false;
-      }
-    });
+    if (this._accessToken && !this._hasExpired) {
+      return this._accessToken;
+    } else {
+      this._fetchingToken = true;
+      const result = await MobileHost.authGetAccessToken();
+      this._accessToken = result[0];
+      if (result[1])
+        this._expirationDate = new Date(result[1]);
+      this._fetchingToken = false;
+      return this._accessToken;
+    }
   }
 
   public setAccessToken(accessToken?: string, expirationDate?: string) {

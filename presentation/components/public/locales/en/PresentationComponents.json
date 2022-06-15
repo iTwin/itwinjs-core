@@ -16,5 +16,8 @@
   },
   "instance-filter-builder": {
     "classes": "Classes"
+  },
+  "tree": {
+    "presentation-components-muted-node": "Too many child nodes."
   }
 }
