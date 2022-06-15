@@ -132,16 +132,6 @@ jobs:
     - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)'
       displayName: Push version bump
 
-    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-      - task: PythonScript@0
-        inputs:
-          scriptSource: filepath
-          scriptPath: common/scripts/create_release.py   
-          arguments: 'release/$(getVersion.version)'
-        env:
-          GITHUB_TOKEN: $(GITHUBTOKEN)
-        displayName: Create GitHub release
-    
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
     - job: CreateBranch
       displayName: Create branch for next release
