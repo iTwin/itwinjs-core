@@ -60,12 +60,12 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
   }, [descriptor]);
 
   const onClassSelected = React.useCallback((classInfo: ClassInfo) => {
-    setSelectedClasses([...selectedClasses, classInfo]);
-  }, [selectedClasses]);
+    setSelectedClasses((prevClasses) => ([...prevClasses, classInfo]));
+  }, []);
 
   const onClassDeselected = React.useCallback((classInfo: ClassInfo) => {
-    setSelectedClasses(selectedClasses.filter((info) => info.id !== classInfo.id));
-  }, [selectedClasses]);
+    setSelectedClasses((prevClasses) => prevClasses.filter((info) => info.id !== classInfo.id));
+  }, []);
 
   const onClearClasses = React.useCallback(() => {
     setSelectedClasses([]);
@@ -78,10 +78,11 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     if (!propertyInfo)
       return;
 
-    const selectedClassesByProperty = computeSelectedClassesByProperty(propertyInfo, classes, selectedClasses, classHierarchyProvider);
-    if (selectedClassesByProperty)
-      setSelectedClasses(selectedClassesByProperty);
-  }, [classes, propertyInfos, selectedClasses, classHierarchyProvider, enableClassFiltering]);
+    setSelectedClasses((prevClasses) => {
+      const selectedClassesByProperty = computeSelectedClassesByProperty(propertyInfo, classes, prevClasses, classHierarchyProvider);
+      return selectedClassesByProperty ?? prevClasses;
+    });
+  }, [classes, propertyInfos, classHierarchyProvider, enableClassFiltering]);
 
   return {
     onPropertySelected,
