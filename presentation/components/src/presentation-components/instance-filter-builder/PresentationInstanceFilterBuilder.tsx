@@ -139,7 +139,7 @@ function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableC
 }
 
 function useECClassHierarchyProvider(imodel: IModelConnection) {
-  const [classHierarchyProvider, setClassHierarchyProvider] = React.useState<ECClassHierarchyProvider | undefined>();
+  const [classHierarchyProvider, setClassHierarchyProvider] = React.useState<ECClassHierarchyProvider>();
 
   React.useEffect(() => {
     let disposed = false;
