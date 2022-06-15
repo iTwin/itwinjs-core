@@ -2944,7 +2944,7 @@ describe("PresentationManager", () => {
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
       const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodel.object }, ids, "test scope");
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object }, ids, "test scope");
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
       expect(result).to.eq(resultKeys);
     });
 
@@ -2953,7 +2953,16 @@ describe("PresentationManager", () => {
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
       const result = await manager.computeSelection({ requestContext: ClientRequestContext.current, imodel: imodel.object, ids, scopeId: "test scope" });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object }, ids, "test scope");
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
+      expect(result).to.eq(resultKeys);
+    });
+
+    it("computes element selection using `SelectionScopesHelper`", async () => {
+      const elementIds = [createRandomId()];
+      const resultKeys = new KeySet();
+      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      const result = await manager.computeSelection({ requestContext: ClientRequestContext.current, imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
       expect(result).to.eq(resultKeys);
     });
 

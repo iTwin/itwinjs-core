@@ -16,7 +16,7 @@ import { DisplayStyle3dState } from "./DisplayStyleState";
 import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState3d } from "./ViewState";
+import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 
 /** Defines a view of one or more SpatialModels.
@@ -181,8 +181,8 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public override attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     this.registerModelSelectorListeners();
   }
 

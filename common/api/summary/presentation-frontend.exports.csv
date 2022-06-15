@@ -4,12 +4,14 @@ internal;buildPagedResponse:
 alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
 alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
+internal;createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps
 public;FavoritePropertiesManager 
 public;FavoritePropertiesManagerProps
 public;FavoritePropertiesOrderInfo
 public;FavoritePropertiesScope
 internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
+deprecated;getScopeId(scope: SelectionScope | string | undefined): string
 internal;HILITE_RULESET: Ruleset
 public;HiliteSet
 public;HiliteSetProvider

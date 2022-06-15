@@ -53,6 +53,7 @@ export * from "./NativeAppStorage";
 export * from "./NativeHost";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
+export * from "./CloudStorageTileUploader";
 export * from "./DevTools";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";

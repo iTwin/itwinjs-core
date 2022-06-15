@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.19.20",
+  "version": "2.19.40",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -11,7 +11,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test --offline=\"mock\"",
     "cover": "nyc npm test"
@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.20"
+    "@bentley/bentleyjs-core": "workspace:^2.19.40"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

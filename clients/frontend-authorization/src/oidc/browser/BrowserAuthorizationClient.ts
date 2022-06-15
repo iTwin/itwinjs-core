@@ -190,7 +190,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Attempts a silent sign in with the authorization provider
-   * @throws [[BentleyError]] If the silent sign in fails
+   * @throws [BentleyError]($bentleyjs-core) If the silent sign in fails
    */
   public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();

@@ -1223,6 +1223,12 @@ export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
 
+// @internal
+export interface AttachToViewportArgs {
+    drawingToSheetTransform?: Transform;
+    invalidateDecorations: () => void;
+}
+
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -2221,6 +2227,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
+    onTouchStart(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
     static toolId: string;
 }
 
@@ -2505,7 +2513,7 @@ export class DrawingViewState extends ViewState2d {
     // @internal
     get attachmentInfo(): Object;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
@@ -6804,6 +6812,9 @@ export class OffScreenViewport extends Viewport {
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
     static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
+    // @internal
+    get drawingToSheetTransform(): Transform | undefined;
+    set drawingToSheetTransform(transform: Transform | undefined);
     // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
@@ -9112,7 +9123,7 @@ export class SheetViewState extends ViewState2d {
     // @internal
     get attachments(): Object[] | undefined;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
@@ -9374,7 +9385,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     addViewedModel(id: Id64String): void;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
@@ -12262,6 +12273,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
+    // @internal (undocumented)
+    protected attachToView(): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -12303,6 +12316,8 @@ export abstract class Viewport implements IDisposable {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
+    // @internal (undocumented)
+    protected detachFromView(): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal
@@ -12707,7 +12722,7 @@ export abstract class ViewState extends ElementState {
     abstract applyPose(props: ViewPose): this;
     get areAllTileTreesLoaded(): boolean;
     // @internal
-    attachToViewport(): void;
+    attachToViewport(_args: AttachToViewportArgs): void;
     get auxiliaryCoordinateSystem(): AuxCoordSystemState;
     get backgroundColor(): ColorDef;
     // (undocumented)

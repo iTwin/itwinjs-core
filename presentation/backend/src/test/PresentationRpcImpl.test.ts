@@ -6,18 +6,18 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { ClientRequestContext, CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, CompressedId64Set } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON,
-  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions,
-  ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions,
-  HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectionScopeRequestOptions,
-  VariableValueTypes,
+  ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions,
+  ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions,
+  DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions,
+  ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo,
+  HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON,
+  Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable,
+  RulesetVariableJSON, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -1618,23 +1618,53 @@ describe("PresentationRpcImpl", () => {
 
     describe("computeSelection", () => {
 
-      it("calls manager", async () => {
+      it("[deprecated] calls manager", async () => {
         const scope = createRandomSelectionScope();
         const ids = [createRandomId()];
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }> = {
+        const managerOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
-          ids,
-          scopeId: scope.id,
+          elementIds: ids,
+          scope: { id: scope.id },
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result.toJSON());
+      });
+
+      it("calls manager", async () => {
+        const scopeId = "element";
+        const ancestorLevel = 123;
+        const elementIds = [createRandomId()];
+        const rpcOptions: ComputeSelectionRpcRequestOptions = {
+          ...defaultRpcParams,
+          elementIds,
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
+        };
+        const managerOptions: WithClientRequestContext<ComputeSelectionRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: testData.imodelMock.object,
+          elementIds,
+          scope: {
+            id: scopeId,
+            ancestorLevel,
+          },
+        };
+        const result = new KeySet();
+        presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result.toJSON());
       });

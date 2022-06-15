@@ -1816,7 +1816,7 @@ describe("iModel", () => {
 
       const testPoint1: XYZProps[] = [];
       testPoint1.push(inputCoord);
-      const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
+      const requestProps1: GeoCoordinatesRequestProps = { targetDatum: datumOrGCS, iModelCoords: testPoint1 };
       const response1 = await iModel.getGeoCoordinatesFromIModelCoordinates(requestContext, JSON.stringify(requestProps1));
 
       const expectedPt1 = Point3d.fromJSON(outputCoord.p);
@@ -1828,7 +1828,7 @@ describe("iModel", () => {
 
       const testPoint2: XYZProps[] = [];
       testPoint2.push(outputCoord.p);
-      const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
+      const requestProps2: IModelCoordinatesRequestProps = { sourceDatum: datumOrGCS, geoCoords: testPoint2 };
       const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestContext, JSON.stringify(requestProps2));
 
       const expectedPt2 = Point3d.fromJSON(inputCoord);

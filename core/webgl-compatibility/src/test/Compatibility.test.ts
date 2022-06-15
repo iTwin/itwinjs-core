@@ -188,6 +188,10 @@ describe("Render Compatibility", () => {
       [ "Intel(R) UHD Graphics 610", false ],
 
       [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+
+      // Around October 2021 slightly different unmasked renderer strings began showing up, containing "Intel, Intel(R)" instead of just "Intel(R)".
+      [ "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true ],
+      [ "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true ],
     ];
 
     for (const renderer of renderers) {
@@ -208,6 +212,33 @@ describe("Render Compatibility", () => {
       const expected = renderer[1] ? true : undefined;
       expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
       expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
+    }
+  });
+
+  it("detects MSAA hang bug", () => {
+    const renderers = [
+      [ "Mali-G71", true ],
+      [ "Mali-G72", true ],
+      [ "Mali-G76", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  false ],
+      [ "Mali-G79", false ],
+    ];
+
+    for (const renderer of renderers) {
+      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
+        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
+          return renderer[0];
+
+        return undefined;
+      });
+
+      const context = makeTestContext(true);
+      const caps = new Capabilities();
+      const compatibility = caps.init(context);
+
+      const expected = renderer[1] ? true : undefined;
+      expect(compatibility.driverBugs.msaaWillHang).to.equal(expected);
     }
   });
 });

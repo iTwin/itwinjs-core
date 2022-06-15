@@ -153,7 +153,7 @@ A server must expose the RpcInterfaces that it implements or imports, so that cl
 
 ### Register Impls
 
-The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
+The server must call `registerImpl` in [RpcManager]($common) to register the impl classes for the interfaces that it implements, if any.
 
 *Example:*
 
@@ -262,15 +262,15 @@ A backend method that turns around an invokes another backend's method via RpcIn
 
 Briefly, here is how it works:
 
-* Frontend/client
-  * iTwin.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
-  * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
-* Backend
-  * iTwin.js on the backend gets the ActivityId from the HTTP header.
-  * The RpcInterface mechanism and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
-  * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
-* Log Browsers
-  * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
+- Frontend/client
+  - iTwin.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
+  - It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
+- Backend
+  - iTwin.js on the backend gets the ActivityId from the HTTP header.
+  - The RpcInterface mechanism and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
+  - Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
+- Log Browsers
+  - Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
 See [managing the ClientRequestContext](../learning/backend/ManagingClientRequestContext.md) for details.
 
@@ -283,23 +283,23 @@ Follow the rules of [semantic versioning](https://semver.org) to indicate the ty
 
 ## Non-Zero Major Versions (released)
 
-* Change in major version indicates a breaking change
-* Change in minor version indicates a method was added
-* Change in patch indicates a fix not affecting compatibility was made
+- Change in major version indicates a breaking change
+- Change in minor version indicates a method was added
+- Change in patch indicates a fix not affecting compatibility was made
 
 ## Zero Major Versions (prerelease)
 
-* Major version locked at zero
-* Change in minor version indicates a potentially breaking change
-* Change in patch indicates that a method was added or a fix was made
+- Major version locked at zero
+- Change in minor version indicates a potentially breaking change
+- Change in patch indicates that a method was added or a fix was made
 
 Interface version incompatibility is a possibility when a client makes requests on a remote server. The [RpcManager]($common) checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
 
 The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
 There are different types of incompatibilities:
 
-* Complete mismatch
-  * Different major versions
-  * Different minor versions in prerelease when major version is zero
-* Client too new
-  * Client version has the same major version but is greater than the server's version when considering minor and patch
+- Complete mismatch
+  - Different major versions
+  - Different minor versions in prerelease when major version is zero
+- Client too new
+  - Client version has the same major version but is greater than the server's version when considering minor and patch

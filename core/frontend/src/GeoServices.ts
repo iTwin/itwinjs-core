@@ -106,7 +106,7 @@ class GCtoIMCResultCache {
       const maxPointsPerRequest = 300;
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
-        const remainingRequest = { source: this._source, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
+        const remainingRequest = { sourceDatum: this._source, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
         const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
 
           // put the responses into the cache, and fill in the output response for each
@@ -171,7 +171,7 @@ class IMCtoGCResultCache {
         response.geoCoords.push(this._cache[thisCacheKey]);
       } else {
         if (!remainingRequest)
-          remainingRequest = { target: this._target, iModelCoords: [] };
+          remainingRequest = { targetDatum: this._target, iModelCoords: [] };
 
         // add this geoCoord to the request we are going to send.
         remainingRequest.iModelCoords.push(thisIModelCoord);
@@ -228,7 +228,7 @@ export class GeoConverter {
   }
 
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
-    const requestProps: IModelCoordinatesRequestProps = { source: this._datumOrGCRS, geoCoords: geoPoints };
+    const requestProps: IModelCoordinatesRequestProps = { sourceDatum: this._datumOrGCRS, geoCoords: geoPoints };
     return this._gCtoIMCResultCache.findInCacheOrRequest(requestProps);
   }
 
@@ -237,7 +237,7 @@ export class GeoConverter {
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
-    const requestProps: GeoCoordinatesRequestProps = { target: this._datumOrGCRS, iModelCoords: iModelPoints };
+    const requestProps: GeoCoordinatesRequestProps = { targetDatum: this._datumOrGCRS, iModelCoords: iModelPoints };
     return this._iMCtoGCResultCache.findInCacheOrRequest(requestProps);
   }
 }

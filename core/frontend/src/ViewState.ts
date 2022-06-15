@@ -95,6 +95,21 @@ class GridDecorator {
   }
 }
 
+/** Arguments to [[ViewState.attachToViewport]].
+ * @internal
+ */
+export interface AttachToViewportArgs {
+  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
+  invalidateDecorations: () => void;
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   */
+  drawingToSheetTransform?: Transform;
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
  * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
@@ -1092,7 +1107,7 @@ export abstract class ViewState extends ElementState {
    * @see [[detachFromViewport]] from the inverse operation.
    * @internal
    */
-  public attachToViewport(): void {
+  public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 

@@ -29,7 +29,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
   /**
    * Create a new context for frontend operations to pass to various services that require
    * authorization. Uses the authorization information supplied to IModelApp to setup an accessToken within the context.
-   * @throws [[BentleyError]] if the application cannot be authorized.
+   * @throws [BentleyError]($bentleyjs-core) if the application cannot be authorized.
    * @see [[IModelApp.authorizationClient]] to setup authorization for the frontend application.
    */
   public static async create(activityId?: string): Promise<AuthorizedFrontendRequestContext> {

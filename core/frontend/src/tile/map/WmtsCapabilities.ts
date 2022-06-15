@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Views
+ */
+
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
 import { MapCartoRectangle } from "../internal";
 import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
-
-/** @packageDocumentation
- * @module Views
- */
 
 /**
  * fetch XML from HTTP request

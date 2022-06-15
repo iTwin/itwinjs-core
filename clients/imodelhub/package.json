@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "2.19.20",
+  "version": "2.19.40",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -15,7 +15,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=imodelhub-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --excludes=@types --tsIndexFile=imodelhub-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
@@ -38,10 +38,10 @@
     "js-base64": "^2.4.5"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.20",
-    "@bentley/frontend-authorization-client": "workspace:^2.19.20",
-    "@bentley/itwin-client": "workspace:^2.19.20",
-    "@bentley/rbac-client": "workspace:^2.19.20"
+    "@bentley/bentleyjs-core": "workspace:^2.19.40",
+    "@bentley/frontend-authorization-client": "workspace:^2.19.40",
+    "@bentley/itwin-client": "workspace:^2.19.40",
+    "@bentley/rbac-client": "workspace:^2.19.40"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

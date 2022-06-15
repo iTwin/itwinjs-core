@@ -1,6 +1,106 @@
 # Change Log - @bentley/rbac-client
 
-This log was last generated on Fri, 29 Oct 2021 16:14:22 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Jun 2022 16:22:03 GMT and should not be manually modified.
+
+## 2.19.40
+Thu, 09 Jun 2022 16:22:03 GMT
+
+_Version update only_
+
+## 2.19.39
+Wed, 01 Jun 2022 12:32:31 GMT
+
+_Version update only_
+
+## 2.19.38
+Fri, 06 May 2022 16:24:59 GMT
+
+_Version update only_
+
+## 2.19.37
+Wed, 13 Apr 2022 14:00:41 GMT
+
+_Version update only_
+
+## 2.19.36
+Mon, 11 Apr 2022 14:32:05 GMT
+
+_Version update only_
+
+## 2.19.35
+Wed, 30 Mar 2022 16:03:53 GMT
+
+_Version update only_
+
+## 2.19.34
+Thu, 24 Mar 2022 16:13:17 GMT
+
+_Version update only_
+
+## 2.19.33
+Wed, 09 Mar 2022 20:26:55 GMT
+
+_Version update only_
+
+## 2.19.32
+Fri, 18 Feb 2022 18:39:22 GMT
+
+_Version update only_
+
+## 2.19.31
+Tue, 15 Feb 2022 19:17:16 GMT
+
+_Version update only_
+
+## 2.19.30
+Wed, 09 Feb 2022 15:49:54 GMT
+
+_Version update only_
+
+## 2.19.29
+Thu, 03 Feb 2022 15:13:06 GMT
+
+_Version update only_
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:53 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
 
 ## 2.19.20
 Fri, 29 Oct 2021 16:14:22 GMT

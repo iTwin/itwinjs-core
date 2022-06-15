@@ -19,3 +19,12 @@ export interface SelectionScope {
   /** Description */
   description?: string;
 }
+
+/** @alpha */
+export interface ElementSelectionScopeProps {
+  id: "element";
+  ancestorLevel?: number;
+}
+
+/** @alpha */
+export type SelectionScopeProps = ElementSelectionScopeProps | { id: string };

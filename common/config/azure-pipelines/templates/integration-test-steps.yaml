@@ -98,22 +98,29 @@ steps:
     displayName: "Run Backend iTwin Client Tests"
     condition: succeededOrFailed()
 
+  # Linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/core"
+    displayName: "Run Core Full Stack Tests"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/imodelhub-client"
     displayName: "Run iModelHub Client Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
     displayName: "Run RPC Interface Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/presentation"
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()

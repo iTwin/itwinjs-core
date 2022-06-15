@@ -796,6 +796,8 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
+    baseUrl?: string;
+    // (undocumented)
     service: "azure" | "alicloud" | "external";
 }
 
@@ -1859,6 +1861,10 @@ export class Entity implements EntityProps {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    // @beta
+    static is(otherClass: typeof Entity): boolean;
+    // @internal
+    static get isGeneratedClass(): boolean;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;

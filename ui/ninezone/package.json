@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.19.20",
+  "version": "2.19.40",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -17,7 +17,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
-    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson",
+    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --excludeGlob=**/declarations.d.ts --tsIndexFile=./ui-ninezone.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ui-ninezone",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.20",
-    "@bentley/ui-abstract": "workspace:^2.19.20",
-    "@bentley/ui-core": "workspace:^2.19.20",
+    "@bentley/bentleyjs-core": "workspace:^2.19.40",
+    "@bentley/ui-abstract": "workspace:^2.19.40",
+    "@bentley/ui-core": "workspace:^2.19.40",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -66,7 +66,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "^1.15.5",
     "enzyme-to-json": "^3.3.4",

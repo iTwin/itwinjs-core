@@ -29,7 +29,7 @@ import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
@@ -436,8 +436,8 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
@@ -595,6 +595,11 @@ class OrthographicAttachment {
     origin.addInPlace(viewOrgToAttachment);
     this._toSheet = Transform.createRefs(origin, matrix);
     this._fromSheet = this._toSheet.inverse()!;
+
+    // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
+    // The clip needs to be transformed into sheet space.
+    if (view.isDrawingView())
+      this._viewport.drawingToSheetTransform = this._toSheet;
 
     // ###TODO? If we also apply the attachment's clip to the attached view, we may get additional culling during tile selection.
     // However the attached view's frustum is already clipped by intersection with sheet view's frustum, and additional clipping planes

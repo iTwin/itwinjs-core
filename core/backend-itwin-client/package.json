@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.19.20",
+  "version": "2.19.40",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --excludes=@types --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",
@@ -38,14 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.20",
-    "@bentley/frontend-authorization-client": "workspace:^2.19.20",
-    "@bentley/geometry-core": "workspace:^2.19.20",
-    "@bentley/imodelhub-client": "workspace:^2.19.20",
-    "@bentley/imodeljs-common": "workspace:^2.19.20",
-    "@bentley/itwin-client": "workspace:^2.19.20",
-    "@bentley/rbac-client": "workspace:^2.19.20",
-    "@bentley/telemetry-client": "workspace:^2.19.20"
+    "@bentley/bentleyjs-core": "workspace:^2.19.40",
+    "@bentley/frontend-authorization-client": "workspace:^2.19.40",
+    "@bentley/geometry-core": "workspace:^2.19.40",
+    "@bentley/imodelhub-client": "workspace:^2.19.40",
+    "@bentley/imodeljs-common": "workspace:^2.19.40",
+    "@bentley/itwin-client": "workspace:^2.19.40",
+    "@bentley/rbac-client": "workspace:^2.19.40",
+    "@bentley/telemetry-client": "workspace:^2.19.40"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -77,7 +77,7 @@
     "@types/stream-buffers": "~3.0.2",
     "@types/proper-lockfile": "^4.1.1",
     "chai": "^4.1.2",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
@@ -113,11 +113,23 @@
     ],
     "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
-      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/oidc/index.ts"]}]
+      "@bentley/no-internal-barrel-imports": [
+        "error",
+        {
+          "ignored-barrel-modules": [
+            "./src/oidc/index.ts"
+          ]
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "files": [
+          "*.test.ts",
+          "*.test.tsx",
+          "**/test/**/*.ts",
+          "**/test/**/*.tsx"
+        ],
         "rules": {
           "@bentley/no-internal-barrel-imports": "off"
         }

@@ -105,14 +105,14 @@ export class SampleTool extends PrimitiveTool {
         params: [{
           type: PropertyEditorParamTypes.ColorData,
           colorValues: [
-            ColorByName.blue as number,
-            ColorByName.red as number,
-            ColorByName.green as number,
-            ColorByName.yellow as number,
-            ColorByName.black as number,
-            ColorByName.gray as number,
-            ColorByName.purple as number,
-            ColorByName.pink as number,
+            ColorByName.blue,
+            ColorByName.red,
+            ColorByName.green,
+            ColorByName.yellow,
+            ColorByName.black,
+            ColorByName.gray,
+            ColorByName.purple,
+            ColorByName.pink,
           ],
           numColumns: 2,
         } as ColorEditorParams,
@@ -121,7 +121,7 @@ export class SampleTool extends PrimitiveTool {
     };
   };
 
-  private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
+  private _colorValue: DialogItemValue = { value: ColorByName.blue };
 
   public get colorValue(): number {
     return this._optionsValue.value as number;

@@ -7,7 +7,7 @@
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
 trigger: none
-
+pr: none
 schedules:
   - cron: "0 5 * * *"
     displayName: Daily midnight build

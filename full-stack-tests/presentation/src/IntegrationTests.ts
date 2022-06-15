@@ -5,9 +5,10 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
-import * as cpx from "cpx";
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
@@ -59,10 +60,10 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
+    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
   }
 }
 
@@ -104,6 +105,10 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
+
+  (global as any).requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 0);
+  });
 };
 
 export const initialize = async (backendTimeout: number = 0) => {
@@ -115,6 +120,7 @@ export const initializeWithClientServices = async () => {
 };
 
 export const terminate = async () => {
+  delete (global as any).requestAnimationFrame;
   await terminateTesting();
 };
 

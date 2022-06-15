@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
   BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
@@ -721,7 +721,7 @@ export class IModelApp {
   }
 
   /** Localize an error status from iModel.js
-   * @param status one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+   * @param status one of the status values from [BentleyStatus]($bentleyjs-core), [IModelStatus]($bentleyjs-core) or [DbResult]($bentleyjs-core)
    * @returns a localized error message
    * @beta
    */
