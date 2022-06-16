@@ -880,7 +880,7 @@ export const setWidgetState = produce((
       assert(!!location);
     }
     if (!!widgetDef.tabLocation.floating) {
-      nineZone.floatingWidgets.byId[widgetDef.floatingContainerId!].hidden = false;
+      nineZone.floatingWidgets.byId[widgetDef.floatingContainerId ?? widgetDef.id].hidden = false;
     }
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
@@ -920,28 +920,29 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
   if (!location)
     return;
   if (isFloatingLocation(location)) {
-      const widget = state.floatingWidgets.byId[location.widgetId];
-      widgetDef.setFloatingContainerId(location.floatingWidgetId);
-      widgetDef.tabLocation = {
-        side: widget.home.side,
-        tabIndex: widget.home.widgetIndex,
-        widgetId: widgetDef.id,
-        widgetIndex: widget.home.widgetIndex,
-        floating: true,
-      };
-      // istanbul ignore else
-  } else if (!isPopoutLocation(location)) {
-  const widgetId = location.widgetId;
-  const side = "side" in location ? location.side : "left";
-  const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
-  const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
-  widgetDef.tabLocation = {
-    side,
-    tabIndex,
-    widgetId,
-    widgetIndex,
-  };
-}
+    const widget = state.floatingWidgets.byId[location.widgetId];
+    widgetDef.setFloatingContainerId(location.floatingWidgetId);
+    widgetDef.tabLocation = {
+      side: widget.home.side,
+      tabIndex: widget.home.widgetIndex,
+      widgetId: widgetDef.id,
+      widgetIndex: widget.home.widgetIndex,
+      floating: true,
+    };
+  } else
+  // istanbul ignore else
+  if (!isPopoutLocation(location)) {
+    const widgetId = location.widgetId;
+    const side = "side" in location ? location.side : "left";
+    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+    const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
+    widgetDef.tabLocation = {
+      side,
+      tabIndex,
+      widgetId,
+      widgetIndex,
+    };
+  }
   removeTab(state, widgetDef.id);
 }
 

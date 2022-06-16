@@ -45,6 +45,7 @@ describe("AppUiSettings", () => {
     UiFramework.setUseDragInteraction(useDragInteraction);
     UiFramework.setShowWidgetIcon(showWidgetIcon);
     UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels);
+    UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels); // verify it handles the same value again
     UiFramework.setAnimateToolSettings(animateToolSettings);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(uiVersion);
