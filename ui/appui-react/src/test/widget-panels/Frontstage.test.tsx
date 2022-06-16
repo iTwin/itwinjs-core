@@ -1082,6 +1082,55 @@ describe("Frontstage local storage wrapper", () => {
           }).should.not.throw();
         });
       });
+
+      describe("useToolAsToolSettingsLabel", () => {
+
+        it("should use localized default name when false", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+
+          renderHook(() => useFrontstageManager(frontstageDef, false));
+
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq("widget.labels.toolSettings");
+        });
+
+        it("should use localized default name when tool or flyover is not defined", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+
+          renderHook(() => useFrontstageManager(frontstageDef, true));
+
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq("widget.labels.toolSettings");
+        });
+
+        it("should use tool label when true", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+          const fakeActiveToolId = "activeTool1";
+          const fakeToolLabel = "activeToolLabel";
+
+          sinon.stub(FrontstageManager, "activeToolId").get(() =>fakeActiveToolId);
+          const findSpy = sinon.stub(IModelApp.tools, "find").returns({flyover: fakeToolLabel} as any);
+
+          renderHook(() => useFrontstageManager(frontstageDef, true));
+
+          findSpy.calledWith(fakeActiveToolId).should.be.true;
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq(fakeToolLabel);
+
+          sinon.restore();
+        });
+
+      });
+
     });
 
     describe("initializeNineZoneState", () => {

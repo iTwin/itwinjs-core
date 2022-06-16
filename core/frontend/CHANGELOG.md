@@ -1,6 +1,22 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 20 May 2022 13:10:54 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jun 2022 16:11:36 GMT and should not be manually modified.
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+### Updates
+
+- added errorOnMissingUniform render option
+- Omit authorization in RPC communication between mobile frontend and backend.
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Add option to quantize positions in TileAdmin.requestElementGraphics.
+- Prevent an assertion when creating a pickable graphic with an empty FeatureTable.
 
 ## 3.2.0
 Fri, 20 May 2022 13:10:54 GMT

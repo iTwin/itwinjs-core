@@ -36,6 +36,7 @@ describe("AppUiSettings", () => {
     const showWidgetIcon = false;
     const animateToolSettings = false;
     const autoCollapseUnpinnedPanels = true;
+    const useToolAsToolSettingsLabel = false;
 
     UiFramework.setUiVersion(uiVersion);
     UiFramework.setWidgetOpacity(opacity);
@@ -47,6 +48,7 @@ describe("AppUiSettings", () => {
     UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels);
     UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels); // verify it handles the same value again
     UiFramework.setAnimateToolSettings(animateToolSettings);
+    UiFramework.setUseToolAsToolSettingsLabel(useToolAsToolSettingsLabel);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(uiVersion);
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);
@@ -55,6 +57,7 @@ describe("AppUiSettings", () => {
     expect(UiFramework.showWidgetIcon).to.eql(showWidgetIcon);
     expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(autoCollapseUnpinnedPanels);
     expect(UiFramework.animateToolSettings).to.eql(animateToolSettings);
+    expect(UiFramework.useToolAsToolSettingsLabel).to.eql(useToolAsToolSettingsLabel);
   });
 
   it("should used default settings", async () => {
@@ -66,6 +69,7 @@ describe("AppUiSettings", () => {
       showWidgetIcon: true,
       autoCollapseUnpinnedPanels: true,
       animateToolSettings: true,
+      useToolAsToolSettingsLabel: true,
     };
 
     const uiSetting = new AppUiSettings(defaults);
@@ -78,6 +82,7 @@ describe("AppUiSettings", () => {
     expect(UiFramework.showWidgetIcon).to.eql(defaults.showWidgetIcon);
     expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(defaults.autoCollapseUnpinnedPanels);
     expect(UiFramework.animateToolSettings).to.eql(defaults.animateToolSettings);
+    expect(UiFramework.useToolAsToolSettingsLabel).to.eql(defaults.useToolAsToolSettingsLabel);
   });
 
 });

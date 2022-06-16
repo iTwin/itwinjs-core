@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "move LocalHub to @internal in core-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
