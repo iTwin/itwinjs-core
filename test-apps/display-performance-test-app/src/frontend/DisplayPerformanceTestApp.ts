@@ -42,18 +42,18 @@ export class DisplayPerfTestApp {
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    if(process.env.IMJS_URL_PREFIX)
-      iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
-        api: {
-          baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
-        },
-      }));
-    else
-      iModelApp.hubAccess = new FrontendIModelsAccess();
-
-    iModelApp.authorizationClient = new TestFrontendAuthorizationClient(
-      await DisplayPerfRpcInterface.getClient().getAccessToken()
-    );
+    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+    if(token) {
+      iModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
+      if(process.env.IMJS_URL_PREFIX)
+        iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
+          api: {
+            baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
+          },
+        }));
+      else
+        iModelApp.hubAccess = new FrontendIModelsAccess();
+    }
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)

@@ -64,8 +64,14 @@ async function initializeAuthorizationClient(): Promise<TestBrowserAuthorization
     email: process.env.IMJS_OIDC_EMAIL!,
     password: process.env.IMJS_OIDC_PASSWORD!,
   };
-  if(Object.entries({...config, ...user}).every((e) => e === undefined))
+  const requiredVars = [config.clientId, config.redirectUri, config.scope, user.email, user.password];
+  const missingVars = requiredVars.filter((v) => v === undefined);
+  if(missingVars.length !== 0) {
+    if(missingVars.length > 0)
+      console.log("Skipping authorization client setup"); // eslint-disable-line no-console
+
     return undefined;
+  }
   const authorizationClient = new TestBrowserAuthorizationClient(config, user);
   await authorizationClient.getAccessToken();
   return authorizationClient;
