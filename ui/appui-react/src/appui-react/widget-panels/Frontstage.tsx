@@ -19,7 +19,7 @@ import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@it
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addPanelWidget, addTab, addWidgetTabToDraftFloatingPanel, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, FloatingWidgetState, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
   isHorizontalPanelSide, isPopoutLocation, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
