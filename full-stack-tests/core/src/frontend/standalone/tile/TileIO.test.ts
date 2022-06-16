@@ -627,7 +627,7 @@ describe("mirukuru TileTree", () => {
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
     const edges = { indexed: false, smooth: false };
-    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true };
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
@@ -686,7 +686,7 @@ describe("mirukuru TileTree", () => {
     expect(v3Props).not.to.be.undefined;
 
     const edges = false as const;
-    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false };
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
     const v3Tree = new IModelTileTree(params, { edges: false, type: BatchType.Primary });
@@ -904,7 +904,7 @@ describe.skip("TileAdmin", () => {
           expect(qualifier.length > 0).to.be.true;
 
         const edges = { indexed: false, smooth: false };
-        const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true };
+        const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
         const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
