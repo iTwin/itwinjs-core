@@ -1605,7 +1605,8 @@ export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide
 }
 
 /**
- *
+ * Adds the floating tab to an existing draft state
+ * @internal
  */
 export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps,

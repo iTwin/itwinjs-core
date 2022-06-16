@@ -37,6 +37,9 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @internal
+export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): void;
+
+// @internal
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
@@ -677,6 +680,8 @@ export const FloatingWidgetsStateContext: React.Context<FloatingWidgetsState>;
 export interface FloatingWidgetState {
     // (undocumented)
     readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly hidden?: boolean;
     // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
@@ -2046,12 +2051,12 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
         zones: {
             1: import("./Zone").ZoneManagerProps;
             2: import("./Zone").ZoneManagerProps;
-            3: import("./Zone").ZoneManagerProps;
             4: import("./Zone").ZoneManagerProps;
+            3: import("./Zone").ZoneManagerProps;
+            9: import("./Zone").ZoneManagerProps;
             6: import("./Zone").ZoneManagerProps;
             7: import("./Zone").ZoneManagerProps;
             8: import("./Zone").ZoneManagerProps;
-            9: import("./Zone").ZoneManagerProps;
         };
         draggedWidget?: import("./Widget").DraggedWidgetManagerProps | undefined;
         isInFooterMode: boolean;
