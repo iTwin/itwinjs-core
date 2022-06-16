@@ -177,7 +177,7 @@ The attribute allows loading additional related properties that are related to t
 
 ### Attribute: `relationshipProperties`
 
-List of names or definitions of relationship class properties that should be included in the content. In addition, a couple of special values are allowed:
+List of property names or definitions of last relationship in [relationship path specifications](../RelationshipPathSpecification.md), that should be included in the content. In addition, a couple of special values are allowed:
 
 - `"_none_"` means none of the relationship properties should be picked up.
 - `"*"` means all relationship properties should be picked up.

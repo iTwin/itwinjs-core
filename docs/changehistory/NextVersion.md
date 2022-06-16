@@ -291,7 +291,9 @@ Previously, nested related properties of different intermediate classes were all
 
 ### Relationship properties
 
-It is now possible to display relationship properties using [`relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute of related properties specification. Related properties will be categorized under relationship category if any relationship properties are included. To force this behavior regardless of whether any relationship properties were included, use [`forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute.
+It is now possible to include relationship properties into content using a newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute. Properties of the relationship and category of the target class are categorized under relationship category if any relationship properties are included.
+
+It's now also possible to move related properties under a relationship category even when there are no relationship properties. To force this behavior, the new [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute can be used.
 
 ## ColorDef validation
 
