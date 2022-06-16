@@ -22,6 +22,9 @@ export interface AbstractUiItemsProviderProps {
 
 /**
  * The AbstractUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
+ * The unique thing about the items provided with this provider is that the toolbar and and statusbar items provider simply
+ * provide abstract item data and the UI packages generate the necessary React components. This means that the package that
+ * supplies the abstract definitions only need to take a dependency on appui-abstract and not on react or any of the other appui packages.
  */
 export class AbstractUiItemsProvider implements UiItemsProvider {
   public readonly id = "appui-test-providers:AbstractUiItemsProvider";
@@ -51,7 +54,7 @@ export class AbstractUiItemsProvider implements UiItemsProvider {
     if (stageUsage === StageUsage.General) {
 
       statusBarItems.push(
-        /** Add a status bar item to set the active unit system used to display quantity values.  */
+        /** Add a status bar item that will open a dialog allow the user to set the active unit system used to display quantity values.  */
         AbstractStatusBarItemUtilities.createActionItem("AppUiTestProviders:UnitsStatusBarItem",
           this.props?.unitsStatusBarItem?.section ?? StatusBarSection.Center,
           this.props?.unitsStatusBarItem?.itemPriority ?? 100,
