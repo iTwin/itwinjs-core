@@ -11,6 +11,9 @@ import {
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
+import { IModelsClient } from "@itwin/imodels-client-management";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -38,6 +41,19 @@ export class DisplayPerfTestApp {
       BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
+
+    if(process.env.IMJS_URL_PREFIX)
+      iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
+        api: {
+          baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
+        },
+      }));
+    else
+      iModelApp.hubAccess = new FrontendIModelsAccess();
+
+    iModelApp.authorizationClient = new TestFrontendAuthorizationClient(
+      await DisplayPerfRpcInterface.getClient().getAccessToken()
+    );
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
