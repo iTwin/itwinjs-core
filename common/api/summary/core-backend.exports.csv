@@ -179,6 +179,7 @@ public;class GroupInformationElement
 public;class GroupInformationModel 
 public;GroupInformationPartition 
 public;GroupModel 
+internal;HubMock
 beta;IModelCloneContext
 public;class IModelDb 
 public;IModelDb
@@ -216,11 +217,14 @@ public;LinkModel
 public;LinkPartition 
 internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
+internal;LocalHub
 beta;LockConflict 
 beta;LockControl
 internal;LockMap = Map
 beta;LockProps
 public;LockState
+internal;LockStatusExclusive
+internal;LockStatusShared
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 

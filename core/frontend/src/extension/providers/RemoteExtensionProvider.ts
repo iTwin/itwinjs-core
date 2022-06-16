@@ -6,6 +6,7 @@ import type {
   ExtensionManifest,
   ExtensionProvider,
 } from "../Extension";
+import { request, RequestOptions } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 
 /**
@@ -38,10 +39,6 @@ export class RemoteExtensionProvider implements ExtensionProvider {
    * Throws an error if the provided jsUrl is not accessible.
    */
   public async execute(): Promise<string> {
-    const doesUrlExist = await this._exists(this._props.jsUrl);
-    if (!doesUrlExist) {
-      throw new Error(`Extension at ${this._props.jsUrl} could not be found.`);
-    }
     return loadScript(this._props.jsUrl);
   }
 
@@ -50,23 +47,14 @@ export class RemoteExtensionProvider implements ExtensionProvider {
    * Throws an error if the provided manifestUrl is not accessible.
    */
   public async getManifest(): Promise<ExtensionManifest> {
-    const doesUrlExist = await this._exists(this._props.manifestUrl);
-    if (!doesUrlExist) {
-      throw new Error(`Manifest at ${this._props.manifestUrl} could not be found.`);
-    }
-    return (await fetch(this._props.manifestUrl)).json();
+    const options: RequestOptions = { method: "GET" };
+    const response = await request(this._props.manifestUrl, options);
+    const data = response.body || (() => {
+      if (!response.text)
+        throw new Error("Manifest file was empty.");
+      return JSON.parse(response.text);
+    })();
+    return data;
   }
 
-  /** Checks if url actually exists */
-  private async _exists(url: string): Promise<boolean> {
-    let exists = false;
-    try {
-      const response = await fetch(url, { method: "HEAD" });
-      if (response.status === 200)
-        exists = true;
-    } catch (error) {
-      exists = false;
-    }
-    return exists;
-  }
 }

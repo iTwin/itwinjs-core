@@ -261,9 +261,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
 	  }
     }
-    const layerSettings = source.toLayerSettings(validation.subLayers);
-    if (layerSettings) {
-      vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
+    const settings = source.toLayerSettings(validation.subLayers);
+    if (settings) {
+      vp.displayStyle.attachMapLayer({settings, isOverlay});
 
       const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -331,9 +331,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       source = MapLayerSource.fromJSON({
         url: mapUrl,
         name: mapName,
-        formatId: mapType,
-        userName: userName||undefined,  // When there is no value, empty string is always returned, in this case force it to undefined,
-        password: password||undefined});
+        formatId: mapType});
+
+      // Set credentials separately since they are not part of JSON
+      if (source) {
+        source.userName = userName||undefined;  // When there is no value, empty string is always returned, in this case force it to undefined,
+        source.password = password||undefined;
+      }
+
     }
     return source;
   }, [mapName, mapType, mapUrl, password, userName]);

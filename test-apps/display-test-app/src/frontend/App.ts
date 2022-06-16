@@ -16,7 +16,7 @@ import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
-import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -250,10 +250,8 @@ export class DisplayTestApp {
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
-    } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts as IOSAppOpts);
-    } else if (ProcessDetector.isAndroidAppFrontend) {
-      await AndroidApp.startup(opts);
+    } else if (ProcessDetector.isIOSAppFrontend || ProcessDetector.isAndroidAppFrontend) {
+      await MobileApp.startup(opts as MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
