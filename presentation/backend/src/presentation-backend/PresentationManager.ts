@@ -559,6 +559,7 @@ export class PresentationManager {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId,
       ...strippedOptions,
+      contentFlags: ContentFlags.DescriptorOnly,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     const reviver = (key: string, value: any) => {

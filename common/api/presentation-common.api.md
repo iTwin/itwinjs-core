@@ -264,6 +264,8 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 
 // @public
 export enum ContentFlags {
+    // @internal
+    DescriptorOnly = 512,
     DistinctValues = 16,
     // @beta
     IncludeInputKeys = 256,
