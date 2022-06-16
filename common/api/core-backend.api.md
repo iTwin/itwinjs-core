@@ -2231,13 +2231,9 @@ export class HubMock {
     }): Promise<void>;
     static destroy(iModelId: GuidString): void;
     // (undocumented)
-    static downloadChangeset(arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
+    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
     // (undocumented)
-    static downloadChangesets(arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
+    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // (undocumented)
     static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
     // (undocumented)
