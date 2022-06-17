@@ -327,9 +327,7 @@ export function matchesWords(word: string, target: string, contiguous: boolean =
   word = word.toLowerCase();
   target = target.toLowerCase();
   while (i < target.length && (result = _matchesWords(word, target, 0, i, contiguous)) === null) {
-    console.log (`i=${i} word=${word} target=${target}`);
     i = nextWord(target, i + 1);
-    console.log (`nextWord start i=${i}`);
   }
 
   return result;
@@ -437,7 +435,7 @@ export function createMatches(score: undefined | FuzzyScore): IMatch[] {
   return res;
 }
 
-const _maxLen = 256;
+const _maxLen = 128;
 
 function initTable() {
   const table: number[][] = [];

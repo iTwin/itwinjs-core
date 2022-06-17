@@ -203,7 +203,8 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       const newKeyinSet: KeyinEntry[] = [];
       allKeyins.forEach((value) => {
         if (value.value.length >= currentKeyin.length) {
-          const matches = matchesWords(currentKeyin, value.value, currentKeyin.length < 60);
+          // Force contiguous searches if key-in is over 60 characters long for performance.
+          const matches = matchesWords(currentKeyin, value.value, currentKeyin.length > 60);
           if (matches && matches.length) {
             // istanbul ignore else
             if (value.isHistory) {
