@@ -5,11 +5,13 @@
 
 import { expect } from "chai";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
-import { join } from "path";
+import { dirname, join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import {
+  BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb,
+} from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, DbResult, GuidString, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { assert, DbResult, Guid, GuidString, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
@@ -21,16 +23,19 @@ export namespace CloudSqliteTest {
   };
   const credential = new azureBlob.StorageSharedKeyCredential(storage.accessName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
-  export async function initializeContainers(containers: TestContainer[]) {
+  export async function createAzureContainer(container: TestContainer) {
     const pipeline = azureBlob.newPipeline(credential);
     const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accessName}`, pipeline);
+    setSasToken(container, "racwdl");
+    try {
+      await blobService.deleteContainer(container.containerId);
+    } catch (e) {
+    }
+    await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
+  }
+  export async function initializeContainers(containers: TestContainer[]) {
     for await (const container of containers) {
-      setSasToken(container, "racwdl");
-      try {
-        await blobService.deleteContainer(container.containerId);
-      } catch (e) {
-      }
-      await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
+      await createAzureContainer(container);
       container.initializeContainer({ checksumBlockNames: true });
     }
   }
@@ -52,13 +57,16 @@ export namespace CloudSqliteTest {
 
     return containers;
   }
+  export function makeCache(name: string) {
+    const rootDir = join(IModelHost.cacheDir, name);
+    makeEmptyDir(rootDir);
+    return new IModelHost.platform.CloudCache({ name, rootDir });
+
+  }
   export function makeCaches(names: string[]) {
     const caches = [];
-    for (const name of names) {
-      const rootDir = join(IModelHost.cacheDir, name);
-      makeEmptyDir(rootDir);
-      caches.push(new IModelHost.platform.CloudCache({ name, rootDir }));
-    }
+    for (const name of names)
+      caches.push(makeCache(name));
     return caches;
   }
   export function makeSasToken(containerName: string, permissionFlags: string) {
@@ -67,12 +75,22 @@ export namespace CloudSqliteTest {
       containerName,
       permissions: azureBlob.ContainerSASPermissions.parse(permissionFlags),
       startsOn: now,
-      expiresOn: new Date(now.valueOf() + 86400),
+      expiresOn: new Date(now.valueOf() + 86400 * 1000), // one day, in milliseconds
       version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
   export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
     container.accessToken = makeSasToken(container.containerId, permissionFlags);
+  }
+  export async function uploadFile(container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) {
+    expect(container.isConnected).false;
+    container.connect(cache);
+    expect(container.isConnected);
+
+    await CloudSqlite.withWriteLock("upload", container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
+    expect(container.isConnected);
+    container.detach();
+    expect(container.isConnected).false;
   }
 }
 
@@ -95,30 +113,19 @@ describe("CloudSqlite", () => {
     testBimGuid = imodel.iModelId;
     imodel.close();
 
-    const uploadFile = async (container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) => {
-      expect(container.isConnected).false;
-      container.connect(cache);
-      expect(container.isConnected);
-
-      await CloudSqlite.withWriteLock(user, container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
-      expect(container.isConnected);
-      container.detach();
-      expect(container.isConnected).false;
-    };
-
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testws.db");
     if (existsSync(tempDbFile))
       rmSync(tempDbFile);
     EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
 
-    await uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
-    await uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
-    await uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
-    await uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
-    await uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
+    await CloudSqliteTest.uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
+    await CloudSqliteTest.uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
+    await CloudSqliteTest.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
 
-  it.only("cloud containers", async () => {
+  it("cloud containers", async () => {
     expect(undefined !== caches[0]);
 
     const contain1 = testContainers[0];
@@ -171,7 +178,10 @@ describe("CloudSqlite", () => {
     });
 
     await CloudSqlite.withWriteLock(user, contain1, async () => {
-      IModelHost.platform.DgnDb.vacuum("testBim2", contain1);
+      db.openDb("testBim2", OpenMode.ReadWrite, contain1);
+      db.nativeDb.vacuum();
+      db.closeDb();
+
       expect(contain1.hasLocalChanges).true;
       dbProps = contain1.queryDatabase("testBim2");
       assert(dbProps !== undefined);
@@ -240,27 +250,6 @@ describe("CloudSqlite", () => {
     });
     expect(retries).equals(5); // retry handler should be called 5 times
 
-    // Logger.initializeToConsole();
-    // Logger.setLevel("CloudSqlite", LogLevel.Trace);
-    // caches[1].setLogMask(0xff);
-
-    const timer = new StopWatch("lock", true);
-    let count = 0;
-    const db2 = new SQLiteDb();
-    for (let i = 0; i < 1000; ++i) {
-      await CloudSqlite.withWriteLock(user2, contain1, async () => {
-        db2.openDb("c0-db1:0", OpenMode.ReadWrite, contain1);
-        db2.withSqliteStatement(`INSERT INTO strings(id,value) VALUES(${i},"${i}")`, (stmt) => {
-          stmt.step();
-        });
-        db2.saveChanges();
-        db2.closeDb();
-        count++;
-      });
-    }
-
-    console.log(`lock took ${timer.elapsedSeconds} seconds for ${count} cycles (${timer.elapsedSeconds * 1000 / count} milliseconds per request)`);
-
     cont2.detach();
     contain1.detach();
 
@@ -312,6 +301,82 @@ describe("CloudSqlite", () => {
     expect(newCache1.guid).not.equals(newCache2.guid);
     newCache1.destroy();
     newCache2.destroy();
+  });
+
+  it.only("simultaneous writes", async () => {
+    const codeContainer = CloudSqliteTest.makeCloudSqliteContainer("codes", false);
+    await CloudSqliteTest.createAzureContainer(codeContainer);
+    codeContainer.initializeContainer({ checksumBlockNames: false, blockSize: 256 * 1024 });
+
+    const tempDbFile = join(KnownLocations.tmpdir, "TestWrites", "codes.db");
+    if (existsSync(tempDbFile))
+      rmSync(tempDbFile);
+
+    const db = new SQLiteDb();
+    IModelJsFs.recursiveMkDirSync(dirname(tempDbFile));
+    db.createDb(tempDbFile);
+    db.executeSQL("CREATE TABLE codeSpecs(Id INTEGER PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE,json TEXT)");
+    db.executeSQL("CREATE TABLE reservations(Id INTEGER PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE, json TEXT)");
+    db.executeSQL("CREATE TABLE codes(Id BLOB PRIMARY KEY NOT NULL,spec INTEGER NOT NULL,scope BLOB NOT NULL,value TEXT NOT NULL COLLATE NOCASE," +
+      "state INTEGER,reserved INTEGER,json TEXT,FOREIGN KEY(spec) REFERENCES codeSpecs(Id),FOREIGN KEY(reserved) REFERENCES reservations(Id))");
+    db.executeSQL("CREATE UNIQUE INDEX code_idx ON codes(spec,scope,value)");
+    db.executeSQL("CREATE INDEX reserved_idx ON codes(reserved) WHERE reserved IS NOT NULL;");
+
+    db.saveChanges();
+    db.closeDb();
+
+    const codeCache = CloudSqliteTest.makeCache("codes");
+    await CloudSqliteTest.uploadFile(codeContainer, codeCache, "codeIdx", tempDbFile);
+    codeContainer.connect(codeCache);
+    expect(codeContainer.isConnected);
+
+    // Logger.initializeToConsole();
+    // Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    // codeCache.setLogMask(0xff);
+
+    const outFile = join(KnownLocations.tmpdir, "TestWrites", "codeIdx.db");
+    if (IModelJsFs.existsSync(outFile))
+      IModelJsFs.removeSync(outFile);
+
+    const timer = new StopWatch("lock", true);
+    let count = 0;
+    const scope = Guid.createValue();
+    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
+      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
+      db.executeSQL(`INSERT INTO codeSpecs(name) VALUES("bsi:SpatialCategory")`);
+      db.withSqliteStatement(`INSERT INTO reservations(name,json) VALUES(?,?)`, (stmt) => {
+        stmt.bindString(1, "Create New Wing 5d");
+        stmt.bindString(2, JSON.stringify({ contact: "Jim Jones", date: "1/1/2022" }));
+        stmt.step();
+      });
+      db.withSqliteStatement(`INSERT INTO codes(Id,spec,scope,value,reserved,state) VALUES(?,?,?,?,?,?)`, (stmt) => {
+        for (let i = 0; i < 1000000; ++i) {
+          stmt.bindGuid(1, Guid.createValue());
+          stmt.bindInteger(2, 1);
+          stmt.bindGuid(3, scope);
+          stmt.bindString(4, `value-${i}`);
+          if (i % 10 === 0)
+            stmt.bindInteger(5, 1);
+          else
+            stmt.bindNull(5);
+          stmt.step();
+          stmt.reset();
+        }
+      });
+      db.saveChanges();
+      db.closeDb();
+      count++;
+      await codeContainer.cleanDeletedBlocks();
+      console.log(`add codes took ${timer.elapsedSeconds} seconds`);
+      timer.start();
+    });
+    console.log(`lock took ${timer.elapsedSeconds} seconds for ${count} cycles (${timer.elapsedSeconds * 1000 / count} milliseconds per request)`);
+
+    timer.start();
+    db.openDb("codeIdx", OpenMode.Readonly, codeContainer);
+    db.nativeDb.vacuum({ into: `file:${outFile}?vfs=win32` });
+    db.closeDb();
+    console.log(`vacuum took ${timer.elapsedSeconds} seconds`);
   });
 });
 
