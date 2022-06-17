@@ -2,6 +2,18 @@
   "name": "@itwin/map-layers",
   "entries": [
     {
+      "version": "3.2.3",
+      "tag": "@itwin/map-layers_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Made public MapLayers related objects, methods."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.2",
       "tag": "@itwin/map-layers_v3.2.2",
       "date": "Fri, 10 Jun 2022 16:11:37 GMT",
