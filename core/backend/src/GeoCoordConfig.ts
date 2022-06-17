@@ -31,24 +31,24 @@ export class GeoCoordConfig {
     try {
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
-      if (!cloudContainer?.isConnected) {
+      if (!cloudContainer?.nativeContainer.isConnected) {
         Logger.logInfo("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
         return;
       }
 
       const gcsDbName = container.resolveDbFileName(dbProps);
-      const gcsDbProps = cloudContainer.queryDatabase(gcsDbName);
+      const gcsDbProps = cloudContainer.nativeContainer.queryDatabase(gcsDbName);
       if (undefined === gcsDbProps)
         throw new Error(`database "${gcsDbName}" not found in container "${containerProps.containerId}"`);
 
-      if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
+      if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer.nativeContainer, dbProps.priority))
         return; // already had this db
 
       IModelHost.platform.enableLocalGcsFiles(false);
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
-        new IModelHost.platform.CloudPrefetch(cloudContainer, gcsDbName);
+        new IModelHost.platform.CloudPrefetch(cloudContainer.nativeContainer, gcsDbName);
 
     } catch (e: unknown) {
       Logger.logError(loggerCat, `${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
