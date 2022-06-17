@@ -48,6 +48,9 @@ beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
+alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element
+alpha;PresentationTreeNodeRendererProps 
+alpha;PresentationTreeRenderer(props: TreeRendererProps): JSX.Element
 public;PropertyDataProviderWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart

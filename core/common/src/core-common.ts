@@ -236,3 +236,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  * @docs-group-description RealityData
  * Types for working with the RealityData API.
  */
+/**
+ * @docs-group-description MapLayers
+ * Types for working with the MapLayers API.
+ */
