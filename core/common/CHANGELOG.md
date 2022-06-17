@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 10 Jun 2022 16:11:36 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jun 2022 15:18:39 GMT and should not be manually modified.
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+### Updates
+
+- Made public MapLayers related objects, methods.
 
 ## 3.2.2
 Fri, 10 Jun 2022 16:11:36 GMT
