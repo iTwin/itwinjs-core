@@ -78,7 +78,7 @@ def createRelease(tag):
   f.close()
 
   print("Publishing GitHub release...")
-  cmd = ['gh', 'release', 'create', tag, '-F', './' + fileName, '-t', '"{0} {1} Release"'.format(currentVer, releaseType)]
+  cmd = ['gh', 'release', 'create', tag, '-F', './' + fileName, '-t', '"v{0}"'.format(currentVer)]
   proc = subprocess.Popen(" ".join(cmd), stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
   proc.wait()
 
