@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Add support for nth level element selection scopes",
+      "comment": "`PresentationRpcInterface`: Enable response compression for certain operations.",
       "type": "none"
     }
   ],
