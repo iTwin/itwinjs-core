@@ -9,7 +9,7 @@ import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration 
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";;
+import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
