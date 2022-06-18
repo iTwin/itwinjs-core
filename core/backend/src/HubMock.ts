@@ -18,6 +18,7 @@ import { CheckpointProps } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
+import { TokenArg } from "./IModelDb";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.

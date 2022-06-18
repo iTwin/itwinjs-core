@@ -9,16 +9,11 @@ import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-(??)import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
-(??)import { BriefcaseManager } from "../BriefcaseManager";
-(??)import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
-(??)import { IModelJsFs } from "../IModelJsFs";
-(??)import { SQLiteDb } from "../SQLiteDb";
-(??)import { LockConflict, LockMap, LockProps, LockState } from "./BackendHubAccess";
-(??)import { BriefcaseManager } from "./BriefcaseManager";
-(??)import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
-(??)import { IModelJsFs } from "./IModelJsFs";
-(??)import { SQLiteDb } from "./SQLiteDb";
+import { LockConflict, LockMap, LockProps, LockState } from "./BackendHubAccess";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
+import { IModelJsFs } from "./IModelJsFs";
+import { SQLiteDb } from "./SQLiteDb";
 
 // cspell:ignore rowid
 
