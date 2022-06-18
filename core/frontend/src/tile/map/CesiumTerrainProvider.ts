@@ -185,8 +185,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
-  public override getLogo(): HTMLTableRowElement {
-    return IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (cards.dataset.cesiumIonLogoCard)
+      return;
+
+    cards.dataset.cesiumIonLogoCard = "true";
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    cards.appendChild(card);
   }
 
   public get maxDepth(): number { return this._maxDepth; }

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.2.0-dev.72",
+  "version": "3.3.0-dev.36",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -39,13 +39,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.2.0-dev.72",
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.72",
-    "@itwin/core-common": "workspace:^3.2.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.72",
-    "@itwin/core-orbitgt": "workspace:^3.2.0-dev.72",
-    "@itwin/core-quantity": "workspace:^3.2.0-dev.72",
-    "@itwin/webgl-compatibility": "workspace:^3.2.0-dev.72"
+    "@itwin/appui-abstract": "workspace:^3.3.0-dev.36",
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.36",
+    "@itwin/core-common": "workspace:^3.3.0-dev.36",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.36",
+    "@itwin/core-orbitgt": "workspace:^3.3.0-dev.36",
+    "@itwin/core-quantity": "workspace:^3.3.0-dev.36",
+    "@itwin/webgl-compatibility": "workspace:^3.3.0-dev.36"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -67,7 +67,7 @@
     "@types/deep-assign": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/qs": "^6.5.0",
     "@types/semver": "^7.3.9",
     "@types/superagent": "^4.1.14",
@@ -77,7 +77,7 @@
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "glob": "^7.1.2",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",

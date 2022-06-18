@@ -8,6 +8,8 @@
 
 import { inPlaceSort } from "fast-sort";
 import memoize from "micro-memoize";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
@@ -17,8 +19,6 @@ import {
   Value, ValuesMap,
 } from "@itwin/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
@@ -641,9 +641,14 @@ function destructureStructMember(member: FieldHierarchyRecord): Array<FieldHiera
 function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: FieldHierarchy) {
   const destructuredFields: FieldHierarchy[] = [];
   fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
-    items.forEach((item, index) => {
+    let didDestructure = false;
+    items.forEach((item) => {
       assert(item.value.valueFormat === UiPropertyValueFormat.Struct);
-      assert(item.value.members[nestedFieldHierarchy.field.name] !== undefined);
+
+      if (item.value.members[nestedFieldHierarchy.field.name] === undefined) {
+        // the member may not exist at all if we decided to skip it beforehand
+        return;
+      }
 
       // destructure a single struct array item member
       const destructuredMembers = destructureStructMember({
@@ -659,8 +664,10 @@ function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: Fi
       });
 
       // store new members. all items are expected to have the same members, so only need to do this once
-      if (index === 0)
+      if (!didDestructure) {
         destructuredMembers.forEach((destructuredMember) => destructuredFields.push(destructuredMember.fieldHierarchy));
+        didDestructure = true;
+      }
     });
   });
 

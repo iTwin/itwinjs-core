@@ -1,6 +1,26 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jun 2022 16:11:36 GMT and should not be manually modified.
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Implement svg icons loading as a web component.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Allow React icons to be user on Wedget tabs, backstage, and status bar items.
+- Add ability to specify default widget size.
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixes for updateDynamics to supply ajusted point.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -6,13 +6,14 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { Guid } from "@itwin/core-bentley";
-import { HubMock } from "../";
+import { Guid, IModelStatus } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { HubMock } from "../../HubMock";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -143,7 +144,7 @@ describe("Checkpoint Manager", () => {
     snapshot.close();
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => { return undefined; });
+    sinon.stub(IModelHost.hubAccess, "downloadV2Checkpoint").callsFake(async () => { throw new IModelError(IModelStatus.NotFound, "Feature is disabled."); });
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);

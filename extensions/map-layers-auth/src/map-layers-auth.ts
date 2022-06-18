@@ -5,6 +5,5 @@
 export * from "./ArcGis/ArcGisOAuth2Endpoint";
 export * from "./ArcGis/ArcGisUrl";
 export * from "./ArcGis/ArcGisAccessClient";
-export * from "./ArcGis/ArcGisOauthRedirect";
 export * from "./ArcGis/ArcGisTokenGenerator";
 export * from "./ArcGis/ArcGisTokenManager";
