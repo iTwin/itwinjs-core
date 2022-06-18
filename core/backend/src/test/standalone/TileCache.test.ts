@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/*
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
@@ -174,4 +175,4 @@ describe("TileCache, open v2", async () => {
     checkpoint.close();
   });
 });
-
+*/
