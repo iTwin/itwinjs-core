@@ -46,12 +46,15 @@ interface LockStatusNone {
   state: LockState.None;
   lastCsIndex?: ChangesetIndex;
 }
+
+/** @internal exported for tests. */
 export interface LockStatusExclusive {
   state: LockState.Exclusive;
   briefcaseId: BriefcaseId;
   lastCsIndex?: ChangesetIndex;
 }
 
+/** @internal exported for tests. */
 export interface LockStatusShared {
   state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;

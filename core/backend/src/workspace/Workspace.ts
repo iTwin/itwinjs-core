@@ -32,47 +32,36 @@ export const WorkspaceSetting = {
   Databases: "workspace/databases",
 };
 
+/** @beta TODO document this */
 export namespace WorkspaceAccount {
-  /**
-   * The name of a WorkspaceAccount in a "cloud/accounts" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceAccount in a "cloud/accounts" setting. */
   export type Name = string;
 
   /** A member named `accountName` that specifies by an entry in a "cloud/accounts" setting */
   export interface Alias { accountName: string }
 
-  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting.
-   * @beta
-   */
+  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting. */
   export type Props = CloudSqlite.AccountAccessProps;
 }
 
+/** @beta */
 export namespace WorkspaceContainer {
-  /**
-   * The name of a WorkspaceContainer in a "cloud/containers" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceContainer in a "cloud/containers" setting. */
   export type Name = string;
 
-  /**
-   * The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
+  /** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
    * Usually supplied via the `containerId` member of a "cloud/containers" setting.
    * `WorkspaceContainer.Id`s may:
    *  - only contain lower case letters, numbers or dashes
    *  - not start or end with a dash
    *  - not be shorter than 3 or longer than 63 characters
-   * @beta
    */
   export type Id = string;
 
   /** A member named `containerName` that specifies by an entry in a "cloud/containers" setting */
   export interface Alias { containerName: string }
 
-  /**
-   * Properties that specify a WorkspaceContainer.
-   * @beta
-   */
+  /** Properties that specify a WorkspaceContainer. */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
@@ -81,41 +70,24 @@ export namespace WorkspaceContainer {
   }
 }
 
+/** @beta TODO document this. */
 export namespace WorkspaceDb {
-  /**
-   * The name of a WorkspaceDb in a "workspace/databases" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceDb in a "workspace/databases" setting. */
   export type Name = string;
 
-  /**
-   * The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier)
-   * @beta
-   */
+  /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
   export type DbName = string;
 
-  /**
-   * The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier
-   * @beta
-   */
+  /** The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier */
   export type DbFullName = string;
 
-  /**
-   * The semver-format version identifier for a WorkspaceDb.
-   * @beta
-   */
+  /** The semver-format version identifier for a WorkspaceDb. */
   export type Version = string;
 
-  /**
-   * The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions.
-   * @beta
-   */
+  /** The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions. */
   export type VersionRange = string;
 
-  /**
-   * Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]].
-   * @beta
-   */
+  /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
   export interface Props extends CloudSqlite.DbNameProp {
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
     version?: VersionRange;
@@ -123,13 +95,13 @@ export namespace WorkspaceDb {
     includePrerelease?: boolean;
   }
 
-  /**
-   * Scope to increment for a version number.
+  /** Scope to increment for a version number.
    * @see semver.ReleaseType
    */
   export type VersionIncrement = "major" | "minor" | "patch";
 }
 
+/** @beta TODO document this. */
 export namespace WorkspaceResource {
   /**
    * The name for identifying WorkspaceResources in a [[WorkspaceDb]].
@@ -137,13 +109,10 @@ export namespace WorkspaceResource {
    *  - be blank or start or end with a space
    *  - be longer than 1024 characters
    * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResource.Name.
-   * @beta
    */
   export type Name = string;
 
-  /** Properties that specify an individual WorkspaceResource within a WorkspaceDb.
-   * @beta
-   */
+  /** Properties that specify an individual WorkspaceResource within a [[WorkspaceDb]]. */
   export interface Props {
     /** the name of the resource within the WorkspaceDb */
     rscName: Name;
@@ -198,7 +167,9 @@ export interface WorkspaceDb {
   prefetch(): void;
 }
 
-/** The properties of the CloudCache used for Workspaces. */
+/** The properties of the CloudCache used for Workspaces.
+ * @beta
+ */
 export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
   /** if true, empty the cache before using it. */
   clearContents?: boolean;
