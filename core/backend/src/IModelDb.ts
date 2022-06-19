@@ -2096,7 +2096,7 @@ export interface TokenArg {
  */
 export interface CloudContainerArgs {
   /** @alpha */
-  container?: IModelJsNative.CloudContainer
+  container?: IModelJsNative.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).
