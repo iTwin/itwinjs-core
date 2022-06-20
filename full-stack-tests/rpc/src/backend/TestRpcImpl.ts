@@ -153,6 +153,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async noContent() {
     throw new NoContentError();
   }
+
+  public async getRequestedProtocolVersion() {
+    return RpcInvocation.current(this).request.protocolVersion;
+  }
 }
 
 export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {
