@@ -26,18 +26,11 @@ The RepositoryModel contains a hierarchy of `Subject` Elements organized into a 
 
 ### Model Contains Elements
 
-A Model is a *container* for Elements.
-Models are a way to subdivide and organize the overall repository.
-Each Element is contained by exactly 1 Model as defined by the `ModelContainsElements` relationship.
+A Model is a *container* for Elements. Models are a way to subdivide and organize the overall repository. Each Element is contained by exactly 1 Model as defined by the `ModelContainsElements` relationship.
 
 ### Model Models Element
 
-A Model is more detail about an Element from a higher level in the information hierarchy.
-A Model is about exactly 1 Element as defined by the `ModelModelsElement` relationship.
-From the Model's perspective, this higher-level Element is known as the *modeled element*.
-From the Element's perspective, the lower-level Model is knows as the *SubModel*.
-The *SubModel* term is just a way to refer to a relative position in the information hierarchy.
-There is no special class for a *SubModel*, only the standard `Model` subclasses.
+A Model is more detail about an Element from a higher level in the information hierarchy. A Model is about exactly 1 Element as defined by the `ModelModelsElement` relationship. From the Model's perspective, this higher-level Element is known as the *modeled element*. From the Element's perspective, the lower-level Model is knows as the *SubModel*. The *SubModel* term is just a way to refer to a relative position in the information hierarchy. There is no special class for a *SubModel*, only the standard `Model` subclasses.
 
 For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
@@ -47,12 +40,7 @@ For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `D
 
 ### Element Owns Child Elements
 
-An Element can own child Elements.
-This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements.
-An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship.
-An Element without a parent is considered a *top-level* Element.
-An Element with a parent is considered a *child* Element.
-These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
+An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
 
 ### Element Held by Spatial Organizer
 
