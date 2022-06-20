@@ -81,7 +81,13 @@ export interface IModelTransformOptions {
   loadSourceGeometry?: boolean;
 
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
-   * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
+   *
+   * Prefer to never to set this flag. If you need geometry changes, instead override [[IModelTransformer.onTransformElement]]
+   * and provide an [ElementGeometryBuilderParams]($backend) to the `elementGeometryBuilderParams`
+   * property of [ElementProps]($common) instead, it is much faster. You can read geometry during the transformation by setting the
+   * [[IModelTransformOptions.loadSourceGeometry]] property to `true`, and passing that to a [GeometryStreamIterator]($common)
+   * @note this flag will be deprecated when `elementGeometryBuilderParams` is no longer an alpha API
+   *
    * @default true
    */
   cloneUsingBinaryGeometry?: boolean;
@@ -89,9 +95,9 @@ export interface IModelTransformOptions {
   /** Flag that indicates that ids should be preserved while copying elements to the target
    * Intended only for pure-filter transforms, so you can keep parts of the source, while deleting others,
    * and element ids are guaranteed to be the same, (other entity ids are not, however)
-   * @note the target must be empty
-   * @note it is invalid to insert elements during the transformation, do not use this with transformers that try to
-   * @note this does not preserve the ids of non-element entities such as link table relationships, or aspects, etc
+   * @note The target must be empty.
+   * @note It is invalid to insert elements during the transformation, do not use this with transformers that try to.
+   * @note This does not preserve the ids of non-element entities such as link table relationships, or aspects, etc.
    * @default false
    * @beta
    */
@@ -102,7 +108,7 @@ export interface IModelTransformOptions {
    * It is possible to craft an iModel with dangling predecessors/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
    *
-   * @note "reject" will throw an error and reject the transformation upon finding this case
+   * @note "reject" will throw an error and reject the transformation upon finding this case.
    * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.

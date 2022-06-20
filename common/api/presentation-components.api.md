@@ -79,6 +79,8 @@ import { TreeEventHandler } from '@itwin/components-react';
 import { TreeModelChanges } from '@itwin/components-react';
 import { TreeModelSource } from '@itwin/components-react';
 import { TreeNodeItem } from '@itwin/components-react';
+import { TreeNodeRendererProps } from '@itwin/components-react';
+import { TreeRendererProps } from '@itwin/components-react';
 import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { TypeDescription } from '@itwin/presentation-common';
@@ -522,6 +524,18 @@ export interface PresentationTreeNodeLoaderResult {
     // @alpha
     onItemsRendered: (items: RenderedItemsRange) => void;
 }
+
+// @alpha (undocumented)
+export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
+    // (undocumented)
+    nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+}
+
+// @alpha (undocumented)
+export function PresentationTreeRenderer(props: TreeRendererProps): JSX.Element;
 
 // @public
 export interface PropertyDataProviderWithUnifiedSelectionProps {

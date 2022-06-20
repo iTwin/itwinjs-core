@@ -138,7 +138,7 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(10);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
 
     wrapper.unmount();
   });
@@ -216,7 +216,7 @@ describe("UiSettingsPage", () => {
     await TestUtils.flushAsyncOperations();
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
     expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(10);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
     const checkbox = getInputBySpanTitle(uiVersionSpan);
 
@@ -226,7 +226,7 @@ describe("UiSettingsPage", () => {
 
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(10);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
 
     wrapper.unmount();
   });
@@ -238,6 +238,23 @@ describe("UiSettingsPage", () => {
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.animateToolSettingsTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
+    wrapper.unmount();
+  });
+
+  it("renders useToolAsToolSettingsLabel toggle", async () => {
+    UiFramework.setUiVersion("2");
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    expect(wrapper).not.to.be.undefined;
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.useToolAsToolSettingsLabelTitle");
     const checkbox = getInputBySpanTitle(titleSpan);
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
