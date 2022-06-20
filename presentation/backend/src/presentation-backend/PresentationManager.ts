@@ -14,7 +14,7 @@ import {
   DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
   SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
@@ -26,9 +26,7 @@ import {
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey, getLocalesDirectory } from "./Utils";
-import { getElementKey } from "./Utils";
+import { BackendDiagnosticsAttribute, getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -635,32 +633,6 @@ export class PresentationManager {
         const { ids, scopeId, ...rest } = requestOptions;
         return { ...rest, elementIds: ids, scope: { id: scopeId } };
       })());
-  }
-
-  private async request<TParams extends { diagnostics?: BackendDiagnosticsOptions, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
-    if (this._onManagerUsed)
-      this._onManagerUsed();
-    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const nativeRequestParams: any = {
-      requestId,
-      params: {
-        locale: normalizeLocale(locale ?? this.activeLocale),
-        unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
-        ...strippedParams,
-      },
-    };
-
-    let diagnosticsListener: BackendDiagnosticsHandler | undefined;
-    if (diagnostics) {
-      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
-      diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = diagnosticsOptions;
-    }
-
-    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    diagnosticsListener && response.diagnostics && diagnosticsListener({ logs: [response.diagnostics] });
-    return JSON.parse(response.result, reviver);
   }
 
   /**
