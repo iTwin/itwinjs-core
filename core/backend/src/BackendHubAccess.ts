@@ -6,12 +6,12 @@
  * @module HubAccess
  */
 
-import { AccessToken, BeEvent, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
+import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
@@ -41,41 +41,6 @@ export class LockConflict extends IModelError {
   ) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
   }
-}
-
-/**
- * Controls cancellation by raising [[CancelSignal]] on cancel.
- * @note This is based on AbortController (https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
- * @beta
- */
-export class CancelController {
-  private _cancelEvent = new BeEvent<() => void>();
-
-  /** Signal raised on cancel. */
-  public get signal(): CancelSignal {
-    return {
-      addListener: (listener) => this._cancelEvent.addListener(listener),
-    };
-  }
-
-  /** Raises cancel signal. */
-  public cancel() {
-    this._cancelEvent.raiseEvent();
-  }
-}
-
-/**
- * Signal raised on cancel.
- * @note This is based on AbortSignal (https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal).
- * @beta
- */
-export interface CancelSignal {
-  /**
-   * Registers a Listener to be executed whenever signal is raised.
-   * @param listener A listener to be executed whenever signal is raised.
-   * @returns A function that will remove this listener.
-   */
-  addListener(listener: () => void): () => void;
 }
 
 /**
@@ -110,29 +75,12 @@ export interface LockProps {
 }
 
 /**
- * Function used to indicate download progress in bytes.
- * @param loaded Bytes downloaded.
- * @param total Total size of item(s) in bytes.
- * @beta
- */
-export type DownloadProgressFunction = (loaded: number, total: number) => void;
-
-/**
- * Argument for tracking download progress.
+ * Argument for cancelling and tracking download progress.
  * @beta
  */
 export interface DownloadProgressArg {
-  /** Callback for reporting download progress. */
-  progressCallback?: DownloadProgressFunction;
-}
-
-/**
- * Argument for cancelling download.
- * @beta
- */
-export interface CancelDownloadArg {
-  /** Signal raised on cancel. */
-  cancelSignal?: CancelSignal;
+  /** Called to show progress during a download. If this function returns non-zero, the download is aborted. */
+  progressCallback?: ProgressFunction;
 }
 
 /**
@@ -191,7 +139,7 @@ export interface ChangesetArg extends IModelIdArg {
 /** Argument for downloading a changeset.
  * @beta
  */
-export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg, CancelDownloadArg {
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
   /** Directory where the changeset should be downloaded. */
   targetDir: LocalDirName;
 }
@@ -212,7 +160,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 /** Argument for downloading a changeset range.
  * @beta
  */
-export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg, CancelDownloadArg {
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
   /** Directory where the changesets should be downloaded. */
   targetDir: LocalDirName;
 }

@@ -526,22 +526,6 @@ export abstract class Callout extends DetailingSymbol {
     static get className(): string;
 }
 
-// @beta
-export class CancelController {
-    cancel(): void;
-    get signal(): CancelSignal;
-}
-
-// @beta
-export interface CancelDownloadArg {
-    cancelSignal?: CancelSignal;
-}
-
-// @beta
-export interface CancelSignal {
-    addListener(listener: () => void): () => void;
-}
-
 // @public
 export class Category extends DefinitionElement {
     // @internal
@@ -1035,12 +1019,12 @@ export class DocumentPartition extends InformationPartitionElement {
 }
 
 // @beta
-export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg, CancelDownloadArg {
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
 
 // @beta
-export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg, CancelDownloadArg {
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
 
@@ -1054,11 +1038,8 @@ export interface DownloadJob {
 
 // @beta
 export interface DownloadProgressArg {
-    progressCallback?: DownloadProgressFunction;
+    progressCallback?: ProgressFunction;
 }
-
-// @beta
-export type DownloadProgressFunction = (loaded: number, total: number) => void;
 
 // @internal
 export interface DownloadRequest {
