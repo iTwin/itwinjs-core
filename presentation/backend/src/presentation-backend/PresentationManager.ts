@@ -321,9 +321,8 @@ export class PresentationManager {
   public get activeLocale(): string | undefined { return this._detail.activeLocale; }
   public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; }
 
-  /** Get active unit system used to format property values with units */
+  /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined { return this._detail.activeUnitSystem; }
-  /** Set active unit system used to format property values with units */
   // istanbul ignore next
   public set activeUnitSystem(value: UnitSystemKey | undefined) { this._detail.activeUnitSystem = value; }
 
@@ -332,6 +331,7 @@ export class PresentationManager {
     this._detail.dispose();
   }
 
+  /** @internal */
   public setOnManagerUsedHandler(handler: () => void) {
     this._detail.setOnManagerUsedHandler(handler);
   }
