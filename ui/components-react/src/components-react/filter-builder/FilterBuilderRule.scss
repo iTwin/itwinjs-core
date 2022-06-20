@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/index";
 
 .rule {
   display: grid;
   grid-template-columns: min-content auto;
+  padding: 3px 0;
 
   .rule-condition {
     display: grid;
@@ -20,7 +22,7 @@
   }
 
   .rule-remove-action {
-    padding-right: 5px;
+    padding-right: $iui-s;
     visibility: hidden;
   }
 

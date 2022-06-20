@@ -5,9 +5,15 @@
 @import "~@itwin/itwinui-css/scss/style/index";
 @import "~@itwin/itwinui-css/scss/button/disabled";
 
-.filter-builder > .rule-group > .rule-group-content {
-  border-left: 0;
-  padding-left: 0;
+.filter-builder > .rule-group {
+  & > .rule-group-content {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  & > .rule-group-remove-action {
+    padding-right: 0;
+  }
 }
 
 .rule-group {
@@ -38,19 +44,20 @@
   }
 
   .rule-group-remove-action {
-    padding-top: 5px;
-    padding-right: 5px;
+    padding: 3px $iui-s 3px 0;
     visibility: hidden;
   }
 
   .rule-group-content {
-    padding: 5px 0 5px 11px;
+    padding-left: $iui-m;
     border-left: 1px solid;
+    box-sizing: border-box;
     @include themed {
       border-color: t(iui-color-background-border);
     }
 
     .rule-group-operator {
+      padding: 3px 0;
       width: max-content;
     }
 
@@ -61,14 +68,10 @@
       &:first-child {
         margin-top: 11px;
       }
-
-      &:last-child {
-        margin-bottom: 0;
-      }
     }
 
     .rule-group-actions {
-      padding-top: 11px;
+      padding: 3px 0;
     }
   }
 }
