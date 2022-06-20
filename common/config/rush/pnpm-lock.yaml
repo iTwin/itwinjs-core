@@ -3748,7 +3748,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     dependencies:
@@ -3780,7 +3780,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
@@ -3830,7 +3830,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
       uuid: ^7.0.3
@@ -3882,7 +3882,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -3960,7 +3960,7 @@ importers:
       rxjs: ^6.6.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4037,7 +4037,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4120,7 +4120,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4202,7 +4202,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4265,7 +4265,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4327,7 +4327,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4394,7 +4394,7 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
-      ts-node: ^10.4.0
+      ts-node: 10.8.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4460,7 +4460,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.1_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.8.0_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -21477,8 +21477,8 @@ packages:
     resolution: {integrity: sha512-ZYcdy6/RdwryMm2hcRT3KJanGSQREd5SDkMirdFjhWINe12wht2A26tzBqi3pxPau9Pf3Bq1C7iwzFCOfdm5yQ==}
     dev: false
 
-  /ts-node/10.8.1_ee928ac548ac44c173bf0d4654ae2c29:
-    resolution: {integrity: sha512-Wwsnao4DQoJsN034wePSg5nZiw4YKXf56mPIAeD6wVmiv+RytNSWqc2f3fKvcUoV+Yn2+yocD71VOfQHbmVX4g==}
+  /ts-node/10.8.0_ee928ac548ac44c173bf0d4654ae2c29:
+    resolution: {integrity: sha512-/fNd5Qh+zTt8Vt1KbYZjRHCE9sI5i7nqfD/dzBBRDeVXZXS6kToW6R7tTU6Nd4XavFs0mAVCg29Q//ML7WsZYA==}
     hasBin: true
     peerDependencies:
       '@swc/core': '>=1.2.50'
