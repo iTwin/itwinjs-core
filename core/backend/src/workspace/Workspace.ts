@@ -19,7 +19,6 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
-import { SqliteCloudContainer } from "../SqliteCloudContainer";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey
@@ -293,7 +292,7 @@ export interface WorkspaceContainer {
   /** Workspace holding this WorkspaceContainer. */
   readonly workspace: Workspace;
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
-  readonly cloudContainer?: SqliteCloudContainer;
+  readonly cloudContainer?: IModelJsNative.CloudContainer;
 
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
@@ -446,7 +445,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
-  public readonly cloudContainer?: SqliteCloudContainer | undefined;
+  public readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
   private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -477,7 +476,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (account?.accessName && account.storageType)
-      this.cloudContainer = new SqliteCloudContainer({ accessToken: "", ...props, ...account });
+      this.cloudContainer = new IModelHost.platform.CloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -486,7 +485,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return;
 
-    cloudContainer.nativeContainer.connect(this.workspace.cloudCache);
+    cloudContainer.connect(this.workspace.cloudCache);
     if (props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();

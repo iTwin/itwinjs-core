@@ -15,7 +15,7 @@ import { assert, DbResult, Guid, GuidString, OpenMode, StopWatch } from "@itwin/
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
-  export type TestContainer = CloudSqlite.Container & { isPublic: boolean };
+  export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";
   export const storage: CloudSqlite.AccountAccessProps = {
     accessName: "devstoreaccount1",
@@ -79,15 +79,15 @@ export namespace CloudSqliteTest {
       version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
-  export function setSasToken(container: CloudSqlite.Container, permissionFlags: string) {
+  export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
     container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
-  export async function uploadFile(container: CloudSqlite.Container, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) {
+  export async function uploadFile(container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) {
     expect(container.isConnected).false;
     container.connect(cache);
     expect(container.isConnected);
 
-    await container.withWriteLock("upload", async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
+    await CloudSqlite.withWriteLock("upload", container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
     expect(container.isConnected);
     container.detach();
     expect(container.isConnected).false;
@@ -160,7 +160,7 @@ describe("CloudSqlite", () => {
     expect(imodel.iModelId).equals(testBimGuid);
     imodel.close();
 
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.copyDatabase("badName", "bad2")).eventually.rejectedWith("no such database");
       await contain1.copyDatabase("testBim", "testBim2");
     });
@@ -168,7 +168,7 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabases().length).equals(3);
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       expect(contain1.hasWriteLock);
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
@@ -177,7 +177,7 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       db.openDb("testBim2", OpenMode.ReadWrite, contain1);
       db.nativeDb.vacuum();
       db.closeDb();
@@ -192,7 +192,18 @@ describe("CloudSqlite", () => {
 
     expect(contain1.queryDatabase("testBim2")?.dirtyBlocks).equals(0);
 
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
+      await contain1.copyDatabase("testBim", "testBim33");
+      await contain1.deleteDatabase("testBim2");
+      expect(contain1.hasLocalChanges).true;
+      contain1.abandonWriteLock();
+    });
+    expect(contain1.hasLocalChanges).false;
+    expect(contain1.queryDatabases().length).equals(3);
+    expect(contain1.queryDatabase("testBim33")).undefined;
+    expect(contain1.queryDatabase("testBim2")).not.undefined;
+
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith("no such database");
       await contain1.deleteDatabase("testBim2");
     });
@@ -203,7 +214,7 @@ describe("CloudSqlite", () => {
     contain1.disconnect();
     CloudSqliteTest.setSasToken(contain1, "rwl"); // don't ask for delete permission
     contain1.connect(caches[1]);
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
@@ -211,7 +222,7 @@ describe("CloudSqlite", () => {
     CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await contain1.withWriteLock(user, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -235,14 +246,14 @@ describe("CloudSqlite", () => {
     expect(dbProps.totalBlocks).greaterThan(0);
 
     // when one cache has the lock the other should fail to obtain it
-    await contain1.withWriteLock(user, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => cont2.acquireWriteLock(user)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
     let retries = 0;
-    await cont2.withWriteLock(user2, async () => {
-      await expect(contain1.withWriteLock(user, async () => { }, async (lockedBy: string, expires: string) => {
+    await CloudSqlite.withWriteLock(user2, cont2, async () => {
+      await expect(CloudSqlite.withWriteLock(user, contain1, async () => { }, async (lockedBy: string, expires: string) => {
         expect(lockedBy).equals(user2);
         expect(expires.length).greaterThan(0);
         return ++retries < 5;
@@ -347,7 +358,7 @@ describe("CloudSqlite", () => {
     const timer = new StopWatch("lock", true);
     let count = 0;
     const scope = Guid.createValue();
-    await codeContainer.withWriteLock(user2, async () => {
+    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
       db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
       db.executeSQL(`INSERT INTO codeSpecs(name) VALUES("bsi:SpatialCategory")`);
       db.withSqliteStatement(`INSERT INTO reservations(name,json) VALUES(?,?)`, (stmt) => {
@@ -397,7 +408,7 @@ describe("CloudSqlite", () => {
       expect(stmt.getValueInteger(0)).equal(10000);
     });
 
-    await codeContainer.withWriteLock(user2, async () => {
+    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
       db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
       db.executeSQL(`DELETE FROM codes WHERE value="value-20"`);
       db.saveChanges();
@@ -413,6 +424,35 @@ describe("CloudSqlite", () => {
     db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
       stmt.step();
       expect(stmt.getValueInteger(0)).equal(10000 - 1);
+    });
+
+    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
+      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
+      db.executeSQL(`DELETE FROM codes WHERE value="value-200"`);
+      db.saveChanges();
+      db.closeDb();
+      expect(codeContainer.hasLocalChanges).true;
+      codeContainer.abandonWriteLock();
+      expect(codeContainer.hasLocalChanges).false;
+    });
+
+    codeContainer2.checkForChanges();
+    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
+      stmt.step();
+      expect(stmt.getValueInteger(0)).equal(10000 - 1);
+    });
+
+    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
+      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
+      db.executeSQL(`DELETE FROM codes WHERE value="value-200"`);
+      db.saveChanges();
+      db.closeDb();
+    });
+
+    codeContainer2.checkForChanges();
+    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
+      stmt.step();
+      expect(stmt.getValueInteger(0)).equal(10000 - 2);
     });
 
     // timer.start();

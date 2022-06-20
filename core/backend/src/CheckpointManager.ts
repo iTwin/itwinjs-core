@@ -18,7 +18,6 @@ import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
-import { SqliteCloudContainer } from "./SqliteCloudContainer";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -206,8 +205,8 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = new SqliteCloudContainer(this.toCloudContainerProps(v2props));
-    await container.transferDb("download", { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
+    const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
+    await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }
 
