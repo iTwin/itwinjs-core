@@ -26,18 +26,18 @@ internal;B3dmHeader
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
-beta;BackgroundMapProvider
+public;BackgroundMapProvider
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
-beta;BackgroundMapProviderProps
+public;BackgroundMapProviderProps
 public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-beta;BaseLayerProps = BaseMapLayerProps | ColorDefProps
-beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
-beta;BaseLayerSettings
-beta;BaseMapLayerProps 
-beta;BaseMapLayerSettings 
+public;BaseLayerProps = BaseMapLayerProps | ColorDefProps
+public;BaseLayerSettings = BaseMapLayerSettings | ColorDef
+public;BaseLayerSettings
+public;BaseMapLayerProps 
+public;BaseMapLayerSettings 
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
@@ -117,7 +117,7 @@ public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
-beta;CommonMapLayerProps
+public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
@@ -344,9 +344,10 @@ public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
-beta;ImageMapLayerProps 
-beta;ImageMapLayerSettings 
+public;ImageMapLayerProps 
+public;ImageMapLayerSettings 
 public;ImagePrimitive
+public;ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS"
 public;ImageSource
 public;ImageSourceFormat
 internal;ImdlFlags
@@ -408,13 +409,13 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
-beta;MapImageryProps
-beta;MapImagerySettings
-beta;MapLayerKey
-beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
-beta;class MapLayerSettings
-beta;MapSubLayerProps
-beta;MapSubLayerSettings
+public;MapImageryProps
+public;MapImagerySettings
+public;MapLayerKey
+public;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+public;class MapLayerSettings
+public;MapSubLayerProps
+public;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
@@ -436,8 +437,8 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
-beta;ModelMapLayerProps 
-beta;ModelMapLayerSettings 
+public;ModelMapLayerProps 
+public;ModelMapLayerSettings 
 public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
@@ -690,7 +691,7 @@ public;SubCategoryPlanarClipMaskArgs
 public;SubCategoryProps 
 internal;SubCategoryResultRow
 public;SubjectProps 
-beta;SubLayerId = string | number
+public;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode

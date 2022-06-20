@@ -43,6 +43,7 @@ import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
+import { IModelApp } from "@itwin/core-frontend";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
@@ -221,7 +222,6 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useUpdateNineZoneSize(frontstageDef);
   useSavedFrontstageState(frontstageDef);
   useSaveFrontstageSettings(frontstageDef);
-  useFrontstageManager(frontstageDef);
   useItemsManager(frontstageDef);
   const labels = useLabels();
   const uiIsVisible = useUiVisibility();
@@ -237,6 +237,11 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return !!frameworkState.configurableUiState.animateToolSettings;
   });
+  const useToolAsToolSettingsLabel = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.useToolAsToolSettingsLabel;
+  });
+  useFrontstageManager(frontstageDef, useToolAsToolSettingsLabel);
 
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
@@ -1064,7 +1069,7 @@ const createListener = <T extends (...args: any[]) => void>(frontstageDef: Front
 };
 
 /** @internal */
-export function useFrontstageManager(frontstageDef: FrontstageDef) {
+export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsToolSettingsLabel?: boolean) {
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef, widgetState }: WidgetStateChangedEventArgs) => {
       assert(!!frontstageDef.nineZoneState);
@@ -1124,6 +1129,36 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetLabelChangedEvent.removeListener(listener);
     };
   }, [frontstageDef]);
+
+  const defaultLabel = React.useMemo(
+    () => UiFramework.translate("widget.labels.toolSettings"),[]
+  );
+  React.useEffect(() => {
+    const updateLabel = createListener(frontstageDef, () => {
+      const toolId = FrontstageManager.activeToolId;
+      assert(!!frontstageDef.nineZoneState);
+      const label = useToolAsToolSettingsLabel ?
+        IModelApp.tools.find(toolId)?.flyover || defaultLabel : defaultLabel;
+      frontstageDef.nineZoneState = setWidgetLabel(frontstageDef.nineZoneState, toolSettingsTabId, label);
+    });
+    // Whenever the frontstageDef or the useTool... changes, keep the label up to date.
+    updateLabel();
+    // If useTool... is true, listen for events to keep up the label up to date.
+    if(useToolAsToolSettingsLabel) {
+      FrontstageManager.onFrontstageReadyEvent.addListener(updateLabel);
+      FrontstageManager.onFrontstageRestoreLayoutEvent.addListener(updateLabel);
+      FrontstageManager.onToolActivatedEvent.addListener(updateLabel);
+      FrontstageManager.onToolSettingsReloadEvent.addListener(updateLabel);
+    }
+    return () => {
+      if(useToolAsToolSettingsLabel) {
+        FrontstageManager.onFrontstageReadyEvent.removeListener(updateLabel);
+        FrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(updateLabel);
+        FrontstageManager.onToolActivatedEvent.removeListener(updateLabel);
+        FrontstageManager.onToolSettingsReloadEvent.removeListener(updateLabel);
+      }
+    };
+  }, [frontstageDef, useToolAsToolSettingsLabel, defaultLabel]);
 }
 
 /** @internal */

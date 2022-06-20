@@ -27,7 +27,7 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 /** JSON representation of a [[BackgroundMapProvider]].
  * @see [[BaseMapLayerProps.provider]].
- * @beta
+ * @public
  */
 export interface BackgroundMapProviderProps {
   /** The name of the provider. Default: "BingProvider" */
@@ -37,7 +37,7 @@ export interface BackgroundMapProviderProps {
 }
 
 /** Describes one of a small set of standard, known suppliers of background map imagery as part of a [[BaseMapLayerSettings]].
- * @beta
+ * @public
  */
 export class BackgroundMapProvider {
   /** The name of the provider. */
