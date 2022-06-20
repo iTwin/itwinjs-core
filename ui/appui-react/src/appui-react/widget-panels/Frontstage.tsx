@@ -765,6 +765,20 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
   }
   return restored;
 }
+/**
+ * Checks to see whether a widget id is one of our generated uuids
+ * @param uuid the string value to test
+ * @returns boolean
+ */
+function isUUID( uuid: string ) {
+  const s = `${uuid}`;
+
+  const result = s.match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+  if (result === null) {
+    return false;
+  }
+  return true;
+}
 
 /** Prepares NineZoneState to be saved.
  * @note Removes toolSettings tab.
@@ -780,6 +794,9 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
     for (const [, tab] of Object.entries(state.tabs)) {
       if (tab.id === toolSettingsTabId)
         continue;
+      if (isUUID(tab.id))
+        continue;
+
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
@@ -787,6 +804,17 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
         allowedPanelTargets: tab.allowedPanelTargets,
         userSized: tab.userSized,
       };
+    }
+  });
+  packed = produce (packed, (draft) => {
+    for (const [, floatingWidget] of Object.entries(state.floatingWidgets.byId)) {
+      const widgetId = floatingWidget.id;
+      if (isUUID(widgetId)){
+        const idIndex = draft.floatingWidgets.allIds.indexOf(widgetId);
+        draft.floatingWidgets.allIds.splice(idIndex, 1);
+        delete draft.floatingWidgets.byId[widgetId];
+        delete draft.widgets[widgetId];
+      }
     }
   });
   return packed;

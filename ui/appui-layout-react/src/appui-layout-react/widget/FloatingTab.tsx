@@ -35,7 +35,7 @@ export function FloatingTab() {
         ...dragTarget,
       };
     } else if (dragTarget) {
-      let newWidgetId = getUniqueId();
+      let newWidgetId = id ?? getUniqueId();
       if (isWidgetTarget(dragTarget)) {
         newWidgetId = getWidgetPanelSectionId(dragTarget.side, dragTarget.widgetIndex);
       } else /* istanbul ignore else */ if (isPanelTarget(dragTarget)) {
@@ -49,7 +49,7 @@ export function FloatingTab() {
     } else {
       target = {
         type: "floatingWidget",
-        newFloatingWidgetId: getUniqueId(),
+        newFloatingWidgetId: id ?? getUniqueId(),
         size,
       };
     }
