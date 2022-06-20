@@ -1561,62 +1561,32 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ^1.38.1
       '@types/chai': 4.3.1
-      '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
-      '@types/node': 16.11.7
-      '@types/react': ^17.0.37
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
-      chai-as-promised: ^7
-      chai-jest-snapshot: ^2.0.0
-      chai-spies: 1.0.0
-      classnames: ^2.3.1
-      cpx2: ^3.0.0
-      enzyme: 3.10.0
-      enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       nyc: ^15.1.0
-      react: ^17.0.0
-      react-dom: ^17.0.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
-      typemoq: ^2.1.0
       typescript: ~4.4.0
-    dependencies:
-      classnames: 2.3.1
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/itwinui-css': 0.60.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
       '@types/chai': 4.3.1
-      '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
-      '@types/node': 16.11.7
-      '@types/react': 17.0.47
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       chai: 4.3.6
-      chai-as-promised: 7.1.1_chai@4.3.6
-      chai-jest-snapshot: 2.0.0_chai@4.3.6
-      chai-spies: 1.0.0_chai@4.3.6
-      cpx2: 3.0.2
-      enzyme: 3.10.0
-      enzyme-to-json: 3.6.2_enzyme@3.10.0
       eslint: 7.32.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -1626,7 +1596,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
       source-map-support: 0.5.21
-      typemoq: 2.1.0
       typescript: 4.4.4
 
   ../../extensions/test-extension:
