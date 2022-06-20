@@ -252,8 +252,8 @@ export class TestRunner {
         let context: TestContext;
         try {
           context = await this.openIModel();
-        } catch (e) {
-          await this.logError(`Failed to open iModel ${iModelName}`);
+        } catch (e: any) {
+          await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
           continue;
         }
 

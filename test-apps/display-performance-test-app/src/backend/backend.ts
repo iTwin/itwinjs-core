@@ -53,26 +53,32 @@ export async function initializeBackend() {
 }
 
 async function initializeAuthorizationClient(): Promise<TestBrowserAuthorizationClient | undefined> {
-  const config: TestBrowserAuthorizationClientConfiguration = {
+  const requiredEnvVars = [
+    "IMJS_OIDC_CLIENT_ID",
+    "IMJS_OIDC_REDIRECT_URI",
+    "IMJS_OIDC_SCOPE",
+    "IMJS_OIDC_EMAIL",
+    "IMJS_OIDC_PASSWORD",
+  ];
+  const missing = requiredEnvVars.filter((name) => process.env[name] === undefined);
+  if(missing.length > 0) {
+    if(missing.length < requiredEnvVars.length) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping authorization client setup: Missing ${ missing.join(", ") }`);
+    }
+    return undefined;
+  }
+
+  const authorizationClient = new TestBrowserAuthorizationClient({
     clientId: process.env.IMJS_OIDC_CLIENT_ID!,
     redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
     scope: process.env.IMJS_OIDC_SCOPE!,
     authority: process.env.IMJS_OIDC_AUTHORITY,
     clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
-  };
-  const user: TestUserCredentials = {
+  }, {
     email: process.env.IMJS_OIDC_EMAIL!,
     password: process.env.IMJS_OIDC_PASSWORD!,
-  };
-  const requiredVars = [config.clientId, config.redirectUri, config.scope, user.email, user.password];
-  const missingVars = requiredVars.filter((v) => v === undefined);
-  if(missingVars.length !== 0) {
-    if(missingVars.length > 0)
-      console.log("Skipping authorization client setup"); // eslint-disable-line no-console
-
-    return undefined;
-  }
-  const authorizationClient = new TestBrowserAuthorizationClient(config, user);
+  });
   await authorizationClient.getAccessToken();
   return authorizationClient;
 }
