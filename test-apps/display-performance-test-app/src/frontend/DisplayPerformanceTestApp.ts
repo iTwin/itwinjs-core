@@ -42,24 +42,25 @@ export class DisplayPerfTestApp {
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
-    if(token) {
-      iModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
-      if(process.env.IMJS_URL_PREFIX)
-        iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
-          api: {
-            baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
-          },
-        }));
-      else
-        iModelApp.hubAccess = new FrontendIModelsAccess();
-    }
+    if(process.env.IMJS_URL_PREFIX)
+      iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
+        api: {
+          baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
+        },
+      }));
+    else
+      iModelApp.hubAccess = new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
+
+    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+    if(token) {
+      IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
+    }
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 
