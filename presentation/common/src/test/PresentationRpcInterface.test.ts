@@ -14,8 +14,8 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
-  PresentationRpcResponseData, SingleElementPropertiesRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, PresentationRpcResponseData, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -231,13 +231,22 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards computeSelection call", async () => {
+    it("[deprecated] forwards computeSelection call", async () => {
       const options: SelectionScopeRpcRequestOptions = {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
+    });
+
+    it("forwards computeSelection call", async () => {
+      const options: ComputeSelectionRpcRequestOptions = {
+        elementIds: new Array<Id64String>(),
+        scope: { id: faker.random.uuid() },
+      };
+      await rpcInterface.computeSelection(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
   });

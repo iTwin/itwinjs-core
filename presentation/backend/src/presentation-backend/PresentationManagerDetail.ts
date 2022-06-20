@@ -8,8 +8,7 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, DiagnosticsOptionsWithHandler, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized,
-  Ruleset,
+  ContentDescriptorRequestOptions, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
@@ -19,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -145,7 +144,7 @@ export class PresentationManagerDetail implements IDisposable {
       },
     };
 
-    let diagnosticsListener;
+    let diagnosticsListener: BackendDiagnosticsHandler | undefined;
     if (diagnostics) {
       const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
       diagnosticsListener = tempDiagnosticsListener;
@@ -153,13 +152,13 @@ export class PresentationManagerDetail implements IDisposable {
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
+    diagnosticsListener && response.diagnostics && diagnosticsListener({ logs: [response.diagnostics] });
     return response.result;
   }
 }
 
 interface RequestParams {
-  diagnostics?: DiagnosticsOptionsWithHandler;
+  diagnostics?: BackendDiagnosticsOptions;
   requestId: string;
   imodel: IModelDb;
   locale?: string;

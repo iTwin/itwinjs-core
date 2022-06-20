@@ -10,10 +10,10 @@ import { Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
-import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
+import { SelectionScopeProps } from "./selection/SelectionScope";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -31,9 +31,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /** @alpha */
-  diagnostics?: DiagnosticsOptionsWithHandler;
 
   /**
    * Expected form of response. This property is set automatically on newer frontends.
@@ -203,6 +200,19 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * @public
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+
+/**
+ * Request options used for calculating selection based on picked instance ksy and selection scope
+ * @alpha
+ */
+export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  elementIds: Id64String[];
+  scope: SelectionScopeProps;
+}
+/** @internal */
+export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel> {
+  return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
+}
 
 /**
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
