@@ -722,7 +722,7 @@ Yargs.command<InitializeOpts>({
 async function runScript(arg: EditorProps & { scriptName: string }) {
   inScript = true;
   const val = fs.readFileSync(arg.scriptName, "utf-8");
-  const lines = val.split("\r");
+  const lines = val.split(/\r?\n/);
   let i = 0;
 
   for (let line of lines) {
