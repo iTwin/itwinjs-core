@@ -10,9 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -20,6 +20,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -27,9 +28,9 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -346,7 +347,8 @@ export class IModelHost {
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
     this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
 
-    // allow subsystems to load their default settings
+    GeoCoordConfig.onStartup();
+    // allow applications to load their default settings
     this.onWorkspaceStartup.raiseEvent();
   }
 
