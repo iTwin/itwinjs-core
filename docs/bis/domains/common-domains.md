@@ -8,11 +8,15 @@ The following domains lay out the [Common layer](../guide/intro/bis-organization
 
 ### [DistributionSystems](./DistributionSystems.ecschema.md)
 
+<!-- TODO: Enable once Grids schema is released
 ### [Grids](./Grids.ecschema.md)
+-->
 
 ### [Linear Referencing](./LinearReferencing.ecschema.md)
 
+<!-- TODO: Enable once NetworkTopology schema is released
 ### [NetworkTopology](./NetworkTopology.ecschema.md)
+-->
 
 ### [Profiles](./Profiles.ecschema.md)
 

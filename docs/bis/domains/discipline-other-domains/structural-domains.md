@@ -4,4 +4,6 @@ The following domains are used by multiple disciplines and are considered part o
 
 ### [StructuralAnalysis](../StructuralAnalysis.ecschema.md)
 
+<!-- TODO: Enable once StructuralDesign schema is released
 ### [StructuralDesign](../StructuralDesign.ecschema.md)
+-->
