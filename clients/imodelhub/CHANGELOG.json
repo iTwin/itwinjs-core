@@ -2,6 +2,12 @@
   "name": "@bentley/imodelbank-client",
   "entries": [
     {
+      "version": "3.2.4",
+      "tag": "@bentley/imodelbank-client_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.3",
       "tag": "@bentley/imodelbank-client_v3.2.3",
       "date": "Fri, 17 Jun 2022 15:18:39 GMT",
