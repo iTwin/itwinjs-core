@@ -1801,14 +1801,6 @@ describe("IModelTransformer", () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
     const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
 
-    const sourcePhysModelId = sourceDb.withPreparedStatement("SELECT ECInstanceId FROM bis.PhysicalPartition LIMIT 1 OFFSET 1", (stmt) => {
-      const stepResult = stmt.step();
-      assert(stepResult === DbResult.BE_SQLITE_ROW);
-      return stmt.getValue(0).getId();
-    });
-
-    expect(sourcePhysModelId).to.equal("0x20000000220");
-
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
@@ -1819,11 +1811,11 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     class TestTransformer extends IModelTransformer {
-      public hasTestedShouldExportPhysModel = false;
+      public remapCount = 0;
       public override shouldExportElement(sourceElement: Element): boolean {
-        if (sourceElement.id === sourcePhysModelId) {
+        if (sourceElement instanceof PhysicalPartition) {
+          this.remapCount++;
           this.context.remapElement(sourceElement.id, targetModelId);
-          this.hasTestedShouldExportPhysModel = true;
         }
         return super.shouldExportElement(sourceElement);
       }
@@ -1831,11 +1823,10 @@ describe("IModelTransformer", () => {
 
     const transformer = new TestTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
     transformer.importer.doNotUpdateElementIds.add(targetModelId);
-    // transformer.context.remapElement(physModelId, targetModelId);
 
     await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
     await expect(transformer.processAll()).to.eventually.be.fulfilled;
-    expect(transformer.hasTestedShouldExportPhysModel).to.be.true;
+    expect(transformer.remapCount).to.be.greaterThanOrEqual(2);
 
     sourceDb.close();
     targetDb.close();
