@@ -63,7 +63,6 @@ export class TestUtils {
       cfg.cacheDir = undefined; // Let the native side handle the cache.
     } else {
       cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-      cfg.workspace = { settingsFiles: IModelTestUtils.resolveAssetFile("gcs.setting.json5") };
     }
     await IModelHost.startup(cfg);
   }

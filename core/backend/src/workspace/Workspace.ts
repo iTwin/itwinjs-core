@@ -32,7 +32,9 @@ export const WorkspaceSetting = {
   Databases: "workspace/databases",
 };
 
-/** @beta TODO document this */
+/** Types used to identify cloud accounts for Workspaces.
+ *  @beta
+ */
 export namespace WorkspaceAccount {
   /** The name of a WorkspaceAccount in a "cloud/accounts" setting. */
   export type Name = string;
@@ -70,7 +72,7 @@ export namespace WorkspaceContainer {
   }
 }
 
-/** @beta TODO document this. */
+/** @beta */
 export namespace WorkspaceDb {
   /** The name of a WorkspaceDb in a "workspace/databases" setting. */
   export type Name = string;
@@ -101,7 +103,9 @@ export namespace WorkspaceDb {
   export type VersionIncrement = "major" | "minor" | "patch";
 }
 
-/** @beta TODO document this. */
+/** Types used to identify Workspace resources
+ *  @beta
+ */
 export namespace WorkspaceResource {
   /**
    * The name for identifying WorkspaceResources in a [[WorkspaceDb]].
@@ -238,7 +242,7 @@ export interface Workspace {
    * @param databaseName the database name, resolved via [[resolveDatabase]].
    * @see [[getWorkspaceDbFromProps]]
    */
-  getWorkspaceDb(databaseName: WorkspaceDb.Name,): Promise<WorkspaceDb>;
+  getWorkspaceDb(databaseName: WorkspaceDb.Name,): WorkspaceDb;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -332,7 +336,7 @@ export class ITwinWorkspace implements Workspace {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
   }
 
-  public async getWorkspaceDb(dbAlias: string,) {
+  public getWorkspaceDb(dbAlias: string,) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
@@ -490,7 +494,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
   public static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const dbName = props.dbName;
-    const dbs = cloudContainer.queryDatabases(`${dbName}%`); // get all databases that start with dbName
+    const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
     const versions = [];
     for (const db of dbs) {
@@ -561,8 +565,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     const name = toDrop.dbName;
     const wsDb = this._wsDbs.get(name);
     if (wsDb === toDrop) {
-      await wsDb.close();
       this._wsDbs.delete(name);
+      await wsDb.close();
     }
   }
 

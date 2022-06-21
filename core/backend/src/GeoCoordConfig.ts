@@ -79,9 +79,10 @@ export class GeoCoordConfig {
     }
   }
 
-  public static loadForImodel(settings: Settings) {
-    this.loadDefaultDatabases();
-    this.loadAll(settings, "gcs/databases");
+  public static loadForImodel(_settings: Settings) {
+    // TODO: Enable when gcs workspaces exist
+    // this.loadDefaultDatabases();
+    // this.loadAll(settings, "gcs/databases");
   }
 }
 
