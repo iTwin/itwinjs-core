@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
@@ -35,7 +36,6 @@ import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
 
-const assert = chai.assert;
 chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */

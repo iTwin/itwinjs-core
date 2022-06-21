@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Renderer for nodes with too many children.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
