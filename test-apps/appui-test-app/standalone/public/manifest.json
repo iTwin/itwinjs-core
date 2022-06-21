@@ -1,6 +1,6 @@
 {
   "short_name": "SampleApp",
-  "name": "iTwin.js AppUI Sample App",
+  "name": "AppUI Standalone Test App",
   "icons": [
     {
       "src": "favicon.ico",
