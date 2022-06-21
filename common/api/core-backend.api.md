@@ -2804,7 +2804,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string): Promise<WorkspaceDb>;
+    getWorkspaceDb(dbAlias: string): WorkspaceDb;
     // (undocumented)
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     // (undocumented)
@@ -4578,6 +4578,8 @@ export class V2CheckpointManager {
         container: IModelJsNative.CloudContainer;
     }>;
     // (undocumented)
+    static cleanup(): void;
+    // (undocumented)
     static readonly cloudCacheName = "v2Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     // (undocumented)
@@ -4695,7 +4697,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(databaseName: WorkspaceDb.Name): Promise<WorkspaceDb>;
+    getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
@@ -4748,7 +4750,7 @@ export interface WorkspaceContainer {
     readonly workspace: Workspace;
 }
 
-// @beta
+// @beta (undocumented)
 export namespace WorkspaceDb {
     export type DbFullName = string;
     export type DbName = string;

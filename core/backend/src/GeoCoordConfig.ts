@@ -20,6 +20,7 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
   priority?: number;
 }
 
+/** Internal class to configure and load the gcs workspaces for an iModel. */
 export class GeoCoordConfig {
 
   private static addGcsWorkspace(gcsDbAlias: string) {
