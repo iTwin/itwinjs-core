@@ -18,7 +18,7 @@ import { SettingsPriority } from "../../core-backend";
 describe("GeoServices", () => {
   before(() => {
     // TEMPORARY until gcs workspaces are available
-    IModelHost.appWorkspace.settings.addFile(IModelTestUtils.resolveAssetFile("gcs.setting.json5"), SettingsPriority.application);
+    // IModelHost.appWorkspace.settings.addFile(IModelTestUtils.resolveAssetFile("gcs.setting.json5"), SettingsPriority.application);
     GeoCoordConfig.loadDefaultDatabases();
   });
 
