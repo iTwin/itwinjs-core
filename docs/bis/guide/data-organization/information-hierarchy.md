@@ -87,7 +87,7 @@ Two examples of repository organizations are described below. It should be noted
 The following instance-diagram depicts the information hierarchy for an hypothetical campus. It shows the organization of data in two modeling perspectives: Physical and Functional, as well as catalog-data in Definition models. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 &nbsp;
-![Information Hierarchy](../media/information-hierarchy.png)
+![Information Hierarchy](../media/information-hierarchy.webp)
 &nbsp;
 
 ### iModel Connector Repository Organization
@@ -97,7 +97,7 @@ iModel Connectors transform data in an external format into an iModel. As part o
 The following instance diagram depicts the organization of information in one iModel target by three iModel Connectors: IFC, OpenBuilding Designer and Bentley Civil. The last two are shown with more detail, including their parallel `Model`, `ExternalSource` and `SpatialComposition` hierarchies. The sample iModel shows data synchronized from three different datasets, two .dgn-based and one .ifc.
 
 &nbsp;
-![iModel Connector Repository Organization](../media/imodel-connector-repository-organization.png)
+![iModel Connector Repository Organization](../media/imodel-connector-repository-organization.webp)
 &nbsp;
 
 Since iModel Connectors run headless without user-input, they need to organize data they write into iModels based on their understanding about it. In the example above, data synchronized by each iModel Connector is stored under a specific branch of the Subject hierarchy. Each iModel Connector lays out the next levels according to the structure and discoverable semantics about the data on the source. In the case of dgn files, both the OpenBuilding Designer and Bentley Civil iModel Connectors create child Subjects for every referenced dgn & model on the external dataset, mirroring the division of labor among teams and disciplines that drive the organization of data in those external products.

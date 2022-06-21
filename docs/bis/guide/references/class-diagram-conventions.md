@@ -95,7 +95,7 @@ Following stereotypes **must** be added for:
 
 ## **Example**
 
-![Example](../media/class-diagram-example.png)
+![Example](../media/class-diagram-example.webp)
 
 ## **Additional conventions**
 

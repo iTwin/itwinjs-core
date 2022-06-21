@@ -87,7 +87,7 @@ Each Entity will be modeled with an `Element`. Does the [Entity](../references/g
 
 In the picture below, Entity 0 is modeled with an `ISubModeledElement`, so `Element` P-0 represents the whole [Entity](../references/glossary.md#Entity) 0, and its sub-`Model` also represents the whole [Entity](../references/glossary.md#Entity) 0, at a different granularity.  [Entity](../references/glossary.md#Entity) 4 is modeled as an `IParentElement`, so `Element`s P-4, P-5, and P-6 collectively represent [Entity](../references/glossary.md#Entity) 4 and its parts.
 
-![Whole-Part Mapping](../media/organizing-models-and-elements-02.png)
+![Whole-Part Mapping](../media/organizing-models-and-elements-02.webp)
 
 Use these questions to determine whether to use parent-child modeling vs sub-modeling:
 
