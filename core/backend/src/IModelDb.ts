@@ -36,6 +36,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
@@ -47,7 +48,6 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { GeoCoordConfig } from "./GeoCoordConfig";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2090,12 +2090,12 @@ export interface TokenArg {
   readonly accessToken?: AccessToken;
 }
 
-/** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] with a [CloudContainer]($docs/learning/backend/Workspace.md).
+/** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] to open files from a cloud container.
  * Currently the properties are this interface are reserved for internal use only.
  * @public
  */
 export interface CloudContainerArgs {
-  /** @alpha */
+  /** @internal */
   container?: IModelJsNative.CloudContainer;
 }
 

@@ -709,7 +709,7 @@ export class ClassRegistry {
 
 // @public
 export interface CloudContainerArgs {
-    // @alpha (undocumented)
+    // @internal (undocumented)
     container?: IModelJsNative.CloudContainer;
 }
 
