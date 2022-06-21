@@ -24,6 +24,7 @@ import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../T
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect, should } from "chai";
 import { Provider } from "react-redux";
+import { getUniqueId } from "@itwin/appui-layout-react";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 
@@ -1750,7 +1751,9 @@ describe("Frontstage local storage wrapper", () => {
       it("should remove labels", () => {
         let nineZone = createNineZoneState();
         nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+        nineZone = addFloatingWidget(nineZone, getUniqueId(), ["t2"]);
         nineZone = addTab(nineZone, "t1");
+        nineZone = addTab(nineZone, getUniqueId());
         const sut = packNineZoneState(nineZone);
         sut.should.matchSnapshot();
       });

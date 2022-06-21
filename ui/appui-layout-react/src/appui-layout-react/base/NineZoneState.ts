@@ -1335,7 +1335,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
 
     // istanbul ignore else - no else/using as type guard to cast
     if (isPanelLocation(location)) {
-      const floatingWidgetId = widgetTabId ?? getUniqueId();
+      const floatingWidgetId = widgetTabId ? widgetTabId : /* istanbul ignore next */ getUniqueId();
       const panel = state.panels[location.side];
       const widgetIndex = panel.widgets.indexOf(location.widgetId);
 

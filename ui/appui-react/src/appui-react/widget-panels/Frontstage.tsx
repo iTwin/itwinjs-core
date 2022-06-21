@@ -774,6 +774,7 @@ function isUUID( uuid: string ) {
   const s = `${uuid}`;
 
   const result = s.match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+  // istanbul ignore else
   if (result === null) {
     return false;
   }
@@ -794,8 +795,10 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
     for (const [, tab] of Object.entries(state.tabs)) {
       if (tab.id === toolSettingsTabId)
         continue;
+
+      // istanbul ignore else
       if (isUUID(tab.id))
-        continue;
+            continue;
 
       draft.tabs[tab.id] = {
         id: tab.id,
@@ -809,6 +812,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
   packed = produce (packed, (draft) => {
     for (const [, floatingWidget] of Object.entries(state.floatingWidgets.byId)) {
       const widgetId = floatingWidget.id;
+      // istanbul ignore else
       if (isUUID(widgetId)){
         const idIndex = draft.floatingWidgets.allIds.indexOf(widgetId);
         draft.floatingWidgets.allIds.splice(idIndex, 1);
