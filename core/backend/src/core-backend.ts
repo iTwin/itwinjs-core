@@ -53,7 +53,7 @@ export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
 export * from "./workspace/Settings";
-export * from "./workspace/SettingsSpecRegistry";
+export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
 export * from "./IModelDb"; // must be last
 

@@ -7,27 +7,33 @@ import { assert } from "chai";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { SQLiteDb } from "../../SQLiteDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 
 describe("SQLiteDb", () => {
 
   it("should create new SQLiteDb", () => {
     const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "db1.db");
     const db = new SQLiteDb();
-    db.createDb(fileName);
+    db.createDb(fileName, undefined, { rawSQLite: true, pageSize: 8 * 1024 });
     db.executeSQL("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
     db.executeSQL(`INSERT INTO test1(id,val) VALUES (1,"val1")`);
     db.executeSQL(`INSERT INTO test1(id,val) VALUES (2,"val2")`);
     db.saveChanges();
 
-    db.withSqliteStatement("SELECT id,val from test1", (stmt) => {
-      stmt.step();
-      assert.equal(stmt.getValue(0).getInteger(), 1);
-      assert.equal(stmt.getValue(1).getString(), "val1");
-      stmt.step();
-      assert.equal(stmt.getValue(0).getInteger(), 2);
-      assert.equal(stmt.getValue(1).getString(), "val2");
-    });
-    db.closeDb();
+    const testDb = () => {
+      db.withSqliteStatement("SELECT id,val from test1", (stmt) => {
+        stmt.step();
+        assert.equal(stmt.getValue(0).getInteger(), 1);
+        assert.equal(stmt.getValue(1).getString(), "val1");
+        stmt.step();
+        assert.equal(stmt.getValue(0).getInteger(), 2);
+        assert.equal(stmt.getValue(1).getString(), "val2");
+      });
+      db.closeDb();
+    };
+    testDb();
+    db.openDb(fileName, { openMode: OpenMode.Readonly, skipFileCheck: true, immutable: true, defaultTxn: IModelJsNative.DefaultTxnMode.None, rawSQLite: true });
+    testDb();
   });
 
   it("should be able to open existing .bim file with SQLiteDb", () => {

@@ -44,7 +44,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",
