@@ -22,8 +22,6 @@ describe("MapLayerSources", () => {
       formatId: "WMS",
       name: "testSource",
       url: "https://testserver/wms",
-      userName: "testUser",
-      password: "testPassword",
       transparentBackground: false,
       baseMap: true,
     };
@@ -33,8 +31,6 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.formatId).to.equals(sampleSourceJson.formatId);
     expect(sampleSource!.name).to.equals(sampleSourceJson.name);
     expect(sampleSource!.url).to.equals(sampleSourceJson.url);
-    expect(sampleSource!.userName).to.equals(sampleSourceJson.userName);
-    expect(sampleSource!.password).to.equals(sampleSourceJson.password);
     expect(sampleSource!.transparentBackground).to.equals(sampleSourceJson.transparentBackground);
     expect(sampleSource!.baseMap).to.equals(sampleSourceJson.baseMap);
 
@@ -57,9 +53,10 @@ describe("MapLayerSources", () => {
       formatId: "WMS",
       name: "testSource",
       url: "https://testserver/wms",
-      userName: "testUser",
-      password: "testPassword",
     });
+
+    sampleSource!.userName = "testUser";
+    sampleSource!.password = "testPassword";
     expect(sampleSource).to.not.undefined;
     if (!sampleSource)
       return;

@@ -73,7 +73,7 @@ describe("Cloud workspace containers", () => {
     expect(ws2.getString("string 1")).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
 
-    await expect(wsCont2.getWorkspaceDb({ dbName: testDbName, version: "^2.0.0" })).rejectedWith("No version of");
+    expect(() => wsCont2.getWorkspaceDb({ dbName: testDbName, version: "^2.0.0" })).throws("No version of");
 
     // change the workspace in one cache and see that it is updated in the other
     const newVal = "new value for string 1";

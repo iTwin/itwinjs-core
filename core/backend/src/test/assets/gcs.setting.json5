@@ -1,9 +1,0 @@
-{
-    "cloud/accounts": [
-        {
-            "name": "gcs/account",
-            "accessName": "http://127.0.0.1:10000/devstoreaccount1",
-            "storageType": "azure?customuri=1&sas=1",
-        },
-    ],
-}

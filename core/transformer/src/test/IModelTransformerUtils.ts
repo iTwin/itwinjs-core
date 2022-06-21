@@ -11,7 +11,7 @@ import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
-  GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
+  GeometricElement3d, GeometryPart, HubMock, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
@@ -23,7 +23,6 @@ import {
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { HubMock } from "./HubMock";
 
 export class HubWrappers extends BackendTestUtils.HubWrappers {
   protected static override get hubMock() { return HubMock; }

@@ -13,5 +13,8 @@
   },
   "instance-key-value-renderer": {
     "select-instance": "Select element"
+  },
+  "tree": {
+    "presentation-components-muted-node": "Too many child nodes."
   }
 }

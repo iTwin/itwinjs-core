@@ -171,6 +171,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_DISABLE_UNIFORM_ERRORS
+  * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
 * IMJS_DEBUG_SHADERS
@@ -251,7 +253,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
 * `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
-* `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
+* `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
 * `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.

@@ -89,6 +89,9 @@ public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
+public;connectViewportFrusta(viewports: Iterable
+public;connectViewports(viewports: Iterable
+public;connectViewportViews(viewports: Iterable
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -354,10 +357,10 @@ beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
-internal;MapLayerSource
+public;MapLayerSource
 internal;MapLayerSources
-beta;MapLayerSourceStatus
-beta;MapLayerSourceValidation
+public;MapLayerSourceStatus
+public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
@@ -584,6 +587,9 @@ internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
+public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
+public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
+public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint

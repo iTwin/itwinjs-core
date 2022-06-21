@@ -20,6 +20,7 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
   priority?: number;
 }
 
+/** Internal class to configure and load the gcs workspaces for an iModel. */
 export class GeoCoordConfig {
 
   private static addGcsWorkspace(gcsDbAlias: string) {
@@ -79,9 +80,10 @@ export class GeoCoordConfig {
     }
   }
 
-  public static loadForImodel(settings: Settings) {
-    this.loadDefaultDatabases();
-    this.loadAll(settings, "gcs/databases");
+  public static loadForImodel(_settings: Settings) {
+    // TODO: Enable when gcs workspaces exist
+    // this.loadDefaultDatabases();
+    // this.loadAll(settings, "gcs/databases");
   }
 }
 

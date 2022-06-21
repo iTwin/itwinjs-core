@@ -7,12 +7,12 @@ import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { HubMock } from "../";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { HubMock } from "../../HubMock";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
