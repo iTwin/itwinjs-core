@@ -10,7 +10,7 @@ import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { TestBrowserAuthorizationClient, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
