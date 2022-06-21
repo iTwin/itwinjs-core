@@ -23,11 +23,12 @@ export interface PresentationInstanceFilterBuilderProps {
   descriptor: Descriptor;
   onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
   enableClassFilteringByProperties?: boolean;
+  ruleGroupDepthLimit?: number;
 }
 
 /** @alpha */
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
-  const {imodel, descriptor, onInstanceFilterChanged, enableClassFilteringByProperties} = props;
+  const { imodel, descriptor, onInstanceFilterChanged, enableClassFilteringByProperties, ruleGroupDepthLimit } = props;
   const classHierarchyProvider = useECClassHierarchyProvider(imodel);
   const filteringProps = usePresentationInstanceFilteringProps(descriptor, classHierarchyProvider, enableClassFilteringByProperties);
 
@@ -39,6 +40,7 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
   return <InstanceFilterBuilder
     {...filteringProps}
     onFilterChanged={onFilterChanged}
+    ruleGroupDepthLimit={ruleGroupDepthLimit}
   />;
 }
 

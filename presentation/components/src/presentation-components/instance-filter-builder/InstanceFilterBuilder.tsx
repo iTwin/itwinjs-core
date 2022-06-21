@@ -26,11 +26,12 @@ export interface InstanceFilterBuilderProps {
   onClassDeselected: (selectedClass: ClassInfo) => void;
   onClearClasses: () => void;
   onPropertySelected?: (property: PropertyDescription) => void;
+  ruleGroupDepthLimit?: number;
 }
 
 /** @alpha */
 export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
-  const {selectedClasses, classes, properties, onFilterChanged, onPropertySelected, onClassSelected, onClassDeselected, onClearClasses} = props;
+  const { selectedClasses, classes, properties, ruleGroupDepthLimit, onFilterChanged, onPropertySelected, onClassSelected, onClassDeselected, onClearClasses } = props;
 
   const onSelectChange = React.useCallback((_, action: ActionMeta<ClassInfo>) => {
     switch (action.action) {
@@ -66,6 +67,11 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         isClearable={true}
       />
     </div>
-    <PropertyFilterBuilder properties={properties} onFilterChanged={onFilterChanged} onRulePropertySelected={onPropertySelected}/>
+    <PropertyFilterBuilder
+      properties={properties}
+      onFilterChanged={onFilterChanged}
+      onRulePropertySelected={onPropertySelected}
+      ruleGroupDepthLimit={ruleGroupDepthLimit}
+    />
   </div>;
 }

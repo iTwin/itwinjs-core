@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import classnames from "classnames";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
-import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 import { PropertyFilterBuilderContext } from "./FilterBuilder";
 import { PropertyFilterBuilderRuleRenderer } from "./FilterBuilderRule";
@@ -21,7 +22,7 @@ export interface PropertyFilterBuilderRuleGroupRendererProps {
 /** @alpha */
 export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps) {
   const { path, group } = props;
-  const { actions } = React.useContext(PropertyFilterBuilderContext);
+  const { actions, ruleGroupDepthLimit } = React.useContext(PropertyFilterBuilderContext);
 
   const addRule = () => actions.addItem(path, "RULE");
   const addRuleGroup = () => actions.addItem(path, "RULE_GROUP");
@@ -31,6 +32,7 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
     actions.setRuleGroupOperator(path, operator);
   }, [path, actions]);
 
+  const allowToAddGroup = ruleGroupDepthLimit === undefined || path.length < ruleGroupDepthLimit;
   const { active, eventHandlers } = useIsActive();
 
   return <div
@@ -46,15 +48,19 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
       <div className="rule-group-items">
         {group.items.map((item) => <PropertyFilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
       </div>
-      <div className="rule-group-actions">
-        <ButtonGroup>
+      <div className={classnames("rule-group-actions", { "iui-button-group": allowToAddGroup })}>
+        <div>
           <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="default" size="small" startIcon={<SvgAdd />}>
             {UiComponents.translate("filterBuilder.rule")}
           </Button>
-          <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="default" size="small" startIcon={<SvgAdd />}>
-            {UiComponents.translate("filterBuilder.ruleGroup")}
-          </Button>
-        </ButtonGroup>
+        </div>
+        {
+          allowToAddGroup && <div>
+            <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="default" size="small" startIcon={<SvgAdd />}>
+              {UiComponents.translate("filterBuilder.ruleGroup")}
+            </Button>
+          </div>
+        }
       </div>
     </div>
   </div>;
@@ -68,7 +74,7 @@ export interface PropertyFilterBuilderRuleGroupOperatorProps {
 
 /** @alpha */
 export function PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps) {
-  const {operator, onChange} = props;
+  const { operator, onChange } = props;
 
   const options = React.useMemo<Array<SelectOption<PropertyFilterRuleGroupOperator>>>(() => ([
     { value: PropertyFilterRuleGroupOperator.And, label: UiComponents.translate("filterBuilder.operators.and") },

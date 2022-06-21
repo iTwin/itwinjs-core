@@ -16,7 +16,7 @@ export interface PropertyFilterBuilderRuleOperatorProps {
 
 /** @alpha */
 export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps) {
-  const {operator, property, onChange} = props;
+  const { operator, property, onChange } = props;
 
   const availableOperators = React.useMemo(() => getPropertyFilterOperators(property), [property]);
   const selectedOperator = operator ?? availableOperators[0];

@@ -21,6 +21,7 @@ export interface PropertyFilterBuilderProps {
   onRulePropertySelected?: (property: PropertyDescription) => void;
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+  ruleGroupDepthLimit?: number;
 }
 
 /** @alpha */
@@ -28,6 +29,7 @@ export interface PropertyFilterBuilderContextProps {
   actions: PropertyFilterBuilderActions;
   properties: PropertyDescription[];
   onRulePropertySelected?: (property: PropertyDescription) => void;
+  ruleGroupDepthLimit?: number;
 }
 
 /** @alpha */
@@ -46,16 +48,22 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer } = props;
-  const {state, actions} = usePropertyFilterBuilderState();
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit } = props;
+  const { state, actions } = usePropertyFilterBuilderState();
 
   const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);
   React.useEffect(() => {
     onFilterChanged(filter);
   }, [filter, onFilterChanged]);
 
-  const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(() => ({actions, properties, onRulePropertySelected}), [actions, properties, onRulePropertySelected]);
-  const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
+  const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(
+    () => ({actions, properties, onRulePropertySelected, ruleGroupDepthLimit}),
+    [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
+  );
+  const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
+    () => ({ruleOperatorRenderer, ruleValueRenderer}),
+    [ruleOperatorRenderer, ruleValueRenderer]
+  );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
       <PropertyFilterBuilderContext.Provider value={contextValue}>
@@ -96,12 +104,12 @@ function buildPropertyFilterFromRuleGroup(rootGroup: PropertyFilterBuilderRuleGr
 }
 
 function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyFilter | undefined {
-  const {property, operator, value} = rule;
+  const { property, operator, value } = rule;
   if (!property || operator === undefined)
     return undefined;
 
   if (!isUnaryPropertyFilterOperator(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
     return undefined;
 
-  return {property, operator, value};
+  return { property, operator, value };
 }

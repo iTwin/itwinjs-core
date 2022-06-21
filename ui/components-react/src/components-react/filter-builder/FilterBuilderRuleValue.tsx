@@ -15,7 +15,7 @@ export interface PropertyFilterBuilderRuleValueProps {
 
 /** @alpha */
 export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps) {
-  const {value, property, onChange} = props;
+  const { value, property, onChange } = props;
 
   const propertyRecord = React.useMemo(() => {
     return new PropertyRecord(value ?? {valueFormat: PropertyValueFormat.Primitive}, property);
