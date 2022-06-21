@@ -199,5 +199,7 @@ describe("IModelBranchingOperations", () => {
     await forwardSyncMasterToBranch(masterDb, branchDb, myAccessToken);
     await arbitraryEdit(branchDb, myAccessToken, "edit branch");
     await reverseSyncBranchToMaster(branchDb, masterDb, myAccessToken);
+    masterDb.close();
+    branchDb.close();
   });
 });

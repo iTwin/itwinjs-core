@@ -17,6 +17,7 @@ import { SQLiteDb } from "./SQLiteDb";
 
 // cspell:ignore rowid
 
+/** @internal */
 interface MockBriefcaseIdProps {
   id: BriefcaseId;
   user: string; // Just an AccessToken that simulates a user
@@ -24,6 +25,7 @@ interface MockBriefcaseIdProps {
   assigned: boolean;
 }
 
+/** @internal */
 interface LocalHubProps {
   readonly iTwinId: GuidString;
   readonly iModelId: GuidString;
@@ -44,14 +46,15 @@ interface LockStatusNone {
   state: LockState.None;
   lastCsIndex?: ChangesetIndex;
 }
-/** @internal */
+
+/** @internal exported for tests. */
 export interface LockStatusExclusive {
   state: LockState.Exclusive;
   briefcaseId: BriefcaseId;
   lastCsIndex?: ChangesetIndex;
 }
 
-/** @internal */
+/** @internal exported for tests. */
 export interface LockStatusShared {
   state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;
@@ -66,7 +69,7 @@ interface BriefcaseIdAndChangeset {
 type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
 
 /**
- * A "local" hub that records a timeline (changesets, checkpoints, and named versions) and manages briefcases for a single iModel.
+ * A "local" mock for IModelHub to provide access to a single iModel. Used by HubMock.
  * @internal
  */
 export class LocalHub {
