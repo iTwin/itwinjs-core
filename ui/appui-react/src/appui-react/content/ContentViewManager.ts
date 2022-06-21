@@ -78,7 +78,7 @@ export class ContentViewManager {
     return this._activeContent;
   }
 
-  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = true) {
+  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = false) {
     if (floatingControls?.length) {
       const control = floatingControls.find((contentControl) => contentControl.reactNode === content);
       if (control)
@@ -141,8 +141,8 @@ export class ContentViewManager {
         const activeContentGroup = activeFrontstageDef.contentGroup;
 
         // istanbul ignore else
-        const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls, false);
-        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls, true);
 
         // Only call setActiveView if going to or coming from a non-viewport ContentControl
         // istanbul ignore else
