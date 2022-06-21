@@ -54,22 +54,6 @@ describe("ContentGroup", () => {
     ConfigurableUiManager.unregisterControl("TestContentControl");
   });
 
-  it("ContentGroup.getControlFromElement should log Error if passed an invalid node", () => {
-    const spyMethod = sinon.spy(Logger, "logError");
-
-    const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
-    const groupProps: ContentGroupProps = {
-      id: "testGroup",
-      layout: StandardContentLayouts.singleView,
-      contents: [contentProps],
-    };
-    const contentGroup = new ContentGroup(groupProps);
-
-    contentGroup.getControlFromElement(null);
-
-    spyMethod.called.should.true;
-  });
-
   it("ContentGroup.toJSON should throw Error if class not registered", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
