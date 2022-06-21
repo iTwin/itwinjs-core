@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { Logger } from "@itwin/core-bentley";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -160,7 +159,6 @@ export class ContentGroup {
       return this._contentSetMap.get(controlId);
     }
 
-    Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
     return undefined;
   }
 
