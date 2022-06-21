@@ -12,7 +12,7 @@
   .rule-condition {
     display: grid;
     grid-template-columns: minmax(auto, 400px) 150px auto;
-    grid-column-gap: 5px;
+    grid-column-gap: $iui-m;
 
     .rule-property .iui-input {
       padding-top: 1.5px;
@@ -22,7 +22,7 @@
   }
 
   .rule-remove-action {
-    padding-right: $iui-s;
+    padding-right: $iui-sm;
     visibility: hidden;
   }
 

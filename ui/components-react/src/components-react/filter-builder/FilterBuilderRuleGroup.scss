@@ -44,12 +44,12 @@
   }
 
   .rule-group-remove-action {
-    padding: 3px $iui-s 3px 0;
+    padding: 3px $iui-sm 3px 0;
     visibility: hidden;
   }
 
   .rule-group-content {
-    padding-left: $iui-m;
+    padding-left: $iui-sm;
     border-left: 1px solid;
     box-sizing: border-box;
     @include themed {
