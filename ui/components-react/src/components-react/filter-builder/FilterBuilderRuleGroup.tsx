@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import classnames from "classnames";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
-import { Button, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 import { PropertyFilterBuilderContext } from "./FilterBuilder";
 import { PropertyFilterBuilderRuleRenderer } from "./FilterBuilderRule";
@@ -35,6 +34,20 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
   const allowToAddGroup = ruleGroupDepthLimit === undefined || path.length < ruleGroupDepthLimit;
   const { active, eventHandlers } = useIsActive();
 
+  const actionButtons = [
+    <Button key="add-rule-button" data-testid="rule-group-add-rule" onClick={addRule} styleType="default" size="small" startIcon={<SvgAdd />}>
+      {UiComponents.translate("filterBuilder.rule")}
+    </Button>,
+  ];
+
+  if (allowToAddGroup) {
+    actionButtons.push(
+      <Button key="add-rule-group-button" data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="default" size="small" startIcon={<SvgAdd />}>
+        {UiComponents.translate("filterBuilder.ruleGroup")}
+      </Button>
+    );
+  }
+
   return <div
     className="rule-group"
     data-isactive={active}
@@ -48,20 +61,9 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
       <div className="rule-group-items">
         {group.items.map((item) => <PropertyFilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
       </div>
-      <div className={classnames("rule-group-actions", { "iui-button-group": allowToAddGroup })}>
-        <div>
-          <Button data-testid="rule-group-add-rule" onClick={addRule} styleType="default" size="small" startIcon={<SvgAdd />}>
-            {UiComponents.translate("filterBuilder.rule")}
-          </Button>
-        </div>
-        {
-          allowToAddGroup && <div>
-            <Button data-testid="rule-group-add-rule-group" onClick={addRuleGroup} styleType="default" size="small" startIcon={<SvgAdd />}>
-              {UiComponents.translate("filterBuilder.ruleGroup")}
-            </Button>
-          </div>
-        }
-      </div>
+      <ButtonGroup className="rule-group-actions">
+        {actionButtons}
+      </ButtonGroup>
     </div>
   </div>;
 }
