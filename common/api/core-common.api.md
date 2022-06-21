@@ -1094,6 +1094,12 @@ export interface ClipStyleProps {
     produceCutGeometry?: boolean;
 }
 
+// @beta
+export interface CloudContainerUri {
+    // (undocumented)
+    readonly uriParams: string;
+}
+
 // @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
@@ -1682,8 +1688,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1835008,
-    Major = 28,
+    Combined = 1900544,
+    Major = 29,
     Minor = 0
 }
 
@@ -3821,6 +3827,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    quantizePositions?: boolean;
     readonly sectionCut?: string;
     // @internal
     readonly smoothPolyfaceEdges?: boolean;
@@ -4488,7 +4495,7 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public
+// @public @deprecated
 export interface IModelEncryptionProps {
     readonly password?: string;
 }
@@ -8268,10 +8275,6 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
-    // @internal (undocumented)
-    readonly autoUploadBlocks?: boolean;
-    // @internal (undocumented)
-    readonly lazyBlockCache?: boolean;
     // @internal
     readonly tempFileBase?: string;
 }

@@ -1199,6 +1199,7 @@ describe("PresentationManager", () => {
             keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            contentFlags: ContentFlags.DescriptorOnly,
           },
         };
 

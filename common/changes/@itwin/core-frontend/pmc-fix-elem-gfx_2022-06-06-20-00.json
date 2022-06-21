@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add option to quantize positions in TileAdmin.requestElementGraphics.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

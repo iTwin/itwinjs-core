@@ -15,12 +15,12 @@ export type Mutable<T> = {
 
 /** Make a new type from an existing type `T`, with set of required properties `K` optional.
  * @public
-*/
+ */
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 /** Make a new type from an existing type `T`, with set of optional properties `K` required.
  * @public
-*/
+ */
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 /** Generically represents a class `T`, for use in type annotations.
