@@ -145,7 +145,7 @@ export interface IModelTransformOptions {
  * A container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed
  * @internal
  */
-class PartiallyCommittedElement {
+class PartiallyCommittedEntity {
   public constructor(
     /**
      * A set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12`.
@@ -156,7 +156,7 @@ class PartiallyCommittedElement {
     private _onComplete: () => void
   ) {}
   public resolveReference(id: Id64String, isModelRef: boolean) {
-    const key = PartiallyCommittedElement.makeReferenceKey(id, isModelRef);
+    const key = PartiallyCommittedEntity.makeReferenceKey(id, isModelRef);
     this._missingReferences.delete(key);
     if (this._missingReferences.size === 0)
       this._onComplete();
@@ -272,10 +272,10 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved
    * and have some helper methods below for now */
-  protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedElement>();
+  protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedEntity>();
 
   /** map of partially committed element ids to their partial commit progress */
-  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
+  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedEntity>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingReferencesBehavior">;
@@ -648,7 +648,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private collectUnmappedReferences(element: Element) {
     const missingReferences = new Set<string>();
-    let thisPartialElem: PartiallyCommittedElement | undefined;
+    let thisPartialElem: PartiallyCommittedEntity | undefined;
 
     for (const referenceId of element.getReferenceIds()) {
       const referenceState = ElementProcessState.fromElementAndTransformer(referenceId, this);
@@ -677,16 +677,16 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedElement(missingReferences, this.makePartialElementCompleter(element));
+        thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialElementCompleter(element));
         if (!this._partiallyCommittedElements.has(element.id))
           this._partiallyCommittedElements.set(element.id, thisPartialElem);
       }
       if (referenceState.needsModelImport) {
-        missingReferences.add(PartiallyCommittedElement.makeReferenceKey(referenceId, true));
+        missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
         this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: true}, thisPartialElem);
       }
       if (referenceState.needsElemImport) {
-        missingReferences.add(PartiallyCommittedElement.makeReferenceKey(referenceId, false));
+        missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
         this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: false}, thisPartialElem);
       }
     }
@@ -1085,13 +1085,13 @@ export class IModelTransformer extends IModelExportHandler {
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
       return this.onTransformElementAspect(sourceAspect, targetElementId);
     });
-    if (this._options.includeSourceProvenance) {
-      this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
-        return (a instanceof ExternalSourceAspect) ? a.scope.id !== this.targetScopeElementId : true; // filter out ExternalSourceAspects added by IModelTransformer
-      });
-    } else {
-      this.importer.importElementMultiAspects(targetAspectPropsArray);
-    }
+    this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
+      const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
+      return (
+        !this._options.includeSourceProvenance ||
+        !isExternalSourceAspectFromTransformer
+      );
+    });
   }
 
   /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.
