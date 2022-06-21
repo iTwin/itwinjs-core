@@ -222,8 +222,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return fileNames;
   }
 
-  public override async getAccessToken(): Promise<string | undefined> {
-    return IModelHost.authorizationClient?.getAccessToken();
+  public override async getAccessToken(): Promise<string> {
+    return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 }
 

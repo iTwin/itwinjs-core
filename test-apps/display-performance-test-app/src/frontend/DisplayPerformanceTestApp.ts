@@ -12,7 +12,6 @@ import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { IModelsClient } from "@itwin/imodels-client-management";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
@@ -56,11 +55,6 @@ export class DisplayPerfTestApp {
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
-
-    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
-    if(token) {
-      IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
-    }
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 

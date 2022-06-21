@@ -17,6 +17,7 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
@@ -658,10 +659,15 @@ export class TestRunner {
   private async openIModel(): Promise<TestContext> {
     if(this.curConfig.iModelId) {
       // Download remote iModel and its saved views
+      await this.logToConsole(`Opening remote iModel "${this.curConfig.iModelName}"`);
+      // Couldn't find a better/working way to ensure the token is refreshed on expiry
+      IModelApp.authorizationClient = new TestFrontendAuthorizationClient(await DisplayPerfRpcInterface.getClient().getAccessToken());
       const iModelId = this.curConfig.iModelId;
       const iTwinId = this.curConfig.iTwinId!;
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+      await this.logToConsole(`Fetching its saved views`);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
+      IModelApp.authorizationClient = undefined;
       return { iModel, externalSavedViews };
     } else {
       // Load local iModel and its saved views
