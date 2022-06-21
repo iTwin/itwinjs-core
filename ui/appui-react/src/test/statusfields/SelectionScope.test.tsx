@@ -21,10 +21,10 @@ class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     super(info, options);
   }
 
-  public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+  public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
     return (
       <>
-        <SelectionScopeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+        <SelectionScopeField isInFooterMode={isInFooterMode} />
       </>
     );
   }
