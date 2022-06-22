@@ -148,7 +148,7 @@ export interface IModelTransformOptions {
 class PartiallyCommittedEntity {
   public constructor(
     /**
-     * A set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12`.
+     * A set of "model|element ++ ID64" pairs, (e.g. `model0x11` or `element0x12`)
      * It is possible for the submodel of an element to be separately resolved from the actual element,
      * so its resolution must be tracked separately
      */
@@ -168,6 +168,13 @@ class PartiallyCommittedEntity {
     this._onComplete();
   }
 }
+
+// possible table types in current BisCore
+// TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
+// TODO: verify the BisCore schema has no other real tables in an iModel before proceeding here
+type EntityKey =
+  | `Element:${Id64String}`
+  | `NonElementEntity:${Id64String}`;
 
 /**
  * A helper for checking the in-transformation processing state of an element,
@@ -274,8 +281,8 @@ export class IModelTransformer extends IModelExportHandler {
    * and have some helper methods below for now */
   protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedEntity>();
 
-  /** map of partially committed element ids to their partial commit progress */
-  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedEntity>();
+  /** map of partially committed entities to their partial commit progress */
+  protected _partiallyCommittedEntities = new Map<EntityKey, PartiallyCommittedEntity>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingReferencesBehavior">;
@@ -631,15 +638,32 @@ export class IModelTransformer extends IModelExportHandler {
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
-  private makePartialElementCompleter(sourceElem: Element) {
+  private makePartialEntityCompleter(entity: Element | Relationship | ElementAspect) {
     return () => {
-      const sourceElemId = sourceElem.id;
-      const targetElemId = this.context.findTargetElementId(sourceElem.id);
-      if (targetElemId === Id64.invalid)
-        throw Error(`${sourceElemId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
-      const targetElemProps = this.onTransformElement(sourceElem);
-      this.targetDb.elements.updateElement({...targetElemProps, id: targetElemId});
-      this._partiallyCommittedElements.delete(sourceElemId);
+      const entityKey: EntityKey = `${entity instanceof Element ? "Element" : "NonElementEntity"}:${entity.id}`;
+      const unreachableType = () => { throw Error("unreachable; argument was not an entity"); };
+      /* eslint-disable @typescript-eslint/indent, @typescript-eslint/unbound-method */
+      type EntityTransformHandler = (entity: Element | Relationship | ElementAspect) => ElementProps | RelationshipProps | ElementAspectProps;
+      type EntityUpdater = (entityProps: ElementProps | RelationshipProps | ElementAspectProps) => void;
+      const [onEntityTransform, updateEntity] =
+        ( entity instanceof Element
+          ? [this.onTransformElement, this.targetDb.elements.updateElement.bind(this.targetDb.elements)]
+        : entity instanceof Relationship
+          ? [this.onTransformRelationship, this.targetDb.relationships.updateInstance.bind(this.targetDb.relationships)]
+        : entity instanceof ElementAspect
+          ? [this.onTransformElementAspect, this.targetDb.elements.updateAspect.bind(this.targetDb.elements)]
+        : unreachableType()
+        ) as [EntityTransformHandler, EntityUpdater];
+      /* eslint-enable @typescript-eslint/indent, @typescript-eslint/unbound-method */
+
+      const sourceId = entity.id;
+      // FIXME: needs to be fixed
+      const targetId = this.context.findTargetElementId(entity.id);
+      if (targetId === Id64.invalid)
+        throw Error(`${sourceId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
+      const targetProps = onEntityTransform.call(this, entity);
+      updateEntity({...targetProps, id: targetId});
+      this._partiallyCommittedEntities.delete(entityKey);
     };
   }
 
@@ -677,9 +701,9 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialElementCompleter(element));
-        if (!this._partiallyCommittedElements.has(element.id))
-          this._partiallyCommittedElements.set(element.id, thisPartialElem);
+        thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialEntityCompleter(element));
+        if (!this._partiallyCommittedEntities.has(element.id))
+          this._partiallyCommittedEntities.set(element.id, thisPartialElem);
       }
       if (referenceState.needsModelImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
@@ -948,17 +972,17 @@ export class IModelTransformer extends IModelExportHandler {
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 
   private finalizeTransformation() {
-    if (this._partiallyCommittedElements.size > 0) {
+    if (this._partiallyCommittedEntities.size > 0) {
       Logger.logWarning(
         loggerCategory,
         [
           "The following elements were never fully resolved:",
-          [...this._partiallyCommittedElements.keys()].join(","),
+          [...this._partiallyCommittedEntities.keys()].join(","),
           "This indicates that either some references were excluded from the transformation",
           "or the source has dangling references.",
         ].join("\n")
       );
-      for (const partiallyCommittedElem of this._partiallyCommittedElements.values()) {
+      for (const partiallyCommittedElem of this._partiallyCommittedEntities.values()) {
         partiallyCommittedElem.forceComplete();
       }
     }
