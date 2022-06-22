@@ -13,6 +13,11 @@ import { Geometry } from "@itwin/core-geometry";
 // spell-checker: disable
 
 describe("GeoServices", () => {
+  before(() => {
+    // TEMPORARY until gcs workspaces are available
+    // IModelHost.appWorkspace.settings.addFile(IModelTestUtils.resolveAssetFile("gcs.setting.json5"), SettingsPriority.application);
+    // GeoCoordConfig.loadDefaultDatabases();
+  });
 
   it("should be able to interpret to completion an incomplete GeographicCRS", async () => {
 

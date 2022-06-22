@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert, expect } from "chai";
+import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState,
-  StandardViewId,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
@@ -308,7 +309,7 @@ describe("EmphasizeElements tests", () => {
 
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
-      assert(undefined !== key);
+      bAssert(undefined !== key);
       const { overrideType, color } = { ...emph.getOverrideFromKey(key) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {

@@ -939,9 +939,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *   * `arc` is the (bounded) arc
    *   * `fraction10` is the tangency point's position as an interpolating fraction of the line segment from `point1` (backwards) to `point0`
    *   * `fraction12` is the tangency point's position as an interpolating fraction of the line segment from `point1` (forward) to `point2`
-   *   * `point1` is the `point1` input.
+   *   * `point` is the `point1` input.
    * * If unable to construct the arc:
-   *   * `point` is the `point` input.
+   *   * `point` is the `point1` input.
    *   * both fractions are zero
    *   * `arc` is undefined.
    * @param point0 first point of path. (the point before the point of inflection)

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.3.0-dev.21",
+  "version": "3.3.0-dev.42",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -36,13 +36,13 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
+    "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",
     "@types/sinon": "^9.0.0",
-    "@xmldom/xmldom": "^0.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
@@ -53,10 +53,12 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
-    "glob": "^7.1.2"
+    "glob": "^7.1.2",
+    "fs-extra": "^8.1.0",
+    "@xmldom/xmldom": "^0.7.0"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.21"
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.42"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

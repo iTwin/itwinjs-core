@@ -2433,14 +2433,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
+    attachMapLayer(options: {
+        settings: MapLayerSettings;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     // @internal (undocumented)
-    attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
-    // @internal (undocumented)
-    attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
+    attachMapLayerProps(options: {
+        props: MapLayerProps;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
-    // @beta (undocumented)
     get backgroundMapBase(): BaseLayerSettings;
     set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
@@ -2449,17 +2455,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // @internal
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
     // (undocumented)
     changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    // @internal (undocumented)
     changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    // (undocumented)
     changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
@@ -2467,7 +2469,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
@@ -2476,7 +2477,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
-    // @internal (undocumented)
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
@@ -2492,7 +2492,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
-    // @internal (undocumented)
+    // @internal
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
@@ -2508,15 +2508,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // @internal (undocumented)
+    // (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    // @internal
     moveMapLayerToBottom(index: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
@@ -5743,6 +5740,10 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
     // (undocumented)
+    getEPSG4326Lat(y3857: number): number;
+    // (undocumented)
+    getEPSG4326Lon(x3857: number): number;
+    // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
@@ -5814,13 +5815,13 @@ export interface MapLayerOptions {
     MapboxImagery?: MapLayerKey;
 }
 
-// @internal
+// @public
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
     formatId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
     static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
@@ -5867,25 +5868,19 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @beta (undocumented)
+// @public
 export enum MapLayerSourceStatus {
-    // (undocumented)
     InvalidCredentials = 1,
-    // (undocumented)
     InvalidFormat = 2,
-    // (undocumented)
     InvalidTileTree = 3,
-    // (undocumented)
     InvalidUrl = 4,
-    // (undocumented)
     RequireAuth = 5,
-    // (undocumented)
     Valid = 0
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface MapLayerSourceValidation {
-    // (undocumented)
+    // @beta (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
     // (undocumented)
     status: MapLayerSourceStatus;
@@ -8945,6 +8940,7 @@ export namespace RenderSystem {
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
+        errorOnMissingUniform?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
         // @internal
@@ -9582,9 +9578,9 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 export interface ServiceExtensionProviderProps {
     // @internal (undocumented)
     getAccessToken?: () => Promise<AccessToken>;
-    iTwinId: string;
+    iTwinId?: string;
     name: string;
-    version: string;
+    version?: string;
 }
 
 // @public
