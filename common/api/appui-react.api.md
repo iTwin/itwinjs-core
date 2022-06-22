@@ -7131,6 +7131,9 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
 
+// @beta
+export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
+
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
