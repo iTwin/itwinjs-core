@@ -26,6 +26,7 @@ import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IMod
 import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
+import { EntityMap } from "./EntityMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -169,13 +170,6 @@ class PartiallyCommittedEntity {
   }
 }
 
-// possible table types in current BisCore
-// TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
-// TODO: verify the BisCore schema has no other real tables in an iModel before proceeding here
-type EntityKey =
-  | `Element:${Id64String}`
-  | `NonElementEntity:${Id64String}`;
-
 /**
  * A helper for checking the in-transformation processing state of an element,
  * whether it has been transformed, and if its submodel has been
@@ -282,7 +276,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedEntity>();
 
   /** map of partially committed entities to their partial commit progress */
-  protected _partiallyCommittedEntities = new Map<EntityKey, PartiallyCommittedEntity>();
+  protected _partiallyCommittedEntities = new EntityMap<PartiallyCommittedEntity>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingReferencesBehavior">;
@@ -638,32 +632,38 @@ export class IModelTransformer extends IModelExportHandler {
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
-  private makePartialEntityCompleter(entity: Element | Relationship | ElementAspect) {
+  private makePartialEntityCompleter(
+    sourceEntity: Element | Relationship | ElementAspect,
+  ) {
     return () => {
-      const entityKey: EntityKey = `${entity instanceof Element ? "Element" : "NonElementEntity"}:${entity.id}`;
+      const targetId = this.context.findTargetElementId(sourceEntity.id);
+      if (targetId === Id64.invalid)
+        throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
+
+      const [targetRelSourceId, targetRelTargetId] =
+        sourceEntity instanceof Relationship
+          ? [this.context.findTargetElementId(sourceEntity.sourceId), this.context.findTargetElementId(sourceEntity.targetId)]
+          : [undefined, undefined];
+
       const unreachableType = () => { throw Error("unreachable; argument was not an entity"); };
       /* eslint-disable @typescript-eslint/indent, @typescript-eslint/unbound-method */
       type EntityTransformHandler = (entity: Element | Relationship | ElementAspect) => ElementProps | RelationshipProps | ElementAspectProps;
       type EntityUpdater = (entityProps: ElementProps | RelationshipProps | ElementAspectProps) => void;
       const [onEntityTransform, updateEntity] =
-        ( entity instanceof Element
+        ( sourceEntity instanceof Element
           ? [this.onTransformElement, this.targetDb.elements.updateElement.bind(this.targetDb.elements)]
-        : entity instanceof Relationship
+        : sourceEntity instanceof Relationship
           ? [this.onTransformRelationship, this.targetDb.relationships.updateInstance.bind(this.targetDb.relationships)]
-        : entity instanceof ElementAspect
+        : sourceEntity instanceof ElementAspect
           ? [this.onTransformElementAspect, this.targetDb.elements.updateAspect.bind(this.targetDb.elements)]
         : unreachableType()
         ) as [EntityTransformHandler, EntityUpdater];
       /* eslint-enable @typescript-eslint/indent, @typescript-eslint/unbound-method */
-
-      const sourceId = entity.id;
-      // FIXME: needs to be fixed
-      const targetId = this.context.findTargetElementId(entity.id);
-      if (targetId === Id64.invalid)
-        throw Error(`${sourceId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
-      const targetProps = onEntityTransform.call(this, entity);
+      const targetProps = onEntityTransform.call(this, sourceEntity);
+      if (targetRelSourceId) (targetProps as RelationshipProps).sourceId = targetRelSourceId;
+      if (targetRelTargetId) (targetProps as RelationshipProps).targetId = targetRelTargetId;
       updateEntity({...targetProps, id: targetId});
-      this._partiallyCommittedEntities.delete(entityKey);
+      this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
 
@@ -702,8 +702,8 @@ export class IModelTransformer extends IModelExportHandler {
       }
       if (thisPartialElem === undefined) {
         thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialEntityCompleter(element));
-        if (!this._partiallyCommittedEntities.has(element.id))
-          this._partiallyCommittedEntities.set(element.id, thisPartialElem);
+        if (!this._partiallyCommittedEntities.has(element))
+          this._partiallyCommittedEntities.set(element, thisPartialElem);
       }
       if (referenceState.needsModelImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
