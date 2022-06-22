@@ -874,6 +874,8 @@ export namespace RenderSchedule {
     private _maxBatchId?: number;
     /** Tile tree suppliers perform **very** frequent ordered comparisons of ModelTimelines. They need to be fast. */
     private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
+    /** When loading tiles we need to quickly map element Ids to batch Ids. This map is initialized on first call to [[getTimelineForElement]] to facilitate that lookup. */
+    private _idPairToElementTimeline?: Id64.Uint32Map<ElementTimeline>;
 
     private constructor(props: ModelTimelineProps) {
       super(props);
@@ -982,6 +984,24 @@ export namespace RenderSchedule {
       }
 
       return this._maxBatchId;
+    }
+
+    /** Given the two halves of an [Id64]($bentley) return the [[ElementTimeline]] containing the corresponding element.
+     * @note The first call to this method populates a mapping for fast lookup.
+     * @alpha
+     */
+    public getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined {
+      if (!this._idPairToElementTimeline) {
+        this._idPairToElementTimeline = new Id64.Uint32Map<ElementTimeline>();
+        for (const timeline of this.elementTimelines) {
+          for (const elementId of timeline.elementIds) {
+            // NB: a malformed script may place the same element Id into multiple timelines. We're not going to check for such data errors here.
+            this._idPairToElementTimeline.setById(elementId, timeline);
+          }
+        }
+      }
+
+      return this._idPairToElementTimeline.get(idLo, idHi);
     }
   }
 

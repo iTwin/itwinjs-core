@@ -1276,15 +1276,9 @@ export class ImdlReader {
       return branch;
     };
 
-    // ###TODO optimize this lookup?
     featureTable.populateAnimationNodeIds((elemIdPair) => {
-      const id = Id64.fromUint32PairObject(elemIdPair);
-      for (const elemTimeline of timeline.elementTimelines)
-        for (const elemId of elemTimeline.elementIds)
-          if (elemId === id)
-            return elemTimeline.batchId;
-
-      return 0;
+      const elementTimeline = timeline.getTimelineForElement(elemIdPair.lower, elemIdPair.upper);
+      return elementTimeline?.batchId ?? 0;
     }, timeline.maxBatchId);
 
     let discreteNodeIds = new Set<number>(timeline.transformBatchIds);
