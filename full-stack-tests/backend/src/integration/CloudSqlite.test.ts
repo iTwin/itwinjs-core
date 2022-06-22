@@ -94,7 +94,7 @@ export namespace CloudSqliteTest {
   }
 }
 
-describe("CloudSqlite", () => {
+describe.only("CloudSqlite", () => {
   let caches: IModelJsNative.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
@@ -196,7 +196,7 @@ describe("CloudSqlite", () => {
       await contain1.copyDatabase("testBim", "testBim33");
       await contain1.deleteDatabase("testBim2");
       expect(contain1.hasLocalChanges).true;
-      contain1.abandonWriteLock();
+      contain1.abandonChanges();
     });
     expect(contain1.hasLocalChanges).false;
     expect(contain1.queryDatabases().length).equals(3);
@@ -432,9 +432,16 @@ describe("CloudSqlite", () => {
       db.saveChanges();
       db.closeDb();
       expect(codeContainer.hasLocalChanges).true;
-      codeContainer.abandonWriteLock();
+      codeContainer.abandonChanges();
       expect(codeContainer.hasLocalChanges).false;
     });
+
+    db.openDb("codeIdx", OpenMode.Readonly, codeContainer);
+    db.withSqliteStatement(`SELECT count(*) FROM codes WHERE value="value-200"`, (stmt) => {
+      stmt.step();
+      expect(stmt.getValueInteger(0)).equal(1); // abandon changes should bring this back
+    });
+    db.closeDb();
 
     codeContainer2.checkForChanges();
     db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
