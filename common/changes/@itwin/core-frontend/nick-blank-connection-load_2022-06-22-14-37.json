@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "return in viewState.load() if iModel is blankConnection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
