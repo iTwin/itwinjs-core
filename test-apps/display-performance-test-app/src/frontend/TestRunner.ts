@@ -659,15 +659,12 @@ export class TestRunner {
   private async openIModel(): Promise<TestContext> {
     if(this.curConfig.iModelId) {
       // Download remote iModel and its saved views
-      await this.logToConsole(`Opening remote iModel "${this.curConfig.iModelName}"`);
-      // Couldn't find a better/working way to ensure the token is refreshed on expiry
-      IModelApp.authorizationClient = new TestFrontendAuthorizationClient(await DisplayPerfRpcInterface.getClient().getAccessToken());
-      const iModelId = this.curConfig.iModelId;
-      const iTwinId = this.curConfig.iTwinId!;
+      await this.refreshAccessToken();
+      const { iModelId, iTwinId } = this.curConfig;
+      if(iTwinId === undefined)
+        throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
-      await this.logToConsole(`Fetching its saved views`);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
-      IModelApp.authorizationClient = undefined;
       return { iModel, externalSavedViews };
     } else {
       // Load local iModel and its saved views
@@ -689,6 +686,11 @@ export class TestRunner {
       }
       return { iModel, externalSavedViews };
     }
+  }
+
+  private async refreshAccessToken(): Promise<void> {
+    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
   }
 
   private async getIModelNames(): Promise<string[]> {
