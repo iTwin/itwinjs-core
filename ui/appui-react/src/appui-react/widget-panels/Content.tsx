@@ -7,7 +7,7 @@
  */
 import * as React from "react";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { ScrollableWidgetContent, TabIdContext } from "@itwin/appui-layout-react";
+import { ScrollableWidgetContent, TabIdContext, useTransientState } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -18,6 +18,13 @@ export function WidgetContent() {
   const widget = useWidgetDef();
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
+  const onSave = React.useCallback(() => {
+    widget?.saveTransientState();
+  }, [widget]);
+  const onRestore = React.useCallback(() => {
+    widget?.restoreTransientState();
+  }, [widget]);
+  useTransientState(onSave, onRestore);
   return (
     <ScrollableWidgetContent
       itemId={itemId}
