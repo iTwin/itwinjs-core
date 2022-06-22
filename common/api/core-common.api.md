@@ -1094,6 +1094,12 @@ export interface ClipStyleProps {
     produceCutGeometry?: boolean;
 }
 
+// @beta
+export interface CloudContainerUri {
+    // (undocumented)
+    readonly uriParams: string;
+}
+
 // @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
@@ -1682,8 +1688,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1835008,
-    Major = 28,
+    Combined = 1900544,
+    Major = 29,
     Minor = 0
 }
 
@@ -3821,6 +3827,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    quantizePositions?: boolean;
     readonly sectionCut?: string;
     // @internal
     readonly smoothPolyfaceEdges?: boolean;
@@ -4488,7 +4495,7 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public
+// @public @deprecated
 export interface IModelEncryptionProps {
     readonly password?: string;
 }
@@ -7551,8 +7558,6 @@ export abstract class RpcProtocol {
     getOperationFromPath(path: string): SerializedRpcOperation;
     getStatus(code: number): RpcRequestStatus;
     inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps;
-    // (undocumented)
-    initialize(_token?: IModelRpcProps): Promise<void>;
     readonly invocationType: typeof RpcInvocation;
     // (undocumented)
     onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
@@ -7744,7 +7749,6 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     readonly id: string;
-    protected isHeaderAvailable(_name: string): boolean;
     get lastSubmitted(): number;
     get lastUpdated(): number;
     protected abstract load(): Promise<RpcSerializedValue>;
@@ -7770,7 +7774,7 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     protected _response: Response | undefined;
     // (undocumented)
-    protected responseProtocolVersion: number;
+    responseProtocolVersion: RpcProtocolVersion;
     get retryAfter(): number | null;
     retryInterval: number;
     protected abstract send(): Promise<number>;
@@ -8271,10 +8275,6 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
-    // @internal (undocumented)
-    readonly autoUploadBlocks?: boolean;
-    // @internal (undocumented)
-    readonly lazyBlockCache?: boolean;
     // @internal
     readonly tempFileBase?: string;
 }
@@ -9525,8 +9525,6 @@ export const WEB_RPC_CONSTANTS: {
 // @internal
 export abstract class WebAppRpcProtocol extends RpcProtocol {
     constructor(configuration: RpcConfiguration);
-    // (undocumented)
-    allowedHeaders: Set<string>;
     static computeContentType(httpType: string | null | undefined): RpcContentType;
     getCode(status: RpcRequestStatus): number;
     getStatus(code: number): RpcRequestStatus;
@@ -9534,8 +9532,6 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     abstract info: OpenAPIInfo;
-    // (undocumented)
-    initialize(token?: IModelRpcProps): Promise<void>;
     isTimeout(code: number): boolean;
     get openAPIDescription(): RpcOpenAPIDescription;
     pathPrefix: string;
@@ -9556,8 +9552,6 @@ export class WebAppRpcRequest extends RpcRequest {
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     // (undocumented)
-    protected isHeaderAvailable(name: string): boolean;
-    // (undocumented)
     protected load(): Promise<RpcSerializedValue>;
     static maxUrlComponentSize: number;
     metadata: {
@@ -9566,8 +9560,6 @@ export class WebAppRpcRequest extends RpcRequest {
     };
     method: HttpMethod_T;
     static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
-    // (undocumented)
-    preflight(): Promise<Response | undefined>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse): Promise<void>;

@@ -1,0 +1,22 @@
+{
+  "$id": "http://itwinjs.org/json-schema/gcs",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "GeoCoordinate settings",
+  "description": "settings for geocoordinate services",
+  "type": "object",
+  "groupName": "gcs",
+  "properties": {
+    "gcs/default/databases": {
+      "type": "array",
+      "cumulative": false,
+      "description": "List of GCS workspace database aliases loaded by default. Must be entries in \"workspace/databases\".",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "gcs/base",
+        "gcs/entire-earth"
+      ]
+    }
+  }
+}

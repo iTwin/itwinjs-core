@@ -50,10 +50,10 @@ export class LockConflict extends IModelError {
 export interface V2CheckpointAccessProps {
   /** blob store account name. */
   readonly accountName: string;
-  /** The name of the iModel's blob store container holding all checkpoints. */
-  readonly containerId: string;
   /** AccessToken that grants access to the container. */
   readonly sasToken: AccessToken;
+  /** The name of the iModel's blob store container holding all checkpoints. */
+  readonly containerId: string;
   /** The name of the virtual file within the container, used for the checkpoint */
   readonly dbName: string;
   /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
@@ -226,12 +226,6 @@ export interface BackendHubAccess {
    * @internal
    */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-  /**
-   * download a v2 checkpoint
-   * @deprecated
-   * @internal
-   */
-  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line deprecation/deprecation
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

@@ -6,8 +6,8 @@
  * @module SQLiteDb
  */
 
-import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
@@ -39,15 +39,16 @@ export class SQLiteDb implements IDisposable {
   /** Create a SQLiteDb
    * @param pathName The path to the SQLiteDb file to create.
    */
-  public createDb(pathName: string): void {
-    this.nativeDb.createDb(pathName);
+  public createDb(pathName: string, container?: IModelJsNative.CloudContainer, params?: IModelJsNative.SQLiteDbCreateParams): void {
+    this.nativeDb.createDb(pathName, container, params);
   }
 
   /** Open a SQLiteDb.
    * @param pathName The path to the SQLiteDb file to open
+   * @param container optional CloudContainer holding database
    */
-  public openDb(pathName: string, openMode: OpenMode): void {
-    this.nativeDb.openDb(pathName, openMode);
+  public openDb(pathName: string, openMode: OpenMode | IModelJsNative.SQLiteDbOpenParams, container?: IModelJsNative.CloudContainer): void {
+    this.nativeDb.openDb(pathName, openMode, container);
   }
 
   /** Returns true if the SQLiteDb is open */
