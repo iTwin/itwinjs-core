@@ -35,7 +35,7 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
   protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions) {
     this._constructor = constructor;
     this._data = new constructor(options?.initialCapacity ?? 0);
-    this._growthFactor = options?.growthFactor ?? 1.5;
+    this._growthFactor = Math.max(1.0, options?.growthFactor ?? 1.5);
     this._length = 0;
   }
 
@@ -54,7 +54,8 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
     if (this.capacity >= newCapacity)
       return this.capacity;
 
-    newCapacity *= this._growthFactor;
+    assert(this._growthFactor >= 1.0);
+    newCapacity = Math.ceil(newCapacity * this._growthFactor);
     const prevData = this._data;
     this._data = new this._constructor(newCapacity);
     this._data.set(prevData, 0);
