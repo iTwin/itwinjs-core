@@ -12,7 +12,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, getUniqueId, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
@@ -24,7 +24,6 @@ import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../T
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect, should } from "chai";
 import { Provider } from "react-redux";
-import { getUniqueId } from "@itwin/appui-layout-react";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 

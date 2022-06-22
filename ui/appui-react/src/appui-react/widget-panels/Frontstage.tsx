@@ -798,7 +798,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
 
       // istanbul ignore else
       if (isUUID(tab.id))
-            continue;
+        continue;
 
       draft.tabs[tab.id] = {
         id: tab.id,
