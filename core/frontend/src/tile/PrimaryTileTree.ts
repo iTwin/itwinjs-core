@@ -233,13 +233,15 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
+    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleState)?.timeline;
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing || timeline !== this._id.timeline) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
         isPlanProjection: this._id.isPlanProjection,
         forceNoInstancing: this._forceNoInstancing,
+        timeline,
       };
 
       this._owner = primaryTreeSupplier.getOwner(this._id, this.model.iModel);
