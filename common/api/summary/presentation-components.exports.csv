@@ -6,7 +6,7 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
-alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
+alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
@@ -48,6 +48,9 @@ beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
+alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element
+alpha;PresentationTreeNodeRendererProps 
+alpha;PresentationTreeRenderer(props: TreeRendererProps): JSX.Element
 public;PropertyDataProviderWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart

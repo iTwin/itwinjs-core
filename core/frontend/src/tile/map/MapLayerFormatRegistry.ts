@@ -31,10 +31,12 @@ export class MapLayerFormat {
 /** @beta */
 export type MapLayerFormatType = typeof MapLayerFormat;
 
-/** @beta */
+/** @public */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
+
+  /** @beta */
   authInfo?: MapLayerAuthenticationInfo;
 }
 

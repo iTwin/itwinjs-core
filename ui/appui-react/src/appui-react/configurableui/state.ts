@@ -28,6 +28,7 @@ export enum ConfigurableUiActionId {
   AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
   AnimateToolSettings = "configurableui:set-animate-tool-settings",
+  UseToolAsToolSettingsLabel = "configurableui:set-use-tool-as-tool-settings-label",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -44,6 +45,7 @@ export interface ConfigurableUiState {
   autoCollapseUnpinnedPanels: boolean;
   viewOverlayDisplay: boolean;
   animateToolSettings: boolean;
+  useToolAsToolSettingsLabel: boolean;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -58,6 +60,7 @@ const initialState: ConfigurableUiState = {
   autoCollapseUnpinnedPanels: false,
   viewOverlayDisplay: true,
   animateToolSettings: false,
+  useToolAsToolSettingsLabel: false,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -80,6 +83,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
   setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),
   setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
   setAnimateToolSettings: (animateToolSettings: boolean) => createAction(ConfigurableUiActionId.AnimateToolSettings, animateToolSettings),
+  setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => createAction(ConfigurableUiActionId.UseToolAsToolSettingsLabel, useToolAsToolSettingsLabel),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -124,6 +128,9 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     }
     case ConfigurableUiActionId.AnimateToolSettings: {
       return { ...state, animateToolSettings: action.payload };
+    }
+    case ConfigurableUiActionId.UseToolAsToolSettingsLabel: {
+      return { ...state, useToolAsToolSettingsLabel: action.payload };
     }
   }
   return outState;

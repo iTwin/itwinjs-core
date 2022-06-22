@@ -693,7 +693,7 @@ internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly 
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
 public;useFrameworkVersion(): FrameworkVersionId
-internal;useFrontstageManager(frontstageDef: FrontstageDef): void
+internal;useFrontstageManager(frontstageDef: FrontstageDef, useToolAsToolSettingsLabel?: boolean): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 public;useIsBackstageOpen: (manager: BackstageManager) => boolean

@@ -1,6 +1,23 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Tue, 07 Jun 2022 15:02:57 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Jun 2022 18:06:33 GMT and should not be manually modified.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:37 GMT
+
+### Updates
+
+- Add support for nth level element selection scopes
 
 ## 3.2.1
 Tue, 07 Jun 2022 15:02:57 GMT
