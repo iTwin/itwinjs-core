@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "return in viewState.load() if iModel is blankConnection",
+      "comment": "Avoid attempting to load ViewState data from the backend for a BlankConnection.",
       "type": "none"
     }
   ],
