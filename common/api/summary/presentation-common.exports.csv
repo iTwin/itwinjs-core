@@ -327,7 +327,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
-alpha;RpcDiagnosticsOptions = Omit
+alpha;RpcDiagnosticsOptions = Omit_2
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride

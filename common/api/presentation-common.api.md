@@ -2502,7 +2502,7 @@ export interface RootNodeRule extends NavigationRuleBase {
 }
 
 // @alpha (undocumented)
-export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
+export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
 export class RpcRequestsHandler implements IDisposable {
@@ -2551,7 +2551,7 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
-    }
+}
 
 // @internal
 export interface RpcRequestsHandlerProps {

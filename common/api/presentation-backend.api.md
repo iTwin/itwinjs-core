@@ -216,7 +216,7 @@ export class PresentationManager {
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
     getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
     getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)

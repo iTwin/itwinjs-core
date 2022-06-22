@@ -98,7 +98,7 @@ beta;PropertyCategory
 beta;PropertyCategoryProps 
 beta;PropertyProps
 beta;PropertyType
-beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
+beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "PrimitiveArrayProperty" | "StructArrayProperty" | "NavigationProperty"
 beta;PropertyTypeUtils
 beta;RelationshipClass 
 beta;RelationshipClassProps 
