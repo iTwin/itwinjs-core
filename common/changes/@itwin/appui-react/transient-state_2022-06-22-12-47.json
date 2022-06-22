@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Export useTransientState hook.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
