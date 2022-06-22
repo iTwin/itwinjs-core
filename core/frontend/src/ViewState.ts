@@ -350,6 +350,11 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    // If the iModel associated with the viewState is a blankConnection,
+    // then no data can be retrieved from the backend.
+    if (this.iModel.isBlank)
+      return;
+
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
     const promises = [
