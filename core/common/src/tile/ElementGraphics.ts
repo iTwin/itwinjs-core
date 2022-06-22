@@ -53,6 +53,10 @@ export interface GraphicsRequestProps {
    * @see [ClipVector.toCompactString]($core-geometry) to produce the string representation.
    */
   readonly sectionCut?: string;
+  /** If true, vertex positions will be quantized to [[QPoint3d]]s to conserve space at the expense of accuracy. Quantization may produce
+   * perceptible inaccuracies when producing graphics for large and/or highly-detailed elements.
+   */
+  quantizePositions?: boolean;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.

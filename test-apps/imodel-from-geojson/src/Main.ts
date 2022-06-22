@@ -9,13 +9,8 @@ import { IModelHost } from "@itwin/core-backend";
 import { GeoJson } from "./GeoJson";
 import { GeoJsonImporter } from "./GeoJsonImporter";
 
-interface Args {
-  input: string;
-  output: string;
-}
-
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */
-const argv: yargs.Arguments<Args> = yargs
+const argv = yargs
   .usage("Usage: $0 --input [GeomJsonFileName] --output [iModelFileName]")
   .describe("input", "Input GeoJSON file name")
   .string("input")
@@ -50,7 +45,7 @@ const argv: yargs.Arguments<Args> = yargs
   .describe("classifiedInside", "Classifier Outside (on, off, dimmed, hilite, color)")
   .choices("classifiedInside", ["on", "off", "dimmed", "hilite", "color"])
   .demandOption(["input", "output"])
-  .argv;
+  .parseSync();
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();

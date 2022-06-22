@@ -115,4 +115,7 @@
     "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
     "source.fixAll.eslint": true // then run ESLint auto-fix
   },
+  "cSpell.words": [
+    "Discoverability"
+  ],
 }

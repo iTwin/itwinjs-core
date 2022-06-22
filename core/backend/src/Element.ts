@@ -7,14 +7,15 @@
  */
 
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
-import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
-  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
-  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
+  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
+  SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -98,7 +99,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * uniqueness of id, code, and federationGuid.
  *
  * See:
- * * [Element Fundamentals]($docs/bis/intro/element-fundamentals.md)
+ * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
@@ -109,17 +110,17 @@ export class Element extends Entity {
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
-  /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
   public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
@@ -1258,7 +1259,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
  * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
- * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
+ * @see [iModel Information Hierarchy]($docs/bis/guide/data-organization/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement {
