@@ -13,7 +13,7 @@ Table of contents:
 
 The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
 
-The beta functions [Entity.collectPredecessorIds]($core-backend) and [Entity.getPredecessorIds]($core-backend) have been deprecated and replaced with [Entity.collectReferenceIds]($core-backend) and [Entity.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
+The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.getPredecessorIds]($core-backend) have been deprecated and replaced with [Element.collectReferenceIds]($core-backend) and [Element.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
 
 ### @itwin/core-mobile
 
