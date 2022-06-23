@@ -337,7 +337,7 @@ export class Element extends Entity {
   }
 
   /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated use collectReferenceIds instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    * @beta
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
@@ -361,10 +361,10 @@ export class Element extends Entity {
       referenceIds.add(this.parent.id); // A parent element is a reference
   }
 
-  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
+  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
    * This is important for cloning operations but can be useful in other situations as well.
    * @beta
-   * @deprecated
+   * @deprecated use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    */
   public getPredecessorIds(): Id64Set {
     return this.getReferenceIds();

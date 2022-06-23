@@ -114,7 +114,7 @@ export interface IModelTransformOptions {
    *       reference depending on your use case.
    * @default "reject"
    * @beta
-   * @deprecated use danglingReferencesBehavior instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
 
