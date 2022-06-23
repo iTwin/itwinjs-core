@@ -4180,6 +4180,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindGuid(parameter: BindParameter, guid: GuidString): void;
     bindId(parameter: BindParameter, id: Id64String): void;
     bindInteger(parameter: BindParameter, val: number): void;
+    bindNull(parameter: BindParameter): void;
     bindString(parameter: BindParameter, val: string): void;
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
