@@ -41,21 +41,21 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectReferenceIds(predecessorIds: Id64Set): void {
-    super.collectReferenceIds(predecessorIds);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      predecessorIds.add(id);
+      referenceIds.add(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      predecessorIds.add(excludedElementId);
+      referenceIds.add(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      predecessorIds.add(this.settings.renderTimeline);
+      referenceIds.add(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(predecessorIds);
+        script.script.discloseIds(referenceIds);
     }
   }
 
