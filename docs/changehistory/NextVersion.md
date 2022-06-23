@@ -291,9 +291,9 @@ Previously, nested related properties of different intermediate classes were all
 
 ### Relationship properties
 
-It is now possible to include relationship properties into content using a newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute. Properties of the relationship and category of the target class are categorized under relationship category if any relationship properties are included. If only target class properties are included, then relationship category is not created by default.
+Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
 
-It's now also possible to move related properties under a relationship category even when there are no relationship properties. To force this behavior, the new [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute can be used.
+When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
 
 ## ColorDef validation
 

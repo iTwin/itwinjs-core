@@ -177,7 +177,7 @@ The attribute allows loading additional related properties that are related to t
 
 ### Attribute: `relationshipProperties`
 
-List of names or definitions of relationship class properties that should be included in the content. The properties are taken from the relationship used in the last step of the relationship path specified in the [`propertiesSource`](#attribute-propertiessource). In addition, a couple of special values are allowed:
+Lists [ECRelationshipClass](../../bis/ec/ec-relationship-class.md) properties that should be included in the content. Only the properties from the last relationship of [`propertiesSource`](#attribute-propertiessource) path are accessible. In addition, a couple of special values are allowed:
 
 - `"_none_"` means none of the relationship properties should be picked up.
 - `"*"` means all relationship properties should be picked up.
@@ -208,4 +208,6 @@ Specifies whether a relationship category should be created regardless of whethe
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.ForceCreateRelationshipCategory.Ruleset]]
 ```
 
-![Example of using the "force create relationship category" attribute](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute.png)
+| `forceCreateRelationshipCategory: false`                                                                                                                                               | `forceCreateRelationshipCategory: true`                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Example of using the "force create relationship category" attribute set to "false"](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute-false.png) | ![Example of using the "force create relationship category" attribute set to "true"](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute-true.png) |
