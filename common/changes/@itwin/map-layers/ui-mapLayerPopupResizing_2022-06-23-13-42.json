@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Use a different resize observer technique to ensure the controlled tree in map suplayer popup is properly sized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
