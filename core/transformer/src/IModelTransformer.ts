@@ -579,7 +579,7 @@ export class IModelTransformer extends IModelExportHandler {
             throw new IModelError(
               IModelStatus.NotFound,
               [
-                `Found a reference to an element "${referenceId}" that doesn't exist while looking for predecessors of "${element.id}".`,
+                `Found a reference to an element "${referenceId}" that doesn't exist while looking for references of "${element.id}".`,
                 "This must have been caused by an upstream application that changed the iModel.",
                 "You can set the IModelTransformerOptions.danglingReferencesBehavior option to 'ignore' to ignore this, but this will leave the iModel",
                 "in a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom",
