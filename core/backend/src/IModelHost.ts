@@ -10,9 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -20,6 +20,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -27,9 +28,9 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
-import { SettingsSpecRegistry } from "./workspace/SettingsSpecRegistry";
+import { SettingsSchemas } from "./workspace/SettingsSchemas";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -167,7 +168,7 @@ export class IModelHostConfiguration {
 }
 
 /**
- * Settings for the application workspace.
+ * Settings for `IModelHost.appWorkspace`.
  * @note this includes the default dictionary from the SettingsSpecRegistry
  */
 class ApplicationSettings extends BaseSettings {
@@ -178,18 +179,19 @@ class ApplicationSettings extends BaseSettings {
   }
   private updateDefaults() {
     const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
+    for (const [schemaName, val] of SettingsSchemas.allSchemas) {
       if (val.default)
-        defaults[specName] = val.default;
+        defaults[schemaName] = val.default;
     }
     this.addDictionary("_default_", 0, defaults);
   }
 
   public constructor() {
     super();
-    this._remove = SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
+    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
+
   public override close() {
     if (this._remove) {
       this._remove();
@@ -222,6 +224,10 @@ export class IModelHost {
   }
 
   public static configuration?: IModelHostConfiguration;
+
+  /** Event raised during startup to allow loading settings data */
+  public static readonly onWorkspaceStartup = new BeEvent<() => void>();
+
   /** Event raised just after the backend IModelHost was started */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
@@ -274,7 +280,7 @@ export class IModelHost {
 
   /** @internal */
   public static flushLog() {
-    return this.platform.DgnDb.flushLog();
+    return this.platform.flushLog();
   }
   /** @internal */
   public static loadNative(): void {
@@ -335,6 +341,17 @@ export class IModelHost {
     return this._hubAccess;
   }
 
+  private static initializeWorkspace(configuration: IModelHostConfiguration) {
+    const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
+    SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
+
+    GeoCoordConfig.onStartup();
+    // allow applications to load their default settings
+    this.onWorkspaceStartup.raiseEvent();
+  }
+
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
@@ -392,7 +409,7 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this.initializeWorkspace(configuration);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -411,14 +428,13 @@ export class IModelHost {
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     if (undefined !== configuration.hubAccess)
-      IModelHost._hubAccess = configuration.hubAccess;
-    IModelHost.configuration = configuration;
-    IModelHost.setupTileCache();
+      this._hubAccess = configuration.hubAccess;
+    this.configuration = configuration;
+    this.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
-
     process.once("beforeExit", IModelHost.shutdown);
-    IModelHost.onAfterStartup.raiseEvent();
+    this.onAfterStartup.raiseEvent();
   }
 
   private static _briefcaseCacheDir: LocalDirName;
@@ -467,7 +483,7 @@ export class IModelHost {
     IModelHost.configuration = undefined;
     IModelHost.tileCacheService = undefined;
     IModelHost.tileUploader = undefined;
-    IModelHost.appWorkspace.close();
+    await IModelHost.appWorkspace.close();
     IModelHost._appWorkspace = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
@@ -558,6 +574,11 @@ export class IModelHost {
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
     }
+  }
+
+  /** @internal */
+  public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
+    return this.platform.computeSchemaChecksum(arg);
   }
 }
 

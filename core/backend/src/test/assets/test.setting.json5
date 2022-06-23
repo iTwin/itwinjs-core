@@ -1,11 +1,7 @@
 {
     "$schema": "./TestSettings.schema.json", // non-standard - supported by VSCode only
-    "editor/fontWeight": "normal",
-    "editor/fontSize": 12,
-    "editor/multiCursorModifier": "ctrlCmd",
-    "editor/cursorStyle": "line",
-    "window/restoreWindows": "all",
-    "cSpell/enableFiletypes": [
+    "editor/renderWhitespace": "selection",
+    "editor/enableFiletypes": [
         "c",
         "cpp",
         "csharp",
@@ -26,25 +22,61 @@
     ],
     "myApp/categories": [
         "cat 2",
-        "junk"
+        "vital2"
     ],
-    "editor/renderWhitespace": "selection",
-    "editor/lineHeight": 11,
-    "workspace/container/alias": [
+    "cloud/accounts": [
         {
-            "name": "Public Data",
-            "id": "public-data-1"
+            "name": "gcs/data",
+            "accessName": "devstoreaccount1",
+            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
         },
         {
-            "name": "gcs-data",
-            "id": "gcsdata-01"
+            "name": "other/data",
+            "accessName": "devstoreaccount1",
+            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
+        }
+    ],
+    "cloud/containers": [
+        {
+            "name": "gcs/container",
+            "containerId": "gcs",
+            "accountName": "gcs/data"
+        },
+        {
+            "name": "fonts/public",
+            "containerId": "fonts",
+            "accountName": ""
+        }
+    ],
+    "workspace/databases": [
+        {
+            "name": "gcs/base",
+            "dbName": "base",
+            "containerName": "gcs/container",
+            "version": "^1"
+        },
+        {
+            "name": "gcs/entire-world",
+            "dbName": "entireEarth",
+            "containerName": "gcs/container",
+            "version": "^1"
+        },
+        {
+            "name": "fonts/public-fonts",
+            "dbName": "fonts",
+            "version": "^1",
+            "containerName": "fonts/public"
+        },
+        {
+            "name": "fonts/more-fonts",
+            "dbName": "fonts2",
+            "version": "^1",
+            "containerName": "fonts/public"
         }
     ],
     "workspace/fontDbs": [
-        {
-            "containerName": "Public Data",
-            "dbName": "fonts"
-        }
+        "fonts/public-fonts",
+        "fonts/more-fonts"
     ],
     "editor/tokenColorCustomizations": {
         "Default High Contrast": {
@@ -58,7 +90,7 @@
                     "scope": [
                         "constant",
                         "constant.language",
-                        "support.constant",
+                        "support.constant"
                     ],
                     "settings": {
                         "foreground": "#d16c6c",
@@ -67,7 +99,7 @@
                 },
                 {
                     "scope": [
-                        "comment",
+                        "comment"
                     ],
                     "settings": {
                         "foreground": "#7c7b7b",
@@ -76,7 +108,7 @@
                 },
                 {
                     "scope": [
-                        "variable.language",
+                        "variable.language"
                     ],
                     "settings": {
                         "foreground": "#9c7325"
@@ -90,7 +122,7 @@
                         "entity.name.tag",
                         "entity.name.type",
                         "entity.other",
-                        "entity",
+                        "entity"
                     ],
                     "settings": {
                         "foreground": "#0857be"
@@ -105,7 +137,7 @@
                         "keyword.operator.new",
                         "keyword.operator",
                         "keyword.other",
-                        "keyword",
+                        "keyword"
                     ],
                     "settings": {
                         "foreground": "#068135",
@@ -126,6 +158,6 @@
             ]
         }
     },
-    "workbench/colorTheme": "Visual Studio Light",
-    "app1/tree/blah": "blah default"
+    "app1/colorTheme": "Light Theme",
+    "app1/tree/blah": true
 }

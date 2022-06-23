@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Avoid attempting to load ViewState data from the backend for a BlankConnection.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

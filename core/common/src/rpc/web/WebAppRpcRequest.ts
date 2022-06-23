@@ -164,20 +164,6 @@ export class WebAppRpcRequest extends RpcRequest {
     this._request.headers = {};
   }
 
-  /** @internal */
-  public async preflight(): Promise<Response | undefined> {
-    this.method = "options";
-    this._request.method = "options";
-    await this.setHeaders();
-    await this.send();
-    return this._response;
-  }
-
-  protected override isHeaderAvailable(name: string): boolean {
-    const allowed = this.protocol.allowedHeaders;
-    return allowed.has("*") || allowed.has(name);
-  }
-
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
     this._headers[name] = value;
@@ -390,10 +376,6 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async setupTransport(): Promise<void> {
-    if (this.method === "options") {
-      return;
-    }
-
     const parameters = (await this.protocol.serialize(this)).parameters;
     const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
 
