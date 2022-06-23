@@ -2387,10 +2387,10 @@ export class SnapshotDb extends IModelDb {
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
-    IModelHost.platform.DgnDb.vacuum(snapshotFile);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
+    nativeDb.vacuum();
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))

@@ -12,9 +12,10 @@ import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
+  SQLiteDb,
   SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -126,7 +127,13 @@ function showMessage(msg: string) {
 /** perform a vacuum on a database, with a message while it's happening */
 function doVacuum(fileName: string, cloudContainer?: IModelJsNative.CloudContainer) {
   process.stdout.write(`Vacuuming ${fileName} ... `);
-  IModelHost.platform.DgnDb.vacuum(fileName, cloudContainer);
+  const db = new SQLiteDb();
+  db.openDb(fileName, OpenMode.ReadWrite, cloudContainer);
+  try {
+    db.nativeDb.vacuum();
+  } finally {
+    db.closeDb();
+  }
   process.stdout.write("done");
   showMessage("");
 }
@@ -556,7 +563,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
-        logTimer = setInterval(() => flushLog(), 20); // logging from other threads is buffered. This causes it to appear every 1/4 second.
+        logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
       await cmd(args);
