@@ -215,14 +215,14 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectReferenceIds(predecessorIds: Id64Set): void {
-    super.collectReferenceIds(predecessorIds);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      predecessorIds.add(textureId);
+      referenceIds.add(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        predecessorIds.add(planProjectionSetting[0]);
+        referenceIds.add(planProjectionSetting[0]);
   }
 
   /** @alpha */

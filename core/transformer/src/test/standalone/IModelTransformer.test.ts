@@ -996,8 +996,8 @@ describe("IModelTransformer", () => {
   });
 
   it("handles definition element scoped by non-definitional element", async () => {
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadReferencesExampleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadReferenceExampleSource" } });
 
     // create a document partition in our iModel's root
     const documentListModelId = DocumentListModel.insert(sourceDb, IModelDb.rootSubjectId, "DocumentList");
@@ -1028,7 +1028,7 @@ describe("IModelTransformer", () => {
 
     sourceDb.saveChanges();
 
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorExampleTarget.bim");
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadReferenceExampleTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: sourceDb.rootSubject.name } });
     const transformer = new IModelTransformer(sourceDb, targetDb);
 
@@ -1050,8 +1050,8 @@ describe("IModelTransformer", () => {
   });
 
   it("handle backwards related-instance code in model", async () => {
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadReferencesExampleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadReferenceExampleSource" } });
 
     // create a document partition in our iModel's root
     const documentListModelId = DocumentListModel.insert(sourceDb, IModelDb.rootSubjectId, "DocumentList");
@@ -1103,7 +1103,7 @@ describe("IModelTransformer", () => {
 
     sourceDb.saveChanges();
 
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorExampleTarget.bim");
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "BadReferenceExampleTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: sourceDb.rootSubject.name } });
     const transformer = new IModelTransformer(sourceDb, targetDb);
 
@@ -1284,7 +1284,7 @@ describe("IModelTransformer", () => {
 
     /** filter the category and all related elements from the source for transformation */
     function filterCategoryTransformationPredicate(elem: Element): boolean {
-      // if we don't filter out the elements, the transformer will see that the category is a predecessor
+      // if we don't filter out the elements, the transformer will see that the category is a reference
       // and re-add it to the transformation.
       if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
         return false;
@@ -1388,7 +1388,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  function createIModelWithDanglingPredecessor(opts: {name: string, path: string}) {
+  function createIModelWithDanglingReference(opts: {name: string, path: string}) {
     const sourceDb = SnapshotDb.createEmpty(opts.path, { rootSubject: { name: opts.name } });
 
     const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
@@ -1459,14 +1459,14 @@ describe("IModelTransformer", () => {
     }
   }
 
-  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
+  it("reference deletion is considered invalid when danglingReferencesBehavior='reject' and that is the default", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingReferenceSource.bim");
     const [
       sourceDb,
       { displayStyleId, physicalObjects },
-    ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
+    ] = createIModelWithDanglingReference({ name: "DanglingReferences", path: sourceDbPath });
 
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget-reject.bim");
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "DanglingReferenceTarget-reject.bim");
     const targetDbForRejected = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected);
@@ -1474,13 +1474,13 @@ describe("IModelTransformer", () => {
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const rejectDanglingPredecessorsTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingPredecessorsBehavior: "reject" });
-    await expect(rejectDanglingPredecessorsTransformer.processAll()).to.be.rejectedWith(
+    const rejectDanglingReferencesTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingReferencesBehavior: "reject" });
+    await expect(rejectDanglingReferencesTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const runTransform = async (opts: Pick<IModelTransformOptions, "danglingPredecessorsBehavior">) => {
-      const thisTransformTargetPath  = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", `DanglingPredecessorTarget-${opts.danglingPredecessorsBehavior}.bim`);
+    const runTransform = async (opts: Pick<IModelTransformOptions, "danglingReferencesBehavior">) => {
+      const thisTransformTargetPath  = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", `DanglingReferenceTarget-${opts.danglingReferencesBehavior}.bim`);
       const targetDb = SnapshotDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
       const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb, opts);
       await expect(transformer.processAll()).not.to.be.rejected;
@@ -1504,7 +1504,7 @@ describe("IModelTransformer", () => {
       return { displayStyleInTarget, physObjsInTarget };
     };
 
-    const ignoreResult = await runTransform({danglingPredecessorsBehavior: "ignore"});
+    const ignoreResult = await runTransform({danglingReferencesBehavior: "ignore"});
 
     expect(
       [...ignoreResult.displayStyleInTarget.settings.excludedElementIds]
@@ -1547,8 +1547,7 @@ describe("IModelTransformer", () => {
       geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
       placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
     } as PhysicalElementProps);
-    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
-    // (which are predecessors) are inserted
+    // because they are definition elements, display styles will be transformed first
     const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
       excludedElements: [myPhysicalObjId],
     });
@@ -1601,9 +1600,9 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("IModelTransformer processes nav property predecessors even in generated classes", async () => {
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Source.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+  it("IModelTransformer processes nav property references even in generated classes", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropReferences-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropReferences" } });
 
     const testSchema1Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
     IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
@@ -1647,7 +1646,7 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
     } as ElementProps);
 
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropReferences-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     class ProcessTargetLastTransformer extends IModelTransformer {
@@ -1772,8 +1771,7 @@ describe("IModelTransformer", () => {
       geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
       placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
     } as PhysicalElementProps);
-    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
-    // (which are predecessors) are inserted
+    // because they are definition elements, display styles will be transformed first
     const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
       excludedElements: [myPhysicalObjId],
     });
@@ -1809,7 +1807,7 @@ describe("IModelTransformer", () => {
 
   it("IModelTransformer handles generated class nav property cycle", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropReferences" } });
 
     const testSchema1Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
     IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
