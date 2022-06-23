@@ -3887,8 +3887,8 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
     // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {

@@ -710,7 +710,7 @@ public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): S
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 public;useSpecificWidgetDef(widgetId: string): WidgetDef | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
+internal;useToolSettingsNode(): string | number | boolean | {} | React_2.ReactElement
 beta;useTransientState(onSave?: () => void, onRestore?: () => void): void
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
