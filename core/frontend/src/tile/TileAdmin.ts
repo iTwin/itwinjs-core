@@ -21,7 +21,7 @@ import {
   DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
-import type { ClientStorage } from "@itwin/object-storage-core/lib/frontend";
+import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -164,7 +164,7 @@ export class TileAdmin {
   private _maxTotalTileContentBytes?: number;
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
-  private readonly _cloudStorage?: ClientStorage;
+  private readonly _cloudStorage?: FrontendStorage;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -291,8 +291,15 @@ export class TileAdmin {
 
   private _tileStorage?: TileStorage;
   private async getTileStorage(): Promise<TileStorage> {
-    if (this._tileStorage === undefined)
-      this._tileStorage = new TileStorage(this._cloudStorage ?? new (await import("@itwin/object-storage-azure/lib/frontend")).AzureFrontendStorage());
+    if (this._tileStorage === undefined) {
+      if(this._cloudStorage !== undefined) {
+        this._tileStorage = new TileStorage(this._cloudStorage);
+      } else {
+        const azureFrontend = await import("@itwin/object-storage-azure/lib/frontend");
+        const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
+        this._tileStorage = new TileStorage(azureStorage);
+      }
+    }
     return this._tileStorage;
   }
 
@@ -920,10 +927,10 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     /**
      * The client side storage implementation of @itwin/object-storage-core to use for retrieving tiles from tile cache.
      *
-     * Defaults to AzureClientSideStorage
+     * Defaults to AzureFrontendStorage
      * @beta
      */
-    tileStorage?: ClientStorage;
+    tileStorage?: FrontendStorage;
 
     /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
      *

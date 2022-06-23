@@ -1,8 +1,12 @@
-import type { ClientStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { getTileObjectReference, IModelRpcProps, IModelTileRpcInterface } from "@itwin/core-common";
 
 export class TileStorage {
-  public constructor(public readonly storage: ClientStorage) { }
+  public constructor(public readonly storage: FrontendStorage) { }
 
   private _transferConfigs: Map<string, TransferConfig> = new Map();
   private _pendingTransferConfigRequests: Map<string, Promise<TransferConfig>> = new Map();
@@ -15,7 +19,7 @@ export class TileStorage {
         transferType: "buffer",
       }
     );
-    return buffer; // should always be Buffer because transferType === "buffer"
+    return new Uint8Array(buffer); // should always be Buffer because transferType === "buffer"
   }
 
   private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig> {
