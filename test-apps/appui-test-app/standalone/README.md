@@ -9,9 +9,7 @@ The application contained within this directory provides a test environment for 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 1. To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
-2. If you want to work online, follow the configure the [client application section](#client-configuration).
-    > If you intend to use the appui-standalone-app offline with a snapshot iModel, you can safely ignore these instructions. When prompted to sign-in click the "Work offline" button.
-3. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
+2. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
 Note: Before running `appui-standalone-app` for the first time, use the command `npm run build:ci` from the `appui-standalone-app` directory to ensure all assets are properly displayed when running locally.
 

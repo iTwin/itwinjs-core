@@ -83,17 +83,4 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
       }
     }
   }
-
-  /* offline container */
-  .components-signin-offline {
-    align-self: center;
-    margin-top: 2.25em;
-
-    &:hover {
-      color: $signin-hyperlink-hover-color;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  }
-
 }

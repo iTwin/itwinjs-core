@@ -9,9 +9,8 @@ The application contained within this directory provides a test environment for 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 1. To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
-2. If you want to work online, follow the configure the [client application section](#client-configuration).
-    > If you intend to use the ui-test-app offline with a snapshot iModel, you can safely ignore these instructions. When prompted to sign-in click the "Work offline" button.
-3. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
+2. To work online, follow the configure the [client application section](#client-configuration).
+3. Set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
 Note: Before running `ui-test-app` for the first time, use the command `npm run build:ci` from the `ui-test-app` directory to ensure all assets are properly displayed when running locally.
 
@@ -98,13 +97,13 @@ If you do have an existing client, set the following environment variables with 
   * IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_BROWSER_TEST_SCOPES
-    * By default set this to `openid profile organization email itwinjs projects:read`
+    * By default set this to `openid profile organization email itwinjs projects:read imodels:read`
 * For Electron/Desktop, use a client that is "Type" `Desktop/Mobile` and set the following variables
   * IMJS_OIDC_ELECTRON_TEST_CLIENT_ID
   * IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_ELECTRON_TEST_SCOPES
-    * By default set this to `openid profile organization email itwinjs offline_access projects:read`
+    * By default set this to `openid profile organization email itwinjs projects:read imodels:read`
 
 > Note: In the Web case, if you change the PORT of the frontend then you will also need to update the redirect_uri in both the Developer Portal and the `IMJS_OIDC_BROWSER_TEST_REDIRECT_URI` variable to reflect the new port. The default port is `3000`.
 
