@@ -24,8 +24,10 @@ import {
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  assertIdentityTransformation, ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils,
-  PhysicalModelConsolidator, RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  assertIdentityTransformation,
+  AssertOrderTransformer,
+  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -1791,6 +1793,35 @@ describe("IModelTransformer", () => {
     targetDb.saveChanges();
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("handle out-of-order references in aspects during consolidations", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
+
+    // as a member of the repository model hierarchy, and not the root subject hierarchy, it will be exported after the element which is inserted later
+    const sourceRepositoryId = IModelTransformerTestUtils.insertRepositoryLink(sourceDb, "anything.dgn", "https://test.bentley.com/folder/anything.dgn", "DGN");
+    const elem1Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const _extSrcAspect1Id = sourceDb.elements.insertAspect({
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: elem1Id },
+      kind: ExternalSourceAspect.Kind.Element,
+      identifier: Guid.empty, // doesn't matter, any identifier in the hypothetical source
+      scope: { id: sourceRepositoryId },
+    } as ExternalSourceAspectProps);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefsTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new AssertOrderTransformer([elem1Id, sourceRepositoryId], sourceDb, targetDb, { includeSourceProvenance: true });
+
+    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
 
     sourceDb.close();
     targetDb.close();

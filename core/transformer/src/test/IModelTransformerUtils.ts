@@ -1021,6 +1021,25 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 }
 
+/** a transformer which will throw an error if a given array of element ids are exported out of that list's order, or not at all*/
+export class AssertOrderTransformer extends IModelTransformer {
+  public constructor(private _exportOrderQueue: Id64String[], ...superArgs: ConstructorParameters<typeof IModelTransformer>) {
+    super(...superArgs);
+  }
+  public override onExportElement(elem: Element) {
+    if (elem.id === this._exportOrderQueue[0])
+      this._exportOrderQueue.shift(); // pop the front
+    // if it's still in there, either there is an illegal duplicate or the export order doesn't follow the queue
+    if (this._exportOrderQueue.includes(elem.id))
+      return super.onExportElement(elem);
+  }
+  public override async processAll() {
+    if (this._exportOrderQueue.length > 0)
+      throw Error(`the export order given to AssertOrderTransformer was not followed; the elements [${this._exportOrderQueue}] remain`);
+    return super.processAll();
+  }
+}
+
 /** Specialization of IModelImporter that counts the number of times each callback is called. */
 export class CountingIModelImporter extends IModelImporter {
   public numModelsInserted: number = 0;
