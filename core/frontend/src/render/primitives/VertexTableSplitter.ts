@@ -627,9 +627,12 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
     indSil.silhouettes.push((norm2 & 0x00ff00) >>> 8);
   }
 
+  let maxIndex = 0;
+  for (const srcIndex of src.indices)
+    maxIndex = Math.max (srcIndex, maxIndex);
   const remappedIndex = { } as unknown as RemappedIndex;
   let es1Index = 0, es2Index = 0, n1 = 0, n2 = 0;
-  for (let curSegment = 0, byteIndex = 0; byteIndex + (curSegment < numSegments ? 6 : 10) <= srcEdgeData.length; ++curSegment) {
+  for (let curSegment = 0, byteIndex = 0; curSegment <= maxIndex; ++curSegment) {
     if (curSegment < numSegments) {  // edges
       [es1Index, es2Index] = getUint24EdgePair(byteIndex);
       byteIndex += 6;
