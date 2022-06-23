@@ -50,7 +50,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it.only("should transform changes from source to target", async () => {
+  it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
