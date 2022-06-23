@@ -3,9 +3,32 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/theme";
+@import "~@itwin/itwinui-css/scss/style/space";
 
 .presentation-components-muted-node{
   @include themed {
     color: t(iui-text-color-muted);
+  }
+}
+
+.presentation-filter-action-button.iui-button{
+  visibility: hidden;
+  height: 24px;
+  width: 30px;
+  margin-right: $iui-m;
+  padding: 0;
+  @include themed {
+    color: t(iui-icons-color);
+  }
+   &:hover{
+     @include themed {
+        color: t(iui-icons-color-actionable);
+     }
+  }
+}
+
+.presentation-node{
+  &:hover > .presentation-filter-action-button.iui-button{
+    visibility: visible;
   }
 }

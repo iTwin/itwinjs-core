@@ -7,11 +7,13 @@
  */
 
 import * as React from "react";
-import { TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
+import classnames from "classnames";
+import { TreeModelNode, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { TreeNode } from "@itwin/core-react";
+import { SvgFilter } from "@itwin/itwinui-icons-react";
+import { IconButton } from "@itwin/itwinui-react";
 import { translate } from "../../common/Utils";
 import "./PresentationTreeNodeRenderer.scss";
-
 /**
  * @alpha
  */
@@ -22,25 +24,44 @@ export function PresentationTreeRenderer(props: TreeRendererProps) {
   />;
 }
 
+interface FilterButtonProps {
+  onFilter?: (node: TreeModelNode) => void;
+}
+
+const FilterButton = (props: FilterButtonProps) => {
+  return (
+    <IconButton className="presentation-filter-action-button" styleType="borderless"
+      onClick={() => props.onFilter}>
+      <SvgFilter className="presentation-filter-icon"/>
+    </IconButton>
+  );
+};
+
 /**
  * @alpha
  */
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
-  nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
+  onFilter?: (node: TreeModelNode) => void;
 }
 
 /**
  * @alpha
  */
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
-  const { nodeRenderer, ...restProps } = props;
+  const { onFilter, ...restProps } = props;
+  const className = classnames("presentation-node", restProps.className);
   if (restProps.node.item.extendedData !== undefined && restProps.node.item.extendedData.tooManyChildren === true)
     return <TooManyChildNodeRenderer
       nodeDepth={restProps.node.depth}
     />;
-  return nodeRenderer ? <>{nodeRenderer(restProps)}</> : <TreeNodeRenderer
-    {...restProps}
-  />;
+  return <TreeNodeRenderer
+    {...restProps }
+    className={className}
+  >
+    <FilterButton
+      onFilter={onFilter}
+    />
+  </TreeNodeRenderer>;
 }
 
 interface TooManyChildNodeRendererProps {
