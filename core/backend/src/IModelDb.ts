@@ -2090,8 +2090,18 @@ export interface TokenArg {
   readonly accessToken?: AccessToken;
 }
 
-export interface CloudContainerArgs { container?: IModelJsNative.CloudContainer }
+/** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] with a [CloudContainer]($docs/learning/backend/Workspace.md).
+ * Currently the properties are this interface are reserved for internal use only.
+ * @public
+ */
+export interface CloudContainerArgs {
+  /** @alpha */
+  container?: IModelJsNative.CloudContainer;
+}
 
+/** Options to open a [SnapshotDb]($backend).
+ * @public
+ */
 export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
 
 /**

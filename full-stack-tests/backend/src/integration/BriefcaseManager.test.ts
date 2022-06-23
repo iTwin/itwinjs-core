@@ -51,7 +51,10 @@ describe("BriefcaseManager", () => {
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
     // the v2 checkpoint should be opened directly
-    expect(iModel.pathName).equals(`\\imodelblocks-73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a\\BASELINE.bim`);
+    // Convert to UNIX path separators on Windows for consistent results.
+    const actualPathName = iModel.pathName.replace(/\\/g, "/");
+    const expectedPathName = `/imodelblocks-73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a/BASELINE.bim`;
+    expect(actualPathName).equals(expectedPathName);
     iModel.close();
   });
 

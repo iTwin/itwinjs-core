@@ -10,7 +10,7 @@ import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager"
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 
 describe("SnapshotDb.refreshContainerSas", () => {
   afterEach(() => sinon.restore());

@@ -7,7 +7,6 @@
  */
 
 import {
-  AuthStatus,
   BentleyError,
   BentleyStatus,
   BriefcaseStatus,
@@ -328,9 +327,6 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelHubStatus.FileHandlerNotSet: return new NotImplemented();
     case IModelHubStatus.FileNotFound: return new NotFound();
     case IModelHubStatus.InitializationTimeout: return new Timeout();
-
-    case AuthStatus.Success: return new Success();
-    case AuthStatus.Error: return new UnknownError();
 
     case GeoServiceStatus.Success: return new Success();
     case GeoServiceStatus.NoGeoLocation: return new ValidationError();

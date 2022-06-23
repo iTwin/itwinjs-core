@@ -10,14 +10,14 @@ import {
   Code, ColorDef, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import {
   BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { HubWrappers } from "..";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -44,7 +44,7 @@ describe("IModelWriteTest", () => {
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
-    HubMock.startup("IModelWriteTest");
+    HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
 
     testITwinId = HubMock.iTwinId;
     readWriteTestIModelName = IModelTestUtils.generateUniqueName("ReadWriteTest");

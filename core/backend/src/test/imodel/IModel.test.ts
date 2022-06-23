@@ -31,7 +31,7 @@ import {
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
 

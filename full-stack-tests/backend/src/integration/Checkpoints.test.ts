@@ -16,7 +16,7 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-describe("Checkpoints", () => {
+describe.skip("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
@@ -70,7 +70,7 @@ describe("Checkpoints", () => {
       cacheSize: "10G",
     };
     daemonProps = {
-      log: "meh", // message, event, http
+      // log: "meh", // message, event, http
       cacheSize: "10G",
       addr: "127.0.0.1",
       portNumber: 2030,
@@ -110,7 +110,7 @@ describe("Checkpoints", () => {
 
   afterEach(async () => {
     // need to cleanup the v2checkpointmanager after each run.
-    (V2CheckpointManager as any).cleanup();
+    V2CheckpointManager.cleanup();
   });
 
   after(async () => {

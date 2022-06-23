@@ -533,6 +533,16 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.AnimateToolSettings, value, true);
   }
 
+  /** Use Tool Name As Tool Settings Widget Tab Label */
+  public static get useToolAsToolSettingsLabel(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useToolAsToolSettingsLabel : /* istanbul ignore next */ false;
+  }
+  public static setUseToolAsToolSettingsLabel(value: boolean) {
+    if (UiFramework.useToolAsToolSettingsLabel === value)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.UseToolAsToolSettingsLabel, value, true);
+  }
+
   /** @alpha */
   public static get autoCollapseUnpinnedPanels(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.autoCollapseUnpinnedPanels : /* istanbul ignore next */ false;

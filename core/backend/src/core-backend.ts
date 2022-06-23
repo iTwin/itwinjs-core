@@ -17,6 +17,8 @@ export * from "./ElementAspect";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./LocalHub";
+export * from "./HubMock";
 export * from "./IModelJsFs";
 export * from "./BackendHubAccess";
 export * from "./Relationship";
