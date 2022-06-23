@@ -2140,6 +2140,7 @@ export const expandWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -4874,6 +4875,7 @@ export const setPanelSize: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5066,6 +5068,7 @@ export const setWidgetLabel: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5239,6 +5242,7 @@ export const setWidgetState: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5476,6 +5480,7 @@ export const showWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -6253,6 +6258,8 @@ export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
 
 // @internal (undocumented)
 export interface TabLocation {
+    // (undocumented)
+    floating?: boolean;
     // (undocumented)
     side: PanelSide;
     // (undocumented)
@@ -7142,6 +7149,9 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+
+// @beta
+export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
