@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
+import { Id64, Id64Set, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
@@ -100,6 +100,31 @@ export class Entity {
    * @internal
    */
   public static get isGeneratedClass() { return false; }
+
+  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @see collectReferenceIds
+   * @beta
+   */
+  public getReferenceIds(): Id64Set {
+    const referenceIds = new Set<Id64String>();
+    this.collectReferenceIds(referenceIds);
+    return referenceIds;
+  }
+
+  /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
+   * A *reference* is any entity referenced by this entity's EC Data
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @param referenceIds The Id64Set to populate with reference Ids.
+   * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
+   * @see getReferenceIds
+   * @beta
+   */
+  protected collectReferenceIds(_referenceIds: Id64Set): void {
+    return; // no references by default
+  }
+
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
