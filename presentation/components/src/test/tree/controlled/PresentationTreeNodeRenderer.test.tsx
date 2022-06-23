@@ -182,7 +182,7 @@ describe("TreeNodeRenderer", () => {
     expect(button).to.not.be.undefined;
   });
 
-  it("renders node with filter button and clicks it", () => {
+  it("invokes 'onFilter' callback when filter button is clicked", () => {
     const testLabel = "testLabel";
     const node = createTreeModelNode(undefined, testLabel, undefined, 10);
     const buttonSpy = sinon.spy();

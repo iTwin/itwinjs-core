@@ -50,7 +50,7 @@ export interface TreeNodeRendererProps extends CommonProps {
    */
   onLabelRendered?: (node: TreeModelNode) => void;
 
-  /** Children to render inside the node.*/
+  /** Child components to render inside the node.*/
   children?: React.ReactNode;
 }
 
