@@ -18,9 +18,9 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
+  addPanelWidget, addTab, addWidgetTabToDraftFloatingPanel, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
   createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  isHorizontalPanelSide, isPopoutLocation, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -765,6 +765,21 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
   }
   return restored;
 }
+/**
+ * Checks to see whether a widget id is one of our generated uuids
+ * @param uuid the string value to test
+ * @returns boolean
+ */
+function isUUID( uuid: string ) {
+  const s = `${uuid}`;
+
+  const result = s.match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+  // istanbul ignore else
+  if (result === null) {
+    return false;
+  }
+  return true;
+}
 
 /** Prepares NineZoneState to be saved.
  * @note Removes toolSettings tab.
@@ -780,6 +795,11 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
     for (const [, tab] of Object.entries(state.tabs)) {
       if (tab.id === toolSettingsTabId)
         continue;
+
+      // istanbul ignore else
+      if (isUUID(tab.id))
+        continue;
+
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
@@ -787,6 +807,18 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
         allowedPanelTargets: tab.allowedPanelTargets,
         userSized: tab.userSized,
       };
+    }
+  });
+  packed = produce (packed, (draft) => {
+    for (const [, floatingWidget] of Object.entries(state.floatingWidgets.byId)) {
+      const widgetId = floatingWidget.id;
+      // istanbul ignore else
+      if (isUUID(widgetId)){
+        const idIndex = draft.floatingWidgets.allIds.indexOf(widgetId);
+        draft.floatingWidgets.allIds.splice(idIndex, 1);
+        delete draft.floatingWidgets.byId[widgetId];
+        delete draft.widgets[widgetId];
+      }
     }
   });
   return packed;
@@ -842,6 +874,17 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     const widgetId = widgetDef.tabLocation.widgetId;
     const newTabWidget = nineZone.widgets[widgetId];
     newTabWidget.tabs.splice(widgetDef.tabLocation.tabIndex, 0, newTab.id);
+  } else if (widgetDef.tabLocation.floating) {
+    const id = widgetDef.tabLocation.widgetId;
+    if (id in nineZone.floatingWidgets.byId){
+      nineZone.floatingWidgets.allIds.push(id);
+      nineZone.floatingWidgets.byId[id].hidden = false;
+      addWidgetTabToDraftFloatingPanel (nineZone, widgetDef.floatingContainerId ?? widgetDef.id, widgetDef.id, nineZone.floatingWidgets.byId[id].home, newTab);
+    } else {
+      const home: FloatingWidgetHomeState = { side: widgetDef.tabLocation.side, widgetId: widgetDef.floatingContainerId, widgetIndex: 0 };
+      addWidgetTabToDraftFloatingPanel (nineZone, widgetDef.floatingContainerId ?? widgetDef.id, widgetDef.id, home, newTab);
+    }
+
   } else {
     const newTabPanel = nineZone.panels[widgetDef.tabLocation.side];
     if (newTabPanel.maxWidgetCount === newTabPanel.widgets.length) {
@@ -872,6 +915,9 @@ export const setWidgetState = produce((
       addRemovedTab(nineZone, widgetDef);
       location = findTab(nineZone, id);
       assert(!!location);
+    }
+    if (!!widgetDef.tabLocation.floating) {
+      nineZone.floatingWidgets.byId[widgetDef.floatingContainerId ?? widgetDef.id].hidden = false;
     }
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
@@ -910,16 +956,30 @@ function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const location = findTab(state, widgetDef.id);
   if (!location)
     return;
-  const widgetId = location.widgetId;
-  const side = "side" in location ? location.side : "left";
-  const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
-  const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
-  widgetDef.tabLocation = {
-    side,
-    tabIndex,
-    widgetId,
-    widgetIndex,
-  };
+  if (isFloatingLocation(location)) {
+    const widget = state.floatingWidgets.byId[location.widgetId];
+    widgetDef.setFloatingContainerId(location.floatingWidgetId);
+    widgetDef.tabLocation = {
+      side: widget.home.side,
+      tabIndex: widget.home.widgetIndex,
+      widgetId: widgetDef.id,
+      widgetIndex: widget.home.widgetIndex,
+      floating: true,
+    };
+  } else
+  // istanbul ignore else
+  if (!isPopoutLocation(location)) {
+    const widgetId = location.widgetId;
+    const side = "side" in location ? location.side : "left";
+    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+    const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
+    widgetDef.tabLocation = {
+      side,
+      tabIndex,
+      widgetId,
+      widgetIndex,
+    };
+  }
   removeTab(state, widgetDef.id);
 }
 
