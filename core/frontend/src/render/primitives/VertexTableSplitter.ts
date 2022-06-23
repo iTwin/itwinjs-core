@@ -686,7 +686,8 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
       const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(numSegmentEdges, numSilhouettes, IModelApp.renderSystem.maxTextureSize);
       const data = new Uint8Array(width * height * 4);
       data.set(remappedEdges.indexed.edges.toTypedArray(), 0);
-      data.set(remappedEdges.indexed.silhouettes.toTypedArray(), silhouetteStartByteIndex);
+      if (numSilhouettes > 0)
+        data.set(remappedEdges.indexed.silhouettes.toTypedArray(), silhouetteStartByteIndex + silhouettePadding);
 
       edgeTable = {
         data,
