@@ -47,10 +47,11 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
     {onFilter && <IconButton className="presentation-filter-action-button"
       styleType="borderless"
       onClick={(e) => {
-        onFilter?.(restProps.node.item);
+        onFilter(restProps.node.item);
         e.stopPropagation();
       }} >
-      <SvgFilter /></IconButton>}
+      <SvgFilter/>
+    </IconButton>}
   </TreeNodeRenderer>;
 }
 
