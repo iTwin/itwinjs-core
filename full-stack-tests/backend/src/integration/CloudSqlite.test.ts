@@ -5,13 +5,13 @@
 
 import { expect } from "chai";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
-import { dirname, join } from "path";
+import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import {
-  BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb,
+  BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb,
 } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, DbResult, Guid, GuidString, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
@@ -94,7 +94,7 @@ export namespace CloudSqliteTest {
   }
 }
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   let caches: IModelJsNative.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
@@ -251,6 +251,7 @@ describe.only("CloudSqlite", () => {
       expect(() => cont2.acquireWriteLock(user)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
+    // test busy retry handler
     let retries = 0;
     await CloudSqlite.withWriteLock(user2, cont2, async () => {
       await expect(CloudSqlite.withWriteLock(user, contain1, async () => { }, async (lockedBy: string, expires: string) => {
@@ -314,161 +315,5 @@ describe.only("CloudSqlite", () => {
     newCache2.destroy();
   });
 
-  it.only("simultaneous writes", async () => {
-    const codeContainer = CloudSqliteTest.makeCloudSqliteContainer("codes", false);
-    await CloudSqliteTest.createAzureContainer(codeContainer);
-    codeContainer.initializeContainer({ checksumBlockNames: false, blockSize: 256 * 1024 });
-
-    const tempDbFile = join(KnownLocations.tmpdir, "TestWrites", "codes.db");
-    if (existsSync(tempDbFile))
-      rmSync(tempDbFile);
-
-    const db = new SQLiteDb();
-    IModelJsFs.recursiveMkDirSync(dirname(tempDbFile));
-    db.createDb(tempDbFile);
-    db.executeSQL("CREATE TABLE codeSpecs(id INTEGER PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE,json TEXT)");
-    db.executeSQL("CREATE TABLE reservations(id INTEGER PRIMARY KEY,name TEXT NOT NULL UNIQUE COLLATE NOCASE, json TEXT)");
-    db.executeSQL("CREATE TABLE sources(id INTEGER PRIMARY KEY,type TEXT NOT NULL,name TEXT,json TEXT,UNIQUE(type,name))");
-    db.executeSQL("CREATE TABLE codes(guid BLOB PRIMARY KEY NOT NULL,spec INTEGER NOT NULL,scope BLOB NOT NULL,value TEXT NOT NULL COLLATE NOCASE," +
-      "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))," +
-      "source INTEGER,flags INTEGER,reserved INTEGER,json TEXT," +
-      "UNIQUE(spec,scope,value)," +
-      "FOREIGN KEY(spec) REFERENCES codeSpecs(id)," +
-      "FOREIGN KEY(source) REFERENCES sources(id)," +
-      "FOREIGN KEY(reserved) REFERENCES reservations(id))");
-    db.executeSQL("CREATE INDEX reserved_idx ON codes(reserved) WHERE reserved IS NOT NULL");
-    db.executeSQL("CREATE TRIGGER timeStamp AFTER UPDATE ON codes WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE codes SET lastMod=julianday('now') WHERE guid=new.guid; END");
-
-    db.saveChanges();
-    db.closeDb();
-
-    const codeCache = CloudSqliteTest.makeCache("codes");
-    await CloudSqliteTest.uploadFile(codeContainer, codeCache, "codeIdx", tempDbFile);
-    codeContainer.connect(codeCache);
-    expect(codeContainer.isConnected);
-
-    // Logger.initializeToConsole();
-    // Logger.setLevel("CloudSqlite", LogLevel.Trace);
-    // codeCache.setLogMask(0xff);
-
-    const outFile = join(KnownLocations.tmpdir, "TestWrites", "codeIdx.db");
-    if (IModelJsFs.existsSync(outFile))
-      IModelJsFs.removeSync(outFile);
-
-    const timer = new StopWatch("lock", true);
-    let count = 0;
-    const scope = Guid.createValue();
-    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
-      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
-      db.executeSQL(`INSERT INTO codeSpecs(name) VALUES("bsi:SpatialCategory")`);
-      db.withSqliteStatement(`INSERT INTO reservations(name,json) VALUES(?,?)`, (stmt) => {
-        stmt.bindString(1, "Create New Wing 5d");
-        stmt.bindString(2, JSON.stringify({ contact: "Jim Jones", date: "1/1/2022" }));
-        stmt.step();
-      });
-      db.withSqliteStatement(`INSERT INTO sources(type,name,json) VALUES(?,?,?)`, (stmt) => {
-        stmt.bindString(1, "iModel");
-        stmt.bindString(2, Guid.createValue());
-        stmt.bindString(3, JSON.stringify({ importer: "OpenPlant" }));
-        stmt.step();
-      });
-      db.withSqliteStatement(`INSERT INTO codes(guid,spec,scope,value,reserved,source) VALUES(?,?,?,?,?,?)`, (stmt) => {
-        for (let i = 0; i < 100000; ++i) {
-          stmt.bindGuid(1, Guid.createValue());
-          stmt.bindInteger(2, 1);
-          stmt.bindGuid(3, scope);
-          stmt.bindString(4, `value-${i}`);
-          if (i % 10 === 0)
-            stmt.bindInteger(5, 1);
-          else
-            stmt.bindNull(5);
-          stmt.bindInteger(6, 1);
-          stmt.step();
-          stmt.reset();
-        }
-      });
-      db.saveChanges();
-      db.closeDb();
-      count++;
-      await codeContainer.cleanDeletedBlocks();
-      console.log(`add codes took ${timer.elapsedSeconds} seconds`);
-      timer.start();
-    });
-    console.log(`lock took ${timer.elapsedSeconds} seconds for ${count} cycles (${timer.elapsedSeconds * 1000 / count} milliseconds per request)`);
-
-    const codeCache2 = CloudSqliteTest.makeCache("codes2");
-    const codeContainer2 = CloudSqliteTest.makeCloudSqliteContainer("codes", false);
-    CloudSqliteTest.setSasToken(codeContainer2, "racwdl");
-    codeContainer2.connect(codeCache2);
-    expect(codeContainer2.isConnected);
-    const db2 = new SQLiteDb();
-    db2.openDb("codeIdx", { openMode: OpenMode.Readonly }, codeContainer2);
-    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(10000);
-    });
-
-    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
-      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
-      db.executeSQL(`DELETE FROM codes WHERE value="value-20"`);
-      db.saveChanges();
-      db.closeDb();
-    });
-
-    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(10000);
-    });
-
-    codeContainer2.checkForChanges();
-    db2.nativeDb.restartDefaultTxn();
-    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(10000 - 1);
-    });
-
-    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
-      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
-      db.executeSQL(`DELETE FROM codes WHERE value="value-200"`);
-      db.saveChanges();
-      db.closeDb();
-      expect(codeContainer.hasLocalChanges).true;
-      codeContainer.abandonChanges();
-      expect(codeContainer.hasLocalChanges).false;
-    });
-
-    db.openDb("codeIdx", OpenMode.Readonly, codeContainer);
-    db.withSqliteStatement(`SELECT count(*) FROM codes WHERE value="value-200"`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(1); // abandon changes should bring this back
-    });
-    db.closeDb();
-
-    codeContainer2.checkForChanges();
-    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(10000 - 1);
-    });
-
-    await CloudSqlite.withWriteLock(user2, codeContainer, async () => {
-      db.openDb("codeIdx", OpenMode.ReadWrite, codeContainer);
-      db.executeSQL(`DELETE FROM codes WHERE value="value-200"`);
-      db.saveChanges();
-      db.closeDb();
-    });
-
-    codeContainer2.checkForChanges();
-    db2.nativeDb.restartDefaultTxn();
-    db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
-      stmt.step();
-      expect(stmt.getValueInteger(0)).equal(10000 - 2);
-    });
-
-    // timer.start();
-    // db.openDb("codeIdx", OpenMode.Readonly, codeContainer);
-    // db.nativeDb.vacuum({ into: `file:${outFile}?vfs=win32` });
-    // db.closeDb();
-    // console.log(`vacuum took ${timer.elapsedSeconds} seconds`);
-  });
 });
 
