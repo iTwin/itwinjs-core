@@ -191,7 +191,7 @@ describe("TreeNodeRenderer", () => {
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={parentNode}
-        onFilter={buttonSpy(parentNode)}
+        onFilter={buttonSpy}
       />);
 
     const button = container.getElementsByClassName("presentation-filter-action-button")[0];

@@ -77,7 +77,6 @@ import { TableProps } from '@itwin/components-react';
 import { TreeEditingParams } from '@itwin/components-react';
 import { TreeEventHandler } from '@itwin/components-react';
 import { TreeModelChanges } from '@itwin/components-react';
-import { TreeModelNode } from '@itwin/components-react';
 import { TreeModelSource } from '@itwin/components-react';
 import { TreeNodeItem } from '@itwin/components-react';
 import { TreeNodeRendererProps } from '@itwin/components-react';
@@ -532,7 +531,7 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
 // @alpha (undocumented)
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
     // (undocumented)
-    onFilter?: (node: TreeModelNode) => void;
+    onFilter?: (item: TreeNodeItem) => void;
 }
 
 // @alpha (undocumented)

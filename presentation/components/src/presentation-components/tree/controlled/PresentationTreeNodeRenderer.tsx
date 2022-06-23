@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { TreeModelNode, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
+import { TreeNodeItem, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { TreeNode } from "@itwin/core-react";
 import { SvgFilter } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
@@ -24,43 +24,29 @@ export function PresentationTreeRenderer(props: TreeRendererProps) {
   />;
 }
 
-interface FilterButtonProps {
-  onFilter?: (node: TreeModelNode) => void;
-}
-
-const FilterButton = (props: FilterButtonProps) => {
-  return (
-    <IconButton className="presentation-filter-action-button" styleType="borderless"
-      onClick={() => props.onFilter}>
-      <SvgFilter className="presentation-filter-icon"/>
-    </IconButton>
-  );
-};
-
 /**
  * @alpha
  */
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
-  onFilter?: (node: TreeModelNode) => void;
+  onFilter?: (item: TreeNodeItem) => void;
 }
 
 /**
  * @alpha
  */
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
-  const { onFilter, ...restProps } = props;
-  const className = classnames("presentation-node", restProps.className);
+  const { onFilter, className, ...restProps } = props;
   if (restProps.node.item.extendedData !== undefined && restProps.node.item.extendedData.tooManyChildren === true)
     return <TooManyChildNodeRenderer
       nodeDepth={restProps.node.depth}
     />;
   return <TreeNodeRenderer
     {...restProps }
-    className={className}
+    className={classnames("presentation-node", className)}
   >
-    <FilterButton
-      onFilter={onFilter}
-    />
+    <IconButton className="presentation-filter-action-button" styleType="borderless" onClick={() => onFilter?.(restProps.node.item)}>
+      <SvgFilter/>
+    </IconButton>
   </TreeNodeRenderer>;
 }
 
