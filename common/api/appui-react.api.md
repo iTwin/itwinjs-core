@@ -2153,6 +2153,7 @@ export const expandWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -3886,10 +3887,8 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
     // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React_2.ReactNode;
-    // (undocumented)
-    readonly state: Readonly<MessageCenterState>;
-}
+    render(): React.ReactNode;
+    }
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -4887,6 +4886,7 @@ export const setPanelSize: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5079,6 +5079,7 @@ export const setWidgetLabel: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5252,6 +5253,7 @@ export const setWidgetState: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5489,6 +5491,7 @@ export const showWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -6126,7 +6129,9 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
 // @public
 export interface StatusBarWidgetControlArgs {
     isInFooterMode: boolean;
+    // @deprecated
     onOpenWidget: (widget: StatusBarFieldId) => void;
+    // @deprecated
     openWidget: StatusBarFieldId;
     toastTargetRef: React.Ref<HTMLElement>;
 }
@@ -6160,8 +6165,10 @@ export interface StatusBarZoneProps extends CommonProps {
 // @public
 export interface StatusFieldProps extends CommonProps {
     isInFooterMode: boolean;
-    onOpenWidget: (widget: StatusBarFieldId) => void;
-    openWidget: StatusBarFieldId;
+    // @deprecated
+    onOpenWidget?: (widget: StatusBarFieldId) => void;
+    // @deprecated
+    openWidget?: StatusBarFieldId;
 }
 
 // @public
@@ -6266,6 +6273,8 @@ export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
 
 // @internal (undocumented)
 export interface TabLocation {
+    // (undocumented)
+    floating?: boolean;
     // (undocumented)
     side: PanelSide;
     // (undocumented)
@@ -7155,6 +7164,9 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React_2.ReactElement<any, string | React_2.JSXElementConstructor<any>> | Iterable<React_2.ReactNode> | React_2.ReactPortal | null | undefined;
+
+// @beta
+export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];

@@ -9,6 +9,7 @@
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { CommonProps } from '@itwin/core-react';
+import { DateFormatOptions } from '@itwin/components-react';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { GenericUiEventArgs } from '@itwin/appui-abstract';
@@ -928,6 +929,7 @@ export interface TimelineComponentProps {
     appMenuItemOption?: TimelineMenuItemOption;
     appMenuItems?: TimelineMenuItemProps[];
     componentId?: string;
+    dateFormatOptions?: DateFormatOptions;
     endDate?: Date;
     includeRepeat?: boolean;
     initialDuration?: number;
@@ -940,6 +942,7 @@ export interface TimelineComponentProps {
     repeat?: boolean;
     showDuration?: boolean;
     startDate?: Date;
+    timeFormatOptions?: DateFormatOptions;
     timeZoneOffset?: number;
     totalDuration: number;
 }
