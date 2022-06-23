@@ -560,7 +560,7 @@ export class CategorySelector extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
@@ -952,7 +952,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @alpha (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
@@ -981,7 +981,7 @@ export class DisplayStyle3d extends DisplayStyle {
     // @internal (undocumented)
     static get className(): string;
     // @alpha (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
@@ -1333,15 +1333,19 @@ export class Element extends Entity {
     // @internal (undocumented)
     static get className(): string;
     code: Code;
-    // @beta
+    // @beta @deprecated
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    // @beta
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     delete(): void;
     federationGuid?: GuidString;
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
-    // @beta
+    // @beta @deprecated
     getPredecessorIds(): Id64Set;
+    // @beta
+    getReferenceIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -1967,7 +1971,7 @@ export abstract class GeometricElement extends Element {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // @alpha
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
@@ -1987,7 +1991,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // (undocumented)
     placement: Placement2d;
     // @internal (undocumented)
@@ -2010,7 +2014,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // (undocumented)
     placement: Placement3d;
     // @internal (undocumented)
@@ -3353,7 +3357,7 @@ export class ModelSelector extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
@@ -3738,7 +3742,7 @@ export class RenderTimeline extends InformationRecordElement {
     // @internal (undocumented)
     static get className(): string;
     // @alpha (undocumented)
-    protected collectPredecessorIds(ids: Id64Set): void;
+    protected collectReferenceIds(ids: Id64Set): void;
     description: string;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
@@ -3983,7 +3987,7 @@ export class Sheet extends Document {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     height: number;
@@ -4022,7 +4026,7 @@ export class SheetTemplate extends Document {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -4141,7 +4145,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
@@ -4525,7 +4529,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // (undocumented)
     recipe?: RelatedElement;
 }
@@ -4601,7 +4605,7 @@ export class ViewAttachment extends GraphicalElement2d {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     // (undocumented)
     view: RelatedElement;
 }
@@ -4621,7 +4625,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
@@ -4650,7 +4654,7 @@ export class ViewDefinition2d extends ViewDefinition {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    protected collectReferenceIds(referenceIds: Id64Set): void;
     delta: Point2d;
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
