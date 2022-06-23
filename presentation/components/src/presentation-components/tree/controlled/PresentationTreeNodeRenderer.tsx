@@ -44,9 +44,13 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
     {...restProps }
     className={classnames("presentation-node", className)}
   >
-    <IconButton className="presentation-filter-action-button" styleType="borderless" onClick={() => onFilter?.(restProps.node.item)}>
-      <SvgFilter/>
-    </IconButton>
+    {onFilter && <IconButton className="presentation-filter-action-button"
+      styleType="borderless"
+      onClick={(e) => {
+        onFilter?.(restProps.node.item);
+        e.stopPropagation();
+      }} >
+      <SvgFilter /></IconButton>}
   </TreeNodeRenderer>;
 }
 
