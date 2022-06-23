@@ -3638,7 +3638,13 @@ export interface ProcessChangesetOptions {
 }
 
 // @public
-export type ProgressFunction = (loaded: number, total: number) => number;
+export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
+
+// @public
+export enum ProgressStatus {
+    Abort = 1,
+    Continue = 0
+}
 
 // @public
 export type PullChangesArgs = ToChangesetArgs;
