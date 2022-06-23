@@ -59,8 +59,6 @@ function useResizeDetector(): { width: number | undefined, height: number | unde
   const [ref] = useResizeObserver(React.useCallback((size: DOMRectReadOnly) => {
     setWidth(size.width);
     setHeight(size.height);
-    // eslint-disable-next-line no-console
-    console.log(`processing resize w=${size.width} h=${size.height}`);
   }, []));
   return { width, height, ref };
 }
