@@ -9,7 +9,6 @@ import { CommonProps } from "@itwin/core-react";
 
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 
-
 /** Properties for a StatusBar field component
  * @public
  */
