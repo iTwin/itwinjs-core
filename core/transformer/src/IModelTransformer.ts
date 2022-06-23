@@ -557,7 +557,7 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  /** collect references this entity has that are yet to be mapped, and if necessary create a
+  /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
    */
   private collectUnmappedReferences(element: Element) {
