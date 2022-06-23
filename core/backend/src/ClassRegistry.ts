@@ -126,7 +126,7 @@ export class ClassRegistry {
           // first prototype of `this` is its class
           value(this: typeof generatedClass, predecessorIds: Id64Set) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectPredecessorIds"];
+            const superImpl = superclass.prototype["collectReferenceIds"];
             superImpl.call(this, predecessorIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions

@@ -40,8 +40,8 @@ export class ModelSelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
   }
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -106,8 +106,8 @@ export class CategorySelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -197,8 +197,8 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
@@ -343,8 +343,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
   }
 
@@ -518,8 +518,8 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     predecessorIds.add(this.baseModelId);
   }
 
@@ -692,8 +692,8 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     predecessorIds.add(this.view.id);
   }
 }

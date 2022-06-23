@@ -274,8 +274,8 @@ describe("Class Registry - generated classes", () => {
   it("should not override custom registered schema class implementations of collectPredecessorIds", async () => {
     const testImplPredecessorId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
+      public override collectReferenceIds(predecessorIds: Id64Set) {
+        super.collectReferenceIds(predecessorIds);
         predecessorIds.add(testImplPredecessorId);
       }
     }
@@ -357,14 +357,14 @@ describe("Class Registry - generated classes", () => {
 
   it("should work along a complex chain of overrides", async () => {
     class MyDerived2 extends Derived2 {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
+      public override collectReferenceIds(predecessorIds: Id64Set) {
+        super.collectReferenceIds(predecessorIds);
         predecessorIds.add("derived-2");
       }
     }
     class MyDerived4 extends Derived4 {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
+      public override collectReferenceIds(predecessorIds: Id64Set) {
+        super.collectReferenceIds(predecessorIds);
         predecessorIds.add("derived-4");
       }
     }
@@ -488,7 +488,7 @@ describe("Class Registry - generated classes", () => {
           Derived4,
           Derived5, // save as above (so will be removed from set)
           Derived6, // save as above (so will be removed from set)
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     ).to.deep.equal(
       new Set(
@@ -499,7 +499,7 @@ describe("Class Registry - generated classes", () => {
           Derived2,
           Derived4,
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     );
 

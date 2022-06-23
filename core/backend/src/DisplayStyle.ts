@@ -41,8 +41,8 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       predecessorIds.add(id);
     }
@@ -215,8 +215,8 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(predecessorIds: Id64Set): void {
+    super.collectReferenceIds(predecessorIds);
     for (const textureId of this.settings.environment.sky.textureIds)
       predecessorIds.add(textureId);
 

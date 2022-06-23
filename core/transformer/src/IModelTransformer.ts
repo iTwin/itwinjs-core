@@ -541,12 +541,10 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  /** collect references this element has that are yet to be mapped, and if necessary create a
+  /** collect references this entity has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
-   * @returns {boolean}
    */
-  private collectUnmappedReferences(element: Element): boolean {
-
+  private collectUnmappedReferences(element: Element) {
     const missingPredecessors = new Set<string>();
     let thisPartialElem: PartiallyCommittedElement | undefined;
 
@@ -588,8 +586,6 @@ export class IModelTransformer extends IModelExportHandler {
         this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
       }
     }
-
-    return missingPredecessors.size > 0;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
@@ -701,6 +697,7 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+
     // now that we've mapped this elem we can fix unmapped references to it
     for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
       const isModelRef = false; // we're in onExportElement so no
@@ -710,6 +707,7 @@ export class IModelTransformer extends IModelExportHandler {
       pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
       this._pendingReferences.delete(key);
     }
+
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
