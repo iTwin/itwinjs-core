@@ -336,15 +336,12 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @see collectReferenceIds
+  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
+   * @deprecated use collectReferenceIds instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    * @beta
    */
-  public getReferenceIds(): Id64Set {
-    const referenceIds = new Set<Id64String>();
-    this.collectReferenceIds(referenceIds);
-    return referenceIds;
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    return this.collectReferenceIds(predecessorIds);
   }
 
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
@@ -364,14 +361,6 @@ export class Element extends Entity {
       referenceIds.add(this.parent.id); // A parent element is a predecessor
   }
 
-  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated use collectReferenceIds instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   * @beta
-   */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
-    return this.collectReferenceIds(predecessorIds);
-  }
-
   /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
    * This is important for cloning operations but can be useful in other situations as well.
    * @beta
@@ -379,6 +368,17 @@ export class Element extends Entity {
    */
   public getPredecessorIds(): Id64Set {
     return this.getReferenceIds();
+  }
+
+  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @see collectReferenceIds
+   * @beta
+   */
+  public getReferenceIds(): Id64Set {
+    const referenceIds = new Set<Id64String>();
+    this.collectReferenceIds(referenceIds);
+    return referenceIds;
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
