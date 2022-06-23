@@ -2210,8 +2210,6 @@ export class HubMock {
     // (undocumented)
     static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    static downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
-    // (undocumented)
     static findLocalHub(iModelId: GuidString): LocalHub;
     static getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
