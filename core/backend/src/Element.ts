@@ -349,16 +349,7 @@ export class Element extends Entity {
     return this.collectReferenceIds(predecessorIds);
   }
 
-  /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
-   * A *reference* is any entity referenced by this entity's EC Data
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @param referenceIds The Id64Set to populate with reference Ids.
-   * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
-   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
-   * @see getReferenceIds
-   * @beta
-   */
-  protected collectReferenceIds(referenceIds: Id64Set): void {
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
     referenceIds.add(this.model); // The modeledElement is a reference
     if (this.code.scope && Id64.isValidId64(this.code.scope))
       referenceIds.add(this.code.scope); // The element that scopes the code is a reference
@@ -373,17 +364,6 @@ export class Element extends Entity {
    */
   public getPredecessorIds(): Id64Set {
     return this.getReferenceIds();
-  }
-
-  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @see collectReferenceIds
-   * @beta
-   */
-  public getReferenceIds(): Id64Set {
-    const referenceIds = new Set<Id64String>();
-    this.collectReferenceIds(referenceIds);
-    return referenceIds;
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
