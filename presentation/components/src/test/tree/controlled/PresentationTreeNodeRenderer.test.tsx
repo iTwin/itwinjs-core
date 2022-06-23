@@ -170,12 +170,12 @@ describe("TreeNodeRenderer", () => {
 
   it("renders node with filter button", () => {
     const testLabel = "testLabel";
-    const parentNode = createTreeModelNode(undefined, testLabel, undefined, 10);
+    const node = createTreeModelNode(undefined, testLabel, undefined, 10);
 
     const { container } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
-        node={parentNode}
+        node={node}
       />);
 
     const button = container.querySelector("presentation-filter-action-button");
@@ -184,13 +184,13 @@ describe("TreeNodeRenderer", () => {
 
   it("renders node with filter button and clicks it", () => {
     const testLabel = "testLabel";
-    const parentNode = createTreeModelNode(undefined, testLabel, undefined, 10);
+    const node = createTreeModelNode(undefined, testLabel, undefined, 10);
     const buttonSpy = sinon.spy();
 
     const { container } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
-        node={parentNode}
+        node={node}
         onFilter={buttonSpy}
       />);
 
