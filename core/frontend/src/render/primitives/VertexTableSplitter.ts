@@ -479,7 +479,6 @@ class RemappedPolylineEdges {
 }
 
 interface RemappedIndexEdges {
-  indices: IndexBuffer;
   edges: Uint8ArrayBuilder;
   silhouettes: Uint8ArrayBuilder;
 }
@@ -647,8 +646,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
         edges.set(remappedIndex.id, entry = { });
       }
       if (!entry.indexed)
-        entry.indexed = { indices: new IndexBuffer(), edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
-      entry.indexed.indices.push(remappedIndex.index);
+        entry.indexed = { edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
 
       if (curSegment < numSegments) {  // edges
         const newE1Index = remappedIndex.node.remappedIndices.get(es1Index);
@@ -683,6 +681,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
     if (!remappedEdges.segments && !remappedEdges.silhouettes && !remappedEdges.indexed)
       continue;
     let edgeTable = { } as unknown as EdgeTable;
+    let edgeIndices = { } as unknown as VertexIndices;
     if (remappedEdges.indexed) {
       const numSegmentEdges = remappedEdges.indexed.edges.length / 6;
       const numSilhouettes = remappedEdges.indexed.silhouettes.length / 10;
@@ -691,6 +690,11 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
       data.set(remappedEdges.indexed.edges.toTypedArray(), 0);
       if (numSilhouettes > 0)
         data.set(remappedEdges.indexed.silhouettes.toTypedArray(), silhouetteStartByteIndex + silhouettePadding);
+      const numTotalEdges = numSegmentEdges + numSilhouettes;
+      edgeIndices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
+      for (let i = 0; i < numTotalEdges; i++)
+        for (let j = 0; j < 6; j++)
+          edgeIndices.setNthIndex(i * 6 + j, i);
 
       edgeTable = {
         data,
@@ -719,7 +723,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
         nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
       } : undefined,
       indexed: remappedEdges.indexed ? {
-        indices: remappedEdges.indexed.indices.toVertexIndices(),
+        indices: edgeIndices,
         edges: edgeTable,
       } : undefined,
     });
