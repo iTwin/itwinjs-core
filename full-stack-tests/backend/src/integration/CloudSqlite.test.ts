@@ -402,7 +402,7 @@ describe.only("CloudSqlite", () => {
     codeContainer2.connect(codeCache2);
     expect(codeContainer2.isConnected);
     const db2 = new SQLiteDb();
-    db2.openDb("codeIdx", { openMode: OpenMode.Readonly, defaultTxn: IModelJsNative.DefaultTxnMode.None }, codeContainer2);
+    db2.openDb("codeIdx", { openMode: OpenMode.Readonly }, codeContainer2);
     db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
       stmt.step();
       expect(stmt.getValueInteger(0)).equal(10000);
@@ -421,6 +421,7 @@ describe.only("CloudSqlite", () => {
     });
 
     codeContainer2.checkForChanges();
+    db2.nativeDb.restartDefaultTxn();
     db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
       stmt.step();
       expect(stmt.getValueInteger(0)).equal(10000 - 1);
@@ -457,6 +458,7 @@ describe.only("CloudSqlite", () => {
     });
 
     codeContainer2.checkForChanges();
+    db2.nativeDb.restartDefaultTxn();
     db2.withSqliteStatement(`SELECT count(*) FROM codes WHERE reserved=1`, (stmt) => {
       stmt.step();
       expect(stmt.getValueInteger(0)).equal(10000 - 2);
