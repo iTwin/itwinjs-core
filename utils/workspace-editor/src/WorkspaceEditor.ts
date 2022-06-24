@@ -12,10 +12,9 @@ import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
-  SQLiteDb,
-  SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
+  SQLiteDb, SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch, using } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -125,15 +124,9 @@ function showMessage(msg: string) {
 }
 
 /** perform a vacuum on a database, with a message while it's happening */
-function doVacuum(fileName: string, cloudContainer?: IModelJsNative.CloudContainer) {
-  process.stdout.write(`Vacuuming ${fileName} ... `);
-  const db = new SQLiteDb();
-  db.openDb(fileName, OpenMode.ReadWrite, cloudContainer);
-  try {
-    db.nativeDb.vacuum();
-  } finally {
-    db.closeDb();
-  }
+function doVacuum(dbName: string, container?: IModelJsNative.CloudContainer) {
+  process.stdout.write(`Vacuuming ${dbName} ... `);
+  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, (db) => db.nativeDb.vacuum());
   process.stdout.write("done");
   showMessage("");
 }

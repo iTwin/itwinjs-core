@@ -759,8 +759,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     db.createDb(fileName);
     db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
-    db.saveChanges();
-    db.closeDb();
+    db.closeDb(true);
   }
 
   /** Add a new string resource to this WorkspaceDb.

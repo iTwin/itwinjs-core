@@ -177,10 +177,9 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
-      db.openDb("testBim2", OpenMode.ReadWrite, contain1);
-      db.nativeDb.vacuum();
-      db.closeDb();
+    await SQLiteDb.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async (vdb) => {
+      vdb.vacuum();
+      vdb.closeDb();
 
       expect(contain1.hasLocalChanges).true;
       dbProps = contain1.queryDatabase("testBim2");

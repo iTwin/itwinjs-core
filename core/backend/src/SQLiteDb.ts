@@ -6,58 +6,119 @@
  * @module SQLiteDb
  */
 
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
+import { LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+
+export namespace SQLiteDb {
+  export type CloudContainer = IModelJsNative.CloudContainer;
+  export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
+  export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
+}
 
 /** A SQLiteDb file
  * @public
  */
 export class SQLiteDb implements IDisposable {
-  private _nativeDb?: IModelJsNative.SQLiteDb;
+  public readonly nativeDb = new IModelHost.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
-  /** @internal */
-  public get nativeDb(): IModelJsNative.SQLiteDb {
-    return this._nativeDb!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-  }
-
-  constructor() {
-    this._nativeDb = new IModelHost.platform.SQLiteDb();
-  }
-  /** Call this function when finished with this SQLiteDb. This releases the native resources */
+  /** alias for closeDb. */
   public dispose(): void {
-    if (!this._nativeDb)
-      return;
-
     this.closeDb();
-    this._nativeDb.dispose();
-    this._nativeDb = undefined;
   }
 
   /** Create a SQLiteDb
-   * @param pathName The path to the SQLiteDb file to create.
+   * @param dbName The path to the SQLiteDb file to create.
    */
-  public createDb(pathName: string, container?: IModelJsNative.CloudContainer, params?: IModelJsNative.SQLiteDbCreateParams): void {
-    this.nativeDb.createDb(pathName, container, params);
+  public createDb(dbName: string, container?: SQLiteDb.CloudContainer, params?: SQLiteDb.CreateParams): void {
+    this.nativeDb.createDb(dbName, container, params);
   }
 
   /** Open a SQLiteDb.
-   * @param pathName The path to the SQLiteDb file to open
+   * @param dbName The path to the SQLiteDb file to open
    * @param container optional CloudContainer holding database
    */
-  public openDb(pathName: string, openMode: OpenMode | IModelJsNative.SQLiteDbOpenParams, container?: IModelJsNative.CloudContainer): void {
-    this.nativeDb.openDb(pathName, openMode, container);
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void {
+    this.nativeDb.openDb(dbName, openMode, container);
+  }
+
+  /** Close SQLiteDb.
+   * @param saveChanges if true, call `saveChanges` before closing db.
+   */
+  public closeDb(saveChanges?: boolean): void {
+    if (saveChanges && this.isOpen)
+      this.saveChanges();
+    this._sqliteStatementCache.clear();
+    this.nativeDb.closeDb();
   }
 
   /** Returns true if the SQLiteDb is open */
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
-  /** Close SQLiteDb. */
-  public closeDb(): void {
-    this._sqliteStatementCache.clear();
-    this.nativeDb.closeDb();
+  /**
+   * 1. open a database
+   * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
+   * 3. close the database (even if exceptions are thrown)
+   */
+  public static withOpenDb<T>(args: { dbName: string, openMode?: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer }, operation: (db: SQLiteDb) => T): T {
+    const db = new SQLiteDb();
+    db.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
+    let fromPromise = false;
+
+    try {
+      const result = operation(db);
+      if (result instanceof Promise) {
+        fromPromise = true;
+        const doClose = () => db.closeDb();
+        result.then(doClose, doClose);
+      }
+      return result;
+    } finally {
+      if (!fromPromise)
+        db.closeDb();
+    }
+  }
+
+  /**
+   * 1. acquire the write lock on a CloudContainer
+   * 2. open a ReadWrite database in the container
+   * 3. call a function with the opened database as an argument
+   * 4. close the database
+   * 5. release the write lock and upload changes.
+   * @internal
+   */
+  public static async withLockedContainer(
+    args: {
+      /** the name to be displayed in the event of lock collisions */
+      user: string;
+      /** the name of the database within the container */
+      dbName: string;
+      /** the CloudContainer on which the operation will be performed */
+      container: SQLiteDb.CloudContainer;
+      /** if present, function called when the write lock is currently held by another user. */
+      busyHandler?: CloudSqlite.WriteLockBusyHandler;
+    },
+    /** an asynchronous operation performed on the database with the write lock held. */
+    operation: (db: SQLiteDb) => Promise<void>) {
+    const fn = async () => SQLiteDb.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
+    await CloudSqlite.withWriteLock(args.user, args.container, fn, args.busyHandler);
+  }
+
+  /** vacuum this database
+   * @see https://www.sqlite.org/lang_vacuum.html
+   */
+  public vacuum(args?: {
+    /** new page size
+     * @see https://www.sqlite.org/pragma.html#pragma_page_size
+     */
+    pageSize?: number;
+    /** if present, name of new file to vacuum into */
+    into?: LocalFileName;
+  }) {
+    this.nativeDb.vacuum(args);
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction. */
