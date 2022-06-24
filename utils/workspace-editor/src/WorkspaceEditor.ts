@@ -438,7 +438,7 @@ async function initializeWorkspace(args: InitializeOpts) {
     if (yesNo[0].toUpperCase() !== "Y")
       return;
   }
-  const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
+  const container = SQLiteDb.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
   container.initializeContainer({ checksumBlockNames: true });
   showMessage(`container "${args.containerId} initialized`);
 }
@@ -484,7 +484,7 @@ async function preFetchWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = getCloudContainer(args);
   const timer = new StopWatch("prefetch", true);
-  const prefetch = new IModelHost.platform.CloudPrefetch(container, args.dbFileName);
+  const prefetch = SQLiteDb.startCloudPrefetch(container, args.dbFileName);
   await prefetch.promise;
   showMessage(`preFetched WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
 }

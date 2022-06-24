@@ -4152,36 +4152,30 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
-// @public (undocumented)
-export namespace SQLiteDb {
-    // @internal
-    export type BlobIO = IModelJsNative.BlobIO;
-    // @internal (undocumented)
-    export type CloudCache = IModelJsNative.CloudCache;
-    // @internal
-    export type CloudContainer = IModelJsNative.CloudContainer;
-    // @internal (undocumented)
-    export type CloudPrefetch = IModelJsNative.CloudPrefetch;
-    // @internal
-    export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
-    // @internal
-    export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
-}
-
 // @public
 export class SQLiteDb implements IDisposable {
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
+    // @internal (undocumented)
+    static createBlobIO(): SQLiteDb.BlobIO;
+    // @internal (undocumented)
+    static createCloudCache(args: CloudSqlite.CacheProps): SQLiteDb.CloudCache;
+    // @internal (undocumented)
+    static createCloudContainer(args: CloudSqlite.ContainerAccessProps): SQLiteDb.CloudContainer;
     createDb(dbName: string, container?: SQLiteDb.CloudContainer, params?: SQLiteDb.CreateParams): void;
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
     // @internal (undocumented)
     readonly nativeDb: IModelJsNative.SQLiteDb;
+    openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
+    // @internal (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     saveChanges(): void;
+    // @internal (undocumented)
+    static startCloudPrefetch(container: SQLiteDb.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch;
     vacuum(args?: {
         pageSize?: number;
         into?: LocalFileName;
@@ -4201,6 +4195,37 @@ export class SQLiteDb implements IDisposable {
     }, operation: (db: SQLiteDb) => T): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+}
+
+// @public (undocumented)
+export namespace SQLiteDb {
+    // @internal
+    export type BlobIO = IModelJsNative.BlobIO;
+    // @internal (undocumented)
+    export type CloudCache = IModelJsNative.CloudCache;
+    // @internal
+    export type CloudContainer = IModelJsNative.CloudContainer;
+    // @internal (undocumented)
+    export type CloudPrefetch = IModelJsNative.CloudPrefetch;
+    export interface CreateParams extends OpenOrCreateParams {
+        pageSize?: number;
+    }
+    export enum DefaultTxnMode {
+        Deferred = 1,
+        Exclusive = 3,
+        Immediate = 2,
+        None = 0
+    }
+    export interface OpenOrCreateParams {
+        defaultTxn?: 0 | 1 | 2 | 3;
+        immutable?: boolean;
+        queryParam?: string;
+        rawSQLite?: boolean;
+        skipFileCheck?: boolean;
+    }
+    export interface OpenParams extends OpenOrCreateParams {
+        openMode: OpenMode;
+    }
 }
 
 // @public

@@ -12,32 +12,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
-/** @public */
-export namespace SQLiteDb {
-  /** A CloudSqlite container that may be connected to a CloudCache.
-   * @internal
-   */
-  export type CloudContainer = IModelJsNative.CloudContainer;
-  /** @internal */
-  export type CloudCache = IModelJsNative.CloudCache;
-  /** @internal */
-  export type CloudPrefetch = IModelJsNative.CloudPrefetch;
-
-  /** Parameters for creating a new SQLiteDb
-   * @internal
-   */
-  export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
-
-  /** Parameters for opening a SQLiteDb
-   * @internal
-   */
-  export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
-
-  /** Incremental IO for blobs
-   * @internal
-   */
-  export type BlobIO = IModelJsNative.BlobIO;
-}
+/* eslint-disable @typescript-eslint/unified-signatures */
 
 /** A SQLiteDb file
  * @public
@@ -46,6 +21,23 @@ export class SQLiteDb implements IDisposable {
   /** @internal */
   public readonly nativeDb = new IModelHost.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
+
+  /** @internal */
+  public static createCloudContainer(args: CloudSqlite.ContainerAccessProps): SQLiteDb.CloudContainer {
+    return new IModelHost.platform.CloudContainer(args);
+  }
+  /** @internal */
+  public static createCloudCache(args: CloudSqlite.CacheProps): SQLiteDb.CloudCache {
+    return new IModelHost.platform.CloudCache(args);
+  }
+  /** @internal */
+  public static startCloudPrefetch(container: SQLiteDb.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch {
+    return new IModelHost.platform.CloudPrefetch(container, dbName, args);
+  }
+  /** @internal */
+  public static createBlobIO(): SQLiteDb.BlobIO {
+    return new IModelHost.platform.BlobIO();
+  }
 
   /** alias for closeDb. */
   public dispose(): void {
@@ -61,8 +53,15 @@ export class SQLiteDb implements IDisposable {
 
   /** Open a SQLiteDb.
    * @param dbName The path to the SQLiteDb file to open
-   * @param container optional CloudContainer holding database
    */
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
+  /**
+   * @param container optional CloudContainer holding database
+   * @internal
+   */
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
+
+  /** @internal */
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void {
     this.nativeDb.openDb(dbName, openMode, container);
   }
@@ -85,7 +84,14 @@ export class SQLiteDb implements IDisposable {
    * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
    * 3. close the database (even if exceptions are thrown)
    */
-  public static withOpenDb<T>(args: { dbName: string, openMode?: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer }, operation: (db: SQLiteDb) => T): T {
+  public static withOpenDb<T>(args: {
+    /** The name of the database to open */
+    dbName: string;
+    /** either an object with the open parameters or just OpenMode value. */
+    openMode?: OpenMode | SQLiteDb.OpenParams;
+    /** @internal */
+    container?: SQLiteDb.CloudContainer;
+  }, operation: (db: SQLiteDb) => T): T {
     const db = new SQLiteDb();
     db.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
     let fromPromise = false;
@@ -225,4 +231,63 @@ export class SQLiteDb implements IDisposable {
       stmt.dispose();
     }
   }
+}
+
+/** @public */
+export namespace SQLiteDb {
+  /** A CloudSqlite container that may be connected to a CloudCache.
+   * @internal
+   */
+  export type CloudContainer = IModelJsNative.CloudContainer;
+  /** @internal */
+  export type CloudCache = IModelJsNative.CloudCache;
+  /** @internal */
+  export type CloudPrefetch = IModelJsNative.CloudPrefetch;
+  /** Incremental IO for blobs
+   * @internal
+   */
+  export type BlobIO = IModelJsNative.BlobIO;
+
+  /** Default transaction mode for SQLiteDbs.
+     * @see https://www.sqlite.org/lang_transaction.html
+    */
+  export enum DefaultTxnMode {
+    /** no default transaction is started. You must use BEGIN/COMMIT or SQLite will use implicit transactions */
+    None = 0,
+    /** A deferred transaction is started when the file is first opened. This is the default. */
+    Deferred = 1,
+    /** An immediate transaction is started when the file is first opened. */
+    Immediate = 2,
+    /** An exclusive transaction is started when the file is first opened. */
+    Exclusive = 3
+  }
+
+  /** parameters common to opening or creating a new SQLiteDb */
+  export interface OpenOrCreateParams {
+    /** If true, do not require that the `be_Prop` table exist */
+    rawSQLite?: boolean;
+    /** @see immutable option at https://www.sqlite.org/c3ref/open.html */
+    immutable?: boolean;
+    /** Do not attempt to verify that the file is a valid sQLite file before opening. */
+    skipFileCheck?: boolean;
+    /** the default transaction mode
+     * @see [[DefaultTxnMode]]
+    */
+    defaultTxn?: 0 | 1 | 2 | 3;
+    /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */
+    queryParam?: string;
+  }
+
+  /** Parameters for opening an existing SQLiteDb */
+  export interface OpenParams extends OpenOrCreateParams {
+    /** use OpenMode.ReadWrite to open the file with write access */
+    openMode: OpenMode;
+  }
+
+  /** Parameters for creating a new SQLiteDb */
+  export interface CreateParams extends OpenOrCreateParams {
+    /** see https://www.sqlite.org/pragma.html#pragma_page_size */
+    pageSize?: number;
+  }
+
 }

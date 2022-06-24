@@ -154,7 +154,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = SQLiteDb.createCloudCache({ name: this.cloudCacheName, rootDir });
 
       // Its fine if its not a daemon, but lets just log an info message
       if (!this._cloudCache.isDaemon)
@@ -171,7 +171,7 @@ export class V2CheckpointManager {
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2Props));
+      container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2Props));
       this.containers.set(v2Props.containerId, container);
     }
     return container;
@@ -200,7 +200,7 @@ export class V2CheckpointManager {
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(new IModelHost.platform.CloudPrefetch(container, dbName));
+        logPrefetch(SQLiteDb.startCloudPrefetch(container, dbName));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -219,7 +219,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
+    const container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2props));
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }

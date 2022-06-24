@@ -316,14 +316,12 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
+public;SQLiteDb 
 public;SQLiteDb
 internal;BlobIO = IModelJsNative.BlobIO
 internal;CloudCache = IModelJsNative.CloudCache
 internal;CloudContainer = IModelJsNative.CloudContainer
 internal;CloudPrefetch = IModelJsNative.CloudPrefetch
-internal;CreateParams = IModelJsNative.SQLiteDbCreateParams
-internal;OpenParams = IModelJsNative.SQLiteDbOpenParams
-public;SQLiteDb 
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

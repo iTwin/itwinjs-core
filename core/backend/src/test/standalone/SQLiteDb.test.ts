@@ -7,7 +7,6 @@ import { expect } from "chai";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
 import { SQLiteDb } from "../../SQLiteDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 
 describe("SQLiteDb", () => {
 
@@ -34,7 +33,7 @@ describe("SQLiteDb", () => {
     testDb();
 
     // now test immutable flag
-    db.openDb(fileName, { openMode: OpenMode.Readonly, skipFileCheck: true, immutable: true, defaultTxn: IModelJsNative.DefaultTxnMode.None, rawSQLite: true });
+    db.openDb(fileName, { openMode: OpenMode.Readonly, skipFileCheck: true, immutable: true, defaultTxn: SQLiteDb.DefaultTxnMode.None, rawSQLite: true });
     testDb();
 
     expect(db.isOpen).false;

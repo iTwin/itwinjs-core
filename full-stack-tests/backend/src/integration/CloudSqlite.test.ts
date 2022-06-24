@@ -43,7 +43,7 @@ export namespace CloudSqliteTest {
   }
 
   export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
+    const cont = SQLiteDb.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   }
@@ -58,7 +58,7 @@ export namespace CloudSqliteTest {
   export function makeCache(name: string) {
     const rootDir = join(IModelHost.cacheDir, name);
     makeEmptyDir(rootDir);
-    return new IModelHost.platform.CloudCache({ name, rootDir });
+    return SQLiteDb.createCloudCache({ name, rootDir });
 
   }
   export function makeCaches(names: string[]) {
@@ -303,8 +303,8 @@ describe("CloudSqlite", () => {
     caches[1].destroy();
 
     // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)
-    const newCache1 = new IModelHost.platform.CloudCache(wasCache1);
-    const newCache2 = new IModelHost.platform.CloudCache(wasCache2);
+    const newCache1 = SQLiteDb.createCloudCache(wasCache1);
+    const newCache2 = SQLiteDb.createCloudCache(wasCache2);
     expect(newCache1.guid).equals(wasCache1.guid);
     expect(newCache2.guid).equals(wasCache2.guid);
     expect(newCache1.guid).not.equals(newCache2.guid);

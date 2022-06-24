@@ -13,7 +13,7 @@ import * as semver from "semver";
 import { CloudSqlite, NativeLibrary } from "@bentley/imodeljs-native";
 import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelHost, KnownLocations } from "../IModelHost";
+import { KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
@@ -303,7 +303,7 @@ export class ITwinWorkspace implements Workspace {
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
       if (cacheProps.clearContents)
         fs.emptyDirSync(cacheProps.rootDir);
-      this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
+      this._cloudCache = SQLiteDb.createCloudCache(cacheProps);
     }
     return this._cloudCache;
   }
@@ -453,7 +453,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (account?.accessName && account.storageType)
-      this.cloudContainer = new IModelHost.platform.CloudContainer({ accessToken: "", ...props, ...account });
+      this.cloudContainer = SQLiteDb.createCloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -650,7 +650,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
-      const blobReader = new IModelHost.platform.BlobIO();
+      const blobReader = SQLiteDb.createBlobIO();
       blobReader.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
       return blobReader;
     });
@@ -691,7 +691,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
   public prefetch(opts?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch | undefined {
     const cloudContainer = this.container.cloudContainer;
-    return (cloudContainer !== undefined) ? new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
+    return (cloudContainer !== undefined) ? SQLiteDb.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
   }
 }
 
@@ -814,7 +814,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   public getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
-      const blobWriter = new IModelHost.platform.BlobIO();
+      const blobWriter = SQLiteDb.createBlobIO();
       blobWriter.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
       return blobWriter;
     });
