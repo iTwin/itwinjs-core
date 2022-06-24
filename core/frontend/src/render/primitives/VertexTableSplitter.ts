@@ -479,7 +479,6 @@ class RemappedPolylineEdges {
 }
 
 interface RemappedIndexEdges {
-  indices: IndexBuffer;
   edges: Uint8ArrayBuilder;
   silhouettes: Uint8ArrayBuilder;
 }
@@ -601,6 +600,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
     return [srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
       srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | srcEdgeData[byteIndex + 5] << 16];
   }
+
   function setUint24EdgePair(indEdges: RemappedIndexEdges, value1: number, value2: number): void {
     indEdges.edges.push(value1 & 0x0000ff);
     indEdges.edges.push((value1 & 0x00ff00) >>> 8);
@@ -609,11 +609,13 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
     indEdges.edges.push((value2 & 0x00ff00) >>> 8);
     indEdges.edges.push((value2 & 0xff0000) >>> 16);
   }
+
   function getUint24SilPair(byteIndex: number): [number, number, number, number] {
     return [srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
       srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | srcEdgeData[byteIndex + 5] << 16,
       srcEdgeData[byteIndex + 6] | (srcEdgeData[byteIndex + 7] << 8), srcEdgeData[byteIndex + 8] | (srcEdgeData[byteIndex + 9] << 8)];
   }
+
   function setUint24SilPair(indSil: RemappedIndexEdges, value1: number, value2: number, norm1: number, norm2: number): void {
     indSil.silhouettes.push(value1 & 0x0000ff);
     indSil.silhouettes.push((value1 & 0x00ff00) >>> 8);
@@ -630,6 +632,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
   let maxIndex = 0;
   for (const srcIndex of src.indices)
     maxIndex = Math.max (srcIndex, maxIndex);
+
   const remappedIndex = { } as unknown as RemappedIndex;
   let es1Index = 0, es2Index = 0, n1 = 0, n2 = 0;
   for (let curSegment = 0, byteIndex = 0; curSegment <= maxIndex; ++curSegment) {
@@ -643,9 +646,9 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
 
     if (remapIndex(remappedIndex, es1Index, nodes)) {
       let entry = edges.get(remappedIndex.id);
-      if (!entry) {
+      if (!entry)
         edges.set(remappedIndex.id, entry = { });
-      }
+
       if (!entry.indexed)
         entry.indexed = { edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
 
@@ -681,7 +684,9 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
   for (const [id, remappedEdges] of edges) {
     if (!remappedEdges.segments && !remappedEdges.silhouettes && !remappedEdges.indexed)
       continue;
+
     let edgeTable = { } as unknown as EdgeTable;
+    let edgeIndices = { } as unknown as VertexIndices;
     if (remappedEdges.indexed) {
       const numSegmentEdges = remappedEdges.indexed.edges.length / 6;
       const numSilhouettes = remappedEdges.indexed.silhouettes.length / 10;
@@ -690,6 +695,12 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
       data.set(remappedEdges.indexed.edges.toTypedArray(), 0);
       if (numSilhouettes > 0)
         data.set(remappedEdges.indexed.silhouettes.toTypedArray(), silhouetteStartByteIndex + silhouettePadding);
+
+      const numTotalEdges = numSegmentEdges + numSilhouettes;
+      edgeIndices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
+      for (let i = 0; i < numTotalEdges; i++)
+        for (let j = 0; j < 6; j++)
+          edgeIndices.setNthIndex(i * 6 + j, i);
 
       edgeTable = {
         data,
@@ -718,7 +729,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
         nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
       } : undefined,
       indexed: remappedEdges.indexed ? {
-        indices: remappedEdges.indexed.indices.toVertexIndices(),
+        indices: edgeIndices,
         edges: edgeTable,
       } : undefined,
     });
