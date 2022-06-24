@@ -45,7 +45,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.mkdirSync(outputDir);
     }
     // initialize logging
-    if (false) {
+    if (process.env.LOG_TRANSFORMER_IN_TESTS) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
@@ -1798,20 +1798,22 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("handle out-of-order references in aspects during consolidations", async () => {
+  it.only("handle out-of-order references in aspects during consolidations", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
 
     // as a member of the repository model hierarchy, and not the root subject hierarchy, it will be exported after the element which is inserted later
     const sourceRepositoryId = IModelTransformerTestUtils.insertRepositoryLink(sourceDb, "anything.dgn", "https://test.bentley.com/folder/anything.dgn", "DGN");
-    const elem1Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
-    const _extSrcAspect1Id = sourceDb.elements.insertAspect({
+
+    const elem1Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-in-target");
+    const extSrcAspect1: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
       element: { id: elem1Id },
       kind: ExternalSourceAspect.Kind.Element,
       identifier: Guid.empty, // doesn't matter, any identifier in the hypothetical source
       scope: { id: sourceRepositoryId },
-    } as ExternalSourceAspectProps);
+    };
+    const _extSrcAspect1Id = sourceDb.elements.insertAspect(extSrcAspect1);
 
     sourceDb.saveChanges();
 
@@ -1823,11 +1825,22 @@ describe("IModelTransformer", () => {
     await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
     await expect(transformer.processAll()).to.eventually.be.fulfilled;
 
+    const elem1InTargetId = transformer.context.findTargetElementId(elem1Id);
+    const elem1AspectsInTarget = targetDb.elements.getAspects(elem1InTargetId);
+    expect(elem1AspectsInTarget).to.have.lengthOf(2);
+
+    const extSrcAspect1InTarget = elem1AspectsInTarget[1];
+    assert(extSrcAspect1InTarget instanceof ExternalSourceAspect);
+    expect(extSrcAspect1InTarget.identifier).to.equal(extSrcAspect1.identifier);
+
+    const sourceRepositoryInTargetId = transformer.context.findTargetElementId(sourceRepositoryId);
+    expect(extSrcAspect1InTarget?.scope?.id).to.equal(sourceRepositoryInTargetId);
+
     sourceDb.close();
     targetDb.close();
   });
 
-  it.only("new bug test", async () => {
+  it("new bug test", async () => {
     const seedDb = SnapshotDb.openFile("/tmp/bad-scope.bim");
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
     const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);

@@ -1026,17 +1026,24 @@ export class AssertOrderTransformer extends IModelTransformer {
   public constructor(private _exportOrderQueue: Id64String[], ...superArgs: ConstructorParameters<typeof IModelTransformer>) {
     super(...superArgs);
   }
+
+  public get errPrologue() { return "The export order given to AssertOrderTransformer was not followed"; }
+  public get errEpilogue() { return `The elements [${this._exportOrderQueue}] remain`; }
+
   public override onExportElement(elem: Element) {
     if (elem.id === this._exportOrderQueue[0])
       this._exportOrderQueue.shift(); // pop the front
-    // if it's still in there, either there is an illegal duplicate or the export order doesn't follow the queue
-    if (this._exportOrderQueue.includes(elem.id))
-      return super.onExportElement(elem);
+    // we just popped the queue if it was expected, so it shouldn't be there the order was correct (and there are no duplicates)
+    const currentExportWasNotInExpectedOrder = this._exportOrderQueue.includes(elem.id);
+    if (currentExportWasNotInExpectedOrder)
+      throw Error(`${this.errPrologue}. '${elem.id}' came before the expected '${this._exportOrderQueue[0]}'. ${this.errEpilogue}`);
+    return super.onExportElement(elem);
   }
+
   public override async processAll() {
+    await super.processAll();
     if (this._exportOrderQueue.length > 0)
-      throw Error(`the export order given to AssertOrderTransformer was not followed; the elements [${this._exportOrderQueue}] remain`);
-    return super.processAll();
+      throw Error(`${this.errPrologue}. ${this.errEpilogue}`);
   }
 }
 

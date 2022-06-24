@@ -81,6 +81,9 @@
       "runtimeArgs": [
         "test"
       ],
+      "env": {
+        "LOG_TRANSFORMER_IN_TESTS": "1"
+      },
       "outFiles": [
         "${workspaceFolder}/core/{backend,transformer}/lib/**/*.js"
       ]
