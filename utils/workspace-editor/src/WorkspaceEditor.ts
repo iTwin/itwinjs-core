@@ -126,7 +126,7 @@ function showMessage(msg: string) {
 /** perform a vacuum on a database, with a message while it's happening */
 function doVacuum(dbName: string, container?: IModelJsNative.CloudContainer) {
   process.stdout.write(`Vacuuming ${dbName} ... `);
-  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, (db) => db.nativeDb.vacuum());
+  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, (db) => db.vacuum());
   process.stdout.write("done");
   showMessage("");
 }
