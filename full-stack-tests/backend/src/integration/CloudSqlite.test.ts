@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -115,6 +115,10 @@ describe("CloudSqlite", () => {
     await uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
     await uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
     await uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
+  });
+
+  after(async () => {
+    V2CheckpointManager.cleanup();
   });
 
   it("cloud containers", async () => {
