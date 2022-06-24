@@ -38,7 +38,7 @@ export function IModelOpen(props: IModelOpenProps) {
     async function fetchProjects() {
       const client = new ProjectsAccessClient();
       try {
-        const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
+        const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 30 } });
         setRecentITwins(iTwins);
         if (iTwins.length)
           setCurrentITwin(iTwins[0]);
