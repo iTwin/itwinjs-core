@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module iModels
+ * @module Utils
  */
-import { Entity } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { Element, Entity } from "@itwin/core-backend";
+import { ConcreteEntityId } from "./EntityUnifier";
 
 // possible table types in current BisCore
 // TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
 // TODO: verify the BisCore schema has no other real tables in an iModel before proceeding here
-export type EntityKey =
-  | `Element:${Id64String}`
-  | `NonElementEntity:${Id64String}`;
+/** @internal */
+export type EntityKey = ConcreteEntityId;
 
+/** @internal */
 export class EntityMap<V> {
   private _map = new Map<EntityKey, V>();
 
   public static makeKey(entity: Entity): EntityKey {
-    return `${entity instanceof Entity ? "Element" : "NonElementEntity"}:${entity.id}`;
+    return ConcreteEntityId.from(entity);
   }
 
   public has(entity: Entity) {

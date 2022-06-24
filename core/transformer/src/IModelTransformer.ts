@@ -27,6 +27,7 @@ import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
+import { EntityUnifier } from "./EntityUnifier";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -143,7 +144,7 @@ export interface IModelTransformOptions {
 }
 
 /**
- * A container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed
+ * A container for tracking the state of a partially committed entity and finalizing it when it's ready to be fully committed
  * @internal
  */
 class PartiallyCommittedEntity {
@@ -636,54 +637,47 @@ export class IModelTransformer extends IModelExportHandler {
     sourceEntity: Element | Relationship | ElementAspect,
   ) {
     return () => {
+      let id: Id64String;
+      if (sourceEntity instanceof Element) {
+        id = this.context.findTargetElementId(sourceEntity.id);
+      } else if (sourceEntity instanceof Relationship) {
+
+      } else if (sourceEntity instanceof ElementAspect) {
+
+      } else {
+        throw Error(`unreachable; sourceEntity was '${(sourceEntity as any).constructor.name}' not an Element, Relationship, or ElementAspect`);
+      }
       const targetId = this.context.findTargetElementId(sourceEntity.id);
       if (targetId === Id64.invalid)
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
-
-      const [targetRelSourceId, targetRelTargetId] =
-        sourceEntity instanceof Relationship
-          ? [this.context.findTargetElementId(sourceEntity.sourceId), this.context.findTargetElementId(sourceEntity.targetId)]
-          : [undefined, undefined];
-
-      const unreachableType = () => { throw Error("unreachable; argument was not an entity"); };
-      /* eslint-disable @typescript-eslint/indent, @typescript-eslint/unbound-method */
-      type EntityTransformHandler = (entity: Element | Relationship | ElementAspect) => ElementProps | RelationshipProps | ElementAspectProps;
-      type EntityUpdater = (entityProps: ElementProps | RelationshipProps | ElementAspectProps) => void;
-      const [onEntityTransform, updateEntity] =
-        ( sourceEntity instanceof Element
-          ? [this.onTransformElement, this.targetDb.elements.updateElement.bind(this.targetDb.elements)]
-        : sourceEntity instanceof Relationship
-          ? [this.onTransformRelationship, this.targetDb.relationships.updateInstance.bind(this.targetDb.relationships)]
-        : sourceEntity instanceof ElementAspect
-          ? [this.onTransformElementAspect, this.targetDb.elements.updateAspect.bind(this.targetDb.elements)]
-        : unreachableType()
-        ) as [EntityTransformHandler, EntityUpdater];
-      /* eslint-enable @typescript-eslint/indent, @typescript-eslint/unbound-method */
+      const onEntityTransform = EntityUnifier.transformCallbackFor(this, sourceEntity);
+      const updateEntity = EntityUnifier.updaterFor(this.targetDb, sourceEntity);
       const targetProps = onEntityTransform.call(this, sourceEntity);
-      if (targetRelSourceId) (targetProps as RelationshipProps).sourceId = targetRelSourceId;
-      if (targetRelTargetId) (targetProps as RelationshipProps).targetId = targetRelTargetId;
+      if (sourceEntity instanceof Relationship) {
+        (targetProps as RelationshipProps).sourceId = this.context.findTargetElementId(sourceEntity.sourceId);
+        (targetProps as RelationshipProps).targetId = this.context.findTargetElementId(sourceEntity.targetId);
+      }
       updateEntity({...targetProps, id: targetId});
       this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
 
-  /** collect references this element has that are yet to be mapped, and if necessary create a
-   * PartiallyCommittedElement for it to track resolution of unmapped references
+  /** collect references this entity has that are yet to be mapped, and if there are any
+   * create a [[PartiallyCommittedEntity]] to track resolution of those references
    */
-  private collectUnmappedReferences(element: Element) {
+  private collectUnmappedReferences(entity: Element | ElementAspect | Relationship) {
     const missingReferences = new Set<string>();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
-    for (const referenceId of element.getReferenceIds()) {
+    for (const referenceId of entity.getReferenceIds()) {
       const referenceState = ElementProcessState.fromElementAndTransformer(referenceId, this);
       if (!referenceState.needsImport)
         continue;
 
-      Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${element.id}'`);
-      // TODO: instead of loading the entire element run a small has query
-      const reference = this.sourceDb.elements.tryGetElement(referenceId);
-      if (reference === undefined) {
-        Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling reference (${referenceId})`);
+      Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
+      const exists = EntityUnifier.exists(this.sourceDb, { id: referenceId });
+      if (!exists) {
+        Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);
         switch (this._options.danglingReferencesBehavior) {
           case "ignore":
             continue;
@@ -691,7 +685,7 @@ export class IModelTransformer extends IModelExportHandler {
             throw new IModelError(
               IModelStatus.NotFound,
               [
-                `Found a reference to an element "${referenceId}" that doesn't exist while looking for references of "${element.id}".`,
+                `Found a reference to an element "${referenceId}" that doesn't exist while looking for references of "${entity.id}".`,
                 "This must have been caused by an upstream application that changed the iModel.",
                 "You can set the IModelTransformerOptions.danglingReferencesBehavior option to 'ignore' to ignore this, but this will leave the iModel",
                 "in a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom",
@@ -701,17 +695,17 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialEntityCompleter(element));
-        if (!this._partiallyCommittedEntities.has(element))
-          this._partiallyCommittedEntities.set(element, thisPartialElem);
+        thisPartialElem = new PartiallyCommittedEntity(missingReferences, this.makePartialEntityCompleter(entity));
+        if (!this._partiallyCommittedEntities.has(entity))
+          this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
       if (referenceState.needsModelImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
-        this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: true}, thisPartialElem);
+        this._pendingReferences.set({referenced: referenceId, referencer: entity.id, isModelRef: true}, thisPartialElem);
       }
       if (referenceState.needsElemImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
-        this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: false}, thisPartialElem);
+        this._pendingReferences.set({referenced: referenceId, referencer: entity.id, isModelRef: false}, thisPartialElem);
       }
     }
   }
