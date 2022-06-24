@@ -162,8 +162,6 @@ export class SQLiteDb implements IDisposable {
      * @param sql The SQLite SQL statement to execute
      * @param callback the callback to invoke on the prepared statement
      * @returns the value returned by `callback`.
-     * @see [[withPreparedStatement]]
-     * @public
      */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
@@ -189,7 +187,6 @@ export class SQLiteDb implements IDisposable {
      * @param sql The SQLite SQL statement to execute
      * @param callback the callback to invoke on the prepared statement
      * @returns the value returned by `callback`.
-     * @public
      */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
