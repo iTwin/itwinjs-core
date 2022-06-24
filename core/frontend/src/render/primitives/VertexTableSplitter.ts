@@ -647,12 +647,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
         edges.set(remappedIndex.id, entry = { });
       }
       if (!entry.indexed)
-        entry.indexed = { indices: new IndexBuffer(), edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
-
-      assert(0 === entry.indexed.indices.numIndices % 6);
-      const edgeIndex = entry.indexed.indices.numIndices / 6;
-      for (let i = 0; i < 6; i++)
-        entry.indexed.indices.push(edgeIndex);
+        entry.indexed = { edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
 
       if (curSegment < numSegments) {  // edges
         const newE1Index = remappedIndex.node.remappedIndices.get(es1Index);
