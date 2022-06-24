@@ -30,7 +30,7 @@ import {
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
+// import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -40,7 +40,7 @@ import { AppUi } from "./appui/AppUi";
 import { ExternalIModel } from "./appui/ExternalIModel";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
-import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+// import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import {

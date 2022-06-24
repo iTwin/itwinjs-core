@@ -30,7 +30,7 @@ import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFront
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
-import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
+// import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getSupportedRpcs } from "../common/rpcs";
@@ -39,7 +39,7 @@ import { AppUi } from "./appui/AppUi";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
-import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+// import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
