@@ -12,6 +12,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
+/** @public */
 export namespace SQLiteDb {
   export type CloudContainer = IModelJsNative.CloudContainer;
   export type CreateParams = IModelJsNative.SQLiteDbCreateParams;

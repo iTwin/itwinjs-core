@@ -4152,21 +4152,47 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
+// @public (undocumented)
+export namespace SQLiteDb {
+    // (undocumented)
+    export type CloudContainer = IModelJsNative.CloudContainer;
+    // (undocumented)
+    export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
+    // (undocumented)
+    export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
+}
+
 // @public
 export class SQLiteDb implements IDisposable {
-    constructor();
     abandonChanges(): void;
-    closeDb(): void;
-    createDb(pathName: string, container?: IModelJsNative.CloudContainer, params?: IModelJsNative.SQLiteDbCreateParams): void;
+    closeDb(saveChanges?: boolean): void;
+    createDb(dbName: string, container?: SQLiteDb.CloudContainer, params?: SQLiteDb.CreateParams): void;
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
-    // @internal (undocumented)
-    get nativeDb(): IModelJsNative.SQLiteDb;
-    openDb(pathName: string, openMode: OpenMode | IModelJsNative.SQLiteDbOpenParams, container?: IModelJsNative.CloudContainer): void;
+    // (undocumented)
+    readonly nativeDb: IModelJsNative.SQLiteDb;
+    openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     saveChanges(): void;
+    vacuum(args?: {
+        pageSize?: number;
+        into?: LocalFileName;
+    }): void;
+    // @internal
+    static withLockedContainer(args: {
+        user: string;
+        dbName: string;
+        container: SQLiteDb.CloudContainer;
+        busyHandler?: CloudSqlite.WriteLockBusyHandler;
+    },
+    operation: (db: SQLiteDb) => Promise<void>): Promise<void>;
+    static withOpenDb<T>(args: {
+        dbName: string;
+        openMode?: OpenMode | SQLiteDb.OpenParams;
+        container?: SQLiteDb.CloudContainer;
+    }, operation: (db: SQLiteDb) => T): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
 }

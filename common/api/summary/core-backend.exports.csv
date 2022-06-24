@@ -316,6 +316,7 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
+public;SQLiteDb
 public;SQLiteDb 
 public;SqliteStatement 
 public;SqliteValue
