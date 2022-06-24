@@ -430,9 +430,8 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_ITWIN_NAME) {
+    if (undefined === SampleAppIModelApp.iModelParams && process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_ITWIN_NAME) {
       const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
-
       const iTwinName = process.env.IMJS_UITESTAPP_ITWIN_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
@@ -495,6 +494,13 @@ export class SampleAppIModelApp {
       const stageId = urlParams.get("stageId") || undefined;
 
       return { iTwinId, iModelId, viewIds, stageId };
+    }
+
+    if (process.env.IMJS_UITESTAPP_IMODEL_ID && process.env.IMJS_UITESTAPP_ITWIN_ID) {
+      const envITwinId = process.env.IMJS_UITESTAPP_ITWIN_ID;
+      const envIModelId = process.env.IMJS_UITESTAPP_IMODEL_ID;
+      const viewIds = process.env.IMJS_UITESTAPP_IMODEL_VIEWID ? [process.env.IMJS_UITESTAPP_IMODEL_VIEWID] : undefined;
+      return { iTwinId: envITwinId, iModelId: envIModelId, viewIds };
     }
 
     return undefined;
