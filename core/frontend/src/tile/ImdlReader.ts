@@ -1281,11 +1281,7 @@ export class ImdlReader {
       return elementTimeline?.batchId ?? 0;
     }, timeline.maxBatchId);
 
-    let discreteNodeIds = new Set<number>(timeline.transformBatchIds);
-    for (const elemTimeline of timeline.elementTimelines)
-      if (!elemTimeline.containsTransform && undefined !== elemTimeline.cuttingPlane)
-        discreteNodeIds.add(elemTimeline.batchId);
-
+    let discreteNodeIds = timeline.discreteBatchIds;
     const computeNodeId: ComputeNodeId = (_id, featureIndex) => {
       const nodeId = featureTable.getAnimationNodeId(featureIndex);
       return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;

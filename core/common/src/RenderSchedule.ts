@@ -876,6 +876,7 @@ export namespace RenderSchedule {
     private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
     /** When loading tiles we need to quickly map element Ids to batch Ids. This map is initialized on first call to [[getTimelineForElement]] to facilitate that lookup. */
     private _idPairToElementTimeline?: Id64.Uint32Map<ElementTimeline>;
+    private _discreteBatchIds?: Set<number>;
 
     private constructor(props: ModelTimelineProps) {
       super(props);
@@ -1002,6 +1003,20 @@ export namespace RenderSchedule {
       }
 
       return this._idPairToElementTimeline.get(idLo, idHi);
+    }
+
+    /** The batch Ids of the subset of [[elementTimelines]] that apply a transform and/or cutting plane.
+     * @alpha
+     */
+    public get discreteBatchIds(): Set<number> {
+      if (!this._discreteBatchIds) {
+        this._discreteBatchIds = new Set<number>(this.transformBatchIds);
+        for (const timeline of this.elementTimelines)
+          if (!timeline.containsTransform && undefined !== timeline.cuttingPlane)
+            this._discreteBatchIds.add(timeline.batchId);
+      }
+
+      return this._discreteBatchIds;
     }
   }
 
