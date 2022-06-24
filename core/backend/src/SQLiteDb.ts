@@ -154,15 +154,15 @@ export class SQLiteDb implements IDisposable {
   }
 
   /**
-     * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
-     * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
-     * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
-     * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
-     * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
-     * @param sql The SQLite SQL statement to execute
-     * @param callback the callback to invoke on the prepared statement
-     * @returns the value returned by `callback`.
-     */
+   * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
@@ -181,13 +181,13 @@ export class SQLiteDb implements IDisposable {
   }
 
   /**
-     * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
-     * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
-     * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
-     * @param sql The SQLite SQL statement to execute
-     * @param callback the callback to invoke on the prepared statement
-     * @returns the value returned by `callback`.
-     */
+   * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
+   * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
     const release = () => stmt.dispose();
