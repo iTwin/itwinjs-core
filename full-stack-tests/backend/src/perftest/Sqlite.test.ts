@@ -85,20 +85,16 @@ async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveRe
   return sp.elapsedSeconds;
 }
 
-function changePageSize(iModelPath: string, pageSizeInKb: number) {
+function changePageSize(dbName: string, pageSizeInKb: number) {
   const sp = new StopWatch(undefined, true);
-  using(new SQLiteDb(), (db: SQLiteDb) => {
-    db.openDb(iModelPath, OpenMode.ReadWrite);
-    if (!db.isOpen)
-      throw new Error(`changePageSize() failed to open file ${iModelPath}`);
+  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite }, (db) => {
     let pageSize = 0;
     db.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new Error(`changePageSize() failed to get page size`);
       pageSize = stmt.getValue(0).getInteger();
     });
-    db.nativeDb.vacuum({ pageSize: pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024 });
-    db.closeDb();
+    db.vacuum({ pageSize: pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024 });
   });
   process.stdout.write(`Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
 }

@@ -10,6 +10,7 @@
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { IModelHost } from "./IModelHost";
+import { SQLiteDb } from "./SQLiteDb";
 import { Settings } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
@@ -49,7 +50,7 @@ export class GeoCoordConfig {
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
-        new IModelHost.platform.CloudPrefetch(cloudContainer, gcsDbName);
+        SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName);
 
     } catch (e: unknown) {
       Logger.logError(loggerCat, `${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);

@@ -7,15 +7,13 @@ import { expect } from "chai";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import {
-  BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb,
-} from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
-  export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
+  export type TestContainer = SQLiteDb.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";
   export const storage: CloudSqlite.AccountAccessProps = {
     accessName: "devstoreaccount1",
@@ -45,7 +43,7 @@ export namespace CloudSqliteTest {
   }
 
   export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
+    const cont = SQLiteDb.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   }
@@ -60,7 +58,7 @@ export namespace CloudSqliteTest {
   export function makeCache(name: string) {
     const rootDir = join(IModelHost.cacheDir, name);
     makeEmptyDir(rootDir);
-    return new IModelHost.platform.CloudCache({ name, rootDir });
+    return SQLiteDb.createCloudCache({ name, rootDir });
 
   }
   export function makeCaches(names: string[]) {
@@ -79,10 +77,10 @@ export namespace CloudSqliteTest {
       version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
-  export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
+  export function setSasToken(container: SQLiteDb.CloudContainer, permissionFlags: string) {
     container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
-  export async function uploadFile(container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) {
+  export async function uploadFile(container: SQLiteDb.CloudContainer, cache: SQLiteDb.CloudCache, dbName: string, localFileName: LocalFileName) {
     expect(container.isConnected).false;
     container.connect(cache);
     expect(container.isConnected);
@@ -95,7 +93,7 @@ export namespace CloudSqliteTest {
 }
 
 describe("CloudSqlite", () => {
-  let caches: IModelJsNative.CloudCache[];
+  let caches: SQLiteDb.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
   const user = "CloudSqlite test";
@@ -177,10 +175,9 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await CloudSqlite.withWriteLock(user, contain1, async () => {
-      db.openDb("testBim2", OpenMode.ReadWrite, contain1);
-      db.nativeDb.vacuum();
-      db.closeDb();
+    await SQLiteDb.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async (vdb) => {
+      vdb.vacuum();
+      vdb.closeDb();
 
       expect(contain1.hasLocalChanges).true;
       dbProps = contain1.queryDatabase("testBim2");
@@ -306,8 +303,8 @@ describe("CloudSqlite", () => {
     caches[1].destroy();
 
     // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)
-    const newCache1 = new IModelHost.platform.CloudCache(wasCache1);
-    const newCache2 = new IModelHost.platform.CloudCache(wasCache2);
+    const newCache1 = SQLiteDb.createCloudCache(wasCache1);
+    const newCache2 = SQLiteDb.createCloudCache(wasCache2);
     expect(newCache1.guid).equals(wasCache1.guid);
     expect(newCache2.guid).equals(wasCache2.guid);
     expect(newCache1.guid).not.equals(newCache2.guid);

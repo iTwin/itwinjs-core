@@ -48,6 +48,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { GeoCoordConfig } from "./GeoCoordConfig";
+import { SQLiteDb } from "./SQLiteDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2091,12 +2092,12 @@ export interface TokenArg {
 }
 
 /** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] with a [CloudContainer]($docs/learning/backend/Workspace.md).
- * Currently the properties are this interface are reserved for internal use only.
+ * The properties are this interface are reserved for internal use only.
  * @public
  */
 export interface CloudContainerArgs {
-  /** @alpha */
-  container?: IModelJsNative.CloudContainer;
+  /** @internal */
+  container?: SQLiteDb.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).
