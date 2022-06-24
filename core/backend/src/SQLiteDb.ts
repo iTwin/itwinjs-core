@@ -9,20 +9,42 @@
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
+import { type } from "os";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
 /** @public */
 export namespace SQLiteDb {
+  /** A CloudSqlite container that may be connected to a CloudCache.
+   * @internal
+   */
   export type CloudContainer = IModelJsNative.CloudContainer;
+  /** @internal */
+  export type CloudCache = IModelJsNative.CloudCache;
+  /** @internal */
+  export type CloudPrefetch = IModelJsNative.CloudPrefetch;
+
+  /** Parameters for creating a new SQLiteDb
+   * @internal
+   */
   export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
+
+  /** Parameters for opening a SQLiteDb
+   * @internal
+   */
   export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
+
+  /** Incremental IO for blobs
+   * @internal
+   */
+  export type BlobIO = IModelJsNative.BlobIO;
 }
 
 /** A SQLiteDb file
  * @public
  */
 export class SQLiteDb implements IDisposable {
+  /** @internal */
   public readonly nativeDb = new IModelHost.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 

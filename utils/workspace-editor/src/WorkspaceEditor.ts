@@ -124,7 +124,7 @@ function showMessage(msg: string) {
 }
 
 /** perform a vacuum on a database, with a message while it's happening */
-function doVacuum(dbName: string, container?: IModelJsNative.CloudContainer) {
+function doVacuum(dbName: string, container?: SQLiteDb.CloudContainer) {
   process.stdout.write(`Vacuuming ${dbName} ... `);
   SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, (db) => db.vacuum());
   process.stdout.write("done");
@@ -167,7 +167,7 @@ function getContainer(args: EditorOpts) {
 }
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
-function getCloudContainer(args: EditorOpts): IModelJsNative.CloudContainer {
+function getCloudContainer(args: EditorOpts): SQLiteDb.CloudContainer {
   args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
@@ -206,7 +206,7 @@ async function listWorkspaceDb(args: ListOptions) {
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
-    let prefetch: IModelJsNative.CloudPrefetch | undefined;
+    let prefetch: SQLiteDb.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
       prefetch = file.prefetch({ nRequests: args.nRequests });
@@ -361,7 +361,7 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 }
 
 /** Either upload or download a WorkspaceDb to/from a cloud WorkspaceContainer. Shows progress % during transfer */
-async function performTransfer(container: IModelJsNative.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
+async function performTransfer(container: SQLiteDb.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
   fixVersionArg(args);
   const localFileName = args.localFileName;
 

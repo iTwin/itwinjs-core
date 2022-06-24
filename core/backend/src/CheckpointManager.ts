@@ -9,15 +9,18 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+} from "@itwin/core-common";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
+import { SQLiteDb } from "./SQLiteDb";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -110,8 +113,8 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   public static readonly cloudCacheName = "v2Checkpoints";
-  private static _cloudCache?: IModelJsNative.CloudCache;
-  private static containers = new Map<string, IModelJsNative.CloudContainer>();
+  private static _cloudCache?: SQLiteDb.CloudCache;
+  private static containers = new Map<string, SQLiteDb.CloudContainer>();
 
   public static getFolder(): LocalDirName {
     const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
@@ -137,7 +140,7 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  private static get cloudCache(): IModelJsNative.CloudCache {
+  private static get cloudCache(): SQLiteDb.CloudCache {
     if (!this._cloudCache) {
       let rootDir = process.env.BLOCKCACHE_DIR;
       if (!rootDir) {
@@ -174,7 +177,7 @@ export class V2CheckpointManager {
     return container;
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: SQLiteDb.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
@@ -190,7 +193,7 @@ export class V2CheckpointManager {
       if (!container.isConnected)
         container.connect(this.cloudCache);
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
-        const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
+        const logPrefetch = async (prefetch: SQLiteDb.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;

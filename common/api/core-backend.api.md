@@ -709,8 +709,8 @@ export class ClassRegistry {
 
 // @public
 export interface CloudContainerArgs {
-    // @alpha (undocumented)
-    container?: IModelJsNative.CloudContainer;
+    // @internal (undocumented)
+    container?: SQLiteDb.CloudContainer;
 }
 
 export { CloudSqlite }
@@ -1307,15 +1307,15 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
-// @beta
+// @internal
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     addBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     addFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResource.Name, val: string): void;
-    // @internal (undocumented)
+    // (undocumented)
     createDb(version?: string): Promise<void>;
     static createEmpty(fileName: LocalFileName): void;
-    getBlobWriter(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO;
+    getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
     // (undocumented)
     open(): void;
     removeBlob(rscName: WorkspaceResource.Name): void;
@@ -2796,7 +2796,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
-    get cloudCache(): IModelJsNative.CloudCache;
+    get cloudCache(): SQLiteDb.CloudCache;
     // (undocumented)
     readonly containerDir: LocalDirName;
     // (undocumented)
@@ -2827,7 +2827,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     // (undocumented)
     close(): Promise<void>;
     // (undocumented)
-    readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
+    readonly cloudContainer?: SQLiteDb.CloudContainer | undefined;
     // (undocumented)
     get dirName(): string;
     // (undocumented)
@@ -2840,7 +2840,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     readonly id: WorkspaceContainer.Id;
     // (undocumented)
     static makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName;
-    static makeNewVersion(cloudContainer: IModelJsNative.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
+    static makeNewVersion(cloudContainer: SQLiteDb.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement): Promise<{
         oldName: string;
         newName: string;
     }>;
@@ -2853,7 +2853,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     };
     purgeContainerFiles(): void;
     // (undocumented)
-    static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
+    static resolveCloudFileName(cloudContainer: SQLiteDb.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName;
     // (undocumented)
     static validateDbName(dbName: WorkspaceDb.DbName): void;
@@ -2863,7 +2863,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     readonly workspace: ITwinWorkspace;
     }
 
-// @beta
+// @internal
 export class ITwinWorkspaceDb implements WorkspaceDb {
     constructor(props: WorkspaceDb.Props, container: WorkspaceContainer);
     // (undocumented)
@@ -2874,7 +2874,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     static readonly fileExt = "itwin-workspace";
     // (undocumented)
     getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
-    getBlobReader(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO;
+    getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
     // (undocumented)
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     // (undocumented)
@@ -2884,11 +2884,11 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     // (undocumented)
     open(): void;
     // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): IModelJsNative.CloudPrefetch | undefined;
+    prefetch(opts?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch | undefined;
     // (undocumented)
     queryFileResource(rscName: WorkspaceResource.Name): {
         localFileName: string;
-        info: IModelJsNative.EmbedFileQuery;
+        info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
     } | undefined;
     readonly sqliteDb: SQLiteDb;
 }
@@ -4154,11 +4154,17 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
 // @public (undocumented)
 export namespace SQLiteDb {
-    // (undocumented)
+    // @internal
+    export type BlobIO = IModelJsNative.BlobIO;
+    // @internal (undocumented)
+    export type CloudCache = IModelJsNative.CloudCache;
+    // @internal
     export type CloudContainer = IModelJsNative.CloudContainer;
-    // (undocumented)
+    // @internal (undocumented)
+    export type CloudPrefetch = IModelJsNative.CloudPrefetch;
+    // @internal
     export type CreateParams = IModelJsNative.SQLiteDbCreateParams;
-    // (undocumented)
+    // @internal
     export type OpenParams = IModelJsNative.SQLiteDbOpenParams;
 }
 
@@ -4170,7 +4176,7 @@ export class SQLiteDb implements IDisposable {
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly nativeDb: IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
     // @internal
@@ -4602,7 +4608,7 @@ export class V2CheckpointManager {
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
-        container: IModelJsNative.CloudContainer;
+        container: SQLiteDb.CloudContainer;
     }>;
     // (undocumented)
     static cleanup(): void;
@@ -4720,7 +4726,7 @@ export class WebMercatorModel extends SpatialModel {
 // @beta
 export interface Workspace {
     close(): Promise<void>;
-    readonly cloudCache?: IModelJsNative.CloudCache;
+    readonly cloudCache?: SQLiteDb.CloudCache;
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
@@ -4767,7 +4773,8 @@ export interface WorkspaceContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     close(): Promise<void>;
-    readonly cloudContainer?: IModelJsNative.CloudContainer;
+    // @internal
+    readonly cloudContainer?: SQLiteDb.CloudContainer;
     dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;
     getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
@@ -4798,7 +4805,7 @@ export interface WorkspaceDb {
     readonly dbName: WorkspaceDb.DbName;
     getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
     // @internal (undocumented)
-    getBlobReader(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO;
+    getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;

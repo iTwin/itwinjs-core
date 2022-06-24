@@ -15,7 +15,7 @@ import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace CloudSqliteTest {
-  export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
+  export type TestContainer = SQLiteDb.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";
   export const storage: CloudSqlite.AccountAccessProps = {
     accessName: "devstoreaccount1",
@@ -79,10 +79,10 @@ export namespace CloudSqliteTest {
       version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
-  export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
+  export function setSasToken(container: SQLiteDb.CloudContainer, permissionFlags: string) {
     container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
-  export async function uploadFile(container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) {
+  export async function uploadFile(container: SQLiteDb.CloudContainer, cache: SQLiteDb.CloudCache, dbName: string, localFileName: LocalFileName) {
     expect(container.isConnected).false;
     container.connect(cache);
     expect(container.isConnected);
@@ -95,7 +95,7 @@ export namespace CloudSqliteTest {
 }
 
 describe("CloudSqlite", () => {
-  let caches: IModelJsNative.CloudCache[];
+  let caches: SQLiteDb.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
   const user = "CloudSqlite test";

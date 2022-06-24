@@ -92,7 +92,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceDb 
+internal;EditableWorkspaceDb 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -207,7 +207,7 @@ public;IpcHostOpts
 public;ITwinIdArg
 internal;ITwinWorkspace 
 internal;ITwinWorkspaceContainer 
-beta;ITwinWorkspaceDb 
+internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -317,6 +317,12 @@ public;class SpatialLocationType
 public;class SpatialModel 
 public;SpatialViewDefinition 
 public;SQLiteDb
+internal;BlobIO = IModelJsNative.BlobIO
+internal;CloudCache = IModelJsNative.CloudCache
+internal;CloudContainer = IModelJsNative.CloudContainer
+internal;CloudPrefetch = IModelJsNative.CloudPrefetch
+internal;CreateParams = IModelJsNative.SQLiteDbCreateParams
+internal;OpenParams = IModelJsNative.SQLiteDbOpenParams
 public;SQLiteDb 
 public;SqliteStatement 
 public;SqliteValue
