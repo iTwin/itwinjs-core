@@ -7,9 +7,7 @@ import { expect } from "chai";
 import { emptyDirSync, existsSync, mkdirsSync, rmSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import {
-  BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb,
-} from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";

@@ -9,7 +9,6 @@
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
-import { type } from "os";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
