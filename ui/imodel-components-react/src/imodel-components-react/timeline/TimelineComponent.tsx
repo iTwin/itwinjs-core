@@ -10,7 +10,7 @@ import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, UiAdmin } from "@itwin/appui-abstract";
-import { toDateString, toTimeString, UiComponents } from "@itwin/components-react";
+import { DateFormatOptions, toDateString, toTimeString, UiComponents } from "@itwin/components-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
@@ -93,7 +93,10 @@ export interface TimelineComponentProps {
   timeZoneOffset?: number;
   /** Display a marker on the timeline rail to indicate current date - will only work if starDate and endDate are defined */
   markDate?: TimelineDateMarkerProps;
-
+  /** Options used to format date string. If not defined it will user browser default locale settings. */
+  dateFormatOptions?: DateFormatOptions;
+  /** Options used to format time string. If not defined it will user browser default locale settings. */
+  timeFormatOptions?: DateFormatOptions;
 }
 /** @internal */
 interface TimelineComponentState {
@@ -457,7 +460,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   public override render() {
-    const { startDate, endDate, showDuration, timeZoneOffset } = this.props;
+    const { startDate, endDate, showDuration, timeZoneOffset, dateFormatOptions, timeFormatOptions } = this.props;
     const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
@@ -475,13 +478,13 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             title={UiIModelComponents.translate("timeline.step")} />
           <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
             title={UiIModelComponents.translate("timeline.backward")} />
-          <span className="current-date">{toDateString(currentDate, timeZoneOffset)}</span>
+          <span className="current-date">{toDateString(currentDate, timeZoneOffset, dateFormatOptions)}</span>
         </div>
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
-            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate, timeZoneOffset)}</span>}
+            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate, timeZoneOffset, dateFormatOptions)}</span>}
+            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate, timeZoneOffset, timeFormatOptions)}</span>}
             {showDuration && <span className="duration-start-time">{durationString}</span>}
           </div>
           <Scrubber
@@ -500,7 +503,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           />
           <div className="end-time-container">
             {hasDates && <span className="end-date">{toDateString(endDate, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate, timeZoneOffset, timeFormatOptions)}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
           {minimized && this._renderSettings()}

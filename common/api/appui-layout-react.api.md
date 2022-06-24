@@ -37,6 +37,9 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @internal
+export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): void;
+
+// @internal
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
@@ -677,6 +680,8 @@ export const FloatingWidgetsStateContext: React.Context<FloatingWidgetsState>;
 export interface FloatingWidgetState {
     // (undocumented)
     readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly hidden?: boolean;
     // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)

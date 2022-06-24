@@ -86,6 +86,3 @@ export class GeoCoordConfig {
     // this.loadAll(settings, "gcs/databases");
   }
 }
-
-IModelHost.onWorkspaceStartup.addListener(() => GeoCoordConfig.onStartup());
-

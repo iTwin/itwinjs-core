@@ -880,7 +880,7 @@ export namespace RenderSchedule {
         timeline.addSymbologyOverrides(overrides, time);
     }
 
-    /** Used by collectPredecessorIds methods of RenderTimeline and DisplayStyle.
+    /** Used by the [Element.collectReferenceIds]($backend) method overrides in RenderTimeline and DisplayStyle.
      * @internal
      */
     public discloseIds(ids: Id64Set): void {
