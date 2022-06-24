@@ -32,14 +32,14 @@ describe.skip("Checkpoints", () => {
   let testITwinId2: GuidString;
   let testChangeSet2: ChangesetProps;
 
-  const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
+  const cloudcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
   let originalEnv: any;
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
     fs.chmodSync((CloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
     daemon = CloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
-    while (!IModelJsFs.existsSync(path.join(blockcacheDir, "portnumber.bcv"))) {
+    while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
   };
@@ -52,12 +52,12 @@ describe.skip("Checkpoints", () => {
       await onDaemonExit;
     }
     if (deleteDir)
-      fs.removeSync(blockcacheDir);
+      fs.removeSync(cloudcacheDir);
   };
 
   before(async () => {
     originalEnv = { ...process.env };
-    process.env.BLOCKCACHE_DIR = blockcacheDir;
+    process.env.CLOUDSQLITE_CACHE_DIR = cloudcacheDir;
 
     // Props for daemon
     accountProps = {
@@ -65,7 +65,7 @@ describe.skip("Checkpoints", () => {
       storageType: CloudSqliteTest.storage.storageType,
     };
     cacheProps = {
-      rootDir: blockcacheDir,
+      rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,
       cacheSize: "10G",
     };
@@ -118,7 +118,8 @@ describe.skip("Checkpoints", () => {
 
     await shutdownDaemon(true);
   });
-  it("should use fallback directory when blockcache_dir has no daemon in it", async () => {
+
+  it("should use fallback directory when cloudsqlite_cache_dir has no daemon in it", async () => {
     await shutdownDaemon(true);
     const v2Manager = sinon.spy(V2CheckpointManager, "getFolder");
     const iModel = await SnapshotDb.openCheckpointV2({
@@ -131,6 +132,7 @@ describe.skip("Checkpoints", () => {
     iModel.close();
     await startDaemon();
   });
+
   it("should fail to open v2 checkpoint when daemon no longer running in the directory", async () => {
     await shutdownDaemon(false); // pass false, so old daemondir sticks around
     await expect(SnapshotDb.openCheckpointV2({
