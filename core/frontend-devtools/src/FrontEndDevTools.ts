@@ -28,9 +28,10 @@ import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, QueryScheduleScriptTool, ReverseScheduleScriptTool,
-  SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
+  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
@@ -159,6 +160,7 @@ export class FrontendDevTools {
       SelectElementsByIdTool,
       SetAASamplesTool,
       SetAspectRatioSkewTool,
+      SetScheduleScriptTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
       SharpenEffect,

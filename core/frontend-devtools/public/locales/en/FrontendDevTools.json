@@ -454,6 +454,9 @@
     "ReverseScheduleScript": {
       "keyin": "fdt reverse schedule script"
     },
+    "SetScheduleScript": {
+      "keyin": "fdt set schedule script"
+    },
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"
     },

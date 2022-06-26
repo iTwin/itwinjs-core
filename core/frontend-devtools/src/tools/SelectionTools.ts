@@ -37,7 +37,7 @@ export class SelectElementsByIdTool extends Tool {
 export class DumpSelectionSetTool extends Tool {
   public static override toolId = "DumpSelectionSet";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   private _format: "json" | "compressed" | "list" = "list";
   private _copy?: boolean;
