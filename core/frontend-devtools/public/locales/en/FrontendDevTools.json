@@ -448,6 +448,9 @@
     "QueryScheduleScript": {
       "keyin": "fdt query schedule script"
     },
+    "ReverseScheduleScript": {
+      "keyin": "fdt reverse schedule script"
+    },
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"
     },

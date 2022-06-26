@@ -1234,7 +1234,7 @@ export namespace RenderSchedule {
     }
 
     /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. */
-    public addTransform(time: number, transform: Transform | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
+    public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
       if (!this.transform)
         this.transform = [];
 

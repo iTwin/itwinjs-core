@@ -7,13 +7,13 @@
  * @module Tools
  */
 
-import { CompressedId64Set } from "@itwin/core-bentley";
+import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
-  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
+  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderScheduleState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -439,6 +439,60 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
     else
       copyStringToClipboard(JSON.stringify(script, null, 2));
 
+    return true;
+  }
+}
+
+interface Timeline<Entry extends RenderSchedule.TimelineEntry> {
+  readonly length: number;
+  getEntry(index: number): Entry | undefined;
+}
+
+function reverseTimeline<Entry extends RenderSchedule.TimelineEntry>(timeline: Timeline<Entry> | undefined, accept: (time: number, entry: Entry) => void): void {
+  if (!timeline)
+    return;
+
+  const len = timeline.length;
+  for (let i = 0; i < len; i++) {
+    const timeEntry = timeline.getEntry(i);
+    const valueEntry = timeline.getEntry(len - i - 1);
+    assert(undefined !== timeEntry);
+    assert(undefined !== valueEntry);
+    accept(timeEntry.time, valueEntry as Entry);
+  }
+}
+
+export class ReverseScheduleScriptTool extends DisplayStyleTool {
+  public static override toolId = "ReverseScheduleScript";
+
+  public override async execute(vp: Viewport): Promise<boolean> {
+    const prevRef = vp?.displayStyle.scheduleState;
+    if (!prevRef || prevRef.script.isMissingElementIds)
+      return false;
+
+    const script = prevRef.script;
+    const builder = new RenderSchedule.ScriptBuilder();
+    for (const modelTimeline of script.modelTimelines) {
+      const modelBuilder = builder.addModelTimeline(modelTimeline.modelId);
+      for (const elemTimeline of modelTimeline.elementTimelines) {
+        const elemBuilder = modelBuilder.addElementTimeline(elemTimeline.elementIds);
+        reverseTimeline(elemTimeline.visibility, (time, entry) => elemBuilder.addVisibility(time, entry.value, entry.interpolation));
+        reverseTimeline(elemTimeline.color, (time, entry) => elemBuilder.addColor(time, entry.value, entry.interpolation));
+        reverseTimeline(elemTimeline.transform, (time, entry) => elemBuilder.addTransform(time, entry.value, entry.components, entry.interpolation));
+        reverseTimeline(elemTimeline.cuttingPlane, (time, entry) => elemBuilder.addCuttingPlane(time, entry.value, entry.interpolation));
+      }
+    }
+
+    const scriptProps = builder.finish();
+    const newScript = RenderSchedule.Script.fromJSON(scriptProps);
+    assert(undefined !== newScript);
+
+    // ###TODO an API on DisplayStyleSettings to change the RenderSchedule.ScriptReference? RenderScheduleState is internal.
+    vp.displayStyle.setScheduleState(new RenderScheduleState("", newScript));
+    return true;
+  }
+
+  public async parse() {
     return true;
   }
 }
