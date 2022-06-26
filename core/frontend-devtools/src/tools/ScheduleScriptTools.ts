@@ -9,15 +9,13 @@
 
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
-  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
-  SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
+  ElementLoadOptions, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";
 import {
-  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderScheduleState, Tool, Viewport,
+  RenderScheduleState, Viewport,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
-import { parseToggle } from "./parseToggle";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 
 /** Query the schedule script JSON from an element.
@@ -117,7 +115,7 @@ function reverseTimeline<Entry extends RenderSchedule.TimelineEntry>(timeline: T
     const valueEntry = timeline.getEntry(len - i - 1);
     assert(undefined !== timeEntry);
     assert(undefined !== valueEntry);
-    accept(timeEntry.time, valueEntry as Entry);
+    accept(timeEntry.time, valueEntry);
   }
 }
 
