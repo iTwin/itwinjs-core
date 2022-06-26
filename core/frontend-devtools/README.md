@@ -264,6 +264,12 @@ These keysins control the planar masking of reality models.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
   * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
+* `fdt dump selection` - Dump the Ids of the currently select elements, optionally formatting and/or copying to the clipboard. Optional arguments:
+  * "copy=0|1" - if `1`, copy the result to the system clipboard.
+  * "format=list|json|compressed"
+    * "list" (default): Output consists of a list of element Ids each separate by a single space. e.g., `0x123 0x456 0x789`.
+    * "json": Output is a JSON array of Ids. e.g., `["0x123", "0x456", "0x789"]`.
+    * "compressed": Output is a CompressedId64String. e.g., `+123+333*2`
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
 * `fdt sky cube` - set the images used for the skybox, mapping each to one or more faces of the box. Each image is specified as a Url or texture Id. The images are mapped in the following orders based on how many are supplied:
