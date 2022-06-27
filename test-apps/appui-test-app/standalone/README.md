@@ -11,8 +11,6 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 1. To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 2. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
-Note: Before running `appui-standalone-app` for the first time, use the command `npm run build:ci` from the `appui-standalone-app` directory to ensure all assets are properly displayed when running locally.
-
 * To start the application in Electron, navigate to the root of appui-standalone-app, and use the command:
 
   ```cmd

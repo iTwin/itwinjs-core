@@ -12,8 +12,6 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 2. To work online, follow the configure the [client application section](#client-configuration).
 3. Set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
-Note: Before running `ui-test-app` for the first time, use the command `npm run build:ci` from the `ui-test-app` directory to ensure all assets are properly displayed when running locally.
-
 * To start the application in Electron, navigate to the root of ui-test-app, and use the command:
 
   ```cmd
@@ -47,11 +45,15 @@ To set the environment variables, either set them directly within the terminal y
 ### Common variables
 
 * IMJS_UITESTAPP_IMODEL_NAME
-  * (Online-only) Set the iModel to open when the app starts. The iTwin Name variable is required for this one to properly work and the iModel to be opened
+  * Set the iModel to open when the app starts. The iTwin Name variable is required for this one to properly work and the iModel to be opened
 * IMJS_UITESTAPP_ITWIN_NAME
-  * (Online-only) Set the iTwin to open when the app starts. The iModel Name variable is required for this one to properly work and the iModel to be opened.
+  * Set the iTwin to open when the app starts. The iModel Name variable is required for this one to properly work and the iModel to be opened.
+* IMJS_UITESTAPP_IMODEL_ID
+  * Set the iModel Id to open when the app starts. The iModel Name variable should not be set if this Id is specified. Should be used when IMJS_UITESTAPP_IMODEL_VIEWID is used.
+* IMJS_UITESTAPP_ITWIN_ID
+  * Set the iTwin Id to open when the app starts. The iTwin Name variable should not be set if this Id is specified.
 * IMJS_UITESTAPP_IMODEL_VIEWID
-  * (Online-only) Opens the provided iModel to the viewId, otherwise default viewId is used.
+  * Opens the provided iModel to the viewId, otherwise default viewId is used.
 * IMJS_UITESTAPP_USE_LOCAL_SETTINGS
   * Store settings in LocalStorage instead of Project Settings Service
 
