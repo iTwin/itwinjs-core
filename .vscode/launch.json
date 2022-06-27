@@ -794,13 +794,19 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "download",
-        "usa-nsrs2011",
-        "-l=d:/temp/abc.d"
+        "listDb",
+        "allEarth",
+        "--prefetch",
+        "--logging",
+        "--config=s:/realAzure.json"
       ],
       "outFiles": [
-        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"
-      ]
+        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
+        "${workspaceFolder}/core/*/lib/**/*.js",
+      ],
+      "env": {
+        "WORKSPACE_EDITOR_LOGGING": "true",
+      }
     },
     {
       "name": "imodel-transformer (app)",

@@ -21,10 +21,10 @@ class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     super(info, options);
   }
 
-  public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+  public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
     return (
       <>
-        <SelectionScopeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+        <SelectionScopeField isInFooterMode={isInFooterMode} />
       </>
     );
   }
@@ -134,5 +134,51 @@ describe("Test that requires Presentation", () => {
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.getActiveSelectionScope()).to.be.equal("assembly");
     // expect(selectElement.selectedIndex).to.be.equal(1);
+  });
+
+  it("SelectionScopeField should properly handle empty override scope labels", async () => {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, [
+      { id: "element", label: "" } as PresentationSelectionScope,
+      { id: "assembly", label: "" } as PresentationSelectionScope,
+      { id: "top-assembly", label: "" } as PresentationSelectionScope,
+    ]);
+
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "top-assembly");
+
+    const component = render(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+    </Provider>);
+    expect(component).not.to.be.undefined;
+    const selectElement = component.getByTestId("components-selectionScope-selector") as HTMLSelectElement;
+    expect(selectElement).not.to.be.null;
+    expect(UiFramework.getActiveSelectionScope()).to.be.equal("top-assembly");
+    component.getByText("selectionScopeLabels.top-assembly");
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "assembly");
+    component.getByText("selectionScopeLabels.assembly");
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "element");
+    component.getByText("selectionScopeLabels.element");
+  });
+
+  it("SelectionScopeField should properly handle override scope labels", async () => {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, [
+      { id: "element", label: "Functional Element" } as PresentationSelectionScope,
+      { id: "assembly", label: "Functional Assembly" } as PresentationSelectionScope,
+      { id: "top-assembly", label: "Functional TopAssembly" } as PresentationSelectionScope,
+    ]);
+
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "top-assembly");
+
+    const component = render(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+    </Provider>);
+    expect(component).not.to.be.undefined;
+    const selectElement = component.getByTestId("components-selectionScope-selector") as HTMLSelectElement;
+    expect(selectElement).not.to.be.null;
+    expect(UiFramework.getActiveSelectionScope()).to.be.equal("top-assembly");
+    component.getByText("Functional TopAssembly");
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "assembly");
+    component.getByText("Functional Assembly");
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, "element");
+    component.getByText("Functional Element");
   });
 });

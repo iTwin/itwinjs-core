@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.3.0-dev.18",
+  "version": "3.3.0-dev.47",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -44,7 +44,7 @@
     "typedoc-plugin-merge-modules": "^3.0.2",
     "typescript": "~4.4.0",
     "wtfnode": "^0.9.1",
-    "yargs": "^16.0.0"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "workspace:*",

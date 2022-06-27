@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
@@ -11,6 +12,8 @@ import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Warning);
 RpcConfiguration.disableRoutingValidation = true;
 
 function initializeCloud(protocol: string) {

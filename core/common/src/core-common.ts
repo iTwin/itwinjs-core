@@ -160,7 +160,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  */
 /**
  * @docs-group-description Codes
- * Types for working with [Codes]($docs/bis/intro/codes.md).
+ * Types for working with [Codes]($docs/bis/guide/fundamentals/codes.md).
  */
 /**
  * @docs-group-description Geometry
@@ -237,4 +237,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description RealityData
  * Types for working with the RealityData API.
+ */
+/**
+ * @docs-group-description MapLayers
+ * Types for working with the MapLayers API.
  */

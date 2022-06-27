@@ -83,7 +83,7 @@ export interface ClassProps extends SchemaItemProps {
     // (undocumented)
     readonly modifier?: string;
     // (undocumented)
-    readonly properties?: PropertyProps[];
+    readonly properties?: AnyPropertyProps[];
 }
 
 // @beta
@@ -1664,6 +1664,7 @@ export class SchemaCache implements ISchemaLocater {
     addSchemaSync<T extends Schema>(schema: T): void;
     // (undocumented)
     get count(): number;
+    getAllSchemas(): Schema[];
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
     // (undocumented)
@@ -1682,6 +1683,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal
     getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
+    getKnownSchemas(): Schema[];
     // (undocumented)
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // (undocumented)
@@ -2115,7 +2117,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
-    getProperties(xmlElement: Element): Iterable<[string, string, Element]>;
+    getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
     // (undocumented)
     getPropertyCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
