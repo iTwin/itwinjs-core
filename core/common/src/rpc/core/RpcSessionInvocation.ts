@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { RPC } from "../../ipc/IpcSession";
+import { InterceptedRpcRequest } from "../../ipc/IpcSession";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
 import { RpcInvocation } from "./RpcInvocation";
@@ -28,7 +28,7 @@ class SessionProtocol extends RpcProtocol {
 
 /** @internal */
 export class RpcSessionInvocation extends RpcInvocation {
-  public static create(request: RPC): RpcSessionInvocation {
+  public static create(request: InterceptedRpcRequest): RpcSessionInvocation {
     const serializedRequest: SerializedRpcRequest = {
       id: request.context.id,
       applicationId: request.context.applicationId,

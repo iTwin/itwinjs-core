@@ -7,15 +7,16 @@
  */
 
 import * as semver from "semver";
-import { RpcConfiguration, RpcConfigurationSupplier, RpcDefaultConfiguration } from "./rpc/core/RpcConfiguration";
+import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
-import { IpcSession, RPC } from "./ipc/IpcSession";
+import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
 import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
 import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
 import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
 import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
+import { BeDuration } from "@itwin/core-bentley";
 
 /** @internal */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
@@ -61,7 +62,7 @@ export abstract class RpcInterface {
     const operationName = parametersArray.pop();
 
     const session = IpcSession.active;
-    if (session && !(this.configuration instanceof RpcDefaultConfiguration)) {
+    if (session) {
       return intercept(session, this, operationName, parametersArray);
     } else {
       const request = new (this.configuration.protocol.requestType as any)(this, operationName, parametersArray) as RpcRequest;
@@ -90,7 +91,7 @@ async function intercept(session: IpcSession, client: RpcInterface, operation: s
   const context = await client.configuration.protocol.serialize(request);
   request.parameters = parameters;
 
-  const info: RPC = {
+  const info: InterceptedRpcRequest = {
     definition: {
       interfaceName: context.operation.interfaceDefinition,
       interfaceVersion: context.operation.interfaceVersion,
@@ -138,16 +139,8 @@ async function handlePending(request: InterceptedRequest, status: RpcManagedStat
 
   const delay = request.operation.policy.retryInterval(request.client.configuration);
 
-  return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      try {
-        const response = await dispatch();
-        resolve(response);
-      } catch (err) {
-        reject(err);
-      }
-    }, delay);
-  });
+  await BeDuration.wait(delay);
+  return dispatch();
 }
 
 async function handleNotFound(request: InterceptedRequest, status: RpcManagedStatus, dispatch: () => Promise<any>) {

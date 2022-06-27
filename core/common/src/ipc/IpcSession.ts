@@ -7,7 +7,7 @@
  */
 
 /** @internal */
-export interface RPC {
+export interface InterceptedRpcRequest {
   definition: { interfaceName: string, interfaceVersion: string };
   operation: string;
   parameters: any[];
@@ -35,5 +35,5 @@ export abstract class IpcSession {
     this._active = undefined;
   }
 
-  public abstract handleRpc(info: RPC): Promise<any>;
+  public abstract handleRpc(info: InterceptedRpcRequest): Promise<any>;
 }

@@ -7,7 +7,7 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RPC, RpcSessionInvocation } from "@itwin/core-common";
+import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "./IpcHost";
 import { IModelHostConfiguration } from "./IModelHost";
 
@@ -63,7 +63,7 @@ class LocalTransport extends IpcWebSocketTransport {
 class RpcHandler extends IpcHandler {
   public channelName = "RPC";
 
-  public async request(info: RPC) {
+  public async request(info: InterceptedRpcRequest) {
     const invocation = RpcSessionInvocation.create(info);
     const fulfillment = await invocation.fulfillment;
     return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult;
