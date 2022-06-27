@@ -250,6 +250,7 @@ export function getKeysForContentRequest(
   return result;
 }
 
+/** @internal */
 export function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstancesMap: Map<string, Set<string>>) {
   const elementClassName = "BisCore:Element";
   const elementIds = classInstancesMap.get(elementClassName);
