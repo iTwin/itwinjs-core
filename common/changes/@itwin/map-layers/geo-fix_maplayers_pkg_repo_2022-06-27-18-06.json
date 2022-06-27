@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Fix invalid repository URL for map-layers package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
