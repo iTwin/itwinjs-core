@@ -178,7 +178,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _bindWindowEvents = () => {
     const activeWindow = this.getParentWindow();
     activeWindow.addEventListener("pointerdown", this._handleOutsideClick);
-    activeWindow.addEventListener("resize", this._hide);
+    activeWindow.addEventListener("resize", this._resize);
     activeWindow.addEventListener("contextmenu", this._handleContextMenu);
     activeWindow.addEventListener("scroll", this._hide);
     activeWindow.addEventListener("wheel", this._handleWheel);
@@ -188,7 +188,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _unBindWindowEvents = () => {
     const activeWindow = this.getParentWindow();
     activeWindow.removeEventListener("pointerdown", this._handleOutsideClick);
-    activeWindow.removeEventListener("resize", this._hide);
+    activeWindow.removeEventListener("resize", this._resize);
     activeWindow.removeEventListener("contextmenu", this._handleContextMenu);
     activeWindow.removeEventListener("scroll", this._hide);
     activeWindow.removeEventListener("wheel", this._handleWheel);
@@ -266,6 +266,14 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       } else {
         this._onClose(false);
       }
+    }
+  };
+
+  private _resize = () => {
+    if (this.props.isOpen) {
+      const position = this._toggleRelativePosition();
+      const point = this._fitPopup(this._getPosition(position));
+      this.setState({ left: point.x, top: point.y, position });
     }
   };
 
