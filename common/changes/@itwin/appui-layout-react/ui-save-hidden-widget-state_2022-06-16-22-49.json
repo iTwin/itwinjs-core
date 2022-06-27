@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-layout-react",
+      "comment": "Save state of floating widgets when they are hidden",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-layout-react"
+}

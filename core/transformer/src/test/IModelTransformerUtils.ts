@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Assertion, expect, util } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
-import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
@@ -23,77 +23,6 @@ import {
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 import { KnownTestLocations } from "./KnownTestLocations";
-
-interface DeepEqualWithFpToleranceOpts {
-  tolerance?: number;
-  /** e.g. consider {x: undefined} and {} as deeply equal */
-  considerNonExistingAndUndefinedEqual?: boolean;
-}
-
-declare global {
-  namespace Chai {
-    interface Deep {
-      // might be better to implement .approximately.deep.equal, but this is simpler
-      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
-    }
-  }
-}
-
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
-
-export function deepEqualWithFpTolerance(
-  a: any,
-  b: any,
-  options: DeepEqualWithFpToleranceOpts = {},
-): boolean {
-  if (options.tolerance === undefined) options.tolerance = 1e-10;
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  switch (typeof a) {
-    case "number":
-      return isAlmostEqualNumber(a, b, options.tolerance);
-    case "string":
-    case "boolean":
-    case "function":
-    case "symbol":
-    case "undefined":
-      return false; // these objects can only be strict equal which was already tested
-    case "object":
-      if ((a === null) !== (b === null)) return false;
-      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
-      const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
-      return aSize === bSize && Object.keys(a).every(
-        (key) =>
-          (key in b || options.considerNonExistingAndUndefinedEqual) &&
-          deepEqualWithFpTolerance(a[key], b[key], options)
-      );
-    default: // bigint unhandled
-      throw Error("unhandled deep compare type");
-  }
-}
-
-Assertion.addMethod(
-  "equalWithFpTolerance",
-  function equalWithFpTolerance(
-    expected: any,
-    options: DeepEqualWithFpToleranceOpts = {}
-  ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
-    const actual = this._obj;
-    const isDeep = util.flag(this, "deep");
-    this.assert(
-      isDeep
-        ? deepEqualWithFpTolerance(expected, actual, options)
-        : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      expected,
-      actual
-    );
-  }
-);
 
 export class HubWrappers extends BackendTestUtils.HubWrappers {
   protected static override get hubMock() { return HubMock; }
@@ -356,7 +285,7 @@ export async function assertIdentityTransformation(
           );
         } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
-          const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          const _propEq = BackendTestUtils.deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
@@ -406,7 +335,7 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
@@ -475,7 +404,7 @@ export async function assertIdentityTransformation(
       targetModelIds.add(targetModelId);
       targetToSourceModelsMap.set(targetModel, sourceModel);
       const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
       );
