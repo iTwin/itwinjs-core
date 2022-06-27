@@ -110,8 +110,10 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
         >
           <MessageCenter
             indicatorRef={this._indicator}
-            isInFooterMode={this.props.isInFooterMode}
-            label={this.props.isInFooterMode ? this._title : undefined}
+            // eslint-disable-next-line deprecation/deprecation
+            isInFooterMode={this.props.isInFooterMode ?? true}
+            // eslint-disable-next-line deprecation/deprecation
+            label={(this.props.isInFooterMode ?? true) ? this._title : undefined}
             onClick={this._handleMessageIndicatorClick}
           >
             {this.state.messageCount.toString()}
