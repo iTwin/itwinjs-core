@@ -13,7 +13,9 @@ export interface InspectUiItemInfoToolProviderProps {
 }
 
 /**
- * The InspectUiItemInfoTool provides the inspect tool to any stage that has a usage value of StageUsage.General.
+ * The InspectUiItemInfoToolProvider registers and provides the InspectUiItemInfoTool to any stage that has a usage value of StageUsage.General.
+ * This tool can be used to display info about dynamically provided toolbuttons, status bar items, and widget by hovering over them
+ * with mouse.
  */
 export class InspectUiItemInfoToolProvider implements UiItemsProvider {
   public readonly id = "appui-test-providers:InspectUiItemInfoToolProvider";

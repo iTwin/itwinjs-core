@@ -15,6 +15,11 @@ import { ContentLayoutProps, StageUsage, StandardContentLayouts, UiItemsManager 
 import { CustomContentStageUiProvider } from "../providers/CustomContentStageUiProvider";
 import { SampleContentControl } from "../content/SampleContentControl";
 
+/**
+ * The CustomContentGroupProvider class method `provideContentGroup` returns a ContentGroup that displays two content view, one the
+ * shows and IModel using `UiFramework.getDefaultViewState` and a second content that just display React components. The layout
+ * used in StandardContentLayouts.twoHorizontalSplit which arrange the iModel view on top and the React content below.
+ */
 export class CustomContentGroupProvider extends ContentGroupProvider {
   public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
     // copy and then modify standard layout so the content is always shown - note we could have just copied the standard and created a new one in line
@@ -35,7 +40,6 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
           classId: IModelViewportControl.id,
           applicationData: {
             isPrimaryView: true,
-            supports: ["viewIdSelection", "3dModels", "2dModels"],
             viewState: UiFramework.getDefaultViewState,
             iModelConnection: UiFramework.getIModelConnection,
             featureOptions:
@@ -58,8 +62,10 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
 }
 
 /**
- * This class is used to register a new frontstage that is called 'Custom' but it provides no real tools to do work,
- * it is simply used as a test defining a stage that provides custom content along with imodel content.
+ * This class is used to register a new frontstage that is called 'Custom' which provides custom content along with imodel content.
+ * Providers are used to provide some tools from standard providers along with a stage-specific provider that
+ * defines a couple test tool buttons to demonstrate how to use Redux from a package like the one that includes this
+ * frontstage definition.
  */
 export class CustomContentFrontstage {
   public static stageId = "appui-test-providers:CustomContent";
@@ -91,6 +97,9 @@ export class CustomContentFrontstage {
           hide: "group",
           isolate: "group",
           emphasize: "element",
+        },
+        vertical: {
+          selectElement: true,
         },
       }), { providerId: "customContentTools", stageIds: [CustomContentFrontstage.stageId] });
 

@@ -16,6 +16,14 @@ import {
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { ContentLayoutStageUiItemsProvider } from "../providers/ContentLayoutStageUiItemsProvider";
 
+/**
+ * The ContentLayoutStageContentGroupProvider provides a class with the primary method `provideContentGroup` to provide a ContentGroup
+ * to a stage when the stage is activated. This provider will look to see if the user saved out a ContentGroup to use when a stage and
+ * specific iModel is opened. See `SaveContentLayoutTool` in `ContentLayoutTools.tsx` to see tool that saved the layout and ViewStates.
+ * If no saved state was found `UiFramework.getDefaultViewState` is used to specify the ViewState and `StandardContentLayouts.singleView`
+ * is used to specify the layout. The `prepareToSaveProps` prepare the JSON to be saved to local storage when saving ContentGroup data. The
+ * method `applyUpdatesToSavedProps` is used to make any updates to the saved JSON before it is applied to the stage.
+ */
 export class ContentLayoutStageContentGroupProvider extends ContentGroupProvider {
   public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
     const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
@@ -86,6 +94,14 @@ export class ContentLayoutStageContentGroupProvider extends ContentGroupProvider
     });
   }
 }
+
+/**
+ * The ContentLayoutStage provides a register method that registers a FrontstageProvider that is used to activate a stage.
+ * It also register "standard" providers to provide tool buttons and statusbar items. Finally it registers a UiItemsProvider
+ * that provides tools that are only intended to be used in this stage. This stage also uses a ContentGroupProvider to provide a
+ * ContentGroup to use when the stage is activated. Using a ContentGroupProvider allows async code to be run as a stage is activated
+ * so it can use logic to determine what content and layout to use.
+ */
 
 export class ContentLayoutStage {
   public static stageId = "appui-test-providers:ContentLayoutExample";

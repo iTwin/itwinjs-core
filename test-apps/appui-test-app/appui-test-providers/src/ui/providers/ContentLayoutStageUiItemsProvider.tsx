@@ -18,6 +18,20 @@ import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
 import { ContentLayoutStage } from "../frontstages/ContentLayout";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
+/**
+ * The ContentLayoutStageUiItemsProvider provides additional items only to the `ContentLayoutStage` frontstage.
+ * This provider provides four tool buttons to:
+ *  - toggle between a single view and two side-by-side views.
+ *  - activate a tool to save the current view layout and viewstate shown in each view.
+ *  - activate a tool to restore the previous saved state for the current stage.
+ *  - open a popup to change the viewstate of the "active" view to that selected from the popup list.
+ * Note: If you want to allow the user to perform an action via the key-in palette, a `Tool` must be created and registered.
+ *       The Key-in Palette is open using keystroke Ctrl+F2 and shows the keyins from all the registered Tools.
+ * This provider also adds a display style picker to the status bar. This item allows user to apply a display style to the
+ * "active" view. If the display style for a view contains a schedule script one of the default view overlay components will
+ * display to allow user to play the animation.
+ */
+
 export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:content-layout-stage-items-provider";
   public readonly id = ContentLayoutStageUiItemsProvider.providerId;

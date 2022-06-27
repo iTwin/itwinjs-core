@@ -10,8 +10,6 @@ import { providerSlice, TestProviderSliceName } from "./store";
  * initialize method is called tools, frontstages and UiItemProviders are registered.
  */
 export class AppUiTestProviders {
-  /** We'll register the `appuiTestProviders` as the package's namespace. The matching file `appuiTestProviders.json`
-   * found in `src/public/locales/en` with contain the keys and matching localized string for English.  */
   public static readonly localizationNamespace = "appuiTestProviders";
 
   public static syncEventIdHideCustomDialogButton = "appui-test-providers:sync-custom-dialog-button";
@@ -25,6 +23,8 @@ export class AppUiTestProviders {
   }
 
   public static async initializeLocalizationAndState() {
+    /** We'll register the `appuiTestProviders` as the package's namespace. The matching file `appuiTestProviders.json`
+      * found in `src/public/locales/en` with contain the keys and matching localized string for English.  */
     await IModelApp.localization.registerNamespace(AppUiTestProviders.localizationNamespace);
 
     /** Register a slice of state into the iModelApp Redux store. - this should only be called once */
