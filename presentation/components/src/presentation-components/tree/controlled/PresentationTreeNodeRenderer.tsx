@@ -42,16 +42,18 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
     />;
   return <TreeNodeRenderer
     {...restProps }
-    className={classnames("presentation-node", className)}
+    className={classnames("presentation-components-node", className)}
   >
-    {onFilter && <IconButton className="presentation-filter-action-button"
-      styleType="borderless"
-      onClick={(e) => {
-        onFilter(restProps.node.item);
-        e.stopPropagation();
-      }} >
-      <SvgFilter/>
-    </IconButton>}
+    {onFilter && <div className="presentation-components-filter-action-button">
+      <IconButton
+        styleType="borderless"
+        onClick={(e) => {
+          onFilter(restProps.node.item);
+          e.stopPropagation();
+        }} >
+        <SvgFilter/>
+      </IconButton>
+    </div>}
   </TreeNodeRenderer>;
 }
 

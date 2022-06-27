@@ -178,7 +178,7 @@ describe("TreeNodeRenderer", () => {
         node={node}
       />);
 
-    const button = container.querySelector("presentation-filter-action-button");
+    const button = container.querySelector("presentation-components-filter-action-button");
     expect(button).to.not.be.undefined;
   });
 
@@ -194,7 +194,8 @@ describe("TreeNodeRenderer", () => {
         onFilter={buttonSpy}
       />);
 
-    const button = container.getElementsByClassName("presentation-filter-action-button")[0];
+    const buttonContainer = container.getElementsByClassName("presentation-components-filter-action-button")[0];
+    const button = buttonContainer.getElementsByClassName("iui-button")[0];
     fireEvent.click(button);
     expect(buttonSpy).to.be.called;
   });
