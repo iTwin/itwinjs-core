@@ -31,6 +31,13 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
+
+  /**
+   * Expected form of response. This property is set automatically on newer frontends.
+   * `unparsed-json` — deliver response from native addon without parsing it.
+   * @internal
+   */
+  transport?: "unparsed-json";
 }
 
 /**
