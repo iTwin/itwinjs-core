@@ -2118,7 +2118,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
-    getProperties(xmlElement: Element): Iterable<[string, string, Element]>;
+    getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
     // (undocumented)
     getPropertyCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)

@@ -35,7 +35,6 @@ import { LabelDefinition } from '@itwin/presentation-common';
 import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
-import { NodeKeyJSON } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
@@ -82,9 +81,6 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
 // @internal (undocumented)
 export const getLocalesDirectory: (assetsDirectory: string) => string;
@@ -191,8 +187,10 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
-    activeLocale: string | undefined;
-    activeUnitSystem: UnitSystemKey | undefined;
+    get activeLocale(): string | undefined;
+    set activeLocale(value: string | undefined);
+    get activeUnitSystem(): UnitSystemKey | undefined;
+    set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
     computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
@@ -206,6 +204,8 @@ export class PresentationManager {
     getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
     // @beta (undocumented)
     getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
+    // @internal (undocumented)
+    getDetail(): PresentationManagerDetail;
     getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     // @beta

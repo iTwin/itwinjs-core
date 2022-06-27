@@ -2474,6 +2474,8 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
+    // @internal
+    transport?: "unparsed-json";
     unitSystem?: UnitSystemKey;
 }
 
