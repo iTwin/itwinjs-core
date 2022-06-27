@@ -3,25 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { useSelector } from "react-redux";
+
 import {
   BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   StateManager,
-  SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
 import {
   ConditionalStringValue,
-  StageUsage, StandardContentLayouts, UiItemsManager, UiSyncEventArgs,
+  StageUsage, StandardContentLayouts, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";
-import { getTestProviderState, setShowCustomViewOverlay } from "../../store";
+import { getTestProviderState, setShowCustomViewOverlay, TestProviderState } from "../../store";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 
+/**
+ * The WidgetApiStageContentGroupProvider class method `provideContentGroup` returns a ContentGroup that displays
+ * a single content view and also defines a custom view overlay. The display of the view overlay in its applicationData.
+ */
 export class WidgetApiStageContentGroupProvider extends ContentGroupProvider {
   /* eslint-disable react/jsx-key */
   public static supplyViewOverlay = (viewport: ScreenViewport) => {
@@ -154,11 +159,12 @@ export class WidgetApiStage {
     // Provides standard status fields for stage
     UiItemsManager.register(new StandardStatusbarUiItemsProvider(), { providerId: "widget-api-stage-standardStatusItems", stageIds: [WidgetApiStage.stageId] });
 
-    // Provides example widgets stage
+    // Provides example widgets stage and tool to toggle display of Custom overlay.
     WidgetApiStageUiItemsProvider.register(localizationNamespace);
   }
 }
 
+// Return CommandItemDef that can be used to provide a toolbar button.
 export function getToggleCustomOverlayCommandItemDef() {
   const commandId = "testHideShowItems";
   return new CommandItemDef({
@@ -174,31 +180,16 @@ export function getToggleCustomOverlayCommandItemDef() {
   });
 }
 
+/*
+ * Simple View overlay that just displays static React component. The display of the overlay is controlled
+ * based on a variable in the Redux store which can be seen in file `..\appui-test-providers\src\store\index.ts`.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MyCustomViewOverlay() {
-  const [syncIdsOfInterest] = React.useState([AppUiTestProviders.syncEventIdHideCustomViewOverlay]);
-  const [showOverlay, setShowOverlay] = React.useState(() => getTestProviderState().showCustomViewOverlay);
 
-  React.useEffect(() => {
-    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
-      if (0 === syncIdsOfInterest.length)
-        return;
-
-      // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
-        const show = getTestProviderState().showCustomViewOverlay;
-        if (show !== showOverlay) {
-          setShowOverlay(show);
-        }
-      }
-    };
-
-    // Note: that items with conditions have condition run when loaded into the items manager
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-    return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
-    };
-  }, [setShowOverlay, showOverlay, syncIdsOfInterest]);
+  const showOverlay = useSelector((state: { testProviderState: TestProviderState }) => {
+    return !!state.testProviderState.showCustomViewOverlay;
+  });
 
   return showOverlay ?
     <div className="uifw-view-overlay">

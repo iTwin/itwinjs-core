@@ -14,6 +14,7 @@ import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontst
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 
+
 export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:widget-api-stage";
   public readonly id = WidgetApiStageUiItemsProvider.providerId;

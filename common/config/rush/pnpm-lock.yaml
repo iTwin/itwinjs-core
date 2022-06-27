@@ -2662,6 +2662,7 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@reduxjs/toolkit': ^1.5.0
       '@types/react': ^17.0.37
+      '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
       cpx2: ^3.0.0
@@ -2699,6 +2700,7 @@ importers:
       '@itwin/build-tools': link:../../../tools/build
       '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
       '@types/react': 17.0.45
+      '@types/react-redux': 7.1.24
       '@types/react-select': 3.0.26
       cpx2: 3.0.2
       eslint: 7.32.0
@@ -22341,7 +22343,7 @@ packages:
     dev: false
 
   /util-deprecate/1.0.2:
-    resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=}
+    resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   /util.promisify/1.0.0:
     resolution: {integrity: sha512-i+6qA2MPhvoKLuxnJNpXAGhg7HphQOSUq2LKMZD0m15EiskXUkMvKdF4Uui0WYeCUGea+o2cw/ZuwehtfsrNkA==}
@@ -23310,7 +23312,7 @@ packages:
       yargs-parser: 21.0.1
 
   /yauzl/2.10.0:
-    resolution: {integrity: sha1-x+sXyT4RLLEIb6bY5R+wZnt5pfk=}
+    resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0

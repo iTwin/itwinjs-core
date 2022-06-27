@@ -23,7 +23,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
  * ```
  */
 
-interface TestProviderState {
+export interface TestProviderState {
   hideCustomDialogButton: boolean;
   showCustomViewOverlay: boolean;
 }

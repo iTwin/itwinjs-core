@@ -31,7 +31,6 @@ import { DisplayStyleField } from "../statusfields/DisplayStyleField";
  * "active" view. If the display style for a view contains a schedule script one of the default view overlay components will
  * display to allow user to play the animation.
  */
-
 export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:content-layout-stage-items-provider";
   public readonly id = ContentLayoutStageUiItemsProvider.providerId;
