@@ -17,6 +17,7 @@ import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
 import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
 import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
 import { BeDuration } from "@itwin/core-bentley";
+import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /** @internal */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
@@ -146,7 +147,11 @@ async function handlePending(request: InterceptedRequest, status: RpcManagedStat
 async function handleNotFound(request: InterceptedRequest, status: RpcManagedStatus, dispatch: () => Promise<any>) {
   return new Promise((resolve, reject) => {
     let resubmitted = false;
-    RpcRequest.notFoundHandlers.raiseEvent(request, status.responseValue, async () => {
+
+    const notFound = new RpcNotFoundResponse();
+    notFound.message = status.responseValue;
+
+    RpcRequest.notFoundHandlers.raiseEvent(request, notFound, async () => {
       if (resubmitted) {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
       }
