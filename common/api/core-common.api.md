@@ -4699,6 +4699,23 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
+// @internal (undocumented)
+export interface InterceptedRpcRequest {
+    // (undocumented)
+    context: {
+        [index: string]: string;
+    };
+    // (undocumented)
+    definition: {
+        interfaceName: string;
+        interfaceVersion: string;
+    };
+    // (undocumented)
+    operation: string;
+    // (undocumented)
+    parameters: any[];
+}
+
 // @beta
 export enum InternetConnectivityStatus {
     // (undocumented)
@@ -4794,7 +4811,7 @@ export abstract class IpcSession {
     // (undocumented)
     static get active(): IpcSession | undefined;
     // (undocumented)
-    abstract handleRpc(info: RPC): Promise<any>;
+    abstract handleRpc(info: InterceptedRpcRequest): Promise<any>;
     // (undocumented)
     static start(session: IpcSession): void;
     // (undocumented)
@@ -7266,23 +7283,6 @@ export interface RootSubjectProps {
     readonly name: string;
 }
 
-// @internal (undocumented)
-export interface RPC {
-    // (undocumented)
-    context: {
-        [index: string]: string;
-    };
-    // (undocumented)
-    definition: {
-        interfaceName: string;
-        interfaceVersion: string;
-    };
-    // (undocumented)
-    operation: string;
-    // (undocumented)
-    parameters: any[];
-}
-
 // @public
 export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
@@ -7969,7 +7969,7 @@ export namespace RpcSerializedValue {
 // @internal (undocumented)
 export class RpcSessionInvocation extends RpcInvocation {
     // (undocumented)
-    static create(request: RPC): RpcSessionInvocation;
+    static create(request: InterceptedRpcRequest): RpcSessionInvocation;
     // (undocumented)
     get rejected(): boolean;
 }
