@@ -30,9 +30,9 @@ class AttachMapLayerBaseTool extends Tool {
           vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
           vp.invalidateRenderPlan();
         } else {
-          const layerSettings = source.toLayerSettings(validation.subLayers);
-          if (layerSettings) {
-            vp.displayStyle.attachMapLayerSettings(layerSettings, !this._isBackground);
+          const settings = source.toLayerSettings(validation.subLayers);
+          if (settings) {
+            vp.displayStyle.attachMapLayer({settings, isOverlay: !this._isBackground});
           }
         }
 
@@ -81,7 +81,8 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      vp.displayStyle.attachMapLayerSettings(ModelMapLayerSettings.fromJSON({ name, modelId }), false);
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
+      vp.displayStyle.attachMapLayer({settings, isOverlay:false});
     }
     return true;
   }
@@ -99,7 +100,13 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
   constructor(protected _formatId: string) { super(); }
 
   public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
-    this.doAttach(MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId, userName, password }));
+    const source = MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId });
+    if (source){
+      source.userName = userName;
+      source.password = password;
+    }
+
+    this.doAttach(source);
     return true;
   }
 

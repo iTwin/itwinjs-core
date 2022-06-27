@@ -12,7 +12,8 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
 import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, PromiseContainer, ResolvablePromise,
+  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
+  PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
@@ -291,7 +292,7 @@ describe("TreeDataProvider", () => {
 
   describe("diagnostics", () => {
 
-    it("passes diagnostics options to presentation manager", async () => {
+    it("passes rule diagnostics options to presentation manager", async () => {
       const diagnosticsHandler = sinon.stub();
 
       provider.dispose();
@@ -303,6 +304,24 @@ describe("TreeDataProvider", () => {
 
       presentationManagerMock
         .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler } }))
+        .returns(async () => 0)
+        .verifiable();
+      await provider.getNodesCount();
+      presentationManagerMock.verifyAll();
+    });
+
+    it("passes dev diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new PresentationTreeDataProvider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        devDiagnostics: { backendVersion: true, perf: true, severity: "error", handler: diagnosticsHandler },
+      });
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { backendVersion: true, perf: true, dev: "error", handler: diagnosticsHandler } }))
         .returns(async () => 0)
         .verifiable();
       await provider.getNodesCount();

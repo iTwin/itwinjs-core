@@ -24,6 +24,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 
 /* eslint-disable no-console */
 describe("ParityRegionSweep", () => {
@@ -185,5 +186,54 @@ it("bowTieTriangulate", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "simpleHoleTriangulate");
     expect(ck.getNumErrors()).equals(0);
     });
+
+it("KarolisRegion", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const dx = 50;
+  const dy = 50;
+  let shiftX = 0;
+  let shiftY = 0;
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
+  ck.testDefined(inputs, "linearSweep imported");
+
+  const boundaryEdges: SortableEdgeCluster[] = [];
+  const nullEdges: SortableEdgeCluster[] = [];
+  const otherClusteredEdges: SortableEdgeCluster[] = [];
+  let boundaryEdgeCount = 0, nullEdgeCount = 0, otherClusteredEdgeCount = 0;
+  const expectedBoundaryEdgeCount = 0, expectedNullEdgeCount = 0, expectedOtherClusteredEdgeCount = 3;  // we know there are 3 singular vertices in the parity regions
+
+  for (const input of inputs) {
+    const solid = input as LinearSweep;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid, shiftX, shiftY);
+    shiftX += dx;
+
+    const polyfaceBuilder = PolyfaceBuilder.create();
+    polyfaceBuilder.addLinearSweep(solid);
+    const facetedSolid = polyfaceBuilder.claimPolyface();
+    ck.testDefined(facetedSolid, "polyface built");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetedSolid, shiftX, shiftY);
+    shiftX += dx;
+
+    const processedFacets = PolyfaceQuery.cloneByFacetDuplication(facetedSolid, true, DuplicateFacetClusterSelector.SelectOneByParity);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, processedFacets, shiftX, shiftY);
+
+    PolyfaceQuery.createIndexedEdges(processedFacets).sortAndCollectClusters(undefined, boundaryEdges, nullEdges, otherClusteredEdges);
+    boundaryEdgeCount += boundaryEdges.length;
+    nullEdgeCount += nullEdges.length;
+    otherClusteredEdgeCount += otherClusteredEdges.length;
+    if (boundaryEdges.length > 0 || nullEdges.length > 0 || otherClusteredEdges.length > 0)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceQuery.boundaryEdges(processedFacets), shiftX, shiftY);
+
+    shiftX = 0;
+    shiftY += dy;
+  }
+  ck.testExactNumber(boundaryEdgeCount, expectedBoundaryEdgeCount, "linearSweeps have expected boundary edge count");
+  ck.testExactNumber(nullEdgeCount, expectedNullEdgeCount, "linearSweeps have expected null edge count");
+  ck.testExactNumber(otherClusteredEdgeCount, expectedOtherClusteredEdgeCount, "linearSweeps have expected other clustered edge count");
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "KarolisRegion");
+  expect(ck.getNumErrors()).equals(0);
+});
 
 });

@@ -37,6 +37,9 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @internal
+export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): void;
+
+// @internal
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
@@ -678,6 +681,8 @@ export interface FloatingWidgetState {
     // (undocumented)
     readonly bounds: RectangleProps;
     // (undocumented)
+    readonly hidden?: boolean;
+    // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
     readonly id: WidgetState["id"];
@@ -1037,6 +1042,9 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
 export function isPanelLocation(location: TabLocation): location is PanelLocation;
 
 // @internal (undocumented)
+export function isPanelTarget(target: DragTarget): target is PanelTarget_2;
+
+// @internal (undocumented)
 export function isPopoutLocation(location: TabLocation): location is PopoutLocation;
 
 // @internal (undocumented)
@@ -1044,6 +1052,9 @@ export function isPopoutWidgetLocation(location: WidgetLocation): location is Po
 
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
+
+// @internal (undocumented)
+export function isWidgetTarget(target: DragTarget): target is WidgetTarget_2;
 
 // @beta @deprecated
 export class Item extends React.PureComponent<ItemProps> {

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.3.0-dev.7",
+  "version": "3.3.0-dev.47",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -37,27 +37,27 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "flatbuffers": "~1.12.0",
-    "semver": "^5.5.0",
+    "semver": "^7.3.5",
     "string_decoder": "^1.3.0",
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.7",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.7"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.47",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.47"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",
-    "@types/semver": "^5.5.0",
+    "@types/semver": "^7.3.9",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

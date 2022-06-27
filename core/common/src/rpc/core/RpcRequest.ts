@@ -123,7 +123,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
-  protected responseProtocolVersion = 0;
+  public responseProtocolVersion = RpcProtocolVersion.None;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -265,11 +265,6 @@ export abstract class RpcRequest<TResponse = any> {
   /** Sets the last updated time for the request. */
   protected setLastUpdatedTime() {
     this._lastUpdated = new Date().getTime();
-  }
-
-  /** Override to describe available headers based on a protocol-specific criteria (such as a CORS whitelist). */
-  protected isHeaderAvailable(_name: string): boolean {
-    return true;
   }
 
   protected computeRetryAfter(attempts: number) {
@@ -563,9 +558,8 @@ export abstract class RpcRequest<TResponse = any> {
 
   protected async setHeaders(): Promise<void> {
     const versionHeader = this.protocol.protocolVersionHeaderName;
-    if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
+    if (versionHeader && RpcProtocol.protocolVersion)
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
-    }
 
     const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
     const headerValues = await RpcConfiguration.requestContext.serialize(this);

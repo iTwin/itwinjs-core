@@ -334,8 +334,8 @@ export class IModelHubBackend implements BackendHubAccess {
 
     return {
       containerId: containerAccessKeyContainer,
-      sasToken: containerAccessKeySAS,
-      accountName: containerAccessKeyAccount,
+      accountName: containerAccessKeySAS,
+      sasToken: containerAccessKeyAccount,
       dbName: containerAccessKeyDbName,
       storageType: "azure?sas=1",
     };
@@ -362,15 +362,14 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const transfer = new IModelHost.platform.CloudDbTransfer("download", {
+    const container = new IModelHost.platform.CloudContainer({
       containerId: containerAccessKeyContainer,
-      sasToken: containerAccessKeySAS,
+      accessToken: containerAccessKeySAS,
       storageType: "azure?sas=1",
-      accountName: containerAccessKeyAccount,
-      dbName: containerAccessKeyDbName,
+      accessName: containerAccessKeyAccount,
       writeable: false,
-      localFile: arg.localFile,
     });
+    const transfer = new IModelHost.platform.CloudDbTransfer("download", container, { dbName: containerAccessKeyDbName, localFileName: arg.localFile });
 
     let timer: NodeJS.Timeout | undefined;
     try {

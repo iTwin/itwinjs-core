@@ -28,25 +28,25 @@ export interface RelatedElementProps {
   relClassName?: string;
 }
 
-/** Properties of an [Element]($docs/bis/intro/element-fundamentals)
+/** Properties of an [Element]($docs/bis/guide/fundamentals/element-fundamentals)
  * @public
  * @extensions
  */
 export interface ElementProps extends EntityProps {
-  /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The Id of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   code: CodeProps;
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element.
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element.
    * @note  On insert, if this is a valid Guid, the value is preserved. If it is `undefined`, a new Guid is created. If it is an invalid Guid (e.g. Guid.empty), the
    * resultant element will have a `null` federationGuid. For update, `undefined` means "don't change."
    */
   federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
   jsonProperties?: any;
 }
 
