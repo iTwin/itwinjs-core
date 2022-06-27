@@ -14,7 +14,10 @@ import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontst
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 
-
+/**
+ * WidgetApiStageUiItemsProvider provides widget in the bottom panel that can exercise the Widget API on Widgets in the other panels.
+ * Widgets may be hidden, shown, floated, popped out etc. using the controls in the bottom panel.
+ */
 export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   public static providerId = "appui-test-providers:widget-api-stage";
   public readonly id = WidgetApiStageUiItemsProvider.providerId;
@@ -277,6 +280,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
+  /** provide a toolbar button to set a value in redux store that toggles the display of the custom overlay */
   public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     const allowedStages = [WidgetApiStage.stageId];
     if (allowedStages.includes(stageId)) {
@@ -289,6 +293,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
+  /** Add entry to activate this stage in the backstage. */
   public provideBackstageItems(): BackstageItem[] {
     const label = AppUiTestProviders.translate("backstage.widgetApiTestFrontstageLabel");
     return [
