@@ -1114,6 +1114,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._timePointValid = false;
       this._changeFlags.setDisplayStyle();
       this.setFeatureOverrideProviderChanged();
+      this.invalidateScene();
       IModelApp.requestNextAnimation();
     };
 
