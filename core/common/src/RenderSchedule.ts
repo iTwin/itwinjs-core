@@ -1155,6 +1155,12 @@ export namespace RenderSchedule {
             ids.add(id);
       }
     }
+
+    /** @internal */
+    public modelRequiresBatching(modelId: Id64String): boolean {
+      // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
+      return this.requiresBatching && this.modelTimelines.some((x) => x.modelId === modelId && x.requiresBatching);
+    }
   }
 
   /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.

@@ -18,9 +18,8 @@ import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
-import { AnimationNodeId } from "../render/GraphicBranch";
+import { AnimationNodeId, formatAnimationBranchId } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
@@ -165,7 +164,7 @@ class PrimaryTreeReference extends TileTreeReference {
       view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
     }
 
-    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleState);
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScriptReference);
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -233,7 +232,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
-    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleState)?.timeline;
+    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleScriptReference)?.timeline;
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing || timeline !== this._id.timeline) {
       this._id = {
         modelId: this._id.modelId,
@@ -264,7 +263,7 @@ class PrimaryTreeReference extends TileTreeReference {
       };
     }
 
-    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleState)?.animationId;
+    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleScriptReference)?.animationId;
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
@@ -560,13 +559,13 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderScheduleState | undefined): void {
+  public updateAnimated(script: RenderSchedule.ScriptReference | undefined): void {
     const ref = this._primaryRef;
     if (!ref)
       return;
 
     this._animatedRefs.length = 0;
-    const nodeIds = script?.getTransformNodeIds(ref.model.id);
+    const nodeIds = script?.script.getTransformBatchIds(ref.model.id);
     if (nodeIds)
       for (const nodeId of nodeIds)
         this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, nodeId));
@@ -623,12 +622,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
-  private _scheduleScript?: RenderScheduleState;
+  private _scheduleScript?: RenderSchedule.ScriptReference;
   private _sectionCut?: StringifiedClipVector;
 
   public constructor(view: SpatialViewState) {
     this._view = view;
-    this._scheduleScript = view.displayStyle.scheduleState;
+    this._scheduleScript = view.displayStyle.scheduleScriptReference;
     this._sectionCut = this.getSectionCutFromView();
   }
 
@@ -664,7 +663,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const curScript = this._view.displayStyle.scheduleState;
+    const curScript = this._view.displayStyle.scheduleScriptReference;
     const prevScript = this._scheduleScript;
     if (curScript !== prevScript) {
       this._scheduleScript = curScript;

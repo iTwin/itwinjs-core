@@ -17,7 +17,6 @@ import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
-import { RenderScheduleState } from "../RenderScheduleState";
 import {
   DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
@@ -735,7 +734,7 @@ export class TileAdmin {
    * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
    * @internal
    */
-  public getScriptInfoForTreeId(modelId: Id64String, script: RenderScheduleState | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
+  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
     if (!script || !script.script.requiresBatching)
       return undefined;
 
@@ -745,7 +744,7 @@ export class TileAdmin {
       return timeline && (timeline.requiresBatching || timeline.containsTransform) ? { timeline } : undefined;
     }
 
-    return script.modelRequiresBatching(modelId) ? { animationId: script.sourceId } : undefined;
+    return script.script.modelRequiresBatching(modelId) ? { animationId: script.sourceId } : undefined;
   }
 
   private dispatchTileTreePropsRequests(): void {

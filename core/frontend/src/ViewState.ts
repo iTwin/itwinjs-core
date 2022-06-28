@@ -30,7 +30,6 @@ import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -298,8 +297,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this.displayStyle.scheduleState;
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+    return this.displayStyle.scheduleScriptReference;
   }
 
   /** Get the globe projection mode.

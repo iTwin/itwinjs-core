@@ -40,6 +40,7 @@ import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
+import { AnimationBranchStates } from "./render/GraphicBranch";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
@@ -2323,13 +2324,13 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      const scheduleScript = view.displayStyle.scheduleState;
+      const scheduleScript = view.displayStyle.scheduleScriptReference?.script;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
+        target.animationBranches = AnimationBranchStates.fromScript(scheduleScript, this.timePoint ?? scheduleScript.duration.low)
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
 
-        if (scheduleScript.script.containsTransform && !this._freezeScene)
+        if (scheduleScript.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
 

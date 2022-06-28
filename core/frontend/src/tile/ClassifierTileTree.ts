@@ -186,7 +186,7 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleState);
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference);
   return {
     modelId: classifier.modelId,
     type,
