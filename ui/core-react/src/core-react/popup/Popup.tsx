@@ -79,7 +79,7 @@ export interface PopupProps extends CommonProps {
   keepContentsMounted?: boolean;
 
   /**
-   * If true the the popup will remain open and will be repositioned when window resize event occurs, default to false
+   * If true the popup will remain open and will be repositioned when window resize events occur, default to false.
    * @beta
    * */
   repositionOnResize?: boolean;
