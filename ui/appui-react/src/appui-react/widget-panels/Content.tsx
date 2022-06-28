@@ -12,12 +12,22 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import { useTransientState } from "./useTransientState";
 
 /** @internal */
 export function WidgetContent() {
   const widget = useWidgetDef();
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
+  const onSave = React.useCallback(() => {
+    // istanbul ignore next
+    widget?.saveTransientState();
+  }, [widget]);
+  const onRestore = React.useCallback(() => {
+    // istanbul ignore next
+    widget?.restoreTransientState();
+  }, [widget]);
+  useTransientState(onSave, onRestore);
   return (
     <ScrollableWidgetContent
       itemId={itemId}

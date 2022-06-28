@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "deprecate collectPredecessorIds and getPredecessorIds in favor of collectReferenceIds and getReferenceIds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

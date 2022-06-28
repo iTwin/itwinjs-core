@@ -252,6 +252,7 @@ export * from "./appui-react/widget-panels/Tab";
 export * from "./appui-react/widget-panels/Toolbars";
 export * from "./appui-react/widget-panels/ToolSettings";
 export * from "./appui-react/widget-panels/useWidgetDirection";
+export * from "./appui-react/widget-panels/useTransientState";
 
 export * from "./appui-react/widgets/BackstageAppButton";
 export * from "./appui-react/widgets/BasicNavigationWidget";

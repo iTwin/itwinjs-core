@@ -106,6 +106,7 @@ export interface TabLocation {
   widgetIndex: number;
   side: PanelSide;
   tabIndex: number;
+  floating?: boolean;
 }
 
 // -----------------------------------------------------------------------------
