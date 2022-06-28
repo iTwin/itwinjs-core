@@ -1124,12 +1124,9 @@ export class IModelTransformer extends IModelExportHandler {
         !isExternalSourceAspectFromTransformer
       );
     });
-    assert(targetIds.length === targetAspectPropsArray.length, "target ids s was not the same as ");
-    for (let i = 0; i < targetIds.length)
-    targetAspectPropsArray.forEach((targetAspectProps) => {
-
-    this.context.remapElementAspect(sourceAspect.id, targetId);
-    })
+    for (let i = 0; i < targetIds.length; ++i) {
+      this.context.remapElementAspect(sourceAspects[i].id, targetIds[i]);
+    }
   }
 
   /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.
