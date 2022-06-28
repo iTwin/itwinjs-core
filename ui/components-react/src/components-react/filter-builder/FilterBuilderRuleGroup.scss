@@ -40,7 +40,9 @@
   }
 
   &[data-isactive=false] > .rule-group-content > .rule-group-actions .iui-button {
-    @include iui-button-disabled;
+    @include themed {
+      color: t(iui-icons-color);
+    }
   }
 
   .rule-group-remove-action {
@@ -72,6 +74,9 @@
 
     .rule-group-actions {
       padding: 3px 0;
+      display: grid;
+      grid-template-columns: min-content min-content;
+      gap: 8px;
     }
   }
 }
