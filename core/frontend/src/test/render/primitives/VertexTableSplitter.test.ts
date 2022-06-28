@@ -198,7 +198,6 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     vertIndices: mesh.indices,
     normals,
     fillFlags: FillFlags.None,
-    // ###TODO test material atlases
     material: mesh.materials instanceof RenderMaterial ? mesh.materials : undefined,
     textureMapping,
     colors: makeColorIndex(mesh.points, mesh.colors),
@@ -225,7 +224,6 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
   expect(surface.textureMapping?.texture).to.equal(mesh.texture);
   if (Array.isArray(mesh.materials)) {
     expect(surface.material).to.be.undefined;
-    // ###TODO material atlases
   } else {
     expect(surface.material).to.equal(mesh.materials)
   }
@@ -351,7 +349,6 @@ interface Edges {
   segments?: Array<[ number, number, number ]>,
   // segments plus oct-encoded normal pair
   silhouettes?: Array<[ number, number, number, number ]>,
-  // ###TODO indexed edges
   polylines?: PolylineIndices[],
 }
 
@@ -437,8 +434,6 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
   expect(undefined === params.polylines).to.equal(undefined === expected.polylines);
   if (params.polylines)
     expectPolyline(params.polylines, expected.polylines!);
-
-  // ###TODO indexed edges
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -769,7 +764,6 @@ describe.only("VertexTableSplitter", () => {
         [17, 16, 18, 0],
         [18, 17, 18, 1],
       ],
-      // ###TODO indexed edges
     };
 
     surface.params.edges = makeEdgeParams(edges);
