@@ -29,6 +29,7 @@ export interface TabState {
   readonly canPopout?: boolean;
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
+  readonly hideWithUi?: boolean;
 }
 
 /** @internal future */
@@ -49,6 +50,7 @@ export interface FloatingWidgetState {
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
   readonly userSized?: boolean;
+  readonly hideWithUi?: boolean;
 }
 
 /** @internal future */
@@ -70,6 +72,7 @@ export interface DraggedTabState {
   readonly tabId: TabState["id"];
   readonly position: PointProps;
   readonly home: FloatingWidgetHomeState;
+  readonly hideWithUi: TabState["hideWithUi"];
 }
 
 /** @internal future */
@@ -293,6 +296,7 @@ export interface PanelWidgetDragStartAction {
   readonly bounds: RectangleProps;
   readonly side: PanelSide;
   readonly userSized?: boolean;
+  readonly hideWithUi?: boolean;
 }
 
 /** @internal future */
@@ -747,6 +751,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const bounds = Rectangle.createFromSize(tab.preferredFloatingWidgetSize || target.size).offset(state.draggedTab.position);
         const containedBounds = bounds.containIn(nzBounds);
         const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
+        // const hideWithUi =
 
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: containedBounds.toProps(),
@@ -1596,7 +1601,7 @@ export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide
  */
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
-  userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState {
+  userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUi = false): NineZoneState {
   const location = findTab(state, widgetTabId);
   if (location || !(widgetTabId in state.tabs))
     return state;
@@ -1624,6 +1629,7 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
         id: floatingWidgetId,
         home,
         userSized,
+        hideWithUi,
       };
     }
 
