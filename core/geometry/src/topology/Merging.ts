@@ -256,8 +256,8 @@ export class HalfEdgeGraphOps {
  * @internal
  */
 export class HalfEdgeGraphMerge {
-  // return k2 <= kB such that stored angles (at extra data index 0 !) kA<=k<kC match.
-  // * Note that the usual case (when angle at k0 is not repeated) is k0+1 === kC
+  // return kC <= kB such that stored angles (at extra data index 0 !) kA<=k<kC match.
+  // * Note that the usual case (when angle at kA is not repeated) is kA+1 === kC
   public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number{
     let kC = kA + 1;
     const thetaA = clusters.getExtraData(order[kA], 0);
@@ -424,7 +424,7 @@ export class HalfEdgeGraphMerge {
               nodeA = nodeB;
               thetaA = thetaB;
             } else if (nodeB.isMaskSet(HalfEdgeMask.NULL_FACE)) {
-              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeA === node);
+              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeB === node);
               if (j >= 0) {
                 unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
                 unmatchedNullFaceNodes.pop();

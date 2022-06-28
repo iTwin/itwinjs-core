@@ -298,6 +298,8 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 
 // @public
 export enum ContentFlags {
+    // @internal
+    DescriptorOnly = 512,
     DistinctValues = 16,
     // @beta
     IncludeInputKeys = 256,
@@ -2470,6 +2472,8 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
+    // @internal
+    transport?: "unparsed-json";
     unitSystem?: UnitSystemKey;
 }
 

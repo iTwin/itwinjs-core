@@ -18,6 +18,7 @@ export function useWidgetDirection(): "horizontal" | "vertical" {
   const version = useFrameworkVersion();
   const tabId = React.useContext(TabIdContext);
   const nineZone = React.useContext(NineZoneContext);
+  // istanbul ignore else
   if (version === "2") {
     const tabLocation = findTab(nineZone, tabId);
     if (tabLocation && ("side" in tabLocation) && isHorizontalPanelSide(tabLocation.side)) {

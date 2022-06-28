@@ -25,15 +25,15 @@ export interface CodeProps {
   value?: string;
 }
 
-/** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element
+/** A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
  * @public
  */
 export class Code implements CodeProps {
-  /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
+  /** The id of the [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec) of the Element */
   public spec: Id64String;
-  /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
+  /** The [CodeScope]($docs/bis/guide/fundamentals/codes.md#codescope-property) of the Element */
   public scope: string;
-  /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
+  /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
   public get value() { return this._value ?? ""; }
@@ -64,8 +64,8 @@ export class Code implements CodeProps {
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
- * @extensions
- * @see [CodeSpec]($docs/bis/intro/codes.md#codespec)
+* @extensions
+* @see [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec)
  */
 export enum BisCodeSpec {
   /** The name of the standard [[CodeSpec]] used when creating *empty* codes.
@@ -223,7 +223,7 @@ export namespace CodeScopeSpec {
   }
 }
 
-/** A [Code Specification]($docs/bis/intro/glossary#codespec) captures the rules for encoding and decoding significant business information into
+/** A [Code Specification]($docs/bis/guide/references/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
  * A CodeSpec defines the format of a Code for a certain type of Element in an IModel.

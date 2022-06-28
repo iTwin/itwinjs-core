@@ -850,7 +850,15 @@ export class ToolAdmin {
       return;
 
     const buttonMask = (event.ev as MouseEvent).buttons;
-    const cancelDrag = (current.isDragging(BeButton.Data) && !(buttonMask & 1)) || (current.isDragging(BeButton.Reset) && !(buttonMask & 2)) || (current.isDragging(BeButton.Middle) && !(buttonMask & 4));
+    let cancelDrag = false;
+
+    current.button.forEach((button, buttonNum) => {
+      if (button.isDragging && !(buttonMask & (1 << buttonNum))) {
+        button.isDragging = button.isDown = false;
+        cancelDrag = true;
+      }
+    });
+
     if (cancelDrag)
       await tool.onReinitialize();
   }
@@ -1042,7 +1050,7 @@ export class ToolAdmin {
 
       IModelApp.accuDraw.onMotion(ev);
 
-      const tool = this.activeTool;
+      let tool = this.activeTool;
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
@@ -1051,10 +1059,16 @@ export class ToolAdmin {
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
 
-        if (undefined !== tool && isValidLocation)
-          tool.receivedDownEvent = true;
+        if (undefined !== tool) {
+          if (!isValidLocation)
+            tool = undefined;
+          else if (forceStartDrag)
+            tool.receivedDownEvent = true;
+          else if (!tool.receivedDownEvent)
+            tool = undefined;
+        }
 
-        await this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        await this.onStartDrag(ev, tool);
         return;
       }
 

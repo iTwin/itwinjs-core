@@ -39,7 +39,6 @@ interface SnapModeFieldState {
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  */
 class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapModeFieldState> {
-  private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [
     { label: UiFramework.translate("snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
     { label: UiFramework.translate("snapModeField.intersection"), value: SnapMode.Intersection as number, iconName: "snaps-intersection" },
@@ -57,9 +56,6 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
 
   constructor(props: SnapModeFieldProps) {
     super(props);
-
-    const instance = this.constructor;
-    this._className = instance.name;
   }
 
   /** Return icon class name for a specific snapMode. */

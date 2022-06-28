@@ -186,9 +186,6 @@ export abstract class RpcProtocol {
     return new (this.invocationType)(this, request).fulfillment;
   }
 
-  /** @internal */
-  public async initialize(_token?: IModelRpcProps): Promise<void> { }
-
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
     const serializedContext = await RpcConfiguration.requestContext.serialize(request);

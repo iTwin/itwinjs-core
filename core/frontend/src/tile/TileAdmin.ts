@@ -661,6 +661,9 @@ export class TileAdmin {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
       requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
+    if (undefined === requestProps.quantizePositions)
+      requestProps = { ...requestProps, quantizePositions: false };
+
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);

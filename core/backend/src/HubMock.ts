@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
@@ -102,7 +101,6 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot!);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     IModelJsFs.removeSync(this.mockRoot!);
-    sinon.restore();
     IModelHost.setHubAccess(this._saveHubAccess);
     this.mockRoot = undefined;
   }
