@@ -1122,6 +1122,12 @@ export abstract class ViewState extends ElementState implements ViewportDecorato
     return normal;
   }
 
+  public getEarthCenter(): Vector3d | undefined {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
+      return undefined;
+    return Vector3d.createFrom(this.iModel.getMapEcefToDb(0).origin);
+  }
+
   /** Return true if the view is looking at the current iModel project extents or
    * false if the viewed area do does not include more than one percent of the project.
    */

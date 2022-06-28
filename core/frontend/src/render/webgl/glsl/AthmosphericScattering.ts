@@ -2,10 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariablePrecision,
+  VariableType,
+  VertexShaderComponent,
+} from "../ShaderBuilder";
 import { Matrix3 } from "../Matrix";
 import { assert } from "@itwin/core-bentley";
 import { addEyeSpace } from "./Common";
+import { isMap } from "lodash";
+import { WebGLContext } from "@itwin/webgl-compatibility";
+import { ShaderProgram } from "../ShaderProgram";
+import { AttributeMap } from "../AttributeMap";
+import { AtmosphericScatteringViewportQuadGeometry } from "../CachedGeometry";
 
 // #region GENERAL
 
@@ -24,6 +35,7 @@ const computeSceneDepthDefault = `
 const computeSceneDepthRealityMesh = `
   float computeSceneDepth() {
     if (u_isMapTile)
+      // return length(v_eyeSpace);
       return getProjectedSceneDepth(v_eyeSpace, u_earthCenter, u_earthRadius);
     return length(v_eyeSpace);
   }
@@ -65,6 +77,13 @@ vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDi
 }
 `;
 
+/**
+ * Returns
+ *
+ * @param
+ * @param
+ * @returns
+ */
 const opticalDepth = `
 float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
   vec3 densitySamplePoint = rayOrigin;
@@ -73,7 +92,7 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
   vec3 rayStep = rayDir * stepSize;
 
   for (int i = 0; i < u_numOpticalDepthPoints; i ++) {
-    float localDensity = densityAtPoint(densitySamplePoint);
+    float localDensity = densityAtPoint(densitySamplePoint, u_earthCenter, u_earthRadius, u_atmosphereRadius, u_densityFalloff);
     opticalDepth += localDensity * stepSize;
     densitySamplePoint += rayStep;
   }
@@ -81,14 +100,25 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
 }
 `;
 
+/**
+ * Returns the atmospheric density at a point according to its distance between
+ * a minimum and maximum density height. Density decreases exponentially,
+ * modulated by a density falloff coefficient.
+ *
+ * @param densitySamplePoint - Point we want to sample density for.
+ * @param sphereCenterPoint - Center point of the sphere responsible for the atmosphere.
+ * @param minDensityHeight - Distance from sphereCenterPoint at which density is 0.0.
+ * @param maxDensityHeight - Distance from sphereCenterPoint at which density is 1.0.
+ * @param densityFalloff - Coefficient modulating density falloff speed.
+ * @returns A density value between [0.0 - 1.0].
+ */
 const densityAtPoint = `
-float densityAtPoint(vec3 densitySamplePoint) {
-  float heightAboveSurface = length(densitySamplePoint - u_earthCenter) - u_earthRadius;
-  float isAboveSurface = step(heightAboveSurface, 0.0);
-  // float height01 = clamp(heightAboveSurface / (u_atmosphereRadius - u_earthRadius), 0.0, 1.0);
-  float height01 = clamp(1.0 * heightAboveSurface / (u_atmosphereRadius - u_earthRadius), 0.0, 1.0);
-  float localDensity = exp(-height01 * u_densityFalloff) * (1.0 - height01);
-  return localDensity;
+float densityAtPoint(vec3 densitySamplePoint, vec3 sphereCenterPoint, float minDensityHeight, float maxDensityHeight, float densityFalloff) {
+  float distanceFromCenter = length(densitySamplePoint - sphereCenterPoint);
+  float distanceFromMinHeight = distanceFromCenter - minDensityHeight;
+  float isAboveMinHeight = step(0.0, distanceFromMinHeight);
+  float minToMaxRatio = isAboveMinHeight * clamp(distanceFromMinHeight / (maxDensityHeight - minDensityHeight), 0.0, 1.0);
+  return exp(-minToMaxRatio * densityFalloff) * (1.0 - minToMaxRatio);
 }
 `;
 
@@ -102,9 +132,9 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 dirT
   for (int i = 0; i < u_numInScatteringPoints; i++) {
     float sunRayLength = raySphere(u_earthCenter, u_atmosphereRadius, inScatterPoint, dirToSun)[1];
     float sunRayOpticalDepth = opticalDepth(inScatterPoint, dirToSun, sunRayLength);
-    viewRayOpticalDepth = opticalDepth(inScatterPoint, -rayDir, stepSize * float(i)); // validate -rayDir vs rayDir
+    viewRayOpticalDepth = opticalDepth(inScatterPoint, -rayDir, stepSize * float(i));
     vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * u_scatteringCoefficients);
-    float localDensity = densityAtPoint(inScatterPoint);
+    float localDensity = densityAtPoint(inScatterPoint, u_earthCenter, u_earthRadius, u_atmosphereRadius, u_densityFalloff);
 
     // inScatteredLight += localDensity * transmittance;
     inScatteredLight += localDensity * transmittance * u_scatteringCoefficients * stepSize;
@@ -119,6 +149,7 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 dirT
   // if (gl_FragCoord.x / u_vpSize.x < 0.5 && gl_FragCoord.y / u_vpSize.y < 0.5) // BOTTOM LEFT
   //   return vec3(originalColorTransmittance);
   return baseColor * originalColorTransmittance + inScatteredLight; // TOP LEFT
+  // return baseColor * originalColorTransmittance; // TOP LEFT
 }
 `;
 
@@ -130,9 +161,6 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
   float distanceToAtmosphere = hitInfo[0];
   // We remove distance through atmosphere beyond the fragment's position
   float distanceThroughAtmosphere = min(hitInfo[1], sceneDepth - distanceToAtmosphere);
-
-  float distanceToEarthSurface = raySphere(u_earthCenter, u_earthRadius, rayOrigin, rayDir)[0];
-  vec4 temp = distanceToEarthSurface == max_float ? baseColor : vec4(1.0);
 
   // float tempDiff = length(v_eyeSpace - u_earthCenter) - length(sceneDepth - u_earthCenter);
   // vec4 temp;
@@ -146,6 +174,7 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
   //   temp = vec4(0.0, 0.0, 1.0, 1.0); // BLUE
   // }
 
+  float debugVal = sceneDepth - distanceToAtmosphere > hitInfo[1] ? 1.0 : 0.0;
 
   if (distanceThroughAtmosphere > 0.0) {
     // point on ray where atmosphere starts
@@ -156,6 +185,7 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
     // return vec4(1.0);
     // return vec4(temp, temp, temp, 1.0);
     // return temp;
+    // return vec4(debugVal, debugVal, debugVal, 1.0);
     return vec4(light, baseColor.a);
   }
   // return vec4(0.0, 0.0, 0.0, 1.0);
@@ -163,6 +193,7 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
   // return vec4(rayDir, 1.0);
   // return vec4(temp, temp, temp, 1.0);
   // return temp;
+  // return vec4(debugVal, debugVal, debugVal, 1.0);
   return baseColor;
 }
 `;
@@ -302,6 +333,13 @@ vec3 calculateScatteringPlanar(vec3 rayOrigin, vec3 rayDir, float rayLength, vec
 `;
 // #endregion PLANAR
 // #region MISC
+const getProjectedSceneDepth = `
+float getProjectedSceneDepth(vec3 initialPoint, vec3 sphereOrigin, float sphereRadius) {
+  // return length(v_eyeSpace);
+  return raySphere(sphereOrigin, sphereRadius, vec3(0.0), normalize(initialPoint))[0];
+}
+`;
+
 const getAngle = `
 // validated
 float getAngle(vec3 vector1, vec3 vector2) {
@@ -394,7 +432,11 @@ const applyAtmosphericScattering = `
 `;
 
 /** @internal */
-export function _addAtmosphericScattering(builder: ProgramBuilder, isSky = false, isRealityMesh = false) {
+export function addAtmosphericScattering(
+  builder: ProgramBuilder,
+  isSky = false,
+  isRealityMesh = false
+) {
   assert(!(isSky && isRealityMesh));
   const frag = builder.frag;
   frag.addDefine("PI", "3.1415926538");
@@ -405,77 +447,152 @@ export function _addAtmosphericScattering(builder: ProgramBuilder, isSky = false
   frag.addConstant("u_maxAtmosphereDistance", VariableType.Float, "10000.0");
   frag.addConstant("ditherStrength", VariableType.Float, "0.1");
 
-  frag.addUniform("u_densityFalloff", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindDensityFalloff(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_densityFalloff",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindDensityFalloff(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_isPlanar", VariableType.Int, (prog) => {
-    prog.addProgramUniform("u_isPlanar", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindIsPlanar(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_isPlanar",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_isPlanar", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindIsPlanar(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_scatteringCoefficients", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindScatteringCoefficients(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_scatteringCoefficients",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindScatteringCoefficients(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_numInScatteringPoints", VariableType.Int, (prog) => {
-    prog.addProgramUniform("u_numInScatteringPoints", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindNumInScatteringPoints(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_numInScatteringPoints",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_numInScatteringPoints", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindNumInScatteringPoints(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_numOpticalDepthPoints", VariableType.Int, (prog) => {
-    prog.addProgramUniform("u_numOpticalDepthPoints", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindNumOpticalDepthPoints(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_numOpticalDepthPoints",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_numOpticalDepthPoints", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindNumOpticalDepthPoints(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_sunDir", (uniform, params) => {
-      params.target.uniforms.bindSunDirection(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_sunDir",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_sunDir", (uniform, params) => {
+        params.target.uniforms.bindSunDirection(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_viewMatrix", VariableType.Mat3, (prog) => {
-    prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
-      uniform.setMatrix3(Matrix3.fromMatrix3d(params.target.uniforms.frustum.viewMatrix.matrix));
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_viewMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
+        uniform.setMatrix3(
+          Matrix3.fromMatrix3d(params.target.uniforms.frustum.viewMatrix.matrix)
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_earthCenter", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_earthCenter",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_earthCenter", (uniform, params) => {
+        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
+        params.target.uniforms.atmosphericScattering.bindRealEarthCenter(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_atmosphereRadius", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_atmosphereRadius", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindAtmosphereRadius(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_atmosphereRadius",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_atmosphereRadius", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindAtmosphereRadius(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_earthRadius", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_earthRadius", (uniform, params) => {
-      params.target.uniforms.atmosphericScattering.bindEarthRadius(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_earthRadius",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_earthRadius", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthRadius(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_vpSize", VariableType.Vec2, (prog) => {
-    prog.addProgramUniform("u_vpSize", (uniform, params) => {
-      params.target.uniforms.viewRect.bindDimensions(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_vpSize",
+    VariableType.Vec2,
+    (prog) => {
+      prog.addProgramUniform("u_vpSize", (uniform, params) => {
+        params.target.uniforms.viewRect.bindDimensions(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_isEnabled", VariableType.Int, (prog) => {
-    prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-      uniform.setUniform1i(params.target.plan.viewFlags.atmosphericScattering?1:0);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_isEnabled",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
+        uniform.setUniform1i(
+          params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
+        );
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addFunction(raySphere);
   frag.addFunction(linePlaneIntersection);
@@ -495,38 +612,177 @@ export function _addAtmosphericScattering(builder: ProgramBuilder, isSky = false
   frag.addFunction(applyAtmosphericScatteringSphere);
   frag.addFunction(applyAtmosphericScatteringPlanar);
 
+  frag.addFunction(computeRayDirDefault);
   if (isSky) {
-    frag.addFunction(computeRayDirSky);
     frag.addFunction(computeSceneDepthSky);
   } else if (isRealityMesh) {
-    frag.addFunction(computeRayDirDefault);
+    builder.frag.addUniform("u_isMapTile", VariableType.Boolean, (program) => {
+      program.addGraphicUniform("u_isMapTile", (uniform, params) => {
+        uniform.setUniform1i(params.geometry.asRealityMesh!.isMapTile ? 1 : 0);
+      });
+    });
+    builder.frag.addFunction(getProjectedSceneDepth);
+
     frag.addFunction(computeSceneDepthRealityMesh);
   } else {
-    frag.addFunction(computeRayDirDefault);
     frag.addFunction(computeSceneDepthDefault);
   }
 
-  addEyeSpace(builder);
-  frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
+  // addEyeSpace(builder);
+  frag.set(
+    FragmentShaderComponent.ApplyAtmosphericScattering,
+    applyAtmosphericScattering
+  );
 }
 // #endregion MAIN
 
 // #region DEBUG
-export function addAtmosphericScattering(builder: ProgramBuilder, isSky = false, _isRealityMesh = false) {
-  addEyeSpace(builder);
-  builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, debugAtmosphericScattering);
-  builder.frag.addConstant("kIsSky", VariableType.Boolean, isSky ? "true" : "false");
-  builder.frag.addFunction(getAngle);
-  if (isSky) {
-    builder.frag.addFunction(computeRayDirSky);
-  } else {
-    builder.frag.addFunction(computeRayDirDefault);
-  }
+export function _addAtmosphericScattering(
+  builder: ProgramBuilder,
+  _isSky = false,
+  _isRealityMesh = false
+) {
+  builder.frag.addConstant("isSky", VariableType.Boolean, _isSky ? "true" : "false");
+  builder.frag.addConstant("isMesh", VariableType.Boolean, _isRealityMesh ? "true" : "false");
+
+  builder.frag.addConstant("max_float", VariableType.Float, "3.402823466e+38");
+  builder.frag.addDefine("PI", "3.1415926538");
+  // addEyeSpace(builder);
+  builder.frag.set(
+    FragmentShaderComponent.ApplyAtmosphericScattering,
+    debugAtmosphericScattering
+  );
+  builder.frag.addFunction(raySphere);
+  // builder.frag.addFunction(getAngle);
+  builder.frag.addFunction(getProjectedSceneDepth);
+  // builder.frag.addFunction(computeRayDirDefault);
+  builder.frag.addFunction(computeSceneDepthDefault);
+  // builder.frag.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+  //   prg.addGraphicUniform("u_frustum", (uniform, params) => {
+  //     uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+  //   });
+  // });
+  builder.frag.addUniform(
+    "u_earthCenter",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_earthCenter", (uniform, params) => {
+        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
+        params.target.uniforms.atmosphericScattering.bindRealEarthCenter(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  builder.frag.addUniform(
+    "u_earthRadius",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_earthRadius", (uniform, params) => {
+        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
+        params.target.uniforms.atmosphericScattering.bindEarthRadius(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 }
 
 const debugAtmosphericScattering = `
-  float angle = getAngle(vec3(0.0, 0.0, -1.0), computeRayDir());
-  float val = angle / 90.0;
-  return vec4(val, val, val, 1.0);
+  float sceneDepth = computeSceneDepth();
+  vec4 debugValue = getProjectedSceneDepth(v_eyeSpace, u_earthCenter, u_earthRadius) > sceneDepth ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(1.0);
+
+  if (isMesh) {
+    return debugValue;
+  }
+  return baseColor;
+  // float angle = getAngle(vec3(0.0, 0.0, -1.0), computeRayDir());
+  // float val = angle / (PI / 2.0);
+  // float l = length(v_eyeSpace) - u_frustum.x;
+  // return vec4(v_eyeSpace.xyz, 1.0);
+  // if (l < 0.0)
+  //   return vec4(1.0, 0.0, 0.0, 1.0);
+  // return vec4(l, l, l, 1.0);
+  // // return vec4(v_eyeSpace.xyz, 1.0);
+  // // return baseColor;
+  // return vec4(val, val, val, 1.0);
+  // // return vec4(0.5, 1.0, 0.6, 1.0);
+
 `;
 // #endregion DEBUG
+
+// #region QUAD
+const computeBaseColorVS = `return vec4(u_skyColor.xyz, 1.0);`;
+const computeBaseColorFS = `return v_color;`;
+const assignFragData = `FragColor = baseColor;`;
+const computePosition = `
+vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
+
+float top = u_frustumPlanes.x;
+float bottom = u_frustumPlanes.y;
+float left = u_frustumPlanes.z;
+float right = u_frustumPlanes.w;
+
+v_eyeSpace = vec3(
+  mix(left, right, pos01.x),
+  mix(bottom, top, pos01.y),
+  -u_frustum.x
+);
+// v_eyeSpace.x = rawPos.x == -1.0 ? 0.0 : 1.0;
+// v_eyeSpace.y = rawPos.y == -1.0 ? 0.0 : 1.0;
+// v_eyeSpace = pos01;
+
+// return vec4(pos01.x, pos01.y, rawPos.z, rawPos.z);
+return rawPos;
+`;
+
+/** @internal */
+export function createAtmosphericSkyProgram(
+  context: WebGLContext
+): ShaderProgram {
+  const prog = new ProgramBuilder(
+    AttributeMap.findAttributeMap(undefined, false)
+  );
+
+  prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+  prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
+  prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
+  prog.vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
+    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
+      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
+    });
+  });
+  prog.vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+    prg.addGraphicUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+    });
+  });
+  prog.addVarying("v_eyeSpace", VariableType.Vec3);
+  prog.vert.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
+    shader.addGraphicUniform("u_skyColor", (uniform, params) => {
+      const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
+      uniform.setUniform3fv(geom.atmosphericSkyColor);
+    });
+  });
+  prog.addVarying("v_color", VariableType.Vec4);
+  // prog.vert.addUniform("u_vpSize", VariableType.Vec2, (prg) => {
+  //   prg.addProgramUniform("u_vpSize", (uniform, params) => {
+  //     params.target.uniforms.viewRect.bindDimensions(uniform);
+  //   });
+  // }, VariablePrecision.High);
+
+  // prog.frag.addUniform("s_cube", VariableType.SamplerCube, (prg) => {
+  //   prg.addGraphicUniform("s_cube", (uniform, params) => {
+  //     const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
+  //     (geom.cube as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+  //   });
+  // });
+  // prog.addInlineComputedVarying("v_texDir", VariableType.Vec3, computeTexDir);
+
+  addAtmosphericScattering(prog, true);
+
+  prog.vert.headerComment = "//!V! AtmosphericSky";
+  prog.frag.headerComment = "//!F! AtmosphericSky";
+
+  return prog.buildProgram(context);
+}
+// #endregion QUAD

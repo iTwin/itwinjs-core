@@ -10,10 +10,10 @@ import { assert } from "@itwin/core-bentley";
 import { CompositeFlags } from "./RenderFlags";
 
 /* eslint-disable no-restricted-syntax */
-
 /** Technique enumeration
  * @internal
  */
+
 export const enum TechniqueId {
   // Techniques with many different variations
   Invalid = -1,
@@ -53,6 +53,7 @@ export const enum TechniqueId {
   VolClassCopyZ,
   VolClassSetBlend,
   VolClassBlend,
+  AtmosphericSky,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

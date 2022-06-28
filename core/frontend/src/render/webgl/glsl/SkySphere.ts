@@ -20,12 +20,12 @@ import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { addAtmosphericScattering } from "./AthmosphericScattering";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.
-  float radius = sqrt(v_eyeToVert.x * v_eyeToVert.x + v_eyeToVert.y * v_eyeToVert.y);
-  float zValue = v_eyeToVert.z - radius * u_zOffset;
+  vec3 eyeToVert = a_worldPos - u_worldEye;
+  float radius = sqrt(eyeToVert.x * eyeToVert.x + eyeToVert.y * eyeToVert.y);
+  float zValue = eyeToVert.z - radius * u_zOffset;
   float d = atan(zValue, radius);
   if (u_skyParams.x < 0.0) { // 2-color gradient
     d = 0.5 - d / 3.14159265359;
@@ -78,12 +78,11 @@ function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array)
 export function createSkySphereProgram(context: WebGLContext, isGradient: boolean): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
-  addAtmosphericScattering(builder, true);
-  builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
   if (isGradient) {
     builder.addFunctionComputedVarying("v_gradientValue", VariableType.Vec4, "computeGradientValue", computeGradientValue);
     builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
-  }
+  } else
+    builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
 
   const vert = builder.vert;
   vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {

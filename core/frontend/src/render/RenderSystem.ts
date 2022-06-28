@@ -238,6 +238,11 @@ export interface RenderSkyCubeParams {
 /** @internal */
 export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
+/** @internal */
+export interface RenderAtmosphericSkyParams {
+  color: ColorDef;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -489,6 +494,8 @@ export abstract class RenderSystem implements IDisposable {
    * @internal
    */
   public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined { return undefined; }
+
+  public createAtmosphericSky(_params: RenderAtmosphericSkyParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;

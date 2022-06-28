@@ -16,7 +16,7 @@ import { ViewState3d } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { GraphicType } from "./render/GraphicBuilder";
-import { RenderSkyBoxParams } from "./render/RenderSystem";
+import { RenderAtmosphericSkyParams, RenderSkyBoxParams } from "./render/RenderSystem";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -31,6 +31,12 @@ export interface SkyBoxDecorations {
 }
 
 /** @internal */
+export interface AtmosphericSkyDecorations {
+  params?: RenderAtmosphericSkyParams | undefined;
+  promise?: Promise<RenderAtmosphericSkyParams | undefined>;
+}
+
+/** @internal */
 export class EnvironmentDecorations {
   protected readonly _view: ViewState3d;
   protected readonly _onLoaded: () => void;
@@ -38,23 +44,28 @@ export class EnvironmentDecorations {
   protected _environment: Environment;
   protected _ground?: GroundPlaneDecorations;
   protected _sky: SkyBoxDecorations;
+  protected _atmosphericSky: AtmosphericSkyDecorations;
 
   public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
     this._environment = view.displayStyle.environment;
     this._view = view;
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
-
     this._sky = { };
     this.loadSky();
     if (this._environment.displayGround)
       this.loadGround();
+
+    this._atmosphericSky = { };
+    this.loadAtmosphericSky();
   }
 
   public dispose(): void {
     this._ground = undefined;
 
     this._sky.promise = this._sky.params = undefined;
+
+    this._atmosphericSky.promise = this._atmosphericSky.params = undefined;
 
     this._onDispose();
   }
@@ -76,11 +87,18 @@ export class EnvironmentDecorations {
     // Update sky box
     if (env.sky !== prev.sky)
       this.loadSky();
+
+    if (env.atmosphericSky !== prev.atmosphericSky)
+      this.loadAtmosphericSky();
   }
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
-    if (env.displaySky && this._sky.params) {
+    if (env.displayAtmosphericSky && this._atmosphericSky.params) {
+      const sky = IModelApp.renderSystem.createAtmosphericSky(this._atmosphericSky.params);
+      if (sky)
+        context.setSkyBox(sky);
+    } else if (env.displaySky && this._sky.params) {
       const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
       if (sky)
         context.setSkyBox(sky);
@@ -200,9 +218,10 @@ export class EnvironmentDecorations {
         let index = 0;
         for (const spec of specs) {
           const image = images[index++];
-          if (!image)
+          if (!image) {
+            console.log("undefined");
             return undefined;
-          else
+          } else
             idToImage.set(spec, image);
         }
 
@@ -214,6 +233,7 @@ export class EnvironmentDecorations {
         ];
 
         const texture = IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
+        console.log(texture ? "texture!": "no texture");
         return texture ? { type: "cube", texture } : undefined;
       });
     } else if (sky instanceof SkySphere) {
@@ -229,8 +249,13 @@ export class EnvironmentDecorations {
         }
       }
 
-      if (!texture)
+      if (!texture) {
+        // eslint-disable-next-line no-console
+        console.log("no texture");
         return undefined;
+      }
+      // eslint-disable-next-line no-console
+      console.log("texture!");
 
       return { type: "sphere", texture, rotation, zOffset: this._view.iModel.globalOrigin.z };
     } else {
@@ -252,5 +277,31 @@ export class EnvironmentDecorations {
       return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
 
     return tryImageElementFromUrl(spec);
+  }
+
+  private loadAtmosphericSky(): void {
+    const promise = this.loadAtmosphericSkyParams();
+    this._atmosphericSky.promise = promise;
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    promise.then((params) => {
+      if (promise === this._atmosphericSky.promise)
+        this.setAtmosphericSky(params!);
+    });
+
+    // promise.catch(() => {
+    //   if (this._sky.promise === promise)
+    //     this.setAtmosphericSky(this.setAtmosphericSky(RenderAtmosphericSkyParams));
+    // });
+  }
+
+  private async loadAtmosphericSkyParams(): Promise<RenderAtmosphericSkyParams | undefined> {
+    return { color: this._environment.atmosphericSky.color };
+  }
+
+  private setAtmosphericSky(params: RenderAtmosphericSkyParams): void {
+    this._atmosphericSky.promise = undefined;
+    this._atmosphericSky.params = params;
+    this._onLoaded();
   }
 }

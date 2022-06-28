@@ -47,6 +47,7 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
+  readonly earthCenter?: Vector3d;
 }
 
 /** @internal */
@@ -144,5 +145,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
+    earthCenter: vp.view.getEarthCenter(),
   };
 }

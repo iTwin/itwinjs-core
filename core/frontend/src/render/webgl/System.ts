@@ -30,13 +30,13 @@ import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 import { RenderMemory } from "../RenderMemory";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderAtmosphericSkyParams, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { AtmosphericScatteringViewportQuadGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
@@ -53,7 +53,7 @@ import { PlanarGridGeometry } from "./PlanarGrid";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
-import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
+import { AtmosphericSkyPrimitive, Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
 import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
@@ -305,8 +305,11 @@ export class IdMap implements WebGLDisposable {
       return tex;
 
     const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
-    if (!handle)
+    if (!handle) {
+      // eslint-disable-next-line no-console
+      console.log("no handle");
       return undefined;
+    }
 
     const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
     tex = new Texture({ handle, ownership, type: params.type, transparency: TextureTransparency.Opaque });
@@ -606,6 +609,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.texture));
 
     return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
+  }
+
+  public override createAtmosphericSky(params: RenderAtmosphericSkyParams): RenderGraphic | undefined {
+    return AtmosphericSkyPrimitive.create(AtmosphericScatteringViewportQuadGeometry.createGeometry(params));
   }
 
   public override createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {
