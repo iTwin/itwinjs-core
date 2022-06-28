@@ -568,6 +568,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/extension-client': ^0.1.1
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
@@ -624,6 +625,7 @@ importers:
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@itwin/extension-client': 0.1.1
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -6803,6 +6805,14 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+
+  /@itwin/extension-client/0.1.1:
+    resolution: {integrity: sha512-q9Pz3gbr4IMniSYz2vaewV5vG5KCufVVeb+RCgBf9dfbqlDDTlPcIuAfgrCmHxZvW3LBtRawjh1s/5k40rnrJw==}
+    dependencies:
+      cross-fetch: 3.1.5
+    transitivePeerDependencies:
+      - encoding
+    dev: true
 
   /@itwin/imodels-access-backend/1.0.2:
     resolution: {integrity: sha512-pEP+Sycbw7kFyRuMn1ia8E6Qcw/aIWjP8LWRKj4bPCeIOrL+FCqOl5dhsCHGAJltlA0QIavKxgm7jzBRUZfNWA==}

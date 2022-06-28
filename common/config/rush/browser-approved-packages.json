@@ -239,6 +239,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/extension-client",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/frontend-devtools",
       "allowedCategories": [ "internal" ]
     },
