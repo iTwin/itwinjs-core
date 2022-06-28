@@ -49,7 +49,7 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapManagerSettings() {
-  const { activeViewport } = useSourceMapContext();
+  const { activeViewport} = useSourceMapContext();
   const backgroundMapSettings = (activeViewport!.view as ViewState3d).getDisplayStyle3d().settings.backgroundMap;
 
   const [transparency, setTransparency] = React.useState(() =>
@@ -233,7 +233,7 @@ export function MapManagerSettings() {
         </>
 
       </div>
-      <div className="map-manager-settings-terrain-container">
+      <div className="map-manager-settings-group">
         <fieldset>
           <legend>{terrainLabel}</legend>
 
@@ -247,7 +247,8 @@ export function MapManagerSettings() {
             <QuantityNumberInput disabled={!applyTerrain} persistenceValue={terrainOrigin} snap quantityType={QuantityType.LengthEngineering} onChange={handleHeightOriginChange} onKeyDown={onKeyDown}/>
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
-            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} size="small" />
+            {/* elevation correction component:  'popoverProps' is needed here otherwise selecting an option closes the menu popup.*/}
+            <Select popoverProps={{appendTo: "parent"}} options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} size="small" />
 
             <span className="map-manager-settings-label">{exaggerationLabel}</span>
             <NumberInput value={exaggeration} disabled={!applyTerrain} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />

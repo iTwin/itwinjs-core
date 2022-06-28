@@ -63,6 +63,18 @@ describe("<PointerCaptor />", () => {
 
     spy.calledOnce.should.true;
   });
+
+  it("should prevent default on drag start", () => {
+    const sut = mount(<PointerCaptor isPointerDown />);
+    const overlay = sut.find("div.nz-overlay");
+
+    const preventDefault = sinon.stub();
+    overlay.simulate("dragStart", {
+      preventDefault,
+    });
+
+    preventDefault.calledOnceWithExactly().should.true;
+  });
 });
 
 describe("usePointerCaptor", () => {

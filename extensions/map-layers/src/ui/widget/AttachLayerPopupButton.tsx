@@ -71,7 +71,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapLayerOptions } = useSourceMapContext();
+  const mapTypesOptions = mapLayerOptions?.mapTypeOptions;
   const iTwinId = activeViewport?.iModel?.iTwinId;
   const iModelId = activeViewport?.iModel?.iModelId;
 
@@ -122,14 +123,14 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
               if (status === MapLayerSourceStatus.Valid) {
-                const layerSettings = mapLayerSettings.toLayerSettings(subLayers);
+                const settings = mapLayerSettings.toLayerSettings(subLayers);
 
-                if (layerSettings) {
-                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
+                if (settings) {
+                  activeViewport.displayStyle.attachMapLayer({settings, isOverlay});
 
                   activeViewport.invalidateRenderPlan();
 
-                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: layerSettings.name, sourceUrl: layerSettings.url });
+                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: settings.name, sourceUrl: settings.url });
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
                 }
 
@@ -333,12 +334,16 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                   (!!iTwinId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
                   <>
                     <Button
+                      size="small"
+                      styleType="borderless"
                       className="map-source-list-entry-button"
                       title={editLayerDefButtonTitle}
                       onClick={onItemEditButtonClicked}>
                       <UiCore.Icon iconSpec="icon-edit" />
                     </Button>
                     <Button
+                      size="small"
+                      styleType="borderless"
                       className="map-source-list-entry-button"
                       title={removeLayerDefButtonTitle}
                       onClick={(event: React.MouseEvent) => { onItemRemoveButtonClicked(source, event); }}>
@@ -436,10 +441,10 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
 
     if (props.buttonType === undefined || props.buttonType === AttachLayerButtonType.Icon) {
       button = (
-        <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+        <Button size="small" styleType="borderless" ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>
           <UiCore.WebFontIcon iconName="icon-add" />
-        </button>
+        </Button>
       );
     } else {
       const determineStyleType = () => {

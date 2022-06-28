@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { assert as bAssert } from "@itwin/core-bentley";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../ImageUtil";
 import { IModelApp } from "../../../IModelApp";
@@ -90,11 +91,11 @@ describe("Texture tests", () => {
   it("should produce a texture from an html image and resize to power of two", async () => {
     const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
     const image = await imageElementFromImageSource(imageSource);
-    assert(undefined !== image);
+    bAssert(undefined !== image);
     const imageTexture = TextureHandle.createForImage(image, RenderTexture.Type.Normal);
-    assert(undefined !== imageTexture);
-    expect(imageTexture!.width).to.equal(4);
-    expect(imageTexture!.height).to.equal(4);
+    bAssert(undefined !== imageTexture);
+    expect(imageTexture.width).to.equal(4);
+    expect(imageTexture.height).to.equal(4);
   });
 });
 

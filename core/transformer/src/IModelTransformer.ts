@@ -7,28 +7,36 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
-  KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter, OptimizeGeometryOptions } from "./IModelImporter";
+import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
+import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
+const nullLastProvenanceEntityInfo = {
+  entityId: Id64.invalid,
+  aspectId: Id64.invalid,
+  aspectVersion: "",
+  aspectKind: ExternalSourceAspect.Kind.Element,
+};
+
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
+ * @note if adding an option, you must explicitly add its serialization to [[IModelTransformer.saveStateToFile]]!
  */
 export interface IModelTransformOptions {
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
@@ -73,7 +81,13 @@ export interface IModelTransformOptions {
   loadSourceGeometry?: boolean;
 
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
-   * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
+   *
+   * Prefer to never to set this flag. If you need geometry changes, instead override [[IModelTransformer.onTransformElement]]
+   * and provide an [ElementGeometryBuilderParams]($backend) to the `elementGeometryBuilderParams`
+   * property of [ElementProps]($common) instead, it is much faster. You can read geometry during the transformation by setting the
+   * [[IModelTransformOptions.loadSourceGeometry]] property to `true`, and passing that to a [GeometryStreamIterator]($common)
+   * @note this flag will be deprecated when `elementGeometryBuilderParams` is no longer an alpha API
+   *
    * @default true
    */
   cloneUsingBinaryGeometry?: boolean;
@@ -81,27 +95,42 @@ export interface IModelTransformOptions {
   /** Flag that indicates that ids should be preserved while copying elements to the target
    * Intended only for pure-filter transforms, so you can keep parts of the source, while deleting others,
    * and element ids are guaranteed to be the same, (other entity ids are not, however)
-   * @note the target must be empty
-   * @note it is invalid to insert elements during the transformation, do not use this with transformers that try to
-   * @note this does not preserve the ids of non-element entities such as link table relationships, or aspects, etc
+   * @note The target must be empty.
+   * @note It is invalid to insert elements during the transformation, do not use this with transformers that try to.
+   * @note This does not preserve the ids of non-element entities such as link table relationships, or aspects, etc.
    * @default false
    * @beta
    */
   preserveElementIdsForFiltering?: boolean;
 
-  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element in the source,
+  /** The behavior to use when an element reference (id) is found stored as a reference on an element in the source,
    * but the referenced element does not actually exist in the source.
-   * It is possible to craft an iModel with dangling predecessors/invalidated relationships by, e.g., deleting certain
+   * It is possible to craft an iModel with dangling references/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
    *
-   * @note "reject" will throw an error and reject the transformation upon finding this case
+   * @note "reject" will throw an error and reject the transformation upon finding this case.
+   * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
+   *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
+   *       reference depending on your use case.
+   * @default "reject"
+   * @beta
+   * @deprecated use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   */
+  danglingPredecessorsBehavior?: "reject" | "ignore";
+
+  /** The behavior to use when an element reference (id) is found stored as a reference on an element in the source,
+   * but the referenced element does not actually exist in the source.
+   * It is possible to craft an iModel with dangling references/invalidated relationships by, e.g., deleting certain
+   * elements without fixing up references.
+   *
+   * @note "reject" will throw an error and reject the transformation upon finding this case.
    * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
    * @default "reject"
    * @beta
    */
-  danglingPredecessorsBehavior?: "reject" | "ignore";
+  danglingReferencesBehavior?: "reject" | "ignore";
 
   /** If defined, options to be supplied to [[IModelImporter.optimizeGeometry]] by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
    * as a post-processing step to optimize the geometry in the iModel.
@@ -121,15 +150,15 @@ class PartiallyCommittedElement {
      * It is possible for the submodel of an element to be separately resolved from the actual element,
      * so its resolution must be tracked separately
      */
-    private _missingPredecessors: Set<string>,
+    private _missingReferences: Set<string>,
     private _onComplete: () => void
   ) {}
-  public resolvePredecessor(id: Id64String, isModelRef: boolean) {
-    const key = PartiallyCommittedElement.makePredecessorKey(id, isModelRef);
-    this._missingPredecessors.delete(key);
-    if (this._missingPredecessors.size === 0) this._onComplete();
+  public resolveReference(id: Id64String, isModelRef: boolean) {
+    const key = PartiallyCommittedElement.makeReferenceKey(id, isModelRef);
+    this._missingReferences.delete(key);
+    if (this._missingReferences.size === 0) this._onComplete();
   }
-  public static makePredecessorKey(id: Id64String, isModelRef: boolean) {
+  public static makeReferenceKey(id: Id64String, isModelRef: boolean) {
     return `${isModelRef ? "model" : "element"}${id}`;
   }
   public forceComplete() {
@@ -178,7 +207,11 @@ function mapId64<R>(
   idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
-  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
+  const isId64String = (arg: any): arg is Id64String => {
+    const isString = typeof arg === "string";
+    assert(() => !isString || Id64.isValidId64(arg));
+    return isString;
+  };
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
 
@@ -230,7 +263,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
 
   /** the options that were used to initialize this transformer */
-  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
+  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingReferencesBehavior">;
 
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
@@ -258,7 +291,8 @@ export class IModelTransformer extends IModelExportHandler {
       // non-falsy defaults
       cloneUsingBinaryGeometry: options?.cloneUsingBinaryGeometry ?? true,
       targetScopeElementId: options?.targetScopeElementId ?? IModel.rootSubjectId,
-      danglingPredecessorsBehavior: options?.danglingPredecessorsBehavior ?? "reject",
+      // eslint-disable-next-line deprecation/deprecation
+      danglingReferencesBehavior: options?.danglingReferencesBehavior ?? options?.danglingPredecessorsBehavior ?? "reject",
     };
     this._isFirstSynchronization = this._options.wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
@@ -525,31 +559,29 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
-   * @returns {boolean}
    */
-  private collectUnmappedReferences(element: Element): boolean {
-
-    const missingPredecessors = new Set<string>();
+  private collectUnmappedReferences(element: Element) {
+    const missingReferences = new Set<string>();
     let thisPartialElem: PartiallyCommittedElement | undefined;
 
-    for (const predecessorId of element.getPredecessorIds()) {
-      const predecessorState = ElementProcessState.fromElementAndTransformer(predecessorId, this);
-      if (!predecessorState.needsImport) continue;
-      Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
+    for (const referenceId of element.getReferenceIds()) {
+      const referenceState = ElementProcessState.fromElementAndTransformer(referenceId, this);
+      if (!referenceState.needsImport) continue;
+      Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${element.id}'`);
       // TODO: instead of loading the entire element run a small has query
-      const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
-      if (predecessor === undefined) {
-        Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling predecessor (${predecessorId})`);
-        switch (this._options.danglingPredecessorsBehavior) {
+      const reference = this.sourceDb.elements.tryGetElement(referenceId);
+      if (reference === undefined) {
+        Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling reference (${referenceId})`);
+        switch (this._options.danglingReferencesBehavior) {
           case "ignore":
             continue;
           case "reject":
             throw new IModelError(
               IModelStatus.NotFound,
               [
-                `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}".`,
+                `Found a reference to an element "${referenceId}" that doesn't exist while looking for references of "${element.id}".`,
                 "This must have been caused by an upstream application that changed the iModel.",
-                "You can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel",
+                "You can set the IModelTransformerOptions.danglingReferencesBehavior option to 'ignore' to ignore this, but this will leave the iModel",
                 "in a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom",
                 "transformer to remove the reference and fix affected elements may be suitable.",
               ].join("\n")
@@ -557,21 +589,19 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+        thisPartialElem = new PartiallyCommittedElement(missingReferences, this.makePartialElementCompleter(element));
         if (!this._partiallyCommittedElements.has(element.id))
           this._partiallyCommittedElements.set(element.id, thisPartialElem);
       }
-      if (predecessorState.needsModelImport) {
-        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
-        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
+      if (referenceState.needsModelImport) {
+        missingReferences.add(PartiallyCommittedElement.makeReferenceKey(referenceId, true));
+        this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: true}, thisPartialElem);
       }
-      if (predecessorState.needsElemImport) {
-        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
-        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
+      if (referenceState.needsElemImport) {
+        missingReferences.add(PartiallyCommittedElement.makeReferenceKey(referenceId, false));
+        this._pendingReferences.set({referenced: referenceId, referencer: element.id, isModelRef: false}, thisPartialElem);
       }
     }
-
-    return missingPredecessors.size > 0;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
@@ -599,13 +629,13 @@ export class IModelTransformer extends IModelExportHandler {
   public override shouldExportElement(_sourceElement: Element): boolean { return true; }
 
   /**
-   * If they haven't been already, import all of the required predecessors
+   * If they haven't been already, import all of the required references
    * @internal do not call, override or implement this, it will be removed
    */
   public override async preExportElement(sourceElement: Element): Promise<void> {
     const elemClass = sourceElement.constructor as typeof Element;
 
-    const unresolvedPredecessorsProcessStates = elemClass.requiredReferenceKeys
+    const unresolvedReferencesProcessStates = elemClass.requiredReferenceKeys
       .map((referenceKey) => {
         const idContainer = sourceElement[referenceKey as keyof Element];
         return mapId64(idContainer, (id) => {
@@ -627,8 +657,8 @@ export class IModelTransformer extends IModelExportHandler {
         maybeProcessState !== undefined && maybeProcessState.needsImport
       );
 
-    if (unresolvedPredecessorsProcessStates.length > 0) {
-      for (const processState of unresolvedPredecessorsProcessStates) {
+    if (unresolvedReferencesProcessStates.length > 0) {
+      for (const processState of unresolvedReferencesProcessStates) {
         // must export element first if not done so
         if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
         if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
@@ -652,7 +682,7 @@ export class IModelTransformer extends IModelExportHandler {
       targetElementId = this.context.findTargetElementId(sourceElement.id);
       targetElementProps = this.onTransformElement(sourceElement);
     }
-    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
+    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing reference so not worth checking)
     if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
@@ -683,22 +713,27 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+
     // now that we've mapped this elem we can fix unmapped references to it
     for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
       const isModelRef = false; // we're in onExportElement so no
       const key = {referencer, referenced: sourceElement.id, isModelRef};
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
-      pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
+      pendingRef.resolveReference(sourceElement.id, isModelRef);
       this._pendingReferences.delete(key);
     }
+
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
         this.provenanceDb.elements.insertAspect(aspectProps);
+        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
       } else {
         this.provenanceDb.elements.updateAspect(aspectProps);
       }
+      assert(aspectProps.id !== undefined);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: false });
     }
   }
 
@@ -727,7 +762,7 @@ export class IModelTransformer extends IModelExportHandler {
       const key = { referencer, referenced: sourceModel.id, isModelRef };
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
-      pendingRef.resolvePredecessor(sourceModel.id, isModelRef);
+      pendingRef.resolveReference(sourceModel.id, isModelRef);
       this._pendingReferences.delete(key);
     }
   }
@@ -797,7 +832,8 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
     const targetModelProps: ModelProps = sourceModel.toJSON();
-    targetModelProps.modeledElement.id = targetModeledElementId;
+    // don't directly edit deep object since toJSON performs a shallow clone
+    targetModelProps.modeledElement = { ...targetModelProps.modeledElement, id: targetModeledElementId };
     targetModelProps.id = targetModeledElementId;
     targetModelProps.parentModel = this.context.findTargetElementId(targetModelProps.parentModel!);
     return targetModelProps;
@@ -815,8 +851,8 @@ export class IModelTransformer extends IModelExportHandler {
         [
           "The following elements were never fully resolved:",
           [...this._partiallyCommittedElements.keys()].join(","),
-          "This indicates that either some predecessors were excluded from the transformation",
-          "or the source has dangling predecessors.",
+          "This indicates that either some references were excluded from the transformation",
+          "or the source has dangling references.",
         ].join("\n")
       );
       for (const partiallyCommittedElem of this._partiallyCommittedElements.values()) {
@@ -848,7 +884,10 @@ export class IModelTransformer extends IModelExportHandler {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
         this.provenanceDb.elements.insertAspect(aspectProps);
+        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
       }
+      assert(aspectProps.id !== undefined);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: true });
     }
   }
 
@@ -1084,6 +1123,203 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
+  private _lastProvenanceEntityInfo = nullLastProvenanceEntityInfo;
+
+  private markLastProvenance(sourceAspect: MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship = false }) {
+    this._lastProvenanceEntityInfo = {
+      entityId: sourceAspect.element.id,
+      aspectId: sourceAspect.id,
+      aspectVersion: sourceAspect.version ?? "",
+      aspectKind: isRelationship ? ExternalSourceAspect.Kind.Relationship : ExternalSourceAspect.Kind.Element,
+    };
+  }
+
+  /** @internal the name of the table where javascript state of the transformer is serialized in transformer state dumps */
+  public static readonly jsStateTable = "TransformerJsState";
+
+  /** @internal the name of the table where the target state heuristics is serialized in transformer state dumps */
+  public static readonly lastProvenanceEntityInfoTable = "LastProvenanceEntityInfo";
+
+  /**
+   * Load the state of the active transformation from an open SQLiteDb
+   * You can override this if you'd like to load from custom tables in the resumable dump state, but you should call
+   * this super implementation
+   * @note the SQLiteDb must be open
+   */
+  protected loadStateFromDb(db: SQLiteDb): void {
+    const lastProvenanceEntityInfo: IModelTransformer["_lastProvenanceEntityInfo"] = db.withSqliteStatement(
+      `SELECT entityId, aspectId, aspectVersion, aspectKind FROM ${IModelTransformer.lastProvenanceEntityInfoTable}`,
+      (stmt) => {
+        if (DbResult.BE_SQLITE_ROW !== stmt.step())
+          throw Error(
+            "expected row when getting lastProvenanceEntityId from target state table"
+          );
+        return {
+          entityId: stmt.getValueString(0),
+          aspectId: stmt.getValueString(1),
+          aspectVersion: stmt.getValueString(2),
+          aspectKind: stmt.getValueString(3) as ExternalSourceAspect.Kind,
+        };
+      }
+    );
+    const targetHasCorrectLastProvenance =
+      // ignore provenance check if it's null since we can't bind those ids
+      !Id64.isValidId64(lastProvenanceEntityInfo.aspectId) ||
+      !Id64.isValidId64(lastProvenanceEntityInfo.entityId) ||
+      this.provenanceDb.withPreparedStatement(`
+        SELECT Version FROM ${ExternalSourceAspect.classFullName}
+        WHERE Scope.Id=:scopeId
+          AND ECInstanceId=:aspectId
+          AND Kind=:kind
+          AND Element.Id=:entityId
+      `,
+      (statement: ECSqlStatement): boolean => {
+        statement.bindId("scopeId", this.targetScopeElementId);
+        statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
+        statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
+        statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
+        const stepResult = statement.step();
+        switch (stepResult) {
+          case DbResult.BE_SQLITE_ROW:
+            const version = statement.getValue(0).getString();
+            return version === lastProvenanceEntityInfo.aspectVersion;
+          case DbResult.BE_SQLITE_DONE:
+            return false;
+          default:
+            throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
+        }
+      });
+    if (!targetHasCorrectLastProvenance)
+      throw Error([
+        "Target for resuming from does not have the expected provenance ",
+        "from the target that the resume state was made with",
+      ].join("\n"));
+    this._lastProvenanceEntityInfo = lastProvenanceEntityInfo;
+
+    const state = db.withSqliteStatement(`SELECT data FROM ${IModelTransformer.jsStateTable}`, (stmt) => {
+      if (DbResult.BE_SQLITE_ROW !== stmt.step())
+        throw Error("expected row when getting data from js state table");
+      return JSON.parse(stmt.getValueString(0)) as TransformationJsonState;
+    });
+    if (state.transformerClass !== this.constructor.name)
+      throw Error("resuming from a differently named transformer class, it is not necessarily valid to resume with a different transformer class");
+    // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
+    (this as any)._options = state.options;
+    this.context.loadStateFromDb(db);
+    this.importer.loadStateFromJson(state.importerState);
+    this.exporter.loadStateFromJson(state.exporterState);
+    this.loadAdditionalStateJson(state.additionalState);
+  }
+
+  /**
+   * Return a new transformer instance with the same remappings state as saved from a previous [[IModelTransformer.saveStateToFile]] call.
+   * This allows you to "resume" an iModel transformation, you will have to call [[IModelTransformer.processChanges]]/[[IModelTransformer.processAll]]
+   * again but the remapping state will cause already mapped elements to be skipped.
+   * To "resume" an iModel Transformation you need:
+   * - the sourceDb at the same changeset
+   * - the same targetDb in the state in which it was before
+   * @param statePath the path to the serialized state of the transformer, use [[IModelTransformer.saveStateToFile]] to get this from an existing transformer instance
+   * @param constructorArgs remaining arguments that you would normally pass to the Transformer subclass you are using, usually (sourceDb, targetDb)
+   * @note custom transformers with custom state may need to override this method in order to handle loading their own custom state somewhere
+   */
+  public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
+    this: SubClass,
+    statePath: string,
+    ...constructorArgs: ConstructorParameters<SubClass>
+  ): InstanceType<SubClass> {
+    const transformer = new this(...constructorArgs);
+    const db = new SQLiteDb();
+    db.openDb(statePath, OpenMode.Readonly);
+    try {
+      transformer.loadStateFromDb(db);
+    } finally {
+      db.closeDb();
+    }
+    return transformer as InstanceType<SubClass>;
+  }
+
+  /**
+   * You may override this to store arbitrary json state in a transformer state dump, useful for some resumptions
+   * @see [[IModelTransformer.saveStateToFile]]
+   */
+  protected getAdditionalStateJson(): any {
+    return {};
+  }
+
+  /**
+   * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
+   * @see [[IModelTransformer.loadStateFromFile]]
+   */
+  protected loadAdditionalStateJson(_additionalState: any): void {}
+
+  /**
+   * Save the state of the active transformation to an open SQLiteDb
+   * You can override this if you'd like to write custom tables to the resumable dump state, but you should call
+   * this super implementation
+   * @note the SQLiteDb must be open
+   */
+  protected saveStateToDb(db: SQLiteDb): void {
+    const jsonState: TransformationJsonState = {
+      transformerClass: this.constructor.name,
+      options: this._options,
+      importerState: this.importer.saveStateToJson(),
+      exporterState: this.exporter.saveStateToJson(),
+      additionalState: this.getAdditionalStateJson(),
+    };
+    this.context.saveStateToDb(db);
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
+      `CREATE TABLE ${IModelTransformer.jsStateTable} (data TEXT)`
+    )) throw Error("Failed to create the js state table in the state database");
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
+      CREATE TABLE ${IModelTransformer.lastProvenanceEntityInfoTable} (
+        -- because we cannot bind the invalid id which we use for our null state, we actually store the id as a hex string
+        entityId TEXT,
+        aspectId TEXT,
+        aspectVersion TEXT,
+        aspectKind TEXT
+      )
+    `)) throw Error("Failed to create the target state table in the state database");
+    db.saveChanges();
+    db.withSqliteStatement(
+      `INSERT INTO ${IModelTransformer.jsStateTable} (data) VALUES (?)`,
+      (stmt) => {
+        stmt.bindString(1, JSON.stringify(jsonState));
+        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+      });
+    db.withSqliteStatement(
+      `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion, aspectKind) VALUES (?,?,?,?)`,
+      (stmt) => {
+        stmt.bindString(1, this._lastProvenanceEntityInfo.entityId);
+        stmt.bindString(2, this._lastProvenanceEntityInfo.aspectId);
+        stmt.bindString(3, this._lastProvenanceEntityInfo.aspectVersion);
+        stmt.bindString(4, this._lastProvenanceEntityInfo.aspectKind);
+        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+      });
+    db.saveChanges();
+  }
+
+  /**
+   * Save the state of the active transformation to a file path, if a file at the path already exists, it will be overwritten
+   * This state can be used by [[IModelTransformer.resumeTransformation]] to resume a transformation from this point.
+   * The serialization format is a custom sqlite database.
+   * @note custom transformers with custom state may override [[IModelTransformer.saveStateToDb]] or [[IModelTransformer.getAdditionalStateJson]]
+   *       and [[IModelTransformer.loadStateFromDb]] (with a super call) or [[IModelTransformer.loadAdditionalStateJson]]
+   *       if they have custom state that needs to be stored with
+   *       potentially inside the same sqlite file in separate tables
+   */
+  public saveStateToFile(nativeStatePath: string): void {
+    const db = new SQLiteDb();
+    if (IModelJsFs.existsSync(nativeStatePath))
+      IModelJsFs.unlinkSync(nativeStatePath);
+    db.createDb(nativeStatePath);
+    try {
+      this.saveStateToDb(db);
+      db.saveChanges();
+    } finally {
+      db.closeDb();
+    }
+  }
+
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
  * Inserts, updates, and deletes are determined by inspecting the changeset(s).
  * @param accessToken A valid access token string
@@ -1105,6 +1341,15 @@ export class IModelTransformer extends IModelExportHandler {
     this.importer.computeProjectExtents();
     this.finalizeTransformation();
   }
+}
+
+/** @internal the json part of a transformation's state */
+interface TransformationJsonState {
+  transformerClass: string;
+  options: IModelTransformOptions;
+  importerState: IModelImporterState;
+  exporterState: IModelExporterState;
+  additionalState?: any;
 }
 
 /** IModelTransformer that clones the contents of a template model.
@@ -1131,7 +1376,7 @@ export class TemplateModelCloner extends IModelTransformer {
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
    * @param targetModelId The Id of the target model (must be a subclass of GeometricModel3d) where the cloned component will be inserted.
    * @param placement The placement for the cloned component.
-   * @note *Predecessors* like the SpatialCategory must be remapped before calling this method.
+   * @note *Required References* like the SpatialCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
   public async placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>> {
@@ -1151,7 +1396,7 @@ export class TemplateModelCloner extends IModelTransformer {
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
    * @param targetModelId The Id of the target model (must be a subclass of GeometricModel2d) where the cloned component will be inserted.
    * @param placement The placement for the cloned component.
-   * @note *Predecessors* like the DrawingCategory must be remapped before calling this method.
+   * @note *Required References* like the DrawingCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
    */
   public async placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>> {
@@ -1169,17 +1414,17 @@ export class TemplateModelCloner extends IModelTransformer {
   }
   /** Cloning from a template requires this override of onTransformElement. */
   public override onTransformElement(sourceElement: Element): ElementProps {
-    const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
-    predecessorIds.forEach((predecessorId: Id64String) => {
-      if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
+    const referenceIds: Id64Set = sourceElement.getReferenceIds();
+    referenceIds.forEach((referenceId: Id64String) => {
+      if (Id64.invalid === this.context.findTargetElementId(referenceId)) {
         if (this.context.isBetweenIModels) {
-          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`);
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${referenceId} not found for target iModel`);
         } else {
-          const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
+          const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(referenceId, DefinitionElement);
           if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
-            this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
+            this.context.remapElement(referenceId, referenceId); // when in the same iModel, can use existing DefinitionElements without remapping
           } else {
-            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`);
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${referenceId} not found`);
           }
         }
       }

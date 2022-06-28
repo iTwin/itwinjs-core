@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Parser, UnitProps } from "@itwin/core-quantity";
 import { assert } from "chai";
+import { assert as bAssert } from "@itwin/core-bentley";
+import { Parser, UnitProps } from "@itwin/core-quantity";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
@@ -176,9 +177,9 @@ describe("Quantity formatter", async () => {
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
     quantityFormatter.addAlternateLabels("Units.FT", "shoe", "sock");
     const alternateLabels = quantityFormatter.alternateUnitLabelsProvider.getAlternateUnitLabels({ name: "Units.FT" } as UnitProps);
-    assert(!!alternateLabels);
-    assert(alternateLabels!.includes("shoe"));
-    assert(alternateLabels!.includes("sock"));
+    bAssert(undefined !== alternateLabels);
+    assert(alternateLabels.includes("shoe"));
+    assert(alternateLabels.includes("sock"));
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
     const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);

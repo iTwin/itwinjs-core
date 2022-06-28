@@ -37,13 +37,13 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
+public;CloudContainerArgs
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
-beta;ContainerNameOrId =
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -179,6 +179,7 @@ public;class GroupInformationElement
 public;class GroupInformationModel 
 public;GroupInformationPartition 
 public;GroupModel 
+internal;HubMock
 beta;IModelCloneContext
 public;class IModelDb 
 public;IModelDb
@@ -216,11 +217,14 @@ public;LinkModel
 public;LinkPartition 
 internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
+internal;LocalHub
 beta;LockConflict 
 beta;LockControl
 internal;LockMap = Map
 beta;LockProps
 public;LockState
+internal;LockStatusExclusive
+internal;LockStatusShared
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
@@ -243,7 +247,7 @@ beta;OnModelIdArg
 beta;OnModelPropsArg 
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
-public;OpenBriefcaseArgs = OpenBriefcaseProps &
+public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -290,10 +294,10 @@ beta;SettingName = string
 beta;SettingObject
 beta;SettingResolver
 beta;Settings
-beta;SettingsGroupSpec
-beta;SettingSpec 
+beta;SettingSchema 
+beta;SettingSchemaGroup
 beta;SettingsPriority
-beta;SettingsSpecRegistry
+beta;SettingsSchemas
 beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
@@ -301,6 +305,7 @@ public;SheetModel
 public;SheetTemplate 
 public;SheetViewDefinition 
 public;SnapshotDb 
+public;SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs
 public;SpatialCategory 
 public;class SpatialElement 
 public;SpatialLocation 
@@ -354,14 +359,12 @@ public;class ViewDefinition3d
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
+beta;WorkspaceAccount
+beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
-beta;WorkspaceContainerId = string
-beta;WorkspaceContainerName = string
-beta;WorkspaceContainerProps = ContainerNameOrId &
+beta;WorkspaceContainer
 beta;WorkspaceDb
-beta;WorkspaceDbName = string
-beta;WorkspaceDbProps = WorkspaceContainerProps &
-beta;WorkspaceDbVersion = string
+beta;WorkspaceDb
 beta;WorkspaceOpts
-beta;WorkspaceResourceName = string
-beta;WorkspaceResourceProps = WorkspaceDbProps &
+beta;WorkspaceResource
+beta;WorkspaceSetting:

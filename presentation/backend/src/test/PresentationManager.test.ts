@@ -12,14 +12,13 @@ import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwi
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
+  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
-  VariableValueTypes,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
+  HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
+  MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
+  SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -31,8 +30,9 @@ import {
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {
-  getKeysForContentRequest, HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
+import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -631,18 +631,20 @@ describe("PresentationManager", () => {
         editor: "info",
         dev: "warning",
       };
-      const diagnosticsResult: DiagnosticsScopeLogs = {
-        scope: "test",
-        duration: 123,
+      const diagnosticsResult: Diagnostics = {
+        logs: [{
+          scope: "test",
+          duration: 123,
+        }],
       };
       const diagnosticsListener = sinon.spy();
       addonMock
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
+      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
   });
@@ -667,7 +669,7 @@ describe("PresentationManager", () => {
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
-      sinon.stub(manager, "rulesets").returns(sinon.createStubInstance(RulesetManagerImpl, {
+      sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
         add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
       }));
     });
@@ -1198,6 +1200,7 @@ describe("PresentationManager", () => {
             keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            contentFlags: ContentFlags.DescriptorOnly,
           },
         };
 
@@ -2123,7 +2126,16 @@ describe("PresentationManager", () => {
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
       const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object }, ids, "test scope");
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
+      expect(result).to.eq(resultKeys);
+    });
+
+    it("computes element selection using `SelectionScopesHelper`", async () => {
+      const elementIds = [createRandomId()];
+      const resultKeys = new KeySet();
+      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      const result = await manager.computeSelection({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
       expect(result).to.eq(resultKeys);
     });
 
