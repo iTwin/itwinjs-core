@@ -294,13 +294,14 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /** Import an ElementUniqueAspect into the target iModel. */
-  public importElementUniqueAspect(aspectProps: ElementAspectProps): void {
+  public importElementUniqueAspect(aspectProps: ElementAspectProps): Id64String {
     const aspects: ElementAspect[] = this.targetDb.elements.getAspects(aspectProps.element.id, aspectProps.classFullName);
     if (aspects.length === 0) {
-      this.onInsertElementAspect(aspectProps);
+      return this.onInsertElementAspect(aspectProps);
     } else if (hasEntityChanged(aspects[0], aspectProps)) {
       aspectProps.id = aspects[0].id;
       this.onUpdateElementAspect(aspectProps);
+      return aspectProps.id;
     }
   }
 
@@ -308,10 +309,11 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @param aspectPropsArray The ElementMultiAspects to import
    * @param filterFunc Optional filter func that is used to exclude target ElementMultiAspects that were added during iModel transformation from the update detection logic.
    * @note For insert vs. update reasons, it is important to process all ElementMultiAspects owned by an Element at once since we don't have aspect-specific provenance.
+   * @returns the array of ids of the newly inserted ElementMultiAspects, in the order of the aspectPropsArray parameter
    */
-  public importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void {
+  public importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): Id64String[] {
     if (aspectPropsArray.length === 0) {
-      return;
+      return [];
     }
     const elementId: Id64String = aspectPropsArray[0].element.id;
     // Determine the set of ElementMultiAspect classes to consider
@@ -359,11 +361,12 @@ export class IModelImporter implements Required<IModelImportOptions> {
   /** Insert the ElementAspect into the target iModel.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElementAspect`.
    */
-  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected onInsertElementAspect(aspectProps: ElementAspectProps): Id64String {
     try {
       this.targetDb.elements.insertAspect(aspectProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
       this.trackProgress();
+      return aspectProps.id;
     } catch (error) {
       if (!this.targetDb.containsClass(aspectProps.classFullName)) {
         // replace standard insert error with something more helpful

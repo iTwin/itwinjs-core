@@ -11,8 +11,8 @@ import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelS
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChangeSummaryManager,
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ChannelRootAspect, ChangeSummaryManager,
+  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -630,6 +630,29 @@ export class IModelTransformer extends IModelExportHandler {
     return true;
   }
 
+  private findTargetId(sourceEntity: Element | Relationship | ElementAspect): Id64String {
+    if (sourceEntity instanceof Element) {
+      return this.context.findTargetElementId(sourceEntity.id);
+    } else if (sourceEntity instanceof Relationship) {
+      const relSourceInTargetId = this.context.findTargetElementId(sourceEntity.sourceId);
+      const relTargetInTargetId = this.context.findTargetElementId(sourceEntity.targetId);
+      for (const rel of [ElementRefersToElements, ElementDrivesElement]) {
+        const maybeTargetId = this.targetDb.relationships.getInstance(rel.classFullName, {
+          sourceId: relSourceInTargetId,
+          targetId: relTargetInTargetId,
+        })?.id;
+        if (maybeTargetId) {
+          return maybeTargetId;
+        }
+      }
+      return Id64.invalid;
+    } else if (sourceEntity instanceof ElementAspect) {
+      return this.context.findTargetAspectId(sourceEntity.id);
+    } else {
+      throw Error(`unreachable; sourceEntity was '${(sourceEntity as any).constructor.name}' not an Element, Relationship, or ElementAspect`);
+    }
+  }
+
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
@@ -637,17 +660,7 @@ export class IModelTransformer extends IModelExportHandler {
     sourceEntity: Element | Relationship | ElementAspect,
   ) {
     return () => {
-      let id: Id64String;
-      if (sourceEntity instanceof Element) {
-        id = this.context.findTargetElementId(sourceEntity.id);
-      } else if (sourceEntity instanceof Relationship) {
-
-      } else if (sourceEntity instanceof ElementAspect) {
-
-      } else {
-        throw Error(`unreachable; sourceEntity was '${(sourceEntity as any).constructor.name}' not an Element, Relationship, or ElementAspect`);
-      }
-      const targetId = this.context.findTargetElementId(sourceEntity.id);
+      const targetId = this.findTargetId(sourceEntity);
       if (targetId === Id64.invalid)
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
       const onEntityTransform = EntityUnifier.transformCallbackFor(this, sourceEntity);
@@ -1090,7 +1103,8 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
     const targetAspectProps: ElementAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
-    this.importer.importElementUniqueAspect(targetAspectProps);
+    const targetId = this.importer.importElementUniqueAspect(targetAspectProps);
+    this.context.remapElementAspect(sourceAspect.id, targetId);
   }
 
   /** Override of [IModelExportHandler.onExportElementMultiAspects]($transformer) that imports ElementMultiAspects into the target iModel when they are exported from the source iModel.
@@ -1103,13 +1117,19 @@ export class IModelTransformer extends IModelExportHandler {
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
       return this.onTransformElementAspect(sourceAspect, targetElementId);
     });
-    this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
+    const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
       return (
         !this._options.includeSourceProvenance ||
         !isExternalSourceAspectFromTransformer
       );
     });
+    assert(targetIds.length === targetAspectPropsArray.length, "target ids s was not the same as ");
+    for (let i = 0; i < targetIds.length)
+    targetAspectPropsArray.forEach((targetAspectProps) => {
+
+    this.context.remapElementAspect(sourceAspect.id, targetId);
+    })
   }
 
   /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.

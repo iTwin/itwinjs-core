@@ -72,6 +72,18 @@ export class IModelCloneContext {
     this._nativeContext.removeElementId(sourceId);
   }
 
+  private _aspectRemapTable = new Map<Id64String, Id64String>();
+
+  /** Add a rule that remaps the specified source ElementAspect to the specified target ElementAspect. */
+  public remapElementAspect(aspectSourceId: Id64String, aspectTargetId: Id64String): void {
+    this._aspectRemapTable.set(aspectSourceId, aspectTargetId);
+  }
+
+  /** Remove a rule that remaps the specified source ElementAspect */
+  public removeElementAspect(aspectSourceId: Id64String): void {
+    this._aspectRemapTable.delete(aspectSourceId);
+  }
+
   /** Look up a target CodeSpecId from the source CodeSpecId.
    * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
@@ -90,6 +102,16 @@ export class IModelCloneContext {
       return Id64.invalid;
     }
     return this._nativeContext.findElementId(sourceElementId);
+  }
+
+  /** Look up a target AspectId from the source AspectId.
+   * @returns the target AspectId or [Id64.invalid]($bentley) if a mapping not found.
+   */
+  public findTargetAspectId(sourceAspectId: Id64String): Id64String {
+    if (Id64.invalid === sourceAspectId) {
+      return Id64.invalid;
+    }
+    return this._nativeContext.findElementId(sourceAspectId);
   }
 
   /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
