@@ -20,8 +20,7 @@ describe("SelectionInfoField", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
           <SelectionInfoField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />

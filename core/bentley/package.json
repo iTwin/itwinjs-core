@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "3.3.0-dev.19",
+  "version": "3.3.0-dev.48",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -35,7 +35,8 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@opentelemetry/api": "^1.0.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",

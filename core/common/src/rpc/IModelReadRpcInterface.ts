@@ -37,6 +37,7 @@ import { RpcRoutingToken } from "./core/RpcRoutingToken";
  */
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
   public isIModelNotFoundResponse: boolean = true;
+  public override message = "iModel not found";
 }
 
 /** The RPC interface for reading from an iModel.
@@ -65,6 +66,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> { return this.forward(arguments); }
   public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> { return this.forward(arguments); }
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }

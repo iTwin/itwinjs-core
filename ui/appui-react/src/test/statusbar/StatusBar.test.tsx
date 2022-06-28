@@ -28,10 +28,10 @@ describe("StatusBar", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          <MessageCenterField isInFooterMode={isInFooterMode} />
         </>
       );
     }

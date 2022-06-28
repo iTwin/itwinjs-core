@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, Tracing } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -162,9 +162,16 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
+      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters)
+        .catch(async (error) => {
+          // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
+          if (!(error instanceof RpcPendingResponse)) {
+            Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
+            Tracing.setAttributes({ error: true });
+          }
+          throw error;
+        }));
     } catch (error: unknown) {
-      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error), ...RpcInvocation.sanitizeForLog(activity) });
       return this.reject(error);
     }
   }

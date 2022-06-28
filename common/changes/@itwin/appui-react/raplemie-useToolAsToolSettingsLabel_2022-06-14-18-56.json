@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add option to display active tool name as the Tool Settings tab label.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

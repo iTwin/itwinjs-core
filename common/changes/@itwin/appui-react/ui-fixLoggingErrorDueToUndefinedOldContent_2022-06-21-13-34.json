@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Change to only log the inability to find a content view when the content is required.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

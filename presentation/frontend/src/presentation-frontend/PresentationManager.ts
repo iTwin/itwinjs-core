@@ -10,12 +10,12 @@ import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@i
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo,
-  Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo,
-  InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions,
-  PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
-  UpdateInfoJSON, VariableValueTypes,
+  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
+  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -277,7 +277,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves nodes */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]> {
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Node[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
@@ -286,7 +286,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves nodes count. */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>): Promise<number> {
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
@@ -294,7 +294,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves total nodes count and a single page of nodes. */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<{ count: number, nodes: Node[] }> {
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ count: number, nodes: Node[] }> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
@@ -306,7 +306,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
-  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]> {
+  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, instancePaths: options.instancePaths.map((p) => p.map(InstanceKey.toJSON)) });
@@ -315,7 +315,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
-  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
@@ -326,7 +326,7 @@ export class PresentationManager implements IDisposable {
    * Get all content sources for a given list of classes.
    * @beta
    */
-  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]> {
+  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
     await this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
@@ -334,7 +334,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves the content descriptor which describes the content and can be used to customize it. */
-  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -346,7 +346,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves overall content set size. */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<number> {
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -358,12 +358,12 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves content which consists of a content descriptor and a page of records. */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>): Promise<Content | undefined> {
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Content | undefined> {
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
   /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>): Promise<{ content: Content, size: number } | undefined> {
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -393,7 +393,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves distinct values of specific field from the content. */
-  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -412,7 +412,7 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
+  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined> {
     await this.onConnection(requestOptions.imodel);
     return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
   }
@@ -421,7 +421,7 @@ export class PresentationManager implements IDisposable {
    * Retrieves content item instance keys.
    * @beta
    */
-  public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
+  public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -448,7 +448,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves display label definition of specific item. */
-  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition> {
     await this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, key: InstanceKey.toJSON(requestOptions.key) });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
@@ -456,7 +456,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /** Retrieves display label definition of specific items. */
-  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: requestOptions.keys.map(InstanceKey.toJSON) });
     const result = await buildPagedArrayResponse(undefined, async (partialPageOptions) => {

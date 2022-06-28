@@ -510,6 +510,60 @@ describe("Full Schema Deserialization", () => {
       };
       await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
+
+    it("invalid property type in child class json, reports error correctly", async () => {
+      const schemaJson = {
+        ...baseJson,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.BaseEntity",
+            properties: [
+              {
+                name: "TestProp",
+                type: "BadProperty",
+                typeName: "int",
+              },
+            ],
+          },
+          BaseEntity: {
+            schemaItemType: "EntityClass",
+          },
+        },
+      };
+
+      const context = new SchemaContext();
+      const reader = new SchemaReadHelper(JsonParser, context);
+      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECObjectsError, "The ECProperty TestSchema.TestEntity.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
+    });
+
+    it("invalid property type in class json with mixin, reports error correctly", async () => {
+      const schemaJson = {
+        ...baseJson,
+        items: {
+          TestEntityClass: {
+            schemaItemType: "EntityClass",
+            mixins: ["TestSchema.TestMixin"],
+            properties: [
+              {
+                name: "TestProp",
+                type: "BadProperty",
+                typeName: "int",
+              },
+            ],
+          },
+          TestMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.TestEntityClass",
+          },
+        },
+      };
+
+      const context = new SchemaContext();
+      const reader = new SchemaReadHelper(JsonParser, context);
+      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECObjectsError, "The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
+    });
+
   });
 
   describe("with visitor", () => {

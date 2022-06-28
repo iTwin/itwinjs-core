@@ -574,6 +574,8 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     showWidgetIcon: UiStateEntry<boolean>;
     // (undocumented)
+    useToolAsToolSettingsLabel: UiStateEntry<boolean>;
+    // (undocumented)
     widgetOpacity: UiStateEntry<number>;
 }
 
@@ -1180,7 +1182,9 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
     // (undocumented)
-    SetWidgetOpacity = "configurableui:set_widget_opacity"
+    SetWidgetOpacity = "configurableui:set_widget_opacity",
+    // (undocumented)
+    UseToolAsToolSettingsLabel = "configurableui:set-use-tool-as-tool-settings-label"
 }
 
 // @public
@@ -1195,6 +1199,7 @@ export const ConfigurableUiActions: {
     setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>;
     setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
     setAnimateToolSettings: (animateToolSettings: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AnimateToolSettings, boolean>;
+    setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>;
 };
 
 // @public
@@ -1302,6 +1307,8 @@ export interface ConfigurableUiState {
     toolPrompt: string;
     // (undocumented)
     useDragInteraction: boolean;
+    // (undocumented)
+    useToolAsToolSettingsLabel: boolean;
     // (undocumented)
     viewOverlayDisplay: boolean;
     // (undocumented)
@@ -2143,6 +2150,7 @@ export const expandWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -2389,7 +2397,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -3332,6 +3340,8 @@ export interface InitialAppUiSettings {
     // (undocumented)
     showWidgetIcon?: boolean;
     // (undocumented)
+    useToolAsToolSettingsLabel?: boolean;
+    // (undocumented)
     widgetOpacity: number;
 }
 
@@ -3875,8 +3885,6 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
-    // (undocumented)
-    readonly state: Readonly<MessageCenterState>;
     }
 
 // @public
@@ -4883,6 +4891,7 @@ export const setPanelSize: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5075,6 +5084,7 @@ export const setWidgetLabel: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5248,6 +5258,7 @@ export const setWidgetState: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5485,6 +5496,7 @@ export const showWidget: (base: {
                     readonly side: PanelSide;
                 };
                 readonly userSized?: boolean | undefined;
+                readonly hidden?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -6122,7 +6134,9 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
 // @public
 export interface StatusBarWidgetControlArgs {
     isInFooterMode: boolean;
+    // @deprecated
     onOpenWidget: (widget: StatusBarFieldId) => void;
+    // @deprecated
     openWidget: StatusBarFieldId;
     toastTargetRef: React_2.Ref<HTMLElement>;
 }
@@ -6156,8 +6170,10 @@ export interface StatusBarZoneProps extends CommonProps {
 // @public
 export interface StatusFieldProps extends CommonProps {
     isInFooterMode: boolean;
-    onOpenWidget: (widget: StatusBarFieldId) => void;
-    openWidget: StatusBarFieldId;
+    // @deprecated
+    onOpenWidget?: (widget: StatusBarFieldId) => void;
+    // @deprecated
+    openWidget?: StatusBarFieldId;
 }
 
 // @public @deprecated
@@ -6262,6 +6278,8 @@ export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
 
 // @internal (undocumented)
 export interface TabLocation {
+    // (undocumented)
+    floating?: boolean;
     // (undocumented)
     side: PanelSide;
     // (undocumented)
@@ -6927,6 +6945,8 @@ export class UiFramework {
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
+    // (undocumented)
+    static setUseToolAsToolSettingsLabel(value: boolean): void;
     static setViewOverlayDisplay(display: boolean): void;
     // (undocumented)
     static setWidgetOpacity(opacity: number): void;
@@ -6941,6 +6961,7 @@ export class UiFramework {
     static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
+    static get useToolAsToolSettingsLabel(): boolean;
     static get viewOverlayDisplay(): boolean;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
@@ -7092,7 +7113,7 @@ export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly 
 export function useFrameworkVersion(): FrameworkVersionId;
 
 // @internal (undocumented)
-export function useFrontstageManager(frontstageDef: FrontstageDef): void;
+export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsToolSettingsLabel?: boolean): void;
 
 // @internal (undocumented)
 export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedItems;
@@ -7151,6 +7172,9 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+
+// @beta
+export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
