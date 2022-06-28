@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, Id64String, IModelStatus, ProcessDetector,
+  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
   BackendError, CloudStorageTileCache, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
@@ -726,13 +726,18 @@ export class TileAdmin {
     return () => { tileLoad(); treeLoad(); childLoad(); };
   }
 
-  /** @internal */
+  /** Determine what information about the schedule script is needed to produce tiles.
+   * If no script, or the script doesn't require batching, then no information is needed - normal tiles can be used.
+   * If possible and enabled, normal tiles can be requested and then processed on the frontend based on the ModelTimeline.
+   * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
+   * @internal
+   */
   public getScriptInfoForTreeId(modelId: Id64String, script: RenderScheduleState | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
     if (!script || !script.script.requiresBatching)
       return undefined;
 
     // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
-    if (this.enableFrontendScheduleScripts && !script.script.isMissingElementIds) {
+    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !script.script.isMissingElementIds)) {
       const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
       return timeline && (timeline.requiresBatching || timeline.containsTransform) ? { timeline } : undefined;
     }

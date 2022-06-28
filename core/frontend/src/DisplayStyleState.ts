@@ -104,7 +104,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       if (undefined === this.settings.renderTimeline) {
-        // The script cam from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
+        // The script came from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
         if (this.id === this._scheduleState.sourceId || !Id64.isValidId64(this.id))
           return;
       }

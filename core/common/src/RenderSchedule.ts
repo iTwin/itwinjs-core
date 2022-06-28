@@ -1157,27 +1157,43 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A reference to a [[RenderSchedule.Script]] identifying the source of the script.
-   * A schedule script may originate from one of the following sources:
-   *  - A [RenderTimeline]($backend) element stored in the iModel; or
-   *  - The `scheduleScript` JSON property of a [DisplayStyle]($backend) element stored in the iModel; or
-   *  - Any other source outside of the iModel, such as code that generates the script on the frontend, a script obtained from some server, etc.
-   *
-   * Two ScriptReferences with the same [[sourceId]] are assumed to have identical [[script]] contents.
+  /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.
+   * @see [DisplayStyleState.scheduleScriptReference]($frontend) to obtain the script reference associated with a display style.
    */
   export class ScriptReference {
-    /** Uniquely identifies the source of the script. If the source is a [RenderTimeline]($backend) or [DisplayStyle]($backend) element, `sourceId` provides the Id of that element.
-     * Otherwise, the provider of the Id is responsible for ensuring that two ScriptReferences with the same [[script]] contents, and that two ScriptReferences with different [[script]]
-     * contents will have different `sourceId`s. One way to produce unique identifiers is via [IModelConnection.transientIds]($frontend).
-     * @note `sourceId` properties are compared very frequently - avoid using lengthy strings.
+    /** The Id of the element - if any - from which the script originated.
+     * A schedule script may originate from one of the following sources:
+     *  - A [RenderTimeline]($backend) element stored in the iModel; or
+     *  - The `scheduleScript` JSON property of a [DisplayStyle]($backend) element stored in the iModel; or
+     *  - Any other source outside of the iModel, such as code that generates the script on the frontend, a script obtained from some server, etc.
+     *
+     * The [[sourceId]] property identifies the Id of the element from which the script originated; an empty or invalid [Id64String]($bentley) indicates the script did not
+     * originate from any persistent element. If the Id is valid, the contents of [[script]] are assumed to match those stored on the source element.
      */
-    public readonly sourceId: Id64String | string;
-    /** The script. */
+    public readonly sourceId: Id64String;
+    /** The script defining the rendering timelines to be applied. */
     public readonly script: Script;
 
-    public constructor(sourceId: Id64String, script: Script) {
-      this.sourceId = sourceId;
-      this.script = script;
+    /** Create a reference to a [[script]] with no [[sourceId]]. */
+    public constructor(script: Script);
+
+    /** Create a reference to a [[script]] with the specified [[sourceId]]. */
+    public constructor(sourceId: Id64String, script: Script);
+
+    /** @internal Use one of the public constructor overloads which forward to this one. */
+    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script);
+
+    /** @internal Use one of the public constructor overloads which forward to this one. */
+    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script) {
+      if (typeof sourceIdOrScript === "string") {
+        assert(scriptIfSourceId instanceof Script);
+        this.sourceId = sourceIdOrScript;
+        this.script = scriptIfSourceId;
+      } else {
+        assert(undefined === scriptIfSourceId);
+        this.script = sourceIdOrScript;
+        this.sourceId = Id64.invalid;
+      }
     }
   }
 
