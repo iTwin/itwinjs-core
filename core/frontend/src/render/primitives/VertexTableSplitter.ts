@@ -291,13 +291,14 @@ class MaterialAtlasRemapper {
   }
 
   private unpackFloat(value: number): number {
-    const valUint32 = new Uint32Array(value);
+    this._32[0] = value;
+    const valUint32 = this._32[0];
     const bias = 38.0;
-    const temp = (valUint32[0] >>> 24) / 2.0;
+    const temp = (valUint32 >>> 24) / 2.0;
     let exponent = Math.floor(temp);
     let sign = (temp - exponent) * 2.0;
     sign = -(sign * 2.0 - 1.0);
-    const base = sign * (valUint32[0] & 0xffffff) / 16777216.0;
+    const base = sign * (valUint32 & 0xffffff) / 16777216.0;
     exponent = exponent - bias;
     return base * Math.pow(10.0, exponent);
   }
