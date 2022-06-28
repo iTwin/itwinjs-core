@@ -339,12 +339,16 @@ class Node {
   public readonly usesUnquantizedPositions?: boolean;
 
   /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
-  public constructor(vertexTable: VertexTable, atlasOffset: number | undefined) {
+  public constructor(vertexTable: VertexTable, numColorsPrecedingAtlas: number | undefined) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined === vertexTable.uniformColor)
       this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));
-    if (undefined !== atlasOffset)
-      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, atlasOffset));
+
+    if (undefined !== numColorsPrecedingAtlas) {
+      const atlasOffset = (vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColorsPrecedingAtlas) * 4;
+      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset));
+    }
+
     this.usesUnquantizedPositions = vertexTable.usesUnquantizedPositions;
   }
 
