@@ -355,7 +355,7 @@ export interface InstanceFilterBuilderProps {
     // (undocumented)
     classes: ClassInfo[];
     // (undocumented)
-    onClassDeSelected: (selectedClass: ClassInfo) => void;
+    onClassDeselected: (selectedClass: ClassInfo) => void;
     // (undocumented)
     onClassSelected: (selectedClass: ClassInfo) => void;
     // (undocumented)
@@ -366,6 +366,8 @@ export interface InstanceFilterBuilderProps {
     onPropertySelected?: (property: PropertyDescription) => void;
     // (undocumented)
     properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
     // (undocumented)
     selectedClasses: ClassInfo[];
 }
@@ -446,6 +448,8 @@ export interface PresentationInstanceFilterBuilderProps {
     imodel: IModelConnection;
     // (undocumented)
     onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
 }
 
 // @alpha (undocumented)
@@ -778,7 +782,7 @@ export function useNodeHighlightingProps(filter: string | undefined, filteredNod
 export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean): {
     onPropertySelected: (property: PropertyDescription) => void;
     onClearClasses: () => void;
-    onClassDeSelected: (classInfo: ClassInfo) => void;
+    onClassDeselected: (classInfo: ClassInfo) => void;
     onClassSelected: (classInfo: ClassInfo) => void;
     properties: PropertyDescription[];
     classes: ClassInfo[];

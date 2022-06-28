@@ -2535,6 +2535,8 @@ export interface PropertyFilterBuilderContextProps {
     onRulePropertySelected?: (property: PropertyDescription) => void;
     // (undocumented)
     properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
 }
 
 // @alpha (undocumented)
@@ -2545,6 +2547,8 @@ export interface PropertyFilterBuilderProps {
     onRulePropertySelected?: (property: PropertyDescription) => void;
     // (undocumented)
     properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
     // (undocumented)
     ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
     // (undocumented)
