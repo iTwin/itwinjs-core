@@ -802,7 +802,7 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        if (widgetDef.activeState === WidgetState.Open) {
+        if (widgetDef.activeState === WidgetState.Open || widgetDef.activeState ===  WidgetState.Floating) {
           widgetDef.setWidgetState(WidgetState.Hidden);
         } else {
           widgetDef.setWidgetState(WidgetState.Open);

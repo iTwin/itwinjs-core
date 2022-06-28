@@ -1,35 +1,17 @@
-# Domains
+# Domain Schemas
 
-The following domains exist in [BIS](../index.md)
+## Introduction
 
-## Core
+BIS domains are organized in this reference according to their intended [layer](../guide/intro/bis-organization.md) and discipline.
 
-### [BisCore](./BisCore.ecschema.md)
+## BIS domains
 
-### [Functional](./Functional.ecschema.md)
+### [Core domains](./core-domains.md)
 
-### [Generic](./Generic.ecschema.md)
+### [Common domains](./common-domains.md)
 
-### [Linear Referencing](./LinearReferencing.ecschema.md)
+### [Discipline-Physical domains](./discipline-physical-domains.md)
 
-## Shared across disciplines
+### [Discipline-Other domains](./discipline-other-domains.md)
 
-### [AECUnits](./AecUnits.ecschema.md)
-
-### [SpatialComposition](./SpatialComposition.ecschema.md)
-
-### [ClassificationSystems](./ClassificationSystems.ecschema.md)
-
-## Building discipline
-
-### [Building Spatial](./BuildingSpatial.ecschema.md)
-
-## Standard Schemas
-
-### [CoreCustomAttributes](./CoreCustomAttributes.ecschema.md)
-
-### [ECDbMap](./ECDbMap.ecschema.md)
-
-### [Formats](./Formats.ecschema.md)
-
-### [Units](./Units.ecschema.md)
+### [Standard schemas](./standard-schemas.md)
