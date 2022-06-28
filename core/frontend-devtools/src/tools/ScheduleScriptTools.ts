@@ -11,9 +11,7 @@ import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ElementLoadOptions, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";
-import {
-  RenderScheduleState, Viewport,
-} from "@itwin/core-frontend";
+import { Viewport, } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
@@ -123,7 +121,7 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "ReverseScheduleScript";
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    const prevRef = vp?.displayStyle.scheduleState;
+    const prevRef = vp?.displayStyle.scheduleScriptReference;
     if (!prevRef || prevRef.script.isMissingElementIds)
       return false;
 
@@ -144,8 +142,7 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
     const newScript = RenderSchedule.Script.fromJSON(scriptProps);
     assert(undefined !== newScript);
 
-    // ###TODO an API on DisplayStyleSettings to change the RenderSchedule.ScriptReference? RenderScheduleState is internal.
-    vp.displayStyle.setScheduleState(new RenderScheduleState("", newScript));
+    vp.displayStyle.scheduleScriptReference = new RenderSchedule.ScriptReference(newScript);
     return true;
   }
 
@@ -176,8 +173,7 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
   }
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    const state = this._script ? new RenderScheduleState("", this._script) : undefined;
-    vp.displayStyle.setScheduleState(state);
+    vp.displayStyle.scheduleScriptReference = this._script ? new RenderSchedule.ScriptReference(this._script) : undefined;
     return true;
   }
 }

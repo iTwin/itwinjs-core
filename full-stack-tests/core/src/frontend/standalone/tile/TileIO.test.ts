@@ -62,7 +62,6 @@ export class FakeREProps implements RelatedElementProps {
 }
 
 export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  const scheduleState = options?.animationId ? { getModelAnimationId: () => options.animationId } : undefined;
   return {
     iModel,
     is3d: () => true !== options?.is2d,
@@ -70,9 +69,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: {
-      scheduleState,
-    },
+    displayStyle: { },
   } as unknown as ViewState;
 }
 
@@ -561,7 +558,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
   const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
   const ref = model.createTileTreeReference(view);
