@@ -37,7 +37,7 @@
     "webpack-sources": "^1.4.3"
   },
   "peerDependencies": {
-    "webpack": "4.42.0"
+    "webpack": "^5.64.4"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -54,7 +54,7 @@
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0",
-    "webpack": "4.42.0",
+    "webpack": "^5.64.4",
     "cpx2": "^3.0.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",

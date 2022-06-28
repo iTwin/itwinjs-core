@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chalk from "chalk";
-import { Compiler, Stats } from "webpack";
+import { Compiler, StatsCompilation } from "webpack";
 
-type StatsFormatter = (stats: Stats.ToJsonOutput) => Stats.ToJsonOutput;
+type StatsFormatter = (stats: StatsCompilation) => StatsCompilation;
 
 // No point in having a stack trace that points to the PrettyLoggingPlugin rethrowing an error message.
 class PrettyLoggingError extends Error {
@@ -85,12 +85,12 @@ export class PrettyLoggingPlugin {
   }
 
   // Reformats warnings and errors with react-dev-utils.
-  private handleWarningsAndErrors(elapsed: number, jsonStats: Stats.ToJsonOutput) {
+  private handleWarningsAndErrors(elapsed: number, jsonStats: StatsCompilation) {
     const { errors, warnings } = this._formatter(jsonStats);
-    if (errors.length)
+    if (errors?.length)
       throw new PrettyLoggingError(errors.join("\n\n"));
 
-    if (warnings.length > 0) {
+    if (warnings?.length) {
       if (process.env.CI) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.CI is set.\nMost CI servers set it automatically.\n`));
         throw new PrettyLoggingError(warnings.join("\n\n"));
@@ -115,6 +115,7 @@ export class PrettyLoggingPlugin {
   public apply(compiler: Compiler) {
     compiler.hooks.entryOption.tap("PrettyLoggingPlugin", () => {
       this.printHeading(this._startMessage);
+      return true;
     });
 
     compiler.hooks.watchRun.tap("PrettyLoggingPlugin", () => {
