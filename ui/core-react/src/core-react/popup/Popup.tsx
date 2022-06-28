@@ -77,6 +77,12 @@ export interface PopupProps extends CommonProps {
   /** If true the children are mounted once and unmounted when this component is unmounted. If false the
    * children are unmounted each time the popup is closed. */
   keepContentsMounted?: boolean;
+
+  /**
+   * If true the the popup will remain open and will be repositioned when window resize event occurs, default to false
+   * @beta
+   * */
+  repositionOnResize?: boolean;
 }
 
 /** @internal */
@@ -270,11 +276,16 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   };
 
   private _resize = () => {
-    if (this.props.isOpen) {
-      const position = this._toggleRelativePosition();
-      const point = this._fitPopup(this._getPosition(position));
-      this.setState({ left: point.x, top: point.y, position });
+    if (this.props.repositionOnResize){
+      if (this.props.isOpen) {
+        const position = this._toggleRelativePosition();
+        const point = this._fitPopup(this._getPosition(position));
+        this.setState({ left: point.x, top: point.y, position });
+      }
+    } else {
+      this._hide(); // legacy behavior
     }
+
   };
 
   private _hide = () => {
