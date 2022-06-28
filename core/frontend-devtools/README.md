@@ -322,6 +322,8 @@ These keysins control the planar masking of reality models.
     * "include": Include the Ids as they are stored in the script - possibly in compressed format.
     * "expand": Include the Ids, decompressing them if they are in compressed format.
     * "count": Replace each list of Ids with the number of Ids in that list.
+* `fdt set schedule script` - Sets or clears the schedule script associated with the selected viewport. The script is supplied as a JSON string complying with the format of RenderSchedule.ScriptProps. If no script is supplied, any existing script is removed from the viewport.
+* `fdt reverse schedule script` - If a schedule script is associated with the selected viewport, replaces it with a script that reverses the script's element timelines.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.

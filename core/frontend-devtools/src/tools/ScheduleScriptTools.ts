@@ -156,12 +156,15 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
 
 export class SetScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "SetScheduleScript";
-  public static override get minArgs() { return 1; }
+  public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
   private _script?: RenderSchedule.Script;
 
   public override async parse(args: string[]): Promise<boolean> {
+    if (args.length === 0)
+      return true; // clear schedule script.
+
     try {
       this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
     } catch (ex) {
@@ -173,8 +176,8 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
   }
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    assert(undefined !== this._script);
-    vp.displayStyle.setScheduleState(new RenderScheduleState("", this._script));
+    const state = this._script ? new RenderScheduleState("", this._script) : undefined;
+    vp.displayStyle.setScheduleState(state);
     return true;
   }
 }
