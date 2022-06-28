@@ -5,7 +5,14 @@ publish: false
 
 Table of contents:
 
+- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
 - [Deprecations](#deprecations)
+
+## Progress API for downloading changesets
+
+Progress of changeset(s) download is now reported and download can be cancelled. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend).
+If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning
+[ProgressStatus.Abort]($core-backend) from said function.
 
 ## Deprecations
 
