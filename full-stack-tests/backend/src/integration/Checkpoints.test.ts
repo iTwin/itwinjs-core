@@ -54,7 +54,7 @@ describe("Checkpoints", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
-    process.env.CLOUDSQLITE_CACHE_DIR = cloudcacheDir;
+    process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
     fs.rmSync(cloudcacheDir, { recursive: true, force: true });
 
     // Props for daemon
@@ -112,7 +112,7 @@ describe("Checkpoints", () => {
     process.env = originalEnv;
   });
 
-  it("should use fallback directory when cloudsqlite_cache_dir has no daemon in it", async () => {
+  it("should use fallback directory when checkpoint_cache_dir has no daemon in it", async () => {
     const v2Manager = sinon.spy(V2CheckpointManager, "getFolder");
     const iModel = await SnapshotDb.openCheckpointV2({
       accessToken,

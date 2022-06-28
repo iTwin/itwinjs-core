@@ -139,15 +139,15 @@ export class V2CheckpointManager {
 
   private static get cloudCache(): IModelJsNative.CloudCache {
     if (!this._cloudCache) {
-      let rootDir = process.env.CLOUDSQLITE_CACHE_DIR;
+      let rootDir = process.env.CHECKPOINT_CACHE_DIR;
       if (!rootDir) {
         rootDir = this.getFolder();
-        Logger.logWarning(loggerCategory, `No CLOUDSQLITE_CACHE_DIR found in process.env, using ${rootDir} instead.`);
+        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${rootDir} instead.`);
       } else {
-        // Make sure the cloudsqlite_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
+        // Make sure the checkpoint_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
         if (!(IModelJsFs.existsSync(path.join(rootDir, "portnumber.bcv")))) {
           rootDir = this.getFolder();
-          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CLOUDSQLITE_CACHE_DIR: ${process.env.CLOUDSQLITE_CACHE_DIR}, using ${rootDir} instead.`);
+          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${rootDir} instead.`);
         }
       }
 

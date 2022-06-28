@@ -2093,7 +2093,7 @@ describe("iModel", () => {
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
-    process.env.CLOUDSQLITE_CACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
@@ -2103,7 +2103,7 @@ describe("iModel", () => {
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
-    process.env.CLOUDSQLITE_CACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
     await imodel1.refreshContainerSas(accessToken);
   });
