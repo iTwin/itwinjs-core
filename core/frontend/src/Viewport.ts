@@ -1114,12 +1114,16 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._timePointValid = false;
       this._changeFlags.setDisplayStyle();
       this.setFeatureOverrideProviderChanged();
-      this.invalidateScene();
       IModelApp.requestNextAnimation();
     };
 
-    removals.push(style.onScheduleScriptReferenceChanged.addListener(scheduleChanged));
+    const scriptChanged = () => {
+      scheduleChanged();
+      this.invalidateScene();
+    };
+
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
+    removals.push(style.onScheduleScriptReferenceChanged.addListener(scriptChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
