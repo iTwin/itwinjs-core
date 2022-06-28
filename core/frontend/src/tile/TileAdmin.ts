@@ -734,7 +734,7 @@ export class TileAdmin {
     // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
     if (this.enableFrontendScheduleScripts && !script.script.isMissingElementIds) {
       const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
-      return timeline && timeline.requiresBatching ? { timeline } : undefined;
+      return timeline && (timeline.requiresBatching || timeline.containsTransform) ? { timeline } : undefined;
     }
 
     return script.modelRequiresBatching(modelId) ? { animationId: script.sourceId } : undefined;
