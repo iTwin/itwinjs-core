@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { TreeNodeItem, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { TreeNode } from "@itwin/core-react";
-import { SvgFilter } from "@itwin/itwinui-icons-react";
+import { SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { translate } from "../../common/Utils";
 import "./PresentationTreeNodeRenderer.scss";
@@ -47,11 +47,12 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
     {onFilter && <div className="presentation-components-filter-action-button">
       <IconButton
         styleType="borderless"
+        size="small"
         onClick={(e) => {
           onFilter(restProps.node.item);
           e.stopPropagation();
         }} >
-        <SvgFilter/>
+        <SvgFilterHollow/>
       </IconButton>
     </div>}
   </TreeNodeRenderer>;

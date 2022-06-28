@@ -23,18 +23,9 @@
     .iui-button{
       width: 100%;
       height: 100%;
-      padding: 1px;
-      border: 0;
-      @include themed {
-        color: t(iui-icons-color);
-      }
-       &:hover{
-         @include themed {
-            color: t(iui-icons-color-actionable);
-         }
+      display: flex;
       }
     }
-  }
 
   &:hover > .presentation-components-filter-action-button {
     visibility: visible;
