@@ -30,6 +30,7 @@ export namespace ConcreteEntityId {
 type ConcreteEntity = Element | ElementAspect | Relationship;
 
 /** @internal props for an entity with CRUD routines */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ConcreteEntityProps = ElementProps | ElementAspectProps | RelationshipProps;
 
 /** @internal */
@@ -87,6 +88,8 @@ export namespace EntityUnifier {
           SELECT ECInstanceId FROM bis.ElementUniqueAspect
           UNION ALL
           SELECT ECInstanceId FROM bis.ElementRefersToElements
+          UNION ALL
+          SELECT ECInstanceId FROM bis.ElementDrivesElement
           UNION ALL
           SELECT ECInstanceId FROM bis.ModelSelectorRefersToModels
         ) WHERE ECInstanceId=?
