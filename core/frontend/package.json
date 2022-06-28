@@ -61,6 +61,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/extension-client": "^0.1.1",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

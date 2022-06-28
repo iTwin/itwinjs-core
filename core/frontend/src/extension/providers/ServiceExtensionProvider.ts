@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { rcompare } from "semver";
+import { ExtensionClient, ExtensionMetadata, ITwinOptions } from "@itwin/extension-client";
 
 import { IModelApp } from "../../IModelApp";
 import { request, RequestOptions } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
-import { ExtensionClient, ExtensionMetadata } from "./ExtensionServiceClient";
 
 import type {
   ExtensionManifest, ExtensionProvider,
@@ -77,11 +77,14 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!accessToken)
       return undefined;
 
+    const iTwinId: ITwinOptions = props.iTwinId ? { id: props.iTwinId } : "public";
+
     let extensionProps: ExtensionMetadata | undefined;
-    if (props.version !== undefined)
-      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.name, props.version, props.iTwinId);
-    else {
-      const propsArr = await extensionClient.getExtensions(accessToken, props.name, props.iTwinId);
+    if (props.version !== undefined){
+      const propsArr = await extensionClient.getExtensionsMetadata({accessToken, iTwinId, extensionName: props.name, version: props.version});
+      extensionProps = propsArr[0];
+    } else {
+      const propsArr = await extensionClient.getExtensionsMetadata({accessToken, iTwinId, extensionName: props.name});
       extensionProps = propsArr.sort((ext1, ext2) => rcompare(ext1.version, ext2.version, true))[0];
     }
 
