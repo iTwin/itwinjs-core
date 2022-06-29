@@ -6,13 +6,14 @@
  * @module iModels
  */
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, PrimitiveTypeCode, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
+import { ElementAspect } from "./ElementAspect";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -176,6 +177,24 @@ export class IModelCloneContext {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
+  }
+
+  /** Clone the specified source Element into ElementProps for the target iModel.
+   * @internal
+   */
+  public cloneElementAspect(sourceElementAspect: ElementAspect): ElementAspectProps {
+    const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();
+    targetElementAspectProps.id = undefined;
+    sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
+      if (propertyMetaData.isNavigation) {
+        if (sourceElementAspect.asAny[propertyName]?.id) {
+          (targetElementAspectProps as any)[propertyName].id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
+        }
+      } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
+        (targetElementAspectProps as any)[propertyName] = this.findTargetElementId(sourceElementAspect.asAny[propertyName]);
+      }
+    });
+    return targetElementAspectProps;
   }
 
   /**

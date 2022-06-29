@@ -6,7 +6,7 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
@@ -63,6 +63,12 @@ export class Relationship extends Entity {
   public delete() { this.iModel.relationships.deleteInstance(this.toJSON()); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
+
+  // TODO: what about required references? aren't these required?
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    referenceIds.add(this.sourceId);
+    referenceIds.add(this.targetId);
+  }
 }
 
 /** A Relationship where one Element refers to another Element
