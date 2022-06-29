@@ -139,19 +139,35 @@ describe("DisplayStyleState", () => {
       expect(style.scheduleScriptReference).to.be.undefined;
     });
 
-    it("ignores scheduleScriptProps if renderTimeline is defined", async () => {
+    it("ignores renderTimeline if scheduleScriptProps is defined", async () => {
       const style = new Style();
-      await style.changeRenderTimeline("0x1");
-      style.expectScript(script1, "0x1");
-
-      style.settings.scheduleScriptProps = script2; // eslint-disable-line deprecation/deprecation
-      style.expectScript(script1, "0x1");
-
-      await style.changeRenderTimeline(undefined);
+      style.settings.scheduleScriptProps = script2;
       style.expectScript(script2, "0xbeef");
 
       await style.changeRenderTimeline("0x1");
+      expect(style.settings.renderTimeline).to.equal("0x1");
+      style.expectScript(script2, "0xbeef");
+
+      const promise = new Promise<void>((resolve) => {
+        let numCalls = 0;
+        const removeListener = style.onScheduleScriptChanged.addListener((newScript) => {
+          // Event is invoked immediately when we set schedule script to undefined, then asynchronously after we finish loading
+          // the script from the RenderTimeline.
+          ++numCalls;
+          expect(undefined === newScript).to.equal(numCalls === 1);
+          if (numCalls === 2) {
+            removeListener();
+            resolve();
+          }
+        });
+      });
+
+      style.scheduleScript = undefined;
+      await promise;
       style.expectScript(script1, "0x1");
+
+      style.settings.scheduleScriptProps = script2;
+      style.expectScript(script2, "0xbeef");
     });
 
     it("raises onScheduleScriptReferenceChanged", async () => {

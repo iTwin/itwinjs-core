@@ -284,7 +284,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.renderTimeline = timelineId;
 
     // Await async loading if necessary.
-    // Note the `await` in loadScheduleScriptFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
+    // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
     if (this._queryRenderTimelinePropsPromise)
       await this._queryRenderTimelinePropsPromise;
   }
@@ -308,6 +308,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
       this._assigningScript = true;
       this.settings.scheduleScriptProps = script?.toJSON();
+
+      if (!script)
+        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line deprecation/deprecation
     } finally {
       this._assigningScript = false;
     }
