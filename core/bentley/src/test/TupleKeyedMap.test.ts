@@ -5,14 +5,14 @@
 import { assert, expect } from "chai";
 import { TupleKeyedMap } from "../core-bentley";
 
-describe("TupleKeyedMap", () => {
+describe.only("TupleKeyedMap", () => {
   it("should maintain mapping between keys and values", () => {
     const entries = ["a", "b", "c", "z", "y", "x", "p", "r", "q"];
     const map = new TupleKeyedMap<[string], string>();
     for (const entry of entries) {
       const key = entry;
       const val = entry;
-      expect(map.set([key], val)).to.be.true;
+      map.set([key], val);
       const found = map.get([key]);
       assert(found !== undefined);
       assert(found === entry);

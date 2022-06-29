@@ -23,23 +23,29 @@ interface PartialMap<K, V> {
  * It is implemented by each index of the tuple key being used as a singular key into a submap
  * @note this only implements a subset, [[PartialMap]], of the Map interface
  */
-export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
-  private _map = new Map<K[0], V>();
+export class TupleKeyedMap<K extends readonly any[], V>
+implements PartialMap<K, V> {
+  private _map = new Map<K[0], Map<any, V> | V>();
 
   public clear(): void {
     return this._map.clear();
   }
 
+  private makeKeyError() {
+    return Error(
+      "A Bad key was used, it didn't match the key type of the the map."
+    );
+  }
+
   public get(key: K): V | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let value: TupleKeyedMap<any, any> | V = this;
+    let cursor: Map<any, any> | V = this._map;
     for (const subkey of key) {
-      if (!(value instanceof TupleKeyedMap)) throw Error("A Bad key was used, it didn't match the key type of the the map.");
-      value = value.get(subkey);
-      if (value === undefined) return undefined;
+      if (!(cursor instanceof Map)) throw this.makeKeyError();
+      cursor = cursor.get(subkey);
+      if (cursor === undefined) return undefined;
     }
-    if (value instanceof TupleKeyedMap) throw Error("A Bad key was used, it didn't match the key type of the the map.");
-    return value;
+    if (cursor instanceof Map) throw this.makeKeyError();
+    return cursor;
   }
 
   public has(key: K): boolean {
@@ -47,26 +53,29 @@ export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K,
   }
 
   public set(key: K, value: V): this {
-    // TODO: contribute a fix that this shouldn't apply on mutable bindings (let)
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let cursor: TupleKeyedMap<any, any> = this;
+    let cursor: Map<any, any> = this._map;
     for (let i = 0; i < key.length - 1; ++i) {
       const subkey = key[i];
       let next = cursor.get(subkey);
       if (next === undefined) {
-        next = new TupleKeyedMap();
+        next = new Map();
         cursor.set(subkey, next);
       }
       cursor = next;
     }
     const finalSubkey = key[key.length - 1];
+    if (!(cursor instanceof Map)) throw this.makeKeyError();
     cursor.set(finalSubkey, value);
     this._size++;
     return this;
   }
 
   private _size: number = 0;
-  public get size(): number { return this._size; }
+  public get size(): number {
+    return this._size;
+  }
 
-  public get [Symbol.toStringTag](): string { return this.constructor.name; }
+  public get [Symbol.toStringTag](): string {
+    return this.constructor.name;
+  }
 }
