@@ -521,7 +521,7 @@ export async function assertIdentityTransformation(
   expect(targetRelationshipsToFind.size).to.equal(0);
 }
 
-export class TransformerExtensiveTestScenario {
+export class TransformerExtensiveTestScenario extends BackendTestUtils.ExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
     const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
