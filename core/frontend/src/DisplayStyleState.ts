@@ -132,7 +132,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -161,7 +161,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -302,7 +302,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef);
+      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 
@@ -310,7 +310,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.settings.scheduleScriptProps = script?.toJSON();
 
       if (!script)
-        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line deprecation/deprecation
+        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
     } finally {
       this._assigningScript = false;
     }

@@ -297,8 +297,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this.displayStyle.scheduleScriptReference;
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line deprecation/deprecation
+    return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
   }
 
   /** Get the globe projection mode.

@@ -99,11 +99,13 @@ class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
   }
 }
 
+/* not currently used.
 class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint16Array, options);
   }
 }
+*/
 
 class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
   public constructor(options?: TypedArrayBuilderOptions) {

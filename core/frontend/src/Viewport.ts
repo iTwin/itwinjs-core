@@ -1124,7 +1124,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     };
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
-    removals.push(style.onScheduleScriptReferenceChanged.addListener(scriptChanged));
+    removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
@@ -2324,7 +2324,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      const scheduleScript = view.displayStyle.scheduleScriptReference?.script;
+      const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
         target.animationBranches = AnimationBranchStates.fromScript(scheduleScript, this.timePoint ?? scheduleScript.duration.low);
         if (scheduleScript.containsFeatureOverrides)

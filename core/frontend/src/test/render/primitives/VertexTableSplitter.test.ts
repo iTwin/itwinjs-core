@@ -5,15 +5,15 @@
 import { expect } from "chai";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
-  QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPointStringParams,
-  splitPolylineParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTable,
+  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, SegmentEdgeParams, splitMeshParams, splitPointStringParams,
+  SurfaceType, TesselatedPolyline, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -281,47 +281,6 @@ function makePolyline(verts: PolylineIndices[]): TesselatedPolyline {
     prevIndices: prev.toVertexIndices(),
     nextIndicesAndParams: new Uint8Array(nextAndParam.buffer),
   };
-}
-
-function makeVertexTable(pts: Point[], colors: ColorDef | ColorDef[]): VertexTable {
-  const nPts = pts.length;
-  const nColors = colors instanceof ColorDef ? 0 : colors.length;
-  const data = new Uint32Array(nPts * 3 + nColors);
-
-  for (let i = 0; i < nPts; i++) {
-    const pt = pts[i];
-    const idx = i * 3;
-    const y = (pt.x + 1) << 16;
-    data[idx + 0] = (pt.x | y) >>> 0;
-    const ci = (pt.color) << 16;
-    data[idx + 1] = (pt.x + 5 | ci) >>> 0;
-    data[idx + 2] = pt.feature;
-  }
-
-  if (Array.isArray(colors)) {
-    const colorTableOffset = nPts * 3;
-    for (let i = 0; i < nColors; i++)
-      data[colorTableOffset + i] = colors[i].tbgr;
-  }
-
-  return new VertexTable({
-    data: new Uint8Array(data.buffer),
-    qparams: QParams3d.fromNormalizedRange(),
-    width: data.length,
-    height: 1,
-    hasTranslucency: false,
-    uniformColor: colors instanceof ColorDef ? colors : undefined,
-    numVertices: nPts,
-    numRgbaPerVertex: 3,
-    featureIndexType: FeatureIndexType.NonUniform,
-  });
-}
-
-function makePolylineParams(pts: Point[], indices: PolylineIndices[], colors: ColorDef | ColorDef[]): PolylineParams {
-  return new PolylineParams(
-    makeVertexTable(pts, colors),
-    makePolyline(indices),
-    12, LinePixels.Invisible, false);
 }
 
 function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[]): void {
