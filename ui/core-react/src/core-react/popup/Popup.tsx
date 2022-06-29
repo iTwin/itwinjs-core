@@ -277,17 +277,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
   private _resize = () => {
     if (this.props.repositionOnResize) {
-      if (this.props.isOpen) {
-        const position = this._toggleRelativePosition();
-        const point = this._fitPopup(this._getPosition(position));
-        this.setState({ left: point.x, top: point.y, position });
-      } else {
-        return;
-      }
+      const position = this._toggleRelativePosition();
+      const point = this._fitPopup(this._getPosition(position));
+      this.setState({ left: point.x, top: point.y, position });
     } else {
       this._hide(); // legacy behavior
     }
-
   };
 
   private _hide = () => {
