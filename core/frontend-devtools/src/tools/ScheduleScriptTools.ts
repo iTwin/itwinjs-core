@@ -32,6 +32,8 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
 
   public async parse(input: string[], vp: Viewport) {
     const args = parseArgs(input);
+
+    // eslint-disable-next-line deprecation/deprecation
     this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
     if (!this._sourceId)
       return false;
@@ -125,11 +127,10 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "ReverseScheduleScript";
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    const prevRef = vp?.displayStyle.scheduleScriptReference;
-    if (!prevRef || prevRef.script.modelTimelines.some((x) => x.omitsElementIds))
+    const script = vp?.displayStyle.scheduleScript;
+    if (!script || script.modelTimelines.some((x) => x.omitsElementIds))
       return false;
 
-    const script = prevRef.script;
     const builder = new RenderSchedule.ScriptBuilder();
     for (const modelTimeline of script.modelTimelines) {
       const modelBuilder = builder.addModelTimeline(modelTimeline.modelId);

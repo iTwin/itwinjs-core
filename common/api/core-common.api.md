@@ -7009,7 +7009,6 @@ export namespace RenderSchedule {
         finish(): ScriptProps;
         }
     export type ScriptProps = ModelTimelineProps[];
-    // @deprecated
     export class ScriptReference {
         constructor(script: Script);
         constructor(sourceId: Id64String, script: Script);
