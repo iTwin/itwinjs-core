@@ -111,15 +111,11 @@ The function would run immediately if onStartup was specified as the Activation 
 For example:
 ```tsx
 // src/index.ts
-import { ExtensionHost } from '@itwin/core-extension';
-
 export default function main() {
-  const view = ExtensionHost.viewManager.selectedView;
-  const is3d = view?.view.is3d();
-  console.log("Is the current view 3D?", is3d);
+  console.log("Hello from Extension!");
 }
 ```
-The above would print "Is the current view 3D?", with `true` or `false` depending on the current view in the iTwin.js application. We can extend functionality by adding, for example, a tool to print to the console whenever it is clicked:
+The above would print "Hello from Extension!". We can extend functionality by adding, for example, a tool to print to the console whenever it is clicked:
 
 ```ts
 // src/tool.ts
@@ -142,14 +138,11 @@ export class ExtensionTool extends PrimitiveTool {
 ```ts
 // src/index.ts
 
-import { ExtensionHost } from '@itwin/core-extension';
 import { registerTool } from "@itwin/core-extension";
 import { ExtensionTool } from "./tool";
 
 export default function main() {
-  const view = ExtensionHost.viewManager.selectedView;
-  const is3d = view?.view.is3d();
-  console.log("Is the current view 3D?", is3d);
+  console.log("Hello from Extension!");
   void registerTool(ExtensionTool);
   console.log("Tool Registered");
 }
@@ -195,7 +188,6 @@ IModelApp.extensionAdmin.registerHost("localhost:3001");
 ```
 
 The last step is to add the Extension to the ExtensionAdmin. Once the Extension has been added, its default function will immediately execute if the onStartup Activation Event was defined in the manifest.
-In our example, we interact with the [View](./Views.md), so the Extension must be added after the View is initialized.
 ```ts
 IModelApp.extensionAdmin.addExtension(extensionProvider)
   .catch((e) => console.log(e));
