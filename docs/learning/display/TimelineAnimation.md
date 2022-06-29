@@ -1,6 +1,6 @@
 # Timeline Animation
 
-Timeline animation permits the visualization of change within an iModel over a period of time. For example, construction projects often wish to visualize the state of the model at a given point during its construction schedule. To this end, a [RenderSchedule.Script]($common) can be associated with a display style describing this visualization.
+Timeline animation permits the visualization of change within an iModel over a period of time. For example, construction projects often wish to visualize the state of the model at a given point during its construction schedule. To this end, a [RenderSchedule.Script]($common) can be associated with a display style describing this visualization by assigning it to [DisplayStyleState.scheduleScript]($frontend).
 
 A schedule script partitions sets of elements within the scene into animation nodes. Each node has a corresponding timeline that describes how to animate the elements over time by:
 
