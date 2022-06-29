@@ -1082,9 +1082,9 @@ export class CountingIModelImporter extends IModelImporter {
     this.numElementsDeleted++;
     super.onDeleteElement(elementId);
   }
-  protected override onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onInsertElementAspect(aspectProps: ElementAspectProps): Id64String {
     this.numElementAspectsInserted++;
-    super.onInsertElementAspect(aspectProps);
+    return super.onInsertElementAspect(aspectProps);
   }
   protected override onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsUpdated++;

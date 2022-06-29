@@ -23,7 +23,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
+import { hasEntityChanged, IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
@@ -812,7 +812,7 @@ export class IModelTransformer extends IModelExportHandler {
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
         if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
-          this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+          this.context.remapElement(sourceElement.id, targetElementId); // record that the targetElement was found by Code
         } else {
           targetElementId = undefined;
           targetElementProps.code = Code.createEmpty(); // clear out invalid code
@@ -1102,7 +1102,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
-    const targetAspectProps: ElementAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
+    const targetAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
     const targetId = this.importer.importElementUniqueAspect(targetAspectProps);
     this.context.remapElementAspect(sourceAspect.id, targetId);
   }
@@ -1114,10 +1114,11 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspects[0].element.id);
     // Transform source ElementMultiAspects into target ElementAspectProps
-    const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
-      return this.onTransformElementAspect(sourceAspect, targetElementId);
-    });
-    const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
+    const sourceAspectsToImport = sourceAspects.map(sourceAspect => );
+    const targetAspectPropsArray = sourceAspectsToImport.map((sourceAspect) =>
+      this.onTransformElementAspect(sourceAspect, targetElementId)
+    );
+    const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
       return (
         !this._options.includeSourceProvenance ||
@@ -1131,22 +1132,12 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.
    * @param sourceElementAspect The ElementAspect from the source iModel to be transformed.
-   * @param targetElementId The ElementId of the target Element that will own the ElementAspects after transformation.
+   * @param _targetElementId The ElementId of the target Element that will own the ElementAspects after transformation.
    * @returns ElementAspectProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps {
-    const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();
-    targetElementAspectProps.id = undefined;
-    sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
-      if (propertyMetaData.isNavigation) {
-        if (sourceElementAspect.asAny[propertyName]?.id) {
-          (targetElementAspectProps as any)[propertyName].id = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
-        }
-      } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        (targetElementAspectProps as any)[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
-      }
-    });
+    const targetElementAspectProps = this.context.cloneElementAspect(sourceElementAspect);
     return targetElementAspectProps;
   }
 

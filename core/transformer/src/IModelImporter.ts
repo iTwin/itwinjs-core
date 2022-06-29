@@ -138,13 +138,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
       return;
     }
     try {
-      const model: Model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
+      const model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
       if (hasEntityChanged(model, modelProps, this._modelPropertiesToIgnore)) {
         this.onUpdateModel(modelProps);
       }
     } catch (error) {
       // catch NotFound error and insertModel
-      if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
+      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) {
         this.onInsertModel(modelProps);
         return;
       }
@@ -622,7 +622,7 @@ export interface IModelImporterState {
  * @param entityProps The new EntityProps to compare against
  * @note This method should only be called if changeset information is not available.
  */
-function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
+export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
   let changed: boolean = false;
   entity.forEachProperty((propertyName: string, propertyMeta: PropertyMetaData) => {
     if (!changed) {
