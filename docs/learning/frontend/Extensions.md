@@ -41,7 +41,7 @@ Here is a minimal example:
 }
 ```
 
-Next, you'll want to add [TypeScript](https://www.typescriptlang.org/), and the required dependencies for a developing with the iTwin.js shared libraries:
+Next, you'll want to add [TypeScript](https://www.typescriptlang.org/), and the required dependencies for developing with the iTwin.js shared libraries:
 ```json
   // package.json
   "dependencies": {
