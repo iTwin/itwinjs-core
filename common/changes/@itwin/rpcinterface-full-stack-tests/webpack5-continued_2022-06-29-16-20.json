@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
+      "comment": "Upgrade to Webpack 5",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/rpcinterface-full-stack-tests"
+}

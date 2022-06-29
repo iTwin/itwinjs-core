@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/hypermodeling-frontend",
+      "comment": "Upgrade to Webpack 5",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/hypermodeling-frontend"
+}

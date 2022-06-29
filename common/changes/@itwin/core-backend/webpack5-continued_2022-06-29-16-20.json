@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Upgrade to Webpack 5",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
