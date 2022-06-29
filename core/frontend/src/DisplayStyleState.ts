@@ -800,7 +800,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   protected registerSettingsEventListeners(): void {
-    // eslint-disable-next-line deprecation/deprecation
     this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
       if (this._assigningScript)
         return;
