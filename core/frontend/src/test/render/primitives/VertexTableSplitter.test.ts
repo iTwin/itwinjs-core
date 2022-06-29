@@ -189,7 +189,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   if (mesh.texture) {
     textureMapping = {
       texture: mesh.texture,
-      uvParams: mesh.points.map((pt) => new Point2d(pt.uv, -pt.uv)),
+      uvParams: mesh.points.map((pt) => new Point2d(pt.uv, -pt.uv!)),
     };
   }
 
@@ -233,7 +233,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
 
   const data = getVertexTableData(vertexTable, 0);
   if (SurfaceType.Textured === type || SurfaceType.TexturedLit === type) {
-    const uvs = mesh.points.map((p) => new Point2d(p.uv, -p.uv));
+    const uvs = mesh.points.map((p) => new Point2d(p.uv, -p.uv!));
     const qparams = QParams2d.fromRange(Range2d.createArray(uvs));
     for (const vertIndex of surface.indices) {
       const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
