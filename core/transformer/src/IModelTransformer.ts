@@ -1114,10 +1114,10 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspects[0].element.id);
     // Transform source ElementMultiAspects into target ElementAspectProps
-    const sourceAspectsToImport = sourceAspects.map(sourceAspect => );
-    const targetAspectPropsArray = sourceAspectsToImport.map((sourceAspect) =>
+    const targetAspectPropsArray = sourceAspects.map((sourceAspect) =>
       this.onTransformElementAspect(sourceAspect, targetElementId)
     );
+    const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
     const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
       return (

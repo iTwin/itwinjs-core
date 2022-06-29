@@ -16,7 +16,7 @@ import {
   SubCategory, Subject,
 } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { DbResult, DeepReadonly, Dictionary, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
@@ -33,6 +33,48 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 import { SchemaLoader } from "@itwin/ecschema-metadata";
+
+interface TransformationTestCacheEntry {
+  sourcePath: string;
+  targetPath: string;
+  transformerType: typeof IModelTransformer;
+}
+
+interface TransformationTestCacheResult {
+  sourceDb: IModelDb;
+  /** deep readonly to indicate that tests should not modify the target or other tests could be invalidated
+   * you shouldn't modify any of it but deepreadonly should be used sparingly and I only expect tests to depend upon an immutable target
+   */
+  targetDb: DeepReadonly<IModelDb>;
+  transformer: IModelTransformer;
+}
+
+class TestTransformationsCache {
+  /** Cache for transformations during tests. This allows us to separate tests on the same transformation run for performance purposes */
+  public cache = new Dictionary<TransformationTestCacheEntry, Promise<TransformationTestCacheResult>>((l, r) => {
+    if (l.sourcePath < r.sourcePath) return -1;
+    else if (l.sourcePath > r.sourcePath) return 1;
+    if (l.targetPath < r.targetPath) return -1;
+    else if (l.targetPath > r.targetPath) return 1;
+    // would prefer to not have to be ordered, alternative is switching from Dictionary to a tuple-keyed nested map collection
+    if (l.transformerType.name < r.transformerType.name) return -1;
+    else if (l.transformerType.name > r.transformerType.name) return 1;
+    return 1;
+  });
+
+  /** returns the result of a transformation, which may have already been ran.
+   * @note Do not mutate the results or tests will have side effects.
+   * We might be able to enforce this in the future with DeepReadonly
+   */
+  async runTransformation(desc: TransformationTestCacheEntry): Promise<TransformationTestCacheResult> {
+    let resultPromise = this.cache.get(desc);
+    if (resultPromise === undefined) {
+
+      this.cache.set(desc, await );
+    }
+    return await resultPromise;
+  }
+}
 
 describe("IModelTransformer", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
