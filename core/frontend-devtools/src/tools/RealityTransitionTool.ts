@@ -84,7 +84,7 @@ export class RealityTransitionTool extends Tool {
 
     const script = RenderSchedule.Script.fromJSON(scriptProps);
     if (script) {
-      displayStyle.scheduleScriptReference = new RenderSchedule.ScriptReference(script);
+      displayStyle.scheduleScript = script;
       vp.timePoint = script.duration.low;
     }
 

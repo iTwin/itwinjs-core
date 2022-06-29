@@ -142,7 +142,7 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
     const newScript = RenderSchedule.Script.fromJSON(scriptProps);
     assert(undefined !== newScript);
 
-    vp.displayStyle.scheduleScriptReference = new RenderSchedule.ScriptReference(newScript);
+    vp.displayStyle.scheduleScript = newScript;
     return true;
   }
 
@@ -173,7 +173,7 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
   }
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    vp.displayStyle.scheduleScriptReference = this._script ? new RenderSchedule.ScriptReference(this._script) : undefined;
+    vp.displayStyle.scheduleScript = this._script;
     return true;
   }
 }
