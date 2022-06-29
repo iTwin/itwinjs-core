@@ -6,10 +6,11 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -48,37 +49,55 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
+    if(iModelHost.authorizationClient)
+      await (iModelHost.authorizationClient as ElectronMainAuthorization).signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }
 
-async function initializeAuthorizationClient(): Promise<TestBrowserAuthorizationClient | undefined> {
-  const requiredEnvVars = [
-    "IMJS_OIDC_CLIENT_ID",
-    "IMJS_OIDC_REDIRECT_URI",
-    "IMJS_OIDC_SCOPE",
-    "IMJS_OIDC_EMAIL",
-    "IMJS_OIDC_PASSWORD",
-  ];
-  const missing = requiredEnvVars.filter((name) => process.env[name] === undefined);
-  if(missing.length > 0) {
-    if(missing.length < requiredEnvVars.length) {
-      // eslint-disable-next-line no-console
-      console.log(`Skipping authorization client setup: Missing ${ missing.join(", ") }`);
+async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
+  if(process.env.IMJS_OIDC_HEADLESS) {
+    if(!checkEnvVars(
+      "IMJS_OIDC_CLIENT_ID",
+      "IMJS_OIDC_REDIRECT_URI",
+      "IMJS_OIDC_SCOPE",
+      "IMJS_OIDC_EMAIL",
+      "IMJS_OIDC_PASSWORD"
+    ))
+      return undefined;
+    return new TestBrowserAuthorizationClient({
+      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+      scope: process.env.IMJS_OIDC_SCOPE!,
+      clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
+    }, {
+      email: process.env.IMJS_OIDC_EMAIL!,
+      password: process.env.IMJS_OIDC_PASSWORD!,
+    });
+  } else {
+    if(!checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE"))
+      return undefined;
+    if(ProcessDetector.isElectronAppBackend) {
+      return new ElectronMainAuthorization({
+        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+        scope: process.env.IMJS_OIDC_SCOPE!,
+        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI,
+      });
     }
-    return undefined;
   }
-
-  const authorizationClient = new TestBrowserAuthorizationClient({
-    clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-    redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
-    scope: process.env.IMJS_OIDC_SCOPE!,
-    authority: process.env.IMJS_OIDC_AUTHORITY,
-    clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
-  }, {
-    email: process.env.IMJS_OIDC_EMAIL!,
-    password: process.env.IMJS_OIDC_PASSWORD!,
-  });
-  await authorizationClient.getAccessToken();
-  return authorizationClient;
+  return undefined;
+}
+/**
+ * Logs a warning if only some are provided
+ * @returns true if all are provided, false if any missing.
+ */
+function checkEnvVars(...keys: Array<string>): boolean {
+  const missing = keys.filter((name) => process.env[name] === undefined);
+  if(missing.length === 0)
+    return true;
+  if(missing.length < keys.length) { // Some missing, warn
+    // eslint-disable-next-line no-console
+    console.log(`Skipping auth setup due to missing: ${ missing.join(", ") }`);
+  }
+  return false;
 }

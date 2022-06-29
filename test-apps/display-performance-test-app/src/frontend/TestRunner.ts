@@ -32,6 +32,7 @@ export interface TestSetProps extends TestConfigProps {
 
 /** JSON representation of TestRunner. The tests inherit the base configuration options. */
 export interface TestSetsProps extends TestConfigProps {
+  signIn?: boolean;
   minimize?: boolean;
   testSet: TestSetProps[];
 }
@@ -658,8 +659,11 @@ export class TestRunner {
 
   private async openIModel(): Promise<TestContext> {
     if(this.curConfig.iModelId) {
+      if(process.env.IMJS_OIDC_HEADLESS) {
+        const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+        IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
+      }
       // Download remote iModel and its saved views
-      await this.refreshAccessToken();
       const { iModelId, iTwinId } = this.curConfig;
       if(iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
@@ -686,11 +690,6 @@ export class TestRunner {
       }
       return { iModel, externalSavedViews };
     }
-  }
-
-  private async refreshAccessToken(): Promise<void> {
-    const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
   }
 
   private async getIModelNames(): Promise<string[]> {

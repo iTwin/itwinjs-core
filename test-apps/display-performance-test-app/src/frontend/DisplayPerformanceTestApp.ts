@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { TestRunner, TestSetsProps } from "./TestRunner";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -41,14 +43,9 @@ export class DisplayPerfTestApp {
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    if(process.env.IMJS_URL_PREFIX)
-      iModelApp.hubAccess = new FrontendIModelsAccess(new IModelsClient({
-        api: {
-          baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels`,
-        },
-      }));
-    else
-      iModelApp.hubAccess = new FrontendIModelsAccess();
+    iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` }}))
+      : new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
@@ -71,10 +68,30 @@ export class DisplayPerfTestApp {
   }
 }
 
+async function signIn(): Promise<void> {
+  if(process.env.IMJS_OIDC_HEADLESS)
+    return;
+  let authorizationClient;
+  if(ProcessDetector.isElectronAppFrontend)
+    authorizationClient = new ElectronRendererAuthorization();
+  else
+    authorizationClient = new BrowserAuthorizationClient({
+      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      scope: process.env.IMJS_OIDC_SCOPE!,
+      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+    });
+  await authorizationClient.signIn();
+  IModelApp.authorizationClient = authorizationClient;
+}
+
 async function main() {
   try {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
+
+    if(props.signIn)
+      await signIn();
+
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
