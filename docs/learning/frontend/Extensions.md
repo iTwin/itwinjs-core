@@ -2,7 +2,7 @@
 
 An iTwin.js Extension is a separate JavaScript module that can load on demand into an iTwin.js frontend application.
 The separate deliverable enables Extensions to provide extensibility of an iTwin.js application at runtime.
-Extensions have access to a limited set of iTwin.js functionality through @itwin/core-extension to enable seamless integration with the host app.
+Extensions have access to a limited set of iTwin.js functionality through `@itwin/core-extension` to enable seamless integration with the host app.
 
 ## What can extensions do?
 
@@ -17,7 +17,7 @@ To get started, create a new directory for the Extension.
 
 ### Setup the Manifest
 The first step to creating an extension is to create a manifest.
-Create the package.json by running, in the directory created above:
+Create the `package.json` by running, in the directory created above:
 ```
 npm init --yes
 ```
@@ -170,12 +170,12 @@ my-itwin-extension
 Extensions need to be served somewhere so that the iTwin.js application can load the Extension at runtime.
 > A useful way to serve JavaScript locally is to add [serve](https://www.npmjs.com/package/serve) as a dev dependency `npm i --save-dev serve`, then adding a script to your package.json: `"serve": "serve . -p 3001 --cors"`.
 
-By default, every [IModelApp](./IModelApp.md) has an instance of the ExtensionAdmin.
+By default, every [IModelApp](./IModelApp.md) has an instance of the `ExtensionAdmin`.
 The ExtensionAdmin controls the loading and execution of Extensions.
-An Extension must be added to ExtensionAdmin through an ExtensionProvider before it can be executed.
+An Extension **must** be added to `ExtensionAdmin` through an `ExtensionProvider` before it can be executed.
 
-In the following example we add an Extension served at localhost:3001 through a RemoteExtensionProvider.
-You can also load Extensions locally as if they were npm packages through the LocalExtensionProvider.
+In the following example we add an Extension served at localhost:3001 through a `RemoteExtensionProvider`.
+You can also load Extensions locally as if they were npm packages through the `LocalExtensionProvider`.
 
 ```ts
 const extensionProvider = new RemoteExtensionProvider({
