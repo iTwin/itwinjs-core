@@ -493,6 +493,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case "WIDGET_DRAG_END": {
+      // TODO: handle duplicates in WIDGET_TAB_DRAG_END action
       const target = action.target;
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       const draggedWidget = state.widgets[action.floatingWidgetId];
@@ -517,7 +518,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const targetWidget = state.widgets[target.widgetId];
         targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
       } else if (isSectionTargetState(target)) {
-        state.panels[target.side].widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        const panel = state.panels[target.side];
+        panel.widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        panel.collapsed = false;
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
           id: target.newWidgetId,
@@ -526,11 +529,18 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
         }
+        const widget = findWidget(state, target.widgetId);
+        if (widget && isPanelWidgetLocation(widget)) {
+          const panel = state.panels[widget.side];
+          panel.collapsed = false;
+        }
         const targetWidget = state.widgets[target.widgetId];
         targetWidget.tabs.splice(targetWidget.tabs.length, 0, ...draggedWidget.tabs);
       } else {
         const panelSectionId = getWidgetPanelSectionId(target.side, 0);
-        state.panels[target.side].widgets = [panelSectionId];
+        const panel = state.panels[target.side];
+        panel.widgets = [panelSectionId];
+        panel.collapsed = false;
         state.widgets[panelSectionId] = {
           ...draggedWidget,
           id: panelSectionId,
@@ -725,15 +735,20 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
         targetWidget.tabs.splice(tabIndex, 0, action.id);
       } else if (isPanelTargetState(target)) {
-        state.panels[target.side].widgets.push(target.newWidgetId);
+        const panel = state.panels[target.side];
+        panel.widgets.push(target.newWidgetId);
+        panel.collapsed = false;
         state.widgets[target.newWidgetId] = {
           activeTabId: action.id,
           id: target.newWidgetId,
           minimized: false,
           tabs: [action.id],
         };
+
       } else if (isSectionTargetState(target)) {
-        state.panels[target.side].widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        const panel = state.panels[target.side];
+        panel.widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        panel.collapsed = false;
         state.widgets[target.newWidgetId] = {
           activeTabId: action.id,
           id: target.newWidgetId,
@@ -744,6 +759,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         if (isToolSettingsFloatingWidget(state, target.widgetId)) {
           const floatingWidget = state.floatingWidgets.byId[target.widgetId];
           floatingWidget.home = state.draggedTab.home;
+        }
+        const widget = findWidget(state, target.widgetId);
+        if (widget && isPanelWidgetLocation(widget)) {
+          const panel = state.panels[widget.side];
+          panel.collapsed = false;
         }
         const targetWidget = state.widgets[target.widgetId];
         const tabIndex = targetWidget.tabs.length;
@@ -1279,13 +1299,17 @@ export function isPanelLocation(location: TabLocation): location is PanelLocatio
 }
 
 /** @internal */
-export function isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation {
+export function isFloatingWidgetLocation(location: WidgetLocation): location is FloatingWidgetLocation {
   return "floatingWidgetId" in location;
 }
 
 /** @internal */
-export function isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation {
+export function isPopoutWidgetLocation(location: WidgetLocation): location is PopoutWidgetLocation {
   return "popoutWidgetId" in location;
+}
+
+function isPanelWidgetLocation(location: WidgetLocation): location is PanelWidgetLocation {
+  return "side" in location;
 }
 
 /** @internal */
@@ -1307,10 +1331,19 @@ export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation |
   } : undefined;
 }
 
-type WidgetLocation =
-  { side: PanelSide } |
-  { floatingWidgetId: FloatingWidgetState["id"] } |
-  { popoutWidgetId: PopoutWidgetState["id"] };
+interface PanelWidgetLocation {
+  side: PanelSide;
+}
+
+interface FloatingWidgetLocation {
+  floatingWidgetId: FloatingWidgetState["id"];
+}
+
+interface PopoutWidgetLocation {
+  popoutWidgetId: PopoutWidgetState["id"];
+}
+
+type WidgetLocation = PanelWidgetLocation | FloatingWidgetLocation | PopoutWidgetLocation;
 
 /** @internal */
 export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
