@@ -1473,8 +1473,8 @@ export interface ContentLayoutComponentProps extends CommonProps {
     contentGroup: ContentGroup;
     // (undocumented)
     contentLayout: ContentLayoutDef;
-    // (undocumented)
-    isInFooterMode: boolean;
+    // @deprecated (undocumented)
+    isInFooterMode?: boolean;
 }
 
 // @public
@@ -2944,6 +2944,7 @@ export interface FrontstageProps extends CommonProps {
     defaultTool: ToolItemDef;
     id: string;
     isIModelIndependent?: boolean;
+    // @deprecated
     isInFooterMode?: boolean;
     leftPanel?: React.ReactElement<StagePanelProps>;
     rightPanel?: React.ReactElement<StagePanelProps>;
