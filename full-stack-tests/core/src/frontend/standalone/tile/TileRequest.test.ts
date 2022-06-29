@@ -359,6 +359,7 @@ describe("CloudStorageTileCache", () => {
     cache = new TestCloudStorageTileCache();
   });
 
+  /* eslint-disable deprecation/deprecation */
   it("loads undefined content when backend does not support caching", async () => {
     const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
     expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
@@ -387,4 +388,5 @@ describe("CloudStorageTileCache", () => {
     content = await cache.retrieve(tileProps);
     expect(content).to.be.undefined;
   });
+  /* eslint-enable deprecation/deprecation */
 });

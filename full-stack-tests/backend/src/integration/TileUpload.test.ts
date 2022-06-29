@@ -95,6 +95,7 @@ describe("TileUpload", () => {
     blobService = new Azure.BlobServiceClient(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
 
     // Point tileCacheService towards azurite URL
+    // eslint-disable-next-line deprecation/deprecation
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed

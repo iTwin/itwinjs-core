@@ -38,6 +38,7 @@ export * from "./TileTreeReference";
 export * from "./TileGeometryCollector";
 export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
+export * from "./TileStorage";
 export * from "./TileRequest";
 export * from "./TileRequestChannel";
 export * from "./IModelTileRequestChannels";

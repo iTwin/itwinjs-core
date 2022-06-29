@@ -44,6 +44,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @deprecated
    */
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  // eslint-disable-next-line deprecation/deprecation
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }

@@ -212,6 +212,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   }
 
   if (dtaConfig.useFakeCloudStorageTileCache)
+    // eslint-disable-next-line deprecation/deprecation
     iModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 
   let logLevel = LogLevel.None;

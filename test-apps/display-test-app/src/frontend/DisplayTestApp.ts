@@ -56,6 +56,7 @@ async function openFile(filename: string, writable: boolean): Promise<IModelConn
 class FakeTileCache extends CloudStorageTileCache {
   public constructor() { super(); }
 
+  // eslint-disable-next-line deprecation/deprecation
   protected override async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
     const init: RequestInit = {
       headers: container.headers,

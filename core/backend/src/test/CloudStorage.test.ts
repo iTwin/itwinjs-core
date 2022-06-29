@@ -8,6 +8,7 @@ import * as Azure from "@azure/storage-blob";
 import { CloudStorageProvider } from "@itwin/core-common";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 
+/* eslint-disable deprecation/deprecation */
 describe("AzureBlobStorage.obtainContainerUrl()", () => {
   afterEach(() => {
     sinon.restore();
@@ -39,3 +40,4 @@ describe("AzureBlobStorage.obtainContainerUrl()", () => {
     expect(url.url).to.equal("https://custom.provider/testContainerName?fake&sas=%key");
   });
 });
+/* eslint-enable deprecation/deprecation */
