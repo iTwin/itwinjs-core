@@ -944,6 +944,44 @@ describe("<Popup />", () => {
 
       wrapper.unmount();
     });
+
+    it("should close on resize event (default behavior)", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new UIEvent("resize"));
+      spyOnClose.calledOnce.should.true;
+
+      expect(wrapper.state("isOpen")).to.be.false;
+
+      wrapper.unmount();
+    });
+
+    it("should remain open on resize event (reposition switch)", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen repositionOnResize={true} onClose={spyOnClose} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new UIEvent("resize"));
+
+      spyOnClose.calledOnce.should.false;
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      wrapper.unmount();
+    });
+
+  });
+
+  it("should remain closed on resize event (reposition switch)", () => {
+    const spyOnClose = sinon.spy();
+    const wrapper = mount(<Popup isOpen={false} repositionOnResize={true} onClose={spyOnClose} />);
+    expect(wrapper.state("isOpen")).to.be.false;
+
+    window.dispatchEvent(new UIEvent("resize"));
+    expect(wrapper.state("isOpen")).to.be.false;
+    spyOnClose.calledOnce.should.false;
+    wrapper.unmount();
   });
 
 });
