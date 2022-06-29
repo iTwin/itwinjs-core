@@ -734,6 +734,20 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 // @beta
+export class DumpSelectionSetTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): Promise<boolean>;
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class EdgeDetectionEffect extends ConvolutionEffect {
     // (undocumented)
     protected get effectName(): string;
@@ -1587,6 +1601,16 @@ export class ReportWebGLCompatibilityTool extends Tool {
 }
 
 // @beta
+export class ReverseScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    parse(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class SaturationConfig extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1911,6 +1935,20 @@ export class SetRealityModelTransparencyTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(transparency: number, index: number): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

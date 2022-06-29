@@ -117,6 +117,10 @@ function reverseTimeline<Entry extends RenderSchedule.TimelineEntry>(timeline: T
   }
 }
 
+/** A tool that modifies the [RenderSchedule.Script]($common), if any, associated with the selected [Viewport]($frontend) such that the entries in each
+ * of its [RenderSchedule.ElementTimeline]($common)s are reversed.
+ * @beta
+ */
 export class ReverseScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "ReverseScheduleScript";
 
@@ -151,6 +155,9 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
   }
 }
 
+/** A tool that changes or removes the [RenderSchedule.Script]($common) associated with the selected [Viewport]($frontend).
+ * @beta
+ */
 export class SetScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "SetScheduleScript";
   public static override get minArgs() { return 0; }

@@ -140,6 +140,7 @@ export class FeatureTable extends IndexMap<Feature> {
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
+/** @alpha */
 export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
 
 /**

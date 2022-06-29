@@ -34,6 +34,9 @@ export class SelectElementsByIdTool extends Tool {
   }
 }
 
+/** A tool that outputs the Ids of the elements in the [SelectionSet]($frontend) of the [IModelConnection]($frontend) associated with the selected [Viewport]($frontend).
+ * @beta
+ */
 export class DumpSelectionSetTool extends Tool {
   public static override toolId = "DumpSelectionSet";
   public static override get minArgs() { return 0; }

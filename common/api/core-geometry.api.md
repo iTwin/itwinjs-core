@@ -5572,7 +5572,7 @@ export class Transform implements BeJSONFunctions {
     static get identity(): Transform;
     static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform): void;
     inverse(): Transform | undefined;
-    isAlmostEqual(other: Transform): boolean;
+    isAlmostEqual(other: Readonly<Transform>): boolean;
     isAlmostEqualAllowZRotation(other: Transform): boolean;
     get isIdentity(): boolean;
     static matchArrayLengths(source: any[], dest: any[], constructionFunction: () => any): number;
@@ -6010,6 +6010,11 @@ export class XY implements XAndY {
 // @public
 export type XYAndZ = Readonly<WritableXYAndZ>;
 
+// @public (undocumented)
+export namespace XYAndZ {
+    export function almostEqual(a: XYAndZ, b: XYAndZ, tol?: number): boolean;
+}
+
 // @public
 export type XYProps = {
     x?: number;
@@ -6034,7 +6039,7 @@ export class XYZ implements XYAndZ {
     freeze(): Readonly<this>;
     static hasZ(arg: any): arg is HasZ;
     indexOfMaxAbs(): number;
-    isAlmostEqual(other: XYAndZ, tol?: number): boolean;
+    isAlmostEqual(other: Readonly<XYAndZ>, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
