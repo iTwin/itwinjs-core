@@ -36,12 +36,12 @@ There are two forms of iModels:
 
 The contents of an iModel are defined by [BIS](../bis/index.md) classes.
 
-- ✔️️ [Elements](../bis/intro/element-fundamentals.md)
-- ✔️️ [ElementAspects](../bis/intro/elementaspect-fundamentals.md)
-- ✔️️ [Models](../bis/intro/model-fundamentals.md)
-- ✔️️ [Relationships](../bis/intro/relationship-fundamentals.md)
-- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/intro/information-hierarchy.md)
-- ✔️️ [Categories](../bis/intro/categories.md)
+- ✔️️ [Elements](../bis/guide/fundamentals/element-fundamentals.md)
+- ✔️️ [ElementAspects](../bis/guide/fundamentals/elementaspect-fundamentals.md)
+- ✔️️ [Models](../bis/guide/fundamentals/model-fundamentals.md)
+- ✔️️ [Relationships](../bis/guide/fundamentals/relationship-fundamentals.md)
+- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/guide/fundamentals/information-hierarchy.md)
+- ✔️️ [Categories](../bis/guide/fundamentals/categories.md)
 
 ### GeoLocation
 

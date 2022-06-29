@@ -10,7 +10,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
 
-// @alpha
+// @beta
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)
@@ -19,7 +19,7 @@ export class FileSchemaKey extends SchemaKey {
     schemaText?: string;
 }
 
-// @alpha
+// @beta
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
@@ -42,14 +42,14 @@ export abstract class SchemaFileLocater {
     searchPaths: string[];
 }
 
-// @alpha
+// @beta
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     protected getSchemaKey(data: string): SchemaKey;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
 
-// @alpha
+// @beta
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchemaKey(data: string): SchemaKey;

@@ -4461,7 +4461,7 @@ export class PolyfaceQuery {
     static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
-    static createIndexedEdges(visitor: PolyfaceVisitor): IndexedEdgeMatcher;
+    static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
