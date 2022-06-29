@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Create box and torus tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

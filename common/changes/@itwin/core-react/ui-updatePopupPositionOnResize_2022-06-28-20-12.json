@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Added a 'repositionOnResize' property on the 'Popup' component, to avoid closing the popup everythime the browser window is resized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
