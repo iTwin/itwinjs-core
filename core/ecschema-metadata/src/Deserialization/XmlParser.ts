@@ -561,19 +561,19 @@ export class XmlParser extends AbstractParser<Element> {
     return this.getClassProps(xmlElement);
   }
 
-  public *getProperties(xmlElement: Element): Iterable<[string, string, Element]> {
+  public *getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]> {
     const propertyTagRegex = /EC((Struct(Array)?)|Array|Navigation)?Property/;
     const children = this.getElementChildrenByTagName(xmlElement, propertyTagRegex);
 
     for (const child of children) {
       const childType = child.nodeName;
       const propertyName = this.getRequiredAttribute(child, "propertyName",
-        `An ECProperty in ${this._currentItemFullName} is missing the required 'propertyName' attribute.`);
+        `An ECProperty in ${itemName} is missing the required 'propertyName' attribute.`);
 
       const propertyType = this.getPropertyType(childType);
       // This may not be needed, just a failsafe if the regex is faulty
       if (propertyType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECProperty ${this._currentItemFullName}.${propertyName} has an invalid type. ${childType} is not a valid ECProperty type.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECProperty ${itemName}.${propertyName} has an invalid type. ${childType} is not a valid ECProperty type.`);
 
       yield [propertyName, propertyType, child];
     }
