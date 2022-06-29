@@ -16,7 +16,7 @@ import {
   SubCategory, Subject,
 } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
-import { DbResult, DeepReadonly, Dictionary, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
@@ -34,50 +34,45 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 import { SchemaLoader } from "@itwin/ecschema-metadata";
 
-interface TransformationTestCacheEntry {
-  sourcePath: string;
-  targetPath: string;
-  transformerType: typeof IModelTransformer;
-}
+type TransformationTestCacheEntry = () => Promise<TransformationTestCacheResult>;
 
 interface TransformationTestCacheResult {
-  sourceDb: IModelDb;
-  /** deep readonly to indicate that tests should not modify the target or other tests could be invalidated
-   * you shouldn't modify any of it but deepreadonly should be used sparingly and I only expect tests to depend upon an immutable target
-   */
-  targetDb: DeepReadonly<IModelDb>;
-  transformer: IModelTransformer;
+  /** tests should not modify the target or other tests could be invalidated */
+  resultDb: IModelDb;
+  /** optionally a transformer that was used to create the snapshot */
+  sourceDb?: IModelDb;
+  /** optionally a transformer that was used to create the snapshot */
+  transformer?: IModelTransformer;
 }
 
-class TestTransformationsCache {
+class SnapshotCache {
   /** Cache for transformations during tests. This allows us to separate tests on the same transformation run for performance purposes */
-  public cache = new Dictionary<TransformationTestCacheEntry, Promise<TransformationTestCacheResult>>((l, r) => {
-    if (l.sourcePath < r.sourcePath) return -1;
-    else if (l.sourcePath > r.sourcePath) return 1;
-    if (l.targetPath < r.targetPath) return -1;
-    else if (l.targetPath > r.targetPath) return 1;
-    // would prefer to not have to be ordered, alternative is switching from Dictionary to a tuple-keyed nested map collection
-    if (l.transformerType.name < r.transformerType.name) return -1;
-    else if (l.transformerType.name > r.transformerType.name) return 1;
-    return 1;
-  });
+  public cache = new Map<TransformationTestCacheEntry, Promise<TransformationTestCacheResult>>();
 
-  /** returns the result of a transformation, which may have already been ran.
-   * @note Do not mutate the results or tests will have side effects.
-   * We might be able to enforce this in the future with DeepReadonly
-   */
-  async runTransformation(desc: TransformationTestCacheEntry): Promise<TransformationTestCacheResult> {
+  /** gets the snapshot for the runner, if it doesn't exist run it and save it in the cache */
+  public async makeSnapshot(desc: TransformationTestCacheEntry): Promise<TransformationTestCacheResult> {
     let resultPromise = this.cache.get(desc);
     if (resultPromise === undefined) {
-
-      this.cache.set(desc, await );
+      resultPromise = desc();
+      this.cache.set(desc, resultPromise);
     }
-    return await resultPromise;
+    return resultPromise;
+  }
+
+  public async closeEntries() {
+    for (const [_desc, entryPromise] of this.cache) {
+      const entry = await entryPromise;
+      entry.sourceDb?.close();
+      entry.resultDb.close();
+      entry.transformer?.dispose();
+    }
+    this.cache.clear();
   }
 }
 
 describe("IModelTransformer", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
+  const snapshotsCache = new SnapshotCache();
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
@@ -96,32 +91,64 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("should transform changes from source to target", async () => {
-    // Source IModelDb
-    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
-    TransformerExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
-    // Target IModelDb
-    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
-    await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
-    targetDb.saveChanges();
+  class ReusableSnapshots {
+    private static _extensiveTestScenarioPromise: undefined | Promise<{ sourceDb: IModelDb, targetDb: IModelDb, transformer: TestIModelTransformer, importer: RecordingIModelImporter}>;
+    public static get extensiveTestScenario() {
+      if (this._extensiveTestScenarioPromise === undefined) {
+        const getImpl = async () => {
+          const sourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExtensiveTestScenarioSource.bim");
+          const targetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExtensiveTestScenarioTarget.bim");
+          const sourceDb = SnapshotDb.createEmpty(sourcePath, { rootSubject: { name: "ExtensiveTestScenarioSource" } });
+          await TransformerExtensiveTestScenario.prepareDb(sourceDb);
+          TransformerExtensiveTestScenario.populateDb(sourceDb);
+          const targetDb = SnapshotDb.createEmpty(targetPath, { rootSubject: { name: "ExtensiveTestScenarioTarget" } });
+          await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
 
-    const numSourceUniqueAspects = count(sourceDb, ElementUniqueAspect.classFullName);
-    const numSourceMultiAspects = count(sourceDb, ElementMultiAspect.classFullName);
-    const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
-    assert.isAtLeast(numSourceUniqueAspects, 1);
-    assert.isAtLeast(numSourceMultiAspects, 1);
-    assert.isAtLeast(numSourceRelationships, 1);
+          const numSourceUniqueAspects = count(sourceDb, ElementUniqueAspect.classFullName);
+          const numSourceMultiAspects = count(sourceDb, ElementMultiAspect.classFullName);
+          const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
+          assert.isAtLeast(numSourceUniqueAspects, 1);
+          assert.isAtLeast(numSourceMultiAspects, 1);
+          assert.isAtLeast(numSourceRelationships, 1);
+
+          const targetImporter = new RecordingIModelImporter(targetDb);
+          const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+          await transformer.processAll();
+          targetDb.saveChanges();
+
+          return { sourceDb, targetDb, transformer, importer: targetImporter };
+        };
+        this._extensiveTestScenarioPromise = getImpl();
+      }
+      return this._extensiveTestScenarioPromise;
+    }
+
+    public static async closeEntries() {
+      if (this._extensiveTestScenarioPromise) {
+        const result = await this._extensiveTestScenarioPromise;
+        result.sourceDb.close();
+        result.targetDb.close();
+        result.transformer.dispose();
+      }
+    }
+  }
+
+  after(async () => {
+    await snapshotsCache.closeEntries();
+  });
+
+  it("should transform changes from source to target", async () => {
+    const { sourceDb, targetDb: immutableTargetDb, transformer: firstTransformer } = await ReusableSnapshots.extensiveTestScenario;
+
+    const targetPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
+    const targetDb = SnapshotDb.createFrom(immutableTargetDb, targetPath);
 
     if (true) { // initial import
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Initial Import");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
-      const targetImporter = new RecordingIModelImporter(targetDb);
-      const transformer = new TestIModelTransformer(sourceDb, targetImporter);
+      const targetImporter = firstTransformer.importer as RecordingIModelImporter;
+      const transformer = firstTransformer;
       assert.isTrue(transformer.context.isBetweenIModels);
       await transformer.processAll();
       assert.isAtLeast(targetImporter.numModelsInserted, 1);
@@ -141,7 +168,7 @@ describe("IModelTransformer", () => {
       assert.equal(3, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
-      transformer.context.dump(`${targetDbFile}.context.txt`);
+      transformer.context.dump(`${targetPath}.context.txt`);
       transformer.dispose();
     }
 
