@@ -7,7 +7,7 @@ Extensions have access to a limited set of iTwin.js functionality through @itwin
 ## What can extensions do?
 
 Extensions can be used for many different purposes, such as:
-- Add new a new tool or decorator to an existing application to better support your custom workflows.
+- Add new a new [tool](./Tools.md) or [decorator](./ViewDecorations.md) to an existing application to better support your custom workflows.
 - Write event based processing, i.e., subscribe to an iModel Event, or Unified Selection Event, and process that change.
 
 ## How to get started
@@ -170,7 +170,7 @@ my-itwin-extension
 Extensions need to be served somewhere so that the iTwin.js application can load the Extension at runtime.
 > A useful way to serve JavaScript locally is to add [serve](https://www.npmjs.com/package/serve) as a dev dependency `npm i --save-dev serve`, then adding a script to your package.json: `"serve": "serve . -p 3001 --cors"`.
 
-By default, every IModelApp has an instance of the ExtensionAdmin.
+By default, every [IModelApp](./IModelApp.md) has an instance of the ExtensionAdmin.
 The ExtensionAdmin controls the loading and execution of Extensions.
 An Extension must be added to ExtensionAdmin through an ExtensionProvider before it can be executed.
 
