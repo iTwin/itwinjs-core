@@ -6,6 +6,7 @@
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
 @import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/itwinui-css/scss/style/elevation";
 
 .nz-target-target {
   $border-size: 2px;
@@ -27,6 +28,7 @@
   transition: transform $iui-speed-fast ease-in;
   pointer-events: all;
   display: flex;
+  box-shadow: $iui-elevation-2;
 
   @include uicore-z-index(drag-target);
 
@@ -67,6 +69,7 @@
   &.nz-targeted {
     transform: scale(1.2);
     background-color: $targeted-color;
+    box-shadow: $iui-elevation-4;
 
     >.nz-section {
       &.nz-target {
