@@ -25,7 +25,7 @@ The following properties must be added to the package.json file:
 - _Name_: the name of the Extension.
 - _Version_: the version of the Extension in the format _x.x.x_.
 - _Main_: where to find the javascript file.
-- _ActivationEvents_: events that define when the iTwin.js application should load and run your Extension. Currently, we only support `onStartup`, which will execute the Extension as soon as it is loaded.
+- _ActivationEvents_: events that define when the iTwin.js application should execute your Extension. Currently, we only support `onStartup`, which will execute the Extension as soon as it is added to the application.
 
 Here is a minimal example:
 ```json
@@ -65,7 +65,7 @@ Next, add your favorite JavaScript tool to bundle your code together.
 Bundling is the process of combining multiple small source files into a single file.
 Bundling is necessary because when Extensions are loaded by the host iTwin.js application, they can only load and execute one file at a time.
 It is also a good idea to make the file as small as possible, a process known as minification.
-For JavaScript, popular bundlers are [rollup.js](https://rollupjs.org/guide/en/), [esbuild](https://esbuild.github.io/), and [webpack](https://webpack.js.org/). We recommend using esbuild:
+For JavaScript, popular bundlers are [rollup.js](https://rollupjs.org/guide/en/), [esbuild](https://esbuild.github.io/), and [webpack](https://webpack.js.org/). Here is an example using esbuild:
 ```
 npm i --save-dev esbuild @esbuild-plugins/node-modules-polyfill @esbuild-plugins/node-globals-polyfill
 ```
@@ -194,7 +194,8 @@ The next step is to register your host with the ExtensionAdmin. The ExtensionAdm
 IModelApp.extensionAdmin.registerHost("localhost:3001");
 ```
 
-The last step is to add the Extension to the ExtensionAdmin. Once the Extension has been added, it will immediately execute if the onStartup Activation Event was defined in the manifest.
+The last step is to add the Extension to the ExtensionAdmin. Once the Extension has been added, its default function will immediately execute if the onStartup Activation Event was defined in the manifest.
+In our example, we interact with the [View](./Views.md), so the Extension must be added after the View is initialized.
 ```ts
 IModelApp.extensionAdmin.addExtension(extensionProvider)
   .catch((e) => console.log(e));
