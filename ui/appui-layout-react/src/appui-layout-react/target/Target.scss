@@ -30,7 +30,7 @@
   display: flex;
   box-shadow: $iui-elevation-2;
 
-  @include uicore-z-index(drag-target);
+  @include uicore-z-index(drop-target);
 
   >.nz-section {
     flex: 1;

@@ -12,8 +12,8 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 import { useTargeted } from "../base/DragManager";
 import { isSectionTargetState } from "../base/NineZoneState";
-import { useTargetDirection } from "../target/WidgetTarget";
 import { PanelSideContext } from "../widget-panels/Panel";
+import { useSectionTargetDirection } from "../target/SectionTarget";
 
 /** @internal */
 export interface SectionOutlineProps extends CommonProps {
@@ -23,7 +23,7 @@ export interface SectionOutlineProps extends CommonProps {
 /** @internal */
 export function SectionOutline(props: SectionOutlineProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const hidden = useHidden(props.sectionIndex);
-  const direction = useTargetDirection();
+  const direction = useSectionTargetDirection();
   const className = classnames(
     "nz-outline-sectionOutline",
     `nz-${props.sectionIndex}`,

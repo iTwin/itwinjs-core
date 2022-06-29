@@ -13,9 +13,8 @@ import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { Target } from "./Target";
-import { PanelSideContext } from "../widget-panels/Panel";
-import { useTargetDirection } from "./WidgetTarget";
+import { Target, TargetProps } from "./Target";
+import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { SectionTargetState } from "../base/NineZoneState";
 
 /** @internal */
@@ -29,7 +28,7 @@ export const SectionTarget = React.memo<SectionTargetProps>(function SectionTarg
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-  const direction = useTargetDirection();
+  const direction = useSectionTargetDirection();
   const [ref, targeted] = useTarget<HTMLDivElement>(useSectionTargetArgs(sectionIndex));
   const hidden = !draggedTab && !draggedWidgetId;
   const className = classnames(
@@ -60,4 +59,16 @@ function useSectionTargetArgs(sectionIndex: number) {
       newWidgetId,
     };
   }, [side, sectionIndex, newWidgetId]);
+}
+
+/** @internal */
+export function useSectionTargetDirection(): TargetProps["direction"] {
+  const side = React.useContext(PanelSideContext);
+  assert(!!side);
+
+  if (isHorizontalPanelSide(side)) {
+    return "horizontal";
+  }
+
+  return "vertical";
 }

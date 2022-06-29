@@ -13,11 +13,14 @@ import { assert } from "@itwin/core-bentley";
 import { WidgetContentManagerContext } from "./ContentManager";
 import { WidgetStateContext } from "./Widget";
 import { PanelSideContext } from "../widget-panels/Panel";
-import { WidgetOutline } from "../outline/WidgetOutline";
-import { WidgetTargets } from "../target/WidgetTargets";
 
 /** @internal */
-export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
+export interface WidgetContentContainerProps {
+  children?: React.ReactNode;
+}
+
+/** @internal */
+export const WidgetContentContainer = React.memo(function WidgetContentContainer(props: WidgetContentContainerProps) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   const side = React.useContext(PanelSideContext);
@@ -38,8 +41,7 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
         className="nz-content"
         ref={ref}
       />
-      <WidgetTargets />
-      <WidgetOutline />
+      {props.children}
     </div>
   );
 });

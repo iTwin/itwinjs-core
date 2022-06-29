@@ -6,18 +6,18 @@
  * @module Widget
  */
 
-import "./WidgetTargets.scss";
+import "./SectionTargets.scss";
 import * as React from "react";
 import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
-import { useTargetDirection, WidgetTarget } from "./WidgetTarget";
+import { WidgetTarget } from "./WidgetTarget";
 import { WidgetIdContext } from "../widget/Widget";
-import { SectionTarget } from "./SectionTarget";
+import { SectionTarget, useSectionTargetDirection } from "./SectionTarget";
 
 /** @internal */
-export const WidgetTargets = React.memo(function WidgetTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const SectionTargets = React.memo(function SectionTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const type = useWidgetTargetsType();
-  const direction = useTargetDirection();
+  const direction = useSectionTargetDirection();
   const widgetId = React.useContext(WidgetIdContext);
   let targets;
   if (type === "merge") {
@@ -31,7 +31,7 @@ export const WidgetTargets = React.memo(function WidgetTargets() { // eslint-dis
   }
   return (
     <TargetContainer
-      className="nz-target-widgetTargets"
+      className="nz-target-sectionTargets"
       direction={direction}
     >
       {targets}

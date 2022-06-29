@@ -67,10 +67,10 @@ export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 export * from "./appui-layout-react/target/PanelTarget";
 export * from "./appui-layout-react/target/PanelTargets";
 export * from "./appui-layout-react/target/SectionTarget";
+export * from "./appui-layout-react/target/SectionTargets";
 export * from "./appui-layout-react/target/Target";
 export * from "./appui-layout-react/target/TargetContainer";
 export * from "./appui-layout-react/target/WidgetTarget";
-export * from "./appui-layout-react/target/WidgetTargets";
 
 export * from "./appui-layout-react/tool-settings/Docked";
 export * from "./appui-layout-react/tool-settings/Handle";

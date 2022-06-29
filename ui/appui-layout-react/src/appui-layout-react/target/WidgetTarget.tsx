@@ -27,7 +27,6 @@ export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-  const direction = useTargetDirection();
   const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
   const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
@@ -38,26 +37,13 @@ export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(
   return (
     <Target
       className={className}
-      direction={direction}
+      direction="horizontal"
       section="fill"
       targeted={targeted}
       ref={ref}
     />
   );
 });
-
-/** @internal */
-export function useTargetDirection(): TargetProps["direction"] {
-  const side = React.useContext(PanelSideContext);
-  if (!side)
-    return "horizontal";
-
-  if (isHorizontalPanelSide(side)) {
-    return "horizontal";
-  }
-
-  return "vertical";
-}
 
 function useTargetArgs(widgetId: WidgetState["id"]) {
   return React.useMemo<WidgetTargetState>(() => {
