@@ -415,6 +415,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "assert",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
     },
@@ -429,6 +433,10 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "browserify-zlib",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "buffer",
@@ -663,6 +671,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "https-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "i18next",
       "allowedCategories": [ "frontend" ]
     },
@@ -801,6 +813,10 @@
     {
       "name": "openid-client",
       "allowedCategories": [ "integration-testing" ]
+    },
+    {
+      "name": "path-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -964,6 +980,14 @@
     },
     {
       "name": "spdy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "stream-http",
       "allowedCategories": [ "internal" ]
     },
     {

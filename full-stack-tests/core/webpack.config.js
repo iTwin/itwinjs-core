@@ -32,7 +32,7 @@ function createConfig(shouldInstrument) {
     output: {
       path: path.resolve(__dirname, "lib/dist"),
       filename: "bundled-tests.js",
-      devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+      devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
     },
     devtool: "nosources-source-map",
     resolve: { mainFields: ["main", "module"] },
@@ -42,32 +42,32 @@ function createConfig(shouldInstrument) {
         // requires for fs that cause it to fail even though the fs dependency
         // is not used.
         /draco_decoder_nodejs.js$/,
-        /draco_encoder_nodejs.js$/
+        /draco_encoder_nodejs.js$/,
       ],
       rules: [
         {
           test: /\.js$/,
           exclude: /common[\/\\]temp[\/\\]node_modules/,
           use: "source-map-loader",
-          enforce: "pre"
+          enforce: "pre",
         },
         {
           test: /azure-storage|AzureFileHandler|UrlFileHandler|AzureSdkFileHandler/,
-          use: "null-loader"
+          use: "null-loader",
         },
         {
           test: /ws\/index\.js$/,
-          use: "null-loader"
+          use: "null-loader",
         },
         {
           test: /tunnel.js/,
-          use: "null-loader"
-        }
-      ]
+          use: "null-loader",
+        },
+      ],
     },
     stats: "errors-only",
     optimization: {
-      nodeEnv: "production"
+      nodeEnv: "production",
     },
     externals: {
       electron: "commonjs electron",
@@ -76,15 +76,29 @@ function createConfig(shouldInstrument) {
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin({
-        "process.env": Object.keys(process.env)
-          .reduce((env, key) => {
+        "process.env": Object.keys(process.env).reduce(
+          (env, key) => {
             env[key] = JSON.stringify(process.env[key]);
             return env;
-          }, {
-            IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
-          }),
+          },
+          {
+            IMODELJS_CORE_DIRNAME: JSON.stringify(
+              path.join(__dirname, "../..")
+            ),
+          }
+        ),
       }),
-    ]
+    ],
+    resolve: {
+      fallback: {
+        assert: require.resolve("assert"),
+        http: require.resolve("stream-http"),
+        https: require.resolve("https-browserify"),
+        path: require.resolve("path-browserify"),
+        stream: require.resolve("stream-browserify"),
+        zlib: require.resolve("browserify-zlib"),
+      },
+    },
   };
 
   if (shouldInstrument) {
