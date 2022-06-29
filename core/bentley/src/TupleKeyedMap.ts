@@ -11,6 +11,7 @@ interface PartialMap<K, V> {
   get(k: K): V | undefined;
   set(k: K, v: V): PartialMap<K, V>;
   has(k: K): boolean;
+  [Symbol.iterator](): IterableIterator<[K, V]>;
 }
 
 /** A map similar to the standard JavaScript Map collection except that the keys must be a tuple
@@ -74,6 +75,20 @@ export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K,
     cursor.set(finalSubkey, value);
     this._size++;
     return this;
+  }
+
+  public *[Symbol.iterator](): IterableIterator<[K, V]> {
+    function *impl(map: Map<any, any>, keyPrefix: readonly any[]): IterableIterator<[K, V]> {
+      for (const [k, v] of map) {
+        const nextKey = [...keyPrefix, k];
+        if (v instanceof Map) {
+          yield* impl(v, nextKey);
+        } else {
+          yield [nextKey as any as K, v];
+        }
+      }
+    }
+    yield* impl(this._map, []);
   }
 
   private _size: number = 0;

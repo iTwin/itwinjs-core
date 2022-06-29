@@ -22,11 +22,13 @@ describe.only("TupleKeyedMap", () => {
     expect(map.size).to.equal(entries.length);
   });
 
-  it("gets and sets", () => {
+  it("gets, sets, and iterates", () => {
     const [a, b, c, d] = new Array(4).fill(undefined).map(() => ({}));
-    const map = new TupleKeyedMap<[string, number, object], number>();
-    map.set(["three", 3, c], 3);
-    map.set(["four", 4, d], 4);
+    const map = new TupleKeyedMap<[string, number, object], number>([
+      [["three", 3, c], 3],
+      [["four", 4, d], 4],
+    ]);
+
     expect(map.get(["one", 1, a])).to.equal(undefined);
 
     expect(map.get(["three", 3, c])).to.equal(3);
@@ -43,5 +45,14 @@ describe.only("TupleKeyedMap", () => {
     expect(map.get(["four", 3, c])).to.equal(undefined);
     expect(() => map.get(["three", 3, c, b] as any)).to.throw();
     expect(() => map.get(["three", 3] as any)).to.throw();
+
+    expect(() => map.set(["three", 4, c], 11)).not.to.throw();
+
+    // subkey-level insertion order is expected because the underlying Map guarantees insertion order
+    const iter = map[Symbol.iterator]();
+    expect(iter.next()).to.deep.equal({ value: [["three", 3, c], 10], done: false});
+    expect(iter.next()).to.deep.equal({ value: [["three", 4, c], 11], done: false});
+    expect(iter.next()).to.deep.equal({ value: [["four", 4, d], 4], done: false});
+    expect(iter.next()).to.deep.equal({ value: undefined, done: true });
   });
 });
