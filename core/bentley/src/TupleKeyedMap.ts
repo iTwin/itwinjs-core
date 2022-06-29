@@ -23,9 +23,15 @@ interface PartialMap<K, V> {
  * It is implemented by each index of the tuple key being used as a singular key into a submap
  * @note this only implements a subset, [[PartialMap]], of the Map interface
  */
-export class TupleKeyedMap<K extends readonly any[], V>
-implements PartialMap<K, V> {
+export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
   private _map = new Map<K[0], Map<any, V> | V>();
+
+  // argument types match those of Map
+  public constructor(entries?: readonly (readonly [K, V])[] | null) {
+    if (entries) for (const [k, v] of entries) {
+      this.set(k, v);
+    }
+  }
 
   public clear(): void {
     return this._map.clear();
