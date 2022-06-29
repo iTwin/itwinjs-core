@@ -869,7 +869,7 @@ export namespace RenderSchedule {
     public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
-    /** True if any [[ElementTimeline]]s exist and none of them contain any element Ids. This generally indicates that
+    /** True if any [[RenderSchedule.ElementTimeline]]s exist and none of them contain any element Ids. This generally indicates that
      * the backend was instructed to omit the Ids to save space when supplying the script.
      */
     public readonly omitsElementIds: boolean;

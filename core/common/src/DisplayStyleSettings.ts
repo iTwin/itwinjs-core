@@ -651,7 +651,7 @@ export class DisplayStyleSettings {
   /** JSON representation of a [[RenderSchedule.Script]] embedded in the display style describing how to animate the contents of the view over time.
    * This script, if present, takes precedence over a script supplied by [[renderTimeline]].
    * @see [[onScheduleScriptPropsChanged]] to be notified when this property changes.
-   * @see [DisplayStyleState.script]($frontend) to change the [[RenderSchedule.Script]] object directly rather than via JSON.
+   * @see [DisplayStyleState.scheduleScript]($frontend) to change the [[RenderSchedule.Script]] object directly rather than via JSON.
    */
   public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
     return this._json.scheduleScript;
