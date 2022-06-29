@@ -10,6 +10,11 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 
 1. To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 2. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
+3. Build the application code using `buildapp` script (`build` is reserved for rush overall builds, we use a different script to build this application backend to reduce normal builds):
+
+    ```cmd
+    npm run buildapp
+    ```
 
 * To start the application in Electron, navigate to the root of appui-standalone-app, and use the command:
 
