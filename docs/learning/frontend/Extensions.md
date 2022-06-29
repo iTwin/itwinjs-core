@@ -1,7 +1,7 @@
 # iTwin.js Extensions
 
 An iTwin.js Extension is a separate JavaScript module that can load on demand into an iTwin.js frontend application.
-The separate deliverable enables Extensions to provide extensibility of an iTwin.js application at runtime.
+The separate deliverable enables Extensions to provide extensibility of an iTwin.js application without having to re-build or re-deploy the application.
 Extensions have access to a limited set of iTwin.js functionality through `@itwin/core-extension` to enable seamless integration with the host app.
 
 ## What can extensions do?
