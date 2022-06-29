@@ -95,16 +95,25 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.options.simplifyElementGeometry = val;
   }
 
+  private static _realityDataSourceLinkPartitionStaticId: Id64String = "0xe";
+
   /** The set of elements that should not be updated by this IModelImporter.
+   * Defaults to the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
-  public readonly doNotUpdateElementIds = new Set<Id64String>();
+  public readonly doNotUpdateElementIds = new Set<Id64String>([
+    IModel.rootSubjectId,
+    IModel.dictionaryId,
+    IModelImporter._realityDataSourceLinkPartitionStaticId,
+  ]);
   /** The number of entity changes before incremental progress should be reported via the [[onProgress]] callback. */
   public progressInterval: number = 1000;
   /** Tracks the current total number of entity changes. */
   private _progressCounter: number = 0;
   /** */
-  private _modelPropertiesToIgnore = new Set<string>();
+  private _modelPropertiesToIgnore = new Set<string>([
+    "geometryGuid", // cannot compare GeometricModel.GeometryGuid values across iModels
+  ]);
 
   /** Construct a new IModelImporter
    * @param targetDb The target IModelDb
@@ -117,11 +126,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
       preserveElementIdsForFiltering: options?.preserveElementIdsForFiltering ?? false,
       simplifyElementGeometry: options?.simplifyElementGeometry ?? false,
     };
-    // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
-    this.doNotUpdateElementIds.add(IModel.rootSubjectId);
-    this.doNotUpdateElementIds.add(IModel.dictionaryId);
-    this.doNotUpdateElementIds.add("0xe"); // RealityDataSources LinkPartition
-    this._modelPropertiesToIgnore.add("geometryGuid"); // cannot compare GeometricModel.GeometryGuid values across iModels
   }
 
   /** Import the specified ModelProps (either as an insert or an update) into the target iModel. */
