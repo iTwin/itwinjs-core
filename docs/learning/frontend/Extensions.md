@@ -61,7 +61,11 @@ A basic tsconfig.json file needs to be setup for development. Create a new tscon
 }
 ```
 
-Next, add your favorite JavaScript tool to bundle your code together. Bundling is the process of combining multiple small source files into a single file. For JavaScript, popular bundlers are [rollup.js](https://rollupjs.org/guide/en/), [esbuild](https://esbuild.github.io/), and [webpack](https://webpack.js.org/). We recommend using esbuild:
+Next, add your favorite JavaScript tool to bundle your code together.
+Bundling is the process of combining multiple small source files into a single file.
+Bundling is necessary because when Extensions are loaded by the host iTwin.js application, they can only load and execute one file at a time.
+It is also a good idea to make the file as small as possible, a process known as minification.
+For JavaScript, popular bundlers are [rollup.js](https://rollupjs.org/guide/en/), [esbuild](https://esbuild.github.io/), and [webpack](https://webpack.js.org/). We recommend using esbuild:
 ```
 npm i --save-dev esbuild @esbuild-plugins/node-modules-polyfill @esbuild-plugins/node-globals-polyfill
 ```
@@ -70,9 +74,10 @@ Add the following entry into the scripts section in package.json to build the fi
 // package.json
   "scripts": {
     "build": "node esbuild.js"
-  },
+  }
 ```
-And finally, an esbuild config file (esbuild.js) should be placed next to the package.json:
+And finally, an esbuild configuration file (esbuild.js) should be placed next to the package.json.
+The configuration tells esbuild to bundle and minify the files, as well as adds some necessary polyfills:
 ```js
 // esbuild.js
 import { NodeModulesPolyfillPlugin } from "@esbuild-plugins/node-modules-polyfill";
