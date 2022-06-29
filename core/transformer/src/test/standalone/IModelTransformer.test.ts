@@ -34,45 +34,8 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 import { SchemaLoader } from "@itwin/ecschema-metadata";
 
-type TransformationTestCacheEntry = () => Promise<TransformationTestCacheResult>;
-
-interface TransformationTestCacheResult {
-  /** tests should not modify the target or other tests could be invalidated */
-  resultDb: IModelDb;
-  /** optionally a transformer that was used to create the snapshot */
-  sourceDb?: IModelDb;
-  /** optionally a transformer that was used to create the snapshot */
-  transformer?: IModelTransformer;
-}
-
-class SnapshotCache {
-  /** Cache for transformations during tests. This allows us to separate tests on the same transformation run for performance purposes */
-  public cache = new Map<TransformationTestCacheEntry, Promise<TransformationTestCacheResult>>();
-
-  /** gets the snapshot for the runner, if it doesn't exist run it and save it in the cache */
-  public async makeSnapshot(desc: TransformationTestCacheEntry): Promise<TransformationTestCacheResult> {
-    let resultPromise = this.cache.get(desc);
-    if (resultPromise === undefined) {
-      resultPromise = desc();
-      this.cache.set(desc, resultPromise);
-    }
-    return resultPromise;
-  }
-
-  public async closeEntries() {
-    for (const [_desc, entryPromise] of this.cache) {
-      const entry = await entryPromise;
-      entry.sourceDb?.close();
-      entry.resultDb.close();
-      entry.transformer?.dispose();
-    }
-    this.cache.clear();
-  }
-}
-
 describe("IModelTransformer", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
-  const snapshotsCache = new SnapshotCache();
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
@@ -134,7 +97,7 @@ describe("IModelTransformer", () => {
   }
 
   after(async () => {
-    await snapshotsCache.closeEntries();
+    await ReusableSnapshots.closeEntries();
   });
 
   it("should transform changes from source to target", async () => {
