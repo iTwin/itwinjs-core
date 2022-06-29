@@ -103,14 +103,7 @@ export interface DisplayStyleSettingsProps {
   analysisStyle?: AnalysisStyleProps;
   /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0. */
   analysisFraction?: number;
-  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
-   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
-   * that hosts the script.
-   * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
-   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
-   * @internal
-   */
+  /** @see [[DisplayStyleSettings.scheduleScript]]. */
   scheduleScript?: RenderSchedule.ScriptProps;
   /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
   renderTimeline?: Id64String;
@@ -460,8 +453,7 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
-   * @deprecated Use onRenderTimelineChanged
-   * @internal
+   * @see [[onRenderTimelineChanged]] to be notified when the [[renderTimeline]] property from which a script can be obtained is changed.
    */
   public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>();
 
@@ -653,15 +645,16 @@ export class DisplayStyleSettings {
     }
   }
 
-  /** @internal @deprecated */
+  /** JSON representation of a [[RenderSchedule.Script]] embedded in the display style describing how to animate the contents of the view over time.
+   * This script, if present, takes precedence over a script supplied by [[renderTimeline]].
+   * @see [[onScheduleScriptPropsChanged]] to be notified when this property changes.
+   * @see [DisplayStyleState.script]($frontend) to change the [[RenderSchedule.Script]] object directly rather than via JSON.
+   */
   public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
-    // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
   public set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined) {
-    // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
-    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
@@ -906,11 +899,8 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      // eslint-disable-next-line deprecation/deprecation
-      if (this.scheduleScriptProps) {
-        // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps)
         props.scheduleScript = [...this.scheduleScriptProps];
-      }
 
       if (this.renderTimeline)
         props.renderTimeline = this.renderTimeline;
@@ -986,11 +976,8 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    // eslint-disable-next-line deprecation/deprecation
-    if (overrides.scheduleScript) {
-      // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript)
       this.scheduleScriptProps = [...overrides.scheduleScript];
-    }
 
     if (overrides.renderTimeline)
       this.renderTimeline = overrides.renderTimeline;
