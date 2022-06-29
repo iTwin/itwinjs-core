@@ -7,7 +7,7 @@ Extensions have access to a limited set of iTwin.js functionality through @itwin
 ## What can extensions do?
 
 Extensions can be used for many different purposes, such as:
-- Add new a new tool or marker to an existing application to better support your custom workflows.
+- Add new a new tool or decorator to an existing application to better support your custom workflows.
 - Write event based processing, i.e., subscribe to an iModel Event, or Unified Selection Event, and process that change.
 
 ## How to get started
