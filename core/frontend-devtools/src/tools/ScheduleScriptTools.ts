@@ -122,7 +122,7 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
 
   public override async execute(vp: Viewport): Promise<boolean> {
     const prevRef = vp?.displayStyle.scheduleScriptReference;
-    if (!prevRef || prevRef.script.isMissingElementIds)
+    if (!prevRef || prevRef.script.modelTimelines.some((x) => x.omitsElementIds))
       return false;
 
     const script = prevRef.script;

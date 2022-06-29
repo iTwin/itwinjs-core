@@ -738,13 +738,15 @@ export class TileAdmin {
     if (!script || !script.script.requiresBatching)
       return undefined;
 
-    // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
-    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !script.script.isMissingElementIds)) {
-      const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
-      return timeline && (timeline.requiresBatching || timeline.containsTransform) ? { timeline } : undefined;
-    }
+    const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
+    if (!timeline || (!timeline.requiresBatching && !timeline.containsTransform))
+      return undefined;
 
-    return script.script.modelRequiresBatching(modelId) ? { animationId: script.sourceId } : undefined;
+    // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
+    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !timeline.omitsElementIds))
+      return { timeline };
+
+    return { animationId: script.sourceId };
   }
 
   private dispatchTileTreePropsRequests(): void {

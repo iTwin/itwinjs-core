@@ -869,7 +869,10 @@ export namespace RenderSchedule {
     public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
-    public readonly isMissingElementIds: boolean;
+    /** True if any [[ElementTimeline]]s exist and none of them contain any element Ids. This generally indicates that
+     * the backend was instructed to omit the Ids to save space when supplying the script.
+     */
+    public readonly omitsElementIds: boolean;
     private _maxBatchId?: number;
     /** Tile tree suppliers perform **very** frequent ordered comparisons of ModelTimelines. They need to be fast. */
     private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
@@ -890,7 +893,7 @@ export namespace RenderSchedule {
 
       const transformBatchIds: number[] = [];
       const elementTimelines: ElementTimeline[] = [];
-      let isMissingElementIds = false;
+      let containsElementIds = false;
       for (const elProps of props.elementTimelines) {
         const el = ElementTimeline.fromJSON(elProps);
         elementTimelines.push(el);
@@ -905,12 +908,12 @@ export namespace RenderSchedule {
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
         requiresBatching ||= el.requiresBatching;
-        isMissingElementIds = isMissingElementIds || !el.containsElementIds;
+        containsElementIds = containsElementIds || el.containsElementIds;
       }
 
       this.elementTimelines = elementTimelines;
       this.transformBatchIds = transformBatchIds;
-      this.isMissingElementIds = isMissingElementIds;
+      this.omitsElementIds = elementTimelines.length > 0 && !containsElementIds;
 
       this.containsFeatureOverrides = containsFeatureOverrides;
       this.requiresBatching = requiresBatching;
@@ -1121,10 +1124,6 @@ export namespace RenderSchedule {
     /** Look up the timeline that animates the specified model, if any. */
     public find(modelId: Id64String): ModelTimeline | undefined {
       return this.modelTimelines.find((x) => x.modelId === modelId);
-    }
-
-    public get isMissingElementIds(): boolean {
-      return this.modelTimelines.some((x) => x.isMissingElementIds);
     }
 
     /** @internal */
