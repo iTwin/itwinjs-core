@@ -12,8 +12,8 @@ import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPolylineParams,
-  splitPointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTable,
+  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPointStringParams,
+  splitPolylineParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -164,7 +164,7 @@ interface TriMesh {
 }
 
 function getSurfaceType(mesh: TriMesh): SurfaceType {
-  const expectConsistent = (fn: (point :TriMeshPoint) => boolean) => expect(mesh.points.some(fn)).to.equal(mesh.points.every(fn));
+  const expectConsistent = (fn: (point: TriMeshPoint) => boolean) => expect(mesh.points.some(fn)).to.equal(mesh.points.every(fn));
 
   expectConsistent((x) => undefined === x.material);
   expectConsistent((x) => undefined === x.normal);
@@ -189,7 +189,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   if (mesh.texture) {
     textureMapping = {
       texture: mesh.texture,
-      uvParams: mesh.points.map((pt) => new Point2d(pt.uv!, -pt.uv!)),
+      uvParams: mesh.points.map((pt) => new Point2d(pt.uv, -pt.uv)),
     };
   }
 
@@ -225,7 +225,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
   if (Array.isArray(mesh.materials)) {
     expect(surface.material).to.be.undefined;
   } else {
-    expect(surface.material).to.equal(mesh.materials)
+    expect(surface.material).to.equal(mesh.materials);
   }
 
   if (SurfaceType.Unlit === type)
@@ -233,7 +233,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
 
   const data = getVertexTableData(vertexTable, 0);
   if (SurfaceType.Textured === type || SurfaceType.TexturedLit === type) {
-    const uvs = mesh.points.map((p) => new Point2d(p.uv!, -p.uv!));
+    const uvs = mesh.points.map((p) => new Point2d(p.uv, -p.uv));
     const qparams = QParams2d.fromRange(Range2d.createArray(uvs));
     for (const vertIndex of surface.indices) {
       const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
@@ -346,10 +346,10 @@ function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[
 
 interface Edges {
   // index, other index, quad index
-  segments?: Array<[ number, number, number ]>,
+  segments?: Array<[ number, number, number ]>;
   // segments plus oct-encoded normal pair
-  silhouettes?: Array<[ number, number, number, number ]>,
-  polylines?: PolylineIndices[],
+  silhouettes?: Array<[ number, number, number, number ]>;
+  polylines?: PolylineIndices[];
 }
 
 function makeEdgeParams(edges: Edges): EdgeParams {
@@ -458,7 +458,7 @@ describe.only("VertexTableSplitter", () => {
   });
 
   beforeEach(() => setMaxTextureSize(2048));
-  after(() => MockRender.App.shutdown());
+  after(async () => MockRender.App.shutdown());
 
   function setMaxTextureSize(max: number) {
     MockSystem.maxTextureSize = max;
@@ -578,39 +578,6 @@ describe.only("VertexTableSplitter", () => {
       { x: 6, color: 0, feature: 3 },
       { x: 7, color: 1, feature: 3 },
       { x: 8, color: 0, feature: 3 },
-    ]);
-  });
-
-  it("splits polyline params based on node Id", () => {
-    const params = makePolylineParams([
-      { x: 20, color: 1, feature: 2 }, // 0
-      { x: 0, color: 0, feature: 0 },
-      { x: 11, color: 0, feature: 1 }, // 2
-      { x: 1, color: 0, feature: 0 },
-      { x: 4, color: 0, feature: 0 }, // 4
-      { x: 10, color: 0, feature: 1 },
-      { x: 12, color: 2, feature: 1 }, // 6
-      { x: 13, color: 2, feature: 1 },
-      { x: 14, color: 2, feature: 1 }, // 8
-      { x: 3, color: 0, feature: 0 },
-      { x: 2, color: 0, feature: 0 }, // 10
-      { x: 21, color: 1, feature: 2 },
-    ], [
-      // feature 1
-      [1, 1, 3, 0],
-      [1, 1, 3, 1],
-      [3, 1, 2, 3],
-      [3, 1, 2, 4],
-      [3, 1, 2, 255],
-      [2, 3, 2, 128],
-      [2, 3, 2, 127],
-
-      // feature 0
-
-      // feature 2
-
-      // feature 1
-    ], [
     ]);
   });
 

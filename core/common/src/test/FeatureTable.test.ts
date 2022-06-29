@@ -42,7 +42,7 @@ describe("PackedFeatureTable", () => {
         expect(table.animationNodeIds).instanceof(type);
         expect(table.animationNodeIds!.length).to.equal(1);
         expect(table.animationNodeIds![0]).to.equal(nodeId);
-      };
+      }
 
       expectType(1, Uint8Array);
       expectType(0xff, Uint8Array);

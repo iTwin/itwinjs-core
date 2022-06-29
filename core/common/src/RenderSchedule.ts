@@ -201,8 +201,7 @@ export namespace RenderSchedule {
     }
 
     public compareTo(other: TimelineEntry): number {
-      let cmp = compareNumbers(this.interpolation, other.interpolation);
-      return cmp || compareNumbers(this.time, other.time);
+      return compareNumbers(this.interpolation, other.interpolation) || compareNumbers(this.time, other.time);
     }
 
     public equals(other: TimelineEntry): boolean {
@@ -234,7 +233,7 @@ export namespace RenderSchedule {
     }
 
     public override compareTo(other: VisibilityEntry): number {
-      assert(other instanceof VisibilityEntry)
+      assert(other instanceof VisibilityEntry);
       return super.compareTo(other) || compareNumbers(this.value, other.value);
     }
   }
@@ -336,7 +335,7 @@ export namespace RenderSchedule {
 
     public override compareTo(other: TransformEntry): number {
       assert(other instanceof TransformEntry);
-      let cmp = super.compareTo(other);
+      const cmp = super.compareTo(other);
       if (0 !== cmp)
         return cmp;
 

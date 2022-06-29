@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Constructor, Id64 } from "@itwin/core-bentley";
+import { assert, Constructor } from "@itwin/core-bentley";
 import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,

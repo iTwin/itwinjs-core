@@ -2326,7 +2326,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       isRedrawNeeded = true;
       const scheduleScript = view.displayStyle.scheduleScriptReference?.script;
       if (scheduleScript) {
-        target.animationBranches = AnimationBranchStates.fromScript(scheduleScript, this.timePoint ?? scheduleScript.duration.low)
+        target.animationBranches = AnimationBranchStates.fromScript(scheduleScript, this.timePoint ?? scheduleScript.duration.low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
 

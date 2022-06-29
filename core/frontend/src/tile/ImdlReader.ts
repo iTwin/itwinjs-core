@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
@@ -1281,7 +1281,7 @@ export class ImdlReader {
       return elementTimeline?.batchId ?? 0;
     }, timeline.maxBatchId);
 
-    let discreteNodeIds = timeline.discreteBatchIds;
+    const discreteNodeIds = timeline.discreteBatchIds;
     const computeNodeId: ComputeNodeId = (_id, featureIndex) => {
       const nodeId = featureTable.getAnimationNodeId(featureIndex);
       return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
@@ -1289,7 +1289,7 @@ export class ImdlReader {
 
     const splitArgs = {
       maxDimension: this._system.maxTextureSize,
-      computeNodeId: computeNodeId,
+      computeNodeId,
       featureTable,
     };
 
@@ -1346,7 +1346,7 @@ export class ImdlReader {
     }
 
     for (const branch of branchesByNodeId.values()) {
-      assert(!branch.isEmpty)
+      assert(!branch.isEmpty);
       output.push(this._system.createBranch(branch, Transform.createIdentity()));
     }
   }

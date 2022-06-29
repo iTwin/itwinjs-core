@@ -11,7 +11,7 @@ import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ElementLoadOptions, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";
-import { Viewport, } from "@itwin/core-frontend";
+import { Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";

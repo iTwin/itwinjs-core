@@ -69,7 +69,7 @@ export type XAndY = Readonly<WritableXAndY>;
 export type XYAndZ = Readonly<WritableXYAndZ>;
 
 /** @public */
-export namespace XYAndZ {
+export namespace XYAndZ { // eslint-disable-line no-redeclare
   /** Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
    * @param a The first XYAndZ to compare
    * @param b The second XYAndZ to compare
