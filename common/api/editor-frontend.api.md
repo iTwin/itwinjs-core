@@ -995,9 +995,10 @@ export class CreateSphereTool extends SolidPrimitiveTool {
 
 // @alpha
 export enum CreateTorusPhase {
-    AcceptAngle = 2,
+    AcceptAngle = 3,
     AcceptCenter = 1,
-    AcceptResult = 3,
+    AcceptResult = 4,
+    AcceptSecondaryRadius = 2,
     AcceptStart = 0
 }
 
