@@ -150,7 +150,7 @@ export class V2CheckpointManager {
           Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${rootDir} instead.`);
         }
       }
-      // small commit
+
       this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
 
       // Its fine if its not a daemon, but lets just log an info message
