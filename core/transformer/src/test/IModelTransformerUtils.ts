@@ -1364,3 +1364,13 @@ export class ClassCounter extends IModelExportHandler {
     super.onExportRelationship(relationship, isUpdate);
   }
 }
+
+/** In some cases during tests, you want to modify an existing immutable database, so you need to copy it which will change the id.
+ * Forcing the same id will prevent the transformer from detecting invalid provenance/provenance conflicts
+ */
+export function copyDbPreserveId(sourceDb: IModelDb, pathForCopy: string) {
+  const copy = SnapshotDb.createFrom(sourceDb, pathForCopy);
+  // eslint-disable-next-line @typescript-eslint/dot-notation
+  copy["_iModelId"] = sourceDb.iModelId;
+  return copy;
+}
