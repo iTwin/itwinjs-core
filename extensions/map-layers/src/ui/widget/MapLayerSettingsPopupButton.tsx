@@ -74,6 +74,7 @@ export function MapLayerSettingsPopupButton() {
         onClose={handleCloseSetting}
         target={buttonRef.current}
         onOutsideClick={handleOutsideClick}
+        repositionOnResize={true}
       >
         <div ref={panelRef} className="maplayers-settings-popup-panel">
           <MapManagerSettings />

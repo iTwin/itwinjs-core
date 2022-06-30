@@ -1523,6 +1523,8 @@ export interface PopupProps extends CommonProps {
     onOutsideClick?: (e: MouseEvent) => void;
     onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
+    // @beta
+    repositionOnResize?: boolean;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
     showShadow: boolean;

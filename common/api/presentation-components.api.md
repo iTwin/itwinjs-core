@@ -535,7 +535,7 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
 // @alpha (undocumented)
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
     // (undocumented)
-    nodeRenderer?: (props: TreeNodeRendererProps) => React_2.ReactNode;
+    onFilter?: (item: TreeNodeItem) => void;
 }
 
 // @alpha (undocumented)

@@ -154,6 +154,38 @@
         "LengthPoint": "Define length"
       }
     },
+    "CreateBox": {
+      "keyin": "editor create box",
+      "flyover": "Create Box",
+      "Label": {
+        "Length": "Length",
+        "Width": "Width",
+        "Height": "Height",
+        "Orthogonal": "Orthogonal",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "BasePoint": "Define corner of base",
+        "LengthPoint": "Define length",
+        "WidthPoint": "Define width",
+        "HeightPoint": "Define height"
+      }
+    },
+    "CreateTorus": {
+      "keyin": "editor create torus",
+      "flyover": "Create Torus",
+      "Label": {
+        "PrimaryRadius": "Primary Radius",
+        "SecondaryRadius": "Secondary Radius",
+        "Angle": "Angle",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "StartPoint": "Define start",
+        "CenterPoint": "Define center",
+        "AnglePoint": "Define angle and secondary radius"
+      }
+    },
     "OffsetCurve": {
       "keyin": "editor offset curve",
       "flyover": "Offset planar paths and regions",
