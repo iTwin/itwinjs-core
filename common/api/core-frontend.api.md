@@ -9567,22 +9567,6 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
-// @alpha
-export class ServiceExtensionProvider implements ExtensionProvider {
-    constructor(_props: ServiceExtensionProviderProps);
-    execute(): Promise<any>;
-    getManifest(): Promise<ExtensionManifest>;
-    }
-
-// @alpha
-export interface ServiceExtensionProviderProps {
-    // @internal (undocumented)
-    getAccessToken?: () => Promise<AccessToken>;
-    iTwinId?: string;
-    name: string;
-    version?: string;
-}
-
 // @public
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
