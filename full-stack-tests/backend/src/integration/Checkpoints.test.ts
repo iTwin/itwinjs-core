@@ -16,7 +16,7 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-describe.skip("Checkpoints", () => {
+describe("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
@@ -32,32 +32,30 @@ describe.skip("Checkpoints", () => {
   let testITwinId2: GuidString;
   let testChangeSet2: ChangesetProps;
 
-  const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
+  const cloudcacheDir = path.join(KnownTestLocations.outputDir, "cloudsqlite");
   let originalEnv: any;
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
     fs.chmodSync((CloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
     daemon = CloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
-    while (!IModelJsFs.existsSync(path.join(blockcacheDir, "portnumber.bcv"))) {
+    while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
   };
 
-  const shutdownDaemon = async (deleteDir: boolean) => {
-
+  const shutdownDaemon = async () => {
     if (daemon) {
       const onDaemonExit = new Promise((resolve) => daemon.once("exit", resolve));
       daemon.kill();
       await onDaemonExit;
     }
-    if (deleteDir)
-      fs.removeSync(blockcacheDir);
   };
 
   before(async () => {
     originalEnv = { ...process.env };
-    process.env.BLOCKCACHE_DIR = blockcacheDir;
+    process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
+    fs.rmSync(cloudcacheDir, { recursive: true, force: true });
 
     // Props for daemon
     accountProps = {
@@ -65,7 +63,7 @@ describe.skip("Checkpoints", () => {
       storageType: CloudSqliteTest.storage.storageType,
     };
     cacheProps = {
-      rootDir: blockcacheDir,
+      rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,
       cacheSize: "10G",
     };
@@ -99,9 +97,6 @@ describe.skip("Checkpoints", () => {
       },
     });
     assert.isDefined(checkpoint, "checkpoint missing");
-    // console.log(`checkpoint: ${JSON.stringify(checkpoint)}`);
-
-    await startDaemon();
 
     assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
     assert.isDefined(checkpoint?.sasToken, "checkpoint accessToken is invalid");
@@ -115,11 +110,9 @@ describe.skip("Checkpoints", () => {
 
   after(async () => {
     process.env = originalEnv;
-
-    await shutdownDaemon(true);
   });
-  it("should use fallback directory when blockcache_dir has no daemon in it", async () => {
-    await shutdownDaemon(true);
+
+  it("should use fallback directory when checkpoint_cache_dir has no daemon in it", async () => {
     const v2Manager = sinon.spy(V2CheckpointManager, "getFolder");
     const iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
@@ -129,22 +122,26 @@ describe.skip("Checkpoints", () => {
     });
     assert.isTrue(v2Manager.calledOnce);
     iModel.close();
-    await startDaemon();
   });
-  it("should fail to open v2 checkpoint when daemon no longer running in the directory", async () => {
-    await shutdownDaemon(false); // pass false, so old daemondir sticks around
-    await expect(SnapshotDb.openCheckpointV2({
-      accessToken,
-      iTwinId: testITwinId,
-      iModelId: testIModelId,
-      changeset: testChangeSet,
-    })).eventually.rejectedWith("Cannot create CloudCache: invalid cache directory or directory does not exist");
 
-    await startDaemon();
+  it("should fail to open v2 checkpoint with invalid daemon directory", async () => {
+    const portfile = path.join(cloudcacheDir, "portnumber.bcv");
+    fs.mkdirSync(cloudcacheDir);
+    fs.writeFileSync(portfile, "INVALID");
+
+    try {
+      await expect(SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      })).eventually.rejectedWith(/Cannot create CloudCache: invalid cache directory or directory does not exist/);
+    } finally {
+      fs.rmSync(portfile);
+    }
   });
 
   it("should be able to open and read V2 checkpoints without the daemon ", async () => {
-    await shutdownDaemon(true);
     let iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
@@ -209,75 +206,83 @@ describe.skip("Checkpoints", () => {
     iModel.close();
     iModel2.close();
     iModel3.close();
-
-    // start it back up for other tests
-    await startDaemon();
   });
-  it("should be able to open and read V2 checkpoint with daemon running", async () => {
-    let iModel = await SnapshotDb.openCheckpointV2({
-      accessToken,
-      iTwinId: testITwinId,
-      iModelId: testIModelId,
-      changeset: testChangeSet,
-    });
-    assert.equal(iModel.iModelId, testIModelId);
-    assert.equal(iModel.changeset.id, testChangeSet.id);
-    assert.equal(iModel.iTwinId, testITwinId);
-    assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
-    assert.equal(numModels, 32);
 
-    await iModel.refreshContainerSas(accessToken);
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
-    assert.equal(numModels, 32);
-
-    iModel.close();
-
-    iModel = await SnapshotDb.openCheckpointV2({
-      accessToken,
-      iTwinId: testITwinId,
-      iModelId: testIModelId,
-      changeset: testChangeSet,
-    });
-    assert.equal(iModel.iModelId, testIModelId);
-    assert.equal(iModel.changeset.id, testChangeSet.id);
-    assert.equal(iModel.iTwinId, testITwinId);
-    assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
-    assert.equal(numModels, 32);
-
-    // Open multiple imodels from same container
-    const iModel2 = await SnapshotDb.openCheckpointV2({
-      accessToken,
-      iTwinId: testITwinId,
-      iModelId: testIModelId,
-      changeset: testChangeSetFirstVersion,
-    });
-    assert.equal(iModel2.iModelId, testIModelId);
-    assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
-    assert.equal(iModel2.iTwinId, testITwinId);
-    assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
-    numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
-    assert.equal(numModels, 3);
-
-    // Open imodels across multiple containers
-    const iModel3 = await SnapshotDb.openCheckpointV2({
-      accessToken,
-      iTwinId: testITwinId2,
-      iModelId: testIModelId2,
-      changeset: testChangeSet2,
+  describe("with daemon", () => {
+    before(async () => {
+      await startDaemon();
     });
 
-    assert.equal(iModel3.iModelId, testIModelId2);
-    assert.equal(iModel3.changeset.id, testChangeSet2.id);
-    assert.equal(iModel3.iTwinId, testITwinId2);
-    assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
-    numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
-    assert.equal(numModels, 4);
+    after(async () => {
+      await shutdownDaemon();
+    });
 
-    iModel.close();
-    iModel2.close();
-    iModel3.close();
-  }).timeout(120000);
+    it("should be able to open and read V2 checkpoint with daemon running", async () => {
+      let iModel = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+      assert.equal(iModel.iModelId, testIModelId);
+      assert.equal(iModel.changeset.id, testChangeSet.id);
+      assert.equal(iModel.iTwinId, testITwinId);
+      assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+      let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      assert.equal(numModels, 32);
 
+      await iModel.refreshContainerSas(accessToken);
+      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      assert.equal(numModels, 32);
+
+      iModel.close();
+
+      iModel = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+      assert.equal(iModel.iModelId, testIModelId);
+      assert.equal(iModel.changeset.id, testChangeSet.id);
+      assert.equal(iModel.iTwinId, testITwinId);
+      assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
+      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      assert.equal(numModels, 32);
+
+      // Open multiple imodels from same container
+      const iModel2 = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSetFirstVersion,
+      });
+      assert.equal(iModel2.iModelId, testIModelId);
+      assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
+      assert.equal(iModel2.iTwinId, testITwinId);
+      assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
+      numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
+      assert.equal(numModels, 3);
+
+      // Open imodels across multiple containers
+      const iModel3 = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId2,
+        iModelId: testIModelId2,
+        changeset: testChangeSet2,
+      });
+
+      assert.equal(iModel3.iModelId, testIModelId2);
+      assert.equal(iModel3.changeset.id, testChangeSet2.id);
+      assert.equal(iModel3.iTwinId, testITwinId2);
+      assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
+      numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
+      assert.equal(numModels, 4);
+
+      iModel.close();
+      iModel2.close();
+      iModel3.close();
+    }).timeout(120000);
+
+  });
 });
