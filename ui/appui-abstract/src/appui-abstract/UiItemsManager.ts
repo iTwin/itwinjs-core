@@ -227,9 +227,9 @@ export class UiItemsManager {
       const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
       // istanbul ignore else
-      if (uiProvider.provideBackstageItems && this.allowItemsFromProvider(entry)) {
-        uiProvider.provideBackstageItems()
-          .forEach((item: BackstageItem) => {
+      if (uiProvider.provideBackstageItems) { // Note: We do not call this.allowItemsFromProvider here as backstage items
+        uiProvider.provideBackstageItems()    //       should not be considered stage specific. If they need to be hidden
+          .forEach((item: BackstageItem) => { //       the isHidden property should be set to a ConditionalBooleanValue
             // ignore duplicate ids
             if (-1 === backstageItems.findIndex((existingItem)=> item.id === existingItem.id ))
               backstageItems.push({ ...item, providerId });

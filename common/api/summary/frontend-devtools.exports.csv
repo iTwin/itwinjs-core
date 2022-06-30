@@ -70,6 +70,7 @@ beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
 beta;DumpPlanProjectionSettingsTool 
+beta;DumpSelectionSetTool 
 beta;EdgeDetectionEffect 
 beta;ElementIdFromSourceAspectIdTool 
 beta;EmbossEffect 
@@ -143,6 +144,7 @@ beta;class RenderTargetDebugControlToggleTool
 beta;class RenderTargetDebugControlTool 
 beta;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
+beta;ReverseScheduleScriptTool 
 beta;SaturationConfig 
 beta;SaturationEffect 
 beta;SaveRealityModelTool 
@@ -167,6 +169,7 @@ beta;SetRealityModelColorTool
 beta;SetRealityModelEmphasizedTool 
 beta;SetRealityModelLocateTool 
 beta;SetRealityModelTransparencyTool 
+beta;SetScheduleScriptTool 
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 

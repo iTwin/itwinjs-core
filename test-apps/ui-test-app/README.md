@@ -15,6 +15,12 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 
 Note: Before running `ui-test-app` for the first time, use the command `npm run build:ci` from the `ui-test-app` directory to ensure all assets are properly displayed when running locally.
 
+4. Build the application code using `buildapp` script (`build` is reserved for rush overall builds, we use a different script to build this application backend to reduce normal builds):
+
+    ```cmd
+    npm run buildapp
+    ```
+
 * To start the application in Electron, navigate to the root of ui-test-app, and use the command:
 
   ```cmd
