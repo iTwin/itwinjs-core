@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
   ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
@@ -35,8 +35,10 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
+import chaiSubset = require("chai-subset"); // can become a regular import when we start using esModuleInterop compiler flag in core/backend
 
 chai.use(chaiAsPromised);
+chai.use(chaiSubset);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -903,9 +905,9 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
-    sourceDb.elements.insertAspect({
+    const aspectProps = {
       classFullName: "ExtensiveTestScenario:SourceUniqueAspect",
-      element: new ElementOwnsUniqueAspect(physicalObjectId1),
+      element: new RelatedElement({id: physicalObjectId1, relClassName: ElementOwnsUniqueAspect.classFullName}),
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
@@ -915,16 +917,10 @@ export class ExtensiveTestScenario {
       sourceLong: physicalObjectId1,
       sourceGuid: ExtensiveTestScenario.uniqueAspectGuid,
       extraString: "Extra",
-    } as ElementAspectProps);
+    } as const;
+    sourceDb.elements.insertAspect(aspectProps);
     const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
-    assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
-    assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
-    assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
-    assert.equal(sourceUniqueAspect.asAny.sourceDouble, 11.1);
-    assert.equal(sourceUniqueAspect.asAny.sourceString, "UniqueAspect");
-    assert.equal(sourceUniqueAspect.asAny.sourceLong, physicalObjectId1);
-    assert.equal(sourceUniqueAspect.asAny.sourceGuid, ExtensiveTestScenario.uniqueAspectGuid);
-    assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
+    expect(sourceUniqueAspect).to.containSubset(omit(aspectProps, ["commonBinary"]));
     sourceDb.elements.insertAspect({
       classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),

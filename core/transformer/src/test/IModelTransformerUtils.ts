@@ -289,8 +289,8 @@ export async function assertIdentityTransformation(
           );
         } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
-          const _propEq = BackendTestUtils.deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
-          expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
+          const _propEq = BackendTestUtils.advancedDeepEqual(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          expect(targetElem.asAny[propName]).to.deep.advancedEqual(
             sourceElem.asAny[propName]
           );
         }
@@ -352,13 +352,13 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.advancedDeepEqual(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
       );
 
-      expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(
+      expect(targetElem.jsonProperties).to.deep.advancedEqual(
         expectedSourceElemJsonProps,
         { considerNonExistingAndUndefinedEqual: true }
       );
@@ -422,11 +422,11 @@ export async function assertIdentityTransformation(
       targetModelIds.add(targetModelId);
       targetToSourceModelsMap.set(targetModel, sourceModel);
       const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.advancedDeepEqual(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
       );
-      expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(
+      expect(targetModel.jsonProperties).to.deep.advancedEqual(
         expectedSourceModelJsonProps,
       );
     }
