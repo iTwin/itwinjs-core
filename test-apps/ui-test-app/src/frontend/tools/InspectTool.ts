@@ -58,7 +58,7 @@ export class InspectUiItemInfoTool extends PrimitiveTool {
         let out = "";
         const names = ["type", "id", "priority", "location", "group", "provider"];
         ["data-item-type", "data-item-id", "data-item-priority", "data-item-location",
-          "data-group-priority", "data-item-provider-id"].forEach((value, index) => {
+          "data-item-group-priority", "data-item-provider-id"].forEach((value, index) => {
           const attValue = item?.getAttribute(value);
           if (attValue)
             out += `${names[index]}: ${attValue}<br>`;
@@ -87,7 +87,7 @@ export class InspectUiItemInfoTool extends PrimitiveTool {
     return status;
   }
 
-  public override async exitTool() {
+  public async cleanup() {
     if (this._timerId) {
       window.clearTimeout(this._timerId);
       this._timerId = undefined;
@@ -95,7 +95,16 @@ export class InspectUiItemInfoTool extends PrimitiveTool {
     window.removeEventListener("mousemove", this._mouseMove);
 
     // eslint-disable-next-line no-console
-    console.log("tool exit");
+    console.log("inspect listener removed");
+  }
+
+  public override async onCleanup() {
+    await super.onCleanup();
+    await this.cleanup();
+  }
+
+  public override async exitTool() {
+    await this.cleanup();
     return IModelApp.toolAdmin.startDefaultTool();
   }
 
