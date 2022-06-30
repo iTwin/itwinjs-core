@@ -2018,10 +2018,15 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
+    // (undocumented)
     ao?: AmbientOcclusion.Props;
+    // (undocumented)
     environment?: EnvironmentProps;
+    // (undocumented)
     hline?: HiddenLine.SettingsProps;
+    // (undocumented)
     lights?: LightSettingsProps;
+    // (undocumented)
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
@@ -2029,7 +2034,9 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     sceneLights?: {
         sunDir?: XYZProps;
     };
+    // (undocumented)
     solarShadows?: SolarShadowSettingsProps;
+    // (undocumented)
     thematic?: ThematicDisplayProps;
 }
 
@@ -2163,24 +2170,36 @@ export interface DisplayStyleSettingsOptions {
 
 // @public
 export interface DisplayStyleSettingsProps {
+    // (undocumented)
     analysisFraction?: number;
+    // (undocumented)
     analysisStyle?: AnalysisStyleProps;
+    // (undocumented)
     backgroundColor?: ColorDefProps;
+    // (undocumented)
     backgroundMap?: PersistentBackgroundMapProps;
+    // (undocumented)
     clipStyle?: ClipStyleProps;
     // (undocumented)
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
-    // @beta
+    // @beta (undocumented)
     mapImagery?: MapImageryProps;
     modelOvr?: DisplayStyleModelAppearanceProps[];
+    // (undocumented)
     monochromeColor?: ColorDefProps;
+    // (undocumented)
     monochromeMode?: MonochromeMode;
+    // (undocumented)
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
+    // (undocumented)
     renderTimeline?: Id64String;
+    // (undocumented)
     scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
+    // (undocumented)
     timePoint?: number;
+    // (undocumented)
     viewflags?: ViewFlagProps;
     // (undocumented)
     whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
