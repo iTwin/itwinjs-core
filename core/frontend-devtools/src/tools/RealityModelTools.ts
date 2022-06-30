@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ContextRealityModelProps, FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
-import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, RealityDataSource, Tool, Viewport } from "@itwin/core-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
+import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
