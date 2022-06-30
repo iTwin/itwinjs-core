@@ -276,9 +276,17 @@ export class AttachCesiumAssetTool extends Tool {
     if (vp === undefined)
       return false;
 
+    // attach using getCesiumAssetUrl
     const accessKey = requestKey ? requestKey : IModelApp.tileAdmin.cesiumIonKey ? IModelApp.tileAdmin.cesiumIonKey : "";
-    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(assetId, accessKey);
-    const props: ContextRealityModelProps = { rdSourceKey, tilesetUrl: getCesiumAssetUrl(assetId, accessKey) };
+    const props = {
+      tilesetUrl: getCesiumAssetUrl(
+        assetId,
+        accessKey
+      ),
+    };
+    // Alternative new way to attach using rdSourceKey
+    // const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(assetId, accessKey);
+    // const props: ContextRealityModelProps = { rdSourceKey, tilesetUrl: getCesiumAssetUrl(assetId, accessKey) };
 
     vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
