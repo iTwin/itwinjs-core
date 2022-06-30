@@ -1180,7 +1180,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
      * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.
      * If false, the schedule script must be stored in the iModel and special tiles must be requested from the backend to align with the script's animation nodes.
-     * Default value: true.
+     * Default value: false.
      * @public
      */
     enableFrontendScheduleScripts?: boolean;
