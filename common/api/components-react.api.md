@@ -4054,7 +4054,7 @@ export const TreeNodeRenderer: React_2.MemoExoticComponent<(props: TreeNodeRende
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
     checkboxRenderer?: NodeCheckboxRenderer;
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
