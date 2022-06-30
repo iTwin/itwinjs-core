@@ -35,10 +35,8 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import chaiSubset = require("chai-subset"); // can become a regular import when we start using esModuleInterop compiler flag in core/backend
 
 chai.use(chaiAsPromised);
-chai.use(chaiSubset);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -907,7 +905,7 @@ export class ExtensiveTestScenario {
     // Insert ElementAspects
     const aspectProps = {
       classFullName: "ExtensiveTestScenario:SourceUniqueAspect",
-      element: new RelatedElement({id: physicalObjectId1, relClassName: ElementOwnsUniqueAspect.classFullName}),
+      element: new ElementOwnsUniqueAspect(physicalObjectId1),
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
@@ -920,7 +918,7 @@ export class ExtensiveTestScenario {
     } as const;
     sourceDb.elements.insertAspect(aspectProps);
     const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
-    expect(sourceUniqueAspect).to.containSubset(omit(aspectProps, ["commonBinary"]));
+    expect(sourceUniqueAspect).to.deep.subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
     sourceDb.elements.insertAspect({
       classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),

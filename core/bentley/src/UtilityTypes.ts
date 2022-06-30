@@ -121,3 +121,16 @@ type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
 type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
+
+/** A runtime property omitter, removing properties in a given list from a given object.
+ * Compatible with the typescript `Omit` mapped type:
+ * ```js
+ * const testvar: Omit<{x: string, y: object}, "y"> = omit({x: "hello", y: {}}, ["y"]);
+ * ```
+ * @public
+ */
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+  const clone = { ...t };
+  for (const key of keys) delete clone[key];
+  return clone;
+}
