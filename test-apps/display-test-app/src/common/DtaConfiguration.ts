@@ -22,6 +22,7 @@ export interface DtaConfiguration {
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
   enableExternalTextures?: boolean; // default true
+  enableFrontendScheduleScripts?: boolean; // default true
   disableMagnification?: boolean;
   disableBRepCache?: boolean; // default true
   preserveShaderSourceCode?: boolean;
@@ -102,6 +103,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_NO_EXTERNAL_TEXTURES)
     configuration.enableExternalTextures = false;
+
+  if (undefined !== process.env.IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS)
+    configuration.enableFrontendScheduleScripts = false;
 
   if (undefined !== process.env.IMJS_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
