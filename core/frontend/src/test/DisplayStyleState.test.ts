@@ -183,9 +183,6 @@ describe("DisplayStyleState", () => {
         expectPayloads();
       }
 
-      style.settings.scheduleScriptProps = script1;
-      pushExpected();
-
       await style.changeRenderTimeline("0x1");
       pushExpected();
 
@@ -204,10 +201,14 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).to.be.false;
       expectPayloads();
 
-      style.settings.renderTimeline = undefined;
+      style.settings.scheduleScriptProps = script1;
       pushExpected();
 
-      style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+      style.settings.scheduleScriptProps = undefined;
+      await style.finishLoading();
+      pushExpected();
+
+      style.settings.renderTimeline = undefined;
       pushExpected(false);
     });
 
