@@ -17,34 +17,9 @@ Included in this package are:
 
 ## Development Setup
 
-1. The test application ui-test-app serves as the default an iTwin.js host application and is already set up to take a dependency on this package.
+1. The test applications appui-standalone-app and appui-connected-app serves as the default an iTwin.js host applications and is already set up to take a dependency on this package.
 
-2. The dependencies are installed as part of "rush install" in the iTwin.js repository.
-
-3. Build the package as part of the "rush build" in the iTwin.js repository, or separately build using the npm build command.
-
-  ```sh
-  npm run build
-  ```
-
-4. Once the package is built, change to the directory `ui-test-app` and build that application.
-
-  ```sh
-  npm run build
-  ```
-
-5. Start the ui-test-app
-
-  ```sh
-  npm run start:servers
-  ```
-
-6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
-
-7. Use key-in palette to load the activate/initialize the appui-test-providers. Once loaded, buttons and a status bar item are added to the current stage and new stage entries are inserted into the backstage menu.
-
-- press `Ctrl+F2`
-- enter `load test provider`
+2. Start either appui-standalone-app or appui-connected-app to see the items and stages provided by this package.
 
 ## Contributing
 

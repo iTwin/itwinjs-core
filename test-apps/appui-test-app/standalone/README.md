@@ -16,7 +16,7 @@ The application may be run as an Electron app, Mobile app or within a browser. T
     npm run buildapp
     ```
 
-* To start the application in Electron, navigate to the root of appui-standalone-app, and use the command:
+* To start the application in Electron, navigate to the `standalone` directory under appui-test-app, and use the command:
 
   ```cmd
   npm run start

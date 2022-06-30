@@ -17,7 +17,7 @@ The application may be run as an Electron app, Mobile app or within a browser. T
     npm run buildapp
     ```
 
-* To start the application in Electron, navigate to the root of ui-test-app, and use the command:
+* To start the application in Electron, navigate to the `connected` directory under appui-test-app, and use the command:
 
   ```cmd
   npm run start
@@ -33,8 +33,8 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 
 ## Dependencies
 
-* Installed dependencies for ui-test-app may be found in the generated node_modules directory. Since ui-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
-* Any changes made to itwinjs-core files outside of this directory will not immediately be reflected in ui-test-app. The entire itwinjs-core monorepo must be rebuilt in order for changes to take effect.
+* Installed dependencies for appui-connected-app may be found in the generated node_modules directory. Since appui-connected-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
+* Any changes made to itwinjs-core files outside of this directory will not immediately be reflected in appui-connected-app. The entire itwinjs-core monorepo must be rebuilt in order for changes to take effect.
 * If dependencies have changed after pulling the most recent version of itwinjs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
 
 ```cmd
