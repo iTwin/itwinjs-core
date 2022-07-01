@@ -553,8 +553,6 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;ServiceExtensionProvider 
-alpha;ServiceExtensionProviderProps
 public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
