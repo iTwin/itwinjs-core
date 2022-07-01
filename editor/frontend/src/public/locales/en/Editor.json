@@ -183,7 +183,8 @@
       "Prompts": {
         "StartPoint": "Define start",
         "CenterPoint": "Define center",
-        "AnglePoint": "Define angle and secondary radius"
+        "SecondaryRadiusPoint": "Define secondary radius",
+        "AnglePoint": "Define angle"
       }
     },
     "OffsetCurve": {

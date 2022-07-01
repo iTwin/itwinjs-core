@@ -2650,6 +2650,417 @@ importers:
     devDependencies:
       cpx2: 3.0.2
 
+  ../../test-apps/appui-test-app/appui-test-providers:
+    specifiers:
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
+      '@itwin/build-tools': workspace:*
+      '@itwin/components-react': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/core-quantity': workspace:*
+      '@itwin/core-react': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-react': ^1.38.1
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@reduxjs/toolkit': ^1.5.0
+      '@types/react': ^17.0.37
+      '@types/react-redux': ^7.1.18
+      '@types/react-select': 3.0.26
+      classnames: ^2.3.1
+      cpx2: ^3.0.0
+      eslint: ^7.11.0
+      react: ^17.0.0
+      react-dom: ^17.0.0
+      react-redux: ^7.2.2
+      react-select: 3.2.0
+      rimraf: ^3.0.2
+      typescript: ~4.4.0
+    dependencies:
+      '@itwin/appui-abstract': link:../../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../../ui/appui-react
+      '@itwin/components-react': link:../../../ui/components-react
+      '@itwin/core-bentley': link:../../../core/bentley
+      '@itwin/core-common': link:../../../core/common
+      '@itwin/core-frontend': link:../../../core/frontend
+      '@itwin/core-geometry': link:../../../core/geometry
+      '@itwin/core-quantity': link:../../../core/quantity
+      '@itwin/core-react': link:../../../ui/core-react
+      '@itwin/itwinui-css': 0.60.0
+      '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/presentation-common': link:../../../presentation/common
+      '@itwin/presentation-components': link:../../../presentation/components
+      '@itwin/presentation-frontend': link:../../../presentation/frontend
+      '@reduxjs/toolkit': 1.8.2_react-redux@7.2.8+react@17.0.2
+      classnames: 2.3.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
+    devDependencies:
+      '@itwin/build-tools': link:../../../tools/build
+      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
+      '@types/react': 17.0.47
+      '@types/react-redux': 7.1.24
+      '@types/react-select': 3.0.26
+      cpx2: 3.0.2
+      eslint: 7.32.0
+      rimraf: 3.0.2
+      typescript: 4.4.4
+
+  ../../test-apps/appui-test-app/connected:
+    specifiers:
+      '@axe-core/react': 4.3.1
+      '@bentley/icons-generic': ^1.0.15
+      '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/react-scripts': 5.0.0-dev.4
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
+      '@itwin/appui-test-providers': workspace:*
+      '@itwin/browser-authorization': ^0.5.1
+      '@itwin/build-tools': workspace:*
+      '@itwin/components-react': workspace:*
+      '@itwin/core-backend': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-electron': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/core-markup': workspace:*
+      '@itwin/core-mobile': workspace:*
+      '@itwin/core-quantity': workspace:*
+      '@itwin/core-react': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
+      '@itwin/editor-backend': workspace:*
+      '@itwin/editor-common': workspace:*
+      '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-authorization': ^0.8.3
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/express-server': workspace:*
+      '@itwin/frontend-devtools': workspace:*
+      '@itwin/hypermodeling-frontend': workspace:*
+      '@itwin/imodel-browser-react': 0.12.2
+      '@itwin/imodel-components-react': workspace:*
+      '@itwin/imodels-access-backend': ^1.0.1
+      '@itwin/imodels-access-frontend': ^1.0.1
+      '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-react': ^1.38.1
+      '@itwin/map-layers': workspace:*
+      '@itwin/map-layers-auth': workspace:*
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@itwin/projects-client': ^0.6.0
+      '@itwin/reality-data-client': 0.7.0
+      '@types/lorem-ipsum': ^1.0.2
+      '@types/node': 16.11.7
+      '@types/react': ^17.0.37
+      '@types/react-dom': ^17.0.0
+      '@types/react-redux': ^7.1.18
+      '@types/react-router-dom': ^5.1.7
+      '@types/react-select': 3.0.26
+      '@types/react-table': ^7.0.18
+      '@types/semver': ^7.3.9
+      classnames: ^2.3.1
+      cpx2: ^3.0.0
+      cross-env: ^5.1.4
+      dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
+      electron: ^14.0.0
+      eslint: ^7.11.0
+      fs-extra: ^8.1.0
+      internal-tools: workspace:*
+      lorem-ipsum: ^2.0.3
+      npm-run-all: ^4.1.5
+      null-loader: ^0.1.1
+      react: ^17.0.0
+      react-beautiful-dnd: ^13.0.0
+      react-dom: ^17.0.0
+      react-redux: ^7.2.2
+      react-resize-detector: ^6.7.6
+      react-router-dom: ^5.2.0
+      react-select: 3.2.0
+      react-table: ^7.1.0
+      redux: ^4.1.0
+      rimraf: ^3.0.2
+      semver: ^7.3.5
+      typescript: ~4.4.0
+      webpack: 4.42.0
+    dependencies:
+      '@bentley/icons-generic': 1.0.34
+      '@bentley/icons-generic-webfont': 1.0.34
+      '@itwin/appui-abstract': link:../../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../../ui/appui-react
+      '@itwin/appui-test-providers': link:../appui-test-providers
+      '@itwin/browser-authorization': 0.5.1
+      '@itwin/components-react': link:../../../ui/components-react
+      '@itwin/core-backend': link:../../../core/backend
+      '@itwin/core-bentley': link:../../../core/bentley
+      '@itwin/core-common': link:../../../core/common
+      '@itwin/core-electron': link:../../../core/electron
+      '@itwin/core-frontend': link:../../../core/frontend
+      '@itwin/core-geometry': link:../../../core/geometry
+      '@itwin/core-markup': link:../../../core/markup
+      '@itwin/core-mobile': link:../../../core/mobile
+      '@itwin/core-quantity': link:../../../core/quantity
+      '@itwin/core-react': link:../../../ui/core-react
+      '@itwin/ecschema-metadata': link:../../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../../core/ecschema-rpc/impl
+      '@itwin/editor-backend': link:../../../editor/backend
+      '@itwin/editor-common': link:../../../editor/common
+      '@itwin/editor-frontend': link:../../../editor/frontend
+      '@itwin/electron-authorization': 0.8.4
+      '@itwin/express-server': link:../../../core/express-server
+      '@itwin/frontend-devtools': link:../../../core/frontend-devtools
+      '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
+      '@itwin/imodel-browser-react': 0.12.2_react-dom@17.0.2+react@17.0.2
+      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
+      '@itwin/imodels-access-backend': 1.0.2
+      '@itwin/imodels-access-frontend': 1.0.2
+      '@itwin/imodels-client-authoring': 1.1.0
+      '@itwin/imodels-client-management': 1.1.0
+      '@itwin/itwinui-css': 0.60.0
+      '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/map-layers': link:../../../extensions/map-layers
+      '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
+      '@itwin/presentation-backend': link:../../../presentation/backend
+      '@itwin/presentation-common': link:../../../presentation/common
+      '@itwin/presentation-components': link:../../../presentation/components
+      '@itwin/presentation-frontend': link:../../../presentation/frontend
+      '@itwin/reality-data-client': 0.7.0
+      classnames: 2.3.1
+      lorem-ipsum: 2.0.8
+      react: 17.0.2
+      react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
+      react-router-dom: 5.3.3_react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
+      react-table: 7.8.0_react@17.0.2
+      redux: 4.2.0
+      semver: 7.3.7
+    devDependencies:
+      '@axe-core/react': 4.3.1
+      '@bentley/react-scripts': 5.0.0-dev.4_react@17.0.2+typescript@4.4.4
+      '@itwin/build-tools': link:../../../tools/build
+      '@itwin/core-webpack-tools': link:../../../tools/webpack-core
+      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
+      '@itwin/projects-client': 0.6.0
+      '@types/lorem-ipsum': 1.0.2
+      '@types/node': 16.11.7
+      '@types/react': 17.0.47
+      '@types/react-dom': 17.0.17
+      '@types/react-redux': 7.1.24
+      '@types/react-router-dom': 5.3.3
+      '@types/react-select': 3.0.26
+      '@types/react-table': 7.7.12
+      '@types/semver': 7.3.10
+      cpx2: 3.0.2
+      cross-env: 5.2.1
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      electron: 14.2.9
+      eslint: 7.32.0
+      fs-extra: 8.1.0
+      internal-tools: link:../../../tools/internal
+      npm-run-all: 4.1.5
+      null-loader: 0.1.1
+      rimraf: 3.0.2
+      typescript: 4.4.4
+      webpack: 4.42.0
+
+  ../../test-apps/appui-test-app/standalone:
+    specifiers:
+      '@axe-core/react': 4.3.1
+      '@bentley/icons-generic': ^1.0.15
+      '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/react-scripts': 5.0.0-dev.4
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
+      '@itwin/appui-test-providers': workspace:*
+      '@itwin/browser-authorization': ^0.5.1
+      '@itwin/build-tools': workspace:*
+      '@itwin/components-react': workspace:*
+      '@itwin/core-backend': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-electron': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/core-markup': workspace:*
+      '@itwin/core-mobile': workspace:*
+      '@itwin/core-quantity': workspace:*
+      '@itwin/core-react': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
+      '@itwin/editor-backend': workspace:*
+      '@itwin/editor-common': workspace:*
+      '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-authorization': ^0.8.3
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/express-server': workspace:*
+      '@itwin/frontend-devtools': workspace:*
+      '@itwin/hypermodeling-frontend': workspace:*
+      '@itwin/imodel-components-react': workspace:*
+      '@itwin/imodels-access-backend': ^1.0.1
+      '@itwin/imodels-access-frontend': ^1.0.1
+      '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons-react': ^1.8.0
+      '@itwin/itwinui-react': ^1.38.1
+      '@itwin/map-layers': workspace:*
+      '@itwin/map-layers-auth': workspace:*
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@itwin/projects-client': ^0.6.0
+      '@itwin/reality-data-client': 0.7.0
+      '@types/lorem-ipsum': ^1.0.2
+      '@types/node': 16.11.7
+      '@types/react': ^17.0.37
+      '@types/react-dom': ^17.0.0
+      '@types/react-redux': ^7.1.18
+      '@types/react-router-dom': ^5.1.7
+      '@types/react-select': 3.0.26
+      '@types/react-table': ^7.0.18
+      '@types/semver': ^7.3.9
+      classnames: ^2.3.1
+      cpx2: ^3.0.0
+      cross-env: ^5.1.4
+      dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
+      electron: ^14.0.0
+      eslint: ^7.11.0
+      fs-extra: ^8.1.0
+      internal-tools: workspace:*
+      lorem-ipsum: ^2.0.3
+      npm-run-all: ^4.1.5
+      null-loader: ^0.1.1
+      react: ^17.0.0
+      react-beautiful-dnd: ^13.0.0
+      react-dom: ^17.0.0
+      react-redux: ^7.2.2
+      react-resize-detector: ^6.7.6
+      react-router-dom: ^5.2.0
+      react-select: 3.2.0
+      react-table: ^7.1.0
+      redux: ^4.1.0
+      rimraf: ^3.0.2
+      semver: ^7.3.5
+      typescript: ~4.4.0
+      webpack: 4.42.0
+    dependencies:
+      '@bentley/icons-generic': 1.0.34
+      '@bentley/icons-generic-webfont': 1.0.34
+      '@itwin/appui-abstract': link:../../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../../ui/appui-react
+      '@itwin/appui-test-providers': link:../appui-test-providers
+      '@itwin/browser-authorization': 0.5.1
+      '@itwin/components-react': link:../../../ui/components-react
+      '@itwin/core-backend': link:../../../core/backend
+      '@itwin/core-bentley': link:../../../core/bentley
+      '@itwin/core-common': link:../../../core/common
+      '@itwin/core-electron': link:../../../core/electron
+      '@itwin/core-frontend': link:../../../core/frontend
+      '@itwin/core-geometry': link:../../../core/geometry
+      '@itwin/core-markup': link:../../../core/markup
+      '@itwin/core-mobile': link:../../../core/mobile
+      '@itwin/core-quantity': link:../../../core/quantity
+      '@itwin/core-react': link:../../../ui/core-react
+      '@itwin/ecschema-metadata': link:../../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../../core/ecschema-rpc/impl
+      '@itwin/editor-backend': link:../../../editor/backend
+      '@itwin/editor-common': link:../../../editor/common
+      '@itwin/editor-frontend': link:../../../editor/frontend
+      '@itwin/electron-authorization': 0.8.4
+      '@itwin/express-server': link:../../../core/express-server
+      '@itwin/frontend-devtools': link:../../../core/frontend-devtools
+      '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
+      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
+      '@itwin/imodels-access-backend': 1.0.2
+      '@itwin/imodels-access-frontend': 1.0.2
+      '@itwin/imodels-client-authoring': 1.1.0
+      '@itwin/imodels-client-management': 1.1.0
+      '@itwin/itwinui-css': 0.60.0
+      '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/map-layers': link:../../../extensions/map-layers
+      '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
+      '@itwin/presentation-backend': link:../../../presentation/backend
+      '@itwin/presentation-common': link:../../../presentation/common
+      '@itwin/presentation-components': link:../../../presentation/components
+      '@itwin/presentation-frontend': link:../../../presentation/frontend
+      '@itwin/reality-data-client': 0.7.0
+      classnames: 2.3.1
+      lorem-ipsum: 2.0.8
+      react: 17.0.2
+      react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
+      react-router-dom: 5.3.3_react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
+      react-table: 7.8.0_react@17.0.2
+      redux: 4.2.0
+      semver: 7.3.7
+    devDependencies:
+      '@axe-core/react': 4.3.1
+      '@bentley/react-scripts': 5.0.0-dev.4_react@17.0.2+typescript@4.4.4
+      '@itwin/build-tools': link:../../../tools/build
+      '@itwin/core-webpack-tools': link:../../../tools/webpack-core
+      '@itwin/eslint-plugin': link:../../../tools/eslint-plugin
+      '@itwin/projects-client': 0.6.0
+      '@types/lorem-ipsum': 1.0.2
+      '@types/node': 16.11.7
+      '@types/react': 17.0.47
+      '@types/react-dom': 17.0.17
+      '@types/react-redux': 7.1.24
+      '@types/react-router-dom': 5.3.3
+      '@types/react-select': 3.0.26
+      '@types/react-table': 7.7.12
+      '@types/semver': 7.3.10
+      cpx2: 3.0.2
+      cross-env: 5.2.1
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      electron: 14.2.9
+      eslint: 7.32.0
+      fs-extra: 8.1.0
+      internal-tools: link:../../../tools/internal
+      npm-run-all: 4.1.5
+      null-loader: 0.1.1
+      rimraf: 3.0.2
+      typescript: 4.4.4
+      webpack: 4.42.0
+
   ../../test-apps/display-performance-test-app:
     specifiers:
       '@bentley/react-scripts': 5.0.0-dev.4
@@ -6808,6 +7219,20 @@ packages:
       - debug
     dev: false
 
+  /@itwin/imodel-browser-react/0.12.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-iHdwpBsHPQHbl58k2z85UAUoKrF4qbXBsYHVMVZL0lQUeZSA20j3HsBGt++uxlUBT87j7OKXfHtFv4Wwuhj0wA==}
+    peerDependencies:
+      react: ^16.13.0 || ^17.0.2
+      react-dom: ^16.13.0 || ^17.0.2
+    dependencies:
+      '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      classnames: 2.3.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-intersection-observer: 8.34.0_react@17.0.2
+    dev: false
+
   /@itwin/imodels-access-backend/1.0.2:
     resolution: {integrity: sha512-pEP+Sycbw7kFyRuMn1ia8E6Qcw/aIWjP8LWRKj4bPCeIOrL+FCqOl5dhsCHGAJltlA0QIavKxgm7jzBRUZfNWA==}
     dependencies:
@@ -7960,7 +8385,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 14.14.31
+      '@types/node': 16.11.7
     dev: false
 
   /@types/debug/4.1.7:
@@ -8203,10 +8628,6 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
-    dev: false
-
-  /@types/node/14.14.31:
-    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.21:
@@ -19285,6 +19706,14 @@ packages:
       react: ^16.3.0 || ^17.0.0
     dependencies:
       prop-types: 15.8.1
+      react: 17.0.2
+    dev: false
+
+  /react-intersection-observer/8.34.0_react@17.0.2:
+    resolution: {integrity: sha512-TYKh52Zc0Uptp5/b4N91XydfSGKubEhgZRtcg1rhTKABXijc4Sdr1uTp5lJ8TN27jwUsdXxjHXtHa0kPj704sw==}
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0|| ^18.0.0
+    dependencies:
       react: 17.0.2
     dev: false
 

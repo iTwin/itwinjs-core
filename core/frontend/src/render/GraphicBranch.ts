@@ -6,6 +6,19 @@
  * @module Rendering
  */
 
+import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
+import {
+  FeatureAppearanceProvider, HiddenLine, RenderSchedule, ViewFlagOverrides, ViewFlags,
+} from "@itwin/core-common";
+import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
+import { FeatureSymbology } from "./FeatureSymbology";
+import { RenderClipVolume } from "./RenderClipVolume";
+import { RenderGraphic } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderTextureDrape } from "./RenderSystem";
+
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
  * @internal
  */
@@ -16,16 +29,6 @@ export interface GraphicBranchFrustum {
     y: number;
   };
 }
-
-import { disposeArray, IDisposable } from "@itwin/core-bentley";
-import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { FeatureSymbology } from "./FeatureSymbology";
-import { RenderClipVolume } from "./RenderClipVolume";
-import { RenderGraphic } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { RenderTextureDrape } from "./RenderSystem";
 
 /** Special values of [[GraphicBranch.animationNodeId]].
  * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.
@@ -147,6 +150,21 @@ export interface AnimationBranchState {
   readonly omit?: boolean;
 }
 
+/** @internal */
+export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
+  if (branchId < 0)
+    return modelId;
+
+  return `${modelId}_Node_${branchId.toString()}`;
+}
+
+function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: Map<string, AnimationBranchState>, time: number): void {
+  const clipVector = timeline.getClipVector(time);
+  const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
+  if (clip)
+    branches.set(formatAnimationBranchId(modelId, branchId), { clip });
+}
+
 /** Mapping from node/branch IDs to animation branch state
  * @internal
  */
@@ -155,4 +173,28 @@ export interface AnimationBranchStates {
   readonly branchStates: Map<string, AnimationBranchState>;
   /** Ids of nodes that apply a transform. */
   readonly transformNodeIds: ReadonlySet<number>;
+}
+
+/** @internal */
+export namespace AnimationBranchStates {
+  export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined {
+    if (!script.containsModelClipping && !script.requiresBatching)
+      return undefined;
+
+    const branches = new Map<string, AnimationBranchState>();
+    for (const model of script.modelTimelines) {
+      addAnimationBranch(model.modelId, model, -1, branches, time);
+      for (const elem of model.elementTimelines) {
+        if (elem.getVisibility(time) <= 0)
+          branches.set(formatAnimationBranchId(model.modelId, elem.batchId), { omit: true });
+        else
+          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
+      }
+    }
+
+    return {
+      branchStates: branches,
+      transformNodeIds: script.transformBatchIds,
+    };
+  }
 }
