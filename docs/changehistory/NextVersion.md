@@ -5,7 +5,33 @@ publish: false
 
 Table of contents:
 
+- [Display system](#display-system)
+  - [Dynamic schedule scripts](#dynamic-schedule-scripts)
 - [Deprecations](#deprecations)
+
+## Display system
+
+### Dynamic schedule scripts
+
+[Timeline animation](../learning/display/TimelineAnimation.md) enables the visualization of change within an iModel over a period of time. This can be a valuable tool for, among other things, animating the contents of a viewport to show the progress of an asset through the phases of its construction. However, one constraint has always limited the utility of this feature: the instructions for animating the view were required to be stored on a persistent element - either a [DisplayStyle]($backend) or a [RenderTimeline]($backend) - in the [IModel]($common).
+
+That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
+
+```ts
+   await IModelApp.startup({
+     tileAdmin: {
+      enableFrontendScheduleScripts: true,
+    },
+  });
+```
+
+Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
+
+```ts
+  function updateScheduleScript(viewport: Viewport, props: RenderSchedule.ScriptProps): void {
+    viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+  }
+```
 
 ## Deprecations
 
