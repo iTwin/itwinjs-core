@@ -1019,6 +1019,16 @@ export class TestIModelTransformer extends IModelTransformer {
     }
     return targetRelationshipProps;
   }
+
+  public exportedAspectIdsByElement = new Map<Id64String, Id64String[]>();
+
+  public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
+    const elementId = sourceAspects[0].element.id;
+    assert(!this.exportedAspectIdsByElement.has(elementId), "tried to export element multi aspects for an element more than once");
+    const sourceIds = sourceAspects.map((sourceAspect) => sourceAspect.id);
+    this.exportedAspectIdsByElement.set(elementId, sourceIds);
+    return super.onExportElementMultiAspects(sourceAspects);
+  }
 }
 
 /** a transformer which will throw an error if a given array of element ids are exported out of that list's order, or not at all*/
@@ -1174,6 +1184,21 @@ export class RecordingIModelImporter extends CountingIModelImporter {
       physicalElement: { id: physicalElement.id },
     };
     return this.targetDb.elements.insertElement(auditRecord);
+  }
+}
+
+/** In addition to recording transformation processes with information record elements, also collects
+ * test-specific data for tests to analyze.
+ */
+export class TestIModelImporter extends RecordingIModelImporter {
+  public importedAspectIdsByElement = new Map<Id64String, Id64String[]>();
+  public override importElementMultiAspects(...args: Parameters<IModelImporter["importElementMultiAspects"]>) {
+    const resultTargetIds = super.importElementMultiAspects(...args);
+    const [aspectsProps] = args;
+    const elementId = aspectsProps[0].element.id;
+    assert(!this.importedAspectIdsByElement.has(elementId), "should only export multiaspects for an element once");
+    this.importedAspectIdsByElement.set(elementId, resultTargetIds);
+    return resultTargetIds;
   }
 }
 

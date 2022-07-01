@@ -27,7 +27,7 @@ import {
   assertIdentityTransformation,
   AssertOrderTransformer,
   ClassCounter, copyDbPreserveId, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  RecordingIModelImporter, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -60,7 +60,7 @@ describe("IModelTransformer", () => {
       targetDb: IModelDb;
       updatedSourceDb: IModelDb;
       transformer: TestIModelTransformer;
-      importer: RecordingIModelImporter;
+      importer: TestIModelImporter;
     }>;
 
     public static get extensiveTestScenario() {
@@ -85,7 +85,7 @@ describe("IModelTransformer", () => {
           assert.isAtLeast(numSourceMultiAspects, 1);
           assert.isAtLeast(numSourceRelationships, 1);
 
-          const importer = new RecordingIModelImporter(targetDb);
+          const importer = new TestIModelImporter(targetDb);
           const transformer = new TestIModelTransformer(sourceDb, importer);
           assert(transformer.context.isBetweenIModels);
           await transformer.processAll();
@@ -118,7 +118,7 @@ describe("IModelTransformer", () => {
     await ReusableSnapshots.closeEntries();
   });
 
-  it.only("should transform changes from source to target", async () => {
+  it("should transform changes from source to target", async () => {
     const extensiveTestScenario = await ReusableSnapshots.extensiveTestScenario;
 
     // have to copy since this test will mutate these
@@ -1889,6 +1889,31 @@ describe("IModelTransformer", () => {
 
     sourceDb.close();
     targetDb.close();
+  });
+
+  it.only("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
+    // TODO: choose a reusable scenario with more aspects
+    // confirm the assumption that there are multiple aspect classes
+    const { sourceDb, targetDb, importer, transformer } = await ReusableSnapshots.extensiveTestScenario;
+    const physicalObj1InSourceId = IModelTransformerTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
+    const physicalObj1InTargetId = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    assert(physicalObj1InSourceId !== Id64.invalid);
+    assert(physicalObj1InTargetId !== Id64.invalid);
+
+    const exportedAspectSourceIds = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
+    const importedAspectTargetIds = importer.importedAspectIdsByElement.get(physicalObj1InTargetId);
+    assert(exportedAspectSourceIds !== undefined);
+    assert(importedAspectTargetIds !== undefined);
+    assert(exportedAspectSourceIds.length === importedAspectTargetIds.length);
+
+    for (let i = 0; i < exportedAspectSourceIds.length; ++i) {
+      const sourceId = exportedAspectSourceIds[i];
+      const targetId = importedAspectTargetIds[i];
+      const mappedTarget = transformer.context.findTargetAspectId(sourceId);
+      assert(mappedTarget !== Id64.invalid);
+      const indexInResult = importedAspectTargetIds.findIndex((id) => id === mappedTarget);
+      assert(mappedTarget === targetId, `aspect ${i} (${sourceId} in source, ${mappedTarget} in target) but got ${targetId} and the expected id was at index ${indexInResult}`);
+    }
   });
 
   it("new bug test", async () => {

@@ -109,10 +109,7 @@ export class IModelCloneContext {
    * @returns the target AspectId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetAspectId(sourceAspectId: Id64String): Id64String {
-    if (Id64.invalid === sourceAspectId) {
-      return Id64.invalid;
-    }
-    return this._nativeContext.findElementId(sourceAspectId);
+    return this._aspectRemapTable.get(sourceAspectId) ?? Id64.invalid;
   }
 
   /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
