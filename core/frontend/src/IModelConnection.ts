@@ -215,8 +215,10 @@ export abstract class IModelConnection extends IModel {
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
+
     this.selectionSet = new SelectionSet(this);
     this.hilited = new HiliteSet(this);
+
     this.tiles = new Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
@@ -225,6 +227,10 @@ export abstract class IModelConnection extends IModel {
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);
+    });
+
+    this.hilited.onModelSubCategoryModeChanged.addListener(() => {
+      IModelApp.viewManager.onSelectionSetChanged(this);
     });
   }
 

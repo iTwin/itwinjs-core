@@ -167,13 +167,24 @@ class HilitedElementIds extends HilitedIds {
   }
 }
 
+/** Describes how the sets of hilited models and subcategories in a [[HiliteSet]] interact.
+ *  - "union" indicates a [Feature]($common) will be hilited if either its model **or** its subcategory is present in the HiliteSet.
+ *  - "intersection" indicates a [Feature]($common) will be hilited only if both its model **and** its subcategory are present in the HiliteSet.
+ *
+ * @see [[HiliteSet.modelSubCategoryMode]] to change the mode for a HiliteSet.
+ * @public
+ */
+export type ModelSubCategoryHiliteMode = "union" | "intersection";
+
 /** A set of *hilited* elements for an [[IModelConnection]], by element id.
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
  * The set exposes 3 types of elements in 3 separate collections: geometric elements, subcategories, and geometric models.
+ *
+ * Technically, the hilite effect is applied to [Feature]($common)s, not [Element]($backend)s. An element's geometry stream can contain multiple
+ * features belonging to different subcategories.
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
  * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]]. If you add elements to the HiliteSet directly, you
  * are also responsible for removing them as appropriate.
- * @note Support for subcategories and geometric models in the HiliteSet is currently `beta`.
  * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
@@ -181,17 +192,40 @@ class HilitedElementIds extends HilitedIds {
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
+  private _mode: ModelSubCategoryHiliteMode = "union";
 
   /** The set of hilited subcategories.
-   * @beta
+   * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[models]].
+   * @see [[###TODO]] to obtain the set of subcategories associated with one or more [Category]($backend)'s.
    */
   public readonly subcategories: Id64.Uint32Set;
+
   /** The set of hilited [[GeometricModelState]]s.
-   * @beta
+   * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[subcategories]].
    */
   public readonly models: Id64.Uint32Set;
+
   /** The set of hilited elements. */
   public get elements(): Id64.Uint32Set { return this._elements; }
+
+  /** Controls how the sets of hilited [[models]] and [[subcategories]] interact with one another.
+   * By default they are treated as a union: a [Feature]($common) is hilited if either its model **or** its subcategory is hilited.
+   * This can be changed to an intersection such that a [Feature]($common) is hilited only if both its model **and** subcategory are hilited.
+   * @note The sets of hilited models and subcategories are independent of the set of hilited [[elements]] - an element whose Id is present in
+   * [[elements]] is always hilited regardless of its model or subcategories.
+   */
+  public get modelSubCategoryMode(): ModelSubCategoryHiliteMode {
+    return this._mode;
+  }
+  public set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode) {
+    if (mode === this._mode)
+      return;
+
+    this.onModelSubCategoryModeChanged.raiseEvent(mode);
+    this._mode = mode;
+  }
+
+  public readonly onModelSubCategoryModeChanged = new BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>();
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
