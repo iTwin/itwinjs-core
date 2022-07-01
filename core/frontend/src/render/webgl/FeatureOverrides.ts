@@ -190,7 +190,7 @@ export class FeatureOverrides implements WebGLDisposable {
       }
 
       let flags = app.nonLocatable ? OvrFlags.NonLocatable : OvrFlags.None;
-      if (isModelHilited || (allowHilite && isFeatureHilited(feature, hilites, isModelHilited))) {
+      if (allowHilite && isFeatureHilited(feature, hilites, isModelHilited)) {
         flags |= OvrFlags.Hilited;
         this._anyHilited = true;
       }
