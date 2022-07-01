@@ -11,6 +11,7 @@ import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
+import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
 import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { createBlankConnection } from "../../createBlankConnection";
@@ -315,7 +316,8 @@ describe("FeatureOverrides", () => {
           const numBytesPerFeature = 8; // 2 RGBA values per feature
           expect(data.length).to.equal(2 * numBytesPerFeature);
 
-          const flags = data[featureIndex * numBytesPerFeature];
+          const tex = new Texture2DDataUpdater(data);
+          const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
           const isHilited = 0 !== (flags & OvrFlags.Hilited);
           expect(isHilited).to.equal(expectToBeHilited);
         }
