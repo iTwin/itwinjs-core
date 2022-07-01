@@ -20,6 +20,7 @@ export function renderWithContext(
   const builderContextValue: PropertyFilterBuilderContextProps = {
     actions: builderContextProps.actions ?? new PropertyFilterBuilderActions(sinon.spy()),
     properties: builderContextProps.properties ?? [],
+    ruleGroupDepthLimit: builderContextProps.ruleGroupDepthLimit,
     onRulePropertySelected: builderContextProps.onRulePropertySelected,
   };
 

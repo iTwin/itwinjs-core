@@ -48,6 +48,15 @@ describe("PropertyFilterBuilderRuleGroupRenderer", () => {
     getByTestId("rule-group-remove");
   });
 
+  it("does not render add group button if depth limit is reached", () => {
+    const {queryByTestId} = renderWithContext(<PropertyFilterBuilderRuleGroupRenderer
+      {...defaultProps}
+      path={["parentId", "id"]}
+      group={{id: "id", groupId: "parentId", items: [], operator: PropertyFilterRuleGroupOperator.And}}
+    />, {ruleGroupDepthLimit: 1});
+    expect(queryByTestId("rule-group-add-rule-group")).to.be.null;
+  });
+
   it("renders group as active while it is focused", () => {
     const timer = sinon.useFakeTimers();
     const {container} = renderWithContext(<PropertyFilterBuilderRuleGroupRenderer
