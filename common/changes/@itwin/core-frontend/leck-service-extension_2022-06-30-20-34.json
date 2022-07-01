@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Move ServiceExtensionProvider to the @itwin/extension-client package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
