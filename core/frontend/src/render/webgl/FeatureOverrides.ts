@@ -52,12 +52,14 @@ function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRg
   return { width, height };
 }
 
-export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
     return false;
 
-  return hilites.elements.has(feature.elementId.lower, feature.elementId.upper) ||
-    hilites.subcategories.has(feature.subCategoryId.lower, feature.subCategoryId.upper);
+  if ("union" === hilites.modelSubCategoryMode)
+    return isModelHilited || hilites.elements.hasPair(feature.elementId) || hilites.subcategories.hasPair(feature.subCategoryId);
+
+  return hilites.elements.hasPair(feature.elementId) || (isModelHilited && hilites.subcategories.hasPair(feature.subCategoryId));
 }
 
 /** @internal */
@@ -148,7 +150,7 @@ export class FeatureOverrides implements WebGLDisposable {
     const allowEmphasis = true !== this._options.noEmphasis;
 
     const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const isModelHilited = allowHilite && hilites.models.has(modelIdParts.lower, modelIdParts.upper);
+    const isModelHilited = allowHilite && hilites.models.hasPair(modelIdParts);
 
     this._anyOpaque = this._anyTranslucent = this._anyViewIndependentTranslucent = this._anyHilited = false;
 
@@ -188,7 +190,7 @@ export class FeatureOverrides implements WebGLDisposable {
       }
 
       let flags = app.nonLocatable ? OvrFlags.NonLocatable : OvrFlags.None;
-      if (isModelHilited || (allowHilite && isFeatureHilited(feature, hilites))) {
+      if (isModelHilited || (allowHilite && isFeatureHilited(feature, hilites, isModelHilited))) {
         flags |= OvrFlags.Hilited;
         this._anyHilited = true;
       }
@@ -270,7 +272,7 @@ export class FeatureOverrides implements WebGLDisposable {
     let isModelHilited = false;
     if (!hilites.models.isEmpty) {
       const modelId = Id64.getUint32Pair(map.modelId);
-      isModelHilited = hilites.models.has(modelId.lower, modelId.upper);
+      isModelHilited = hilites.models.hasPair(modelId);
     }
 
     this._anyOverridden = this._anyHilited = false;
@@ -287,13 +289,13 @@ export class FeatureOverrides implements WebGLDisposable {
       let isHilited = isModelHilited && !intersect;
       if (!isHilited && !hilites.elements.isEmpty) {
         elemId = map.getElementIdPair(i);
-        isHilited = hilites.elements.has(elemId.lower, elemId.upper);
+        isHilited = hilites.elements.hasPair(elemId);
       }
 
       if (!isHilited && !hilites.subcategories.isEmpty) {
         if (isModelHilited || !intersect) {
           const subcat = map.getSubCategoryIdPair(i);
-          isHilited = hilites.subcategories.has(subcat.lower, subcat.upper);
+          isHilited = hilites.subcategories.hasPair(subcat);
         }
       }
 

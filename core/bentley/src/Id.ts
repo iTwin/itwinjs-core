@@ -551,6 +551,11 @@ export namespace Id64 {
       return undefined !== set && set.has(low);
     }
 
+    /** Returns true if the set contains the Id specified by `pair`. */
+    public hasPair(pair: Uint32Pair): boolean {
+      return this.has(pair.lower, pair.upper);
+    }
+
     /** Returns true if the set contains no Ids. */
     public get isEmpty(): boolean { return 0 === this._map.size; }
 
