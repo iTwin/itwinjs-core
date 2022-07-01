@@ -229,6 +229,7 @@ export class HiliteSet {
     this._mode = mode;
   }
 
+  /** Event raised just before changing the value of [[modelSubCategoryMode]]. */
   public readonly onModelSubCategoryModeChanged = new BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>();
 
   /** Construct a HiliteSet
