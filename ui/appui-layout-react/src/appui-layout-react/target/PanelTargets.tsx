@@ -17,47 +17,50 @@ import { isHorizontalPanelState } from "../base/NineZoneState";
 import { PanelTarget } from "./PanelTarget";
 import { WidgetTarget } from "./WidgetTarget";
 import { SectionTarget } from "./SectionTarget";
+import { withTargetVersion } from "./TargetOptions";
 
 /** @internal */
-export const PanelTargets = React.memo(function PanelTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const panel = React.useContext(PanelStateContext);
-  assert(!!panel);
-  const direction = usePanelTargetsDirection();
-  const type = usePanelTargetsType();
-  const className = classnames(
-    "nz-target-panelTargets",
-    `nz-${panel.side}`,
-    type === "two-widgets" && "nz-wide",
-    isHorizontalPanelState(panel) && panel.span && "nz-span",
-  );
+export const PanelTargets = React.memo(
+  withTargetVersion("2", function PanelTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+    const panel = React.useContext(PanelStateContext);
+    assert(!!panel);
+    const direction = usePanelTargetsDirection();
+    const type = usePanelTargetsType();
+    const className = classnames(
+      "nz-target-panelTargets",
+      `nz-${panel.side}`,
+      type === "two-widgets" && "nz-wide",
+      isHorizontalPanelState(panel) && panel.span && "nz-span",
+    );
 
-  const panelState = React.useContext(PanelStateContext);
-  assert(!!panelState);
+    const panelState = React.useContext(PanelStateContext);
+    assert(!!panelState);
 
-  let targets;
-  if (type === "no-panel") {
-    targets = <PanelTarget side={panel.side} />;
-  } else if (type === "single-widget") {
-    targets = <>
-      <SectionTarget sectionIndex={0} />
-      <WidgetTarget widgetId={panel.widgets[0]} />
-      <SectionTarget sectionIndex={1} />
-    </>;
-  } else if (type === "two-widgets") {
-    targets = <>
-      <WidgetTarget widgetId={panel.widgets[0]} />
-      <WidgetTarget widgetId={panel.widgets[1]} />
-    </>;
-  }
-  return (
-    <TargetContainer
-      className={className}
-      direction={direction}
-    >
-      {targets}
-    </TargetContainer>
-  );
-});
+    let targets;
+    if (type === "no-panel") {
+      targets = <PanelTarget side={panel.side} />;
+    } else if (type === "single-widget") {
+      targets = <>
+        <SectionTarget sectionIndex={0} />
+        <WidgetTarget widgetId={panel.widgets[0]} />
+        <SectionTarget sectionIndex={1} />
+      </>;
+    } else if (type === "two-widgets") {
+      targets = <>
+        <WidgetTarget widgetId={panel.widgets[0]} />
+        <WidgetTarget widgetId={panel.widgets[1]} />
+      </>;
+    }
+    return (
+      <TargetContainer
+        className={className}
+        direction={direction}
+      >
+        {targets}
+      </TargetContainer>
+    );
+  }),
+);
 
 function usePanelTargetsDirection(): TargetProps["direction"] {
   const panelSide = React.useContext(PanelSideContext);

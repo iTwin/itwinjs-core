@@ -14,6 +14,7 @@ import { useTargeted } from "../base/DragManager";
 import { isSectionTargetState } from "../base/NineZoneState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { useSectionTargetDirection } from "../target/SectionTarget";
+import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
 export interface SectionOutlineProps extends CommonProps {
@@ -21,7 +22,7 @@ export interface SectionOutlineProps extends CommonProps {
 }
 
 /** @internal */
-export function SectionOutline(props: SectionOutlineProps) { // eslint-disable-line @typescript-eslint/naming-convention
+export const SectionOutline = withTargetVersion("2", function SectionOutline(props: SectionOutlineProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const hidden = useHidden(props.sectionIndex);
   const direction = useSectionTargetDirection();
   const className = classnames(
@@ -37,7 +38,7 @@ export function SectionOutline(props: SectionOutlineProps) { // eslint-disable-l
       style={props.style}
     />
   );
-}
+});
 
 function useHidden(sectionIndex: 0 | 1) {
   const side = React.useContext(PanelSideContext);

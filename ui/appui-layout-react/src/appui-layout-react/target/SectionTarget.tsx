@@ -47,7 +47,8 @@ export const SectionTarget = React.memo<SectionTargetProps>(function SectionTarg
   );
 });
 
-function useSectionTargetArgs(sectionIndex: number) {
+/** @internal */
+export function useSectionTargetArgs(sectionIndex: number) {
   const side = React.useContext(PanelSideContext);
   const newWidgetId = React.useMemo(() => getUniqueId(), []);
   return React.useMemo<SectionTargetState>(() => {

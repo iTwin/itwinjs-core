@@ -12,9 +12,8 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { Target, TargetProps } from "./Target";
+import { Target } from "./Target";
 import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
-import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 
 /** @internal */
 export interface WidgetTargetProps {

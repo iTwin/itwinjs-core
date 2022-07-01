@@ -20,3 +20,22 @@ const defaultValue: TargetOptions = {
 /** @internal */
 export const TargetOptionsContext = React.createContext<TargetOptions>(defaultValue); // eslint-disable-line: completed-docs @typescript-eslint/naming-convention
 TargetOptionsContext.displayName = "nz:TargetOptionsContext";
+
+/** @internal */
+export function useTargetOptions() {
+  return React.useContext(TargetOptionsContext);
+}
+
+/** HOC that returns a component which renders only if target version matches a specified `version` parameter.
+ * @internal
+ */
+export function withTargetVersion<P extends {}>(version: TargetOptions["version"], Component: React.ComponentType<P>) {
+  const WrappedComponent: React.FunctionComponent<P> = (props) => {
+    const options = useTargetOptions();
+    if (options.version !== version)
+      return null;
+    return <Component {...props} />;
+  };
+  WrappedComponent.displayName = `withTargetVersion:${version}`;
+  return WrappedComponent;
+}

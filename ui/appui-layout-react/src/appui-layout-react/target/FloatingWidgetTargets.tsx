@@ -11,16 +11,19 @@ import * as React from "react";
 import { WidgetTarget } from "./WidgetTarget";
 import { WidgetIdContext } from "../widget/Widget";
 import { TargetContainer } from "./TargetContainer";
+import { withTargetVersion } from "./TargetOptions";
 
 /** @internal */
-export const FloatingWidgetTargets = React.memo(function FloatingWidgetTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const widgetId = React.useContext(WidgetIdContext);
-  return (
-    <TargetContainer
-      className="nz-target-floatingWidgetTargets"
-      direction="horizontal"
-    >
-      <WidgetTarget widgetId={widgetId} />
-    </TargetContainer>
-  );
-});
+export const FloatingWidgetTargets = React.memo(
+  withTargetVersion("2", function FloatingWidgetTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+    const widgetId = React.useContext(WidgetIdContext);
+    return (
+      <TargetContainer
+        className="nz-target-floatingWidgetTargets"
+        direction="horizontal"
+      >
+        <WidgetTarget widgetId={widgetId} />
+      </TargetContainer>
+    );
+  }),
+);

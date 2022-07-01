@@ -11,7 +11,7 @@ import * as React from "react";
 import { FrameworkAccuDraw, UiFramework } from "@itwin/appui-react";
 import { TargetOptionsContext } from "@itwin/appui-layout-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
+import { SampleAppIModelApp } from "../../index";
 
 /** UiSettingsPage displaying the active settings. */
 export class AccudrawSettingsPageComponent extends React.Component {

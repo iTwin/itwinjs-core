@@ -13,9 +13,10 @@ import { assert } from "@itwin/core-bentley";
 import { useTargeted } from "../base/DragManager";
 import { isHorizontalPanelState, isPanelTargetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
+import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
-export function PanelOutline() { // eslint-disable-line @typescript-eslint/naming-convention
+export const PanelOutline = withTargetVersion("2", function PanelOutline() { // eslint-disable-line @typescript-eslint/naming-convention
   const panel = React.useContext(PanelStateContext);
   assert(!!panel);
   const { side } = panel;
@@ -37,7 +38,7 @@ export function PanelOutline() { // eslint-disable-line @typescript-eslint/namin
       }}
     />
   );
-}
+});
 
 function useHidden() {
   const side = React.useContext(PanelSideContext);

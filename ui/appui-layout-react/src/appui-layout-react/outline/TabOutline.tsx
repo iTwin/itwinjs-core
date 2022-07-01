@@ -12,9 +12,10 @@ import * as React from "react";
 import { useTargeted } from "../base/DragManager";
 import { isWidgetTargetState } from "../base/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
+import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
-export function TabOutline() { // eslint-disable-line @typescript-eslint/naming-convention
+export const TabOutline = withTargetVersion("2", function TabOutline() { // eslint-disable-line @typescript-eslint/naming-convention
   const hidden = useHidden();
   const className = classnames(
     "nz-outline-tabOutline",
@@ -25,7 +26,7 @@ export function TabOutline() { // eslint-disable-line @typescript-eslint/naming-
       className={className}
     />
   );
-}
+});
 
 function useHidden() {
   const widgetId = React.useContext(WidgetIdContext);

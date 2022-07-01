@@ -21,6 +21,8 @@ import { WidgetComponent } from "../widget/Widget";
 import { PanelTargets } from "../target/PanelTargets";
 import { SectionOutline } from "../outline/SectionOutline";
 import { PanelOutline } from "../outline/PanelOutline";
+import { WidgetTarget } from "../widget/WidgetTarget";
+import { PanelTarget } from "./PanelTarget";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -136,6 +138,7 @@ export const WidgetPanelProvider = React.memo<WidgetPanelProviderProps>(function
           spanTop={panels.top.span}
           spanBottom={panels.bottom.span}
         />}
+        {panel.widgets.length === 0 && <PanelTarget />}
         <PanelTargets />
         <PanelOutline />
       </PanelSideContext.Provider>
@@ -313,6 +316,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
       getBounds,
     };
   }, [getBounds]);
+  const showTargets = panel.widgets.length < panel.maxWidgetCount;
   const className = classnames(
     "nz-widgetPanels-panel",
     `nz-${panel.side}`,
@@ -391,6 +395,10 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
             return (
               <React.Fragment key={widgetId}>
                 <div className={panelClassName} style={panelStyle}>
+                  {index === 0 && showTargets && <WidgetTarget
+                    position="first"
+                    widgetIndex={0}
+                  />}
                   <PanelWidget
                     onBeforeTransition={handleBeforeTransition}
                     onPrepareTransition={handlePrepareTransition}
@@ -400,6 +408,10 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     widgetId={widgetId}
                     ref={getRef(widgetId)}
                   />
+                  {showTargets && <WidgetTarget
+                    position={last ? "last" : undefined}
+                    widgetIndex={index + 1}
+                  />}
                   {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
                 </div>
               </React.Fragment>
@@ -651,7 +663,7 @@ function getPanelSize(horizontal: boolean, size: SizeProps) {
   return horizontal ? size.height : size.width;
 }
 
-function SectionOutlines() { // eslint-disable-line @typescript-eslint/naming-convention
+function SectionOutlines() {
   return (
     <>
       <SectionOutline sectionIndex={0} />
