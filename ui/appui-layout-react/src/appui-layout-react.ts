@@ -64,12 +64,16 @@ export * from "./appui-layout-react/stage-panels/manager/NestedStagePanels";
 export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 
+export * from "./appui-layout-react/target/FloatingWidgetTargets";
 export * from "./appui-layout-react/target/PanelTarget";
 export * from "./appui-layout-react/target/PanelTargets";
 export * from "./appui-layout-react/target/SectionTarget";
 export * from "./appui-layout-react/target/SectionTargets";
+export * from "./appui-layout-react/target/TabTarget";
 export * from "./appui-layout-react/target/Target";
 export * from "./appui-layout-react/target/TargetContainer";
+export * from "./appui-layout-react/target/TargetOptions";
+export * from "./appui-layout-react/target/TitleBarTarget";
 export * from "./appui-layout-react/target/WidgetTarget";
 
 export * from "./appui-layout-react/tool-settings/Docked";
