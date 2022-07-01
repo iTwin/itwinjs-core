@@ -178,10 +178,14 @@ export type ModelSubCategoryHiliteMode = "union" | "intersection";
 
 /** A set of *hilited* elements for an [[IModelConnection]], by element id.
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
- * The set exposes 3 types of elements in 3 separate collections: geometric elements, subcategories, and geometric models.
+ * The set exposes 3 types of elements in 3 separate collections: [GeometricElement]($backend), [GeometricModel]($backend), and [SubCategory]($backend).
+ * The [[models]] and [[subcategories]] can be hilited independently or as an intersection of the two sets, as specified by [[modelSubCategoryMode]].
  *
  * Technically, the hilite effect is applied to [Feature]($common)s, not [Element]($backend)s. An element's geometry stream can contain multiple
  * features belonging to different subcategories.
+ *
+ * Because Javascript lacks efficient support for 64-bit integers, the Ids are stored as pairs of 32-bit integers via [Id64.Uint32Set]($bentley).
+ *
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
  * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]]. If you add elements to the HiliteSet directly, you
  * are also responsible for removing them as appropriate.
