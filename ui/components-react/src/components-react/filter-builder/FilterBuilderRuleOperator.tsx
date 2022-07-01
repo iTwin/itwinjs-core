@@ -19,12 +19,11 @@ export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRu
   const { operator, property, onChange } = props;
 
   const availableOperators = React.useMemo(() => getPropertyFilterOperators(property), [property]);
-  const selectedOperator = operator ?? availableOperators[0];
+  const selectedOperator = availableOperators.find((op) => op === operator) ?? availableOperators[0];
 
   React.useEffect(() => {
-    if (!operator)
-      onChange(selectedOperator);
-  }, [operator, onChange, selectedOperator]);
+    onChange(selectedOperator);
+  }, [onChange, selectedOperator]);
 
   const availableOptions = React.useMemo(() => availableOperators.map((op) => ({
     value: op,

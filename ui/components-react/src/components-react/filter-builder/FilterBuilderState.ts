@@ -86,7 +86,6 @@ export class PropertyFilterBuilderActions {
       if (!rule)
         return;
       rule.property = property;
-      rule.operator = undefined;
       rule.value = undefined;
     });
   }
