@@ -1155,12 +1155,24 @@ export class ExtensiveTestScenario {
     const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
     assert.equal(uniqueAspects.length, 1);
     const uniqueAspect = uniqueAspects[0].asAny;
-    assert.equal(uniqueAspect.commonDouble, 1.1);
-    assert.equal(uniqueAspect.commonString, "Unique-Updated");
-    assert.equal(uniqueAspect.commonLong, physicalObjectId1);
-    assert.equal(testTargetSchema ? uniqueAspect.targetDouble : uniqueAspect.sourceDouble, 11.1);
-    assert.equal(testTargetSchema ? uniqueAspect.targetString : uniqueAspect.sourceString, "UniqueAspect-Updated");
-    assert.equal(testTargetSchema ? uniqueAspect.targetLong : uniqueAspect.sourceLong, physicalObjectId1);
+    expect(uniqueAspect).to.deep.subsetEqual({
+      commonDouble: 1.1,
+      commonString: "Unique-Updated",
+      commonLong: physicalObjectId1,
+    });
+    if (testTargetSchema) {
+      expect(uniqueAspect).to.deep.subsetEqual({
+        targetDouble: 11.1,
+        targetString: "UniqueAspect-Updated",
+        targetLong: physicalObjectId1,
+      });
+    } else {
+      expect(uniqueAspect).to.deep.subsetEqual({
+        sourceDouble: 11.1,
+        sourceString: "UniqueAspect-Updated",
+        sourceLong: physicalObjectId1,
+      });
+    }
     const multiAspectClassFullName = testTargetSchema ? "ExtensiveTestScenarioTarget:TargetMultiAspect" : "ExtensiveTestScenario:SourceMultiAspect";
     const multiAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, multiAspectClassFullName);
     assert.equal(multiAspects.length, 2);
