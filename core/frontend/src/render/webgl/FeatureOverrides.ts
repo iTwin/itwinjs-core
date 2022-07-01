@@ -90,6 +90,8 @@ export class FeatureOverrides implements WebGLDisposable {
   public get anyOpaque() { return this._anyOpaque; }
   public get anyHilited() { return this._anyHilited; }
 
+  /** For tests. */
+  public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
   public get isUniformFlashed() {
