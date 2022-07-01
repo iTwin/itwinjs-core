@@ -837,18 +837,8 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
-
     // now that we've mapped this elem we can fix unmapped references to it
-    for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
-      const isModelRef = false; // we're in onExportElement so no
-      const key = {referencer, referenced: sourceElement.id, isModelRef};
-      const pendingRef = this._pendingReferences.get(key);
-      if (!pendingRef)
-        continue;
-
-      pendingRef.resolveReference(sourceElement.id, isModelRef);
-      this._pendingReferences.delete(key);
-    }
+    this.resolvePendingReferences(sourceElement);
 
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
@@ -860,6 +850,18 @@ export class IModelTransformer extends IModelExportHandler {
       }
       assert(aspectProps.id !== undefined);
       this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: false });
+    }
+  }
+
+  private resolvePendingReferences(entity: Element | Model | Relationship | ElementAspect,) {
+    // FIXME: support non element entities
+    const isModelRef = entity instanceof Model;
+    for (const referencer of this._pendingReferences.getReferencers(entity.id)) {
+      const key = { referencer, referenced: entity.id, isModelRef };
+      const pendingRef = this._pendingReferences.get(key);
+      if (!pendingRef) continue;
+      pendingRef.resolveReference(entity.id, isModelRef);
+      this._pendingReferences.delete(key);
     }
   }
 
@@ -883,16 +885,7 @@ export class IModelTransformer extends IModelExportHandler {
     const targetModeledElementId: Id64String = this.context.findTargetElementId(sourceModel.id);
     const targetModelProps: ModelProps = this.onTransformModel(sourceModel, targetModeledElementId);
     this.importer.importModel(targetModelProps);
-    for (const referencer of this._pendingReferences.getReferencers(sourceModel.id)) {
-      const isModelRef = true; // we're in onExportModel so yes
-      const key = { referencer, referenced: sourceModel.id, isModelRef };
-      const pendingRef = this._pendingReferences.get(key);
-      if (!pendingRef)
-        continue;
-
-      pendingRef.resolveReference(sourceModel.id, isModelRef);
-      this._pendingReferences.delete(key);
-    }
+    this.resolvePendingReferences(sourceModel);
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
@@ -1117,7 +1110,15 @@ export class IModelTransformer extends IModelExportHandler {
     const targetAspectPropsArray = sourceAspects.map((sourceAspect) =>
       this.onTransformElementAspect(sourceAspect, targetElementId)
     );
-    const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
+    // TODO: ideally we'd match the behavior of the element export which:
+    // 1. tries to find a remapping, transforms the props
+    // 2. if the element hasn't changed (LastMod), we're done
+    // 3. otherwise collect unmapped references in its ec data
+    // 4. import the element (the id must have been found, by code or remap) if it's an update
+    // 5. create a remapping now that it's imported
+    // 6. resolve any pending references now that it's imported
+    // 7. add provenance
+    // const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
     const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
       return (
