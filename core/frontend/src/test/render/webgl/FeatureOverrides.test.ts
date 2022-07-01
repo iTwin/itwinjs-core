@@ -7,7 +7,6 @@ import { BeEvent } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { Feature, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { ViewRect } from "../../../ViewRect";
-import { IModelConnection } from "../../../IModelConnection";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
@@ -18,16 +17,8 @@ import { createBlankConnection } from "../../createBlankConnection";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
-  let imodel: IModelConnection;
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await createBlankConnection();
-  });
-
-  after(async () => {
-    await imodel.close();
-    await IModelApp.shutdown();
-  });
+  before(async () =>  IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {
     const rect = new ViewRect(0, 0, 100, 50);
@@ -300,6 +291,7 @@ describe("FeatureOverrides", () => {
     expect(b1.perTargetData.data.length).to.equal(0);
 
     testBlankViewport((vp) => {
+      IModelApp.viewManager.addViewport(vp);
       const target = vp.target as Target;
       expect(target).instanceOf(Target);
       target.pushBatch(b1);
@@ -343,13 +335,18 @@ describe("FeatureOverrides", () => {
         expectHilited(b2, 1, expected.has(e22));
       }
 
-      const h = imodel.hilited;
+      const h = vp.iModel.hilited;
       function reset() {
         test(false, () => h.clear());
       }
 
       test(false, () => { });
-      test(e11, () => h.elements.addId(e11));
+      test(e11, () => {
+        expect(h.elements.isEmpty).to.be.true;
+        h.elements.addId(e11);
+        expect(h.elements.isEmpty).to.be.false;
+        expect(h.elements.hasId(e11)).to.be.true;
+      });
       reset();
     });
   });
