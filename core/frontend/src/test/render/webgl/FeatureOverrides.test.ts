@@ -10,6 +10,7 @@ import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
+import { Scene } from "../../../render/Scene";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
@@ -292,13 +293,22 @@ describe("FeatureOverrides", () => {
     expect(b1.perTargetData.data.length).to.equal(0);
 
     testBlankViewport((vp) => {
+      // Make the viewport consider our subcategories visible, otherwise we can't hilite them...
+      vp.addFeatureOverrideProvider({
+        addFeatureOverrides: (ovrs) => {
+          ovrs.ignoreSubCategory = true;
+          debugger;
+        },
+      });
+
       IModelApp.viewManager.addViewport(vp);
       const target = vp.target as Target;
       expect(target).instanceOf(Target);
-      target.pushBatch(b1);
-      target.pushBatch(b2);
 
-      expect(b1.perTargetData.data.length).to.equal(1);
+      vp.view.createScene = (context) => {
+        context.scene.foreground.push(b1);
+        context.scene.background.push(b2);
+      };
 
       function test(expectedHilitedElements: ElemId | ElemId[] | false, setup: () => void): void {
         function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
@@ -319,6 +329,7 @@ describe("FeatureOverrides", () => {
           const tex = new Texture2DDataUpdater(data);
           const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
           const isHilited = 0 !== (flags & OvrFlags.Hilited);
+          expect(JSON.stringify(Array.from(data))).to.equal("bitch");
           expect(isHilited).to.equal(expectToBeHilited);
         }
 
@@ -326,6 +337,7 @@ describe("FeatureOverrides", () => {
         vp.renderFrame();
 
         expect(target.hilites).to.equal(vp.iModel.hilited);
+        expect(b1.perTargetData.data.length).to.equal(1);
 
         let expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
         if (expected.size > 0) {
@@ -344,14 +356,16 @@ describe("FeatureOverrides", () => {
         test(false, () => h.clear());
       }
 
-      test(false, () => { });
-      test(e11, () => {
+      // test(false, () => { });
+      const allElems = [e11, e12, e21, e22];
+      test(allElems, () => h.elements.addIds(allElems));
+      /*test(e11, () => {
         expect(h.elements.isEmpty).to.be.true;
         h.elements.addId(e11);
         expect(h.elements.isEmpty).to.be.false;
         expect(h.elements.hasId(e11)).to.be.true;
-      });
-      reset();
+      });*/
+      // reset();
     });
   });
 });
