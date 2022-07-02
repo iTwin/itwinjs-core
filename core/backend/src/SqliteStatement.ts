@@ -250,6 +250,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
 
+  /** Determine whether the value of the specified column is null
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public isValueNull(colIndex: number): boolean { return this._stmt!.isValueNull(colIndex); }
+
   /** Get a size in bytes of a blob or text column
    * @param colIndex Index of SQL column in query result (0-based)
    */
