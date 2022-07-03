@@ -12,6 +12,7 @@ import { LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
+// cspell:ignore savepoint
 /* eslint-disable @typescript-eslint/unified-signatures */
 
 /** A SQLiteDb file
@@ -76,8 +77,11 @@ export class SQLiteDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
-  /** Returns true if the SQLiteDb is open */
+  /** Returns true if this SQLiteDb is open */
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+
+  /** Returns true if this SQLiteDb is open readonly */
+  public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
 
   /**
    * 1. open a database
@@ -208,6 +212,20 @@ export class SQLiteDb implements IDisposable {
     } catch (err) {
       release();
       throw err;
+    }
+  }
+
+  public withSavePoint(savePointName: string, operation: () => void) {
+    if (this.isReadonly)
+      throw new Error("database is readonly");
+
+    this.executeSQL(`SAVEPOINT ${savePointName}`);
+    try {
+      operation();
+      this.executeSQL(`RELEASE ${savePointName}`);
+    } catch (e) {
+      this.executeSQL(`ROLLBACK TO ${savePointName}`);
+      throw e;
     }
   }
 
