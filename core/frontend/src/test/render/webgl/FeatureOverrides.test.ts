@@ -355,15 +355,17 @@ describe("FeatureOverrides", () => {
         test(false, () => h.clear());
       }
 
-      // test(false, () => { });
+      test(false, () => { });
       const allElems = [e11, e12, e21, e22];
       test(allElems, () => h.elements.addIds(allElems));
-      /*test(e11, () => {
+
+      reset();
+      test(e11, () => {
         expect(h.elements.isEmpty).to.be.true;
         h.elements.addId(e11);
         expect(h.elements.isEmpty).to.be.false;
         expect(h.elements.hasId(e11)).to.be.true;
-      });*/
+      });
       // reset();
     });
   });
