@@ -360,6 +360,9 @@ describe("FeatureOverrides", () => {
             h.clear();
             h.modelSubCategoryMode = "union";
           });
+
+          if (withSymbOvrs)
+            vp.setFeatureOverrideProviderChanged();
         }
 
         reset();
