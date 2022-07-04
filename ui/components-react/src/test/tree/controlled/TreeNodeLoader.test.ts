@@ -391,11 +391,8 @@ describe("AbstractTreeNodeLoader", () => {
 
     function createCustomTreeNodeLoader(
       modelSource: TreeModelSource,
-      // eslint-disable-next-line deprecation/deprecation
       load: (AbstractTreeNodeLoader["load"]),
-    // eslint-disable-next-line deprecation/deprecation
     ): AbstractTreeNodeLoader {
-      // eslint-disable-next-line deprecation/deprecation
       return new class extends AbstractTreeNodeLoader {
         constructor() {
           super(modelSource);
