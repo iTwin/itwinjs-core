@@ -75,6 +75,7 @@ export class SubCategoriesCache {
 
     if (undefined === missing)
       return;
+
     this._missingAtTimeOfPreload = missing;
     options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
   }
@@ -85,9 +86,11 @@ export class SubCategoriesCache {
   public postload(options: HydrateViewStateResponseProps): void {
     if (options.categoryIdsResult === undefined)
       return;
+
     // missingAtTimeOfPreload shouldn't be undefined if options.categoryIdsResult is defined... but just to be safe we'll check
     const missing = this._missingAtTimeOfPreload === undefined ? new Set<string>() : this._missingAtTimeOfPreload;
     this.processResults(options.categoryIdsResult, missing);
+
     // clear missing
     this._missingAtTimeOfPreload = undefined;
   }
@@ -103,6 +106,7 @@ export class SubCategoriesCache {
         missing.add(catId);
       }
     }
+
     return missing;
   }
 
@@ -141,13 +145,39 @@ export class SubCategoriesCache {
     set.add(subCategoryId);
     this._appearances.set(subCategoryId, appearance);
   }
+
+  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
+    // Eliminate duplicates...
+    const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
+    const req = this.load(categoryIds);
+    if (req)
+      await req.promise;
+
+    const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
+    for (const categoryId of categoryIds) {
+      const subCategoryIds = this._byCategoryId.get(categoryId);
+      if (!subCategoryIds)
+        continue;
+
+      const subCategories = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+      for (const id of subCategoryIds) {
+        const appearance = this._appearances.get(id);
+        assert(undefined !== appearance);
+        if (appearance)
+          subCategories.set(id, { id, categoryId, appearance });
+      }
+
+      map.set(categoryId, { id: categoryId, subCategories });
+    }
+
+    return map;
+  }
 }
 
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
 export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
-
   export type Result = SubCategoryResultRow[];
 
   export class Request {

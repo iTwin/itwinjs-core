@@ -14,7 +14,7 @@ import {
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
+  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -69,10 +69,12 @@ export abstract class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection. */
   public readonly tiles: Tiles;
+  /** The set of [Category]($backend)'s in this IModelConnection. */
+  public readonly categories: IModelConnection.Categories;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
    */
-  public readonly subcategories: SubCategoriesCache;
+  public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection
@@ -215,12 +217,12 @@ export abstract class IModelConnection extends IModel {
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
+    this.categories = new IModelConnection.Categories(this);
 
     this.selectionSet = new SelectionSet(this);
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
@@ -1088,6 +1090,35 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
+    }
+  }
+
+  /** @public */
+  export namespace Categories {
+    export interface SubCategoryInfo {
+      readonly id: Id64String;
+      readonly categoryId: Id64String;
+      readonly appearance: Readonly<SubCategoryAppearance>;
+    }
+
+    export interface CategoryInfo {
+      readonly id: Id64String;
+      readonly subCategories: Map<Id64String, SubCategoryInfo>;
+    }
+  }
+
+  /** @public */
+  export class Categories {
+    /** @internal */
+    readonly cache: SubCategoriesCache;
+
+    /** @internal */
+    public constructor(iModel: IModelConnection) {
+      this.cache = new SubCategoriesCache(iModel);
+    }
+
+    public async getCategoryInfo(categoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
+      return this.cache.getCategoryInfo(categoryIds);
     }
   }
 }
