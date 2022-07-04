@@ -329,7 +329,6 @@ describe("FeatureOverrides", () => {
           const tex = new Texture2DDataUpdater(data);
           const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
           const isHilited = 0 !== (flags & OvrFlags.Hilited);
-          expect(JSON.stringify(Array.from(data))).to.equal("bitch");
           expect(isHilited).to.equal(expectToBeHilited);
         }
 
