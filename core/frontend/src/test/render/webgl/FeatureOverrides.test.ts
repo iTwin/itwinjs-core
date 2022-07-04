@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { Feature, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -293,83 +293,125 @@ describe("FeatureOverrides", () => {
     expect(b1.perTargetData.data.length).to.equal(0);
 
     testBlankViewport((vp) => {
-      // Make the viewport consider our subcategories visible, otherwise we can't hilite them...
-      vp.addFeatureOverrideProvider({
-        addFeatureOverrides: (ovrs) => {
-          ovrs.ignoreSubCategory = true;
-          debugger;
-        },
-      });
+      function runTest(withSymbOvrs: boolean): void {
+        // Make the viewport consider our subcategories visible, otherwise we can't hilite them...
+        vp.addFeatureOverrideProvider({
+          addFeatureOverrides: (ovrs) => {
+            ovrs.ignoreSubCategory = true;
+            if (withSymbOvrs) {
+              ovrs.override({ modelId: m1, appearance: FeatureAppearance.fromRgba(ColorDef.blue) });
+              ovrs.override({ subCategoryId: s2, appearance: FeatureAppearance.fromJSON({ weight: 5 }) });
+            }
+          },
+        });
 
-      IModelApp.viewManager.addViewport(vp);
-      const target = vp.target as Target;
-      expect(target).instanceOf(Target);
+        IModelApp.viewManager.addViewport(vp);
+        const target = vp.target as Target;
+        expect(target).instanceOf(Target);
 
-      vp.view.createScene = (context) => {
-        context.scene.foreground.push(b1);
-        context.scene.background.push(b2);
-      };
+        vp.view.createScene = (context) => {
+          context.scene.foreground.push(b1);
+          context.scene.background.push(b2);
+        };
 
-      function test(expectedHilitedElements: ElemId | ElemId[] | false, setup: () => void): void {
-        function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
-          const ptd = batch.perTargetData.data[0];
-          if (!ptd) {
-            expect(expectToBeHilited).to.be.false;
-            return;
+        function test(expectedHilitedElements: ElemId | ElemId[], setup: () => void): void {
+          function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
+            const ptd = batch.perTargetData.data[0];
+            if (!ptd) {
+              expect(expectToBeHilited).to.be.false;
+              return;
+            }
+
+            const ovrs = ptd.featureOverrides.get(undefined);
+            expect(ovrs).not.to.be.undefined;
+            const data = ovrs!.lutData!;
+            expect(data).not.to.be.undefined;
+
+            const numBytesPerFeature = 8; // 2 RGBA values per feature
+            expect(data.length).to.equal(2 * numBytesPerFeature);
+
+            const tex = new Texture2DDataUpdater(data);
+            const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
+            const isHilited = 0 !== (flags & OvrFlags.Hilited);
+            expect(isHilited).to.equal(expectToBeHilited);
           }
 
-          const ovrs = ptd.featureOverrides.get(undefined);
-          expect(ovrs).not.to.be.undefined;
-          const data = ovrs!.lutData!;
-          expect(data).not.to.be.undefined;
+          setup();
+          vp.renderFrame();
 
-          const numBytesPerFeature = 8; // 2 RGBA values per feature
-          expect(data.length).to.equal(2 * numBytesPerFeature);
-
-          const tex = new Texture2DDataUpdater(data);
-          const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
-          const isHilited = 0 !== (flags & OvrFlags.Hilited);
-          expect(isHilited).to.equal(expectToBeHilited);
-        }
-
-        setup();
-        vp.renderFrame();
-
-        expect(target.hilites).to.equal(vp.iModel.hilited);
-        expect(b1.perTargetData.data.length).to.equal(1);
-
-        let expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
-        if (expected.size > 0) {
+          expect(target.hilites).to.equal(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).to.equal(1);
-          expect(b2.perTargetData.data.length).to.equal(1);
+
+          let expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
+          if (expected.size > 0) {
+            expect(b1.perTargetData.data.length).to.equal(1);
+            expect(b2.perTargetData.data.length).to.equal(1);
+          }
+
+          expectHilited(b1, 0, expected.has(e11));
+          expectHilited(b1, 1, expected.has(e12));
+          expectHilited(b2, 0, expected.has(e21));
+          expectHilited(b2, 1, expected.has(e22));
         }
 
-        expectHilited(b1, 0, expected.has(e11));
-        expectHilited(b1, 1, expected.has(e12));
-        expectHilited(b2, 0, expected.has(e21));
-        expectHilited(b2, 1, expected.has(e22));
-      }
+        const h = vp.iModel.hilited;
+        function reset() {
+          test([], () => {
+            h.clear();
+            h.modelSubCategoryMode = "union";
+          });
+        }
 
-      const h = vp.iModel.hilited;
-      function reset() {
-        test(false, () => h.clear());
-      }
+        reset();
+        const allElems = [e11, e12, e21, e22];
+        test(allElems, () => h.elements.addIds(allElems));
 
-      test(false, () => { });
-      const allElems = [e11, e12, e21, e22];
-      test(allElems, () => h.elements.addIds(allElems));
-
-      for (const el of allElems) {
-        test(el, () => {
+        for (const el of allElems) {
           reset();
-          expect(h.elements.isEmpty).to.be.true;
-          h.elements.addId(el);
-          expect(h.elements.isEmpty).to.be.false;
-          expect(h.elements.hasId(el)).to.be.true;
+          test(el, () => {
+            expect(h.elements.isEmpty).to.be.true;
+            h.elements.addId(el);
+            expect(h.elements.isEmpty).to.be.false;
+            expect(h.elements.hasId(el)).to.be.true;
+          });
+        }
+
+        reset();
+        test([e11, e12], () => h.models.addId(m1));
+        reset();
+        test([e21, e22], () => h.models.addId(m2));
+
+        reset();
+        test([e11, e21], () => h.subcategories.addId(s1));
+        reset();
+        test([e12, e22], () => h.subcategories.addId(s2));
+
+        reset();
+        test([e12, e21, e22], () => {
+          h.models.addId(m2);
+          h.subcategories.addId(s2);
         });
+
+        test(e22, () => h.modelSubCategoryMode = "intersection");
+        test([e12, e21, e22], () => h.modelSubCategoryMode = "union");
+
+        reset();
+        test([], () => {
+          h.modelSubCategoryMode = "intersection";
+          h.subcategories.addIds([s1, s2]);
+        });
+
+        reset();
+        test([], () => {
+          h.modelSubCategoryMode = "intersection";
+          h.models.addIds([m1, m2]);
+        });
+
+        test(allElems, () => h.subcategories.addIds([s1, s2]));
       }
 
-      reset();
+      runTest(false);
+      runTest(true);
     });
   });
 });
