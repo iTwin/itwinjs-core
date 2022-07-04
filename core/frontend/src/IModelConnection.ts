@@ -1121,7 +1121,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
    */
   export class Categories {
     /** @internal */
-    readonly cache: SubCategoriesCache;
+    public readonly cache: SubCategoriesCache;
 
     /** @internal */
     public constructor(iModel: IModelConnection) {
@@ -1135,8 +1135,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Obtain information about one or more [SubCategory]($backend)'s belonging to the specified [Category]($backend). */
     public async getSubCategoryInfo(args: {
-      category: Id64String,
-      subCategories: Iterable<Id64String>,
+      category: Id64String;
+      subCategories: Iterable<Id64String>;
     }): Promise<Map<Id64String, Categories.SubCategoryInfo>> {
       return this.cache.getSubCategoryInfo(args.category, args.subCategories);
     }

@@ -10,12 +10,10 @@ import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Scene } from "../../../render/Scene";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
 import { OvrFlags } from "../../../render/webgl/RenderFlags";
-import { createBlankConnection } from "../../createBlankConnection";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
@@ -342,7 +340,7 @@ describe("FeatureOverrides", () => {
           expect(target.hilites).to.equal(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).to.equal(1);
 
-          let expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
+          const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
           if (expected.size > 0) {
             expect(b1.perTargetData.data.length).to.equal(1);
             expect(b2.perTargetData.data.length).to.equal(1);

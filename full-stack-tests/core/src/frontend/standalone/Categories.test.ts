@@ -20,7 +20,6 @@ describe("IModelConnection.Categories", () => {
   const c5 = "0x31";
   const s5 = "0x32";
 
-
   const allCats = [c1, c2, c3, c4, c5];
 
   let imodel: IModelConnection;
@@ -83,7 +82,7 @@ describe("IModelConnection.Categories", () => {
   it("produces no subcategories for invalid or non-existent Ids", async () => {
     const badIds = [Id64.invalid, "0xNotAnId", "", "0x12345678"];
     for (const catId of badIds) {
-      let cats = await imodel.categories.getCategoryInfo(catId);
+      const cats = await imodel.categories.getCategoryInfo(catId);
       expect(cats.size).to.equal(1);
       expectCategory(cats.get(catId)!, catId, []);
 
