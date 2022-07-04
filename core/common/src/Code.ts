@@ -6,14 +6,14 @@
  * @module Codes
  */
 
-import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
  * @public
  * @extensions
  */
-export type CodeScopeProps = Id64String | GuidString;
+export type CodeScopeProps = Id64String;
 
 /** The wire format for a Code
  * @public
@@ -32,7 +32,7 @@ export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
   public spec: Id64String;
   /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
-  public scope: string;
+  public scope: Id64String;
   /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
@@ -47,7 +47,7 @@ export class Code implements CodeProps {
   }
 
   /** Create an empty, non-unique code with no special meaning. */
-  public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
+  public static createEmpty(): Code { const id = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
