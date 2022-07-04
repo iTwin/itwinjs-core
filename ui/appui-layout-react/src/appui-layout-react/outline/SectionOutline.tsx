@@ -9,10 +9,11 @@
 import "./SectionOutline.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { assert } from "@itwin/core-bentley";
 import { CommonProps } from "@itwin/core-react";
 import { useTargeted } from "../base/DragManager";
-import { isSectionTargetState } from "../base/NineZoneState";
-import { PanelSideContext } from "../widget-panels/Panel";
+import { isHorizontalPanelState, isSectionTargetState } from "../base/NineZoneState";
+import { PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
 import { useSectionTargetDirection } from "../target/SectionTarget";
 import { withTargetVersion } from "../target/TargetOptions";
 
@@ -25,6 +26,7 @@ export interface SectionOutlineProps extends CommonProps {
 export const SectionOutline = withTargetVersion("2", function SectionOutline(props: SectionOutlineProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const hidden = useHidden(props.sectionIndex);
   const direction = useSectionTargetDirection();
+  const style = useSize(props.sectionIndex);
   const className = classnames(
     "nz-outline-sectionOutline",
     `nz-${props.sectionIndex}`,
@@ -35,12 +37,15 @@ export const SectionOutline = withTargetVersion("2", function SectionOutline(pro
   return (
     <div
       className={className}
-      style={props.style}
+      style={{
+        ...style,
+        ...props.style,
+      }}
     />
   );
 });
 
-function useHidden(sectionIndex: 0 | 1) {
+function useHidden(sectionIndex: SectionOutlineProps["sectionIndex"]) {
   const side = React.useContext(PanelSideContext);
   const targeted = useTargeted();
   return React.useMemo(() => {
@@ -57,4 +62,22 @@ function useHidden(sectionIndex: 0 | 1) {
 
     return false;
   }, [targeted, side, sectionIndex]);
+}
+
+function useSize(sectionIndex: SectionOutlineProps["sectionIndex"]) {
+  const panel = React.useContext(PanelStateContext);
+  assert(!!panel);
+  return React.useMemo<React.CSSProperties | undefined>(() => {
+    let size = panel.splitterPercent;
+    if (!size)
+      return undefined;
+    if (sectionIndex === 1)
+      size = 100 - size;
+    const style: React.CSSProperties = {};
+    if (isHorizontalPanelState(panel))
+      style.width = `${size}%`;
+    else
+      style.height = `${size}%`;
+    return style;
+  }, [panel, sectionIndex]);
 }
