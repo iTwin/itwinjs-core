@@ -159,15 +159,30 @@ export class SubCategoriesCache {
       if (!subCategoryIds)
         continue;
 
-      const subCategories = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
-      for (const id of subCategoryIds) {
-        const appearance = this._appearances.get(id);
-        assert(undefined !== appearance);
-        if (appearance)
-          subCategories.set(id, { id, categoryId, appearance });
-      }
-
+      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
       map.set(categoryId, { id: categoryId, subCategories });
+    }
+
+    return map;
+  }
+
+  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
+    // Eliminate duplicates...
+    const subCategoryIds = new Set<string>(typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds);
+    const req = this.load(categoryId);
+    if (req)
+      await req.promise;
+
+    return this.mapSubCategoryInfos(categoryId, subCategoryIds);
+  }
+
+  private mapSubCategoryInfos(categoryId: Id64String, subCategoryIds: Set<Id64String>): Map<Id64String, IModelConnection.Categories.SubCategoryInfo> {
+    const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+    for (const id of subCategoryIds) {
+      const appearance = this._appearances.get(id);
+      assert(undefined !== appearance);
+      if (appearance)
+        map.set(id, { id, categoryId, appearance });
     }
 
     return map;

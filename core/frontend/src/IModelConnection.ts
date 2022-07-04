@@ -1095,19 +1095,30 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
   /** @public */
   export namespace Categories {
+    /** A subset of the information describing a [SubCategory]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]
+     * or [[IModelConnection.Categories.getSubCategoryInfo]].
+     */
     export interface SubCategoryInfo {
+      /** The [SubCategory]($backend)'s element Id. */
       readonly id: Id64String;
+      /** The Id of the [Category]($backend) to which this [SubCategory]($backend) belongs. */
       readonly categoryId: Id64String;
+      /** Visual parameters applied to geometry belonging to this [SubCategory]($backend). */
       readonly appearance: Readonly<SubCategoryAppearance>;
     }
 
+    /** A subset of the information describing a [Category]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]. */
     export interface CategoryInfo {
+      /** The category's element Id. */
       readonly id: Id64String;
+      /** For each [SubCategory]($backend) belonging to this [Category]($backend), a mapping from the SubCategory's element Id to its properties. */
       readonly subCategories: Map<Id64String, SubCategoryInfo>;
     }
   }
 
-  /** @public */
+  /** Provides access to information about the [Category]($backend)'s stored in an [[IModelConnection]].
+   * @see [[IModelConnection.categories]] for the categories associated with a specific iModel.
+   */
   export class Categories {
     /** @internal */
     readonly cache: SubCategoriesCache;
@@ -1117,8 +1128,17 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       this.cache = new SubCategoriesCache(iModel);
     }
 
-    public async getCategoryInfo(categoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
+    /** Obtain information about one or more [Category]($backend)'s. */
+    public async getCategoryInfo(categoryIds: Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
       return this.cache.getCategoryInfo(categoryIds);
+    }
+
+    /** Obtain information about one or more [SubCategory]($backend)'s belonging to the specified [Category]($backend). */
+    public async getSubCategoryInfo(args: {
+      category: Id64String,
+      subCategories: Iterable<Id64String>,
+    }): Promise<Map<Id64String, Categories.SubCategoryInfo>> {
+      return this.cache.getSubCategoryInfo(args.category, args.subCategories);
     }
   }
 }
