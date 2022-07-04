@@ -398,6 +398,7 @@ beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
 public;ModelState 
+public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
