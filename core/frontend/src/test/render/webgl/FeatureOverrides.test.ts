@@ -268,7 +268,7 @@ describe("FeatureOverrides", () => {
     ba2.dispose();
   });
 
-  it.only("updates when HiliteSet changes", () => {
+  it("updates when HiliteSet changes", () => {
     const m1 = "0xa1";
     const m2 = "0xa2";
     const s1 = "0xc1";
