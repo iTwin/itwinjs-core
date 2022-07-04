@@ -30,12 +30,13 @@ import {
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
-import { AndroidApp, IOSApp, IOSAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
-import { ArcGisAccessClient, ArcGisEnterpriseClientId, ArcGisOauthRedirect  } from "@itwin/map-layers-auth";
+import { ArcGisAccessClient, ArcGisEnterpriseClientId } from "@itwin/map-layers-auth";
+import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -200,10 +201,8 @@ export class SampleAppIModelApp {
       iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
-    } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts as IOSAppOpts);
-    } else if (ProcessDetector.isAndroidAppFrontend) {
-      await AndroidApp.startup(opts);
+    } else if (ProcessDetector.isIOSAppFrontend || ProcessDetector.isAndroidAppFrontend) {
+      await MobileApp.startup(opts as MobileAppOpts);
     } else {
       // if an auth client has not already been configured, use a default Browser client
       const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
@@ -356,7 +355,7 @@ export class SampleAppIModelApp {
     // ArcGIS Oauth setup
     if ((SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
       || SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId) {
-      let enterpriseClientIds: ArcGisEnterpriseClientId[]|undefined;
+      let enterpriseClientIds: ArcGisEnterpriseClientId[] | undefined;
       if (SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
         enterpriseClientIds = [{
           serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
@@ -370,7 +369,8 @@ export class SampleAppIModelApp {
         clientIds: {
           arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
           enterpriseClientIds,
-        }});
+        },
+      });
 
       IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
       assert(initStatus === true);

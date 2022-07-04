@@ -4,6 +4,11 @@
 
 ```ts
 
+import { Attributes } from '@opentelemetry/api';
+import { SpanContext } from '@opentelemetry/api';
+import { SpanOptions } from '@opentelemetry/api';
+import { Tracer } from '@opentelemetry/api';
+
 // @beta (undocumented)
 export class AbandonedError extends Error {
 }
@@ -35,16 +40,6 @@ export class AsyncMutex {
 
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
-
-// @beta
-export enum AuthStatus {
-    // (undocumented)
-    AUTHSTATUS_BASE = 139264,
-    // (undocumented)
-    Error = 139264,
-    // (undocumented)
-    Success = 0
-}
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -1487,6 +1482,20 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
 }
 
 // @alpha
+export enum SpanKind {
+    // (undocumented)
+    CLIENT = 2,
+    // (undocumented)
+    CONSUMER = 4,
+    // (undocumented)
+    INTERNAL = 0,
+    // (undocumented)
+    PRODUCER = 3,
+    // (undocumented)
+    SERVER = 1
+}
+
+// @alpha
 export abstract class StatusCategory {
     // (undocumented)
     abstract code: number;
@@ -1529,6 +1538,13 @@ export class StopWatch {
 export abstract class SuccessCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
+}
+
+// @alpha
+export class Tracing {
+    static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
+    static setAttributes(attributes: Attributes): void;
+    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public

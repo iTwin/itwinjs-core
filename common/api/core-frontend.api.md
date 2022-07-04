@@ -1133,6 +1133,8 @@ export enum ArcGisErrorCode {
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addLogoCards(cards: HTMLTableElement): void;
+    // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
@@ -1142,8 +1144,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
-    // (undocumented)
-    getLogo(): HTMLTableRowElement;
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
@@ -1307,9 +1307,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(y: number, x: number, zoom: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
-    getLogo(): HTMLTableRowElement;
+    constructUrl(y: number, x: number, zoom: number): Promise<string>;
 }
 
 // @internal
@@ -1579,9 +1579,9 @@ export class BingLocationProvider {
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
-    getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -1919,6 +1919,15 @@ export interface ComputeChordToleranceArgs {
     readonly computeRange: () => Range3d;
     readonly graphic: GraphicBuilder;
 }
+
+// @public
+export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
+
+// @public
+export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void;
+
+// @public
+export function connectViewportViews(viewports: Iterable<Viewport>): () => void;
 
 // @internal (undocumented)
 export enum ContextMode {
@@ -2424,14 +2433,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
+    attachMapLayer(options: {
+        settings: MapLayerSettings;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     // @internal (undocumented)
-    attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex?: number): void;
-    // @internal (undocumented)
-    attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex?: number): void;
+    attachMapLayerProps(options: {
+        props: MapLayerProps;
+        isOverlay?: boolean;
+        insertIndex?: number;
+    }): void;
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
-    // @beta (undocumented)
     get backgroundMapBase(): BaseLayerSettings;
     set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
@@ -2440,17 +2455,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // @internal
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
     // (undocumented)
     changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
-    // @internal (undocumented)
     changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
-    // (undocumented)
     changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
@@ -2458,7 +2469,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
-    // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
@@ -2467,7 +2477,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
-    // @internal (undocumented)
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
@@ -2483,7 +2492,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } | undefined;
     // @internal (undocumented)
     getIsBackgroundMapVisible(): boolean;
-    // @internal (undocumented)
+    // @internal
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
@@ -2499,15 +2508,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
-    // @internal (undocumented)
+    // (undocumented)
     mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined;
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
-    // @internal
     moveMapLayerToBottom(index: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean): void;
-    // @internal
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
@@ -4542,11 +4548,11 @@ export class ImageryMapTile extends RealityTile {
 export class ImageryMapTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams, _imageryLoader: ImageryTileLoader);
     // (undocumented)
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
+    // (undocumented)
     cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle;
     // (undocumented)
     draw(_args: TileDrawArgs): void;
-    // (undocumented)
-    getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     getTileRectangle(quadId: QuadId): MapCartoRectangle;
     // (undocumented)
@@ -5538,9 +5544,9 @@ export enum ManipulatorToolEvent {
 export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
-    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
-    getLogo(): HTMLTableRowElement | undefined;
+    constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
@@ -5698,6 +5704,8 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // (undocumented)
+    addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
+    // (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
     cartoRange?: MapCartoRectangle;
@@ -5732,11 +5740,13 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
     // (undocumented)
+    getEPSG4326Lat(y3857: number): number;
+    // (undocumented)
+    getEPSG4326Lon(x3857: number): number;
+    // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
-    // (undocumented)
-    getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
     getPotentialChildIds(tile: ImageryMapTile): QuadId[];
     // (undocumented)
@@ -5805,13 +5815,13 @@ export interface MapLayerOptions {
     MapboxImagery?: MapLayerKey;
 }
 
-// @internal
+// @public
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // (undocumented)
     formatId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
     static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
@@ -5858,25 +5868,19 @@ export class MapLayerSources {
     static removeLayerByName(name: string): boolean;
     }
 
-// @beta (undocumented)
+// @public
 export enum MapLayerSourceStatus {
-    // (undocumented)
     InvalidCredentials = 1,
-    // (undocumented)
     InvalidFormat = 2,
-    // (undocumented)
     InvalidTileTree = 3,
-    // (undocumented)
     InvalidUrl = 4,
-    // (undocumented)
     RequireAuth = 5,
-    // (undocumented)
     Valid = 0
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface MapLayerSourceValidation {
-    // (undocumented)
+    // @beta (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
     // (undocumented)
     status: MapLayerSourceStatus;
@@ -8936,6 +8940,7 @@ export namespace RenderSystem {
         doIdleWork?: boolean;
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
+        errorOnMissingUniform?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
         // @internal
@@ -9571,9 +9576,11 @@ export class ServiceExtensionProvider implements ExtensionProvider {
 
 // @alpha
 export interface ServiceExtensionProviderProps {
-    iTwinId: string;
+    // @internal (undocumented)
+    getAccessToken?: () => Promise<AccessToken>;
+    iTwinId?: string;
     name: string;
-    version: string;
+    version?: string;
 }
 
 // @public
@@ -10143,6 +10150,15 @@ export class SuspendedToolState {
     stop(): void;
     }
 
+// @public
+export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports;
+
+// @public
+export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
+
+// @public
+export function synchronizeViewportViews(source: Viewport): SynchronizeViewports;
+
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
     protected constructor(rect?: ViewRect);
@@ -10465,13 +10481,13 @@ export class TerrainDisplayOverrides {
 export abstract class TerrainMeshProvider {
     constructor(_iModel: IModelConnection, _modelId: Id64String);
     // (undocumented)
+    addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
+    // (undocumented)
     constructUrl(_row: number, _column: number, _zoomLevel: number): string;
     // (undocumented)
     forceTileLoad(_tile: Tile): boolean;
     // (undocumented)
     abstract getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // (undocumented)
-    getLogo(): HTMLTableRowElement | undefined;
     // (undocumented)
     getMesh(_tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined>;
     // (undocumented)

@@ -75,7 +75,7 @@ The Settings Editor will enforce that the values supplied for a Setting is the c
 
 ### SettingSchemas
 
-Applications can define groups of related `SettingSchema`s in the form of [SettingSchemaGroup]($backend)s, registered at runtime with the [SettingSchemas]($backend) class. A settings editor can present the settings for each group together, or each individually as appropriate.
+Applications can define groups of related `SettingSchema`s in the form of [SettingSchemaGroup]($backend)s, registered at runtime with the [SettingSchema]($backend) class. A settings editor can present the settings for each group together, or each individually as appropriate.
 
 #### Example SettingSchemaGroup
 
@@ -217,7 +217,7 @@ Settings may also be stored externally, in JSON. That can be either stringified 
 
 ### Settings loaded at application startup
 
-When [IModelhost.startup](#backend) is called, all files with the extension ".json" or ".json5" in the `@itwin/core-backend` package `assets\Settings` directory, plus all files listed by [IModelHostConfiguration.workspace.settingsFiles]($backend), are loaded into [IModelHost.appWorkspace.settings]($backend).
+When [IModelhost.startup](#backend) is called, all files with the extension ".json" or ".json5" in the `@itwin/core-backend` package `assets\Settings` directory, plus all files listed by `IModelHostConfiguration.workspace.settingsFiles`, are loaded into `IModelHost.appWorkspace.settings`.
 
 ### iModel Based Settings
 
@@ -227,7 +227,7 @@ To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]
 
 ## WorkspaceDbs
 
-[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can either be local files managed externally or they can be [CloudSqlite]($backend) databases accessed directly from cloud storage.
+[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can either be local files managed externally or they can be SQLite databases accessed directly from cloud storage.
 
 ### Cloud-based WorkspacesDbs
 

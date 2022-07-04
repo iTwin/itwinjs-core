@@ -5,12 +5,14 @@
 import { rcompare } from "semver";
 
 import { IModelApp } from "../../IModelApp";
+import { request, RequestOptions } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 import { ExtensionClient, ExtensionMetadata } from "./ExtensionServiceClient";
 
 import type {
   ExtensionManifest, ExtensionProvider,
 } from "../Extension";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Required props for an extension uploaded to Bentley's Extension Service
@@ -19,10 +21,12 @@ import type {
 export interface ServiceExtensionProviderProps {
   /** Name of the uploaded extension */
   name: string;
-  /** Version number (Semantic Versioning) */
-  version: string;
-  /** iTwin Id */
-  iTwinId: string;
+  /** Version number (optional - if undefined, assumes the latest version) */
+  version?: string;
+  /** iTwin Id (optional - if undefined, assumes the extension is public) */
+  iTwinId?: string;
+  /** @internal */
+  getAccessToken?: () => Promise<AccessToken>;
 }
 
 /**
@@ -43,11 +47,14 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!loadedExtensionProps)
       throw new Error(`Error loading manifest for Extension ${this._props.name}.`);
 
-    const doesUrlExist = await this._exists(loadedExtensionProps.manifest.url);
-    if (!doesUrlExist)
-      throw new Error(`Manifest at ${loadedExtensionProps.manifest.url} could not be found.`);
-
-    return (await fetch(loadedExtensionProps.manifest.url)).json();
+    const options: RequestOptions = { method: "GET" };
+    const response = await request(loadedExtensionProps.manifest.url, options);
+    const data = response.body || (() => {
+      if (!response.text)
+        throw new Error("Manifest file was empty.");
+      return JSON.parse(response.text);
+    })();
+    return data;
   }
 
   /** Executes the javascript main file (the bundled index.js) of an extension from the Extension Service.
@@ -58,24 +65,7 @@ export class ServiceExtensionProvider implements ExtensionProvider {
     if (!loadedExtensionProps)
       throw new Error(`Error executing Extension ${this._props.name}.`);
 
-    const doesUrlExist = await this._exists(loadedExtensionProps.main.url);
-    if (!doesUrlExist)
-      throw new Error(`Main javascript file at ${loadedExtensionProps.main.url} could not be found.`);
-
     return loadScript(loadedExtensionProps.main.url);
-  }
-
-  /** Checks if url actually exists */
-  private async _exists(url: string): Promise<boolean> {
-    let exists = false;
-    try {
-      const response = await fetch(url, { method: "HEAD" });
-      if (response.status === 200)
-        exists = true;
-    } catch (error) {
-      exists = false;
-    }
-    return exists;
   }
 
   /** Fetches the extension from the ExtensionService.
@@ -83,15 +73,15 @@ export class ServiceExtensionProvider implements ExtensionProvider {
   private async _getExtensionFiles(props: ServiceExtensionProviderProps) {
     const extensionClient = new ExtensionClient();
 
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    const accessToken = await (props.getAccessToken?.() ?? IModelApp.authorizationClient?.getAccessToken());
     if (!accessToken)
       return undefined;
 
     let extensionProps: ExtensionMetadata | undefined;
     if (props.version !== undefined)
-      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.iTwinId, props.name, props.version);
+      extensionProps = await extensionClient.getExtensionMetadata(accessToken, props.name, props.version, props.iTwinId);
     else {
-      const propsArr = await extensionClient.getExtensions(accessToken, props.iTwinId, props.name);
+      const propsArr = await extensionClient.getExtensions(accessToken, props.name, props.iTwinId);
       extensionProps = propsArr.sort((ext1, ext2) => rcompare(ext1.version, ext2.version, true))[0];
     }
 

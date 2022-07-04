@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Remove AuthStatus from BentleyError.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -76,10 +76,15 @@ export class Triangulator {
    * * Return true if clearly positive
    * * Return false if clearly negative or almost zero.
    * @param nodeA node on the diagonal edge of candidate for edge flip.
-   * @param if true, divide the determinant by the sum of absolute values of the cubic terms of the determinant.
-   * @return the determinant as modified per comment (but undefined if the faces are not triangles as expected.)
    */
   public static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
+    // Assume triangle A1,A2,B2 is ccw.
+    // Shift the triangle to the origin (by negated A coords).
+    // The Delaunay condition is computed by projecting the origin and the shifted triangle
+    // points up to the paraboloid z = x*x + y*y. Due to the radially symmetric convexity of
+    // this surface and the ccw orientation of this triangle, "A is inside triangle A1,A2,B2"
+    // is equivalent to "the volume of the parallelepiped formed by the projected points is
+    // negative, as computed by the triple product."
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
     if (nodeA2.faceSuccessor !== nodeA)
@@ -107,7 +112,7 @@ export class Triangulator {
       ux, uy, tz);
     if (q < 0)
       return false;
-    const denom = Math.abs(wx * vy * tz) + Math.abs(wx * ty * ux) + Math.abs(tx * vx * uy)
+    const denom = Math.abs(wx * vy * tz) + Math.abs(wy * ty * ux) + Math.abs(tx * vx * uy)
       + Math.abs(wx * ty * uy) + Math.abs(wy * vx * tz) + Math.abs(tx * vy * ux);
     return q > 1.0e-12 * denom;
   }
@@ -301,7 +306,7 @@ export class Triangulator {
       const q = xy as any;
       if (q.hasOwnProperty("x")) x = q.x;
       if (q.hasOwnProperty("y")) y = q.y;
-      if (q.hasOwnProperty("y")) z = q.z;
+      if (q.hasOwnProperty("z")) z = q.z;
     }
     if (!baseNode)
       return graph.splitEdge(baseNode, x, y, z);
@@ -427,19 +432,19 @@ export class Triangulator {
     ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
   }
   private static isInteriorTriangle(a: HalfEdge) {
-    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
+    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || a.isMaskSet(HalfEdgeMask.EXTERIOR))
       return false;
     const b = a.faceSuccessor;
-    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
+    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || b.isMaskSet(HalfEdgeMask.EXTERIOR))
       return false;
     const c = b.faceSuccessor;
-    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
+    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || c.isMaskSet(HalfEdgeMask.EXTERIOR))
       return false;
     return c.faceSuccessor === a;
   }
 
   /**
-   * Perform 0, 1, or more edge flips to improve aspect ratio just behind an that was just cut.
+   * Perform 0, 1, or more edge flips to improve aspect ratio just behind an ear that was just cut.
    * @param ear the triangle corner which just served as the ear node.
    * @returns the node at the back corner after flipping."appropriately positioned" node for the usual advance to ear.faceSuccessor.edgeMate.faceSuccessor.
    */
@@ -454,18 +459,18 @@ export class Triangulator {
     //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
     //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
     //
-    //
-    //                                   . C0|
-    //                              .        |
-    //                           .           |
-    //                       .              ^|
-    //                   .  A0 ---->       B0|
-    //               *=======================*
-    //                 \ A1     <----   B1/
-    //                   \             /
-    //                     \         /
-    //                       \  D1 /
-    //                          *
+    //                           *                                 *
+    //                       . C0|                             . / |
+    //                  .        |                        .  C0 /B1|
+    //               .           |                     .       /v  |
+    //           .              ^|                 .          /    |
+    //       .  A0 ---->       B0|             .            /     ^|
+    //   *=======================*   -->   * A1            /     B0*
+    //     \ A1     <----   B1/              \            /     /
+    //       \             /                   \        /    /
+    //         \         /                       \    ^/ D1/
+    //           \  D1 /                           \A0/  /
+    //              *                                 *
     let b0 = ear;
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
@@ -508,8 +513,13 @@ export class Triangulator {
       pred = ear?.facePredecessor;
       next = ear.faceSuccessor;
       next2 = next.faceSuccessor;
-      if (next === ear || next2 === ear || next2.faceSuccessor === ear)
+      if (next === ear || next2 === ear)
         return true;
+      if (next2.faceSuccessor === ear) {
+        // if triangle, mask it so that its edges can potentially be flipped by doPostCutFlips()
+        ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
+        return true;
+      }
       // earcut does not support self intersections.
       // BUT  .. maybe if we watch from the simplest case of next2 returning to pred it will catch some . . .
       // (no need to do flips -- we know it's already a triangle)

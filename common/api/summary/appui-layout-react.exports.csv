@@ -195,9 +195,11 @@ internal;isFloatingWidgetLocation(location: WidgetLocation): location is Floatin
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
 internal;isPanelLocation(location: TabLocation): location is PanelLocation
+internal;isPanelTarget(target: DragTarget): target is PanelTarget_2
 internal;isPopoutLocation(location: TabLocation): location is PopoutLocation
 internal;isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation
 internal;isTabTarget(target: DragTarget): target is TabTarget
+internal;isWidgetTarget(target: DragTarget): target is WidgetTarget_2
 beta;Item 
 deprecated;Item 
 beta;ItemProps 

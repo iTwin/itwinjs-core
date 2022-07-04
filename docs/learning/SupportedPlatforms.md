@@ -18,7 +18,8 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | Node Version | Supported |
 | - | - |
-| Node >=14.17 | ✔️ |
+| Node 16 (>=16.13) | ✔️ |
+| Node 14 (>=14.17) | ✔️ |
 | Node 12 (>=12.22) | ✔️ |
 | Node <12.22 | ❌ |
 | Node 10.x* | ❌ |

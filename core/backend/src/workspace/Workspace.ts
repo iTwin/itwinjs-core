@@ -10,10 +10,10 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { CloudSqlite, IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { CloudSqlite, NativeLibrary } from "@bentley/imodeljs-native";
 import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelHost, KnownLocations } from "../IModelHost";
+import { KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
@@ -32,47 +32,38 @@ export const WorkspaceSetting = {
   Databases: "workspace/databases",
 };
 
+/** Types used to identify cloud accounts for Workspaces.
+ *  @beta
+ */
 export namespace WorkspaceAccount {
-  /**
-   * The name of a WorkspaceAccount in a "cloud/accounts" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceAccount in a "cloud/accounts" setting. */
   export type Name = string;
 
   /** A member named `accountName` that specifies by an entry in a "cloud/accounts" setting */
   export interface Alias { accountName: string }
 
-  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting.
-   * @beta
-   */
+  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting. */
   export type Props = CloudSqlite.AccountAccessProps;
 }
 
+/** @beta */
 export namespace WorkspaceContainer {
-  /**
-   * The name of a WorkspaceContainer in a "cloud/containers" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceContainer in a "cloud/containers" setting. */
   export type Name = string;
 
-  /**
-   * The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
+  /** The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
    * Usually supplied via the `containerId` member of a "cloud/containers" setting.
    * `WorkspaceContainer.Id`s may:
    *  - only contain lower case letters, numbers or dashes
    *  - not start or end with a dash
    *  - not be shorter than 3 or longer than 63 characters
-   * @beta
    */
   export type Id = string;
 
   /** A member named `containerName` that specifies by an entry in a "cloud/containers" setting */
   export interface Alias { containerName: string }
 
-  /**
-   * Properties that specify a WorkspaceContainer.
-   * @beta
-   */
+  /** Properties that specify a WorkspaceContainer. */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
@@ -81,41 +72,24 @@ export namespace WorkspaceContainer {
   }
 }
 
+/** @beta */
 export namespace WorkspaceDb {
-  /**
-   * The name of a WorkspaceDb in a "workspace/databases" setting.
-   * @beta
-   */
+  /** The name of a WorkspaceDb in a "workspace/databases" setting. */
   export type Name = string;
 
-  /**
-   * The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier)
-   * @beta
-   */
+  /** The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier) */
   export type DbName = string;
 
-  /**
-   * The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier
-   * @beta
-   */
+  /** The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier */
   export type DbFullName = string;
 
-  /**
-   * The semver-format version identifier for a WorkspaceDb.
-   * @beta
-   */
+  /** The semver-format version identifier for a WorkspaceDb. */
   export type Version = string;
 
-  /**
-   * The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions.
-   * @beta
-   */
+  /** The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions. */
   export type VersionRange = string;
 
-  /**
-   * Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]].
-   * @beta
-   */
+  /** Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]]. */
   export interface Props extends CloudSqlite.DbNameProp {
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
     version?: VersionRange;
@@ -123,13 +97,15 @@ export namespace WorkspaceDb {
     includePrerelease?: boolean;
   }
 
-  /**
-   * Scope to increment for a version number.
+  /** Scope to increment for a version number.
    * @see semver.ReleaseType
    */
   export type VersionIncrement = "major" | "minor" | "patch";
 }
 
+/** Types used to identify Workspace resources
+ *  @beta
+ */
 export namespace WorkspaceResource {
   /**
    * The name for identifying WorkspaceResources in a [[WorkspaceDb]].
@@ -137,13 +113,10 @@ export namespace WorkspaceResource {
    *  - be blank or start or end with a space
    *  - be longer than 1024 characters
    * @note a single WorkspaceDb may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResource.Name.
-   * @beta
    */
   export type Name = string;
 
-  /** Properties that specify an individual WorkspaceResource within a WorkspaceDb.
-   * @beta
-   */
+  /** Properties that specify an individual WorkspaceResource within a [[WorkspaceDb]]. */
   export interface Props {
     /** the name of the resource within the WorkspaceDb */
     rscName: Name;
@@ -171,7 +144,7 @@ export interface WorkspaceDb {
   /** Get a blob resource from this WorkspaceDb, if present. */
   getBlob(rscName: WorkspaceResource.Name): Uint8Array | undefined;
   /** @internal */
-  getBlobReader(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO;
+  getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO;
 
   /**
    * Extract a local copy of a file resource from this WorkspaceDb, if present.
@@ -198,7 +171,9 @@ export interface WorkspaceDb {
   prefetch(): void;
 }
 
-/** The properties of the CloudCache used for Workspaces. */
+/** The properties of the CloudCache used for Workspaces.
+ * @beta
+ */
 export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
   /** if true, empty the cache before using it. */
   clearContents?: boolean;
@@ -233,7 +208,7 @@ export interface Workspace {
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
   /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: IModelJsNative.CloudCache;
+  readonly cloudCache?: SQLiteDb.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -267,7 +242,7 @@ export interface Workspace {
    * @param databaseName the database name, resolved via [[resolveDatabase]].
    * @see [[getWorkspaceDbFromProps]]
    */
-  getWorkspaceDb(databaseName: WorkspaceDb.Name,): Promise<WorkspaceDb>;
+  getWorkspaceDb(databaseName: WorkspaceDb.Name,): WorkspaceDb;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -291,8 +266,10 @@ export interface WorkspaceContainer {
   readonly id: WorkspaceContainer.Id;
   /** Workspace holding this WorkspaceContainer. */
   readonly workspace: Workspace;
-  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.) */
-  readonly cloudContainer?: IModelJsNative.CloudContainer;
+  /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)
+   * @internal
+  */
+  readonly cloudContainer?: SQLiteDb.CloudContainer;
 
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
@@ -314,8 +291,8 @@ export class ITwinWorkspace implements Workspace {
   public readonly settings: Settings;
 
   private _cloudCacheProps?: WorkspaceCloudCacheProps;
-  private _cloudCache?: IModelJsNative.CloudCache;
-  public get cloudCache(): IModelJsNative.CloudCache {
+  private _cloudCache?: SQLiteDb.CloudCache;
+  public get cloudCache(): SQLiteDb.CloudCache {
     if (undefined === this._cloudCache) {
       const cacheProps = {
         ...this._cloudCacheProps,
@@ -326,7 +303,7 @@ export class ITwinWorkspace implements Workspace {
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
       if (cacheProps.clearContents)
         fs.emptyDirSync(cacheProps.rootDir);
-      this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
+      this._cloudCache = SQLiteDb.createCloudCache(cacheProps);
     }
     return this._cloudCache;
   }
@@ -361,7 +338,7 @@ export class ITwinWorkspace implements Workspace {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
   }
 
-  public async getWorkspaceDb(dbAlias: string,) {
+  public getWorkspaceDb(dbAlias: string,) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
@@ -445,7 +422,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
-  public readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
+  public readonly cloudContainer?: SQLiteDb.CloudContainer | undefined;
   private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -476,7 +453,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (account?.accessName && account.storageType)
-      this.cloudContainer = new IModelHost.platform.CloudContainer({ accessToken: "", ...props, ...account });
+      this.cloudContainer = SQLiteDb.createCloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -517,9 +494,9 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return `${dbName}:${this.validateVersion(version)}`;
   }
 
-  public static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+  public static resolveCloudFileName(cloudContainer: SQLiteDb.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const dbName = props.dbName;
-    const dbs = cloudContainer.queryDatabases(`${dbName}%`); // get all databases that start with dbName
+    const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
     const versions = [];
     for (const db of dbs) {
@@ -549,7 +526,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
    * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
    * new content before the write lock is released, and thereafter should never be modified again.
    */
-  public static async makeNewVersion(cloudContainer: IModelJsNative.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
+  public static async makeNewVersion(cloudContainer: SQLiteDb.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
     const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
     const oldDb = this.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, versionType);
@@ -590,8 +567,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     const name = toDrop.dbName;
     const wsDb = this._wsDbs.get(name);
     if (wsDb === toDrop) {
-      await wsDb.close();
       this._wsDbs.delete(name);
+      await wsDb.close();
     }
   }
 
@@ -610,7 +587,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
 /**
  * Implementation of WorkspaceDb
- * @beta
+ * @internal
  */
 export class ITwinWorkspaceDb implements WorkspaceDb {
   /** file extension for local WorkspaceDbs */
@@ -670,10 +647,10 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   /** Get a BlobIO reader for a blob WorkspaceResource.
    * @note when finished, caller *must* call `close` on the BlobIO.
    */
-  public getBlobReader(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO {
+  public getBlobReader(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
-      const blobReader = new IModelJsNative.BlobIO();
+      const blobReader = SQLiteDb.createBlobIO();
       blobReader.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
       return blobReader;
     });
@@ -712,9 +689,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public prefetch(opts?: CloudSqlite.PrefetchProps) {
+  public prefetch(opts?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch | undefined {
     const cloudContainer = this.container.cloudContainer;
-    return (cloudContainer !== undefined) ? new IModelHost.platform.CloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
+    return (cloudContainer !== undefined) ? SQLiteDb.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
   }
 }
 
@@ -722,7 +699,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
  * An editable [[WorkspaceDb]]. This is used by administrators for creating and modifying `WorkspaceDb`s.
  * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
  * may be editing.
- * @beta
+ * @internal
  */
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   private static validateResourceName(name: WorkspaceResource.Name) {
@@ -760,7 +737,6 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.sqliteDb.saveChanges();
   }
 
-  /** @internal */
   public async createDb(version?: string) {
     if (!this.container.cloudContainer) {
       EditableWorkspaceDb.createEmpty(this.dbFileName);
@@ -784,8 +760,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     db.createDb(fileName);
     db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
-    db.saveChanges();
-    db.closeDb();
+    db.closeDb(true);
   }
 
   /** Add a new string resource to this WorkspaceDb.
@@ -836,10 +811,10 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
    * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
    */
-  public getBlobWriter(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO {
+  public getBlobWriter(rscName: WorkspaceResource.Name): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
-      const blobWriter = new IModelJsNative.BlobIO();
+      const blobWriter = SQLiteDb.createBlobIO();
       blobWriter.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
       return blobWriter;
     });

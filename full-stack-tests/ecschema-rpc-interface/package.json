@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.2.0-dev.72",
+  "version": "3.3.0-dev.40",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -47,7 +47,7 @@
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "openid-client": "^4.7.4",
     "puppeteer": "chrome-86"
   },
@@ -59,7 +59,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/puppeteer": "2.0.1",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
