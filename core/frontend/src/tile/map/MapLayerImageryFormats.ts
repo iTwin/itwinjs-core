@@ -10,6 +10,7 @@ import { RequestBasicCredentials } from "../../request/Request";
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import {
+  ArcGisFeatureProvider,
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
   AzureMapsLayerImageryProvider,
@@ -196,5 +197,10 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new TileUrlImageryProvider(settings); }
 }
 
+class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
+  public static override formatId = "ArcGisFeature";
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new ArcGisFeatureProvider(settings); }
+}
+
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat, ArcGisFeatureMapLayerFormat];
