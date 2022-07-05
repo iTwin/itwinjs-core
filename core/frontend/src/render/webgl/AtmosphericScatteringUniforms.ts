@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AtmosphericScattering } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { desync, sync } from "./Sync";
@@ -11,7 +11,9 @@ import { UniformHandle } from "./UniformHandle";
 
 export class AtmosphericScatteringUniforms implements WebGLDisposable {
   private readonly _earthCenter = new Float32Array(3);
-  private readonly _realEarthCenter = new Float32Array(3);
+  private readonly _earthCenterParam = new Float32Array(3);
+  private readonly _earthRotation = new Matrix3d();
+  private readonly _earthRadii = new Float32Array(3);
   private _atmosphericScattering?: AtmosphericScattering;
   private _scratchPoint3d = new Point3d();
   private _atmosphereRadius = 0.0;
@@ -38,8 +40,10 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     if (!this.atmosphericScattering) {
       return;
     }
-    this._updateRealEarthCenter(plan.earthCenter, target.uniforms.frustum.viewMatrix);
-    this._updateEarthCenter(this.atmosphericScattering.earthCenter, target.uniforms.frustum.viewMatrix);
+    this._updateEarthCenter(plan.globeCenter, target.uniforms.frustum.viewMatrix);
+    this._updateEarthRotation(plan.globeRotation);
+    this._updateEarthRadii(plan.globeRadii);
+    this._updateEarthCenterParam(this.atmosphericScattering.earthCenter, target.uniforms.frustum.viewMatrix);
     this._updateAtmosphereRadius(this.atmosphericScattering.atmosphereRadius);
     this._updateEarthRadius(this.atmosphericScattering.earthRadius);
     this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
@@ -49,23 +53,43 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     this._updateIsPlanar(this.atmosphericScattering.isPlanar);
   }
 
-  private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
+  private _updateEarthCenterParam(earthCenter: Point3d, viewMatrix: Transform) {
     viewMatrix.multiplyPoint3d(earthCenter, this._scratchPoint3d);
-    this._earthCenter[0] = this._scratchPoint3d.x;
-    this._earthCenter[1] = this._scratchPoint3d.y;
-    this._earthCenter[2] = this._scratchPoint3d.z;
+    this._earthCenterParam[0] = this._scratchPoint3d.x;
+    this._earthCenterParam[1] = this._scratchPoint3d.y;
+    this._earthCenterParam[2] = this._scratchPoint3d.z;
   }
 
-  private _updateRealEarthCenter(earthCenter: Vector3d | undefined, viewMatrix: Transform) {
+  private _updateEarthCenter(earthCenter: Point3d | undefined, viewMatrix: Transform) {
     if (undefined === earthCenter) {
-      this._realEarthCenter[0] = 0.0;
-      this._realEarthCenter[1] = 0.0;
-      this._realEarthCenter[2] = 0.0;
+      this._earthCenter[0] = 0.0;
+      this._earthCenter[1] = 0.0;
+      this._earthCenter[2] = 0.0;
     } else {
       viewMatrix.multiplyPoint3d(earthCenter, this._scratchPoint3d);
-      this._realEarthCenter[0] = this._scratchPoint3d.x;
-      this._realEarthCenter[1] = this._scratchPoint3d.y;
-      this._realEarthCenter[2] = this._scratchPoint3d.z;
+      this._earthCenter[0] = this._scratchPoint3d.x;
+      this._earthCenter[1] = this._scratchPoint3d.y;
+      this._earthCenter[2] = this._scratchPoint3d.z;
+    }
+  }
+
+  private _updateEarthRotation(earthRotation: Matrix3d | undefined) {
+    if (undefined === earthRotation) {
+      this._earthRotation.setZero();
+    } else {
+      this._earthRotation.setFrom(earthRotation);
+    }
+  }
+
+  private _updateEarthRadii(earthRadii: Point3d | undefined) {
+    if (undefined === earthRadii) {
+      this._earthRadii[0] = 0.0;
+      this._earthRadii[1] = 0.0;
+      this._earthRadii[2] = 0.0;
+    } else {
+      this._earthRadii[0] = 1.0 / earthRadii.x ** 2;
+      this._earthRadii[1] = 1.0 / earthRadii.y ** 2;
+      this._earthRadii[2] = 1.0 / earthRadii.z ** 2;
     }
   }
 
@@ -104,10 +128,17 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
       uniform.setUniform3fv(this._earthCenter);
   }
 
-  public bindRealEarthCenter(uniform: UniformHandle): void {
+  public bindEarthCenterParam(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setUniform3fv(this._realEarthCenter);
+      uniform.setUniform3fv(this._earthCenterParam);
   }
+
+  public bindEarthRadii(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform3fv(this._earthRadii);
+  }
+
+  public get earthRotation(): Matrix3d {return this._earthRotation;}
 
   public bindAtmosphereRadius(uniform: UniformHandle): void {
     if (!sync(this, uniform))

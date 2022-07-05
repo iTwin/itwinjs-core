@@ -55,6 +55,65 @@ const computeSceneDepthSky = `
 
 // #endregion GENERAL
 // #region SPHERE
+
+/**
+ *
+ * @param ellipsoidCenter - Center of globe (earth) in view coordinates.
+ * @param ellipsoidMatrix - Rotation matrix from Ecef to world.
+ * @param viewMatrix - Rotation matrix from world to view.
+ * @param ellipsoidRadii - Radiuses of ellipsoid in Ecef coordinate space.
+ * @param rayOrigin
+ * @param rayDirection
+ * @returns
+ */
+const rayEllipsoidIntersection = `
+vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 ellipsoidMatrix, mat3 viewMatrix, vec3 ellipsoidRadii, vec3 rayOrigin, vec3 rayDirection) {
+  vec3 ro, rd;
+
+  // transform ray to be relative to sphere
+  mat3 inverseRotation = inverse(ellipsoidMatrix) * inverse(viewMatrix);
+  rd = inverseRotation * rayDirection;
+  ro = inverseRotation * (rayOrigin - ellipsoidCenter);
+
+  mat3 scale = mat3(ellipsoidRadii.x, 0.0, 0.0, 0.0, ellipsoidRadii.y, 0.0, 0.0, 0.0, ellipsoidRadii.z);
+  mat3 scaleInverse = inverse(scale);
+
+  vec3 rdi = normalize(scaleInverse * rd);
+  vec3 roi = scaleInverse * ro;
+
+  vec2 toAndThrough = raySphere(vec3(0.0), 1.0, roi, rdi);
+  if (toAndThrough[1] > 0.0) {
+    vec3 pt = roi + rdi * toAndThrough[0];
+    return vec2(
+      distance(ro, scale * pt),
+      distance(scale * pt, scale * (pt + rdi * toAndThrough[1]))
+    );
+  }
+  return toAndThrough;
+  // float a = (rayDirEllipsoid.x*rayDirEllipsoid.x*ellipsoidRadii.x)
+  //   + (rayDirEllipsoid.y*rayDirEllipsoid.y*ellipsoidRadii.y)
+  //   + (rayDirEllipsoid.z*rayDirEllipsoid.z*ellipsoidRadii.z);
+  // float b = (rayOriginEllipsoid.x*rayDirEllipsoid.x*ellipsoidRadii.x)
+  //   + (rayOriginEllipsoid.y*rayDirEllipsoid.y*ellipsoidRadii.y)
+  //   + (rayOriginEllipsoid.z*rayDirEllipsoid.z*ellipsoidRadii.z);
+  // float c = (rayOriginEllipsoid.x*rayOriginEllipsoid.x*ellipsoidRadii.x)
+  //   + (rayOriginEllipsoid.y*rayOriginEllipsoid.y*ellipsoidRadii.y)
+  //   + (rayOriginEllipsoid.z*rayOriginEllipsoid.z*ellipsoidRadii.z)-1.0;
+  // float d = ((b*b)-(4.0*a*c));
+
+  // if (d > 0.0) {
+  //   float s = sqrt(d);
+  //   float distanceToSphereNear = max(0.0, (-b - s) / (2.0 * a));
+  //   float distanceToSphereFar = (-b + s) / (2.0 * a);
+
+  //   if (distanceToSphereFar >= 0.0) {
+  //     return vec2(distanceToSphereNear, distanceToSphereFar - distanceToSphereNear);
+  //   }
+  // }
+  // return vec2(max_float, 0.0);
+}
+`;
+
 const raySphere = `
 vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDir) {
   vec3 offset = rayOrigin - sphereCenter;
@@ -157,24 +216,16 @@ const applyAtmosphericScatteringSphere = `
 vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOrigin, vec3 dirToSun, vec4 baseColor) {
   // We get the distance the ray traveled from the eye to the atmosphere and
   // the distance it traveled in the atmosphere to reach the fragment.
-  vec2 hitInfo = raySphere(u_earthCenter, u_atmosphereRadius, rayOrigin, rayDir);
+  vec3 atmosphereRadii = u_earthRadii + u_atmosphereRadius;
+  atmosphereRadii = vec3(1.0, 0.1, 0.1) * u_atmosphereRadius;
+  vec2 hitInfo = rayEllipsoidIntersection(u_earthCenter, u_earthRotation, u_viewMatrix, atmosphereRadii, rayOrigin, rayDir);
+  // vec2 hitInfo = raySphere(u_earthCenter, u_atmosphereRadius, rayOrigin, rayDir);
+
   float distanceToAtmosphere = hitInfo[0];
   // We remove distance through atmosphere beyond the fragment's position
   float distanceThroughAtmosphere = min(hitInfo[1], sceneDepth - distanceToAtmosphere);
 
-  // float tempDiff = length(v_eyeSpace - u_earthCenter) - length(sceneDepth - u_earthCenter);
-  // vec4 temp;
-  // if (tempDiff >= 0.0 && tempDiff <= 10000.0) {
-  //   temp = vec4(0.0, tempDiff / 10000.0, 0.0, 1.0); // GREEN
-  // } else if (tempDiff < 0.0 && tempDiff >= -10000.0) {
-  //   temp = vec4(tempDiff / -10000.0, 0.0, 0.0, 1.0); // RED
-  // } else if (tempDiff < -10000.0) {
-  //   temp = vec4(1.0, 0.6, 0.0, 1.0); // ORANGE
-  // } else {
-  //   temp = vec4(0.0, 0.0, 1.0, 1.0); // BLUE
-  // }
-
-  float debugVal = sceneDepth - distanceToAtmosphere > hitInfo[1] ? 1.0 : 0.0;
+  vec3 debugVal = vec3(distanceToAtmosphere / u_atmosphereRadius);
 
   if (distanceThroughAtmosphere > 0.0) {
     // point on ray where atmosphere starts
@@ -182,10 +233,11 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
     vec3 light = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere - epsilon * 2.0, dirToSun, baseColor.rgb);
     // return vec4(1.0, baseColor.gba);
     // return vec4(rayDir, 1.0);
-    // return vec4(1.0);
+    return vec4(1.0);
     // return vec4(temp, temp, temp, 1.0);
     // return temp;
     // return vec4(debugVal, debugVal, debugVal, 1.0);
+    // return vec4(debugVal.rgb, 1.0);
     return vec4(light, baseColor.a);
   }
   // return vec4(0.0, 0.0, 0.0, 1.0);
@@ -194,6 +246,7 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec3 rayOri
   // return vec4(temp, temp, temp, 1.0);
   // return temp;
   // return vec4(debugVal, debugVal, debugVal, 1.0);
+  // return vec4(debugVal.rgb, 1.0);
   return baseColor;
 }
 `;
@@ -336,6 +389,7 @@ vec3 calculateScatteringPlanar(vec3 rayOrigin, vec3 rayDir, float rayLength, vec
 const getProjectedSceneDepth = `
 float getProjectedSceneDepth(vec3 initialPoint, vec3 sphereOrigin, float sphereRadius) {
   // return length(v_eyeSpace);
+  return rayEllipsoidIntersection(u_earthCenter, u_earthRotation, u_viewMatrix, u_earthRadii, vec3(0.0), normalize(initialPoint))[0];
   return raySphere(sphereOrigin, sphereRadius, vec3(0.0), normalize(initialPoint))[0];
 }
 `;
@@ -540,7 +594,31 @@ export function addAtmosphericScattering(
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
         // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-        params.target.uniforms.atmosphericScattering.bindRealEarthCenter(uniform);
+        params.target.uniforms.atmosphericScattering.bindEarthCenterParam(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+
+  frag.addUniform(
+    "u_earthRotation",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_earthRotation", (uniform, params) => {
+        uniform.setMatrix3(
+          Matrix3.fromMatrix3d(params.target.uniforms.atmosphericScattering.earthRotation)
+        );
+      });
+    },
+    VariablePrecision.High
+  );
+
+  frag.addUniform(
+    "u_earthRadii",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_earthRadii", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthRadii(uniform);
       });
     },
     VariablePrecision.High
@@ -595,6 +673,7 @@ export function addAtmosphericScattering(
   );
 
   frag.addFunction(raySphere);
+  frag.addFunction(rayEllipsoidIntersection);
   frag.addFunction(linePlaneIntersection);
   frag.addFunction(isLineIntersectingPlane);
   frag.addFunction(getAngle);
@@ -667,8 +746,7 @@ export function _addAtmosphericScattering(
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-        params.target.uniforms.atmosphericScattering.bindRealEarthCenter(uniform);
+        params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
       });
     },
     VariablePrecision.High

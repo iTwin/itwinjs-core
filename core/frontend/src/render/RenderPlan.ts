@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
+import { ClipVector, Constant, Matrix3d, Point3d, Transform, Vector3d, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, AtmosphericScattering, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
@@ -47,7 +47,9 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
-  readonly earthCenter?: Vector3d;
+  readonly globeCenter?: Point3d;
+  readonly globeRotation?: Matrix3d;
+  readonly globeRadii?: Point3d;
 }
 
 /** @internal */
@@ -119,6 +121,15 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   if (analysisStyle?.thematic)
     analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
+  let globeCenter;
+  let globeRotation;
+  let globeRadii;
+  if (isGlobeMode3D) {
+    globeCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
+    globeRotation = view.iModel.getMapEcefToDb(0).matrix;
+    globeRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
+  }
+
   return {
     is3d,
     viewFlags,
@@ -145,6 +156,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
-    earthCenter: vp.view.getEarthCenter(),
+    globeCenter,
+    globeRotation,
+    globeRadii,
   };
 }
