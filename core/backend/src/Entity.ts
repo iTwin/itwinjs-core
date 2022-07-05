@@ -8,6 +8,7 @@
 
 import { Id64, Id64Set, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { ConcreteEntityId } from "./ConcreteEntityId";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -106,8 +107,11 @@ export class Entity {
    * @see collectReferenceIds
    * @beta
    */
-  public getReferenceIds(): Id64Set {
-    const referenceIds = new Set<Id64String>();
+  public getReferenceIds(): Set<ConcreteEntityId>;
+  /** @deprecated raw ids are implicitly assumed to be element references, return ConcreteEntityIds instead */
+  public getReferenceIds(): Set<Id64String>;
+  public getReferenceIds(): Set<ConcreteEntityId> | Set<Id64String> {
+    const referenceIds = new Set<ConcreteEntityId>();
     this.collectReferenceIds(referenceIds);
     return referenceIds;
   }
@@ -115,13 +119,17 @@ export class Entity {
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
    * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.
-   * @param referenceIds The Id64Set to populate with reference Ids.
+   * @param _referenceIds The Id64Set to populate with reference Ids.
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
    * @beta
    */
-  protected collectReferenceIds(_referenceIds: Id64Set): void {
+  protected collectReferenceIds(_referenceIds: Set<ConcreteEntityId>): void;
+  /** @deprecated raw ids are implicitly assumed to be element references, add ConcreteEntityId's to the set instead */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  protected collectReferenceIds(_referenceIds: Set<Id64String>): void;
+  protected collectReferenceIds(_referenceIds: Set<ConcreteEntityId> | Set<Id64String>): void {
     return; // no references by default
   }
 

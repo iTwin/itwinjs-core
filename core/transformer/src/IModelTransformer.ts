@@ -718,15 +718,12 @@ export class IModelTransformer extends IModelExportHandler {
         // it looks like I'm going to have to deprecate the string return type of collectElementReferences
         // because I need classes to declare whether their references are to an element or not
         // raw strings will be interpreted as to pointing to an element
-        const pendingRef: PendingReference = {
-          referenced: referenceId,
-          referencer: EntityKey.from(entity),
-        };
+        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "m" : "n"}${entity.id}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
       }
       if (referenceState.needsElemImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
-        const pendingRef: PendingReference = { referenced: referenceId, referencer: entity.id, isModelRef: true };
+        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "e" : "n"}${entity.id}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
       }
     }
