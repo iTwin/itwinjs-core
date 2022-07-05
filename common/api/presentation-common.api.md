@@ -2410,12 +2410,14 @@ export enum RelatedPropertiesSpecialValues {
 // @public
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
+    forceCreateRelationshipCategory?: boolean;
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
+    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     // @beta
     skipIfDuplicate?: boolean;
 }
