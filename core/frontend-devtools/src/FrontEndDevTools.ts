@@ -28,9 +28,10 @@ import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, QueryScheduleScriptTool, SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool,
-  ToggleWiremeshTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
+  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
@@ -60,7 +61,7 @@ import {
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
-import { SelectElementsByIdTool } from "./tools/SelectionTools";
+import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
@@ -120,6 +121,7 @@ export class FrontendDevTools {
       DefaultTileSizeModifierTool,
       DetachMapLayersTool,
       DumpPlanProjectionSettingsTool,
+      DumpSelectionSetTool,
       EdgeDetectionEffect,
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
@@ -150,6 +152,7 @@ export class FrontendDevTools {
       RealityTransitionTool,
       ReorderMapLayers,
       ReportWebGLCompatibilityTool,
+      ReverseScheduleScriptTool,
       SaturationConfig,
       SaturationEffect,
       SaveRenderingStyleTool,
@@ -157,6 +160,7 @@ export class FrontendDevTools {
       SelectElementsByIdTool,
       SetAASamplesTool,
       SetAspectRatioSkewTool,
+      SetScheduleScriptTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
       SharpenEffect,

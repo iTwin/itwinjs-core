@@ -12,6 +12,7 @@ alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
 alpha;CopyElementsTool 
 alpha;CreateArcTool 
 alpha;CreateBCurveTool 
+alpha;CreateBoxTool 
 alpha;CreateCircleTool 
 alpha;CreateConePhase
 alpha;CreateConeTool 
@@ -25,6 +26,8 @@ alpha;CreateLineStringTool
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
 alpha;CreateSphereTool 
+alpha;CreateTorusPhase
+alpha;CreateTorusTool 
 alpha;CurveData
 alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 

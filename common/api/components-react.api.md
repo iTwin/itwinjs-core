@@ -703,6 +703,14 @@ export interface DateFieldProps extends CommonProps {
     timeDisplay?: TimeDisplay;
 }
 
+// @public
+export interface DateFormatOptions {
+    // (undocumented)
+    locales?: string | string[] | undefined;
+    // (undocumented)
+    options?: Intl.DateTimeFormatOptions | undefined;
+}
+
 // @alpha
 export function DatePicker(props: DatePickerProps): JSX.Element;
 
@@ -3559,7 +3567,7 @@ export interface TimeSpec {
 }
 
 // @public
-export const toDateString: (date: Date, timeZoneOffset?: number | undefined) => string;
+export const toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string;
 
 // @public
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
@@ -3730,7 +3738,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
 
 // @public
-export const toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string;
+export const toTimeString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
@@ -4043,6 +4051,7 @@ export const TreeNodeRenderer: React.MemoExoticComponent<(props: TreeNodeRendere
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
     checkboxRenderer?: NodeCheckboxRenderer;
+    children?: React.ReactNode;
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
