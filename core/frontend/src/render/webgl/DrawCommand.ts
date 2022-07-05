@@ -297,7 +297,7 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
             continue;
 
           const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites))
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
             continue;
 
           break;
