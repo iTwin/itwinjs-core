@@ -148,6 +148,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
+    private isPromise<T>(response: Promise<IModelJsNative.ECPresentationManagerResponse<T>> | IModelJsNative.ECPresentationManagerResponse<T>): response is Promise<IModelJsNative.ECPresentationManagerResponse<T>> {
+      return response && Object.prototype.toString.call(response) === "[object Promise]";
+    }
     public dispose() {
       this._nativeAddon.dispose();
     }
@@ -181,20 +184,14 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
-      return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
-        const interval = setInterval(() => {
-          const pollResult = this._nativeAddon.pollResponse(requestGuid);
-          if (pollResult.error) {
-            if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {
-              reject(new PresentationError(this.getStatus(pollResult.error.status), pollResult.error.message));
-              clearInterval(interval);
-            }
-            return; // ignore 'pending' responses
-          }
-          resolve(this.createSuccessResponse(pollResult));
-          clearInterval(interval);
-        }, 20);
+      const response = this._nativeAddon.queueRequest(db, options);
+      if (!this.isPromise(response))
+        this.handleResult(response);
+
+      return (response as Promise<IModelJsNative.ECPresentationManagerResponse<string>>).then((result) => {
+        if (result.error)
+          throw new PresentationError(this.getStatus(result.error.status), result.error.message);
+        return this.createSuccessResponse(result);
       });
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
