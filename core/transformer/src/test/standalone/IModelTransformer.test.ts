@@ -1849,7 +1849,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("handle out-of-order references in aspects during consolidations", async () => {
+  it.only("handle out-of-order references in aspects during consolidations", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
 
@@ -1891,7 +1891,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
+  it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
     // TODO: choose a reusable scenario with more aspects
     // confirm the assumption that there are multiple aspect classes
     const { sourceDb, targetDb, importer, transformer } = await ReusableSnapshots.extensiveTestScenario;

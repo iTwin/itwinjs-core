@@ -23,7 +23,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
-import { hasEntityChanged, IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
+import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
@@ -1118,6 +1118,8 @@ export class IModelTransformer extends IModelExportHandler {
     // 5. create a remapping now that it's imported
     // 6. resolve any pending references now that it's imported
     // 7. add provenance
+    sourceAspects.forEach((a) => this.collectUnmappedReferences(a));
+
     // const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
     const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
@@ -1126,8 +1128,10 @@ export class IModelTransformer extends IModelExportHandler {
         !isExternalSourceAspectFromTransformer
       );
     });
+
     for (let i = 0; i < targetIds.length; ++i) {
       this.context.remapElementAspect(sourceAspects[i].id, targetIds[i]);
+      this.resolvePendingReferences(sourceAspects[i]);
     }
   }
 

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { Element, Entity } from "@itwin/core-backend";
+import { Entity } from "@itwin/core-backend";
 import { ConcreteEntityId } from "./EntityUnifier";
 
 // possible table types in current BisCore
@@ -22,22 +22,38 @@ export class EntityMap<V> {
     return ConcreteEntityId.from(entity);
   }
 
+  public clear(): void {
+    return this._map.clear();
+  }
+
   public has(entity: Entity) {
     return this._map.has(EntityMap.makeKey(entity)
     );
   }
 
   public set(entity: Entity, val: V): EntityMap<V> {
-    this._map.set(EntityMap.makeKey(entity), val);
+    return this.setByKey(EntityMap.makeKey(entity), val);
+  }
+
+  public setByKey(k: EntityKey, val: V): EntityMap<V> {
+    this._map.set(k, val);
     return this;
   }
 
   public get(entity: Entity): V | undefined {
-    return this._map.get(EntityMap.makeKey(entity));
+    return this.getByKey(EntityMap.makeKey(entity));
+  }
+
+  public getByKey(k: EntityKey): V | undefined {
+    return this._map.get(k);
   }
 
   public delete(entity: Entity): boolean {
-    return this._map.delete(EntityMap.makeKey(entity));
+    return this.deleteByKey(EntityMap.makeKey(entity));
+  }
+
+  public deleteByKey(k: EntityKey): boolean {
+    return this._map.delete(k);
   }
 
   public keys() {
