@@ -1108,6 +1108,15 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
+  /** Get the serialized schema in JSON format of the given name asynchronously. */
+  public async getSchemaAsync(schemaName: string): Promise<string> {
+    try {
+      return await this.nativeDb.getSchemaAsync(schemaName);
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
     return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
