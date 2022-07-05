@@ -64,6 +64,14 @@ export class EntityMap<V> {
     return this._map.values();
   }
 
+  public entries() {
+    return this._map.entries();
+  }
+
+  public [Symbol.iterator]() {
+    return this._map[Symbol.iterator]();
+  }
+
   public get size() {
     return this._map.size;
   }

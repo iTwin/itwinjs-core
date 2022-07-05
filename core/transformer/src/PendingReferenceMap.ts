@@ -8,7 +8,7 @@
 
 import { Entity, Model } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import { EntityKey, EntityMap } from "./EntityMap";
+import { EntityMap } from "./EntityMap";
 import { ConcreteEntityId } from "./EntityUnifier";
 
 /**
@@ -35,17 +35,16 @@ namespace EntityReference {
  * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
  * @internal
  */
-interface PendingReference {
+export interface PendingReference {
   referencer: ConcreteEntityId;
   referenced: EntityReference;
 }
 
-namespace PendingReference {
-  export function make(referencer: Entity, referenced: Entity): PendingReference {
-    return {
-      referencer: ConcreteEntityId.from(referencer),
-      referenced: EntityReference.from(referenced),
-    };
+export namespace PendingReference {
+  export function from(referencer: Entity | ConcreteEntityId, referenced: Entity | EntityReference): PendingReference {
+    if (typeof referencer !== "string") referencer = ConcreteEntityId.from(referencer);
+    if (typeof referenced !== "string") referenced = EntityReference.from(referenced);
+    return { referencer, referenced };
   }
 
   export function toKey(props: PendingReference): string {
@@ -62,14 +61,13 @@ namespace PendingReference {
  * a map that supports using PendingReferences objects as structural keys,
  * as well as getting a list of referencers from a referencee (called referenced)
  */
-export class PendingReferenceMap<T> implements Map<PendingReference, T> {
-  private _map = new EntityMap<T>();
+export class PendingReferenceMap<T> {
+  private _map = new Map<string, T>();
   private _referencedToReferencers = new EntityMap<Set<ConcreteEntityId>>();
 
-  public getReferencers(referenced: Entity): Set<Id64String> {
+  public getReferencers(referenced: Entity): Set<ConcreteEntityId> {
     let referencers = this._referencedToReferencers.get(referenced);
     if (referencers === undefined) {
-      // lazy add an empty entry if there wasn't one
       referencers = new Set();
       this._referencedToReferencers.set(referenced, referencers);
     }
@@ -80,17 +78,12 @@ export class PendingReferenceMap<T> implements Map<PendingReference, T> {
   public clear(): void { this._map.clear(); }
 
   public delete(ref: PendingReference): boolean {
+    const deleteResult = this._map.delete(PendingReference.toKey(ref));
     const referencedKey = EntityReference.toEntityId(ref.referenced);
-    const deleteResult = this._map.deleteByKey(referencedKey);
     const referencers = this._referencedToReferencers.getByKey(referencedKey);
     if (referencers !== undefined)
       referencers.delete(ref.referencer);
     return deleteResult;
-  }
-
-  public forEach(callbackfn: (value: T, key: PendingReference, map: Map<PendingReference, T>) => void, thisArg?: any): void {
-    for (const [key, val] of this._map)
-      callbackfn.call(thisArg, val, PendingReference.fromKey(key), this);
   }
 
   public get(ref: PendingReference): T | undefined {
@@ -103,34 +96,17 @@ export class PendingReferenceMap<T> implements Map<PendingReference, T> {
 
   public set(ref: PendingReference, value: T): this {
     this._map.set(PendingReference.toKey(ref), value);
-    let referencers = this._referencedToReferencers.get(ref.referenced);
+    const referencedKey = EntityReference.toEntityId(ref.referenced);
+    let referencers = this._referencedToReferencers.getByKey(referencedKey);
     if (referencers === undefined) {
       referencers = new Set();
-      this._referencedToReferencers.set(ref.referenced, referencers);
+      this._referencedToReferencers.setByKey(referencedKey, referencers);
     }
     referencers.add(ref.referencer);
     return this;
   }
 
   public get size(): number { return this._map.size; }
-
-  public entries(): IterableIterator<[PendingReference, T]> {
-    return this[Symbol.iterator]();
-  }
-
-  public *keys(): IterableIterator<PendingReference> {
-    for (const key of this._map.keys())
-      yield PendingReference.fromKey(key);
-  }
-
-  public values(): IterableIterator<T> {
-    return this._map.values();
-  }
-
-  public *[Symbol.iterator](): IterableIterator<[PendingReference, T]> {
-    for (const [key, val] of this._map)
-      yield [PendingReference.fromKey(key), val];
-  }
 
   public get [Symbol.toStringTag](): string { return "PendingReferenceMap"; }
 }

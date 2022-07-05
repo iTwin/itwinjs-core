@@ -25,7 +25,7 @@ import {
 import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { PendingReferenceMap } from "./PendingReferenceMap";
+import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
 import { EntityUnifier } from "./EntityUnifier";
 
@@ -714,11 +714,20 @@ export class IModelTransformer extends IModelExportHandler {
       }
       if (referenceState.needsModelImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
-        this._pendingReferences.set({referenced: referenceId, referencer: entity.id, isModelRef: true}, thisPartialElem);
+        // NOTE:
+        // it looks like I'm going to have to deprecate the string return type of collectElementReferences
+        // because I need classes to declare whether their references are to an element or not
+        // raw strings will be interpreted as to pointing to an element
+        const pendingRef: PendingReference = {
+          referenced: referenceId,
+          referencer: EntityKey.from(entity),
+        };
+        this._pendingReferences.set(pendingRef, thisPartialElem);
       }
       if (referenceState.needsElemImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
-        this._pendingReferences.set({referenced: referenceId, referencer: entity.id, isModelRef: false}, thisPartialElem);
+        const pendingRef: PendingReference = { referenced: referenceId, referencer: entity.id, isModelRef: true };
+        this._pendingReferences.set(pendingRef, thisPartialElem);
       }
     }
   }
@@ -853,11 +862,11 @@ export class IModelTransformer extends IModelExportHandler {
     }
   }
 
-  private resolvePendingReferences(entity: Element | Model | Relationship | ElementAspect,) {
+  private resolvePendingReferences(entity: Element | Model | Relationship | ElementAspect) {
     // FIXME: support non element entities
     const isModelRef = entity instanceof Model;
-    for (const referencer of this._pendingReferences.getReferencers(entity.id)) {
-      const key = { referencer, referenced: entity.id, isModelRef };
+    for (const referencer of this._pendingReferences.getReferencers(entity)) {
+      const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
       pendingRef.resolveReference(entity.id, isModelRef);
