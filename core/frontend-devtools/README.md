@@ -299,6 +299,7 @@ These keysins control the planar masking of reality models.
   * "children": For each tile, draw a box around the volume of each of its child tiles, color-coded such that green indicates an empty child tile and blue a non-empty child tile.
   * "sphere": Bounding sphere representing the full range of each tile.
 * `fdt time tile load` - Purges all tile trees from memory and reloads the contents of the selected viewport. Outputs to the notifications center the time elapsed once all tiles required for the view are loaded and displayed.
+* `fdt hilite mode` - Changes the ModelSubCategoryHiliteMode for the HiliteSet associated with the selected viewport. It takes a single argument: "union" or "intersection".
 * `fdt hilite settings` - Modifies the hilite settings for the selected viewport. If no arguments are specified, it resets them to the defaults. Otherwise, each argument modifies an aspect of the current settings:
   * "r", "g", or "b": An integer in [0..255] specifying the red, green, or blue component of the hilite color.
   * "v", "h": The visible or hidden ratio in [0..1].
