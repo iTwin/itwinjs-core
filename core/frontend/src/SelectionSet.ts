@@ -200,7 +200,7 @@ export class HiliteSet {
 
   /** The set of hilited subcategories.
    * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[models]].
-   * @see [[###TODO]] to obtain the set of subcategories associated with one or more [Category]($backend)'s.
+   * @see [[IModelConnection.Categories]] to obtain the set of subcategories associated with one or more [Category]($backend)'s.
    */
   public readonly subcategories: Id64.Uint32Set;
 
