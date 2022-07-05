@@ -49,6 +49,9 @@ export interface TreeNodeRendererProps extends CommonProps {
    * @internal
    */
   onLabelRendered?: (node: TreeModelNode) => void;
+
+  /** Child components to render inside the node.*/
+  children?: React.ReactNode;
 }
 
 /**
@@ -100,7 +103,9 @@ export const TreeNodeRenderer = React.memo((props: TreeNodeRendererProps) => {
       onMouseMove={() => props.treeActions.onNodeMouseMove(props.node.id)}
       onClickExpansionToggle={onExpansionToggle}
       renderOverrides={{ renderCheckbox: props.checkboxRenderer }}
-    />
+    >
+      {props.children}
+    </TreeNode>
   );
 });
 

@@ -21,7 +21,6 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
@@ -53,14 +52,19 @@ export interface OsmBuildingDisplayOptions {
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static override get className() { return "DisplayStyle"; }
-  private _scheduleState?: RenderScheduleState;
+  private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+  private _assigningScript = false;
 
-  /** Event raised just before the [[scheduleScriptReference]] property is changed. */
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+   * @deprecated use [[onScheduleScriptChanged]].
+   */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  /** Event raised just before the [[scheduleScript]] property is changed. */
+  public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
   public readonly onOSMBuildingDisplayChanged = new BeEvent<(osmBuildingDisplayEnabled: boolean) => void>();
 
@@ -80,7 +84,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
 
     if (source)
-      this._scheduleState = source._scheduleState;
+      this._scriptReference = source._scriptReference;
 
     if (styles) {
       // ###TODO Use DisplayStyleSettings.planarClipMasks
@@ -97,66 +101,69 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public async load(): Promise<void> {
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
     // Preserve it if still usable.
-    if (this._scheduleState) {
-      if (this.settings.renderTimeline === this._scheduleState.sourceId) {
+    if (this._scriptReference) {
+      if (this.settings.renderTimeline === this._scriptReference.sourceId) {
         // The script came from the same RenderTimeline element. Keep it.
         return;
       }
 
       if (undefined === this.settings.renderTimeline) {
-        // The script cam from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
-        if (this.id === this._scheduleState.sourceId || !Id64.isValidId64(this.id))
+        // The script came from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
+        if (this.id === this._scriptReference.sourceId || !Id64.isValidId64(this.id))
           return;
       }
     }
 
-    if (undefined !== this.settings.renderTimeline)
-      await this.loadScheduleStateFromTimeline(this.settings.renderTimeline);
+    // The schedule script stored in JSON properties takes precedence over the RenderTimeline if both are defined.
+    if (this.settings.scheduleScriptProps)
+      this.loadScriptReferenceFromScript(this.settings.scheduleScriptProps);
     else
-      this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
+      await this.loadScriptReferenceFromTimeline(this.settings.renderTimeline);
   }
 
-  private loadScheduleStateFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps> | undefined): void {
+  private loadScriptReferenceFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps>): void {
     let newState;
-    if (scriptProps) {
+    try {
+      const script = RenderSchedule.Script.fromJSON(scriptProps);
+      if (script)
+        newState = new RenderSchedule.ScriptReference(this.id, script);
+    } catch (_) {
+      // schedule state is undefined.
+    }
+
+    if (newState !== this._scriptReference) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(newState?.script);
+      this._scriptReference = newState;
+    }
+  }
+
+  private async loadScriptReferenceFromTimeline(timelineId: Id64String | undefined): Promise<void> {
+    let newState;
+    if (timelineId && Id64.isValidId64(timelineId)) {
       try {
-        const script = RenderSchedule.Script.fromJSON(scriptProps);
-        if (script)
-          newState = new RenderScheduleState(this.id, script);
+        // If a subsequent call to loadScriptReferenceFromTimeline is made while we're awaiting this one, we'll abort this one.
+        const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
+        const timeline = await promise;
+        if (promise !== this._queryRenderTimelinePropsPromise)
+          return;
+
+        if (timeline) {
+          const scriptProps = JSON.parse(timeline.script);
+          const script = RenderSchedule.Script.fromJSON(scriptProps);
+          if (script)
+            newState = new RenderSchedule.ScriptReference(timelineId, script);
+        }
       } catch (_) {
         // schedule state is undefined.
       }
     }
 
-    if (newState !== this._scheduleState) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
-      this._scheduleState = newState;
-    }
-  }
-
-  private async loadScheduleStateFromTimeline(timelineId: Id64String): Promise<void> {
-    let newState;
-    try {
-      // If a subsequent call to loadScheduleStateFromTimeline is made while we're awaiting this one, we'll abort this one.
-      const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
-      const timeline = await promise;
-      if (promise !== this._queryRenderTimelinePropsPromise)
-        return;
-
-      if (timeline) {
-        const scriptProps = JSON.parse(timeline.script);
-        const script = RenderSchedule.Script.fromJSON(scriptProps);
-        if (script)
-          newState = new RenderScheduleState(timelineId, script);
-      }
-    } catch (_) {
-      // schedule state is undefined.
-    }
-
     this._queryRenderTimelinePropsPromise = undefined;
-    if (newState !== this._scheduleState) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
-      this._scheduleState = newState;
+    if (newState !== this._scriptReference) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(newState?.script);
+      this._scriptReference = newState;
     }
   }
 
@@ -269,7 +276,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get name(): string { return this.code.value; }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
-   * animating the contents of the view, and update [[scheduleScriptReference]] using the script associated with the [RenderTimeline]($backend) element.
+   * animating the contents of the view, and update [[scheduleScript]] using the script associated with the [RenderTimeline]($backend) element.
    * @see [DisplayStyleSettings.renderTimeline]($common).
    */
   public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
@@ -277,7 +284,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.renderTimeline = timelineId;
 
     // Await async loading if necessary.
-    // Note the `await` in loadScheduleStateFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
+    // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
     if (this._queryRenderTimelinePropsPromise)
       await this._queryRenderTimelinePropsPromise;
   }
@@ -286,35 +293,35 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[changeRenderTimeline]] to change the script.
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
-    return this._scheduleState?.script;
+    return this._scriptReference?.script;
+  }
+
+  public set scheduleScript(script: RenderSchedule.Script | undefined) {
+    if (script === this.scheduleScript)
+      return;
+
+    try {
+      const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
+      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(script);
+      this._scriptReference = scriptRef;
+
+      this._assigningScript = true;
+      this.settings.scheduleScriptProps = script?.toJSON();
+
+      if (!script)
+        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+    } finally {
+      this._assigningScript = false;
+    }
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @see [[changeRenderTimeline]] to change the script.
+   * @deprecated Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this._scheduleState;
-  }
-
-  /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this._scheduleState;
-  }
-
-  /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated -
-   * no symbology changes, transforms, or clipping - because the backend tile generator requires a *persistent* element to host the script for those features to work.
-   * @internal
-   */
-  public setScheduleState(state: RenderScheduleState | undefined): void {
-    if (state === this._scheduleState)
-      return;
-
-    this.onScheduleScriptReferenceChanged.raiseEvent(state);
-    this._scheduleState = state;
-
-    // eslint-disable-next-line deprecation/deprecation
-    this.settings.scheduleScriptProps = state?.script.toJSON();
+    return this._scriptReference;
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.
@@ -796,20 +803,27 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   protected registerSettingsEventListeners(): void {
-    // eslint-disable-next-line deprecation/deprecation
     this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
-      if (undefined === this.settings.renderTimeline)
-        this.loadScheduleStateFromScript(scriptProps);
+      if (this._assigningScript)
+        return;
+
+      try {
+        this._assigningScript = true;
+        if (scriptProps)
+          this.loadScriptReferenceFromScript(scriptProps);
+        else
+          this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+      } finally {
+        this._assigningScript = false;
+      }
     });
 
     this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
       // Cancel any in-progress loading of script from timeline.
       this._queryRenderTimelinePropsPromise = undefined;
 
-      if (undefined !== newTimeline)
-        this.loadScheduleStateFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
-      else
-        this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
+      if (!this.settings.scheduleScriptProps)
+        this.loadScriptReferenceFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {
