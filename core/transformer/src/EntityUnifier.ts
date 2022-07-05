@@ -12,22 +12,6 @@ import { Id64String } from "@itwin/core-bentley";
 import { DbResult, ElementAspectProps, ElementProps, IModelError, RelationshipProps } from "@itwin/core-common";
 import { IModelTransformer } from "./IModelTransformer";
 
-// TODO: rename prefixes to `e` and `n`
-/** Elements and non-element entities have different id sequences, they can overlap each other, but not within themselves
- * @internal
- */
-export type ConcreteEntityId = `Element${Id64String}` | `NonElement${Id64String}`;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export namespace ConcreteEntityId {
-  // FIXME: remove make*
-  export function makeElement(id: Id64String): ConcreteEntityId { return `Element${id}`; }
-  export function makeNonElement(id: Id64String): ConcreteEntityId { return `NonElement${id}`; }
-  export function from(entity: Entity): ConcreteEntityId {
-    return `${entity instanceof Element ? "Element" : "NonElement"}:${entity.id}`;
-  }
-}
-
 /** @internal an entity with CRUD routines */
 type ConcreteEntity = Element | ElementAspect | Relationship;
 
