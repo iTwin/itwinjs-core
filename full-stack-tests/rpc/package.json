@@ -42,6 +42,7 @@
     "@types/semver": "^7.3.9",
     "@types/spdy": "^3.4.4",
     "assert": "^2.0.0",
+    "buffer": "^6.0.3",
     "browserify-zlib": "^0.2.0",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
