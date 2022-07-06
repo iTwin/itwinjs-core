@@ -215,6 +215,11 @@ export class SQLiteDb implements IDisposable {
     }
   }
 
+  /**
+   * Perform an operation on this database within a savepoint. If the operation completes successfully, the
+   * changes are saved within the current transaction, which must be committed or canceled.If the operation throws an exception, the savepoint is rolled back
+   * and all changes to the database are reversed.
+   */
   public withSavePoint(savePointName: string, operation: () => void) {
     if (this.isReadonly)
       throw new Error("database is readonly");
