@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
-import { IpcHandler } from "@itwin/core-backend";
+import { IpcHandler, SnapshotDb } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
+// import { IModelTileRpcInterface, RpcManager, TestRpcManager } from "@itwin/core-common";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -95,6 +96,28 @@ const dtaElectronMain = async () => {
       callback(true);
     });
   }
+
+  /*
+  TestRpcManager.initialize(getRpcInterfaces());
+  const db = SnapshotDb.openFile("/tmp/Juergen.Hofer.Bad.Normals.bim");
+  const tileReqLog = require("../../tile_rpc_log.json");
+  let i = 0;
+  const tileClient = RpcManager.getClientForInterface(IModelTileRpcInterface);
+  for (const tileReq of tileReqLog) {
+    Logger.logTrace("STRM", `(index: ${i})`);
+    switch (tileReq.rpcMethod) {
+      case "generateTileContent":
+        await tileClient.generateTileContent(db.getRpcProps(), tileReq.treeId, tileReq.contentId, undefined);
+        break;
+      case "requestTileTreeProps":
+        await tileClient.requestTileTreeProps(db.getRpcProps(), tileReq.treeId);
+        break;
+    }
+    i++;
+  }
+
+  ElectronHost.app.quit();
+  */
 };
 
 // execute this immediately when we load

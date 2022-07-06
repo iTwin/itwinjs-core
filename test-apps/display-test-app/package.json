@@ -92,7 +92,9 @@
     "webpack": "4.42.0",
     "semver": "^7.3.5",
     "express-ws": "^5.0.2",
-    "@types/express-ws": "^3.0.1"
+    "@types/express-ws": "^3.0.1",
+    "jsdom": "^19.0.0",
+    "@types/jsdom": "^12.2.0"
   },
   "browserslist": [
     "last 4 chrome version",

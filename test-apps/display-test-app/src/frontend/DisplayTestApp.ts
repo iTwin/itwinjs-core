@@ -143,10 +143,12 @@ const dtaFrontendMain = async () => {
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
+  /*
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
   }
+  */
 
   // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
   // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
@@ -175,19 +177,17 @@ const dtaFrontendMain = async () => {
       }
     }
 
-    let iModel: IModelConnection | undefined;
-    const iModelName = configuration.iModelName;
-    if (undefined !== iModelName) {
-      const writable = configuration.openReadWrite ?? false;
-      iModel = await openFile(iModelName, writable);
-      setTitle(iModel);
-    }
+    const writable = configuration.openReadWrite ?? false;
+    const iModel = await openFile("/tmp/Juergen.Hofer.Bad.Normals.bim", writable);
+    setTitle(iModel);
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
+
+    await IModelApp.viewManager.getFirstOpenView()?.zoomToElements("0x20000001a37");
 
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
