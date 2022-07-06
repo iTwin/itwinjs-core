@@ -76,7 +76,9 @@ export class WsgError extends ResponseError {
           return wsgError;
         }
       } else {
-        if (wsgError.status === 302 && wsgError._data.indexOf("ims.bentley.com") >= 0) {
+        // https://github.com/iTwin/itwinjs-core/security/code-scanning/3
+        // including https:// index chars 8
+        if (wsgError.status === 302 && wsgError._data.indexOf("ims.bentley.com") <= 8) {
           const authenticationError = new AuthenticationError(WSStatus.LoginRequired);
           deepAssign(authenticationError, responseError);
           authenticationError.name = "Authentication Error";

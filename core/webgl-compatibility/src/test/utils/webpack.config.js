@@ -49,7 +49,8 @@ function createConfig(shouldInstrument) {
       new webpack.DefinePlugin({
         "process.env": Object.keys(process.env)
           .reduce((env, key) => {
-            env[key] = JSON.stringify(process.env[key]);
+            // https://github.com/iTwin/itwinjs-core/security/code-scanning/21
+            env[key] = JSON.stringify({ DEBUG: process.env[key].DEBUG });
             return env;
           }, {}),
       })

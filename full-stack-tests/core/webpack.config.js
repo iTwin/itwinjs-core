@@ -78,7 +78,8 @@ function createConfig(shouldInstrument) {
       new webpack.DefinePlugin({
         "process.env": Object.keys(process.env)
           .reduce((env, key) => {
-            env[key] = JSON.stringify(process.env[key]);
+            // https://github.com/iTwin/itwinjs-core/security/code-scanning/22
+            env[key] = JSON.stringify({ DEBUG: process.env[key].DEBUG });
             return env;
           }, {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),

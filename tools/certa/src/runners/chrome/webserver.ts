@@ -30,11 +30,16 @@ app.use("/", (req, resp, next) => {
 app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
-  resp.sendFile(path.resolve("/", filePath), {
-    headers: (sourceMap) && {
-      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
-    },
-  });
+  // https://github.com/iTwin/itwinjs-core/security/code-scanning/5
+  if (filePath.includes('..')) {
+    console.log("Access denied to previous directories. Error!");
+  } else {
+    resp.sendFile(path.resolve("/", filePath), {
+      headers: (sourceMap) && {
+        "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+  }
 });
 
 // Serve static assets from any configured "public" directories
