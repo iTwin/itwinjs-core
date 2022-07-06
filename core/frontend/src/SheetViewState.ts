@@ -173,7 +173,7 @@ class ViewAttachmentsInfo {
     options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
     options.viewStateLoadProps = {
       displayStyle: {
-        omitScheduleScriptElementIds: true,
+        omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
         compressExcludedElementIds: true,
       },
     };

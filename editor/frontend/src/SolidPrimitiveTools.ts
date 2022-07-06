@@ -1078,7 +1078,9 @@ export enum CreateTorusPhase {
   AcceptStart,
   /** Current tool phase to define center point */
   AcceptCenter,
-  /** Current tool phase to define sweep angle and secondary radius */
+  /** Current tool phase to define  secondary radius */
+  AcceptSecondaryRadius,
+  /** Current tool phase to define sweep angle */
   AcceptAngle,
   /** Current tool phase to accept result */
   AcceptResult,
@@ -1099,6 +1101,9 @@ export class CreateTorusTool extends SolidPrimitiveTool {
       case CreateTorusPhase.AcceptCenter:
         mainInstrText = EditTools.translate("CreateTorus.Prompts.CenterPoint");
         break;
+      case CreateTorusPhase.AcceptSecondaryRadius:
+        mainInstrText = EditTools.translate("CreateTorus.Prompts.SecondaryRadiusPoint");
+        break;
       default:
         mainInstrText = EditTools.translate("CreateTorus.Prompts.AnglePoint");
         break;
@@ -1116,6 +1121,12 @@ export class CreateTorusTool extends SolidPrimitiveTool {
 
     if (CreateTorusPhase.AcceptCenter === this.createPhase) {
       hints.setOrigin(this.accepted[0]);
+    } else if (CreateTorusPhase.AcceptSecondaryRadius === this.createPhase) {
+      hints.setModePolar();
+      hints.setOrigin(this.accepted[0]);
+      hints.setOriginFixed = true;
+      if (undefined !== this.baseRotation)
+        hints.setMatrix(Matrix3d.createColumns(this.baseRotation.getColumn(0), this.baseRotation.getColumn(2), this.baseRotation.getColumn(1)));
     } else if (CreateTorusPhase.AcceptAngle === this.createPhase && 2 === nPts) {
       hints.setModePolar();
       hints.setOrigin(this.accepted[1]);
@@ -1263,18 +1274,45 @@ export class CreateTorusTool extends SolidPrimitiveTool {
           break;
 
         this.accepted.push(arc.center); // Add center to accepted points for AccuDraw hints...
-        this.createPhase = CreateTorusPhase.AcceptAngle;
+        this.createPhase = (this.useSecondaryRadius ? CreateTorusPhase.AcceptAngle : CreateTorusPhase.AcceptSecondaryRadius);
         break;
       }
 
-      case CreateTorusPhase.AcceptAngle: {
-        const vector90 = Vector3d.createStartEnd(this.accepted[1], ev.point);
-        const secondaryRadius = (this.useSecondaryRadius ? this.secondaryRadius : Math.min(this.primaryRadius, Math.abs(this.primaryRadius - vector90.magnitude())));
+      case CreateTorusPhase.AcceptSecondaryRadius: {
+        const vector0 = Vector3d.createStartEnd(this.accepted[0], ev.point);
+        const secondaryRadius = (this.useSecondaryRadius ? this.secondaryRadius : Math.min(this.primaryRadius, vector0.magnitude()));
 
         if (!this.useSecondaryRadius) {
           this.secondaryRadius = secondaryRadius;
           this.syncToolSettingPropertyValue(this.secondaryRadiusProperty);
         }
+
+        const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
+        const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
+
+        if (undefined === vector0.scaleToLength(secondaryRadius, vector0)) {
+          xAxis.scaleToLength(this.primaryRadius, xAxis);
+          yAxis.scaleToLength(this.primaryRadius, yAxis);
+
+          this.current = Arc3d.create(this.accepted[1], xAxis, yAxis);
+          return;
+        }
+
+        const sweep = Angle.createRadians(this.useAngle ? this.angle : 2 * Math.PI);
+        this.current = TorusPipe.createDgnTorusPipe(this.accepted[1], xAxis, yAxis, this.primaryRadius, secondaryRadius, sweep, this.capped);
+
+        if (undefined === this.current) {
+          this.clearGraphics();
+          break;
+        }
+
+        if (!isDynamics)
+          this.createPhase = ((this.useAngle && (2 * Math.PI) === this.angle) ? CreateTorusPhase.AcceptResult : CreateTorusPhase.AcceptAngle);
+        break;
+      }
+
+      case CreateTorusPhase.AcceptAngle: {
+        const vector90 = Vector3d.createStartEnd(this.accepted[1], ev.point);
 
         const xAxis = this.baseRotation ? this.baseRotation.getColumn(0) : Vector3d.unitX();
         const yAxis = this.baseRotation ? this.baseRotation.getColumn(1) : Vector3d.unitY();
@@ -1304,7 +1342,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
           this.syncToolSettingPropertyValue(this.angleProperty);
         }
 
-        this.current = TorusPipe.createDgnTorusPipe(this.accepted[1], xAxis, yAxis, this.primaryRadius, secondaryRadius, sweep, this.capped);
+        this.current = TorusPipe.createDgnTorusPipe(this.accepted[1], xAxis, yAxis, this.primaryRadius, this.secondaryRadius, sweep, this.capped);
 
         if (undefined === this.current) {
           this.clearGraphics();

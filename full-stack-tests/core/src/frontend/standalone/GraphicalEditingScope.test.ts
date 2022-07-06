@@ -273,6 +273,7 @@ describe("GraphicalEditingScope", () => {
             edges: false,
             batchType: BatchType.Primary,
             is3d: true,
+            timeline: undefined,
           },
           rootTile: {
             contentId: "",

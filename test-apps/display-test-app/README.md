@@ -187,6 +187,8 @@ You can use these environment variables to alter the default behavior of various
   * See TileAdmin.Props.minimumSpatialTolerance.
 * IMJS_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
+* IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS
+  * If defined, a schedule script applied to a display style is required to be hosted on a persistent RenderTimeline or DisplayStyle element.
 * IMJS_ITWIN_ID.
   * GuidString of the Context Id (aka project id) to use to query Reality Data - use by Spatial Classification (e.g. "fb1696c8-c074-4c76-a539-a5546e048cc6").
   For IMJS_ITWIN_ID to work you should be in signin mode (IMJS_STANDALONE_SIGNIN=true).

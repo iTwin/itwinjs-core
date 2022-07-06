@@ -116,8 +116,12 @@ export namespace RealityDataSource {
     let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
-      // Keep url hidden and use a dummy id
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId };
+      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id:  CesiumIonAssetProvider.osmBuildingId }; // default OSM building
+      // Parse URL to extract possible asset id and key if provided
+      const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(tilesetUrl);
+      if (cesiumAsset) {
+        cesiumIonAssetKey = RealityDataSource.createCesiumIonAssetKey(cesiumAsset.id, cesiumAsset.key);
+      }
       return cesiumIonAssetKey;
     }
 
