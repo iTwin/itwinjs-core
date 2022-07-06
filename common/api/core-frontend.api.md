@@ -1103,6 +1103,12 @@ export interface AnimationBranchStates {
     readonly transformNodeIds: ReadonlySet<number>;
 }
 
+// @internal (undocumented)
+export namespace AnimationBranchStates {
+    // (undocumented)
+    export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined;
+}
+
 // @internal
 export enum AnimationNodeId {
     // (undocumented)
@@ -2517,6 +2523,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
+    readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
+    // @deprecated
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
@@ -2530,12 +2538,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
+    set scheduleScript(script: RenderSchedule.Script | undefined);
+    // @deprecated
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
-    // @internal (undocumented)
-    get scheduleState(): RenderScheduleState | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
-    // @internal
-    setScheduleState(state: RenderScheduleState | undefined): void;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -4255,6 +4261,8 @@ export interface Hilites {
     // (undocumented)
     readonly models: Id64.Uint32Set;
     // (undocumented)
+    readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
+    // (undocumented)
     readonly subcategories: Id64.Uint32Set;
 }
 
@@ -4267,10 +4275,11 @@ export class HiliteSet {
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
-    // @beta
     readonly models: Id64.Uint32Set;
+    get modelSubCategoryMode(): ModelSubCategoryHiliteMode;
+    set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode);
+    readonly onModelSubCategoryModeChanged: BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>;
     setHilite(arg: Id64Arg, onOff: boolean): void;
-    // @beta
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
     set wantSyncWithSelectionSet(want: boolean);
@@ -4634,6 +4643,7 @@ export interface ImdlReaderCreateArgs {
     stream: ByteStream;
     // (undocumented)
     system: RenderSystem;
+    timeline?: RenderSchedule.ModelTimeline;
     // (undocumented)
     type?: BatchType;
 }
@@ -4782,6 +4792,7 @@ export abstract class IModelConnection extends IModel {
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    readonly categories: IModelConnection.Categories;
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
@@ -4843,7 +4854,7 @@ export abstract class IModelConnection extends IModel {
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
-    readonly subcategories: SubCategoriesCache;
+    get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
@@ -4851,6 +4862,29 @@ export abstract class IModelConnection extends IModel {
 
 // @public (undocumented)
 export namespace IModelConnection {
+    // (undocumented)
+    export namespace Categories {
+        export interface CategoryInfo {
+            readonly id: Id64String;
+            readonly subCategories: Map<Id64String, SubCategoryInfo>;
+        }
+        export interface SubCategoryInfo {
+            readonly appearance: Readonly<SubCategoryAppearance>;
+            readonly categoryId: Id64String;
+            readonly id: Id64String;
+        }
+    }
+    export class Categories {
+        // @internal
+        constructor(iModel: IModelConnection);
+        // @internal (undocumented)
+        readonly cache: SubCategoriesCache;
+        getCategoryInfo(categoryIds: Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>>;
+        getSubCategoryInfo(args: {
+            category: Id64String;
+            subCategories: Iterable<Id64String>;
+        }): Promise<Map<Id64String, Categories.SubCategoryInfo>>;
+    }
     export class CodeSpecs {
         // @internal
         constructor(_iModel: IModelConnection);
@@ -5064,6 +5098,8 @@ export class IModelTileTree extends TileTree {
     readonly tileScreenSize: number;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
+    get timeline(): RenderSchedule.ModelTimeline | undefined;
+    // (undocumented)
     get viewFlagOverrides(): {};
 }
 
@@ -5077,6 +5113,8 @@ export interface IModelTileTreeOptions {
     readonly edges: EdgeOptions | false;
     // (undocumented)
     readonly is3d: boolean;
+    // (undocumented)
+    readonly timeline: RenderSchedule.ModelTimeline | undefined;
 }
 
 // @internal
@@ -7010,6 +7048,9 @@ export class ModelState extends EntityState implements ModelProps {
     toJSON(): ModelProps;
 }
 
+// @public
+export type ModelSubCategoryHiliteMode = "union" | "intersection";
+
 // @alpha (undocumented)
 export enum ModifyElementSource {
     DragSelect = 3,
@@ -8753,24 +8794,6 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
 
-// @internal
-export class RenderScheduleState extends RenderSchedule.ScriptReference {
-    // (undocumented)
-    get containsFeatureOverrides(): boolean;
-    // (undocumented)
-    get duration(): Range1d;
-    // (undocumented)
-    getAnimationBranches(time: number): AnimationBranchStates | undefined;
-    // (undocumented)
-    getModelAnimationId(modelId: Id64String): Id64String | undefined;
-    // (undocumented)
-    getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
-    // (undocumented)
-    getTransform(modelId: Id64String, nodeId: number, time: number): Readonly<Transform> | undefined;
-    // (undocumented)
-    getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined;
-}
-
 // @internal (undocumented)
 export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
@@ -9567,22 +9590,6 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
-// @alpha
-export class ServiceExtensionProvider implements ExtensionProvider {
-    constructor(_props: ServiceExtensionProviderProps);
-    execute(): Promise<any>;
-    getManifest(): Promise<ExtensionManifest>;
-    }
-
-// @alpha
-export interface ServiceExtensionProviderProps {
-    // @internal (undocumented)
-    getAccessToken?: () => Promise<AccessToken>;
-    iTwinId?: string;
-    name: string;
-    version?: string;
-}
-
 // @public
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
@@ -10076,8 +10083,12 @@ export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     // (undocumented)
     clear(): void;
+    // (undocumented)
+    getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>>;
     getSubCategories(categoryId: string): Id64Set | undefined;
     getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
+    // (undocumented)
+    getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
@@ -10757,6 +10768,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
     // @internal (undocumented)
+    readonly enableFrontendScheduleScripts: boolean;
+    // @internal (undocumented)
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
     get enableIndexedEdges(): boolean;
@@ -10781,6 +10794,11 @@ export class TileAdmin {
     getNumRequestsForViewport(vp: Viewport): number;
     // @internal
     getRequestsForUser(user: TileUser): Set<Tile> | undefined;
+    // @internal
+    getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): {
+        timeline?: RenderSchedule.ModelTimeline;
+        animationId?: Id64String;
+    } | undefined;
     // @internal (undocumented)
     getTileRequestProps(tile: {
         iModelTree: IModelTileTree;
@@ -10881,6 +10899,7 @@ export namespace TileAdmin {
         // @alpha
         disableMagnification?: boolean;
         enableExternalTextures?: boolean;
+        enableFrontendScheduleScripts?: boolean;
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
@@ -13575,7 +13594,7 @@ export abstract class ViewState extends ElementState {
     abstract savePose(): ViewPose;
     get scheduleScript(): RenderSchedule.Script | undefined;
     // @internal (undocumented)
-    get scheduleState(): RenderScheduleState | undefined;
+    get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal
     get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;

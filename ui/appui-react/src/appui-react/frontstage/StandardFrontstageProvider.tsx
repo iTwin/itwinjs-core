@@ -53,6 +53,8 @@ export interface StandardFrontstageProps {
   cornerButton?: React.ReactNode;
   /** Set to true if default Navigation aid is not desired */
   hideNavigationAid?: boolean;
+  /** Set to true if no tool setting dock is needed. Typically only used in modal stages. */
+  hideToolSettings?: boolean;
   /** Set to true if no status bar is needed in stage */
   hideStatusBar?: boolean;
   /** Props used to set initial size and state of panel. Defaults to:
@@ -129,9 +131,11 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         toolSettings={
           <Zone
             widgets={
-              [
-                <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />,
-              ]}
+              this.props.hideToolSettings ? [] :
+                [
+                  <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />,
+                ]
+            }
           />
         }
         statusBar={

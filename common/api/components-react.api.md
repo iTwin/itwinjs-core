@@ -2201,7 +2201,9 @@ export class OrthogonalDirectionHelpers {
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
     constructor(dataProvider: TDataProvider, modelSource: TreeModelSource, pageSize: number);
     dispose(): void;
-    protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+    // (undocumented)
+    protected load(): Observable<LoadedNodeHierarchy>;
+    loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult>;
     get pageSize(): number;
     }
 
@@ -4036,7 +4038,9 @@ export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNo
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
     constructor(dataProvider: TDataProvider, modelSource: TreeModelSource);
     dispose(): void;
-    protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
+    // (undocumented)
+    protected load(): Observable<LoadedNodeHierarchy>;
+    loadNode(parent: TreeModelNode | TreeModelRootNode, _childIndex?: number): Observable<TreeNodeLoadResult>;
     }
 
 // @public
@@ -4051,6 +4055,7 @@ export const TreeNodeRenderer: React.MemoExoticComponent<(props: TreeNodeRendere
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
     checkboxRenderer?: NodeCheckboxRenderer;
+    children?: React.ReactNode;
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
