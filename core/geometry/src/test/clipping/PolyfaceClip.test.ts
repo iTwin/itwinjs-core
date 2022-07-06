@@ -346,7 +346,7 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("DisconnectedClips", () => {
+  it("DisconnectedClips", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
