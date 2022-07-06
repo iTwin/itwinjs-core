@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "set cloud cache size to 50G",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

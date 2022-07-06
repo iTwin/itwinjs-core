@@ -119,7 +119,8 @@ export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends T
  */
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
   private _treeDataSource: TreeDataSource;
-  private _activeRequests = new Map<string | undefined, RxjsObservable<LoadedNodeHierarchy>>();
+  private _activeRequests = new Map<string | undefined, RxjsObservable<TreeNodeLoadResult>>();
+  private _scheduler = new SubscriptionScheduler<TreeNodeLoadResult>();
 
   constructor(dataProvider: TDataProvider, modelSource: TreeModelSource) {
     super(modelSource, dataProvider);
@@ -133,24 +134,32 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
    * Schedules to load children of node and returns an Observable.
    * @note It does not start loading node until '.subscribe()' is called on returned Observable.
    */
-  protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
-    const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
-    return this.loadForParent(parentItem, parentNode.numChildren === undefined);
+  public override loadNode(parent: TreeModelNode | TreeModelRootNode, _childIndex?: number): Observable<TreeNodeLoadResult> {
+    return defer(() => {
+      const parentItem = isTreeModelNode(parent) ? parent.item : undefined;
+      const parentId = parentItem?.id;
+      const activeRequest = this._activeRequests.get(parentId);
+      if (activeRequest) {
+        return activeRequest;
+      }
+
+      const newRequest = requestLoadedHierarchy(parentItem, this._treeDataSource, 0, 0, parent.numChildren === undefined)
+        .pipe(
+          map((loadedHierarchy) => {
+            this.updateModel(loadedHierarchy);
+            return { loadedNodes: collectTreeNodeItems(loadedHierarchy.hierarchyItems) };
+          }),
+          scheduleSubscription(this._scheduler),
+          finalize(() => this._activeRequests.delete(parentId))
+        );
+      this._activeRequests.set(parentId, newRequest);
+      return newRequest;
+    });
   }
 
-  private loadForParent(parentItem: TreeNodeItem | undefined, requestNumChildren: boolean): RxjsObservable<LoadedNodeHierarchy> {
-    const parentId = parentItem && parentItem.id;
-    const activeRequest = this._activeRequests.get(parentId);
-    if (activeRequest) {
-      return activeRequest;
-    }
-
-    const newRequest = requestLoadedHierarchy(parentItem, this._treeDataSource, 0, 0, requestNumChildren,
-      () => { this._activeRequests.delete(parentId); },
-    );
-
-    this._activeRequests.set(parentId, newRequest);
-    return newRequest;
+  // istanbul ignore next
+  protected load(): Observable<LoadedNodeHierarchy> {
+    throw new Error("Method not implemented.");
   }
 }
 
@@ -159,17 +168,21 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
  * @public
  */
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
-  private _pageLoader: PageLoader;
+  private _treeDataSource: TreeDataSource;
   private _pageSize: number;
+  private _activePageRequests: Map<string | undefined, Map<number, Observable<TreeNodeLoadResult>>>;
+  private _scheduler: SubscriptionScheduler<TreeNodeLoadResult>;
 
   constructor(dataProvider: TDataProvider, modelSource: TreeModelSource, pageSize: number) {
     super(modelSource, dataProvider);
-    this._pageLoader = new PageLoader(new TreeDataSource(dataProvider), pageSize);
+    this._treeDataSource = new TreeDataSource(dataProvider);
     this._pageSize = pageSize;
+    this._activePageRequests = new Map();
+    this._scheduler = new SubscriptionScheduler();
   }
 
   /** Disposes data source */
-  public dispose() { this._pageLoader.dispose(); }
+  public dispose() { this._treeDataSource.dispose(); }
 
   /** Returns page size used by tree node loader. */
   public get pageSize(): number { return this._pageSize; }
@@ -178,9 +191,48 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends
    * Schedules to load one page of node children and returns an Observable.
    * @note It does not start loading node page until '.subscribe()' is called on returned Observable.
    */
-  protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
-    const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
-    return this._pageLoader.loadPageWithItem(parentItem, childIndex, parentNode.numChildren === undefined);
+  public override loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult> {
+    return defer(() => {
+      const parentItem = isTreeModelNode(parent) ? parent.item : undefined;
+      const parentId = parentItem?.id;
+      const parentPageRequests = this._activePageRequests.get(parentId)
+        ?? new Map<number, Observable<TreeNodeLoadResult>>();
+      const page = Math.trunc(childIndex / this._pageSize);
+      const activeRequest = parentPageRequests.get(page);
+      if (activeRequest) {
+        return activeRequest;
+      }
+
+      const startIndex = page * this._pageSize;
+      const newRequest = requestLoadedHierarchy(
+        parentItem,
+        this._treeDataSource,
+        startIndex,
+        this._pageSize,
+        parent.numChildren === undefined,
+      ).pipe(
+        map((loadedHierarchy) => {
+          this.updateModel(loadedHierarchy);
+          return { loadedNodes: collectTreeNodeItems(loadedHierarchy.hierarchyItems) };
+        }),
+        scheduleSubscription(this._scheduler),
+        finalize(() => {
+          parentPageRequests.delete(page);
+          if (parentPageRequests.size === 0) {
+            this._activePageRequests.delete(parentId);
+          }
+        }),
+      );
+
+      parentPageRequests.set(page, newRequest);
+      this._activePageRequests.set(parentId, parentPageRequests);
+      return newRequest;
+    });
+  }
+
+  // istanbul ignore next
+  protected load(): Observable<LoadedNodeHierarchy> {
+    throw new Error("Method not implemented.");
   }
 }
 
@@ -212,57 +264,12 @@ export interface LoadedNodeHierarchyItem {
   numChildren?: number;
 }
 
-class PageLoader implements IDisposable {
-  private _dataSource: TreeDataSource;
-  private _pageSize: number;
-  private _activePageRequests = new Map<string | undefined, Map<number, RxjsObservable<LoadedNodeHierarchy>>>();
-
-  constructor(
-    dataSource: TreeDataSource,
-    pageSize: number,
-  ) {
-    this._dataSource = dataSource;
-    this._pageSize = pageSize;
-  }
-
-  public dispose() { this._dataSource.dispose(); }
-
-  public loadPageWithItem(
-    parentItem: TreeNodeItem | undefined,
-    itemIndex: number,
-    requestNumChildren: boolean,
-  ): RxjsObservable<LoadedNodeHierarchy> {
-    const parentId = parentItem && parentItem.id;
-    const parentPageRequests = this._activePageRequests.get(parentId) || new Map<number, RxjsObservable<LoadedNodeHierarchy>>();
-    const page = Math.trunc(itemIndex / this._pageSize);
-    const activeRequest = parentPageRequests.get(page);
-    if (activeRequest) {
-      return activeRequest;
-    }
-
-    const startIndex = page * this._pageSize;
-    const newRequest = requestLoadedHierarchy(parentItem, this._dataSource, startIndex, this._pageSize, requestNumChildren,
-      () => {
-        parentPageRequests.delete(page);
-        if (parentPageRequests.size === 0) {
-          this._activePageRequests.delete(parentId);
-        }
-      },
-    );
-
-    parentPageRequests.set(page, newRequest);
-    this._activePageRequests.set(parentId, parentPageRequests);
-    return newRequest;
-  }
-}
-
 function requestLoadedHierarchy(
   parentItem: TreeNodeItem | undefined,
   dataSource: TreeDataSource,
   start: number,
   take: number,
   requestNumChildren: boolean,
-  finalizeCallback: () => void,
 ) {
   const parentId = parentItem && parentItem.id;
   return dataSource.requestItems(parentItem, start, take, requestNumChildren)
@@ -277,9 +284,6 @@ function requestLoadedHierarchy(
           })),
         ),
       ),
-      finalize(finalizeCallback),
-      publish(),
-      refCount(),
     );
 }
 
