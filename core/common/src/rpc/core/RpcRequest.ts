@@ -416,7 +416,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
       const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
-      value.objects = managedStatus.responseValue;
+      value.objects = managedStatus.responseValue as string;
 
       if (managedStatus.managedStatus === "pending") {
         status = RpcRequestStatus.Pending;

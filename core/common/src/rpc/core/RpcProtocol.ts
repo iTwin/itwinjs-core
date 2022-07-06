@@ -11,6 +11,7 @@ import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
@@ -102,7 +103,7 @@ export enum RpcProtocolVersion {
 export interface RpcManagedStatus {
   iTwinRpcCoreResponse: true;
   managedStatus: "pending" | "notFound" | "noContent";
-  responseValue: string;
+  responseValue: string | { message: string } | RpcNotFoundResponse;
 }
 
 /** An application protocol for an RPC interface.

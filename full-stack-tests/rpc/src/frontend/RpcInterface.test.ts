@@ -155,12 +155,20 @@ describe("RpcInterface", () => {
   });
 
   it("should allow void return values when using RpcDirectProtocol", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
   });
 
   it("should allow terminating interfaces", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
     try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
@@ -462,6 +470,10 @@ describe("RpcInterface", () => {
   });
 
   it("should set cache-control headers when applicable", async function () {
+    if (currentEnvironment === "websocket") {
+      return this.skip();
+    }
+
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
       return this.skip();

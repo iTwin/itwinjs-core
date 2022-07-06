@@ -135,7 +135,7 @@ async function intercept(session: IpcSession, client: RpcInterface, operation: s
 
 async function handlePending(request: InterceptedRequest, status: RpcManagedStatus, dispatch: () => Promise<any>) {
   request._status = RpcRequestStatus.Pending;
-  request._extendedStatus = status.responseValue;
+  request._extendedStatus = (status.responseValue as { message: string }).message;
   RpcRequest.events.raiseEvent(RpcRequestEvent.PendingUpdateReceived, request);
 
   const delay = request.operation.policy.retryInterval(request.client.configuration);
@@ -148,10 +148,7 @@ async function handleNotFound(request: InterceptedRequest, status: RpcManagedSta
   return new Promise((resolve, reject) => {
     let resubmitted = false;
 
-    const notFound = new RpcNotFoundResponse();
-    notFound.message = status.responseValue;
-
-    RpcRequest.notFoundHandlers.raiseEvent(request, notFound, async () => {
+    RpcRequest.notFoundHandlers.raiseEvent(request, status.responseValue as RpcNotFoundResponse, async () => {
       if (resubmitted) {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
       }
