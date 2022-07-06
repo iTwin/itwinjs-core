@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Compiler, Configuration, DefinePlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
-// import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
