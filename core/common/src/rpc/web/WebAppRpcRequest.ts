@@ -7,6 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -31,9 +32,11 @@ export class WebAppRpcRequest extends RpcRequest {
   private get _headers() { return this._request.headers as { [key: string]: string }; }
 
   /** The maximum size permitted for an encoded component in a URL.
+   * Note that some backends limit the total cumulative request size. Our current node backends accept requests with a max size of 16 kb.
+   * In addition to the url size, an authorization header may also add considerably to the request size.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
-  public static maxUrlComponentSize = 4096;
+  public static maxUrlComponentSize = 1024 * 8;
 
   /** The HTTP method for this request. */
   public override method: HttpMethod_T;
@@ -95,25 +98,23 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Sends the response for a web request. */
-  public static sendResponse(
+  public static async sendResponse(
     protocol: WebAppRpcProtocol,
     request: SerializedRpcRequest,
     fulfillment: RpcRequestFulfillment,
     req: HttpServerRequest,
     res: HttpServerResponse,
-  ): void {
+  ): Promise<void> {
     const versionHeader = protocol.protocolVersionHeaderName;
     if (versionHeader && RpcProtocol.protocolVersion) {
       res.set(versionHeader, RpcProtocol.protocolVersion.toString());
     }
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-var-requires
-    const { Readable, Stream } = require("stream");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createGzip } = require("zlib");
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
+    const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
 
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
-    let responseBody: Buffer | typeof Readable | string;
+    let responseBody;
     if (transportType === RpcContentType.Binary) {
       responseBody = WebAppRpcRequest.configureBinary(fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
@@ -163,20 +164,6 @@ export class WebAppRpcRequest extends RpcRequest {
     this._request.headers = {};
   }
 
-  /** @internal */
-  public async preflight(): Promise<Response | undefined> {
-    this.method = "options";
-    this._request.method = "options";
-    await this.setHeaders();
-    await this.send();
-    return this._response;
-  }
-
-  protected override isHeaderAvailable(name: string): boolean {
-    const allowed = this.protocol.allowedHeaders;
-    return allowed.has("*") || allowed.has(name);
-  }
-
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
     this._headers[name] = value;
@@ -184,10 +171,6 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Sends the request. */
   protected async send(): Promise<number> {
-    if (this.method !== "options") {
-      await this.protocol.initialize();
-    }
-
     this._loading = true;
     await this.setupTransport();
 
@@ -284,9 +267,26 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private static configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
+    // TODO: Use stale-while-revalidate in cache headers. This needs to be tested, and does not currently have support in the router/caching-service.
+    // This will allow browsers to use stale cached responses while also revalidating with the router, allowing us to start up a backend if necessary.
 
+    // RPC Caching Service uses the s-maxage header to determine the TTL for the redis cache.
+    const oneHourInSeconds = 3600;
     if (success && request.caching === RpcResponseCacheControl.Immutable) {
-      res.set("Cache-Control", "private, max-age=31536000, immutable");
+      // If response size is > 50 MB, do not cache it.
+      if (fulfillment.result.objects.length > (50 * 10**7)) {
+        res.set("Cache-Control", "no-store");
+      } else if (request.operation.operationName === "generateTileContent") {
+        res.set("Cache-Control", "no-store");
+      } else if (request.operation.operationName === "getConnectionProps") {
+        // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
+      } else if (request.operation.operationName === "getTileCacheContainerUrl") {
+        // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 23}, max-age=${oneHourInSeconds * 23}, immutable`);
+      } else {
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=${oneHourInSeconds * 48}, immutable`);
+      }
     }
 
     if (fulfillment.retry) {
@@ -376,10 +376,6 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async setupTransport(): Promise<void> {
-    if (this.method === "options") {
-      return;
-    }
-
     const parameters = (await this.protocol.serialize(this)).parameters;
     const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
 

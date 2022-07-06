@@ -6,11 +6,11 @@
  * @module Core
  */
 
-import { parse as parseVersion } from "semver";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { Element, IModelDb } from "@itwin/core-backend";
-import { InstanceKey } from "@itwin/presentation-common";
 import path from "path";
+import { parse as parseVersion } from "semver";
+import { Element, IModelDb } from "@itwin/core-backend";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Diagnostics, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -39,3 +39,17 @@ export function normalizeVersion(version?: string) {
 /** @internal */
 // istanbul ignore next
 export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
+
+/** @alpha */
+export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+
+/** @alpha */
+export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
+  handler: BackendDiagnosticsHandler;
+}
+
+/** @public */
+export interface BackendDiagnosticsAttribute {
+  /** @alpha */
+  diagnostics?: BackendDiagnosticsOptions;
+}

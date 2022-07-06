@@ -19,8 +19,7 @@ describe("PromptField", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
           <PromptField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />   {/* eslint-disable-line deprecation/deprecation */}

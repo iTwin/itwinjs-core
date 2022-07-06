@@ -6,19 +6,18 @@
 
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import {
-  IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerAccessClient, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
-import { Dialog, Icon } from "@itwin/core-react";
+import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
 import * as React from "react";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
 import { MapLayersUI } from "../../mapLayers";
 import { MapTypesOptions } from "../Interfaces";
 import "./MapUrlDialog.scss";
-import { Guid } from "@itwin/core-bentley";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -81,9 +80,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [modelSettingsLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.MissingCredentials"));
   const [invalidCredentialsLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCredentials"));
+  const [externalLoginTitle] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLogin"));
+  const [externalLoginFailedMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginFailed"));
+  const [externalLoginSucceededMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginSucceeded"));
+  const [externalLoginWaitingMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginWaiting"));
+  const [externalLoginTryAgainLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginTryAgain"));
   const [serverRequireCredentials, setServerRequireCredentials] = React.useState(false);
   const [invalidCredentialsProvided, setInvalidCredentialsProvided] = React.useState(false);
   const [layerAttachPending, setLayerAttachPending] = React.useState(false);
+  const [layerAuthPending, setLayerAuthPending] = React.useState(false);
   const [mapUrl, setMapUrl] = React.useState(getMapUrlFromProps());
   const [mapName, setMapName] = React.useState(getMapNameFromProps());
   const [userName, setUserName] = React.useState("");
@@ -94,7 +99,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
-  const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
+  const [oauthProcessSucceeded, setOAuthProcessSucceeded] = React.useState<undefined|boolean>(undefined);
+  const [showOauthPopup, setShowOauthPopup] = React.useState(false);
+  const [externalLoginUrl, setExternalLoginUrl] = React.useState<string|undefined>();
+  const [onOauthProcessEnd] = React.useState(new BeEvent());
+  const [accessClient, setAccessClient] = React.useState<MapLayerAccessClient | undefined>();
+  const [isAccessClientInitialized, setAccessClientInitialized] = React.useState(false);
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -143,20 +153,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
   });
 
-  // Update warning message based on the dialog state and server response
-  const handleMapTypeSelection = React.useCallback((newValue: string) => {
-    setMapType(newValue);
-
-    // Reset few states
-    if (invalidCredentialsProvided)
-      setInvalidCredentialsProvided(false);
-
-    if (layerAuthMethod !== MapLayerAuthType.None) {
-      setLayerAuthMethod(MapLayerAuthType.None);
-    }
-
-  }, [invalidCredentialsProvided, layerAuthMethod]);
-
   const handleCancel = React.useCallback(() => {
     if (props.onCancelResult) {
       props.onCancelResult();
@@ -177,13 +173,37 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       setInvalidCredentialsProvided(false);
   }, [setPassword, invalidCredentialsProvided, setInvalidCredentialsProvided]);
 
+  const handleArcGisLogin = React.useCallback(() => {
+    setLayerAuthPending(true);
+    setShowOauthPopup(true);
+    if (oauthProcessSucceeded === false) {
+      setOAuthProcessSucceeded(undefined);
+    }
+
+  }, [oauthProcessSucceeded]);
+
   // return true if authorization is needed
-  const updateAuthState = React.useCallback((sourceValidation: MapLayerSourceValidation) => {
+  const updateAuthState = React.useCallback(async (source: MapLayerSource, sourceValidation: MapLayerSourceValidation)  => {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
-    if (sourceRequireAuth && sourceValidation.authInfo?.authMethod !== undefined) {
-      setLayerAuthMethod(sourceValidation.authInfo?.authMethod);
+    if (sourceRequireAuth) {
+      const settings = source.toLayerSettings();
+
+      if (accessClient !== undefined && accessClient.getTokenServiceEndPoint !== undefined && settings !== undefined) {
+        try {
+          const tokenEndpoint = await accessClient.getTokenServiceEndPoint(settings.url);
+          if (tokenEndpoint !== undefined) {
+            const loginUrl = tokenEndpoint.getLoginUrl();
+            setExternalLoginUrl(loginUrl);
+          }
+
+        } catch (_error){
+
+        }
+      }
+
     }
+    setServerRequireCredentials(sourceRequireAuth || invalidCredentials);
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
     } else if (invalidCredentialsProvided) {
@@ -191,7 +211,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     return sourceRequireAuth || invalidCredentials;
-  }, [invalidCredentialsProvided]);
+  }, [accessClient, invalidCredentialsProvided]);
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
@@ -241,9 +261,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
 	  }
     }
-    const layerSettings = source.toLayerSettings(validation.subLayers);
-    if (layerSettings) {
-      vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
+    const settings = source.toLayerSettings(validation.subLayers);
+    if (settings) {
+      vp.displayStyle.attachMapLayer({settings, isOverlay});
 
       const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
@@ -274,12 +294,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         } else {
           return await updateAttachedLayer(source, validation);
         }
-      } else if (updateAuthState(validation)) {
-        return false;
       } else {
-        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ValidationError");
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
-        return true;
+        const authNeeded = await updateAuthState(source, validation);
+        if (authNeeded) {
+          return false;
+        } else {
+          const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ValidationError");
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
+          return true;
+        }
       }
       return false;
     } catch (error) {
@@ -308,9 +331,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       source = MapLayerSource.fromJSON({
         url: mapUrl,
         name: mapName,
-        formatId: mapType,
-        userName: userName||undefined,  // When there is no value, empty string is always returned, in this case force it to undefined,
-        password: password||undefined});
+        formatId: mapType});
+
+      // Set credentials separately since they are not part of JSON
+      if (source) {
+        source.userName = userName||undefined;  // When there is no value, empty string is always returned, in this case force it to undefined,
+        source.password = password||undefined;
+      }
+
     }
     return source;
   }, [mapName, mapType, mapUrl, password, userName]);
@@ -372,30 +400,70 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, onOkResult, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
+  React.useEffect(() => {
+    const handleOAuthProcessEnd = (success: boolean, _state: any ) => {
+      onOauthProcessEnd.raiseEvent(success, _state);
+    };
+
+    // Currently only arcgis support AccessClient
+
+    const ac = IModelApp.mapLayerFormatRegistry.getAccessClient(MAP_TYPES.arcGis);
+    if (ac?.onOAuthProcessEnd) {
+      setAccessClient(ac);   // cache it, so we dont need to make another lookup;
+      ac.onOAuthProcessEnd.addListener(handleOAuthProcessEnd);
+    }
+    setAccessClientInitialized(true);
+    return () => {
+      if (ac?.onOAuthProcessEnd) {
+        ac.onOAuthProcessEnd.removeListener(handleOAuthProcessEnd);
+      }
+
+      setAccessClient(undefined);
+      setAccessClientInitialized(false);
+    };
+  }, [mapType, onOauthProcessEnd, setAccessClient]);
+
+  // After a map type change, make sure the different Oauth states are reset.
+  React.useEffect(() => {
+    // Reset few states
+    setServerRequireCredentials(false);
+    setInvalidCredentialsProvided(false);
+    setShowOauthPopup(false);
+    setOAuthProcessSucceeded(undefined);
+    setExternalLoginUrl(undefined);
+
+  }, [mapType]);
+
   // The first time the dialog is loaded and we already know the layer requires auth. (i.e ImageryProvider already made an attempt)
   // makes a request to discover the authentification types and adjust UI accordingly (i.e. username/password fields, Oauth popup)
   // Without this effect, user would have to manually click the 'OK' button in order to trigger the layer connection.
   React.useEffect(() => {
     // Attach source asynchronously.
     void (async () => {
-      if (props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
+      if (isAccessClientInitialized && props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
         try {
-          const source = MapLayerSource.fromJSON({url: props.layerRequiringCredentials.url, name: props.layerRequiringCredentials.name,formatId: props.layerRequiringCredentials.formatId});
+          const source = MapLayerSource.fromJSON({
+            url: props.layerRequiringCredentials.url,
+            name: props.layerRequiringCredentials.name,
+            formatId: props.layerRequiringCredentials.formatId});
+
           if (source !== undefined) {
             setLayerAttachPending(true);
             const validation = await source.validateSource(true);
             if (isMounted.current) {
               setLayerAttachPending(false);
             }
-            updateAuthState(validation);
+            await updateAuthState(source, validation);
           }
         } catch (_error) {}
       }
     })();
 
-  // Only run this effect when the dialog is initialized, otherwise it will it creates undesirable side-effects when 'OK' button is clicked.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAccessClientInitialized,
+    props.layerRequiringCredentials?.formatId,
+    props.layerRequiringCredentials?.name,
+    props.layerRequiringCredentials?.url,
+    updateAuthState]);
 
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
@@ -404,8 +472,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return (!!mapUrl && !!mapName)
       && !layerAttachPending
       && (!serverRequireCredentials || credentialsSet)
-      && !invalidCredentialsProvided ;
-  }, [userName, password, mapUrl, mapName, serverRequireCredentials, layerAttachPending, invalidCredentialsProvided]);
+      && !invalidCredentialsProvided
+      && (externalLoginUrl === undefined || (externalLoginUrl !== undefined && oauthProcessSucceeded));
+  }, [userName, password, mapUrl, mapName, serverRequireCredentials, layerAttachPending, invalidCredentialsProvided, externalLoginUrl, oauthProcessSucceeded]);
 
   const buttonCluster = React.useMemo(() => [
     { type: DialogButtonType.OK, onClick: handleOk, disabled: !readyToSave() },
@@ -419,11 +488,44 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
   }, [handleOk, readyToSave]);
 
+  // onOauthProcessEnd events handler
+  React.useEffect(() => {
+    const handleOauthProcess = (success: boolean, _state: any ) => {
+      setLayerAuthPending(false);
+      if (success) {
+        setOAuthProcessSucceeded(true);
+        setShowOauthPopup(false);
+        setLayerAttachPending(false);
+        handleOk(); // Add the layer the same way the user would do by clicking 'ok'
+      } else {
+        setShowOauthPopup(false);
+        setLayerAttachPending(false);
+        setOAuthProcessSucceeded(false);
+      }
+    };
+
+    onOauthProcessEnd.addListener(handleOauthProcess);
+    return () => {
+      onOauthProcessEnd.removeListener(handleOauthProcess);
+    };
+  }, [handleOk, onOauthProcessEnd]);
+
   //
   // Monitors authentication method changes
   React.useEffect(() => {
-    setServerRequireCredentials(layerAuthMethod === MapLayerAuthType.Basic || layerAuthMethod === MapLayerAuthType.EsriToken);
-  }, [layerAuthMethod]);
+
+    if (serverRequireCredentials && oauthProcessSucceeded === undefined && externalLoginUrl !== undefined) {
+      handleArcGisLogin();
+    }
+  }, [oauthProcessSucceeded, externalLoginUrl, handleArcGisLogin, serverRequireCredentials]);
+
+  // Monitors Oauth2 popup was closed
+  const handleOAuthPopupClose = React.useCallback(() => {
+    setShowOauthPopup(false);
+    setLayerAuthPending(false);
+    if (oauthProcessSucceeded === undefined)
+      setOAuthProcessSucceeded(false);  // indicates there was a failed attempt
+  }, [oauthProcessSucceeded]);
 
   // Utility function to get warning message section
   function renderWarningMessage(): React.ReactNode {
@@ -431,7 +533,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     let warningMessage: string|undefined;
 
     // Get the proper warning message
-    if (invalidCredentialsProvided) {
+    if (showOauthPopup) {
+      warningMessage = externalLoginWaitingMsg;
+    } else if (oauthProcessSucceeded === false) {
+      warningMessage = externalLoginFailedMsg;
+    } else if (oauthProcessSucceeded === true) {
+      warningMessage = externalLoginSucceededMsg;
+    }else if (invalidCredentialsProvided) {
       warningMessage = invalidCredentialsLabel;
     } else if (serverRequireCredentials && (!userName || !password))  {
       warningMessage = missingCredentialsLabel;
@@ -439,6 +547,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
     // Sometimes we want to add an extra node, such as a button
     let extraNode: React.ReactNode;
+    if (oauthProcessSucceeded === false) {
+      extraNode = <div>
+        <Button onClick={handleArcGisLogin}>{externalLoginTryAgainLabel}</Button>
+      </div>;
+    }
+
     if (warningMessage !== undefined) {
       return(
         <div className="map-layer-source-warnMessage">
@@ -452,6 +566,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return node;
   }
 
+  // Use a hook to display the popup.
+  // The display of the popup is controlled by the 'showOauthPopup' state variable.
+  useCrossOriginPopup(showOauthPopup, externalLoginUrl, externalLoginTitle, 450, 450, handleOAuthPopupClose);
   return (
     <div ref={dialogContainer}>
       <Dialog
@@ -477,24 +594,25 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               className="map-layer-source-select"
               options={mapTypes}
               value={mapType}
-              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending}
-              onChange={handleMapTypeSelection}
+              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending}
+              onChange={setMapType}
               size="small"/>
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending} />
+            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending} value={mapUrl} />
+            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
             {serverRequireCredentials
-             && (layerAuthMethod === MapLayerAuthType.Basic ||  layerAuthMethod === MapLayerAuthType.EsriToken)
+             && externalLoginUrl === undefined  // external login is handled in popup
              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
                 <LabeledInput className="map-layer-source-input"
                   displayStyle="inline"
                   placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
-                  status={!userName && serverRequireCredentials ? "warning" : undefined}
-                  disabled={layerAttachPending}
+                  status={(!userName && serverRequireCredentials) || invalidCredentialsProvided ? "warning" : undefined}
+                  disabled={layerAttachPending || layerAuthPending}
                   onChange={onUsernameChange}
+                  value={userName}
                   size="small" />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
@@ -502,11 +620,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
                   displayStyle="inline"
                   type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
-                  status={!password && serverRequireCredentials ? "warning" : undefined}
-                  disabled={layerAttachPending}
+                  status={(!password && serverRequireCredentials) || invalidCredentialsProvided? "warning" : undefined}
+                  disabled={layerAttachPending || layerAuthPending}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown}
+                  value={password}
                   size="small" />
+
               </>
             }
 
@@ -532,7 +652,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         {renderWarningMessage()}
 
         {/* Progress bar */}
-        {(layerAttachPending) &&
+        {(layerAttachPending || layerAuthPending) &&
           <div className="map-layer-source-progressBar">
             <ProgressLinear indeterminate />
           </div>
