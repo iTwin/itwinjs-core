@@ -53,6 +53,7 @@ module.exports = {
   resolve: {
     fallback: {
       assert: require.resolve("assert"),
+      buffer: require.resolve("buffer"),
       path: require.resolve("path-browserify"),
       stream: require.resolve("stream-browserify"),
       zlib: require.resolve("browserify-zlib"),

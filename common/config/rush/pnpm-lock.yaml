@@ -2177,6 +2177,7 @@ importers:
       '@types/puppeteer': 2.0.1
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
+      buffer: ^6.0.3
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -2232,6 +2233,7 @@ importers:
       '@types/puppeteer': 2.0.1
       assert: 2.0.0
       browserify-zlib: 0.2.0
+      buffer: 6.0.3
       cpx2: 3.0.2
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -10532,7 +10534,6 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    dev: false
 
   /builtin-modules/3.3.0:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}

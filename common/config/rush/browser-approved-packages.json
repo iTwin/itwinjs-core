@@ -452,7 +452,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",

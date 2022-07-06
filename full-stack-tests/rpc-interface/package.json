@@ -70,6 +70,7 @@
     "@types/puppeteer": "2.0.1",
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
