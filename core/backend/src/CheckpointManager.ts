@@ -151,9 +151,9 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
 
-      // Its fine if its not a daemon, but lets just log an info message
+      // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
         Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
     }

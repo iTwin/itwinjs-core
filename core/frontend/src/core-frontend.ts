@@ -72,7 +72,6 @@ export * from "./ViewStatus";
 export * from "./extension/Extension";
 export * from "./extension/providers/LocalExtensionProvider";
 export * from "./extension/providers/RemoteExtensionProvider";
-export * from "./extension/providers/ServiceExtensionProvider";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";

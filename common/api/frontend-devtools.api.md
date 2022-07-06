@@ -291,6 +291,20 @@ export class ChangeFlashSettingsTool extends Tool {
 }
 
 // @beta
+export class ChangeHiliteModeTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(mode?: string): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
     // (undocumented)
     protected apply(vp: Viewport, settings?: Hilite.Settings): void;
