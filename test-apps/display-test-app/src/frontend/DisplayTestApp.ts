@@ -187,7 +187,9 @@ const dtaFrontendMain = async () => {
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
-    await IModelApp.viewManager.getFirstOpenView()?.zoomToElements("0x20000001a37");
+    const badPlacement = (await iModel.elements.getPlacements("0x20000001a3a"))[0];
+    badPlacement.bbox.scaleAboutCenterInPlace(0.5);
+    IModelApp.viewManager.getFirstOpenView()?.zoomToPlacements([badPlacement]);
 
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);

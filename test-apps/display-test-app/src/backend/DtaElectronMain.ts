@@ -72,8 +72,10 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
+  /*
   if (configuration.devTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
+  */
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {
