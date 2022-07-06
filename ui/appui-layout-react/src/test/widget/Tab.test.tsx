@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, createTabState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
@@ -15,7 +15,7 @@ describe("WidgetTab", () => {
   it("should render active", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true });
     const { container } = render(
       <TestNineZoneProvider
         state={nineZone}
@@ -267,7 +267,7 @@ describe("WidgetTab", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true});
     const close = sinon.spy();
     render(
       <TestNineZoneProvider
@@ -374,5 +374,18 @@ describe("WidgetTab", () => {
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: "fw1",
     })).should.true;
+  });
+  it ("should create tab and dragged tab states with hideWithUiWhenFloating properly set", () => {
+    const firstTab = createTabState("firstTab");
+    firstTab?.hideWithUiWhenFloating?.should.false;
+
+    const secondTab = createTabState("secondTab", {hideWithUiWhenFloating: true});
+    secondTab?.hideWithUiWhenFloating?.should.true;
+
+    const firstDraggedTab = createDraggedTabState("firstDraggedTab");
+    firstDraggedTab?.hideWithUiWhenFloating?.should.false;
+
+    const secondDraggedTab = createDraggedTabState("secondDraggedTab", {hideWithUiWhenFloating: true});
+    secondDraggedTab?.hideWithUiWhenFloating?.should.true;
   });
 });

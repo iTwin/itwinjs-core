@@ -210,6 +210,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
           label: "Data",
           defaultState: WidgetState.Hidden,
           isFloatingStateSupported: true,
+          hideWithUi: true,
           // eslint-disable-next-line react/display-name
           getWidgetContent: () => {
             return <SelectedElementDataWidgetComponent />;

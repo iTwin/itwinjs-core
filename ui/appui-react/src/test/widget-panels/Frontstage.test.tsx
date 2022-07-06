@@ -1385,6 +1385,7 @@ describe("Frontstage local storage wrapper", () => {
         const widget = new WidgetDef({
           id: "w1",
           label: "Widget 1",
+          hideWithUiWhenFloating: true,
         });
         state = addWidgets(state, [widget], "left", "leftStart");
         state.tabs.w1.label.should.eq("Widget 1");
@@ -1470,7 +1471,7 @@ describe("Frontstage local storage wrapper", () => {
         it("should add removed tab", () => {
           let nineZone = createNineZoneState();
           nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-          nineZone = addTab(nineZone, "t1");
+          nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true });
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t2" }), WidgetState.Open);
           sut.panels.left.widgets.length.should.eq(2);
         });
@@ -1573,7 +1574,7 @@ describe("Frontstage local storage wrapper", () => {
           let nineZone = createNineZoneState();
           nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
           nineZone = addTab(nineZone, "w1");
-          const widgetDef = new WidgetDef({ id: "w1" });
+          const widgetDef = new WidgetDef({ id: "w1", hideWithUiWhenFloating: true });
           let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
           expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
           let showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
@@ -1750,7 +1751,7 @@ describe("Frontstage local storage wrapper", () => {
       it("should remove labels", () => {
         let nineZone = createNineZoneState();
         nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-        nineZone = addFloatingWidget(nineZone, getUniqueId(), ["t2"]);
+        nineZone = addFloatingWidget(nineZone, getUniqueId(), ["t2"], { hideWithUiWhenFloating: true});
         nineZone = addTab(nineZone, "t1");
         nineZone = addTab(nineZone, getUniqueId());
         const sut = packNineZoneState(nineZone);

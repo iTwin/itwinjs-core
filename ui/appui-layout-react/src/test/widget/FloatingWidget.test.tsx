@@ -11,7 +11,7 @@ import { TestNineZoneProvider } from "../Providers";
 describe("FloatingWidget", () => {
   it("should render", () => {
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], { hideWithUiWhenFloating: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <TestNineZoneProvider
@@ -29,6 +29,23 @@ describe("FloatingWidget", () => {
   it("should render minimized", () => {
     let nineZone = createNineZoneState();
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
+    nineZone = addTab(nineZone, "t1");
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
+          widget={nineZone.widgets.w1}
+        />
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render hidden", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], { hidden: true }, undefined);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <TestNineZoneProvider

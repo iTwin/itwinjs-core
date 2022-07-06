@@ -35,7 +35,7 @@ export interface FloatingWidgetProps {
 
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { id, bounds, userSized, hideWithUi } = props.floatingWidget;
+  const { id, bounds, userSized, hideWithUiWhenFloating } = props.floatingWidget;
   const { minimized, tabs } = props.widget;
   const isSingleTab = 1 === tabs.length;
   const uiIsVisible = React.useContext(UiIsVisibleContext);
@@ -52,8 +52,8 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     };
   }, [bounds, isSingleTab, minimized, userSized]);
   const hideFloatingWidget = React.useMemo(() => {
-    return (!!!uiIsVisible && hideWithUi);
-  }, [uiIsVisible, hideWithUi]);
+    return (!!!uiIsVisible && hideWithUiWhenFloating);
+  }, [uiIsVisible, hideWithUiWhenFloating]);
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
     hideFloatingWidget && "nz-hidden",

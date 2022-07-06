@@ -76,5 +76,5 @@ export interface AbstractWidgetProps extends ProvidedItem {
    * internally. */
   defaultFloatingSize?: { width: number, height: number };
   /** Optional prop that tells the widget system to fade this widget out with the rest of the UI when it is in floating state */
-  hideWithUi?: boolean;
+  hideWithUiWhenFloating?: boolean;
 }

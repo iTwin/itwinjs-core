@@ -299,6 +299,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       preferredFloatingWidgetSize: widget.defaultFloatingSize,
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
+      hideWithUiWhenFloating: widget.hideWithUiWhenFloating ? widget.hideWithUiWhenFloating : false,
     });
     tabs.push(widget.id);
   }
@@ -341,14 +342,15 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       preferredPopoutWidgetSize,
       userSized,
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+      hideWithUiWhenFloating: widgetDef.hideWithUiWhenFloating ? widgetDef.hideWithUiWhenFloating : false,
     });
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
       const floatingContainerId = widgetDef.floatingContainerId ?? getUniqueId();
       const widgetContainerId = getWidgetId(side, panelZoneKeys[preferredWidgetIndex]);
       const homePanelInfo: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
       const preferredPosition = widgetDef.defaultFloatingPosition;
-      const hideWithUi = widgetDef.hideWithUi;
-      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable, hideWithUi);
+      const hideWithUiWhenFloating = widgetDef.hideWithUiWhenFloating;
+      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable, hideWithUiWhenFloating);
     } else {
       const widgetPanelSectionId = getWidgetPanelSectionId(side, preferredWidgetIndex);
       state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);
@@ -868,6 +870,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     iconSpec: widgetDef.iconSpec,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+    hideWithUiWhenFloating: widgetDef.hideWithUiWhenFloating ? widgetDef.hideWithUiWhenFloating : false,
   });
   nineZone.tabs[newTab.id] = newTab;
   if (widgetDef.tabLocation.widgetId in nineZone.widgets) {

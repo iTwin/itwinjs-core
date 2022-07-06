@@ -29,7 +29,7 @@ export interface TabState {
   readonly canPopout?: boolean;
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
-  readonly hideWithUi?: boolean;
+  readonly hideWithUiWhenFloating?: boolean;
 }
 
 /** @internal future */
@@ -51,7 +51,7 @@ export interface FloatingWidgetState {
   readonly home: FloatingWidgetHomeState;
   readonly userSized?: boolean;
   readonly hidden?: boolean;
-  readonly hideWithUi?: boolean;
+  readonly hideWithUiWhenFloating?: boolean;
 }
 
 /** @internal future */
@@ -73,7 +73,7 @@ export interface DraggedTabState {
   readonly tabId: TabState["id"];
   readonly position: PointProps;
   readonly home: FloatingWidgetHomeState;
-  readonly hideWithUi: TabState["hideWithUi"];
+  readonly hideWithUiWhenFloating?: TabState["hideWithUiWhenFloating"];
 }
 
 /** @internal future */
@@ -297,7 +297,7 @@ export interface PanelWidgetDragStartAction {
   readonly bounds: RectangleProps;
   readonly side: PanelSide;
   readonly userSized?: boolean;
-  readonly hideWithUi?: boolean;
+  readonly hideWithUiWhenFloating?: boolean;
 }
 
 /** @internal future */
@@ -346,6 +346,7 @@ export interface WidgetTabDragStartAction {
   readonly id: TabState["id"];
   readonly position: PointProps;
   readonly userSized?: boolean;
+  readonly hideWithUiWhenFloating?: boolean;
 }
 
 /** @internal future */
@@ -683,6 +684,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "WIDGET_TAB_DRAG_START": {
       const tabId = action.id;
       let home: FloatingWidgetHomeState | undefined;
+      const hideWithUiWhenFloating = action.hideWithUiWhenFloating ? action.hideWithUiWhenFloating : false;
       if (action.floatingWidgetId) {
         const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
         home = floatingWidget.home;
@@ -700,6 +702,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         tabId,
         position: Point.create(action.position).toProps(),
         home,
+        hideWithUiWhenFloating,
       };
       removeWidgetTabInternal(state, action.widgetId, action.floatingWidgetId, undefined, action.side, action.id);
       return;
@@ -752,13 +755,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const bounds = Rectangle.createFromSize(tab.preferredFloatingWidgetSize || target.size).offset(state.draggedTab.position);
         const containedBounds = bounds.containIn(nzBounds);
         const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
-        // const hideWithUi =
+        const hideWithUiWhenFloating = state.draggedTab.hideWithUiWhenFloating;
 
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
           userSized,
+          hideWithUiWhenFloating,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -999,6 +1003,7 @@ export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs
 
 /** @internal */
 export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
+  const hideWithUiWhenFloating = args?.hideWithUiWhenFloating ? args.hideWithUiWhenFloating : false;
   return {
     bounds: new Rectangle().toProps(),
     id,
@@ -1008,6 +1013,7 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
       widgetIndex: 0,
     },
     hidden: false,
+    hideWithUiWhenFloating,
     ...args,
   };
 }
@@ -1027,16 +1033,19 @@ export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Part
 
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
+  const hideWithUiWhenFloating = args?.hideWithUiWhenFloating ? args.hideWithUiWhenFloating : false;
   return {
     allowedPanelTargets: undefined,
     id,
     label: "",
+    hideWithUiWhenFloating,
     ...args,
   };
 }
 
 /** @internal */
 export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState {
+  const hideWithUiWhenFloating = args?.hideWithUiWhenFloating ? args.hideWithUiWhenFloating : false;
   return {
     tabId,
     home: {
@@ -1045,6 +1054,7 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
       widgetIndex: 0,
     },
     position: new Point().toProps(),
+    hideWithUiWhenFloating,
     ...args,
   };
 }
@@ -1095,9 +1105,11 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 
 /** @internal */
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
+  const hideWithUiWhenFloating = tabArgs?.hideWithUiWhenFloating ? tabArgs.hideWithUiWhenFloating : false;
   const tab = {
     ...createTabState(id),
     ...tabArgs,
+    hideWithUiWhenFloating,
   };
   return produce(state, (stateDraft) => {
     stateDraft.tabs[id] = tab;
@@ -1615,7 +1627,7 @@ export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide
  */
 export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps,
-  userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUi = false) {
+  userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUiWhenFloating = false) {
   const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
   const preferredPoint = preferredPosition ?? { x: (draft.size.width - size.width) / 2, y: (draft.size.height - size.height) / 2 };
   const nzBounds = Rectangle.createFromSize(draft.size);
@@ -1635,7 +1647,7 @@ export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, fl
       id: floatingWidgetId,
       home,
       userSized,
-      hideWithUi,
+      hideWithUiWhenFloating,
     };
   }
 
@@ -1657,7 +1669,7 @@ export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, fl
  */
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
-  userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUi = false): NineZoneState {
+  userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUiWhenFloating?: boolean): NineZoneState {
   const location = findTab(state, widgetTabId);
   if (location || !(widgetTabId in state.tabs))
     return state;
@@ -1666,6 +1678,6 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
   const tab = state.tabs[widgetTabId];
 
   return produce(state, (draft) => {
-    addWidgetTabToDraftFloatingPanel (draft, floatingWidgetId, widgetTabId, home, tab, preferredSize, preferredPosition, userSized, isFloatingStateWindowResizable);
+    addWidgetTabToDraftFloatingPanel (draft, floatingWidgetId, widgetTabId, home, tab, preferredSize, preferredPosition, userSized, isFloatingStateWindowResizable, hideWithUiWhenFloating);
   });
 }

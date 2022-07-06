@@ -148,7 +148,7 @@ export class WidgetDef {
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
 
-  private _hideWithUi: boolean;
+  private _hideWithUiWhenFloating?: boolean;
   private _initialProps?: WidgetProps;
 
   private _tabLocation: TabLocation = {
@@ -231,7 +231,7 @@ export class WidgetDef {
     me.setFloatingContainerId(widgetProps.floatingContainerId);
     me.defaultFloatingPosition = widgetProps.defaultFloatingPosition ? widgetProps.defaultFloatingPosition as PointProps : undefined;
 
-    me._hideWithUi = !!widgetProps.hideWithUi;
+    me._hideWithUiWhenFloating = !!widgetProps.hideWithUiWhenFloating;
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -302,9 +302,9 @@ export class WidgetDef {
   }
 
   public setUpSyncSupport(props: WidgetProps) {
-    if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) {
+    if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
-      this._stateFunc = props.stateFunc;
+      this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
   }
@@ -451,12 +451,12 @@ export class WidgetDef {
     return WidgetState.Open === this.activeState;
   }
 
-  public set hideWithUi(hide: boolean | undefined) {
-    this._hideWithUi = !!hide;
+  public set hideWithUiWhenFloating(hide: boolean | undefined) {
+    this._hideWithUiWhenFloating = !!hide;
   }
 
-  public get hideWithUi(): boolean {
-    return this._hideWithUi;
+  public get hideWithUiWhenFloating(): boolean {
+    return !!this._hideWithUiWhenFloating;
   }
   public onWidgetStateChanged(): void {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
