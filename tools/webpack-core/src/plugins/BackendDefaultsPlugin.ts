@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Compiler, DefinePlugin } from "webpack";
-import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
+import * as path from "path";
+import { Compiler, Configuration, DefinePlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+// import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
@@ -14,19 +15,42 @@ const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
+const isProductionLikeMode = (
+  options: Configuration | WebpackOptionsNormalized
+) => {
+  return options.mode === "production" || !options.mode;
+};
+
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {
     // By default, webpack will prefer ES Modules over CommonJS modules.
     // This causes trouble with importing node-fetch, so we need to explicitly prefer CommonJS over ES/Harmony.
     // https://github.com/bitinn/node-fetch/issues/450#issuecomment-494475397
-    compiler.options.resolve!.mainFields = ["main"];
+    compiler.options.resolve.mainFields = ["main"];
 
     // Don't bother minimizing backends...
-    compiler.options.optimization!.minimize = false;
+    compiler.options.optimization.minimize = false;
 
-    compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
-    compiler.options.module!.rules = [
-      ...(compiler.options.module!.rules || []),
+    // Add a loader to remove all asserts in production builds.
+    const defaultRules: RuleSetRule[] = [
+      {
+        test: /\.js$/,
+        loader: require.resolve("source-map-loader"),
+        enforce: "pre",
+      },
+    ];
+
+    if (isProductionLikeMode(compiler.options)) {
+      defaultRules.push({
+        test: /\.js$/,
+        loader: path.join(__dirname, "../loaders/strip-assert-loader.js"),
+        enforce: "pre",
+      });
+    }
+
+    compiler.options.module.rules = [
+      ...defaultRules,
+      ...(compiler.options.module.rules || []),
       {
         test: /\.ecschema\.xml$/,
         loader: require.resolve("file-loader"),
@@ -36,6 +60,24 @@ export class BackendDefaultsPlugin {
       },
       copyFilesRule,
     ];
+
+    compiler.options.output.devtoolModuleFilenameTemplate = (
+      value: any,
+      options: Configuration
+    ) => {
+      if (value) return value;
+
+      if (isProductionLikeMode(options))
+        return (info: any) =>
+          path
+            .relative(
+              options.output?.path || process.cwd(),
+              info.absoluteResourcePath
+            )
+            .replace(/\\/g, "/");
+
+      return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
+    };
 
     // Add default plugins
     const plugins = [
