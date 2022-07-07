@@ -7477,7 +7477,9 @@ export interface RpcManagedStatus {
     // (undocumented)
     managedStatus: "pending" | "notFound" | "noContent";
     // (undocumented)
-    responseValue: string;
+    responseValue: string | {
+        message: string;
+    } | RpcNotFoundResponse;
 }
 
 // @internal
