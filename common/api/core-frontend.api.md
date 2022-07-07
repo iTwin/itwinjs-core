@@ -4261,6 +4261,8 @@ export interface Hilites {
     // (undocumented)
     readonly models: Id64.Uint32Set;
     // (undocumented)
+    readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
+    // (undocumented)
     readonly subcategories: Id64.Uint32Set;
 }
 
@@ -4273,10 +4275,11 @@ export class HiliteSet {
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
-    // @beta
     readonly models: Id64.Uint32Set;
+    get modelSubCategoryMode(): ModelSubCategoryHiliteMode;
+    set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode);
+    readonly onModelSubCategoryModeChanged: BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>;
     setHilite(arg: Id64Arg, onOff: boolean): void;
-    // @beta
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
     set wantSyncWithSelectionSet(want: boolean);
@@ -4789,6 +4792,7 @@ export abstract class IModelConnection extends IModel {
     protected beforeClose(): void;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    readonly categories: IModelConnection.Categories;
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
@@ -4850,7 +4854,7 @@ export abstract class IModelConnection extends IModel {
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
-    readonly subcategories: SubCategoriesCache;
+    get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
@@ -4858,6 +4862,29 @@ export abstract class IModelConnection extends IModel {
 
 // @public (undocumented)
 export namespace IModelConnection {
+    // (undocumented)
+    export namespace Categories {
+        export interface CategoryInfo {
+            readonly id: Id64String;
+            readonly subCategories: Map<Id64String, SubCategoryInfo>;
+        }
+        export interface SubCategoryInfo {
+            readonly appearance: Readonly<SubCategoryAppearance>;
+            readonly categoryId: Id64String;
+            readonly id: Id64String;
+        }
+    }
+    export class Categories {
+        // @internal
+        constructor(iModel: IModelConnection);
+        // @internal (undocumented)
+        readonly cache: SubCategoriesCache;
+        getCategoryInfo(categoryIds: Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>>;
+        getSubCategoryInfo(args: {
+            category: Id64String;
+            subCategories: Iterable<Id64String>;
+        }): Promise<Map<Id64String, Categories.SubCategoryInfo>>;
+    }
     export class CodeSpecs {
         // @internal
         constructor(_iModel: IModelConnection);
@@ -7020,6 +7047,9 @@ export class ModelState extends EntityState implements ModelProps {
     parentModel: Id64String;
     toJSON(): ModelProps;
 }
+
+// @public
+export type ModelSubCategoryHiliteMode = "union" | "intersection";
 
 // @alpha (undocumented)
 export enum ModifyElementSource {
@@ -10053,8 +10083,12 @@ export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     // (undocumented)
     clear(): void;
+    // (undocumented)
+    getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>>;
     getSubCategories(categoryId: string): Id64Set | undefined;
     getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
+    // (undocumented)
+    getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
