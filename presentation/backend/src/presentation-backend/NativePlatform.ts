@@ -184,7 +184,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const response = this._nativeAddon.queueRequest(db, options);
+      const response = this._nativeAddon.handleRequest(db, options);
       if (!this.isPromise(response))
         this.handleResult(response);
 

@@ -75,7 +75,7 @@ describe("default NativePlatform", () => {
 
     it("calls addon", async () => {
       addonMock
-        .setup(async (x) => x.queueRequest(moq.It.isAny(), ""))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(async () => ({ result: "0" }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
@@ -84,21 +84,21 @@ describe("default NativePlatform", () => {
 
     it("throws on cancellation response", async () => {
       addonMock
-        .setup(async (x) => x.queueRequest(moq.It.isAny(), ""))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(async () => ({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
-    it("throws on queueRequest error response", async () => {
+    it("throws on handleRequest error response", async () => {
       addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
-        .setup(async (x) => x.queueRequest(moq.It.isAny(), ""))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(async () => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
@@ -110,7 +110,7 @@ describe("default NativePlatform", () => {
       scope: "test",
     };
     addonMock
-      .setup(async (x) => x.queueRequest(moq.It.isAny(), ""))
+      .setup(async (x) => x.handleRequest(moq.It.isAny(), ""))
       .returns(async () => ({ result: "0", diagnostics }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
