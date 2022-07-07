@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../outline/variables";
 
 .nz-target-tabTarget {
-  $targeted-color: rgba(140, 210, 255, var(--iui-opacity-3)); // TODO: re-use color
-
   position: absolute;
   width: 100%;
   height: 100%;
@@ -20,11 +19,11 @@
   }
 
   &.nz-targeted {
-    background-color: $targeted-color;
+    background-color: $nz-outline-color;
 
     >.nz-section {
       &.nz-target {
-        background-color: $targeted-color;
+        background-color: $nz-outline-color;
       }
     }
   }

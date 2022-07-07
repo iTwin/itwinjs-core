@@ -7,6 +7,7 @@
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
 @import "~@itwin/itwinui-css/scss/style/speed";
 @import "~@itwin/itwinui-css/scss/style/elevation";
+@import "../outline/variables";
 
 .nz-target-target {
   $border-size: 2px;
@@ -17,7 +18,6 @@
   $border-color: $buic-background-5;
   $target-color: $buic-background-4;
   $section-color: $buic-background-1;
-  $targeted-color: rgb(140, 210, 255);
 
   height: $length;
   width: $length;
@@ -68,12 +68,12 @@
 
   &.nz-targeted {
     transform: scale(1.2);
-    background-color: $targeted-color;
+    background-color: $nz-opaque-outline-color;
     box-shadow: $iui-elevation-4;
 
     >.nz-section {
       &.nz-target {
-        background-color: $targeted-color;
+        background-color: $nz-opaque-outline-color;
       }
     }
   }
