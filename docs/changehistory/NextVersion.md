@@ -51,6 +51,15 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
+### AppUi Changes
+
+When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop hideWithUiWhenFloating to true in the AbstractWidgetProps in your UiProvider.
+
+By default, when the Tool Settings widget is floating, the title will read "Tool Settings". A new setting in UiFramework will use the name of the active tool as the title, instead. To use this feature, call
+```ts
+  UiFramework.setUseToolAsToolSettingsLabel(true) when your app starts.
+```
+
 ## Deprecations
 
 ### @itwin/core-bentley
@@ -64,3 +73,5 @@ The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.g
 IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
 
 IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
+
+
