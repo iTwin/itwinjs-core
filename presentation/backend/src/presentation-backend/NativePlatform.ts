@@ -148,9 +148,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
-    private isPromise<T>(response: Promise<IModelJsNative.ECPresentationManagerResponse<T>> | IModelJsNative.ECPresentationManagerResponse<T>): response is Promise<IModelJsNative.ECPresentationManagerResponse<T>> {
-      return response && Object.prototype.toString.call(response) === "[object Promise]";
-    }
     public dispose() {
       this._nativeAddon.dispose();
     }
@@ -184,11 +181,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const response = this._nativeAddon.handleRequest(db, options);
-      if (!this.isPromise(response))
-        this.handleResult(response);
-
-      return (response as Promise<IModelJsNative.ECPresentationManagerResponse<string>>).then((result) => {
+      return this._nativeAddon.handleRequest(db, options).then((result) => {
         if (result.error)
           throw new PresentationError(this.getStatus(result.error.status), result.error.message);
         return this.createSuccessResponse(result);

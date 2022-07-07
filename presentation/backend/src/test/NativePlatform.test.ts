@@ -89,13 +89,6 @@ describe("default NativePlatform", () => {
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
-    it("throws on handleRequest error response", async () => {
-      addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
-    });
-
     it("throws on error response", async () => {
       addonMock
         .setup(async (x) => x.handleRequest(moq.It.isAny(), ""))
