@@ -6,7 +6,7 @@ internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["
 internal;addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial
 internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 internal;addWidgetTabToDraftFloatingPanel(draft: Draft
-internal;addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState
+internal;addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUiWhenFloating?: boolean): NineZoneState
 internal;addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState
 internal;AnimateDockedToolSettingsContext: React.Context
 internal;AppButton 

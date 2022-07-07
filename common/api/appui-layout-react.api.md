@@ -37,10 +37,10 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @internal
-export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): void;
+export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUiWhenFloating?: boolean): void;
 
 // @internal
-export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
+export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean, hideWithUiWhenFloating?: boolean): NineZoneState;
 
 // @internal
 export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState;
@@ -420,6 +420,8 @@ export const DraggedTabContext: React.Context<boolean>;
 // @internal
 export interface DraggedTabState {
     // (undocumented)
+    readonly hideWithUiWhenFloating?: TabState["hideWithUiWhenFloating"];
+    // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
     readonly position: PointProps;
@@ -682,6 +684,8 @@ export interface FloatingWidgetState {
     readonly bounds: RectangleProps;
     // (undocumented)
     readonly hidden?: boolean;
+    // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
     // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
@@ -1719,6 +1723,8 @@ export interface PanelWidgetDragStartAction {
     // (undocumented)
     readonly bounds: RectangleProps;
     // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
+    // (undocumented)
     readonly id: WidgetState["id"];
     // (undocumented)
     readonly newFloatingWidgetId: FloatingWidgetState["id"];
@@ -2461,6 +2467,8 @@ export interface TabState {
     readonly allowedPanelTargets?: PanelSide[];
     // (undocumented)
     readonly canPopout?: boolean;
+    // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
     // (undocumented)
     readonly iconSpec?: IconSpec;
     // (undocumented)
@@ -3471,6 +3479,8 @@ export interface WidgetTabDragEndAction {
 export interface WidgetTabDragStartAction {
     // (undocumented)
     readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
+    // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
     // (undocumented)
     readonly id: TabState["id"];
     // (undocumented)
