@@ -9,6 +9,9 @@ Table of contents:
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
 - [Frontend category APIs](#frontend-category-apis)
+- [AppUi](#appui)
+  - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
+  - [Tool Settings title](tool-settings-title)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -51,9 +54,13 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
-### AppUi Changes
+## AppUi
+
+### Auto-hiding floating widgets
 
 When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop hideWithUiWhenFloating to true in the AbstractWidgetProps in your UiProvider.
+
+### Tool Settings title
 
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". A new setting in UiFramework will use the name of the active tool as the title, instead. To use this feature, call
 ```ts
