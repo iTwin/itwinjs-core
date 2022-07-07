@@ -26,6 +26,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
+
+  public override get tileSize(): number { return 512; }
+
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
@@ -62,7 +65,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){
     context.fillStyle = "red";
-    context.strokeRect(0, 0, 256, 256);
+    context.strokeRect(0, 0, this.tileSize, this.tileSize);
     context.font = "30px Arial";
     context.lineWidth = 5;
     // context.drawImage(sampleIconImg,100,100, 20,20);
@@ -72,8 +75,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
 
     const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = this.tileSize;
+    canvas.height = this.tileSize;
 
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
@@ -89,10 +92,16 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       const featureReader = new ArcGisFeatureJSON();
 
       // Compute transform
+
+      const tileExtent0 = this.getEPSG4326Extent(0, 0, 0);
+      const tileExtent1 = this.getEPSG4326Extent(1, 0, 0);
+      console.log(`tileExtent0 : ${tileExtent0}`);
+      console.log(`tileExtent1 : ${tileExtent1}`);
+
       const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
 
       const worldTileWidth = tileExtent.right - tileExtent.left;
-      const canvasTileWidth = 256;
+      const canvasTileWidth = this.tileSize;
       const world2CanvasRatio = canvasTileWidth / worldTileWidth;
       const worldTileOrigin = Point3d.create(tileExtent.left, tileExtent.bottom);
       const worldTileExtent = Point3d.create(tileExtent.right, tileExtent.top);
@@ -110,14 +119,12 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         featureReader.transform = transfo;
       }
 
-      // this.drawTileDebugInfo(row, column, zoomLevel, ctx);
+      this.drawTileDebugInfo(row, column, zoomLevel, ctx);
       featureReader.readRenderGraphics(tileResponse.text, ctx);
 
     } catch {
       return undefined;
     }
-
-    // this.drawTileDebugInfo(row, column, zoomLevel, canvas);
 
     let error = 0;
 

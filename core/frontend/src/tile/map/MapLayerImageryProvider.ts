@@ -227,15 +227,17 @@ export abstract class MapLayerImageryProvider {
   // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
 
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
-    const mapSize = 256 << zoomLevel;
-    const leftGrid = 256 * column;
-    const topGrid = 256 * row;
+    // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
+    // so use Math.pow instead (I assume the performance lost to be minimal)
+    const mapSize = this.tileSize*Math.pow(2,zoomLevel);
+    const leftGrid = this.tileSize  * column;
+    const topGrid = this.tileSize  * row;
 
     const longitudeLeft = 360 * ((leftGrid / mapSize) - 0.5);
-    const y0 = 0.5 - ((topGrid + 256) / mapSize);
+    const y0 = 0.5 - ((topGrid + this.tileSize ) / mapSize);
     const latitudeBottom = 90.0 - 360.0 * Math.atan(Math.exp(-y0 * 2 * Math.PI)) / Math.PI;
 
-    const longitudeRight = 360 * (((leftGrid + 256) / mapSize) - 0.5);
+    const longitudeRight = 360 * (((leftGrid + this.tileSize) / mapSize) - 0.5);
     const y1 = 0.5 - (topGrid / mapSize);
     const latitudeTop = 90.0 - 360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
 
