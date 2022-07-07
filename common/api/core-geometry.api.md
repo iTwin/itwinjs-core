@@ -4522,6 +4522,7 @@ export class PolygonOps {
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
+    static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][];
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumAreaXY(polygons: Point3d[][]): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
