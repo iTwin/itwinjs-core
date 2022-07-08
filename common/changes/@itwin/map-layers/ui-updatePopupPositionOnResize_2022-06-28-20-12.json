@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
