@@ -360,12 +360,13 @@ export class CheckpointManager {
     while (true) {
       try {
         await this.doDownload(request);
-        return await this.updateToRequestedVersion(request);
+        break;
       } catch (e: any) {
         if (retry-- <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
           throw e;
       }
     }
+    return this.updateToRequestedVersion(request);
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
