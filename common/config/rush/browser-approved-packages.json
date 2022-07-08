@@ -300,7 +300,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "@itwin/object-storage-core",

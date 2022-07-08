@@ -20,7 +20,10 @@ export interface TileContentIdentifier {
   guid: string | undefined;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
   private static _instance: CloudStorageTileCache;
 

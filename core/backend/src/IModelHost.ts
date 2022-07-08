@@ -450,9 +450,6 @@ export class IModelHost {
     this.configuration = configuration;
     this.setupTileCache();
 
-    // eslint-disable-next-line deprecation/deprecation
-    this.platform.setUseTileCache(!(IModelHost.tileStorage || IModelHost.tileCacheService));
-
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
   }
@@ -587,11 +584,13 @@ export class IModelHost {
     const storage = config.tileCacheStorage;
     const credentials = config.tileCacheAzureCredentials;
 
-    if(!service && !storage && !credentials)
+    if(!service && !storage && !credentials) {
+      this.platform.setUseTileCache(true);
       return;
+    }
+    this.platform.setUseTileCache(false);
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = new CloudStorageTileUploader();
-
     if(credentials) {
       if(storage || service)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");

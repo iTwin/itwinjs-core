@@ -53,6 +53,7 @@ async function openFile(filename: string, writable: boolean): Promise<IModelConn
   return iModelConnection;
 }
 
+// eslint-disable-next-line deprecation/deprecation
 class FakeTileCache extends CloudStorageTileCache {
   public constructor() { super(); }
 
@@ -122,6 +123,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   if (configuration.useFakeCloudStorageTileCache)
+    // eslint-disable-next-line deprecation/deprecation
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
   return [renderSystemOptions, tileAdminProps];

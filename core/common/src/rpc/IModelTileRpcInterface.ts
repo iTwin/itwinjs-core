@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import type { TransferConfig } from "@itwin/object-storage-core/lib/frontend";
+import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { TileContentIdentifier } from "../CloudStorageTileCache";
