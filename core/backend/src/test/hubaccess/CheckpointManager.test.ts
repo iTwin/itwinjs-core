@@ -131,7 +131,7 @@ describe("Checkpoint Manager", () => {
     assert.isUndefined(db);
   });
 
-  it.only("should fail when downloadCheckpoint does not throw a transient error", async () => {
+  it("should fail when downloadCheckpoint does not throw a transient error", async () => {
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
       accountName: "testAccount",
@@ -159,7 +159,7 @@ describe("Checkpoint Manager", () => {
     assert.isTrue(v2Spy.callCount === 2, `Expected call count of 2, but got ${v2Spy.callCount}`);
   });
 
-  it.only("should fail when downloadCheckpoint throws transient error too many times", async () => {
+  it("should fail when downloadCheckpoint throws transient error too many times", async () => {
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
       accountName: "testAccount",
