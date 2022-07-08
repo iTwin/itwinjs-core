@@ -5,14 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitForElementToBeRemoved } from "@testing-library/react";
 import {
-  ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  ActivityMessageDetails, ActivityMessageEndReason, NoRenderApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
 import { MessageSeverity, WidgetState } from "@itwin/appui-abstract";
-import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@itwin/appui-layout-react";
-import { IconButton } from "@itwin/itwinui-react";
-import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
@@ -52,190 +49,196 @@ describe("StatusBar", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
     notifications = new AppNotificationManager();
+    await NoRenderApp.startup();
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
   });
 
-  it("StatusBar should mount", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-    wrapper.unmount();
-  });
-
   it("StatusBar should render a Toast message", async () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    expect(wrapper.find(Toast).length).to.eq(1); // eslint-disable-line deprecation/deprecation
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-    expect(wrapper.find(MessageLayout).length).to.eq(1);
-    wrapper.unmount();
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief message."));
   });
 
-  it("StatusBar should render a Toast message and animate out", async () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
-    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.", "A detailed message.");
-    notifications.outputMessage(details);
-    wrapper.update();
-
-    expect(wrapper.find(Toast).length).to.eq(1); // eslint-disable-line deprecation/deprecation
-
-    const toast = wrapper.find(".nz-toast");
-    expect(toast.length).to.eq(1);
-    toast.simulate("transitionEnd");
-    wrapper.update();
-
-    expect(wrapper.find(".nz-toast").length).to.eq(0);
-    wrapper.unmount();
-  });
-
-  it("StatusBar should render a Sticky message", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("StatusBar should render a Sticky message", async () => {
+    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-    expect(wrapper.find(MessageLayout).length).to.eq(1);
-    expect(wrapper.find(IconButton).length).to.eq(1);
-    wrapper.unmount();
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief message."));
   });
 
-  it("Sticky message should close on button click", () => {
-    const fakeTimers = sinon.useFakeTimers();
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("Sticky message should close on button click", async () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    expect(wrapper.find(IconButton).length).to.eq(1);
-
-    wrapper.find(IconButton).simulate("click");
-    fakeTimers.tick(1000);
-    fakeTimers.restore();
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    const closeButton = screen.getByRole("button");
+    fireEvent.click(closeButton);
+    await waitForElementToBeRemoved(screen.queryByText("A brief message."));
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
   });
 
-  it("StatusBar should render an Activity message", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("StatusBar should render an Activity message", async () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-    expect(wrapper.find(MessageProgress).length).to.eq(1);
-
-    notifications.endActivityMessage(ActivityMessageEndReason.Completed);
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    act(() => {
+      notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    });
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
   });
 
-  it("Activity message should be canceled", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("Activity message should be canceled", async () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    wrapper.find(MessageHyperlink).simulate("click");
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    const cancelLink = await screen.findByText("dialog.cancel");
+    fireEvent.click(cancelLink);
+
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
   });
 
-  it("Activity message should be dismissed", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("Activity message should be dismissed", async () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    notifications.setupActivityMessage(details);
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    wrapper.find(IconButton).simulate("click");
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    const closeButton = screen.getByRole("button");
+    fireEvent.click(closeButton);
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
   });
 
   it("StatusBar should render Toast, Sticky & Activity messages", async () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
-    notifications.outputMessage(details1);
-    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details2);
-    const details3 = new ActivityMessageDetails(true, true, true);
-    notifications.setupActivityMessage(details3);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief sticky message.", "A detailed message.", OutputMessageType.Sticky);
+    // const details3 = new ActivityMessageDetails(true, true, true);
+    // notifications.setupActivityMessage(details3);
+    act(() => {
+      notifications.outputMessage(details1);
+      notifications.outputMessage(details2);
+      // notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
+    expect(await screen.findByText("A brief sticky message.")).to.be.not.null;
+    // expect(await screen.findByText("Message text")).to.be.not.null;
+    expect(document.querySelector(".nz-content")?.textContent).to.eq("2");
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(3);
-    wrapper.unmount();
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief sticky message."));
   });
 
-  it("StatusBar should render maximum of 3 Sticky messages", async () => {
-    MessageManager.maxDisplayedStickyMessages = 3;
+  // it("StatusBar should render maximum of 3 Sticky messages", async () => {
+  //   MessageManager.maxDisplayedStickyMessages = 3;
 
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  //   render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
-    notifications.outputMessage(details1);
-    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 2.", undefined, OutputMessageType.Sticky);
-    notifications.outputMessage(details2);
-    const details3 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 3.", undefined, OutputMessageType.Sticky);
-    notifications.outputMessage(details3);
-    wrapper.update();
+  //   const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
+  //   act(() => {
+  //     notifications.outputMessage(details1);
+  //   });
+  //   expect(await screen.findByText("A brief message 1.")).to.be.not.null;
+  //   const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 2.", undefined, OutputMessageType.Sticky);
+  //   act(() => {
+  //     notifications.outputMessage(details2);
+  //   });
+  //   expect(await screen.findByText("A brief message 2.")).to.be.not.null;
+  //   const details3 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 3.", undefined, OutputMessageType.Sticky);
+  //   act(() => {
+  //     notifications.outputMessage(details3);
+  //   });
+  //   expect(await screen.findByText("A brief message 3.")).to.be.not.null;
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(3);
+  //   const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
+  //   act(() => {
+  //     notifications.outputMessage(details4);
+  //   });
+  //   expect(await screen.findByText("A brief message 4.")).to.be.null;
 
-    const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
-    notifications.outputMessage(details4);
-    wrapper.update();
+  //   act(() => {
+  //     MessageManager.closeAllMessages();
+  //   });
+  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 1."));
+  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 2."));
+  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 3."));
+  // });
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(3);
-    expect(wrapper.find(IconButton).length).to.eq(3);
-    wrapper.unmount();
-  });
+  // it("StatusBar should not render a Pointer message", () => {
+  //   render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-  it("StatusBar should not render a Pointer message", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  //   const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
+  //   act(() => {
+  //     notifications.outputMessage(details);
+  //   });
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
-    notifications.outputMessage(details);
-    wrapper.update();
+  //   expect(screen.getByText("A brief message.")).to.be.null;
+  // });
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
-  });
+  it("StatusBar should clear messages", async () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-  it("StatusBar should clear messages", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief toast message.", "A detailed message.", OutputMessageType.Sticky);
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief toast message.")).to.be.not.null;
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
-
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-
-    MessageManager.clearMessages();
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    act(() => {
+      MessageManager.clearMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief toast message."));
   });
 
   it("StatusMessageRenderer should render empty correctly", () => {

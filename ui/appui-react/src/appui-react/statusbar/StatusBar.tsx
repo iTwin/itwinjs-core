@@ -15,6 +15,7 @@ import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
 import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 
 // cspell:ignore safearea
 
@@ -34,11 +35,19 @@ export interface StatusBarProps extends CommonProps {
   isInFooterMode: boolean;
 }
 
+/** Message type for the [[StatusBar]] React component
+ * @internal
+ */
+interface StatusBarMessage {
+  close: () => void;
+  details: NotifyMessageDetailsType;
+}
+
 /** Status Bar React component.
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
-  private messages: {close: () => void}[] = [];
+  private messages: StatusBarMessage[] = [];
 
   /** @internal */
   constructor(props: StatusBarProps) {
@@ -108,13 +117,21 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   private _handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
     const displayedMessage = MessageManager.displayMessage(message);
     if(!!displayedMessage)
-      this.messages.push(displayedMessage);
+      this.messages.push({close: displayedMessage.close, details: message});
   };
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
-    this.messages.forEach((msg) => msg.close());
-    this.messages = [];
+    const updatedMessages: StatusBarMessage[] = [];
+    this.messages.forEach((m) => {
+      const existingMessage = MessageManager.messages.find((msg) => m.details.briefMessage === msg.briefMessage);
+      if (existingMessage) {
+        updatedMessages.push({close: m.close, details: existingMessage});
+      } else {
+        m.close();
+      }
+    });
+    this.messages = updatedMessages;
   };
 
   /**

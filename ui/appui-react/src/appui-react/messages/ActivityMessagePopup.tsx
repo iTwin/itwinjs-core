@@ -53,5 +53,5 @@ export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
 
   useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 
-  return null;
+  return <></>;
 }
