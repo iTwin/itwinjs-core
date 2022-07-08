@@ -307,7 +307,7 @@ export class CheckpointManager {
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
       // first see if there's a V2 checkpoint available.
-      let changesetId: string;
+      let changesetId: string | undefined;
       await this.withAttempts(5, async () => {
         try {
           changesetId = await V2CheckpointManager.downloadCheckpoint(request);
@@ -318,7 +318,7 @@ export class CheckpointManager {
             throw error;
         }
       });
-      if (changeSetId === undefined) {
+      if (changesetId === undefined) {
         throw Error("ChangeSetId is undefined after returning from V2CheckpointManager.downloadCheckpoint");
       }
       if (changesetId !== request.checkpoint.changeset.id)
