@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Widget
+ * @module WidgetPanels
  */
 
 import "./SectionTarget.scss";
@@ -13,7 +13,6 @@ import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { Target, TargetProps } from "./Target";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { SectionTargetState } from "../base/NineZoneState";
 
@@ -23,29 +22,40 @@ export interface SectionTargetProps {
 }
 
 /** @internal */
-export const SectionTarget = React.memo<SectionTargetProps>(function SectionTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export function SectionTarget(props: SectionTargetProps) {
   const { sectionIndex } = props;
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-  const direction = useSectionTargetDirection();
+  const direction = useTargetDirection();
   const [ref, targeted] = useTarget<HTMLDivElement>(useSectionTargetArgs(sectionIndex));
   const hidden = !draggedTab && !draggedWidgetId;
   const className = classnames(
-    "nz-target-widgetTarget",
+    "nz-target-sectionTarget",
+    `nz-${direction}`,
+    targeted && "nz-targeted",
     hidden && "nz-hidden",
     cursorType && getCursorClassName(cursorType),
   );
   return (
-    <Target
+    <div
       className={className}
-      direction={direction}
-      section={sectionIndex === 0 ? "start" : "end"}
-      targeted={targeted}
       ref={ref}
-    />
+    >
+      <div className={classnames(
+        "nz-section",
+        "nz-start",
+        sectionIndex === 0 && "nz-target",
+      )} />
+      <div className="nz-border" />
+      <div className={classnames(
+        "nz-section",
+        "nz-end",
+        sectionIndex === 1 && "nz-target",
+      )}/>
+    </div>
   );
-});
+}
 
 /** @internal */
 export function useSectionTargetArgs(sectionIndex: number) {
@@ -63,7 +73,7 @@ export function useSectionTargetArgs(sectionIndex: number) {
 }
 
 /** @internal */
-export function useSectionTargetDirection(): TargetProps["direction"] {
+export function useTargetDirection(): "horizontal" | "vertical" {
   const side = React.useContext(PanelSideContext);
   assert(!!side);
 

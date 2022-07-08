@@ -15,7 +15,7 @@ import { WidgetIdContext } from "../widget/Widget";
 import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
-export const WidgetOutline = withTargetVersion("2", function WidgetOutline(){ // eslint-disable-line @typescript-eslint/naming-convention
+export const WidgetOutline = withTargetVersion("2", function WidgetOutline(){
   const hidden = useHidden();
   const className = classnames(
     "nz-outline-widgetOutline",

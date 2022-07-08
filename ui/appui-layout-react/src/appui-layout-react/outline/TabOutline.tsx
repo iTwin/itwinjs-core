@@ -15,7 +15,7 @@ import { WidgetIdContext } from "../widget/Widget";
 import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
-export const TabOutline = withTargetVersion("2", function TabOutline() { // eslint-disable-line @typescript-eslint/naming-convention
+export const TabOutline = withTargetVersion("2", function TabOutline() {
   const hidden = useHidden();
   const className = classnames(
     "nz-outline-tabOutline",

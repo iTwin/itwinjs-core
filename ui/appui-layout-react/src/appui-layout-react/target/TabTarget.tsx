@@ -19,29 +19,27 @@ import { assert } from "@itwin/core-bentley";
 import { withTargetVersion } from "./TargetOptions";
 
 /** @internal */
-export const TabTarget = React.memo(
-  withTargetVersion("2", function TabTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-    const cursorType = React.useContext(CursorTypeContext);
-    const draggedTab = React.useContext(DraggedTabContext);
-    const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-    const widgetId = React.useContext(WidgetIdContext);
-    const tabIndex = useTabIndex();
-    const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId, tabIndex));
-    const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
-    const className = classnames(
-      "nz-target-tabTarget",
-      hidden && "nz-hidden",
-      targeted && "nz-targeted",
-      cursorType && getCursorClassName(cursorType),
-    );
-    return (
-      <div
-        className={className}
-        ref={ref}
-      />
-    );
-  }),
-);
+export const TabTarget = withTargetVersion("2", function TabTarget() {
+  const cursorType = React.useContext(CursorTypeContext);
+  const draggedTab = React.useContext(DraggedTabContext);
+  const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
+  const widgetId = React.useContext(WidgetIdContext);
+  const tabIndex = useTabIndex();
+  const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId, tabIndex));
+  const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
+  const className = classnames(
+    "nz-target-tabTarget",
+    hidden && "nz-hidden",
+    targeted && "nz-targeted",
+    cursorType && getCursorClassName(cursorType),
+  );
+  return (
+    <div
+      className={className}
+      ref={ref}
+    />
+  );
+});
 
 function useTabIndex() {
   const widget = React.useContext(WidgetStateContext);

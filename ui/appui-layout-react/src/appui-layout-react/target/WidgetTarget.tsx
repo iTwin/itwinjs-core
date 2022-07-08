@@ -12,7 +12,6 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { Target } from "./Target";
 import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
 
 /** @internal */
@@ -21,7 +20,7 @@ export interface WidgetTargetProps {
 }
 
 /** @internal */
-export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export function WidgetTarget(props: WidgetTargetProps) {
   const { widgetId } = props;
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
@@ -30,19 +29,17 @@ export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(
   const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
     "nz-target-widgetTarget",
+    targeted && "nz-targeted",
     hidden && "nz-hidden",
     cursorType && getCursorClassName(cursorType),
   );
   return (
-    <Target
+    <div
       className={className}
-      direction="horizontal"
-      section="fill"
-      targeted={targeted}
       ref={ref}
     />
   );
-});
+}
 
 function useTargetArgs(widgetId: WidgetState["id"]) {
   return React.useMemo<WidgetTargetState>(() => {

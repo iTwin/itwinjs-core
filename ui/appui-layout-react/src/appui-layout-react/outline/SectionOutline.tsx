@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Widget
+ * @module WidgetPanels
  */
 
 import "./SectionOutline.scss";
@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { useTargeted } from "../base/DragManager";
 import { isHorizontalPanelState, isSectionTargetState } from "../base/NineZoneState";
 import { PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
-import { useSectionTargetDirection } from "../target/SectionTarget";
+import { useTargetDirection } from "../target/SectionTarget";
 import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
@@ -23,9 +23,9 @@ export interface SectionOutlineProps extends CommonProps {
 }
 
 /** @internal */
-export const SectionOutline = withTargetVersion("2", function SectionOutline(props: SectionOutlineProps) { // eslint-disable-line @typescript-eslint/naming-convention
+export const SectionOutline = withTargetVersion("2", function SectionOutline(props: SectionOutlineProps) {
   const hidden = useHidden(props.sectionIndex);
-  const direction = useSectionTargetDirection();
+  const direction = useTargetDirection();
   const style = useSize(props.sectionIndex);
   const className = classnames(
     "nz-outline-sectionOutline",

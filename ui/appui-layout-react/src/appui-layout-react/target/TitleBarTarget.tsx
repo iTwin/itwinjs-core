@@ -18,29 +18,27 @@ import { TabOutline } from "../outline/TabOutline";
 import { withTargetVersion } from "./TargetOptions";
 
 /** @internal */
-export const TitleBarTarget = React.memo(
-  withTargetVersion("2", function TitleBarTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-    const cursorType = React.useContext(CursorTypeContext);
-    const draggedTab = React.useContext(DraggedTabContext);
-    const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-    const widgetId = React.useContext(WidgetIdContext);
-    const [ref] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
-    const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
-    const className = classnames(
-      "nz-target-titleBarTarget",
-      hidden && "nz-hidden",
-      cursorType && getCursorClassName(cursorType),
-    );
-    return (
-      <div
-        className={className}
-        ref={ref}
-      >
-        <TabOutline />
-      </div>
-    );
-  }),
-);
+export const TitleBarTarget = withTargetVersion("2", function TitleBarTarget() {
+  const cursorType = React.useContext(CursorTypeContext);
+  const draggedTab = React.useContext(DraggedTabContext);
+  const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
+  const widgetId = React.useContext(WidgetIdContext);
+  const [ref] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
+  const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
+  const className = classnames(
+    "nz-target-titleBarTarget",
+    hidden && "nz-hidden",
+    cursorType && getCursorClassName(cursorType),
+  );
+  return (
+    <div
+      className={className}
+      ref={ref}
+    >
+      <TabOutline />
+    </div>
+  );
+});
 
 function useTargetArgs(widgetId: WidgetState["id"]) {
   return React.useMemo<WidgetTargetState>(() => {

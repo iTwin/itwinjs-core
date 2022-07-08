@@ -14,16 +14,14 @@ import { TargetContainer } from "./TargetContainer";
 import { withTargetVersion } from "./TargetOptions";
 
 /** @internal */
-export const FloatingWidgetTargets = React.memo(
-  withTargetVersion("2", function FloatingWidgetTargets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-    const widgetId = React.useContext(WidgetIdContext);
-    return (
-      <TargetContainer
-        className="nz-target-floatingWidgetTargets"
-        direction="horizontal"
-      >
-        <WidgetTarget widgetId={widgetId} />
-      </TargetContainer>
-    );
-  }),
-);
+export const FloatingWidgetTargets = withTargetVersion("2", function FloatingWidgetTargets() {
+  const widgetId = React.useContext(WidgetIdContext);
+  return (
+    <TargetContainer
+      className="nz-target-floatingWidgetTargets"
+      direction="horizontal"
+    >
+      <WidgetTarget widgetId={widgetId} />
+    </TargetContainer>
+  );
+});

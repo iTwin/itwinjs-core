@@ -18,7 +18,7 @@ const defaultValue: TargetOptions = {
 };
 
 /** @internal */
-export const TargetOptionsContext = React.createContext<TargetOptions>(defaultValue); // eslint-disable-line: completed-docs @typescript-eslint/naming-convention
+export const TargetOptionsContext = React.createContext<TargetOptions>(defaultValue);
 TargetOptionsContext.displayName = "nz:TargetOptionsContext";
 
 /** @internal */

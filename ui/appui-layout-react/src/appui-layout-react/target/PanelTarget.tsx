@@ -14,7 +14,6 @@ import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, getUniqueId, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "../widget-panels/Panel";
-import { Target } from "./Target";
 
 /** @internal */
 export interface PanelTargetProps {
@@ -22,7 +21,7 @@ export interface PanelTargetProps {
 }
 
 /** @internal */
-export const PanelTarget = React.memo<PanelTargetProps>(function PanelTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export function PanelTarget(props: PanelTargetProps) {
   const { side } = props;
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabStateContext);
@@ -34,22 +33,21 @@ export const PanelTarget = React.memo<PanelTargetProps>(function PanelTarget(pro
     newWidgetId,
   });
   const visible = (!!draggedTab || !!draggedWidget) && allowedTarget;
+  const isHorizontal = isHorizontalPanelSide(side);
   const className = classnames(
     "nz-target-panelTarget",
+    isHorizontal ? "nz-horizontal" : "nz-vertical",
+    targeted && "nz-targeted",
     !visible && "nz-hidden",
     cursorType && getCursorClassName(cursorType),
   );
-  const isHorizontal = isHorizontalPanelSide(side);
   return (
-    <Target
+    <div
       className={className}
-      section="fill"
-      direction={isHorizontal ? "horizontal" : "vertical"}
-      targeted={targeted}
       ref={ref}
     />
   );
-});
+}
 
 /** @internal */
 export function useAllowedPanelTarget() {

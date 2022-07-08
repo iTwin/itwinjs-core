@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Widget
+ * @module WidgetPanels
  */
 
 import "./PanelOutline.scss";
@@ -16,7 +16,7 @@ import { isHorizontalPanelSide, PanelSideContext, PanelStateContext } from "../w
 import { withTargetVersion } from "../target/TargetOptions";
 
 /** @internal */
-export const PanelOutline = withTargetVersion("2", function PanelOutline() { // eslint-disable-line @typescript-eslint/naming-convention
+export const PanelOutline = withTargetVersion("2", function PanelOutline() {
   const panel = React.useContext(PanelStateContext);
   assert(!!panel);
   const { side } = panel;
