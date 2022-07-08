@@ -66,6 +66,9 @@ export interface DownloadRequest {
    * function returns a non-zero value, the download is aborted.
    */
   readonly onProgress?: ProgressFunction;
+
+  /** number of retries for transient failures. Default is 5. */
+  readonly retries?: number;
 }
 
 /** @internal */
@@ -353,8 +356,16 @@ export class CheckpointManager {
       }
     }
 
-    await this.doDownload(request);
-    return this.updateToRequestedVersion(request);
+    let retry = request.retries !== undefined ? request.retries : 5;
+    while (true) {
+      try {
+        await this.doDownload(request);
+        return await this.updateToRequestedVersion(request);
+      } catch (e: any) {
+        if (retry-- <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
+          throw e;
+      }
+    }
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
