@@ -41,6 +41,8 @@ import { Path } from "../../curve/Path";
 import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveChainWithDistanceIndex } from "../../core-geometry";
+import path = require("path");
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
   ck.testTrue(data1.isAlmostEqual(data));
@@ -1058,6 +1060,41 @@ describe("TransitionSpiral3d", () => {
 function xyString(name: string, x: number, y: number): string {
   return (`  (${name}  ${x} + ${y})`);
 }
+it("AlexGProjectPointToChain", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+  captureStroked(allGeometry, alignment);
+  if (alignment instanceof Path){
+    const range = alignment.range ();
+    GeometryCoreTestIO.captureRangeEdges (allGeometry, range);
+
+    const chain = CurveChainWithDistanceIndex.createCapture (alignment);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
+    const fractions = [-0.2, -0.1, 0.0, 0.10, 0.20, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+    for (const fx of fractions){
+      for (const fy of fractions){
+        const uv = Point3d.create (fx, fy, 0);
+        const spacePoint = range.localToWorld (uv)!;
+        const curvePoint = chain.closestPoint (spacePoint, false);
+        if (curvePoint){
+          GeometryCoreTestIO.captureGeometry (allGeometry, LineSegment3d.create (spacePoint, curvePoint.point));
+        }
+
+      }
+    }
+    const counters = CurveChainWithDistanceIndex.getClosestPointTestCounts (true);
+    ck.testTrue (counters.numAssigned >= counters.numCalls, "At least one assign per call");
+    ck.testTrue (counters.numTested > counters.numCalls, "more than one test per call");
+    ck.testTrue (counters.numCandidate >= counters.numCalls * alignment.children.length, "candidates");
+    console.log (counters);
+
+  }
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGProjectToChain");
+  expect(ck.getNumErrors()).equals(0);
+});
+
 function captureStroked(allGeometry: GeometryQuery[], data: any, dx: number = 0, dy: number = 0, dz: number = 0): number {
   let numStroked = 0;
   const strokeOptions = StrokeOptions.createForCurves();

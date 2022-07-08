@@ -33,6 +33,7 @@ import type { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
+import { Range3d } from "../geometry3d/Range";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -227,6 +228,19 @@ export abstract class CurvePrimitive extends GeometryQuery {
     const context = new CurveLengthContext(fraction0, fraction1);
     this.emitStrokableParts(context);
     return Math.abs(context.getSum());
+  }
+
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public rangeBetweenFractions(fraction0: number, fraction1: number): Range3d {
+    if (fraction0 === fraction1)
+      return Range3d.create (this.fractionToPoint (fraction0));
+    const fragment = this.clonePartialCurve (fraction0, fraction1);
+    if (fragment)
+      return fragment.range ();
+    return Range3d.createNull ();
   }
 
   /**

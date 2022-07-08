@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -153,6 +154,32 @@ class ExerciseCurve {
         }
       }
     }
+``;
+    const upperFractions = [0.3, 0.5, 0.912312, 1.0];  // do NOT include 0.0 ...
+    let fraction0 = 0;
+    const totalLength = curveA.curveLength ();
+    const totalRange = curveA.range ();
+    let summedLength = 0;
+    const summedRange = Range3d.createNull ();
+    for (const fraction1 of upperFractions){
+      const d01 = curveA.curveLengthBetweenFractions (fraction0, fraction1);
+      const range01 = curveA.rangeBetweenFractions (fraction0, fraction1);
+      summedLength += d01;
+      if (range01)
+        summedRange.extendRange (range01);
+      fraction0 = fraction1;
+    }
+    if (curveA instanceof CurveChainWithDistanceIndex){
+      // BAD !!! not implemented !!
+    } else if (curveA instanceof BSplineCurve3dBase){
+      // ugh.  bspline are pole boundaries that are not tight
+      ck.testTrue (totalRange.containsPoint (summedRange.low), "range low by parts");
+      ck.testTrue (totalRange.containsPoint (summedRange.high), "range high by parts");
+      } else {
+      ck.testPoint3d (totalRange.low, summedRange.low, "range low by parts");
+      ck.testPoint3d (totalRange.high, summedRange.high, "range high by parts");
+      }
+    ck.testCoordinate (totalLength, summedLength, "length by parts");
   }
 
   public static exerciseReverseInPlace(ck: Checker, curve: CurvePrimitive) {
@@ -497,6 +524,12 @@ class ExerciseCurve {
       const poles = [Point3d.create(0,0,0), Point3d.create(5,0,0), Point3d.create(5,5,0), Point3d.create(0,5,0)];
       for (let order = 2; order <= poles.length; ++order) {
         const bcurve = BSplineCurve3d.createPeriodicUniformKnots(poles, order);
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry, bcurve, dx);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.0, 0.3), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.3, 0.4), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.4, 1.0), dx, 5.0);
+        dx += 10.0;
+
         if (ck.testPointer(bcurve)) {
           ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
           ExerciseCurve.exerciseMoveSignedDistance(ck, bcurve);
@@ -530,6 +563,10 @@ class ExerciseCurve {
         Point4d.create(20, 0, 0, 1)];
       for (let order = 3; order <= poles4d.length; order++) {
         const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry, bcurveH, dx);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.0, 0.3), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.3, 0.4), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.4, 1.0), dx, 5.0);
         if (ck.testPointer(bcurveH)) {
           ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
           ExerciseCurve.exerciseStroke(ck, bcurveH);
@@ -625,14 +662,14 @@ class ExerciseCurve {
 }
 
 describe("Curves", () => {
-  it("Exercise", () => {
+  it.only("Exercise", () => {
     const ck = new Checker();
     ExerciseCurve.testManyCurves(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Create and exercise distanceIndex", () => {
+  it.only("Create and exercise distanceIndex", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
     let dx = 0.0;
