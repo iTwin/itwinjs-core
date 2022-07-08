@@ -7,9 +7,8 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { V2CheckpointAccessProps } from "../../core-backend";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelHost } from "../../core-backend";
+import { IModelHost, V2CheckpointAccessProps } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -132,7 +131,7 @@ describe("Checkpoint Manager", () => {
     assert.isUndefined(db);
   });
 
-  it.only("should only retry v2 checkpoint download number of times (5) passed to 'withAttempts' function", async () => {
+  it("should only retry v2 checkpoint download number of times (5) passed to 'withAttempts' function", async () => {
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
       accountName: "testAccount",
@@ -159,7 +158,7 @@ describe("Checkpoint Manager", () => {
     }).onCall(5).callsFake(async () => {
       throw Error("Failure when receiving data from the peer");
     }).onCall(6).callsFake(async () => {
-      throw Error("Failure when receiving data from the peer")
+      throw Error("Failure when receiving data from the peer");
     }).callThrough();
 
     const iModelId = Guid.createValue();
@@ -167,7 +166,6 @@ describe("Checkpoint Manager", () => {
     const changeset = IModelTestUtils.generateChangeSetId();
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
     const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
-    // expect(await CheckpointManager.downloadCheckpoint(request);
     await expect(CheckpointManager.downloadCheckpoint(request)).to.eventually.be.rejectedWith("Failure when receiving data from the peer");
     assert.isTrue(v2Spy.callCount === 5, `Expected call count of 5, but got ${v2Spy.callCount}`);
   });

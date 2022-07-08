@@ -302,7 +302,7 @@ export class CheckpointManager {
         }
       }
     } while (!success && currentAttempts < numAttempts);
-  };
+  }
 
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
@@ -318,11 +318,14 @@ export class CheckpointManager {
             throw error;
         }
       });
-      if (changesetId! !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId!}`);
+      if (changeSetId === undefined) {
+        throw Error("ChangeSetId is undefined after returning from V2CheckpointManager.downloadCheckpoint");
+      }
+      if (changesetId !== request.checkpoint.changeset.id)
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
       else
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
-      return changesetId!;
+      return changesetId;
     } catch (error: any) {
       if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
         return V1CheckpointManager.downloadCheckpoint(request);
