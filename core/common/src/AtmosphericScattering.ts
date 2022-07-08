@@ -12,7 +12,9 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringProps> =
   {
     earthCenter: { x: 0.0, y: 0.0, z: -6_190_000.0 },
+    earthRadii: {x: 10.0, y: 5.0, z: 20.0},
     atmosphereRadius: 6_290_100.0,
+    atmosphereScale: 0.05,
     earthRadius: 6_190_000.0,
     densityFalloff: 5.0,
     scatteringStrength: 0.01,
@@ -36,7 +38,9 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
  */
 export interface AtmosphericScatteringProps {
   earthCenter?: XYZProps;
+  earthRadii?: XYZProps;
   atmosphereRadius?: number;
+  atmosphereScale?: number;
   earthRadius?: number;
   densityFalloff?: number;
   scatteringStrength?: number;
@@ -51,7 +55,9 @@ export interface AtmosphericScatteringProps {
  */
 export class AtmosphericScattering {
   public readonly earthCenter: Point3d;
+  public readonly earthRadii: Point3d;
   public readonly atmosphereRadius: number;
+  public readonly atmosphereScale: number;
   public readonly earthRadius: number;
   public readonly densityFalloff: number;
   public readonly scatteringStrength: number;
@@ -63,6 +69,7 @@ export class AtmosphericScattering {
   public equals(other: AtmosphericScattering): boolean {
     if (this.earthCenter !== other.earthCenter) return false;
     if (this.atmosphereRadius !== other.atmosphereRadius) return false;
+    if (this.atmosphereScale !== other.atmosphereScale) return false;
     if (this.earthCenter !== other.earthCenter) return false;
     if (this.densityFalloff !== other.densityFalloff) return false;
     if (this.scatteringStrength !== other.scatteringStrength) return false;
@@ -80,8 +87,12 @@ export class AtmosphericScattering {
       this.earthCenter = Point3d.fromJSON(
         defaultAtmosphericScatteringProps.earthCenter
       );
+      this.earthRadii = Point3d.fromJSON(
+        defaultAtmosphericScatteringProps.earthRadii
+      );
       this.atmosphereRadius =
         defaultAtmosphericScatteringProps.atmosphereRadius;
+      this.atmosphereScale = defaultAtmosphericScatteringProps.atmosphereScale;
       this.earthRadius = defaultAtmosphericScatteringProps.earthRadius;
       this.densityFalloff = defaultAtmosphericScatteringProps.densityFalloff;
       this.scatteringStrength =
@@ -97,10 +108,18 @@ export class AtmosphericScattering {
         json.earthCenter === undefined
           ? Point3d.fromJSON(defaultAtmosphericScatteringProps.earthCenter)
           : Point3d.fromJSON(json.earthCenter);
+      this.earthRadii =
+        json.earthRadii === undefined
+          ? Point3d.fromJSON(defaultAtmosphericScatteringProps.earthRadii)
+          : Point3d.fromJSON(json.earthRadii);
       this.atmosphereRadius =
         json.atmosphereRadius === undefined
           ? defaultAtmosphericScatteringProps.atmosphereRadius
           : json.atmosphereRadius;
+      this.atmosphereScale =
+        json.atmosphereScale === undefined
+          ? defaultAtmosphericScatteringProps.atmosphereScale
+          : json.atmosphereScale;
       this.earthRadius =
         json.earthRadius === undefined
           ? defaultAtmosphericScatteringProps.earthRadius
@@ -139,7 +158,9 @@ export class AtmosphericScattering {
   public toJSON(): AtmosphericScatteringProps {
     const json: AtmosphericScatteringProps = {
       earthCenter: this.earthCenter.toJSON(),
+      earthRadii: this.earthRadii.toJSON(),
       atmosphereRadius: this.atmosphereRadius,
+      atmosphereScale: this.atmosphereScale,
       earthRadius: this.earthRadius,
       densityFalloff: this.densityFalloff,
       scatteringStrength: this.scatteringStrength,
