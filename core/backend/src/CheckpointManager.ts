@@ -268,21 +268,61 @@ export class V1CheckpointManager {
   }
 }
 
+/** @internal */
+class RetryableError {
+  constructor(public innerErr: Error) {}
+}
+
 /** @internal  */
 export class CheckpointManager {
   public static readonly onDownloadV1 = new BeEvent<(job: DownloadJob) => void>();
   public static readonly onDownloadV2 = new BeEvent<(job: DownloadJob) => void>();
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeset.id}`; }
 
+  /**
+   * This function expects that the "functionToRetry" throws an instance of RetryableError and just any other error otherwise if its a non retryable error. This is to allow for the case where
+   * we may not want to retry every type of error produced by the function.
+   * @param numAttempts number of times to attempt the function
+   * @param functionToRetry function to call during attempts
+   */
+  private static async withAttempts(numAttempts: number, functionToRetry: () => Promise<void>): Promise<void> {
+    let currentAttempts = 0;
+    let success = false;
+    do {
+      currentAttempts+= 1;
+      try {
+        await functionToRetry();
+        success = true;
+      } catch (err) {
+        if (err instanceof RetryableError) {
+          // swallow the error unless we've already attempted numAttempts times
+          if (currentAttempts === numAttempts) throw err.innerErr;
+        } else {
+          throw(err);
+        }
+      }
+    } while (!success && currentAttempts < numAttempts);
+  };
+
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
       // first see if there's a V2 checkpoint available.
-      const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
-      if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+      let changesetId: string;
+      await this.withAttempts(5, async () => {
+        try {
+          changesetId = await V2CheckpointManager.downloadCheckpoint(request);
+        } catch (error: any) {
+          if(error?.message?.includes("Failure when receiving data from the peer"))
+            throw new RetryableError(error); // If the Error is with "receiving data" retry
+          else
+            throw error;
+        }
+      });
+      if (changesetId! !== request.checkpoint.changeset.id)
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId!}`);
       else
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
-      return changesetId;
+      return changesetId!;
     } catch (error: any) {
       if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
         return V1CheckpointManager.downloadCheckpoint(request);
