@@ -66,6 +66,9 @@ export interface DownloadRequest {
    * function returns a non-zero value, the download is aborted.
    */
   readonly onProgress?: ProgressFunction;
+
+  /** number of retries for transient failures. Default is 5. */
+  readonly retries?: number;
 }
 
 /** @internal */
@@ -151,9 +154,9 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
 
-      // Its fine if its not a daemon, but lets just log an info message
+      // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
         Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
     }
@@ -268,59 +271,16 @@ export class V1CheckpointManager {
   }
 }
 
-/** @internal */
-class RetryableError {
-  constructor(public innerErr: Error) {}
-}
-
 /** @internal  */
 export class CheckpointManager {
   public static readonly onDownloadV1 = new BeEvent<(job: DownloadJob) => void>();
   public static readonly onDownloadV2 = new BeEvent<(job: DownloadJob) => void>();
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeset.id}`; }
 
-  /**
-   * This function expects that the "functionToRetry" throws an instance of RetryableError and just any other error otherwise if its a non retryable error. This is to allow for the case where
-   * we may not want to retry every type of error produced by the function.
-   * @param numAttempts number of times to attempt the function
-   * @param functionToRetry function to call during attempts
-   */
-  private static async withAttempts(numAttempts: number, functionToRetry: () => Promise<void>): Promise<void> {
-    let currentAttempts = 0;
-    let success = false;
-    do {
-      currentAttempts+= 1;
-      try {
-        await functionToRetry();
-        success = true;
-      } catch (err) {
-        if (err instanceof RetryableError) {
-          // swallow the error unless we've already attempted numAttempts times
-          if (currentAttempts === numAttempts) throw err.innerErr;
-        } else {
-          throw(err);
-        }
-      }
-    } while (!success && currentAttempts < numAttempts);
-  }
-
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
       // first see if there's a V2 checkpoint available.
-      let changesetId: string | undefined;
-      await this.withAttempts(5, async () => {
-        try {
-          changesetId = await V2CheckpointManager.downloadCheckpoint(request);
-        } catch (error: any) {
-          if(error?.message?.includes("Failure when receiving data from the peer"))
-            throw new RetryableError(error); // If the Error is with "receiving data" retry
-          else
-            throw error;
-        }
-      });
-      if (changesetId === undefined) {
-        throw Error("ChangeSetId is undefined after returning from V2CheckpointManager.downloadCheckpoint");
-      }
+      const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       if (changesetId !== request.checkpoint.changeset.id)
         Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
       else
@@ -396,7 +356,16 @@ export class CheckpointManager {
       }
     }
 
-    await this.doDownload(request);
+    let retry = request.retries !== undefined ? request.retries : 5;
+    while (true) {
+      try {
+        await this.doDownload(request);
+        break;
+      } catch (e: any) {
+        if (--retry <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
+          throw e;
+      }
+    }
     return this.updateToRequestedVersion(request);
   }
 
