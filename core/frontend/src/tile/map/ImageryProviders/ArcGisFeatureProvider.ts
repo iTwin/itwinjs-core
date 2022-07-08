@@ -7,9 +7,10 @@
  */
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { assert, base64StringToUint8Array } from "@itwin/core-bentley";
-import { ArcGisFeatureJSON, ArcGisFeatureQueryUrl, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
-import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ArcGisExtent, ArcGisFeatureJSON, ArcGisFeatureQuery, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { Matrix4d, Point3d } from "@itwin/core-geometry";
 import { request, RequestOptions, Response } from "../../../request/Request";
+import { FeatureQueryQuantizationParams } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -23,6 +24,8 @@ sampleIconImg.src = `data:image/png;base64,${samplePngIcon}`;
 * @internal
 */
 export class ArcGisFeatureProvider extends MapLayerImageryProvider {
+
+  private _supportsCoordinatesQuantization = false; // TODO Reader this from the layer capabilities
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
@@ -37,18 +40,32 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
 
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-    const range3857 = Range2d.createFrom({
-      low: {x: tileExtent.left, y: tileExtent.bottom},
-      high: {x: tileExtent.right, y: tileExtent.top} });
 
-    // const layerString = this.getVisibleLayerString();
+    const enevelope: ArcGisExtent = {
+      xmin: tileExtent.left, ymin: tileExtent.bottom,
+      xmax: tileExtent.right, ymax: tileExtent.top,
+      spatialReference: {wkid:102100, latestWkid:3857},
+    };
 
-    // const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
-    // return `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=${crsString}&STYLES=&BBOX=${bboxString}`;
-
-    const url = new ArcGisFeatureQueryUrl("https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/PhillyTransportationImprovementProject/FeatureServer",
+    let quantizationParameters: FeatureQueryQuantizationParams|undefined;
+    if (this._supportsCoordinatesQuantization) {
+      quantizationParameters = {
+        mode: "view",
+        originPosition: "upperLeft",
+        tolerance: (tileExtent.top - tileExtent.bottom) / this.tileSize, // pixel size in world units
+        extent: enevelope,
+      };
+    }
+    const url = new ArcGisFeatureQuery("https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/PhillyTransportationImprovementProject/FeatureServer",
       0,
-      {envelopeFilter: range3857});
+      {
+        geometry: enevelope,
+        geometryType: "esriGeometryEnvelope",
+        returnExceededLimitFeatures: false,
+        maxRecordCountFactor: 3,    // This was grabbed from the ESRI web viewer request, not sure where this factor come from
+        resultType: "tile",
+        quantizationParameters,
+      });
     return  url.toString();
 
   }
@@ -64,11 +81,10 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){
-    context.fillStyle = "red";
+    context.fillStyle = "cyan";
     context.strokeRect(0, 0, this.tileSize, this.tileSize);
     context.font = "30px Arial";
     context.lineWidth = 5;
-    // context.drawImage(sampleIconImg,100,100, 20,20);
     context.fillText(`${zoomLevel}-${row}-${column}`, 10, 50);
   }
 
@@ -91,35 +107,33 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
       const featureReader = new ArcGisFeatureJSON();
 
-      // Compute transform
+      // Compute transform if CoordinatesQuantization is not supported by service
+      if (!this._supportsCoordinatesQuantization) {
+        const tileExtentWorld3857 = this.getEPSG3857Extent(row, column, zoomLevel);
+        const worldTileWidth = tileExtentWorld3857.right - tileExtentWorld3857.left;
+        const canvasTileWidth = this.tileSize;
+        const world2CanvasRatio = canvasTileWidth / worldTileWidth;
+        const worldTileOrigin = Point3d.create(tileExtentWorld3857.left, tileExtentWorld3857.bottom);
+        const worldTileExtent = Point3d.create(tileExtentWorld3857.right, tileExtentWorld3857.top);
+        const canvasTileOriginOffset = worldTileOrigin.clone();
+        const canvasTileExtentOffset = worldTileExtent.clone();
+        canvasTileOriginOffset.scaleInPlace(world2CanvasRatio);
+        canvasTileExtentOffset.scaleInPlace(world2CanvasRatio);
+        const xTranslate = -1*canvasTileOriginOffset.x;
 
-      const tileExtent0 = this.getEPSG4326Extent(0, 0, 0);
-      const tileExtent1 = this.getEPSG4326Extent(1, 0, 0);
-      console.log(`tileExtent0 : ${tileExtent0}`);
-      console.log(`tileExtent1 : ${tileExtent1}`);
+        // Canvas origin is uppler left corner, so we need to flip the y axsis
+        const yTranslate = canvasTileExtentOffset.y;     // y-axis flip
+        const yWorld2CanvasRatio = -1*world2CanvasRatio; // y-axis flip
 
-      const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-
-      const worldTileWidth = tileExtent.right - tileExtent.left;
-      const canvasTileWidth = this.tileSize;
-      const world2CanvasRatio = canvasTileWidth / worldTileWidth;
-      const worldTileOrigin = Point3d.create(tileExtent.left, tileExtent.bottom);
-      const worldTileExtent = Point3d.create(tileExtent.right, tileExtent.top);
-      const canvasTileOriginOffset = worldTileOrigin.clone();
-      const canvasTileExtentOffset = worldTileExtent.clone();
-      canvasTileOriginOffset.scaleInPlace(world2CanvasRatio);
-      canvasTileExtentOffset.scaleInPlace(world2CanvasRatio);
-      const xTranslate = -1*canvasTileOriginOffset.x;
-      const yTranslate = canvasTileExtentOffset.y;  // we use Extent instead of origin to flip y-axis
-      // const yTranslate = (-1*canvasTileOriginOffset.y);
-      const yWorld2CanvasRatio = -1*world2CanvasRatio; // flip y axis
-      const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
-      const transfo = matrix.asTransform;
-      if (transfo) {
-        featureReader.transform = transfo;
+        const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
+        const transfo = matrix.asTransform;
+        if (transfo) {
+          featureReader.transform = transfo;
+        } else {
+          assert(!"Could not compute world to canvas transform");
+        }
       }
-
-      this.drawTileDebugInfo(row, column, zoomLevel, ctx);
+      // this.drawTileDebugInfo(row, column, zoomLevel, ctx);
       featureReader.readRenderGraphics(tileResponse.text, ctx);
 
     } catch {

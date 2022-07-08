@@ -50,7 +50,7 @@ export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
 export * from "./map/ArcGISTileMap";
-export * from "./map/ArcGisFeatureQueryUrl";
+export * from "./map/ArcGisFeatureQuery";
 export * from "./map/ArcGisFeatureJSON";
 export * from "./map/MapLayerAuthentication";
 export * from "./map/MapFeatureInfo";

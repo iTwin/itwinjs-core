@@ -175,8 +175,10 @@ export class ArcGisFeatureJSON  {
     if (typeof object.x === "number" && typeof object.y === "number") {
 
       const pt = Point2d.create(object.x, object.y);
-      const transPt = this.transform.multiplyPoint2d(pt);
-      context.drawImage(sampleIconImg,transPt.x-iconSizeHalf, transPt.y-iconSizeHalf, iconSize, iconSize);
+      if (this.transform) {
+        this.transform.multiplyPoint2d(pt, pt);
+      }
+      context.drawImage(sampleIconImg, pt.x-iconSizeHalf, pt.y-iconSizeHalf, iconSize, iconSize);
     } else if (object.rings) {
       /*
       const layout = this.getGeometryLayout(object);
