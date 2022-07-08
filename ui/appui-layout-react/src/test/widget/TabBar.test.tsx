@@ -10,11 +10,10 @@ import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
-  useDrag, WidgetIdContext, WidgetTabTarget,
+  PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";
-import { PanelTarget } from "../../appui-layout-react/target/PanelTarget";
 
 describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END", () => {
@@ -43,13 +42,13 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
-        type: "floatingWidget",
+        type: "window",
       },
-    })).should.true;
+    }));
   });
 
   it("should dispatch FLOATING_WIDGET_CLEAR_USER_SIZED", () => {
@@ -162,7 +161,7 @@ describe("WidgetTitleBar", () => {
           widget={nineZone.widgets.w1}
         />
         <PanelStateContext.Provider value={nineZone.panels.right}>
-          <PanelTarget side="right" />
+          <PanelTarget />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
     );

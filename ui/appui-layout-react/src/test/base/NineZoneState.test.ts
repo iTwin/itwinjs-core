@@ -1057,14 +1057,14 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "section",
-            newWidgetId: "",
+            newWidgetId: "nw1",
             side: "left",
             sectionIndex: 1,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
         newState.panels.left.widgets[0].should.eq("leftStart");
-        newState.panels.left.widgets[1].should.eq("leftEnd");
+        newState.panels.left.widgets[1].should.eq("nw1");
       });
 
       it("should add widget to existing end panel section", () => {
@@ -1079,10 +1079,8 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "section",
-            newWidgetId: "",
-            side: "left",
-            sectionIndex: 1,
+            type: "widget",
+            widgetId: "leftEnd",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
@@ -1101,10 +1099,8 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "section",
-            newWidgetId: "",
-            side: "left",
-            sectionIndex: 0,
+            type: "widget",
+            widgetId: "leftStart",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
@@ -1124,13 +1120,13 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "section",
-            newWidgetId: "",
+            newWidgetId: "nw1",
             side: "left",
             sectionIndex: 0,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
-        newState.panels.left.widgets[0].should.eq("leftStart");
+        newState.panels.left.widgets[0].should.eq("nw1");
         newState.panels.left.widgets[1].should.eq("leftEnd");
       });
     });

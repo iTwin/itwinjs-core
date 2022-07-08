@@ -126,7 +126,9 @@ export interface FloatingWidgetTargetState {
 /** @internal future */
 export type TabDropTargetState = PanelTargetState | SectionTargetState | WidgetTargetState | TabTargetState | FloatingWidgetTargetState;
 
-/** @internal future */
+/** Default target state, when nothing is targeted.
+ * @internal future
+ */
 export interface WindowTargetState {
   readonly type: "window";
 }

@@ -34,7 +34,7 @@ describe("DragManager", () => {
       const spy = sinon.stub<Parameters<DragManager["onDragStart"]["add"]>[0]>();
       sut.onDragStart.add(spy);
       sut.handleDragStart(createDragStartArgs());
-      spy.calledOnceWithExactly(sinon.match.any, sinon.match.any, undefined).should.true;
+      sinon.assert.calledOnceWithExactly(spy, sinon.match.any, sinon.match.any, undefined);
     });
   });
 
@@ -70,7 +70,8 @@ describe("useTabTarget", () => {
 
   it("should clear target when drag interaction ends", () => {
     const dragManager = new DragManager();
-    const spy = sinon.spy(dragManager, "handleTargetChanged");
+    const stub = sinon.stub<Parameters<DragManager["onTargetChanged"]["add"]>[0]>();
+    dragManager.onTargetChanged.add(stub);
     const { result } = renderHook(() => useTabTarget({
       tabIndex: 0,
       widgetId: "w1",
@@ -86,11 +87,11 @@ describe("useTabTarget", () => {
     dragManager.handleDrag(10, 20);
     result.current[1].should.true;
 
-    spy.resetHistory();
+    stub.resetHistory();
     elementFromPointStub.restore();
     dragManager.handleDragEnd();
 
-    spy.calledOnceWithExactly(undefined).should.true;
+    sinon.assert.calledOnceWithExactly(stub, undefined);
     result.current[1].should.false;
   });
 });

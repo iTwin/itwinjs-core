@@ -9,8 +9,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
+  PanelTarget, useAllowedPanelTarget,
 } from "../../appui-layout-react";
-import { PanelTarget, useAllowedPanelTarget } from "../../appui-layout-react/target/PanelTarget";
 import { createDragInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
@@ -23,7 +23,7 @@ describe("PanelTarget", () => {
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
-          <PanelTarget side="left" />
+          <PanelTarget />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
     );
@@ -46,7 +46,7 @@ describe("PanelTarget", () => {
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <CursorTypeContext.Provider value="grabbing">
-            <PanelTarget side="left" />
+            <PanelTarget />
           </CursorTypeContext.Provider>
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -75,7 +75,7 @@ describe("PanelTarget", () => {
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
-          <PanelTarget side="left" />
+          <PanelTarget />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
     );
