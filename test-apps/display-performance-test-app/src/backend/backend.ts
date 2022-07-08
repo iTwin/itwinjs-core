@@ -31,7 +31,8 @@ function loadEnv(envFile: string) {
 
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+  // https://github.com/iTwin/itwinjs-core/security/code-scanning/16
+  // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const iModelHost = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});

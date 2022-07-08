@@ -140,8 +140,8 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
 
     // https://github.com/iTwin/itwinjs-core/security/code-scanning/12
-    // xml/html comments can end with --!>
-    const data = file.toString().replace(/(\s*)<!--.*?--!?>/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
+    // xml/html comments can end with --!> + [\s\S] will ignore \n too
+    const data = file.toString().replace(/(\s*)<!--[\s\S]*?--!?>/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
 
     const keys: SchemaKey[] = [];
     const matches = data.match(/<ECSchemaReference ([^]+?)\/>/g);
