@@ -1663,7 +1663,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/sinon': ^9.0.0
-      azurite: ^3.16.0
+      azurite: ^3.18.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1709,7 +1709,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.4.1
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.6.0
-      azurite: 3.17.1
+      azurite: 3.18.0
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
@@ -10029,8 +10029,8 @@ packages:
   /axobject-query/2.2.0:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
 
-  /azurite/3.17.1:
-    resolution: {integrity: sha512-U+qxY1HnXQ3VR6l/J/RamXgc9FF+R75+lrX6uDAHLfFYPOJvAWQEuAh3z5UfdzOk2jvKO3MFmqMwGA/ggerdNQ==}
+  /azurite/3.18.0:
+    resolution: {integrity: sha512-qD+Q6+v58uHK0fIUhkvqDaZgO/EMrZrbJDfd3oja6p7FwqrRbffRq5RNhuGJTkpgqr7yqybwKHPSd0ARKTB2sg==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
