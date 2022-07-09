@@ -303,7 +303,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ClothoidTerms");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("NamedApproximations", () => {
+  it.only("NamedApproximations", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const nominalL1 = 100;
@@ -312,9 +312,14 @@ describe("TransitionSpiral3d", () => {
     const x1 = 1.5 * nominalL1;
     let y0 = 0;
     const dY0 = 10.0;
-    const simpleCubic = DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
-    const aremaSpiral = DirectSpiral3d.createArema(Transform.createIdentity(), nominalL1, nominalR1)!;
-    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), nominalL1, nominalR1)!;
+    const createPlacement = (degrees: number) => {
+      return Transform.createOriginAndMatrix (Point3d.create (1,2,0),
+      Matrix3d.createRotationAroundAxisIndex (2, Angle.createDegrees (degrees)));
+};
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(createPlacement(0), nominalL1, nominalR1)!;
+    const simpleCubicRotated = DirectSpiral3d.createJapaneseCubic(createPlacement(15), nominalL1, nominalR1)!;
+    const aremaSpiral = DirectSpiral3d.createArema(createPlacement(45), nominalL1, nominalR1)!;
+    const directHalfCosine = DirectSpiral3d.createDirectHalfCosine(createPlacement(90.0), nominalL1, nominalR1)!;
     const spiral3 = DirectSpiral3d.createTruncatedClothoid("ClothoidSeriesX3Y3",
       Transform.createIdentity(), 3, 3, undefined, nominalL1, nominalR1, undefined)!;
     const westernAustralianSpiral = DirectSpiral3d.createTruncatedClothoid("WesternAustralian",
@@ -329,13 +334,17 @@ describe("TransitionSpiral3d", () => {
     const mxCubicAlongArc = DirectSpiral3d.createMXCubicAlongArc(Transform.createIdentity(), nominalL1, nominalR1)!;
     const australianRailSpiral = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), nominalL1, nominalR1)!;
     console.log(`Czech gamma factor ${CzechSpiralEvaluator.gammaConstant(nominalL1, nominalR1)}`);
-    for (const spiral of [mxCubicAlongArc, australianRailSpiral, westernAustralianSpiral, spiral23, simpleCubic, czechSpiral, directHalfCosine, westernAustralianSpiral, aremaSpiral, spiral3, spiral4]) {
+    for (const spiral of [mxCubicAlongArc, australianRailSpiral, westernAustralianSpiral, spiral23, simpleCubic, simpleCubicRotated, czechSpiral, directHalfCosine, westernAustralianSpiral, aremaSpiral, spiral3, spiral4]) {
       const strokes = spiral.activeStrokes;
+      const range = spiral.range ();
+
       const markerLines = LineString3d.create([[0, 0, 0], [nominalL1, 0, 0], [nominalL1, y4, 0], [x4, y4, 0], [x4, y4 + 0.1, 0]]);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, markerLines, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, markerLines, x1, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, x1, y0);
+      GeometryCoreTestIO.captureRangeEdges (allGeometry, range, x1, y0);
+
       console.log(` ${spiral.spiralType}  Y1  / Y4  ${spiral.evaluator.fractionToY(1) / y4}`);
       if (strokes?.packedUVParams) {
         const splitFraction = 3 / 7;
@@ -370,7 +379,7 @@ describe("TransitionSpiral3d", () => {
       //  * These drops into simple DY with numTerms = 1.
       // All other paths work, including numTerms reductions.
       //
-      y0 += dY0;
+      y0 += dY0 + range.yLength ();
       const evaluator = spiral.evaluator;
       const f0 = 0.3;
       const f1 = 0.45;

@@ -575,8 +575,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return handler.handleTransitionSpiral(this);
   }
   /** extend the range by the strokes of the spiral */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    this.activeStrokes.extendRange(rangeToExtend, transform);
+  public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    if (transform  !== undefined)
+      this.activeStrokes.extendRange(rangeToExtend, transform.multiplyTransformTransform (this.localToWorld));
+    else
+      this.activeStrokes.extendRange(rangeToExtend, this._localToWorld);
   }
   /** compare various coordinate quantities */
   public override isAlmostEqual(other: any): boolean {
