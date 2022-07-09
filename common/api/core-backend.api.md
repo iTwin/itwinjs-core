@@ -1035,6 +1035,7 @@ export interface DownloadRequest {
     readonly checkpoint: CheckpointProps;
     localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
+    readonly retries?: number;
 }
 
 // @internal (undocumented)
