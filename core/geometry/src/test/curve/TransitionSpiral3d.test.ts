@@ -303,7 +303,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ClothoidTerms");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("NamedApproximations", () => {
+  it("NamedApproximations", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const nominalL1 = 100;

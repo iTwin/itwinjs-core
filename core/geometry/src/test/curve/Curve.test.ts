@@ -189,7 +189,7 @@ class ExerciseCurve {
       // just skip it -- ranges are wonky.
       // bug in interpolation curve? distance index confused by proxy?
     } else if (curvePrimitiveHasInstanceOf (curveA, BSplineCurve3dBase)
-        || curvePrimitiveHasInstanceOf (curveA, IntegratedSpiral3d)) {
+         ||curvePrimitiveHasInstanceOf (curveA, TransitionSpiral3d)) {
       // ugh.  bspline are pole boundaries that are not tight
       ck.testTrue (totalRange1.containsPoint (summedRange.low), "range low by parts");
       ck.testTrue (totalRange1.containsPoint (summedRange.high), "range high by parts");
@@ -439,6 +439,8 @@ class ExerciseCurve {
     const strokeRange = strokes.range();
     ck.testTrue(directRange.containsRange(strokeRange), "range from curve contains range of strokes");
     ck.testTrue(extendRange.containsRange(strokeRange), "range from curve by extend contains range of strokes");
+    const strokesB = LineString3d.create();
+    curve.emitStrokes(strokesB, options);
     // add slop to pass CurveChainWithDistanceIndex with 2-pt InterpolationCurve3d inside, for which quickLength is smaller by 9.0e-16
     ck.testLE(strokeLength, curveLength + Geometry.smallMetricDistanceSquared, "strokeLength cannot exceed curveLength");
     if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
@@ -735,6 +737,8 @@ describe("Curves", () => {
     const dxGap = 1.0;
     const allGeometry: GeometryQuery[] = [];
     for (const p of paths) {
+      if (!curvePrimitiveHasInstanceOf (p, DirectSpiral3d))
+        continue;
       const q = p.clone()!;
       ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
       GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);

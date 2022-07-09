@@ -48,9 +48,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 
   public readonly curvePrimitiveType = "transitionSpiral";
 
-  /** stroked approximation of entire spiral. */
+  /** stroked approximation of entire spiral. This is AFTER the localToWorld transform ... */
   private _globalStrokes: LineString3d;
-  /** stroked approximation of active spiral.
+  /** stroked approximation of active spiral.  This is AFTER the localToWorld transfomr ...
    * * Same count as global -- possibly overly fine, but it gives some consistency between same clothoid constructed as partial versus complete.
    * * If no trimming, this points to the same place as the _globalStrokes !!!  Don't double transform!!!
    */
@@ -98,7 +98,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * @param fraction0 start fraction
    * @param fraction1 end fraction
    */
-  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number) {
+  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number, applyLocalToWorld: boolean = true) {
     if (numInterval < 1)
       numInterval = 1;
     strokes.clear();
@@ -113,7 +113,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
         this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
-
+    if (applyLocalToWorld)
+      strokes.tryTransformInPlace (this._localToWorld);
     let fraction0 = distances.getXAtUncheckedPointIndex(0);
     let trueDistance0 = distances.getYAtUncheckedPointIndex(0); // whatever was assigned as start distance is fine
     let trueDistance1, fraction1;
@@ -466,9 +467,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
 
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.startPoint()); }
+  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.endPoint()); }
+  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)
@@ -576,10 +577,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /** extend the range by the strokes of the spiral */
   public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    if (transform  !== undefined)
-      this.activeStrokes.extendRange(rangeToExtend, transform.multiplyTransformTransform (this.localToWorld));
-    else
-      this.activeStrokes.extendRange(rangeToExtend, this._localToWorld);
+      this.activeStrokes.extendRange(rangeToExtend, transform);
   }
   /** compare various coordinate quantities */
   public override isAlmostEqual(other: any): boolean {
