@@ -1063,7 +1063,8 @@ function xyString(name: string, x: number, y: number): string {
 it("AlexGProjectPointToChain", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+//  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/AlexGSpiral.imjs", "utf8")));
+  const alignment = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/AlexGSpiral/pathWithSpirals.imjs", "utf8")));
   captureStroked(allGeometry, alignment);
   if (alignment instanceof Path){
     const range = alignment.range ();
@@ -1071,7 +1072,7 @@ it("AlexGProjectPointToChain", () => {
 
     const chain = CurveChainWithDistanceIndex.createCapture (alignment);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, alignment);
-    const fractions = [-0.2, -0.1, 0.0, 0.10, 0.20, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
+    const fractions = [-0.2, -0.1, 0.0, 0.10, 0.20, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2];
     for (const fx of fractions){
       for (const fy of fractions){
         const uv = Point3d.create (fx, fy, 0);

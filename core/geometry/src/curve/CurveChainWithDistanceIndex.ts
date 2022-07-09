@@ -23,6 +23,7 @@ import { CurveLocationDetail } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
+import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
 /**
@@ -41,7 +42,7 @@ export class PathFragment {
   public childFraction0: number;
   /** Fractional position of this fragment end within its curve primitive.. */
   public childFraction1: number;
-  /** Curve primitive of this fragment */
+  /** Curve primitive of this fragment, as presented in stroker.  Note that his might have become a proxy. */
   public childCurve: CurvePrimitive;
   /** optional range */
   public range?: Range3d;
@@ -257,6 +258,69 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return CurveChainWithDistanceIndex.createCapture(c);
   }
 
+  /** Return a deep clone */
+  public override clonePartialCurve(_fractionA: number, _fractionB: number): CurveChainWithDistanceIndex | undefined {
+    if (_fractionA === _fractionB)
+      return undefined;
+    let fractionA = _fractionA;
+    let fractionB = _fractionB;
+    const reversed = _fractionA > _fractionB;
+    if (reversed){
+      fractionA = _fractionB;
+      fractionB = _fractionA;
+    }
+    const chainDistanceA = fractionA * this._totalLength;
+    const chainDistanceB = fractionB * this._totalLength;
+    const newPath = Path.create ();
+    const fragmentA = this.chainDistanceToFragment(chainDistanceA, true);
+    const fragmentB = this.chainDistanceToFragment (chainDistanceB, true);
+    if (!fragmentA || !fragmentB)
+      return undefined;
+    const childCurveIndexA = this._path.childIndex (fragmentA.childCurve);
+    const childCurveIndexB = this._path.childIndex(fragmentB.childCurve);
+    const childFractionA = fragmentA.chainDistanceToAccurateChildFraction (chainDistanceA);
+    const childFractionB = fragmentB.chainDistanceToAccurateChildFraction (chainDistanceB);
+    if (childCurveIndexA === undefined || childCurveIndexB === undefined)
+        return undefined;
+    // add a (possibly reversed) partial clone to newPath
+    const addPartialChild = (childCurve: CurvePrimitive, childFraction0: number, childFraction1: number, reversedClone: boolean): boolean => {
+      if (fractionA === fractionB)
+        return false;
+      let newCurve;
+      if (fractionA === 0.0 && fractionB === 1.0){
+        newCurve = childCurve.clone ();
+        if (reversed)
+          newCurve.reverseInPlace ();
+      } else {
+        newCurve = reversedClone?
+                      childCurve.clonePartialCurve (childFraction1, childFraction0)
+                    : childCurve.clonePartialCurve (childFraction0, childFraction1);
+      }
+    if (newCurve){
+      newPath.children.push(newCurve);
+      return true;
+      }
+    return false;
+    };
+
+    if (fragmentA.childCurve === fragmentB.childCurve){
+      // the two distances are within the same curve.
+      if (addPartialChild (fragmentA.childCurve, childFractionA, childFractionB, reversed))
+        return CurveChainWithDistanceIndex.createCapture (newPath);   // singleton -- children[] does not need to be reversed.
+      return undefined;
+    }
+    addPartialChild (this._path.children[childCurveIndexA], childFractionA, 1.0, reversed);
+    // at least two distinct children are impacted ....
+    for (let childIndex = childCurveIndexA + 1; childIndex < childCurveIndexB; childIndex++){
+      addPartialChild (this._path.children[childIndex].clone (), 0.0, 1.0, reversed);
+    }
+    addPartialChild (this._path.children[childCurveIndexB], 0.0, childFractionB, reversed);
+  // This reverses array entries but not orientation within each curve ...
+    if (reversed)
+      newPath.children.reverse ();
+    return CurveChainWithDistanceIndex.createCapture (newPath);
+  }
+
   /** Ask if the curve is within tolerance of a plane.
    * @returns Returns true if the curve is completely within tolerance of the plane.
    */
@@ -386,6 +450,27 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     return undefined;
   }
+  /**
+   * Resolve a fraction of the CurveChain to a PathFragment index
+   * @param distance
+   * @param allowExtrapolation
+   */
+   protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation: boolean = false): number | undefined {
+    const numFragments = this._fragments.length;
+    const fragments = this._fragments;
+    if (numFragments > 0) {
+      if (distance < 0.0)
+        return allowExtrapolation ? 0 : undefined;
+      if (distance > this._totalLength)
+        return allowExtrapolation ? (numFragments - 1) : undefined;
+      // humbug, linear search
+      for (let i = 0; i < numFragments; i++) {
+        if (fragments[i].containsChainDistance(distance)) return i;
+      }
+    }
+    return undefined;
+  }
+
   /**
    * Convert distance along the chain to fraction along the chain.
    * @param distance distance along the chain
