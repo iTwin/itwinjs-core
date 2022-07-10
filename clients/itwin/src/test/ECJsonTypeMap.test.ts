@@ -277,6 +277,6 @@ describe("ECJsonTypeMap", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.message).to.deep.equal("Relationship for class 'Test_Relationship_Class3' cannot contain same descriptor 'direction' with different values: existing - 'Backward', new - 'Forward'.");
+    chai.expect(error.message).to.deep.equal("Relationship for class 'Test_Relationship_Class3' cannot contain same descriptor 'direction' with different values: existing - 'Backward', new - 'Forward'.");
   });
 });
