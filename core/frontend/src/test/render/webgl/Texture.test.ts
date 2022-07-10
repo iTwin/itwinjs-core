@@ -93,8 +93,8 @@ describe("Texture tests", () => {
     assert(undefined !== image);
     const imageTexture = TextureHandle.createForImage(image, true, RenderTexture.Type.Normal);
     assert(undefined !== imageTexture);
-    expect(imageTexture!.width).to.equal(4);
-    expect(imageTexture!.height).to.equal(4);
+    expect(imageTexture.width).to.equal(4);
+    expect(imageTexture.height).to.equal(4);
   });
 });
 
