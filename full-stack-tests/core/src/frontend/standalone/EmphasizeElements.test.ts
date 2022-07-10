@@ -310,7 +310,7 @@ describe("EmphasizeElements tests", () => {
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
       assert(undefined !== key);
-      const { overrideType, color } = { ...emph.getOverrideFromKey(key!) };
+      const { overrideType, color } = { ...emph.getOverrideFromKey(key) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:

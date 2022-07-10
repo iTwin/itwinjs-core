@@ -354,7 +354,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.name).to.be.equal("InstanceNotFound");
+    chai.expect(error.name).to.be.equal("InstanceNotFound");
   });
 
   it("should fail getting an iModel without projectId (#iModelBank)", async () => {
@@ -367,7 +367,7 @@ describe("iModelHub iModelsHandler", () => {
     }
 
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
 
   it("should fail creating existing and initialized iModel (#iModelBank)", async () => {
@@ -386,7 +386,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
   it("should create iModel and upload SeedFile", async () => {
@@ -464,7 +464,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail creating an iModel with no file handler", async () => {
@@ -477,7 +477,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail creating an iModel with no file (#iModelBank)", async () => {
@@ -489,7 +489,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
   it("should fail creating an iModel with directory path (#iModelBank)", async () => {
@@ -501,7 +501,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
   it("should fail creating an iModel with invalid size of extent (#iModelBank)", async () => {
@@ -513,7 +513,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail creating an iModel with invalid coordinate of extent (#iModelBank)", async () => {
@@ -525,7 +525,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should create iModel from another iModel", async () => {
@@ -627,7 +627,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
   });
 
   it("should be able to delete iModel (#unit)", async () => {
@@ -651,7 +651,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
   });
 
   it("should return initialization status (#unit)", async () => {
@@ -693,7 +693,7 @@ describe("iModelHub iModelsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
   it("should create iModel from empty seed file (#iModelBank)", async () => {

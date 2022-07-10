@@ -84,13 +84,13 @@ function mockCheckpointV2(changeSetId: string, state: CheckpointV2State, id?: st
 
 function assertContainerAccessKey(checkpoint: CheckpointV2) {
   chai.assert(checkpoint.containerAccessKeyAccount);
-  chai.expect(checkpoint.containerAccessKeyAccount!.length).to.be.greaterThan(0);
+  chai.expect(checkpoint.containerAccessKeyAccount.length).to.be.greaterThan(0);
   chai.assert(checkpoint.containerAccessKeyContainer);
-  chai.assert(checkpoint.containerAccessKeyContainer!.startsWith("imodelblocks-"));
+  chai.assert(checkpoint.containerAccessKeyContainer.startsWith("imodelblocks-"));
   chai.assert(checkpoint.containerAccessKeySAS);
-  chai.assert(checkpoint.containerAccessKeySAS!.startsWith("?sv="));
+  chai.assert(checkpoint.containerAccessKeySAS.startsWith("?sv="));
   chai.assert(checkpoint.containerAccessKeyDbName);
-  chai.assert(checkpoint.containerAccessKeyDbName!.endsWith(".bim"));
+  chai.assert(checkpoint.containerAccessKeyDbName.endsWith(".bim"));
 }
 
 describe("iModelHub CheckpointV2Handler", () => {
