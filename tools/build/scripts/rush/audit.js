@@ -55,6 +55,8 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     "GHSA-93q8-gq69-wqmw", // https://github.com/advisories/GHSA-93q8-gq69-wqmw
     "GHSA-6h5x-7c5m-7cr7", // https://github.com/advisories/GHSA-6h5x-7c5m-7cr7
     "GHSA-rp65-9cf3-cjxr", // https://github.com/advisories/GHSA-rp65-9cf3-cjxr @bentley/react-scripts>@svgr/webpack>@svgr/plugin-svgo>svgo>css-select>nth-check
+    "GHSA-wc69-rhjr-hc9g", // https://github.com/advisories/GHSA-wc69-rhjr-hc9g backend-integration-tests>azurite>sequelize>moment
+    "GHSA-g4rg-993r-mgx7", // https://github.com/advisories/GHSA-g4rg-993r-mgx7 @bentley/react-scripts>react-dev-utils>shell-quote
   ];
 
   let shouldFailBuild = false;
