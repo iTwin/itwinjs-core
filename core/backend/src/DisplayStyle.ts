@@ -11,6 +11,7 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
+import { ConcreteEntityId, ConcreteEntityIdSet } from "./ConcreteEntityId";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -41,17 +42,17 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
+  protected override collectReferenceIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      referenceIds.add(id);
+      referenceIds.addElement(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      referenceIds.add(excludedElementId);
+      referenceIds.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      referenceIds.add(this.settings.renderTimeline);
+      referenceIds.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)

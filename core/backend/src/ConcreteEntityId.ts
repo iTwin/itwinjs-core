@@ -6,34 +6,25 @@
  * @module Schema
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIdSet,  Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import { Element } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Relationship } from "./Relationship";
 
-/** @internal an entity with CRUD routines */
-type ConcreteEntity = Element | ElementAspect | Relationship;
+// re-export so consumers don't need to manually import the basic types we are extending
+export { ConcreteEntityIdSet, ConcreteEntityId };
 
-/**
- * This id format can be used for storing a unique key for an entity in containers like `Map`.
- * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
- * @public
- */
-export type ConcreteEntityId =
-  /* an element instance */
-  | `e${Id64String}`
-  /* an aspect instance */
-  | `a${Id64String}`
-  /** a relationship entity, so a link table relationship instance */
-  | `r${Id64String}`;
+// FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
+/** an entity that can be created  */
+type ConcreteEntity = Element | ElementAspect | Relationship;
 
 /**
  * Utility function namespace for the ConcreteEntityId type which is a string
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export namespace ConcreteEntityId {
+export namespace ConcreteEntityIds {
   export function from(entity: ConcreteEntity): ConcreteEntityId {
     return `${entity instanceof Element ? "e" : entity instanceof ElementAspect ? "a" : "r"}:${entity.id}`;
   }
