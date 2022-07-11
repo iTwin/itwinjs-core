@@ -109,6 +109,23 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
+// @alpha (undocumented)
+export const ActiveRuleGroupContext: React.Context<ActiveRuleGroupContextProps>;
+
+// @alpha (undocumented)
+export interface ActiveRuleGroupContextProps {
+    // (undocumented)
+    activeElement: HTMLElement | undefined;
+    // (undocumented)
+    onBlur: React.FocusEventHandler<HTMLElement>;
+    // (undocumented)
+    onFocus: React.FocusEventHandler<HTMLElement>;
+    // (undocumented)
+    onMouseOut: React.MouseEventHandler<HTMLElement>;
+    // (undocumented)
+    onMouseOver: React.MouseEventHandler<HTMLElement>;
+}
+
 // @public
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
 

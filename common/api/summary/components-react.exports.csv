@@ -8,6 +8,8 @@ public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactN
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
+alpha;ActiveRuleGroupContext: React.Context
+alpha;ActiveRuleGroupContextProps
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
 public;AsyncErrorMessage
