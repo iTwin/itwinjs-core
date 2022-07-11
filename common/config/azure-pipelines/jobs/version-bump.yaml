@@ -44,7 +44,7 @@ jobs:
     displayName: Validate version
     steps:
     - bash: |
-        exit 0
+        exit 1
 
   - job: Bump
     dependsOn: Validate
