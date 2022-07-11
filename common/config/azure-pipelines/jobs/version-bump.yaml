@@ -44,6 +44,7 @@ jobs:
     displayName: Validate version
     steps:
     - bash: |
+        echo "$(getVersion.version) <--- testing"
         exit 1
 
   - job: Bump
