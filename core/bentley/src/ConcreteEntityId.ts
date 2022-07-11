@@ -21,6 +21,26 @@ export type ConcreteEntityId =
   /** a relationship entity, so a link table relationship instance */
   | `r${Id64String}`;
 
+/** Utility functions for ConcreteEntityId which is a subset of string
+ * @public
+ */
+export class ConcreteEntityIds {
+  // for additional utilities that require runtime backend classes, see ConcreteEntityIds in `@itwin/core-backend`
+  public static isElementOrModel(id: ConcreteEntityId) {
+    return id[0] === "e";
+  }
+  public static isAspect(id: ConcreteEntityId) {
+    return id[0] === "a";
+  }
+  /**  */
+  public static isRelationship(id: ConcreteEntityId) {
+    return id[0] === "r";
+  }
+  public static toId64(id: ConcreteEntityId) {
+    return id.slice(1);
+  }
+}
+
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
  * @public
  */

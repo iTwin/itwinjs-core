@@ -7,11 +7,11 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, ConcreteEntityId, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
+  ChannelRootAspect, ConcreteEntityIds, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -173,15 +173,23 @@ class PartiallyCommittedEntity {
  * whether it has been transformed, and if its submodel has been
  * @internal
  */
-class ElementProcessState {
+class EntityProcessState {
   public constructor(
-    public elementId: string,
+    public id: ConcreteEntityId,
     /** whether or not this element needs to be processed */
-    public needsElemImport: boolean,
-    /** whether or not this element's submodel needs to be processed */
-    public needsModelImport: boolean,
+    public needsSelfImport: boolean,
+    /** only applicable if this is an element, whether or not this element's submodel needs to be processed */
+    public needsSubModelImport = false,
   ) {}
-  public static fromElementAndTransformer(elementId: Id64String, transformer: IModelTransformer): ElementProcessState {
+  public static fromEntityAndTransformer(concreteEntityId: ConcreteEntityId, transformer: IModelTransformer): EntityProcessState {
+    const entityId = ConcreteEntityIds.toId64(concreteEntityId);
+    if (ConcreteEntityIds.isAspect(concreteEntityId)) {
+      return new EntityProcessState(concreteEntityId, transformer.context.findTargetAspectId(entityId) === Id64.invalid);
+    }
+    if (ConcreteEntityIds.isRelationship(concreteEntityId)) {
+      // FIXME: still not sure how we index relationships yet
+      return new EntityProcessState(concreteEntityId, transformer.context.findTargetElementId(entityId) === Id64.invalid);
+    }
     // we don't need to load all of the props of the model to check if the model exists
     const dbHasModel = (db: IModelDb, id: Id64String) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
       stmt.bindId(1, id);
@@ -190,13 +198,13 @@ class ElementProcessState {
       if (stepResult === DbResult.BE_SQLITE_ROW) return true;
       else throw new IModelError(stepResult, "expected 1 or no rows");
     });
-    const isSubModeled = dbHasModel(transformer.sourceDb, elementId);
-    const idOfElemInTarget = transformer.context.findTargetElementId(elementId);
+    const isSubModeled = dbHasModel(transformer.sourceDb, entityId);
+    const idOfElemInTarget = transformer.context.findTargetElementId(entityId);
     const isElemInTarget = Id64.invalid !== idOfElemInTarget;
     const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(transformer.targetDb, idOfElemInTarget));
-    return new ElementProcessState(elementId, !isElemInTarget, needsModelImport);
+    return new EntityProcessState(concreteEntityId, !isElemInTarget, needsModelImport);
   }
-  public get needsImport() { return this.needsElemImport || this.needsModelImport; }
+  public get needsImport() { return this.needsSelfImport || this.needsSubModelImport; }
 }
 
 /**
@@ -596,8 +604,8 @@ export class IModelTransformer extends IModelExportHandler {
     const missingReferences = new Set<string>();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
-    for (const referenceId of entity.getReferenceIds()) {
-      const referenceState = ElementProcessState.fromElementAndTransformer(referenceId, this);
+    for (const referenceId of entity.getReferenceConcreteIds()) {
+      const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
       if (!referenceState.needsImport) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
       const exists = EntityUnifier.exists(this.sourceDb, { id: referenceId });
@@ -624,7 +632,7 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedEntities.has(entity))
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
-      if (referenceState.needsModelImport) {
+      if (referenceState.needsSubModelImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
         // NOTE:
         // it looks like I'm going to have to deprecate the string return type of collectElementReferences
@@ -633,7 +641,7 @@ export class IModelTransformer extends IModelExportHandler {
         const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "m" : "n"}${entity.id}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
       }
-      if (referenceState.needsElemImport) {
+      if (referenceState.needsSelfImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
         const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "e" : "n"}${entity.id}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
@@ -686,19 +694,21 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
-          return ElementProcessState.fromElementAndTransformer(id, this);
+          // For now we just consider all required references to be elements, and do not support
+          // entities that refuse to be inserted without a specific aspect or relationship first being inserted
+          return EntityProcessState.fromEntityAndTransformer(`e${id}`, this);
         });
       })
       .flat()
-      .filter((maybeProcessState): maybeProcessState is ElementProcessState =>
+      .filter((maybeProcessState): maybeProcessState is EntityProcessState =>
         maybeProcessState !== undefined && maybeProcessState.needsImport
       );
 
     if (unresolvedReferencesProcessStates.length > 0) {
       for (const processState of unresolvedReferencesProcessStates) {
         // must export element first if not done so
-        if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
-        if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
+        if (processState.needsSelfImport) await this.exporter.exportElement(processState.id);
+        if (processState.needsSubModelImport) await this.exporter.exportModel(processState.id);
       }
     }
   }
