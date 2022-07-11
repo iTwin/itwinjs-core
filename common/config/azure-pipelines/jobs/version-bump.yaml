@@ -49,7 +49,7 @@ jobs:
         curVer=$(sed -e 's/^"//' -e 's/"$//' <<<"$getVer")
         echo "$curVer <- current version"
 
-        echo "$(Build.SourceBranch) <- current branch"
+        echo "$(Build.SourceBranchName) <- current branch"
 
         # nightly = dev version
         if [[ ${{ parameters.BumpType }} == "nightly"  ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+ ]]
