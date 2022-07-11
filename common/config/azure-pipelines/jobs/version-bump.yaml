@@ -72,7 +72,7 @@ jobs:
             echo "version validation passed on bump ${{ parameters.BumpType }}"
             exit 0
 
-          # patch = non-dev version && queued on release
+          # patch = non-dev version && queued on release sd
           elif if [[ ${{ parameters.BumpType }} == "patch" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+$ ]]
           then
             echo "version validation passed on bump ${{ parameters.BumpType }}"
