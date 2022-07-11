@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.41",
+      "tag": "@bentley/imodeljs-backend_v2.19.41",
+      "date": "Mon, 11 Jul 2022 16:02:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Retry V2 checkpoint downloads when they fail due to transient errors."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.40",
       "tag": "@bentley/imodeljs-backend_v2.19.40",
       "date": "Thu, 09 Jun 2022 16:22:03 GMT",

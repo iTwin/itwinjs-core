@@ -2,6 +2,12 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
+      "version": "2.19.41",
+      "tag": "@bentley/imodelhub-client-tests_v2.19.41",
+      "date": "Mon, 11 Jul 2022 16:02:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.40",
       "tag": "@bentley/imodelhub-client-tests_v2.19.40",
       "date": "Thu, 09 Jun 2022 16:22:03 GMT",

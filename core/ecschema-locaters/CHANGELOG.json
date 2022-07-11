@@ -2,6 +2,12 @@
   "name": "@bentley/ecschema-locaters",
   "entries": [
     {
+      "version": "2.19.41",
+      "tag": "@bentley/ecschema-locaters_v2.19.41",
+      "date": "Mon, 11 Jul 2022 16:02:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.40",
       "tag": "@bentley/ecschema-locaters_v2.19.40",
       "date": "Thu, 09 Jun 2022 16:22:03 GMT",

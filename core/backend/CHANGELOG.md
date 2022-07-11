@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 09 Jun 2022 16:22:03 GMT and should not be manually modified.
+This log was last generated on Mon, 11 Jul 2022 16:02:39 GMT and should not be manually modified.
+
+## 2.19.41
+Mon, 11 Jul 2022 16:02:39 GMT
+
+### Updates
+
+- Retry V2 checkpoint downloads when they fail due to transient errors.
 
 ## 2.19.40
 Thu, 09 Jun 2022 16:22:03 GMT
