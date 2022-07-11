@@ -44,7 +44,43 @@ jobs:
     displayName: Validate version
     steps:
     - bash: |
-        exit 0
+        # Get version and remove quotes
+        getVer=(jq '.[] | .version' common/config/rush/version-policies.json)
+        curVer=$(sed -e 's/^"//' -e 's/"$//' <<<"$getVer")
+        echo "$curVer <- current version"
+
+        echo "$(Build.SourceBranch) <- current branch"
+
+        # nightly = dev version
+        if [[ ${{ parameters.BumpType }} == "nightly"  ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+ ]]
+        then
+          echo "version validation passed on bump ${{ parameters.BumpType }}"
+          exit 0
+
+        # releaseCandidate = dev version && queued on master
+        elif [[ ${{ parameters.BumpType }} == "releaseCandidate" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+ ]]
+        then
+          echo "version validation passed on bump ${{ parameters.BumpType }}"
+          exit 0
+
+        ### if the build is queued on release
+        elif [[ a == a ]]
+        then
+          # minor = dev version && queued on release
+          if [[ ${{ parameters.BumpType }} == "minor" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+ ]]
+          then
+            echo "version validation passed on bump ${{ parameters.BumpType }}"
+            exit 0
+
+          # patch = non-dev version && queued on release
+          elif if [[ ${{ parameters.BumpType }} == "patch" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          then
+            echo "version validation passed on bump ${{ parameters.BumpType }}"
+            exit 0
+          fi
+        fi
+
+        exit 1
 
   - job: Bump
     dependsOn: Validate
