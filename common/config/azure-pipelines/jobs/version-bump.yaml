@@ -48,7 +48,7 @@ jobs:
         getVer=$(jq '.[] | .version' common/config/rush/version-policies.json)
         curVer=$(sed -e 's/^"//' -e 's/"$//' <<<"$getVer")
         echo "$curVer <- current version"
-        echo "${{ parameters.BumpType }}"
+        echo "${{ parameters.BumpType }} <- parameter"
         echo "$(Build.SourceBranchName) <- current branch"
 
         # nightly = dev version
@@ -73,17 +73,13 @@ jobs:
             exit 0
 
           # patch = non-dev version && queued on release sd
-          elif if [[ ${{ parameters.BumpType }} == "patch" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          elif [[ ${{ parameters.BumpType }} == "patch" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+$ ]]
           then
             echo "version validation passed on bump ${{ parameters.BumpType }}"
             exit 0
-          else
-            exit 1
           fi
-        else
-          exit 1
         fi
-        echo "it reached here"
+
         exit 1
 
   - job: Bump
