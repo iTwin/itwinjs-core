@@ -532,3 +532,5 @@ describe("Static Properties", () => {
   });
 
 });
+
+// TODO: add tests on the new model/aspect prefixes
