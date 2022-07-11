@@ -118,14 +118,20 @@ class IModelSchemaLocater implements ISchemaLocaterType {
    * @param schemaKey The [SchemaKey] that identifies the schema.
    * * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
+   * @throws [Error] if the schema is not found or if the schema exists, but cannot be loaded.
    */
   public async getSchemaAsync<T extends SchemaType>(schemaKey: typeof SchemaKey, _matchType: typeof SchemaMatchType, context?: typeof SchemaContext | undefined): Promise<T | undefined> {
-    const schemaProps = await this.getSchemaStringAsync(schemaKey.name);
-    if (!schemaProps)
-      return undefined;
+    try {
+      const schemaProps = await this.getSchemaStringAsync(schemaKey.name);
 
-    context = context ? context : new SchemaContext();
-    return Schema.fromJsonSync(schemaProps, context) as T;
+      if (!schemaProps)
+        return undefined;
+
+      context = context ? context : new SchemaContext();
+      return Schema.fromJsonSync(schemaProps, context) as T;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /** Read schema data from the iModel as JSON string
@@ -146,13 +152,14 @@ class IModelSchemaLocater implements ISchemaLocaterType {
 
   /** Read schema data from the iModel as JSON string asynchronously
    * @param schemaName A string with the name of the schema to load.
-   * @returns A string with the JSON for the schema or `undefined` if the schema is not found.
+   * @returns A string with the JSON for the schema.
+   * @throws [Error] if the schema is not found or if the schema exists, but cannot be loaded.
    */
-  private async getSchemaStringAsync(schemaName: string): Promise<string | undefined> {
+  private async getSchemaStringAsync(schemaName: string): Promise<string> {
     try {
       return await this._iModel.getSchemaAsync(schemaName);
-    } catch (err: any) {
-      return undefined;
+    } catch (error) {
+      throw new Error(`reading schema=${schemaName}`);
     }
   }
 }
