@@ -8,7 +8,7 @@
 
 import {
   assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined,
-  CompressedId64Set, ConcreteEntityIdSet, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable,
+  CompressedId64Set, ConcreteEntityIdSet, Constructor, Id64, Id64String, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
@@ -1145,12 +1145,13 @@ export namespace RenderSchedule {
     /** Used by the [Element.collectReferenceIds]($backend) method overrides in RenderTimeline and DisplayStyle.
      * @internal
      */
-    public discloseIds(ids: ConcreteEntityIdSet) {
+    public discloseIds(ids: ConcreteEntityIdSet | Set<Id64String>) {
+      const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(ids);
       for (const model of this.modelTimelines) {
-        ids.addModel(model.modelId);
+        entitySet.addModel(model.modelId);
         for (const element of model.elementTimelines)
           for (const id of element.elementIds)
-            ids.addElement(id);
+            entitySet.addElement(id);
       }
     }
 

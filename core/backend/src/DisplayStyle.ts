@@ -6,12 +6,12 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
-import { ConcreteEntityId, ConcreteEntityIdSet } from "./ConcreteEntityId";
+import { ConcreteEntityIdSet } from "./ConcreteEntityId";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -42,21 +42,22 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectReferenceIds(referenceIds: ConcreteEntityIdSet): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
+    const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      referenceIds.addElement(id);
+      entitySet.addElement(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      referenceIds.addElement(excludedElementId);
+      entitySet.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      referenceIds.addElement(this.settings.renderTimeline);
+      entitySet.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(referenceIds);
+        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
     }
   }
 
@@ -213,14 +214,15 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      referenceIds.add(textureId);
+      entitySet.addElement(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        referenceIds.add(planProjectionSetting[0]);
+        entitySet.addElement(planProjectionSetting[0]);
   }
 
   /** @alpha */
