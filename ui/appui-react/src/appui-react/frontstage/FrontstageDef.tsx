@@ -812,6 +812,7 @@ export class FrontstageDef {
       if (tabLocation) {
         if (isFloatingLocation(tabLocation)) {
           const floatingWidget = this.nineZoneState.floatingWidgets.byId[tabLocation.floatingWidgetId];
+          // istanbul ignore else
           if (!!!floatingWidget.hidden)
             widgetIsVisible = true;
         } else if (isPopoutLocation(tabLocation)) {

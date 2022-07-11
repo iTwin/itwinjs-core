@@ -18,11 +18,10 @@ describe("FooterModeField", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <FooterModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}> <FooterSeparator /> </FooterModeField>
+          <FooterModeField isInFooterMode={isInFooterMode}> <FooterSeparator /> </FooterModeField>
         </>
       );
     }

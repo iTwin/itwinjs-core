@@ -114,24 +114,24 @@ export class ClassRegistry {
 
     const isElement = (t: typeof Entity): t is typeof Element => t.is(Element); // Entity.is check but with type information to avoid casts later
 
-    // a class only gets an automatic `collectPredecessorIds` implementation if:
+    // a class only gets an automatic `collectReferenceIds` implementation if:
     // - it derives from `BisCore:Element`
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
       Object.defineProperty(
         generatedClass.prototype,
-        "collectPredecessorIds",
+        "collectReferenceIds",
         {
           // first prototype of `this` is its class
-          value(this: typeof generatedClass, predecessorIds: Id64Set) {
+          value(this: typeof generatedClass, referenceIds: Id64Set) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectPredecessorIds"];
-            superImpl.call(this, predecessorIds);
+            const superImpl = superclass.prototype["collectReferenceIds"];
+            superImpl.call(this, referenceIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
-              predecessorIds.add(relatedElem.id);
+              referenceIds.add(relatedElem.id);
             }
           },
           // defaults for methods on a prototype (required for sinon to stub out methods on tests)
