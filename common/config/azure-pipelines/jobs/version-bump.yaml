@@ -40,7 +40,14 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
+  - job : Validate
+    displayName: Validate version
+    steps:
+    - bash: |
+        exit 0
+
   - job: Bump
+    dependsOn: Validate
     displayName: Bump Version
     steps:
     - checkout: self
