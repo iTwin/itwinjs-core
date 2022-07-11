@@ -5,8 +5,7 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { Entity } from "@itwin/core-backend";
-import { ConcreteEntityId } from "./EntityUnifier";
+import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds } from "@itwin/core-backend";
 
 // possible table types in current BisCore
 // TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
@@ -18,20 +17,20 @@ export type EntityKey = ConcreteEntityId;
 export class EntityMap<V> {
   private _map = new Map<EntityKey, V>();
 
-  public static makeKey(entity: Entity): EntityKey {
-    return ConcreteEntityId.from(entity);
+  public static makeKey(entity: ConcreteEntity): EntityKey {
+    return ConcreteEntityIds.from(entity);
   }
 
   public clear(): void {
     return this._map.clear();
   }
 
-  public has(entity: Entity) {
+  public has(entity: ConcreteEntity) {
     return this._map.has(EntityMap.makeKey(entity)
     );
   }
 
-  public set(entity: Entity, val: V): EntityMap<V> {
+  public set(entity: ConcreteEntity, val: V): EntityMap<V> {
     return this.setByKey(EntityMap.makeKey(entity), val);
   }
 
@@ -40,7 +39,7 @@ export class EntityMap<V> {
     return this;
   }
 
-  public get(entity: Entity): V | undefined {
+  public get(entity: ConcreteEntity): V | undefined {
     return this.getByKey(EntityMap.makeKey(entity));
   }
 
@@ -48,7 +47,7 @@ export class EntityMap<V> {
     return this._map.get(k);
   }
 
-  public delete(entity: Entity): boolean {
+  public delete(entity: ConcreteEntity): boolean {
     return this.deleteByKey(EntityMap.makeKey(entity));
   }
 

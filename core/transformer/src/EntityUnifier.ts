@@ -7,17 +7,10 @@
  * utilities that unify operations, especially CRUD operations, on entities
  * for entity-generic operations in the transformer
  */
-import { Element, ElementAspect, Entity, IModelDb, Relationship } from "@itwin/core-backend";
+import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Model, Relationship } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import { DbResult, ElementAspectProps, ElementProps, IModelError, RelationshipProps } from "@itwin/core-common";
+import { DbResult, ElementAspectProps, ElementProps, IModelError, ModelProps, RelationshipProps } from "@itwin/core-common";
 import { IModelTransformer } from "./IModelTransformer";
-
-/** @internal an entity with CRUD routines */
-type ConcreteEntity = Element | ElementAspect | Relationship;
-
-/** @internal props for an entity with CRUD routines */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ConcreteEntityProps = ElementProps | ElementAspectProps | RelationshipProps;
 
 /** @internal */
 function unreachable(entity: any): never {
@@ -33,17 +26,18 @@ export namespace EntityUnifier {
     else return "unknown entity type";
   }
 
-  type EntityTransformHandler = (entity: Element | Relationship | ElementAspect) => ElementProps | RelationshipProps | ElementAspectProps;
+  type EntityTransformHandler = (entity: Element | Model | Relationship | ElementAspect) => ElementProps | ModelProps | RelationshipProps | ElementAspectProps;
 
   export function transformCallbackFor(transformer: IModelTransformer, entity: ConcreteEntity) {
     if (entity instanceof Element) return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Element) return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
     // grab these methods even though they're protected since we don't want to make them public but think this function is better here than on the transformer
     else if (entity instanceof Relationship) return transformer["onTransformRelationship"] as EntityTransformHandler; // eslint-disable-line @typescript-eslint/dot-notation
     else if (entity instanceof ElementAspect) return transformer["onTransformElementAspect"] as EntityTransformHandler; // eslint-disable-line @typescript-eslint/dot-notation
     else unreachable(entity);
   }
 
-  type EntityUpdater = (entityProps: ElementProps | RelationshipProps | ElementAspectProps) => void;
+  type EntityUpdater = (entityProps: ConcreteEntityProps) => void;
 
   /** needs to return a widened type otherwise typescript complains when result is used with a narrow type */
   export function updaterFor(db: IModelDb, entity: ConcreteEntity) {

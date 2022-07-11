@@ -6,10 +6,8 @@
  * @module Utils
  */
 
-import { Entity, Model } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds, Model } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
-import { ConcreteEntityId } from "./EntityUnifier";
 
 /**
  * An encoding of a reference to an entity
@@ -19,15 +17,15 @@ import { ConcreteEntityId } from "./EntityUnifier";
  * @internal
  * @see ConcreteEntityId
  */
-export type EntityReference = `${"m"|"e"|"n"}${Id64String}`;
+export type EntityReference = `${"m"|"e"|"n"}${ConcreteEntityId}`;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 namespace EntityReference {
-  export function from(entity: Entity): EntityReference {
-    return `${entity instanceof Element ? "e" : entity instanceof Model ? "m" : "n"}:${entity.id}`;
+  export function from(entity: ConcreteEntity): EntityReference {
+    return `${entity instanceof Element ? "e" : entity instanceof Model ? "m" : "n"}${ConcreteEntityIds.from(entity)}`;
   }
   export function toEntityId(ref: EntityReference): ConcreteEntityId {
-    return `${ref[0] === "e" || ref[0] === "m" ? "Element" : "NonElement"}${ref.slice(1)}`;
+    return ref.slice(1) as ConcreteEntityId;
   }
 }
 
@@ -41,8 +39,8 @@ export interface PendingReference {
 }
 
 export namespace PendingReference {
-  export function from(referencer: Entity | ConcreteEntityId, referenced: Entity | EntityReference): PendingReference {
-    if (typeof referencer !== "string") referencer = ConcreteEntityId.from(referencer);
+  export function from(referencer: ConcreteEntity | ConcreteEntityId, referenced: ConcreteEntity | EntityReference): PendingReference {
+    if (typeof referencer !== "string") referencer = ConcreteEntityIds.from(referencer);
     if (typeof referenced !== "string") referenced = EntityReference.from(referenced);
     return { referencer, referenced };
   }
@@ -65,7 +63,7 @@ export class PendingReferenceMap<T> {
   private _map = new Map<string, T>();
   private _referencedToReferencers = new EntityMap<Set<ConcreteEntityId>>();
 
-  public getReferencers(referenced: Entity): Set<ConcreteEntityId> {
+  public getReferencers(referenced: ConcreteEntity): Set<ConcreteEntityId> {
     let referencers = this._referencedToReferencers.get(referenced);
     if (referencers === undefined) {
       referencers = new Set();

@@ -6,18 +6,22 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityIdSet, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import { Element } from "./Element";
 import { ElementAspect } from "./ElementAspect";
-import { Relationship } from "./Relationship";
+import { Relationship, RelationshipProps } from "./Relationship";
+import { Model } from "./Model";
+import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 
 // re-export so consumers don't need to manually import the basic types we are extending
-export { ConcreteEntityId, ConcreteEntityIdSet };
+export * from "@itwin/core-bentley/lib/cjs/ConcreteEntityId";
 
 // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
 /** an entity that can be created  */
-type ConcreteEntity = Element | ElementAspect | Relationship;
+export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
+
+export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 /**
  * Utility function namespace for the ConcreteEntityId type which is a string

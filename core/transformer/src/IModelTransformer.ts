@@ -11,7 +11,7 @@ import { AccessToken, assert, ConcreteEntityId, DbResult, Guid, Id64, Id64Set, I
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, ChangeSummaryManager, ConcreteEntityIds,
+  ChannelRootAspect, ChangeSummaryManager, ConcreteEntity, ConcreteEntityIds,
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
@@ -638,8 +638,8 @@ export class IModelTransformer extends IModelExportHandler {
     return true;
   }
 
-  private findTargetId(sourceEntity: Element | Relationship | ElementAspect): Id64String {
-    if (sourceEntity instanceof Element) {
+  private findTargetId(sourceEntity: ConcreteEntity): Id64String {
+    if (sourceEntity instanceof Element || sourceEntity instanceof Model) {
       return this.context.findTargetElementId(sourceEntity.id);
     } else if (sourceEntity instanceof Relationship) {
       const relSourceInTargetId = this.context.findTargetElementId(sourceEntity.sourceId);
@@ -665,7 +665,7 @@ export class IModelTransformer extends IModelExportHandler {
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
   private makePartialEntityCompleter(
-    sourceEntity: Element | Relationship | ElementAspect,
+    sourceEntity: ConcreteEntity
   ) {
     return () => {
       const targetId = this.findTargetId(sourceEntity);
@@ -678,7 +678,7 @@ export class IModelTransformer extends IModelExportHandler {
         (targetProps as RelationshipProps).sourceId = this.context.findTargetElementId(sourceEntity.sourceId);
         (targetProps as RelationshipProps).targetId = this.context.findTargetElementId(sourceEntity.targetId);
       }
-      updateEntity({...targetProps, id: targetId});
+      updateEntity({ ...targetProps, id: targetId });
       this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
@@ -686,7 +686,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** collect references this entity has that are yet to be mapped, and if there are any
    * create a [[PartiallyCommittedEntity]] to track resolution of those references
    */
-  private collectUnmappedReferences(entity: Element | ElementAspect | Relationship) {
+  private collectUnmappedReferences(entity: ConcreteEntity) {
     const missingReferences = new Set<string>();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
@@ -732,12 +732,12 @@ export class IModelTransformer extends IModelExportHandler {
         // it looks like I'm going to have to deprecate the string return type of collectElementReferences
         // because I need classes to declare whether their references are to an element or not
         // raw strings will be interpreted as to pointing to an element
-        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "m" : "n"}${entity.id}`);
+        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "m" : "n"}${ConcreteEntityIds.from(entity)}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
       }
       if (referenceState.needsSelfImport) {
         missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
-        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "e" : "n"}${entity.id}`);
+        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "e" : "n"}${ConcreteEntityIds.from(entity)}`);
         this._pendingReferences.set(pendingRef, thisPartialElem);
       }
     }
@@ -880,7 +880,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
   }
 
-  private resolvePendingReferences(entity: Element | Model | Relationship | ElementAspect) {
+  private resolvePendingReferences(entity: ConcreteEntity) {
     // FIXME: support non element entities
     const isModelRef = entity instanceof Model;
     for (const referencer of this._pendingReferences.getReferencers(entity)) {
