@@ -7,7 +7,7 @@ import chaiSubset from "chai-subset";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { buildPropertyFilter, PropertyFilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
 import { PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "../../components-react/filter-builder/Operators";
@@ -28,6 +28,57 @@ describe("PropertyFilterBuilder", () => {
     const spy = sinon.spy();
     render(<PropertyFilterBuilder properties={[]} onFilterChanged={spy} />);
     expect(spy).to.be.calledOnceWith(undefined);
+  });
+
+  it("marks rule group as active on mouse over", () => {
+    const spy = sinon.spy();
+    const { container } = render(<PropertyFilterBuilder properties={[]} onFilterChanged={spy} />);
+
+    const group = container.querySelector(".rule-group");
+    expect(group).to.not.be.null;
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    fireEvent.mouseOver(group!);
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
+
+    fireEvent.mouseOut(group!);
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+  });
+
+  it("marks rule group as active on focus", () => {
+    const spy = sinon.spy();
+    const { container } = render(<PropertyFilterBuilder properties={[]} onFilterChanged={spy} />);
+
+    const group = container.querySelector(".rule-group");
+    expect(group).to.not.be.null;
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    fireEvent.focus(group!);
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
+
+    fireEvent.blur(group!);
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+  });
+
+  it("keeps rule group marked as active when focus moves to other element inside group", () => {
+    const spy = sinon.spy();
+    const { container } = render(<PropertyFilterBuilder properties={[]} onFilterChanged={spy} />);
+
+    const group = container.querySelector(".rule-group");
+    expect(group).to.not.be.null;
+
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.be.null;
+
+    fireEvent.focus(group!);
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
+
+    const rule = container.querySelector(".rule");
+    expect(rule).to.not.be.null;
+
+    fireEvent.blur(group!, {relatedTarget: rule});
+    expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
   });
 
   describe("buildPropertyFilter", () => {

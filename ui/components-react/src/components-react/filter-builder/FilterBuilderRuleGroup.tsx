@@ -13,6 +13,18 @@ import { PropertyFilterRuleGroupOperator } from "./Operators";
 import "./FilterBuilderRuleGroup.scss";
 
 /** @alpha */
+export interface ActiveRuleGroupContextProps {
+  activeElement: HTMLElement | undefined;
+  onFocus: React.FocusEventHandler<HTMLElement>;
+  onBlur: React.FocusEventHandler<HTMLElement>;
+  onMouseOver: React.MouseEventHandler<HTMLElement>;
+  onMouseOut: React.MouseEventHandler<HTMLElement>;
+}
+
+/** @alpha */
+export const ActiveRuleGroupContext = React.createContext<ActiveRuleGroupContextProps>(null!);
+
+/** @alpha */
 export interface PropertyFilterBuilderRuleGroupRendererProps {
   path: string[];
   group: PropertyFilterBuilderRuleGroup;
@@ -22,6 +34,7 @@ export interface PropertyFilterBuilderRuleGroupRendererProps {
 export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps) {
   const { path, group } = props;
   const { actions, ruleGroupDepthLimit } = React.useContext(PropertyFilterBuilderContext);
+  const groupRef = React.useRef<HTMLDivElement>(null);
 
   const addRule = () => actions.addItem(path, "RULE");
   const addRuleGroup = () => actions.addItem(path, "RULE_GROUP");
@@ -32,11 +45,12 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
   }, [path, actions]);
 
   const allowToAddGroup = ruleGroupDepthLimit === undefined || path.length < ruleGroupDepthLimit;
-  const { active, eventHandlers } = useIsActive();
+  const { activeElement, ...eventHandlers } = React.useContext(ActiveRuleGroupContext);
 
   return <div
+    ref={groupRef}
     className="rule-group"
-    data-isactive={active}
+    data-isactive={groupRef.current === activeElement}
     {...eventHandlers}
   >
     <div className="rule-group-remove-action">
@@ -92,61 +106,3 @@ const PropertyFilterBuilderGroupOrRule = React.memo(
     return <PropertyFilterBuilderRuleRenderer path={itemPath} rule={item} />;
   }
 );
-
-function useIsActive() {
-  const { isFocused, onBlur, onFocus } = useIsFocused();
-  const { isHovered, onMouseOver, onMouseOut } = useIsHovered();
-  const active = isHovered || isFocused;
-
-  return {
-    active,
-    eventHandlers: {
-      onMouseOver,
-      onMouseOut,
-      onFocus,
-      onBlur,
-    },
-  };
-}
-
-function useIsHovered() {
-  const [isHovered, setIsHovered] = React.useState(false);
-
-  const onMouseOver: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    e.stopPropagation();
-    setIsHovered(true);
-  };
-
-  const onMouseOut: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    e.stopPropagation();
-    setIsHovered(false);
-  };
-
-  return { isHovered, onMouseOver, onMouseOut };
-}
-
-function useIsFocused() {
-  const [isFocused, setIsFocused] = React.useState(false);
-  const timeout = React.useRef<any>();
-
-  React.useEffect(() => () => clearTimeout(timeout.current), []);
-
-  const onFocus: React.FocusEventHandler<HTMLDivElement> = (e) => {
-    e.stopPropagation();
-    clearTimeout(timeout.current);
-    timeout.current = undefined;
-    setIsFocused(true);
-  };
-
-  const onBlur: React.FocusEventHandler<HTMLDivElement> = (e) => {
-    e.stopPropagation();
-    // need to handle onBlur on the next tick to check if other child of element
-    // received onFocus event
-    timeout.current = setTimeout(() => {
-      setIsFocused(false);
-      timeout.current = undefined;
-    });
-  };
-
-  return { isFocused, onFocus, onBlur };
-}

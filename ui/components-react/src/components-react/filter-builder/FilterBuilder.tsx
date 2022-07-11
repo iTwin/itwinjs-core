@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
+import { ActiveRuleGroupContext, PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
 import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
@@ -50,6 +50,7 @@ const ROOT_GROUP_PATH: string[] = [];
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit } = props;
   const { state, actions } = usePropertyFilterBuilderState();
+  const rootRef = React.useRef<HTMLDivElement>(null);
 
   const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);
   React.useEffect(() => {
@@ -67,9 +68,11 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
       <PropertyFilterBuilderContext.Provider value={contextValue}>
-        <div className="filter-builder">
-          <PropertyFilterBuilderRuleGroupRenderer path={ROOT_GROUP_PATH} group={state.rootGroup} />
-        </div>
+        <ActiveRuleGroupContext.Provider value={useActiveRuleGroupContextProps(rootRef)}>
+          <div ref={rootRef} className="filter-builder">
+            <PropertyFilterBuilderRuleGroupRenderer path={ROOT_GROUP_PATH} group={state.rootGroup} />
+          </div>
+        </ActiveRuleGroupContext.Provider>
       </PropertyFilterBuilderContext.Provider>
     </PropertyFilterBuilderRuleRenderingContext.Provider>
   );
@@ -112,4 +115,43 @@ function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyF
     return undefined;
 
   return { property, operator, value };
+}
+
+function useActiveRuleGroupContextProps(rootElementRef: React.RefObject<HTMLElement>) {
+  const [activeElement, setActiveElement] = React.useState<HTMLElement | undefined>();
+
+  const onFocus: React.FocusEventHandler<HTMLElement> = React.useCallback((e) => {
+    e.stopPropagation();
+    setActiveElement(e.currentTarget);
+  }, []);
+
+  const onBlur: React.FocusEventHandler<HTMLElement> = React.useCallback((e) => {
+    e.stopPropagation();
+    if (activeElement !== e.currentTarget || (rootElementRef.current && rootElementRef.current.contains(e.relatedTarget)))
+      return;
+
+    setActiveElement(undefined);
+  }, [activeElement, rootElementRef]);
+
+  const onMouseOver: React.MouseEventHandler<HTMLElement> = React.useCallback((e) => {
+    e.stopPropagation();
+    setActiveElement(e.currentTarget);
+  }, []);
+
+  const onMouseOut: React.MouseEventHandler<HTMLElement> = React.useCallback((e) => {
+    e.stopPropagation();
+    // istanbul ignore if
+    if (activeElement !== e.currentTarget)
+      return;
+
+    setActiveElement(undefined);
+  }, [activeElement]);
+
+  return React.useMemo(() => ({
+    activeElement,
+    onFocus,
+    onBlur,
+    onMouseOver,
+    onMouseOut,
+  }), [activeElement, onFocus, onBlur, onMouseOver, onMouseOut]);
 }
