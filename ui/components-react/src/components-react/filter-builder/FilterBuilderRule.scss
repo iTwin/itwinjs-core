@@ -31,3 +31,11 @@
     visibility: visible;
   }
 }
+
+.rule-group-items > .rule {
+  padding-bottom: 14px;
+
+  &:first-child {
+    padding-top: 14px;
+  }
+}

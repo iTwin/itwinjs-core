@@ -21,14 +21,6 @@
   grid-template-columns: min-content auto;
   padding: 11px 0;
 
-  &:last-child {
-    padding-bottom: 0px;
-  }
-
-  &:first-child {
-    padding-top: 0px;
-  }
-
   &[data-isactive=true] > .rule-group-remove-action {
     visibility: visible;
   }
@@ -63,20 +55,19 @@
       width: max-content;
     }
 
-    .rule-group-items > * {
-      position: relative;
-      margin-bottom: 11px;
-
-      &:first-child {
-        margin-top: 11px;
-      }
-    }
-
     .rule-group-actions {
       padding: 3px 0;
       display: grid;
       grid-template-columns: min-content min-content;
       gap: 8px;
     }
+  }
+}
+
+.rule-group-items > .rule-group {
+  padding-bottom: 22px;
+
+  &:last-child {
+    padding-bottom: 11px;
   }
 }
