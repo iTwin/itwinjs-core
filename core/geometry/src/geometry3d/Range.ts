@@ -674,6 +674,23 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (z > this.high.z) this.high.z = z;
   }
 
+  /** Expand this range by a point interpolated between given points. */
+  public extendInterpolated(xyz0: Point3d, fraction: number, xyz1: Point3d): void {
+    if (fraction < 0.5){
+      this.extendXYZ (
+          xyz0.x + fraction * (xyz1.x - xyz0.x),
+          xyz0.y + fraction * (xyz1.y - xyz0.y),
+          xyz0.z + fraction * (xyz1.z - xyz0.z));
+    } else {
+    // use reversed formulas for best accuracy at fraction=1.0
+      const g = 1.0 - fraction;
+      this.extendXYZ (
+            xyz1.x + g * (xyz0.x - xyz1.x),
+            xyz1.y + g * (xyz0.y - xyz1.y),
+            xyz1.z + g * (xyz0.z - xyz1.z));
+    }
+  }
+
   /** Expand this range by distances a in only the x direction.  */
   public extendXOnly(x: number): void {
     if (x < this.low.x) this.low.x = x;

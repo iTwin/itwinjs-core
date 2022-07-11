@@ -176,9 +176,18 @@ class ExerciseCurve {
     totalRange1.expandInPlace (0.02 * totalLength);
     let summedLength = 0;
     const summedRange = Range3d.createNull ();
+    const testFractions = [0.0, 0.25, 0.4, 0.6, 0.92, 0.99, 1.0];
     for (const fraction1 of upperFractions){
       const d01 = curveA.curveLengthBetweenFractions (fraction0, fraction1);
       const range01 = curveA.rangeBetweenFractions (fraction0, fraction1);
+      range01.expandInPlace (1.0e-8);
+      const curveA01 = curveA.clonePartialCurve (fraction0, fraction1)!;
+      if (curveA01 !== undefined){
+          for (const f of testFractions){
+            const xyz = curveA01.fractionToPoint (f);
+            ck.testTrue (range01.containsPoint (xyz), "rangeBetweenFractions contains test point", f);
+          }
+        }
       summedLength += d01;
       if (range01)
         summedRange.extendRange (range01);

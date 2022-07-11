@@ -234,12 +234,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Returns a (high accuracy) range of the curve between fractional positions
    * * Default implementation returns teh range of the curve from clonePartialCurve
    */
-   public rangeBetweenFractions(fraction0: number, fraction1: number): Range3d {
+   public rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     if (fraction0 === fraction1)
       return Range3d.create (this.fractionToPoint (fraction0));
     const fragment = this.clonePartialCurve (fraction0, fraction1);
     if (fragment)
-      return fragment.range ();
+      return fragment.range (transform);
     return Range3d.createNull ();
   }
 
