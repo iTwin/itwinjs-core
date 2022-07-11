@@ -37,7 +37,7 @@ public;ActivityMessage(props: ActivityMessageProps): JSX.Element
 deprecated;ActivityMessage(props: ActivityMessageProps): JSX.Element
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
-public;ActivityMessagePopup(props: ActivityMessagePopupProps): null
+public;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element
 public;ActivityMessagePopupProps 
 public;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 

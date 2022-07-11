@@ -477,7 +477,7 @@ export interface ActivityMessageEventArgs {
 }
 
 // @public
-export function ActivityMessagePopup(props: ActivityMessagePopupProps): null;
+export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
 
 // @public
 export interface ActivityMessagePopupProps extends CommonProps {
