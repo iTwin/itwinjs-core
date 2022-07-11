@@ -45,7 +45,7 @@ jobs:
     steps:
     - bash: |
         # Get version and remove quotes
-        getVer=(jq '.[] | .version' common/config/rush/version-policies.json)
+        getVer=$(jq '.[] | .version' common/config/rush/version-policies.json)
         curVer=$(sed -e 's/^"//' -e 's/"$//' <<<"$getVer")
         echo "$curVer <- current version"
 
