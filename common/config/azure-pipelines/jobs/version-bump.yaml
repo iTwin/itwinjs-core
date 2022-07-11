@@ -48,7 +48,7 @@ jobs:
         getVer=$(jq '.[] | .version' common/config/rush/version-policies.json)
         curVer=$(sed -e 's/^"//' -e 's/"$//' <<<"$getVer")
         echo "$curVer <- current version"
-
+        echo "${{ parameters.BumpType }}"
         echo "$(Build.SourceBranchName) <- current branch"
 
         # nightly = dev version
