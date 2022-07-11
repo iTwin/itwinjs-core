@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -40,9 +40,10 @@ export class ModelSelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    this.models.forEach((modelId: Id64String) => referenceIds.add(modelId));
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    this.models.forEach((modelId: Id64String) => unifiedIds.addModel(modelId));
   }
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -106,9 +107,10 @@ export class CategorySelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    this.categories.forEach((categoryId: Id64String) => referenceIds.add(categoryId));
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    this.categories.forEach((categoryId: Id64String) => unifiedIds.addElement(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -197,13 +199,14 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.categorySelectorId);
-    referenceIds.add(this.displayStyleId);
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    unifiedIds.addElement(this.categorySelectorId);
+    unifiedIds.addElement(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValidId64(acsId)) {
-      referenceIds.add(acsId);
+      unifiedIds.addElement(acsId);
     }
   }
 
@@ -343,9 +346,10 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.modelSelectorId);
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    unifiedIds.addElement(this.modelSelectorId);
   }
 
   /** @beta */
@@ -518,9 +522,10 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.baseModelId);
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    unifiedIds.addElement(this.baseModelId);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -692,9 +697,10 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.view.id);
+  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+    unifiedIds.addElement(this.view.id);
   }
 }
 

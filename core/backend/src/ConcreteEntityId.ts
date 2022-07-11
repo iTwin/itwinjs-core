@@ -6,14 +6,14 @@
  * @module Schema
  */
 
-import { ConcreteEntityId, ConcreteEntityIdSet,  Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIdSet, Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import { Element } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Relationship } from "./Relationship";
 
 // re-export so consumers don't need to manually import the basic types we are extending
-export { ConcreteEntityIdSet, ConcreteEntityId };
+export { ConcreteEntityId, ConcreteEntityIdSet };
 
 // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
 /** an entity that can be created  */

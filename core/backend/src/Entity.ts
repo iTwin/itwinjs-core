@@ -6,9 +6,9 @@
  * @module Schema
  */
 
-import { Id64, Id64Set, Id64String, isSubclassOf } from "@itwin/core-bentley";
+import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import { ConcreteEntityId, ConcreteEntityIdSet } from "./ConcreteEntityId";
+import { ConcreteEntityIdSet } from "./ConcreteEntityId";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -104,13 +104,22 @@ export class Entity {
 
   /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
    * This is important for cloning operations but can be useful in other situations as well.
+   * @note In the next breaking change, the behavior of this function will change to return a ConcreteEntityIdSet
+   *       which does not iterate plain Id64s, see [ConcreteEntityIdSet]($backend).
    * @see collectReferenceIds
    * @beta
    */
-  public getReferenceIds(): ConcreteEntityId;
-  /** @deprecated raw ids are implicitly assumed to be element references, return ConcreteEntityIds instead */
-  public getReferenceIds(): Set<Id64String>;
-  public getReferenceIds(): ConcreteEntityId | Set<Id64String> {
+  public getReferenceIds(): Set<Id64String> {
+    const referenceIds = new Set<Id64String>();
+    this.collectReferenceIds(referenceIds); // eslint-disable-line deprecation/deprecation
+    return referenceIds;
+  }
+
+  /** This is the intended and future behavior of [[getReferenceIds]].
+   * In the next breaking change it will replace getReferenceIds, and is already used by the transformer
+   * @internal
+   */
+  public getReferenceConcreteIds(): ConcreteEntityIdSet {
     const referenceIds = new ConcreteEntityIdSet();
     this.collectReferenceIds(referenceIds);
     return referenceIds;
@@ -120,19 +129,25 @@ export class Entity {
    * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.
    * @param _referenceIds The Id64Set to populate with reference Ids.
+   * @note In the next breaking change, the behavior of this function will change to return require a ConcreteEntityIdSet argument,
+   *       which does not accept plain Id64s, see [ConcreteEntityIdSet]($backend).
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
    * @beta
    */
-  protected collectReferenceIds(_referenceIds: ConcreteEntityIdSet): void;
-  /** @deprecated raw ids are implicitly assumed to be element references, add ConcreteEntityId's to the set instead */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
-  protected collectReferenceIds(_referenceIds: Set<Id64String>): void;
-  protected collectReferenceIds(_referenceIds: ConcreteEntityIdSet | Set<Id64String>): void {
-    return; // no references by default
+  protected collectReferenceIds(referenceIds: Set<Id64String>): void {
+    this.collectReferenceConcreteIds(referenceIds);
   }
 
+  /** This is the intended and future behavior of [[getReferenceIds]], with additional interop with the old
+   * input of `Set<Id64String>` to reduce code duplication.
+   * In the next breaking change it will replace getReferenceIds (with option for a set parameter removed), and is already used by the transformer
+   * @internal
+   */
+  protected collectReferenceConcreteIds(_referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
+    return; // no references by default
+  }
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
