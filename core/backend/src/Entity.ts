@@ -8,7 +8,7 @@
 
 import { Id64, Id64Set, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import { ConcreteEntityId } from "./ConcreteEntityId";
+import { ConcreteEntityId, ConcreteEntityIdSet } from "./ConcreteEntityId";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -107,11 +107,11 @@ export class Entity {
    * @see collectReferenceIds
    * @beta
    */
-  public getReferenceIds(): Set<ConcreteEntityId>;
+  public getReferenceIds(): ConcreteEntityId;
   /** @deprecated raw ids are implicitly assumed to be element references, return ConcreteEntityIds instead */
   public getReferenceIds(): Set<Id64String>;
-  public getReferenceIds(): Set<ConcreteEntityId> | Set<Id64String> {
-    const referenceIds = new Set<ConcreteEntityId>();
+  public getReferenceIds(): ConcreteEntityId | Set<Id64String> {
+    const referenceIds = new ConcreteEntityIdSet();
     this.collectReferenceIds(referenceIds);
     return referenceIds;
   }
@@ -125,11 +125,11 @@ export class Entity {
    * @see getReferenceIds
    * @beta
    */
-  protected collectReferenceIds(_referenceIds: Set<ConcreteEntityId>): void;
+  protected collectReferenceIds(_referenceIds: ConcreteEntityIdSet): void;
   /** @deprecated raw ids are implicitly assumed to be element references, add ConcreteEntityId's to the set instead */
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   protected collectReferenceIds(_referenceIds: Set<Id64String>): void;
-  protected collectReferenceIds(_referenceIds: Set<ConcreteEntityId> | Set<Id64String>): void {
+  protected collectReferenceIds(_referenceIds: ConcreteEntityIdSet | Set<Id64String>): void {
     return; // no references by default
   }
 
