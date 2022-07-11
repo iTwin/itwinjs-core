@@ -77,9 +77,13 @@ jobs:
           then
             echo "version validation passed on bump ${{ parameters.BumpType }}"
             exit 0
+          else
+            exit 1
           fi
+        else
+          exit 1
         fi
-
+        echo "it reached here"
         exit 1
 
   - job: Bump
