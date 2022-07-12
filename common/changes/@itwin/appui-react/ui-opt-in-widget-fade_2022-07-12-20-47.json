@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "hiding specific floating widgets when the UI automatically hides.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
