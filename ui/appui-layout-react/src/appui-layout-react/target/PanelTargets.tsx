@@ -28,11 +28,9 @@ export const PanelTargets = withTargetVersion("2", function PanelTargets() {
     "nz-target-panelTargets",
     `nz-${panel.side}`,
     type === "two-widgets" && "nz-wide",
+    // istanbul ignore next
     isHorizontalPanelState(panel) && panel.span && "nz-span",
   );
-
-  const panelState = React.useContext(PanelStateContext);
-  assert(!!panelState);
 
   let targets;
   if (type === "no-panel") {

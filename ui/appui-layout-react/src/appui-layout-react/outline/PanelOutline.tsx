@@ -40,25 +40,25 @@ export const PanelOutline = withTargetVersion("2", function PanelOutline() {
   );
 });
 
-function useHidden() {
+/** @internal */
+export function useHidden() {
   const side = React.useContext(PanelSideContext);
   const targeted = useTargeted();
-  return React.useMemo(() => {
-    if (!targeted)
-      return true;
+  if (!targeted)
+    return true;
 
-    if (!isPanelTargetState(targeted))
-      return true;
+  if (!isPanelTargetState(targeted))
+    return true;
 
-    if (targeted.side !== side)
-      return true;
+  if (targeted.side !== side)
+    return true;
 
-    return false;
-  }, [targeted,  side]);
+  return false;
 }
 
 function useSize() {
   const panel = React.useContext(PanelStateContext);
   assert(!!panel);
+  // istanbul ignore next
   return panel.size !== undefined ? panel.size : panel.minSize;
 }

@@ -33,8 +33,10 @@ export function SectionTarget(props: SectionTargetProps) {
   const className = classnames(
     "nz-target-sectionTarget",
     `nz-${direction}`,
+    // istanbul ignore next
     targeted && "nz-targeted",
     hidden && "nz-hidden",
+    // istanbul ignore next
     cursorType && getCursorClassName(cursorType),
   );
   return (

@@ -45,6 +45,7 @@ export const SectionOutline = withTargetVersion("2", function SectionOutline(pro
   );
 });
 
+// istanbul ignore next
 function useHidden(sectionIndex: SectionOutlineProps["sectionIndex"]) {
   const side = React.useContext(PanelSideContext);
   const targeted = useTargeted();
@@ -64,6 +65,7 @@ function useHidden(sectionIndex: SectionOutlineProps["sectionIndex"]) {
   }, [targeted, side, sectionIndex]);
 }
 
+// istanbul ignore next
 function useSize(sectionIndex: SectionOutlineProps["sectionIndex"]) {
   const panel = React.useContext(PanelStateContext);
   assert(!!panel);

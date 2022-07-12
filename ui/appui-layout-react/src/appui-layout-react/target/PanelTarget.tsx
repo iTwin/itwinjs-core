@@ -13,7 +13,7 @@ import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, getUniqueId, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "../widget-panels/Panel";
+import { isHorizontalPanelSide, PanelSide, PanelSideContext } from "../widget-panels/Panel";
 
 /** @internal */
 export interface PanelTargetProps {
@@ -32,13 +32,17 @@ export function PanelTarget(props: PanelTargetProps) {
     side,
     newWidgetId,
   });
+  // istanbul ignore next
   const visible = (!!draggedTab || !!draggedWidget) && allowedTarget;
   const isHorizontal = isHorizontalPanelSide(side);
   const className = classnames(
     "nz-target-panelTarget",
+    // istanbul ignore next
     isHorizontal ? "nz-horizontal" : "nz-vertical",
+    // istanbul ignore next
     targeted && "nz-targeted",
     !visible && "nz-hidden",
+    // istanbul ignore next
     cursorType && getCursorClassName(cursorType),
   );
   return (
@@ -51,12 +55,12 @@ export function PanelTarget(props: PanelTargetProps) {
 
 /** @internal */
 export function useAllowedPanelTarget() {
-  const panel = React.useContext(PanelStateContext);
+  const side = React.useContext(PanelSideContext);
+  assert(!!side);
   const draggedTab = React.useContext(DraggedTabStateContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const tabsState = React.useContext(TabsStateContext);
   const widgetsState = React.useContext(WidgetsStateContext);
-  assert(!!panel);
 
   let allowedPanelTargets: ReadonlyArray<PanelSide> | undefined;
   if (draggedTab) {
@@ -69,7 +73,7 @@ export function useAllowedPanelTarget() {
     allowedPanelTargets = tab.allowedPanelTargets;
   }
   if (allowedPanelTargets) {
-    return allowedPanelTargets.includes(panel.side);
+    return allowedPanelTargets.includes(side);
   }
   return true;
 }

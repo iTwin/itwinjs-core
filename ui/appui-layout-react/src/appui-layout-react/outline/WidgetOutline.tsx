@@ -28,6 +28,7 @@ export const WidgetOutline = withTargetVersion("2", function WidgetOutline(){
   );
 });
 
+// istanbul ignore next
 function useHidden() {
   const widgetId = React.useContext(WidgetIdContext);
   const targeted = useTargeted();

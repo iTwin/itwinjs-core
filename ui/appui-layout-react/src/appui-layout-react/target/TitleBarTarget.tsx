@@ -24,10 +24,12 @@ export const TitleBarTarget = withTargetVersion("2", function TitleBarTarget() {
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
   const widgetId = React.useContext(WidgetIdContext);
   const [ref] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
+  // istanbul ignore next
   const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
     "nz-target-titleBarTarget",
     hidden && "nz-hidden",
+    // istanbul ignore next
     cursorType && getCursorClassName(cursorType),
   );
   return (

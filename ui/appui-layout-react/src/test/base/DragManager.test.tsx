@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { renderHook } from "@testing-library/react-hooks";
-import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useTarget } from "../../appui-layout-react";
+import { act, renderHook } from "@testing-library/react-hooks";
+import { DragManager, DragManagerContext, useIsDragged, useIsDraggedType, usePanelTarget, useTabTarget, useTarget, useTargeted } from "../../appui-layout-react";
 import { createDragInfo, createDragStartArgs, setRefValue } from "../Providers";
+import { expect } from "chai";
 
 describe("DragManager", () => {
   describe("isDraggedType", () => {
@@ -165,5 +166,69 @@ describe("useIsDraggedType", () => {
       },
     });
     result.current.should.true;
+  });
+});
+
+describe("useIsDragged", () => {
+  it("should invoke callback", () => {
+    const dragManager = new DragManager();
+    const stub = sinon.stub();
+    stub.returns(false);
+    const { result } = renderHook(() => useIsDragged(stub), {
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
+    });
+    sinon.assert.calledOnce(stub);
+    expect(result.current).to.be.false;
+
+    act(() => {
+      stub.onCall(1).returns(true);
+      dragManager.handleDragStart({
+        info: createDragInfo(),
+        item: {
+          type: "tab",
+          id: "",
+        },
+      });
+    });
+    sinon.assert.calledTwice(stub);
+    expect(result.current).to.be.true;
+
+    act(() => {
+      stub.onCall(2).returns(true);
+      dragManager.handleDragUpdate();
+    });
+    sinon.assert.calledThrice(stub);
+    expect(result.current).to.be.true;
+
+    act(() => {
+      dragManager.handleDragEnd();
+    });
+    expect(result.current).to.be.false;
+    sinon.assert.callCount(stub, 4);
+  });
+});
+
+describe("useTargeted", () => {
+  it("returns a targeted object", () => {
+    const dragManager = new DragManager();
+    const { result } = renderHook(() => useTargeted(), {
+      wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
+    });
+    expect(result.current).to.be.undefined;
+
+    act(() => {
+      dragManager.handleDragStart({
+        info: createDragInfo(),
+        item: {
+          type: "tab",
+          id: "",
+        },
+      });
+      dragManager.handleTargetChanged({
+        type: "window",
+      });
+    });
+
+    result.current!.should.eql({ type: "window" });
   });
 });

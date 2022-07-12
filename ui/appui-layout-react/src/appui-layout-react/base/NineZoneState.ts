@@ -514,9 +514,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         return;
       }
       if (isTabTargetState(target)) {
-        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
-          state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
-        }
+        updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
         const targetWidget = state.widgets[target.widgetId];
         targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
       } else if (isSectionTargetState(target)) {
@@ -528,9 +526,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           id: target.newWidgetId,
         };
       } else if (isWidgetTargetState(target)) {
-        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
-          state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
-        }
+        updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
         const widget = findWidget(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
           const panel = state.panels[widget.side];
@@ -729,12 +725,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       assert(!!state.draggedTab);
       const target = action.target;
       if (isTabTargetState(target)) {
-        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
-          const floatingWidget = state.floatingWidgets.byId[target.widgetId];
-          floatingWidget.home = state.draggedTab.home;
-        }
+        updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
         const targetWidget = state.widgets[target.widgetId];
-        const tabIndex = target.tabIndex === -1 ? targetWidget.tabs.length : target.tabIndex;
+        const tabIndex = target.tabIndex;
         targetWidget.tabs.splice(tabIndex, 0, action.id);
       } else if (isPanelTargetState(target)) {
         const panel = state.panels[target.side];
@@ -758,10 +751,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           tabs: [action.id],
         };
       } else if (isWidgetTargetState(target)) {
-        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
-          const floatingWidget = state.floatingWidgets.byId[target.widgetId];
-          floatingWidget.home = state.draggedTab.home;
-        }
+        updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
         const widget = findWidget(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
           const panel = state.panels[widget.side];
@@ -841,6 +831,13 @@ function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetSta
     widget.tabs[0] === toolSettingsTabId &&
     id in state.floatingWidgets.byId
   );
+}
+
+/** Updated home state of floating tool settings widget. */
+function updateHomeOfToolSettingsWidget(state: Draft<NineZoneState>, id: WidgetState["id"], home: FloatingWidgetHomeState) {
+  if (!isToolSettingsFloatingWidget(state, id))
+    return;
+  state.floatingWidgets.byId[id].home = home;
 }
 
 /** @internal */

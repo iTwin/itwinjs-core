@@ -8,6 +8,7 @@
 
 import "./SectionTargets.scss";
 import * as React from "react";
+import { assert } from "@itwin/core-bentley";
 import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
 import { WidgetTarget } from "./WidgetTarget";
@@ -42,8 +43,7 @@ export const SectionTargets = withTargetVersion("2", function SectionTargets() {
 
 function useWidgetTargetsType(): "merge" | "sections" {
   const panelState = React.useContext(PanelStateContext);
-  if (!panelState)
-    return "merge";
+  assert(!!panelState);
 
   if (panelState.widgets.length === 1)
     return "sections";

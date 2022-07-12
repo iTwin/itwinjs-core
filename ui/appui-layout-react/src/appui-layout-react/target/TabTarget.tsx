@@ -26,11 +26,14 @@ export const TabTarget = withTargetVersion("2", function TabTarget() {
   const widgetId = React.useContext(WidgetIdContext);
   const tabIndex = useTabIndex();
   const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId, tabIndex));
+  // istanbul ignore next
   const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
     "nz-target-tabTarget",
     hidden && "nz-hidden",
+    // istanbul ignore next
     targeted && "nz-targeted",
+    // istanbul ignore next
     cursorType && getCursorClassName(cursorType),
   );
   return (
