@@ -811,7 +811,6 @@ describe("NineZoneStateReducer", () => {
         position: new Point(100, 200).toProps(),
         side: "left",
         widgetId: "w1",
-        hideWithUiWhenFloating: true,
       });
       (!!newState.draggedTab).should.true;
     });

@@ -13,11 +13,11 @@ import { PointProps } from "@itwin/appui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext, UiIsVisibleContext } from "../base/NineZone";
+import { NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
+import { useActiveTab, Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 
@@ -35,9 +35,12 @@ export interface FloatingWidgetProps {
 
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { id, bounds, userSized, hideWithUiWhenFloating } = props.floatingWidget;
-  const { minimized, tabs } = props.widget;
+  const { id, bounds, userSized } = props.floatingWidget;
+  const { minimized, tabs, activeTabId } = props.widget;
   const isSingleTab = 1 === tabs.length;
+  const tabsState = React.useContext(TabsStateContext);
+  const activeTab = tabsState[activeTabId];
+  const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
   const uiIsVisible = React.useContext(UiIsVisibleContext);
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);

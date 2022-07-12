@@ -349,8 +349,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const widgetContainerId = getWidgetId(side, panelZoneKeys[preferredWidgetIndex]);
       const homePanelInfo: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
       const preferredPosition = widgetDef.defaultFloatingPosition;
-      const hideWithUiWhenFloating = widgetDef.hideWithUiWhenFloating;
-      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable, hideWithUiWhenFloating);
+      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
     } else {
       const widgetPanelSectionId = getWidgetPanelSectionId(side, preferredWidgetIndex);
       state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);

@@ -375,17 +375,11 @@ describe("WidgetTab", () => {
       id: "fw1",
     })).should.true;
   });
-  it ("should create tab and dragged tab states with hideWithUiWhenFloating properly set", () => {
+  it ("should create tab states with hideWithUiWhenFloating properly set", () => {
     const firstTab = createTabState("firstTab");
     firstTab?.hideWithUiWhenFloating?.should.false;
 
     const secondTab = createTabState("secondTab", {hideWithUiWhenFloating: true});
     secondTab?.hideWithUiWhenFloating?.should.true;
-
-    const firstDraggedTab = createDraggedTabState("firstDraggedTab");
-    firstDraggedTab?.hideWithUiWhenFloating?.should.false;
-
-    const secondDraggedTab = createDraggedTabState("secondDraggedTab", {hideWithUiWhenFloating: true});
-    secondDraggedTab?.hideWithUiWhenFloating?.should.true;
   });
 });

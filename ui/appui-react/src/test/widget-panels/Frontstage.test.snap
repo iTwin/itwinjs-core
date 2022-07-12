@@ -157,7 +157,6 @@ Object {
           "top": 0,
         },
         "hidden": false,
-        "hideWithUiWhenFloating": false,
         "home": Object {
           "side": "left",
           "widgetId": undefined,

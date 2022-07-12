@@ -83,7 +83,6 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     let bounds = Rectangle.create(ref.current.getBoundingClientRect());
     bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
     const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
-    const hideWithUiWhenFloating = tab.hideWithUiWhenFloating ? tab.hideWithUiWhenFloating : false;
     const position = bounds.topLeft();
     const size = widgetContext.measure();
     const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
@@ -100,11 +99,10 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       id,
       position,
       userSized,
-      hideWithUiWhenFloating,
     });
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, tab.hideWithUiWhenFloating, widgetContext, overflowContext, handleDragStart, dispatch, floatingWidgetId, side, widgetId, id]);
+  }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, overflowContext, handleDragStart, dispatch, floatingWidgetId, side, widgetId, id]);
   const handleClick = React.useCallback(() => {
     overflowContext && overflowContext.close();
     dispatch({
