@@ -1576,7 +1576,8 @@
       "options": [
         "chrome",
         "electron",
-        "direct"
+        "direct",
+        "chrome-websocket"
       ]
     }
   ]

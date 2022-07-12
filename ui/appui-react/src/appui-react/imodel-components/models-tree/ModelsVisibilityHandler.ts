@@ -226,6 +226,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
       return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
 
+    // istanbul ignore else
     if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.size > 0) {
       let allElementsForceHidden = true;
       for await (const elementId of elementIds.getElementIds()) {

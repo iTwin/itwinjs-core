@@ -10,6 +10,7 @@ import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
+import { FrameBuilder } from "./FrameBuilder";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Point2d, Vector2d } from "./Point2dVector2d";
@@ -445,11 +446,13 @@ export class PolygonOps {
   }
   /**
    * Return a unit normal to the plane of the polygon.
-   * @param points array of points around the polygon.  This is assumed to NOT have closure edge.
+   * @param points array of points around the polygon.
    * @param result caller-allocated result vector.
    */
   public static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean {
-    const n = points.length;
+    let n = points.length;
+    if (n > 1 && points.getPoint3dAtUncheckedPointIndex(0).isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1)))
+      --n;  // ignore closure point
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
       return result.normalizeInPlace();
@@ -663,7 +666,7 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * Reverse loops as necessary to make them all have CCW orientation for given outward normal.
    * * Return an array of arrays which capture the input pointers.
    * * In each first level array:
    *    * The first loop is an outer loop.
@@ -680,7 +683,45 @@ export class PolygonOps {
     }
     return SortablePolygon.sortAsArrayOfArrayOfPolygons(loopAndArea);
   }
+
+  /**
+   * Exactly like `sortOuterAndHoleLoopsXY` but allows loops in any plane.
+   * @param loops multiple loops to sort and reverse.
+   * @param defaultNormal optional normal for the loops, if known
+   */
+  public static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][] {
+    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, loops);
+    const worldToLocal = localToWorld?.inverse();
+
+    const xyLoops: GrowableXYZArray[] = [];
+    if (worldToLocal !== undefined) {
+      // transform into plane so we can ignore z in the sort
+      for (const loop of loops) {
+        const xyLoop = new GrowableXYZArray(loop.length);
+        for (const point of loop.points)
+          xyLoop.push(worldToLocal.multiplyPoint3d(point));
+        xyLoops.push(xyLoop);
+      }
+    }
+    const xySortedLoopsArray = PolygonOps.sortOuterAndHoleLoopsXY(xyLoops);
+
+    const sortedLoopsArray: GrowableXYZArray[][] = [];
+    if (localToWorld !== undefined) {
+      for (const xySortedLoops of xySortedLoopsArray) {
+        const sortedLoops: GrowableXYZArray[] = [];
+        for (const xySortedLoop of xySortedLoops) {
+          const sortedLoop = new GrowableXYZArray(xySortedLoop.length);
+          for (const point of xySortedLoop.points)
+            sortedLoop.push(localToWorld.multiplyPoint3d(point));
+          sortedLoops.push(sortedLoop);
+        }
+        sortedLoopsArray.push(sortedLoops);
+      }
+    }
+    return sortedLoopsArray;
+  }
 }
+
 /**
  *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
  * @public

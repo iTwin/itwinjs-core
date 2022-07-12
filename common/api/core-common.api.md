@@ -112,6 +112,12 @@ export interface AffineTransformProps {
     translationY: number;
 }
 
+// @internal (undocumented)
+export const aggregateLoad: {
+    lastRequest: number;
+    lastResponse: number;
+};
+
 // @public
 export class AmbientLight {
     constructor(json?: AmbientLightProps);
@@ -1432,6 +1438,7 @@ export class ColorDef {
     static create(val?: string | ColorDefProps): ColorDef;
     equals(other: ColorDef): boolean;
     static from(red: number, green: number, blue: number, transparency?: number): ColorDef;
+    static fromAbgr(abgr: number): ColorDef;
     static fromHSL(h: number, s: number, l: number, transparency?: number): ColorDef;
     static fromHSV(hsv: HSVColor, transparency?: number): ColorDef;
     static fromJSON(json?: ColorDefProps): ColorDef;
@@ -1547,6 +1554,9 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     range: Range3d;
     isEmpty: boolean;
 }>;
+
+// @alpha (undocumented)
+export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
 
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
@@ -2076,7 +2086,6 @@ export class DisplayStyleSettings {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
-    // (undocumented)
     is3d(): this is DisplayStyle3dSettings;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
@@ -2108,7 +2117,6 @@ export class DisplayStyleSettings {
     readonly onPlanarClipMaskChanged: BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>;
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
-    // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
@@ -2121,7 +2129,6 @@ export class DisplayStyleSettings {
     get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
-    // @internal @deprecated (undocumented)
     get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
     set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
@@ -2152,18 +2159,16 @@ export interface DisplayStyleSettingsProps {
     clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
-    // @alpha
+    // @beta
     mapImagery?: MapImageryProps;
     modelOvr?: DisplayStyleModelAppearanceProps[];
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
     renderTimeline?: Id64String;
-    // @internal @deprecated
     scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     timePoint?: number;
-    // (undocumented)
     viewflags?: ViewFlagProps;
     whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
@@ -2908,7 +2913,6 @@ export class FeatureGates {
 
 // @internal (undocumented)
 export class FeatureIndex {
-    constructor();
     // (undocumented)
     featureID: number;
     // (undocumented)
@@ -4693,6 +4697,23 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
+// @internal (undocumented)
+export interface InterceptedRpcRequest {
+    // (undocumented)
+    context: {
+        [index: string]: string;
+    };
+    // (undocumented)
+    definition: {
+        interfaceName: string;
+        interfaceVersion: string;
+    };
+    // (undocumented)
+    operation: string;
+    // (undocumented)
+    parameters: any[];
+}
+
 // @beta
 export enum InternetConnectivityStatus {
     // (undocumented)
@@ -4782,6 +4803,18 @@ export type IpcInvokeReturn = {
 
 // @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
+
+// @internal (undocumented)
+export abstract class IpcSession {
+    // (undocumented)
+    static get active(): IpcSession | undefined;
+    // (undocumented)
+    abstract handleRpc(info: InterceptedRpcRequest): Promise<any>;
+    // (undocumented)
+    static start(session: IpcSession): void;
+    // (undocumented)
+    static stop(): void;
+}
 
 // @public
 export interface IpcSocket {
@@ -5837,6 +5870,8 @@ export interface PackedFeature {
 export class PackedFeatureTable {
     constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
     // (undocumented)
+    get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
+    // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
     get byteLength(): number;
@@ -5845,7 +5880,7 @@ export class PackedFeatureTable {
     // (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     // (undocumented)
-    getElementIdPair(featureIndex: number): Id64.Uint32Pair;
+    getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number): Feature;
     // (undocumented)
     getPackedFeature(featureIndex: number): PackedFeature;
@@ -5865,6 +5900,8 @@ export class PackedFeatureTable {
     // (undocumented)
     readonly numFeatures: number;
     static pack(featureTable: FeatureTable): PackedFeatureTable;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
     get uniform(): Feature | undefined;
@@ -6843,6 +6880,8 @@ export namespace RenderSchedule {
     export class ColorEntry extends TimelineEntry {
         constructor(props: ColorEntryProps);
         // (undocumented)
+        compareTo(other: ColorEntry): number;
+        // (undocumented)
         toJSON(): ColorEntryProps;
         readonly value: RgbColor | undefined;
     }
@@ -6855,7 +6894,11 @@ export namespace RenderSchedule {
     }
     export class CuttingPlane {
         constructor(props: CuttingPlaneProps);
+        // (undocumented)
+        compareTo(other: CuttingPlane): number;
         readonly direction: XYAndZ;
+        // (undocumented)
+        equals(other: CuttingPlane): boolean;
         readonly hidden: boolean;
         readonly position: XYAndZ;
         // (undocumented)
@@ -6864,6 +6907,8 @@ export namespace RenderSchedule {
     }
     export class CuttingPlaneEntry extends TimelineEntry {
         constructor(props: CuttingPlaneEntryProps);
+        // (undocumented)
+        compareTo(other: CuttingPlaneEntry): number;
         // (undocumented)
         toJSON(): CuttingPlaneEntryProps;
         readonly value: CuttingPlane | undefined;
@@ -6881,6 +6926,10 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
         readonly batchId: number;
+        // (undocumented)
+        compareTo(other: ElementTimeline): number;
+        // (undocumented)
+        get containsElementIds(): boolean;
         get containsFeatureOverrides(): boolean;
         get containsTransform(): boolean;
         get elementIds(): Iterable<Id64String>;
@@ -6919,15 +6968,23 @@ export namespace RenderSchedule {
     export class ModelTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
+        // (undocumented)
+        compareTo(other: ModelTimeline): number;
         readonly containsFeatureOverrides: boolean;
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
+        // @alpha
+        get discreteBatchIds(): Set<number>;
         readonly elementTimelines: ReadonlyArray<ElementTimeline>;
         findByBatchId(batchId: number): ElementTimeline | undefined;
         // (undocumented)
         static fromJSON(props?: ModelTimelineProps): ModelTimeline;
+        // @alpha
+        getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined;
         getTransform(batchId: number, time: number): Readonly<Transform> | undefined;
+        get maxBatchId(): number;
         readonly modelId: Id64String;
+        readonly omitsElementIds: boolean;
         // @internal (undocumented)
         readonly realityModelUrl?: string;
         // @internal
@@ -6955,12 +7012,16 @@ export namespace RenderSchedule {
         protected constructor(props: Readonly<ScriptProps>);
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
+        // (undocumented)
+        compareTo(other: Script): number;
         readonly containsFeatureOverrides: boolean;
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
         // @internal
         discloseIds(ids: Id64Set): void;
         readonly duration: Range1d;
+        // (undocumented)
+        equals(other: Script): boolean;
         find(modelId: Id64String): ModelTimeline | undefined;
         // (undocumented)
         static fromJSON(props: Readonly<ScriptProps>): Script | undefined;
@@ -6968,6 +7029,8 @@ export namespace RenderSchedule {
         getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined;
         // @internal (undocumented)
         getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+        // @internal (undocumented)
+        modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
         // @internal
         readonly requiresBatching: boolean;
@@ -6982,15 +7045,22 @@ export namespace RenderSchedule {
         }
     export type ScriptProps = ModelTimelineProps[];
     export class ScriptReference {
+        constructor(script: Script);
         constructor(sourceId: Id64String, script: Script);
+        // @internal
+        constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script);
         readonly script: Script;
         readonly sourceId: Id64String;
     }
     export class Timeline {
         constructor(props: TimelineProps);
         readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps, RgbColor | undefined>;
+        // (undocumented)
+        compareTo(other: Timeline): number;
         readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
         readonly duration: Range1d;
+        // (undocumented)
+        equals(other: Timeline): boolean;
         getAnimationTransform(time: number): Readonly<Transform>;
         getClipVector(time: number): ClipVector | undefined;
         getColor(time: number): RgbColor | undefined;
@@ -7015,7 +7085,7 @@ export namespace RenderSchedule {
             visible?: boolean;
             hidden?: boolean;
         } | undefined, interpolation?: Interpolation): void;
-        addTransform(time: number, transform: Transform | undefined, components?: {
+        addTransform(time: number, transform: Readonly<Transform> | undefined, components?: {
             pivot: XYAndZ;
             orientation: Point4d;
             position: XYAndZ;
@@ -7029,6 +7099,10 @@ export namespace RenderSchedule {
     }
     export class TimelineEntry {
         constructor(props: TimelineEntryProps);
+        // (undocumented)
+        compareTo(other: TimelineEntry): number;
+        // (undocumented)
+        equals(other: TimelineEntry): boolean;
         readonly interpolation: Interpolation;
         readonly time: number;
         // (undocumented)
@@ -7039,7 +7113,11 @@ export namespace RenderSchedule {
     }, P extends TimelineEntryProps, V> implements Iterable<T> {
         [Symbol.iterator](): Iterator<T>;
         constructor(props: P[], ctor: Constructor<T>);
+        // (undocumented)
+        compareTo(other: TimelineEntryList<T, P, V>): number;
         readonly duration: Range1d;
+        // (undocumented)
+        equals(other: TimelineEntryList<T, P, V>): boolean;
         // @internal (undocumented)
         findInterval(time: number, interval?: Interval): Interval | undefined;
         getEntry(index: number): T | undefined;
@@ -7061,6 +7139,10 @@ export namespace RenderSchedule {
     export class TransformComponents {
         constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d);
         // (undocumented)
+        compareTo(other: TransformComponents): number;
+        // (undocumented)
+        equals(other: TransformComponents): boolean;
+        // (undocumented)
         static fromJSON(props: TransformComponentsProps): TransformComponents | undefined;
         readonly orientation: Point4d;
         readonly pivot: Vector3d;
@@ -7075,6 +7157,8 @@ export namespace RenderSchedule {
     }
     export class TransformEntry extends TimelineEntry {
         constructor(props: TransformEntryProps);
+        // (undocumented)
+        compareTo(other: TransformEntry): number;
         readonly components?: TransformComponents;
         // (undocumented)
         toJSON(): TransformEntryProps;
@@ -7091,6 +7175,8 @@ export namespace RenderSchedule {
     }
     export class VisibilityEntry extends TimelineEntry {
         constructor(props: VisibilityEntryProps);
+        // (undocumented)
+        compareTo(other: VisibilityEntry): number;
         // (undocumented)
         toJSON(): VisibilityEntryProps;
         readonly value: number;
@@ -7215,6 +7301,8 @@ export class RgbColor {
     constructor(r: number, g: number, b: number);
     // (undocumented)
     readonly b: number;
+    // (undocumented)
+    compareTo(other: RgbColor): number;
     // (undocumented)
     equals(rhs: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
@@ -7440,9 +7528,11 @@ export interface RpcManagedStatus {
     // (undocumented)
     iTwinRpcCoreResponse: true;
     // (undocumented)
-    managedStatus: "pending" | "notFound";
+    managedStatus: "pending" | "notFound" | "noContent";
     // (undocumented)
-    responseValue: string;
+    responseValue: string | {
+        message: string;
+    } | RpcNotFoundResponse;
 }
 
 // @internal
@@ -7742,6 +7832,8 @@ export abstract class RpcRequest<TResponse = any> {
     get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     get extendedStatus(): string;
+    // (undocumented)
+    _extendedStatus: string;
     findParameterOfType<T>(requiredProperties: {
         [index: string]: string;
     }): T | undefined;
@@ -7783,6 +7875,8 @@ export abstract class RpcRequest<TResponse = any> {
     protected setHeaders(): Promise<void>;
     protected setLastUpdatedTime(): void;
     get status(): RpcRequestStatus;
+    // (undocumented)
+    _status: RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
     // (undocumented)
@@ -7927,6 +8021,14 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
+// @internal (undocumented)
+export class RpcSessionInvocation extends RpcInvocation {
+    // (undocumented)
+    static create(request: InterceptedRpcRequest): RpcSessionInvocation;
+    // (undocumented)
+    get rejected(): boolean;
+}
+
 // @beta
 export enum SchemaState {
     TooNew = 4,
@@ -8016,6 +8118,8 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     operation: SerializedRpcOperation;
     // (undocumented)
     parameters: RpcSerializedValue;
+    // (undocumented)
+    parametersOverride?: any[];
     // (undocumented)
     path: string;
     // (undocumented)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Transport RPC requests over IPC when available.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

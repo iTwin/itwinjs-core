@@ -28,7 +28,6 @@ import { Transform } from "../geometry3d/Transform";
 import { SweepContour } from "../solid/SweepContour";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { RangeSearch } from "./multiclip/RangeSearch";
-// import { Point3d, Vector3d, Point2d } from "./PointVector";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { PolyfaceQuery } from "./PolyfaceQuery";
@@ -376,7 +375,7 @@ export class PolyfaceClip {
     chainContext.clusterAndMergeVerticesXYZ();
     const loops = chainContext.collectMaximalGrowableXYZArrays();
     if (loops.length > 1) {
-      const loopSets = PolygonOps.sortOuterAndHoleLoopsXY(loops);
+      const loopSets = PolygonOps.sortOuterAndHoleLoops(loops, outwardNormal);
       for (const loopSet of loopSets) {
         PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loopSet, outwardNormal);
         const contour = SweepContour.createForPolygon(loopSet, outwardNormal);
