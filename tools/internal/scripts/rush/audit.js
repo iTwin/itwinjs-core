@@ -39,7 +39,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   const excludedAdvisories = [
     "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6 webpack@4>watchpack>watchpack-chokidar2>chokidar>glob-parent
     "GHSA-rp65-9cf3-cjxr", // https://github.com/advisories/GHSA-rp65-9cf3-cjxr @bentley/react-scripts>@svgr/webpack>@svgr/plugin-svgo>svgo>css-select>nth-check
-    "GHSA-wc69-rhjr-hc9g", // https://github.com/advisories/GHSA-wc69-rhjr-hc9g backend-integration-tests>azurite>sequelize>moment
   ];
 
   let shouldFailBuild = false;

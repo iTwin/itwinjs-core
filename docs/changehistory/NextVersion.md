@@ -12,6 +12,7 @@ Table of contents:
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
   - [Tool Settings title](tool-settings-title)
+- [ElectronApp changes](#electronapp-changes)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -66,6 +67,9 @@ By default, when the Tool Settings widget is floating, the title will read "Tool
 ```ts
   UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
+## ElectronApp changes
+
+Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
 
 ## Deprecations
 
