@@ -575,10 +575,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }
-  /** extend the range by the strokes of the spiral */
-  public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-      this.activeStrokes.extendRange(rangeToExtend, transform);
-  }
   /** compare various coordinate quantities */
   public override isAlmostEqual(other: any): boolean {
     if (other instanceof DirectSpiral3d) {

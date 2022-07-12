@@ -492,7 +492,7 @@ describe("LineStringAnnotation", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("RangeAndLengthBetweenFractions", () => {
+  it("RangeAndLengthBetweenFractions", () => {
     const ck = new Checker();
     // equidistant points .... all breakpoints are at binary fractions
     const p0 = Point3d.create(1, 0, 0);

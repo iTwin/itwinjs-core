@@ -155,6 +155,75 @@ describe("TransitionSpiral3d", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("TransitionSpiralRangeBetweenFractions", () => {
+    // demonstrate (visually and numerically) the effectiveness of "extrapolation" of sampled ranges to make the (known-to-be small)
+    // range of a stroked linestring expand to slightly be reliably exceed the exact curve range.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const c = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+      Segment1d.create(0, 100),
+      AngleSweep.createStartEndDegrees(0, 15),
+      Segment1d.create(0, 1),
+      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex (2, Angle.createDegrees (85.5)))
+    )!;
+    // the start angle is chosen to make the true max x appear near the middle.
+    const numEvalA = 4;  // a pretty crude count for the range, so as to show the properties of the extrapolation.
+    const numEvalB = numEvalA * 2 - 1;
+    const ls = LineString3d.create ();
+    const lsB = LineString3d.create ();
+    const b0 = 0.52;
+    const b1 = 0.58;
+    const dfA = 1.0 / (numEvalB - 1);
+    const numEvalQ = 101;
+    const rangeQ = c.rangeBetweenFractionsByCount (0.0, 1.0, numEvalQ, undefined, 0.0);
+
+    for (let i = 0; i < numEvalB; i++){
+      const f = i * dfA;
+      ls.addPoint (c.fractionToPoint (f));
+      lsB.addPoint (c.fractionToPoint (Geometry.interpolate (b0, f, b1)));
+    }
+    const rangeB = lsB.range ();
+    const rangeA = c.range ();
+    const rangeClone = c.rangeBetweenFractionsByClone (0.0, 1.0);
+    const countedRanges = [];
+    // Use an EVEN number of evaluations so the first one does not evaluate in the middle where the true max is likely
+    for (const extrapolationFactor of [0.0, 0.05, 1.0 / 3.0, 0.45, 0.5, 2.0, 20.0]){
+      const r = c.rangeBetweenFractionsByCount (0.0, 1.0, numEvalA, undefined, extrapolationFactor);
+      countedRanges.push (r);
+      // We expect 1/3 is right on the edge of required expansion.
+      // Confirm for saftey at something a bit above ...
+      if (extrapolationFactor > 0.40)
+        ck.testLT (rangeB.high.x, r.high.x);
+      if (extrapolationFactor < 0.1)
+        ck.testLT (r.high.x, rangeB.high.x);
+    }
+    for (let i = 0; i + 1 < countedRanges.length; i++){
+      // We expect that there will be a nonzero increase in the right ecge
+      ck.testLT (countedRanges[i].high.x, countedRanges[i+1].high.x);
+    }
+    let x0 = 0;
+    const y0 = 0;
+    const dx = Math.max (30.0, rangeA.xLength());
+    for (const r of [rangeA, rangeClone, rangeB, rangeQ]){
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, c, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, lsB, x0, y0);
+      GeometryCoreTestIO.captureRangeEdges (allGeometry, r, x0, y0);
+      x0 += dx;
+    }
+    x0 += dx;
+    // For counted ranges, only output the linestring so the relationship to the ranges is clear
+    for (const r of countedRanges){
+      // GeometryCoreTestIO.captureCloneGeometry (allGeometry, c, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, lsB, x0, y0);
+      GeometryCoreTestIO.captureRangeEdges (allGeometry, r, x0, y0);
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry (allGeometry, "TransitionSpiral3d", "RangeBetweenFractions");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("PartialSpiralPoints", () => {
     const ck = new Checker();
     const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 8), Segment1d.create(0, 1), Transform.createIdentity())!;
