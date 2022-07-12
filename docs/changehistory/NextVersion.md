@@ -9,6 +9,7 @@ Table of contents:
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
 - [Frontend category APIs](#frontend-category-apis)
+- [ElectronApp changes](#electronapp-changes)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -50,6 +51,10 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 [IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
+
+## ElectronApp changes
+
+Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
 
 ## Deprecations
 

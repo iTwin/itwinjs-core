@@ -2,11 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { AsyncMethodsOf, ExtractLiterals } from "@itwin/core-bentley";
 
-// THIS FILE EXISTS ONLY FOR DOCUMENTATION GENERATION.
-// It imports both frontend and backend code, which is not legal anywhere.
-// Do not import it in real code!
-
-export * from "./backend/ElectronHost";
-export * from "./common/ElectronIpcInterface";
-export * from "./frontend/ElectronApp";
+/** Exposed main process methods of dialog module in an Electron app.
+ * @beta
+ */
+export type DialogModuleMethod = ExtractLiterals<AsyncMethodsOf<Electron.Dialog>, "showMessageBox" | "showOpenDialog" | "showSaveDialog">;
