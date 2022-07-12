@@ -1,10 +1,11 @@
-import * as backend from "@itwin/core-backend";
-import { BentleyError, BentleyStatus, IModelRpcProps, IModelStatus, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
-import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import * as backend from "@itwin/core-backend";
+import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
+import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**

@@ -5,7 +5,6 @@
 
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
 import type { ISchemaLocater as ISchemaLocaterType, Schema as SchemaType } from "@itwin/ecschema-metadata";
 

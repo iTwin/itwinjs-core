@@ -1108,7 +1108,6 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
-
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
     return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
