@@ -117,16 +117,8 @@ describe("SchemaLoaderPerformance", () => {
     const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
-    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, string> = imodel.nativeDb.getSchema(schemaName);
+    imodel.nativeDb.getSchemaProps(schemaName);
     const endTime: number = new Date().getTime();
-
-    if (schemaResult.error !== undefined) {
-      throw new Error(schemaResult.error.message);
-    }
-
-    if (schemaResult.result === undefined) {
-      throw new Error("Schema does not exists");
-    }
 
     const elapsedTime = endTime - startTime;
     reporter.addEntry("SchemaLoaderPerfTest", `Get schema from imodel: ${schemaName}`, "Execution time(ms)", elapsedTime, {});

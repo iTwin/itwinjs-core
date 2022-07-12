@@ -106,12 +106,8 @@ class IModelSchemaLocater implements ISchemaLocaterType {
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
   public getSchemaSync<T extends SchemaType>(schemaKey: typeof SchemaKey, _matchType: typeof SchemaMatchType, context?: typeof SchemaContext | undefined): T | undefined {
-    const schemaProps = this.getSchemaString(schemaKey.name);
-    if (!schemaProps)
-      return undefined;
-
-    context = context ? context : new SchemaContext();
-    return Schema.fromJsonSync(schemaProps, context) as T;
+    const schemaProps = this._iModel.nativeDb.getSchemaProps(schemaKey.name);
+    return Schema.fromJsonSync(schemaProps, context ?? new SchemaContext()) as T;
   }
 
   /** Get a schema by [SchemaKey] asynchronously.
@@ -121,45 +117,7 @@ class IModelSchemaLocater implements ISchemaLocaterType {
    * @throws [Error] if the schema is not found or if the schema exists, but cannot be loaded.
    */
   public async getSchemaAsync<T extends SchemaType>(schemaKey: typeof SchemaKey, _matchType: typeof SchemaMatchType, context?: typeof SchemaContext | undefined): Promise<T | undefined> {
-    try {
-      const schemaProps = await this.getSchemaStringAsync(schemaKey.name);
-
-      if (!schemaProps)
-        return undefined;
-
-      context = context ? context : new SchemaContext();
-      return Schema.fromJsonSync(schemaProps, context) as T;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /** Read schema data from the iModel as JSON string
-   * @param schemaName A string with the name of the schema to load.
-   * @returns A string with the JSON for the schema or `undefined` if the schema is not found.
-   * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
-   */
-  private getSchemaString(schemaName: string): string | undefined {
-    const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getSchema(schemaName);
-    if (undefined !== val.error) {
-      if (IModelStatus.NotFound === val.error.status) {
-        return undefined;
-      }
-      throw new IModelError(val.error.status, `reading schema=${schemaName}`);
-    }
-    return val.result;
-  }
-
-  /** Read schema data from the iModel as JSON string asynchronously
-   * @param schemaName A string with the name of the schema to load.
-   * @returns A string with the JSON for the schema.
-   * @throws [Error] if the schema is not found or if the schema exists, but cannot be loaded.
-   */
-  private async getSchemaStringAsync(schemaName: string): Promise<string> {
-    try {
-      return await this._iModel.getSchemaAsync(schemaName);
-    } catch (error) {
-      throw new Error(`reading schema=${schemaName}`);
-    }
+    const schemaProps = await this._iModel.nativeDb.getSchemaPropsAsync(schemaKey.name);
+    return Schema.fromJsonSync(schemaProps, context ?? new SchemaContext()) as T;
   }
 }
