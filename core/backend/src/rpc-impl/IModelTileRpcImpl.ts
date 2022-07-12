@@ -212,10 +212,11 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
-  public async getTileCacheConfig(tokenProps: IModelRpcProps): Promise<TransferConfig> {
+  public async getTileCacheConfig(tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
+    if(IModelHost.tileStorage === undefined)
+      return undefined;
     const iModelId = tokenProps.iModelId ?? (await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps)).iModelId;
-
-    return IModelHost.tileStorage?.getDownloadConfig(iModelId) ?? { baseUrl: "", expiration: new Date() };
+    return IModelHost.tileStorage.getDownloadConfig(iModelId);
   }
 
   /* eslint-disable deprecation/deprecation */

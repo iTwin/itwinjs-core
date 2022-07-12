@@ -629,8 +629,11 @@ export class TileAdmin {
 
   /** @internal */
   public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
+    if(tile.iModelTree.iModel.iModelId === undefined)
+      throw new Error("Provided iModel has no iModelId");
+
     const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);
-    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId ?? "", tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
+    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
     return content;
   }
 

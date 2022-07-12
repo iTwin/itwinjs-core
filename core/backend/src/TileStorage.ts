@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
@@ -36,6 +40,7 @@ export class TileStorage {
       );
     } catch (err) {
       this.logException("Failed to upload tile", err);
+      throw err;
     }
   }
 

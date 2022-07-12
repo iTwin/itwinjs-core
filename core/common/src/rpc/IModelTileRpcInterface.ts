@@ -33,8 +33,11 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** @beta */
-  public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig> {
+  /**
+   * @returns undefined if the backend does not support caching
+   * @beta
+   */
+  public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
     return this.forward(arguments);
   }
 
