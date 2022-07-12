@@ -5,6 +5,7 @@
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { getTileObjectReference, IModelRpcProps, IModelTileRpcInterface } from "@itwin/core-common";
 
+/** @beta */
 export class TileStorage {
   public constructor(public readonly storage: FrontendStorage) { }
 

@@ -104,6 +104,7 @@ import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
+import { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import Fuse from 'fuse.js';
@@ -10921,6 +10922,8 @@ export namespace TileAdmin {
         optimizeBRepProcessing?: boolean;
         retryInterval?: number;
         tileExpirationTime?: number;
+        // @beta
+        tileStorage?: FrontendStorage;
         tileTreeExpirationTime?: number;
         useLargerTiles?: boolean;
         // @internal
@@ -11299,6 +11302,15 @@ export class Tiles implements Iterable<{
     reset(): void;
     updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
 }
+
+// @beta (undocumented)
+export class TileStorage {
+    constructor(storage: FrontendStorage);
+    // (undocumented)
+    downloadTile(tokenProps: IModelRpcProps, iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    readonly storage: FrontendStorage;
+    }
 
 // @public
 export abstract class TileTree {
