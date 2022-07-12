@@ -2123,7 +2123,6 @@ export const expandWidget: (base: {
             readonly widgetId: string | undefined;
             readonly side: PanelSide;
         };
-        readonly hideWithUiWhenFloating?: boolean | undefined;
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -2142,7 +2141,6 @@ export const expandWidget: (base: {
                 };
                 readonly userSized?: boolean | undefined;
                 readonly hidden?: boolean | undefined;
-                readonly hideWithUiWhenFloating?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -4859,7 +4857,6 @@ export const setPanelSize: (base: {
             readonly widgetId: string | undefined;
             readonly side: PanelSide;
         };
-        readonly hideWithUiWhenFloating?: boolean | undefined;
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -4878,7 +4875,6 @@ export const setPanelSize: (base: {
                 };
                 readonly userSized?: boolean | undefined;
                 readonly hidden?: boolean | undefined;
-                readonly hideWithUiWhenFloating?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5055,7 +5051,6 @@ export const setWidgetLabel: (base: {
             readonly widgetId: string | undefined;
             readonly side: PanelSide;
         };
-        readonly hideWithUiWhenFloating?: boolean | undefined;
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -5074,7 +5069,6 @@ export const setWidgetLabel: (base: {
                 };
                 readonly userSized?: boolean | undefined;
                 readonly hidden?: boolean | undefined;
-                readonly hideWithUiWhenFloating?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5232,7 +5226,6 @@ export const setWidgetState: (base: {
             readonly widgetId: string | undefined;
             readonly side: PanelSide;
         };
-        readonly hideWithUiWhenFloating?: boolean | undefined;
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -5251,7 +5244,6 @@ export const setWidgetState: (base: {
                 };
                 readonly userSized?: boolean | undefined;
                 readonly hidden?: boolean | undefined;
-                readonly hideWithUiWhenFloating?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5473,7 +5465,6 @@ export const showWidget: (base: {
             readonly widgetId: string | undefined;
             readonly side: PanelSide;
         };
-        readonly hideWithUiWhenFloating?: boolean | undefined;
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -5492,7 +5483,6 @@ export const showWidget: (base: {
                 };
                 readonly userSized?: boolean | undefined;
                 readonly hidden?: boolean | undefined;
-                readonly hideWithUiWhenFloating?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
