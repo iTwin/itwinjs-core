@@ -175,9 +175,9 @@ describe("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await SQLiteDb.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async (vdb) => {
-      vdb.vacuum();
-      vdb.closeDb();
+    await db.withLockedContainer({ user, container: contain1, dbName: "testBim2" }, async () => {
+      db.vacuum();
+      db.closeDb();
 
       expect(contain1.hasLocalChanges).true;
       dbProps = contain1.queryDatabase("testBim2");
@@ -186,7 +186,7 @@ describe("CloudSqlite", () => {
       expect(dbProps.localBlocks).greaterThan(0);
       expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
     });
-
+    expect(db.isOpen).false;
     expect(contain1.queryDatabase("testBim2")?.dirtyBlocks).equals(0);
 
     await CloudSqlite.withWriteLock(user, contain1, async () => {
@@ -254,7 +254,7 @@ describe("CloudSqlite", () => {
       await expect(CloudSqlite.withWriteLock(user, contain1, async () => { }, async (lockedBy: string, expires: string) => {
         expect(lockedBy).equals(user2);
         expect(expires.length).greaterThan(0);
-        return ++retries < 5;
+        return ++retries < 5 ? undefined : "stop";
       })).rejectedWith("is currently locked");
     });
     expect(retries).equals(5); // retry handler should be called 5 times

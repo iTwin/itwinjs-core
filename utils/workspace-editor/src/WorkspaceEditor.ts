@@ -126,7 +126,8 @@ function showMessage(msg: string) {
 /** perform a vacuum on a database, with a message while it's happening */
 function doVacuum(dbName: string, container?: SQLiteDb.CloudContainer) {
   process.stdout.write(`Vacuuming ${dbName} ... `);
-  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, (db) => db.vacuum());
+  const db = new SQLiteDb();
+  db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, () => db.vacuum());
   process.stdout.write("done");
   showMessage("");
 }

@@ -88,41 +88,42 @@ export class SQLiteDb implements IDisposable {
    * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
    * 3. close the database (even if exceptions are thrown)
    */
-  public static withOpenDb<T>(args: {
+  public withOpenDb<T>(args: {
     /** The name of the database to open */
     dbName: string;
     /** either an object with the open parameters or just OpenMode value. */
     openMode?: OpenMode | SQLiteDb.OpenParams;
     /** @internal */
     container?: SQLiteDb.CloudContainer;
-  }, operation: (db: SQLiteDb) => T): T {
-    const db = new SQLiteDb();
-    db.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
+  }, operation: () => T): T {
+    if (this.isOpen)
+      throw new Error("database is already open");
+    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
     let fromPromise = false;
 
     try {
-      const result = operation(db);
+      const result = operation();
       if (result instanceof Promise) {
         fromPromise = true;
-        const doClose = () => db.closeDb();
+        const doClose = () => this.closeDb();
         result.then(doClose, doClose);
       }
       return result;
     } finally {
       if (!fromPromise)
-        db.closeDb();
+        this.closeDb();
     }
   }
 
   /**
    * 1. acquire the write lock on a CloudContainer
-   * 2. open a ReadWrite database in the container
-   * 3. call a function with the opened database as an argument
+   * 2. open a this object with a ReadWrite database in the container
+   * 3. call a function with the database open
    * 4. close the database
    * 5. release the write lock and upload changes.
    * @internal
    */
-  public static async withLockedContainer(
+  public async withLockedContainer(
     args: {
       /** the name to be displayed in the event of lock collisions */
       user: string;
@@ -134,8 +135,8 @@ export class SQLiteDb implements IDisposable {
       busyHandler?: CloudSqlite.WriteLockBusyHandler;
     },
     /** an asynchronous operation performed on the database with the write lock held. */
-    operation: (db: SQLiteDb) => Promise<void>) {
-    const fn = async () => SQLiteDb.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
+    operation: () => Promise<void>) {
+    const fn = async () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
     await CloudSqlite.withWriteLock(args.user, args.container, fn, args.busyHandler);
   }
 
