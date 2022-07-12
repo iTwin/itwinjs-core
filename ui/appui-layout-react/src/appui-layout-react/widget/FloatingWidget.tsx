@@ -17,7 +17,7 @@ import { NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from ".
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { useActiveTab, Widget, WidgetProvider, WidgetStateContext } from "./Widget";
+import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 

@@ -77,7 +77,6 @@ describe("FloatingWidget", () => {
     container.firstChild!.should.matchSnapshot();
   });
 
-
   it("should render dragged", () => {
     let nineZone = createNineZoneState();
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
