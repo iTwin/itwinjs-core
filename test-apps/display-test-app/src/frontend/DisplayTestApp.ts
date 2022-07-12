@@ -178,7 +178,7 @@ const dtaFrontendMain = async () => {
     }
 
     const writable = configuration.openReadWrite ?? false;
-    const iModel = await openFile("/tmp/Juergen.Hofer.Bad.Normals.bim", writable);
+    const iModel = await openFile("/home/mike/work/Juergen.Hofer.Bad.Normals.bim", writable);
     setTitle(iModel);
 
     await uiReady; // Now wait for the HTML UI to finish loading.
@@ -188,6 +188,7 @@ const dtaFrontendMain = async () => {
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
     const badPlacement = (await iModel.elements.getPlacements("0x20000001a3a"))[0];
+    await new Promise((r) => setTimeout(r, 10_000));
     badPlacement.bbox.scaleAboutCenterInPlace(0.5);
     IModelApp.viewManager.getFirstOpenView()?.zoomToPlacements([badPlacement]);
 
