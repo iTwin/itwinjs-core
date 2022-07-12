@@ -84,5 +84,5 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
 
   useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 
-  return null;
+  return <></>;
 }

@@ -6178,7 +6178,7 @@ export interface StatusFieldProps extends CommonProps {
 }
 
 // @public @deprecated
-export function StatusMessageRenderer(props: StatusMessageRendererProps): null;
+export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element;
 
 // @public
 export interface StatusMessageRendererProps extends CommonProps {

@@ -95,7 +95,7 @@ describe("StatusBar", () => {
     });
     expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    const closeButton = screen.getByRole("button");
+    const closeButton = screen.getByRole("button", {name: "Close"});
     fireEvent.click(closeButton);
     await waitForElementToBeRemoved(screen.queryByText("A brief message."));
     act(() => {
@@ -149,7 +149,7 @@ describe("StatusBar", () => {
     });
     expect(await screen.findByText("Message text")).to.be.not.null;
 
-    const closeButton = screen.getByRole("button");
+    const closeButton = screen.getByRole("button", {name: "Close"});
     fireEvent.click(closeButton);
     await waitForElementToBeRemoved(screen.queryByText("Message text"));
     act(() => {
@@ -162,18 +162,20 @@ describe("StatusBar", () => {
 
     const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
     const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief sticky message.", "A detailed message.", OutputMessageType.Sticky);
-    // const details3 = new ActivityMessageDetails(true, true, true);
-    // notifications.setupActivityMessage(details3);
+    const details3 = new ActivityMessageDetails(true, true, true);
+    notifications.setupActivityMessage(details3);
     act(() => {
       notifications.outputMessage(details1);
       notifications.outputMessage(details2);
-      // notifications.outputActivityMessage("Message text", 50);
+      notifications.outputActivityMessage("Message text", 50);
     });
     expect(await screen.findByText("A brief message.")).to.be.not.null;
     expect(await screen.findByText("A brief sticky message.")).to.be.not.null;
-    // expect(await screen.findByText("Message text")).to.be.not.null;
+    expect(await screen.findByText("Message text")).to.be.not.null;
     expect(document.querySelector(".nz-content")?.textContent).to.eq("2");
-
+    act(() => {
+      notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    });
     act(() => {
       MessageManager.closeAllMessages();
     });
