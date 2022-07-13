@@ -39,14 +39,13 @@ describe("IModelSchemaLoader", () => {
     assert.equal(schema.name, "TestBim");
   });
 
-  it("load unknown EC Schema by name should throw NotFound IModelError", () => {
+  it("load unknown EC Schema by name should throw 'schema not found' error", () => {
     const schemaLoader = new IModelSchemaLoader(imodel);
-    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), IModelError);
+    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), "schema not found");
   });
 
-  it("try load unknown EC Schema by name should return undefined", () => {
+  it("try load unknown EC Schema by name should throw 'schema not found' error", () => {
     const schemaLoader = new IModelSchemaLoader(imodel);
-    const schema = schemaLoader.tryGetSchema("DoesNotExist");
-    assert.isUndefined(schema);
+    assert.throws(() => schemaLoader.tryGetSchema("DoesNotExist"), "schema not found");
   });
 });
