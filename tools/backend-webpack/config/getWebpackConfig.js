@@ -17,7 +17,9 @@ function getWebpackConfig(srcFile, outDir, profile) {
       srcFile
     ],
     output: {
-      libraryTarget: "commonjs2",
+      library: {
+        type: "commonjs2"
+      },
       // The build folder.
       // Next line is not used in dev but WebpackDevServer crashes without it:
       path: outDir,

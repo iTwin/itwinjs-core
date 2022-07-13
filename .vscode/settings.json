@@ -17,7 +17,7 @@
     "**/generated-docs": true,
     "**/package-deps.json": true,
     // "**/node_modules": true,
-    "**/test-apps/**/build": true,
+    // "**/test-apps/**/build": true,
     "**/out": true,
     // "**/lib": true,
     "common/temp": true

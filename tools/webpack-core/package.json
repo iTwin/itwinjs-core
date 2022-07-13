@@ -33,8 +33,7 @@
     "lodash": "^4.17.10",
     "resolve": "1.19.0",
     "source-map-loader": "^4.0.0",
-    "webpack-filter-warnings-plugin": "^1.2.1",
-    "webpack-sources": "^1.4.3"
+    "webpack-filter-warnings-plugin": "^1.2.1"
   },
   "peerDependencies": {
     "webpack": "^5.64.4"
@@ -45,8 +44,6 @@
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "16.11.7",
-    "@types/webpack": "^4.41.2",
-    "@types/webpack-sources": "^0.1.6",
     "@types/mocha": "^8.2.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Compiler, Configuration, DefinePlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import { Compiler, Configuration, DefinePlugin, ProgressPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
@@ -118,6 +118,12 @@ export class BackendDefaultsPlugin {
         "@opentelemetry/tracing",
         "keytar",
       ]),
+      new ProgressPlugin({
+        activeModules: true,
+        dependencies: true,
+        entries: true,
+        modules: true,
+      }),
     ];
     plugins.forEach((p) => p.apply(compiler));
   }
