@@ -49,6 +49,7 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { SQLiteDb } from "./SQLiteDb";
+import { CodeService } from "./CodeService";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -217,6 +218,13 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
+
+  /** @internal */
+  protected _codeService?: CodeService;
+
+  /** @internal */
+  public get codeService() { return this._codeService; }
+
   /**
    * Get the [[LockControl]] for this iModel.
    * @beta
@@ -2229,6 +2237,16 @@ export class BriefcaseDb extends IModelDb {
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    if (openMode === OpenMode.ReadWrite && CodeService.ctor) {
+      try {
+        const codeService = new CodeService.ctor(briefcaseDb);
+        briefcaseDb._codeService = codeService;
+      } catch (e: any) {
+        if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
+          throw e;
+      }
+    }
 
     BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);

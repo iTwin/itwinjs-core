@@ -8,11 +8,11 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
-import { TokenArg } from "./IModelDb";
+import { IModelDb, TokenArg } from "./IModelDb";
 
 /** The state of a lock.
  * @public
@@ -42,6 +42,7 @@ export class LockConflict extends IModelError {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
   }
 }
+
 
 /**
  * The properties to access a V2 checkpoint through a daemon.

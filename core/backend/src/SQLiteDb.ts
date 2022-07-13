@@ -85,8 +85,8 @@ export class SQLiteDb implements IDisposable {
 
   /**
    * 1. open a database
-   * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
-   * 3. close the database (even if exceptions are thrown)
+   * 2. call a function with the database opened. If it is async, await its return.
+   * 3. save all changes and then close the database (even if exceptions are thrown)
    */
   public withOpenDb<T>(args: {
     /** The name of the database to open */
@@ -105,13 +105,13 @@ export class SQLiteDb implements IDisposable {
       const result = operation();
       if (result instanceof Promise) {
         fromPromise = true;
-        const doClose = () => this.closeDb();
+        const doClose = () => this.closeDb(true);
         result.then(doClose, doClose);
       }
       return result;
     } finally {
       if (!fromPromise)
-        this.closeDb();
+        this.closeDb(true);
     }
   }
 
@@ -123,7 +123,7 @@ export class SQLiteDb implements IDisposable {
    * 5. release the write lock and upload changes.
    * @internal
    */
-  public async withLockedContainer(
+  public async withLockedContainer<T>(
     args: {
       /** the name to be displayed in the event of lock collisions */
       user: string;
@@ -134,9 +134,9 @@ export class SQLiteDb implements IDisposable {
       /** if present, function called when the write lock is currently held by another user. */
       busyHandler?: CloudSqlite.WriteLockBusyHandler;
     },
-    /** an asynchronous operation performed on the database with the write lock held. */
-    operation: () => Promise<void>) {
-    const fn = async () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
+    /** an operation performed on the database with the write lock held. */
+    operation: () => T) {
+    const fn = () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
     await CloudSqlite.withWriteLock(args.user, args.container, fn, args.busyHandler);
   }
 
