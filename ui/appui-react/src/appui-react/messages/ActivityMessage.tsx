@@ -125,7 +125,7 @@ export function CustomActivityMessageRenderer({activityMessageInfo, dismissActiv
  * Component used to show and update activity message content.
  * @internal
  */
-export function CustomActivityMessageContent({initialActivityMessageInfo}: {initialActivityMessageInfo?: ActivityMessageEventArgs})  {
+export function CustomActivityMessageContent({initialActivityMessageInfo}: {initialActivityMessageInfo: ActivityMessageEventArgs})  {
   const [percentCompleteLabel] = React.useState(UiFramework.translate("activityCenter.percentComplete"));
   const [activityMessageInfo, setActivityMessageInfo] = React.useState(initialActivityMessageInfo);
 
@@ -139,11 +139,11 @@ export function CustomActivityMessageContent({initialActivityMessageInfo}: {init
 
   return (
     <>
-      {activityMessageInfo?.message && <Text>{activityMessageInfo.message}</Text>}
-      {!!activityMessageInfo?.details?.showPercentInMessage &&
+      {activityMessageInfo.message && <Text>{activityMessageInfo.message}</Text>}
+      {!!activityMessageInfo.details?.showPercentInMessage &&
         <Small>{`${activityMessageInfo.percentage} ${percentCompleteLabel}`}</Small>
       }
-      {activityMessageInfo?.details?.showProgressBar && <ProgressLinear value={activityMessageInfo?.percentage} />}
+      {activityMessageInfo.details?.showProgressBar && <ProgressLinear value={activityMessageInfo?.percentage} />}
     </>
   );
 }

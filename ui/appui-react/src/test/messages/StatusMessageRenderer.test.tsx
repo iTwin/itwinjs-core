@@ -115,9 +115,6 @@ describe("StatusMessageRenderer", () => {
     await waitForElementToBeRemoved(screen.queryByText("Message text"));
     expect(screen.queryByText("Message text")).to.be.null;
     spy.calledOnce.should.true;
-    act(() => {
-      MessageManager.closeAllMessages();
-    });
   });
 
   it("Activity message should be dismissed & restored", async () => {

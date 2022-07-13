@@ -54,6 +54,26 @@ describe("ActivityMessagePopup", () => {
     expect(screen.queryByText("Message text")).to.be.null;
   });
 
+  it("Popup should render an Activity message without details", async () => {
+    render(
+      <ActivityMessagePopup
+        cancelActivityMessage={() => {}}
+        dismissActivityMessage={() => {}}
+      />
+    );
+    const details = new ActivityMessageDetails(false, false, false);
+    notifications.setupActivityMessage(details);
+    act(() => {
+      notifications.outputActivityMessage("Activity message text", 20);
+    });
+    expect(await screen.findByText("Activity message text")).to.be.not.null;
+    expect(screen.queryByText("20")).to.be.null;
+
+    act(() => {
+      notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    });
+  });
+
   it("Activity message should be canceled", async () => {
     const spy = sinon.spy();
     render(
@@ -75,9 +95,6 @@ describe("ActivityMessagePopup", () => {
     await waitForElementToBeRemoved(screen.queryByText("Message text"));
     expect(screen.queryByText("Message text")).to.be.null;
     spy.calledOnce.should.true;
-    act(() => {
-      MessageManager.closeAllMessages();
-    });
   });
 
   it("Activity message should be dismissed & restored", async () => {

@@ -14,7 +14,7 @@ import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils from "../TestUtils";
 import { MessageManager } from "../../appui-react/messages/MessageManager";
 import { StatusMessagesContainer } from "../../appui-react/messages/StatusMessagesContainer";
 
@@ -72,7 +72,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render a Sticky message", async () => {
-    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     act(() => {
@@ -99,7 +99,7 @@ describe("StatusBar", () => {
     fireEvent.click(closeButton);
     await waitForElementToBeRemoved(screen.queryByText("A brief message."));
     act(() => {
-      MessageManager.closeAllMessages();
+      MessageManager.clearMessages();
     });
   });
 
@@ -133,9 +133,6 @@ describe("StatusBar", () => {
     fireEvent.click(cancelLink);
 
     await waitForElementToBeRemoved(screen.queryByText("Message text"));
-    act(() => {
-      MessageManager.closeAllMessages();
-    });
   });
 
   it("Activity message should be dismissed", async () => {
@@ -152,15 +149,12 @@ describe("StatusBar", () => {
     const closeButton = screen.getByRole("button", {name: "Close"});
     fireEvent.click(closeButton);
     await waitForElementToBeRemoved(screen.queryByText("Message text"));
-    act(() => {
-      MessageManager.closeAllMessages();
-    });
   });
 
   it("StatusBar should render Toast, Sticky & Activity messages", async () => {
     render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.", "A detailed message.");
     const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief sticky message.", "A detailed message.", OutputMessageType.Sticky);
     const details3 = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details3);
@@ -217,16 +211,16 @@ describe("StatusBar", () => {
   //   await waitForElementToBeRemoved(screen.queryByText("A brief message 3."));
   // });
 
-  // it("StatusBar should not render a Pointer message", () => {
-  //   render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+  it("StatusBar should not render a Pointer message", () => {
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-  //   const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
-  //   act(() => {
-  //     notifications.outputMessage(details);
-  //   });
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
+    act(() => {
+      notifications.outputMessage(details);
+    });
 
-  //   expect(screen.getByText("A brief message.")).to.be.null;
-  // });
+    expect(screen.queryByText("A brief message.")).to.be.null;
+  });
 
   it("StatusBar should clear messages", async () => {
     render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
@@ -245,7 +239,7 @@ describe("StatusBar", () => {
 
   it("StatusMessageRenderer should render empty correctly", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<StatusMessagesContainer
+    const { container } = render(<StatusMessagesContainer
       messages={[]}
       activityMessageInfo={undefined}
       isActivityMessageVisible={false}
@@ -254,32 +248,27 @@ describe("StatusBar", () => {
       cancelActivityMessage={() => { }}
       dismissActivityMessage={() => { }}
     />);
-    expect(wrapper.find("div").length).to.eq(0);
-    wrapper.unmount();
+    expect(container.querySelectorAll("div").length).to.eq(0);
   });
 
   it("StatusBarSpaceBetween should render correctly", () => {
-    const wrapper = mount(<StatusBarSpaceBetween>Hello</StatusBarSpaceBetween>);
-    expect(wrapper.find("div.uifw-statusbar-space-between").length).to.eq(1);
-    wrapper.unmount();
+    const { container } = render(<StatusBarSpaceBetween>Hello</StatusBarSpaceBetween>);
+    expect(container.querySelectorAll("div.uifw-statusbar-space-between").length).to.eq(1);
   });
 
   it("StatusBarLeftSection should render correctly", () => {
-    const wrapper = mount(<StatusBarLeftSection>Hello</StatusBarLeftSection>);
-    expect(wrapper.find("div.uifw-statusbar-left").length).to.eq(1);
-    wrapper.unmount();
+    const { container } = render(<StatusBarLeftSection>Hello</StatusBarLeftSection>);
+    expect(container.querySelectorAll("div.uifw-statusbar-left").length).to.eq(1);
   });
 
   it("StatusBarCenterSection should render correctly", () => {
-    const wrapper = mount(<StatusBarCenterSection>Hello</StatusBarCenterSection>);
-    expect(wrapper.find("div.uifw-statusbar-center").length).to.eq(1);
-    wrapper.unmount();
+    const { container } = render(<StatusBarCenterSection>Hello</StatusBarCenterSection>);
+    expect(container.querySelectorAll("div.uifw-statusbar-center").length).to.eq(1);
   });
 
   it("StatusBarRightSection should render correctly", () => {
-    const wrapper = mount(<StatusBarRightSection>Hello</StatusBarRightSection>);
-    expect(wrapper.find("div.uifw-statusbar-right").length).to.eq(1);
-    wrapper.unmount();
+    const { container } = render(<StatusBarRightSection>Hello</StatusBarRightSection>);
+    expect(container.querySelectorAll("div.uifw-statusbar-right").length).to.eq(1);
   });
 
   describe("<StatusMessagesContainer />", () => {
@@ -288,6 +277,7 @@ describe("StatusBar", () => {
       { id: "one", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message1", "Detailed message1", OutputMessageType.Toast), severity: MessageSeverity.Information },
       { id: "two", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message2", "Detailed message3", OutputMessageType.Toast), severity: MessageSeverity.Information },
       { id: "three", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message3", "Detailed message3", OutputMessageType.Sticky), severity: MessageSeverity.Question },
+      { id: "four", messageDetails: new NotifyMessageDetails(OutputMessagePriority.Info, "message4", "Detailed message4", OutputMessageType.Pointer), severity: MessageSeverity.Question },
     ];
 
     afterEach(() => {
@@ -316,6 +306,7 @@ describe("StatusBar", () => {
         dismissActivityMessage={() => { }}
       />);
       expect(renderedComponent.container.querySelectorAll("div.uifw-statusbar-messages-container.uifw-scrollable").length).to.eq(0);
+      expect(renderedComponent.container.querySelectorAll("li").length).to.eq(3);
       renderedComponent.unmount();
     });
 
@@ -340,7 +331,44 @@ describe("StatusBar", () => {
         dismissActivityMessage={() => { }}
       />);
       expect(renderedComponent.container.querySelectorAll("div.uifw-statusbar-messages-container.uifw-scrollable").length).to.eq(1);
+      expect(renderedComponent.container.querySelectorAll("li").length).to.eq(3);
       renderedComponent.unmount();
+    });
+
+    it("will render activity message and cancel it", async () => {
+      const spy = sinon.spy();
+      const details = new ActivityMessageDetails(true, true, true);
+      // eslint-disable-next-line deprecation/deprecation
+      render(<StatusMessagesContainer
+        messages={[]}
+        activityMessageInfo={{message: "My activity message", percentage: 0, details }}
+        isActivityMessageVisible
+        toastTarget={null}
+        closeMessage={() => { }}
+        cancelActivityMessage={spy}
+        dismissActivityMessage={() => { }}
+      />);
+      const cancelLink = await screen.findByText("dialog.cancel");
+      fireEvent.click(cancelLink);
+      spy.calledOnce.should.true;
+    });
+
+    it("will render activity message and dismiss it", async () => {
+      const spy = sinon.spy();
+      const details = new ActivityMessageDetails(true, true, false);
+      // eslint-disable-next-line deprecation/deprecation
+      render(<StatusMessagesContainer
+        messages={[]}
+        activityMessageInfo={{message: "My activity message", percentage: 0, details }}
+        isActivityMessageVisible
+        toastTarget={null}
+        closeMessage={() => { }}
+        cancelActivityMessage={() => { }}
+        dismissActivityMessage={spy}
+      />);
+      const closeButton = screen.getByRole("button");
+      fireEvent.click(closeButton);
+      spy.calledOnce.should.true;
     });
 
   });
