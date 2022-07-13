@@ -659,6 +659,10 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
+      "name": "google-protobuf",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "got",
       "allowedCategories": [ "common" ]
     },

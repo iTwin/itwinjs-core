@@ -25,7 +25,7 @@ interface EsriFeatureReadOptions {
 
 export class ArcGisFeatureJSON  {
   private _defaultZDepth  = 0.0;  // TODO: figure out the proper value here
-  public transform = Transform.createIdentity();
+  public transform: Transform|undefined;
 
   public readRenderGraphics(_source: string, context: CanvasRenderingContext2D) {
 

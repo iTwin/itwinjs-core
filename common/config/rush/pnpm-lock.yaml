@@ -574,6 +574,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
+      '@types/google-protobuf': ~3.15.6
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.7
@@ -588,6 +589,7 @@ importers:
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
+      google-protobuf: ~3.20.1
       lodash: ^4.17.10
       mocha: ^10.0.0
       nyc: ^15.1.0
@@ -608,6 +610,7 @@ importers:
       '@loaders.gl/draco': 3.2.4
       deep-assign: 2.0.0
       fuse.js: 3.6.1
+      google-protobuf: 3.20.1
       lodash: 4.17.21
       qs: 6.10.5
       semver: 7.3.7
@@ -628,6 +631,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1
+      '@types/google-protobuf': 3.15.6
       '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 16.11.7
@@ -7956,7 +7960,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8072,6 +8076,10 @@ packages:
     dependencies:
       '@types/minimatch': 3.0.5
       '@types/node': 16.11.7
+
+  /@types/google-protobuf/3.15.6:
+    resolution: {integrity: sha512-pYVNNJ+winC4aek+lZp93sIKxnXt5qMkuKmaqS3WGuTq0Bw1ZDYNBgzG5kkdtwcv+GmYJGo3yEg6z2cKKAiEdw==}
+    dev: true
 
   /@types/graceful-fs/4.1.5:
     resolution: {integrity: sha512-anKkLmZZ+xm4p8JWBf4hElkM4XR+EZeA2M9BAkkTldmcyDY4mbdIJnRghDJH3Ov5ooY7/UAoENtmdMSkaAd7Cw==}
@@ -8199,6 +8207,10 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.21:
@@ -13989,6 +14001,10 @@ packages:
       merge2: 1.4.1
       slash: 4.0.0
     dev: true
+
+  /google-protobuf/3.20.1:
+    resolution: {integrity: sha512-XMf1+O32FjYIV3CYu6Tuh5PNbfNEU5Xu22X+Xkdb/DUexFlCzhvv7d5Iirm4AOwn8lv4al1YvIhzGrg2j9Zfzw==}
+    dev: false
 
   /got/11.8.5:
     resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}

@@ -7,10 +7,10 @@
  */
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { assert, base64StringToUint8Array } from "@itwin/core-bentley";
-import { ArcGisExtent, ArcGisFeatureJSON, ArcGisFeatureQuery, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
-import { Matrix4d, Point3d } from "@itwin/core-geometry";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeatureQuery, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
 import { request, RequestOptions, Response } from "../../../request/Request";
-import { FeatureQueryQuantizationParams } from "../../internal";
+import { ArcGisFeaturePBF } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -25,23 +25,51 @@ sampleIconImg.src = `data:image/png;base64,${samplePngIcon}`;
 */
 export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
-  private _supportsCoordinatesQuantization = false; // TODO Reader this from the layer capabilities
+  private _firstRequest = true;
+  private _supportsCoordinatesQuantization = true; // TODO Reader this from the layer capabilities
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
 
+  public override async initialize(): Promise<void> {
+    /*
+    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
+    if (json === undefined)
+      throw new ServerError(IModelStatus.ValidationFailed, "");
+
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Check again layer status, it might have change during await.
+      if (this.status === MapLayerImageryProviderStatus.Valid) {
+        this.status = MapLayerImageryProviderStatus.RequireAuth;
+        this.onStatusChanged.raiseEvent(this);
+      }
+    }
+
+    if (json !== undefined) {
+      // this.serviceJson = json;
+    }
+*/
+  }
+
   public override get tileSize(): number { return 512; }
+  public get format(): ArcGisFeatureFormat { return "pbf"; }
+  // public get format(): ArcGisFeatureFormat { return "json"; }
 
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
-  // construct the Url from the desired Tile
-  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
+  // We dont use this method inside this provider, but since this is an anstract method, we need to define something
+  public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
+
+    return "";
+  }
+
+  public constructUrlObj(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): {url: string, envelope: ArcGisExtent} {
 
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
 
-    const enevelope: ArcGisExtent = {
+    const tileEnvelope = {
       xmin: tileExtent.left, ymin: tileExtent.bottom,
       xmax: tileExtent.right, ymax: tileExtent.top,
       spatialReference: {wkid:102100, latestWkid:3857},
@@ -53,31 +81,34 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         mode: "view",
         originPosition: "upperLeft",
         tolerance: (tileExtent.top - tileExtent.bottom) / this.tileSize, // pixel size in world units
-        extent: enevelope,
+        extent: tileEnvelope,
       };
     }
-    const url = new ArcGisFeatureQuery("https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/PhillyTransportationImprovementProject/FeatureServer",
+
+    // const url = new ArcGisFeatureQuery("https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/PhillyTransportationImprovementProject/FeatureServer",
+    const url = new ArcGisFeatureQuery(this._settings.url,
       0,
+      this.format,
       {
-        geometry: enevelope,
+        geometry: refineEnvelope ?? tileEnvelope,
         geometryType: "esriGeometryEnvelope",
         returnExceededLimitFeatures: false,
         maxRecordCountFactor: 3,    // This was grabbed from the ESRI web viewer request, not sure where this factor come from
         resultType: "tile",
         quantizationParameters,
       });
-    return  url.toString();
+    return  {url: url.toString(), envelope: refineEnvelope ?? tileEnvelope} ;
 
   }
 
-  private async fetchTile(row: number, column: number, zoomLevel: number): Promise<Response | undefined> {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "text" };
+  private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<{response: Promise<Response> , envelope: ArcGisExtent} | undefined> {
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "json" ? "text" : "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
-    const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
-    if (tileUrl.length === 0)
+    const tileUrl =  this.constructUrlObj(row, column, zoomLevel, refineEnvelope);
+    if (tileUrl.url.length === 0)
       return undefined;
 
-    return request(tileUrl, tileRequestOptions);
+    return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
   }
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){
@@ -89,6 +120,16 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+    /*
+    zoomLevel = 10;
+    row = 385;
+    column = 301;
+
+    if (this._firstRequest)
+      this._firstRequest = false;
+    else
+      return undefined;
+      */
 
     const canvas = document.createElement("canvas");
     canvas.width = this.tileSize;
@@ -101,13 +142,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     try {
-      const tileResponse = await this.fetchTile(row, column, zoomLevel);
-      if (tileResponse === undefined || tileResponse.status !== 200 || tileResponse.text === undefined )
-        return undefined;
-
-      const featureReader = new ArcGisFeatureJSON();
 
       // Compute transform if CoordinatesQuantization is not supported by service
+      let transfo: Transform | undefined;
       if (!this._supportsCoordinatesQuantization) {
         const tileExtentWorld3857 = this.getEPSG3857Extent(row, column, zoomLevel);
         const worldTileWidth = tileExtentWorld3857.right - tileExtentWorld3857.left;
@@ -126,18 +163,72 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         const yWorld2CanvasRatio = -1*world2CanvasRatio; // y-axis flip
 
         const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
-        const transfo = matrix.asTransform;
-        if (transfo) {
-          featureReader.transform = transfo;
-        } else {
+        transfo = matrix.asTransform;
+        if (!transfo)  {
           assert(!"Could not compute world to canvas transform");
         }
       }
-      // this.drawTileDebugInfo(row, column, zoomLevel, ctx);
-      featureReader.readRenderGraphics(tileResponse.text, ctx);
 
-    } catch {
-      return undefined;
+      if (this.format === "pbf") {
+        const featureReader = new ArcGisFeaturePBF();
+        const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
+          const dx = (envelope.xmax - envelope.xmin) * 0.5;
+          const dy = (envelope.xmax - envelope.xmin) * 0.5;
+          const subEnvelopes: ArcGisExtent[] = [];
+          for (let posX=0; posX<2; posX++) {
+            for (let posY=0; posY<2; posY++) {
+              subEnvelopes.push({
+                xmin: envelope.xmin + (dx*posX), ymin: envelope.ymin + (dy*posY),
+                xmax: envelope.xmin + (dx*(posX+1)), ymax: envelope.ymin + (dy*(posY+1)),
+                spatialReference: {wkid:102100, latestWkid:3857},
+              });
+            }
+          }
+          return subEnvelopes;
+        };
+
+        const renderData = async (envelope?: ArcGisExtent) => {
+          const tileData = await this.fetchTile(row, column, zoomLevel, envelope);
+          if (!tileData)
+            return ;
+          const tileResponse = await tileData.response;
+          if (tileResponse === undefined || tileResponse.status !== 200  )
+            return ;
+
+          const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+          if (!byteArray || (byteArray.length === 0))
+            return ;
+
+          const collection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
+          if (collection?.queryResult?.featureResult?.exceededTransferLimit) {
+            const subEnvelopes = getSubEnvelopes(tileData.envelope);
+            const renderPromises = [];
+            for (const subEnvelope of subEnvelopes) {
+              renderPromises.push(renderData(subEnvelope));
+            }
+            await Promise.all(renderPromises);
+          } else {
+            featureReader.readRenderGraphics(collection, ctx);
+          }
+        };
+        await renderData();
+      } else {
+        const tileData = await this.fetchTile(row, column, zoomLevel);
+        if (!tileData)
+          return undefined;
+        const tileResponse = await tileData.response;
+        if (tileResponse === undefined || tileResponse.status !== 200  )
+          return undefined;
+
+        if (tileResponse.text === undefined)
+          return undefined;
+        const featureReader = new ArcGisFeatureJSON();
+        featureReader.transform = transfo;
+        featureReader.readRenderGraphics(tileResponse.text, ctx);
+      }
+      this.drawTileDebugInfo(row, column, zoomLevel, ctx);
+    } catch (e) {
+      console.log(`error occurred, ${e}`);
     }
 
     let error = 0;
@@ -147,8 +238,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       const header = "data:image/png;base64,";
       const dataUrl2 = dataUrl.substring(header.length);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
-    } catch {
+    } catch (e) {
       error = 1;
+      console.log(`error occurred, ${e}`);
     }
     if (error)
       // eslint-disable-next-line no-console

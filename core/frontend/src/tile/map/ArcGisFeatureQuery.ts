@@ -27,6 +27,8 @@ export interface FeatureQueryQuantizationParams {
   tolerance: number;
 }
 
+export type ArcGisFeatureFormat = "json" | "pbf";
+
 // Based on official documentation:
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm
 export interface ArcGisFeatureQueryParams {
@@ -61,6 +63,7 @@ export interface ArcGisFeatureQueryParams {
 export class ArcGisFeatureQuery {
   public baseUrl: string;
   public layerIdx: number;
+  public format: ArcGisFeatureFormat;
   public resultRecordCount?: number;
   public resultOffset?: number;
   public returnGeometry?: boolean;
@@ -77,9 +80,10 @@ export class ArcGisFeatureQuery {
 
   // base url is expected ito be in the format of:
   // https://<hostname>/arcgis/rest/services/<ServiceName>/FeatureServer
-  public constructor(baseUrl: string, layerIdx: number, params?: ArcGisFeatureQueryParams) {
+  public constructor(baseUrl: string, layerIdx: number, format: ArcGisFeatureFormat, params?: ArcGisFeatureQueryParams) {
     this.baseUrl = baseUrl;
     this.layerIdx = layerIdx;
+    this.format = format;
 
     if (params !== undefined) {
       this.resultRecordCount = params.resultRecordCount;
@@ -97,7 +101,7 @@ export class ArcGisFeatureQuery {
 
   }
 
-  public async toString() {
+  public toString() {
     let customParams = "";
 
     if ( this.resultRecordCount !== undefined) {
@@ -171,7 +175,7 @@ export class ArcGisFeatureQuery {
     // TODO: Removed hardcoded 102100 SR (EPSG:3857)
     // return `${this.baseUrl}/${this.layerIdx}/query/?f=json&${customParams}&outSR=102100`;
 
-    return `${this.baseUrl}/${this.layerIdx}/query/?f=json&${customParams}&outSR=102100`;
+    return `${this.baseUrl}/${this.layerIdx}/query/?f=${this.format}&${customParams}&outSR=102100`;
   }
 
   private static  appendParam(urlToAppend: string, paramName: string, paramValue: string) {
