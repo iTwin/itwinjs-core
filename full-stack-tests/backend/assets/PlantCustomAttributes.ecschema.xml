@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="PlantCustomAttributes" alias="PlantCA" version="01.00.01" description="Custom attributes for Plant" displayLabel="Plant Custom Attributes" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECCustomAttributeClass typeName="BisCorePropertyMappingsCustomAttribute" description="Used to specify OpenPlant Schema property mappings that map to BIS Core properties.  Overriding BIS Core properties to add custom attributes causes the propert to be added as a shared column attribute" appliesTo="Any">
+        <ECProperty propertyName="BisCorePropertyMappings" typeName="string" description="List of BisCore property mappings, format &quot;BisCorePropName,OpenPlantPropertyName;BisCorePropName,OpenPlantPropertyName&quot;"/>
+    </ECCustomAttributeClass>
+    <ECCustomAttributeClass typeName="MappingOriginCustomAttribute" description="Used to specify OpenPlant Schema class and property origin for this schema" displayLabel="Mapping Origin Custom Attribute" appliesTo="Any">
+        <ECProperty propertyName="OriginName" typeName="string" description="Name of OpenPlant equivalent class or property" displayLabel="Origin Name"/>
+        <ECProperty propertyName="AdditionalNames" typeName="string" description="Additional OpenPlant class or property names, multiple entries separated by a semicolon" displayLabel="Additional Names"/>
+    </ECCustomAttributeClass>
+    <ECCustomAttributeClass typeName="ReleaseVersion" description="Tracking the version of release" displayLabel="Release Version" appliesTo="Any">
+        <ECProperty propertyName="Version" typeName="string" description="version like 10.05"/>
+        <ECProperty propertyName="VersionDisplayLabel" typeName="string" displayLabel="Version Display Label"/>
+    </ECCustomAttributeClass>
+</ECSchema>

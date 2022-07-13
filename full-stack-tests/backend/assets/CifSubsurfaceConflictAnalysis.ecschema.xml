@@ -1,0 +1,1208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="CifSubsurfaceConflictAnalysis" alias="cifsscfan" version="01.00.03" description="iModel Connector schema containing aspect classes with properties from the Subsurface Utilities Engineering module as part of Civil Designer applications." xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.14" alias="bis"/>
+    <ECSchemaReference name="CifCommon" version="01.00.03" alias="cifcmn"/>
+    <ECSchemaReference name="CifUnits" version="01.00.01" alias="cifu"/>
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="BaseLink_HmiDataSetGeometryAspect_Authority_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Certified" value="0" displayLabel="Certified"/>
+        <ECEnumerator name="Non_Certified" value="1" displayLabel="Non-Certified"/>
+        <ECEnumerator name="Unknown" value="2" displayLabel="Unknown"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseLink_HmiDataSetGeometryAspect_InvestigationLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Land_Survey" value="0" displayLabel="Land Survey"/>
+        <ECEnumerator name="Engineering_Survey" value="1" displayLabel="Engineering Survey"/>
+        <ECEnumerator name="Informational_Survey" value="2" displayLabel="Informational Survey"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseLink_HmiDataSetGeometryAspect_QualityLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Quality_Level_A" value="0" displayLabel="Quality Level A"/>
+        <ECEnumerator name="Quality_Level_B" value="1" displayLabel="Quality Level B"/>
+        <ECEnumerator name="Quality_Level_C" value="2" displayLabel="Quality Level C"/>
+        <ECEnumerator name="Quality_Level_D" value="3" displayLabel="Quality Level D"/>
+        <ECEnumerator name="Undetermined" value="4" displayLabel="Undetermined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseLink_NetworkDataAspect_UtiltityOperationalStatus_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Abandoned" value="0" displayLabel="Abandoned"/>
+        <ECEnumerator name="In_Service" value="1" displayLabel="In Service"/>
+        <ECEnumerator name="Proposed" value="2" displayLabel="Proposed"/>
+        <ECEnumerator name="Removed" value="3" displayLabel="Removed"/>
+        <ECEnumerator name="Temporary" value="4" displayLabel="Temporary"/>
+        <ECEnumerator name="Under_Construction" value="5" displayLabel="Under Construction"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseLink_Physical_SegmentShapeTypeAspect_SegmentShapeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Circle" value="2" displayLabel="Circle"/>
+        <ECEnumerator name="Box" value="3" displayLabel="Box"/>
+        <ECEnumerator name="Basket_Handle" value="4" displayLabel="Basket-Handle"/>
+        <ECEnumerator name="Ellipse" value="5" displayLabel="Ellipse"/>
+        <ECEnumerator name="Horseshoe" value="6" displayLabel="Horseshoe"/>
+        <ECEnumerator name="Egg" value="7" displayLabel="Egg"/>
+        <ECEnumerator name="Semi_Ellipse" value="8" displayLabel="Semi-Ellipse"/>
+        <ECEnumerator name="Pipe_Arch" value="10" displayLabel="Pipe-Arch"/>
+        <ECEnumerator name="Semi_Circle" value="12" displayLabel="Semi-Circle"/>
+        <ECEnumerator name="Catenary" value="13" displayLabel="Catenary"/>
+        <ECEnumerator name="Gothic" value="14" displayLabel="Gothic"/>
+        <ECEnumerator name="Modified_Basket_Handle" value="15" displayLabel="Modified Basket-Handle"/>
+        <ECEnumerator name="Arch" value="30" displayLabel="Arch"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseNode_HmiDataSetGeometryAspect_Authority_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Certified" value="0" displayLabel="Certified"/>
+        <ECEnumerator name="Non_Certified" value="1" displayLabel="Non-Certified"/>
+        <ECEnumerator name="Unknown" value="2" displayLabel="Unknown"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseNode_HmiDataSetGeometryAspect_InvestigationLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Land_Survey" value="0" displayLabel="Land Survey"/>
+        <ECEnumerator name="Engineering_Survey" value="1" displayLabel="Engineering Survey"/>
+        <ECEnumerator name="Informational_Survey" value="2" displayLabel="Informational Survey"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseNode_HmiDataSetGeometryAspect_QualityLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Quality_Level_A" value="0" displayLabel="Quality Level A"/>
+        <ECEnumerator name="Quality_Level_B" value="1" displayLabel="Quality Level B"/>
+        <ECEnumerator name="Quality_Level_C" value="2" displayLabel="Quality Level C"/>
+        <ECEnumerator name="Quality_Level_D" value="3" displayLabel="Quality Level D"/>
+        <ECEnumerator name="Undetermined" value="4" displayLabel="Undetermined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="BaseNode_NetworkDataAspect_UtiltityOperationalStatus_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Abandoned" value="0" displayLabel="Abandoned"/>
+        <ECEnumerator name="In_Service" value="1" displayLabel="In Service"/>
+        <ECEnumerator name="Proposed" value="2" displayLabel="Proposed"/>
+        <ECEnumerator name="Removed" value="3" displayLabel="Removed"/>
+        <ECEnumerator name="Temporary" value="4" displayLabel="Temporary"/>
+        <ECEnumerator name="Under_Construction" value="5" displayLabel="Under Construction"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CommunicationNode_NetworkDataAspect_CommNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Access_Point" value="0" displayLabel="Access Point"/>
+        <ECEnumerator name="Amplifier" value="1" displayLabel="Amplifier"/>
+        <ECEnumerator name="Antenna" value="2" displayLabel="Antenna"/>
+        <ECEnumerator name="DB_Splice" value="3" displayLabel="DB Splice"/>
+        <ECEnumerator name="Device" value="4" displayLabel="Device"/>
+        <ECEnumerator name="Distribution_Panel" value="5" displayLabel="Distribution Panel"/>
+        <ECEnumerator name="Ground" value="6" displayLabel="Ground"/>
+        <ECEnumerator name="ImpedanceMatching" value="7" displayLabel="ImpedanceMatching"/>
+        <ECEnumerator name="Load_Capacitor" value="8" displayLabel="Load Capacitor"/>
+        <ECEnumerator name="Load_Coil" value="9" displayLabel="Load Coil"/>
+        <ECEnumerator name="Media_Converter" value="10" displayLabel="Media Converter"/>
+        <ECEnumerator name="Repeater" value="11" displayLabel="Repeater"/>
+        <ECEnumerator name="Sensor" value="12" displayLabel="Sensor"/>
+        <ECEnumerator name="Speaker" value="13" displayLabel="Speaker"/>
+        <ECEnumerator name="Splice" value="14" displayLabel="Splice"/>
+        <ECEnumerator name="Splitter" value="15" displayLabel="Splitter"/>
+        <ECEnumerator name="Terminal" value="16" displayLabel="Terminal"/>
+        <ECEnumerator name="Terminator" value="17" displayLabel="Terminator"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CommunicationNode_NetworkDataAspect_CommunicationNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Telephone" value="0" displayLabel="Telephone"/>
+        <ECEnumerator name="CATV" value="1" displayLabel="CATV"/>
+        <ECEnumerator name="Fiber_Optic" value="2" displayLabel="Fiber Optic"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CommunicationSegment_NetworkDataAspect_ComConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Cable" value="0" displayLabel="Cable"/>
+        <ECEnumerator name="Duct" value="1" displayLabel="Duct"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CommunicationSegment_NetworkDataAspect_CommSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Segmented_Cable" value="0" displayLabel="Segmented Cable"/>
+        <ECEnumerator name="Service_Loop" value="1" displayLabel="Service Loop"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CommunicationSegment_NetworkDataAspect_CommunicationNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Telephone" value="0" displayLabel="Telephone"/>
+        <ECEnumerator name="CATV" value="1" displayLabel="CATV"/>
+        <ECEnumerator name="Fiber_Optic" value="2" displayLabel="Fiber Optic"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ConflictNode_ConflictAspect_ConflictType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Hard" value="0" displayLabel="Hard"/>
+        <ECEnumerator name="Soft" value="1" displayLabel="Soft"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ConflictNode_ConflictAspect_CurrentStatus_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Created" value="0" displayLabel="Created"/>
+        <ECEnumerator name="Owner_Informed" value="1" displayLabel="Owner Informed"/>
+        <ECEnumerator name="Resolution_Strategy_Selected" value="2" displayLabel="Resolution Strategy Selected"/>
+        <ECEnumerator name="Resolved" value="3" displayLabel="Resolved"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ConflictNode_ConflictAspect_RecommendedResolution_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Relocation_Before_Construction" value="0" displayLabel="Relocation Before Construction"/>
+        <ECEnumerator name="Design_Change" value="1" displayLabel="Design Change"/>
+        <ECEnumerator name="Protect_in_place" value="2" displayLabel="Protect in-place"/>
+        <ECEnumerator name="Ignore" value="3" displayLabel="Ignore"/>
+        <ECEnumerator name="Other" value="4" displayLabel="Other"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ConflictNode_HmiDataSetGeometryAspect_FeatureA_QualityLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Quality_Level_A" value="0" displayLabel="Quality Level A"/>
+        <ECEnumerator name="Quality_Level_B" value="1" displayLabel="Quality Level B"/>
+        <ECEnumerator name="Quality_Level_C" value="2" displayLabel="Quality Level C"/>
+        <ECEnumerator name="Quality_Level_D" value="3" displayLabel="Quality Level D"/>
+        <ECEnumerator name="Undetermined" value="4" displayLabel="Undetermined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ConflictNode_HmiDataSetGeometryAspect_FeatureB_QualityLevel_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Quality_Level_A" value="0" displayLabel="Quality Level A"/>
+        <ECEnumerator name="Quality_Level_B" value="1" displayLabel="Quality Level B"/>
+        <ECEnumerator name="Quality_Level_C" value="2" displayLabel="Quality Level C"/>
+        <ECEnumerator name="Quality_Level_D" value="3" displayLabel="Quality Level D"/>
+        <ECEnumerator name="Undetermined" value="4" displayLabel="Undetermined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ElectricalNode_NetworkDataAspect_ElectricNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Power" value="0" displayLabel="Power"/>
+        <ECEnumerator name="Lighting" value="-1" displayLabel="Lighting"/>
+        <ECEnumerator name="Service" value="2" displayLabel="Service"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ElectricalNode_NetworkDataAspect_ElectricNodeDataType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Capacitor_Bank" value="0" displayLabel="Capacitor Bank"/>
+        <ECEnumerator name="Device_Protective_Device" value="1" displayLabel="Device Protective Device"/>
+        <ECEnumerator name="Exterior_Light" value="2" displayLabel="Exterior Light"/>
+        <ECEnumerator name="Fuse" value="4" displayLabel="Fuse"/>
+        <ECEnumerator name="Generator" value="5" displayLabel="Generator"/>
+        <ECEnumerator name="Grounding_Point" value="6" displayLabel="Grounding Point"/>
+        <ECEnumerator name="Meter_Point" value="7" displayLabel="Meter Point"/>
+        <ECEnumerator name="Open_Point" value="8" displayLabel="Open Point"/>
+        <ECEnumerator name="Switch" value="9" displayLabel="Switch"/>
+        <ECEnumerator name="Transformer" value="10" displayLabel="Transformer"/>
+        <ECEnumerator name="Voltage_Regulator" value="11" displayLabel="Voltage Regulator"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+        <ECEnumerator name="Fitting" value="3" displayLabel="Fitting"/>
+        <ECEnumerator name="Access_Point" value="12" displayLabel="Access Point"/>
+        <ECEnumerator name="Control_Node" value="13" displayLabel="Control Node"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ElectricalSegment_NetworkDataAspect_ElectricConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Cable" value="0" displayLabel="Cable"/>
+        <ECEnumerator name="Duct" value="1" displayLabel="Duct"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ElectricalSegment_NetworkDataAspect_ElectricNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Power" value="0" displayLabel="Power"/>
+        <ECEnumerator name="Lighting" value="-1" displayLabel="Lighting"/>
+        <ECEnumerator name="Service" value="2" displayLabel="Service"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ElectricalSegment_NetworkDataAspect_ElectricSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Bus_Bar" value="0" displayLabel="Bus Bar"/>
+        <ECEnumerator name="Primary_Overhead_Line" value="1" displayLabel="Primary Overhead Line"/>
+        <ECEnumerator name="Primary_Underground_Line" value="2" displayLabel="Primary Underground Line"/>
+        <ECEnumerator name="Secondary_Overhead_Line" value="3" displayLabel="Secondary Overhead Line"/>
+        <ECEnumerator name="Secondary_Underground_Line" value="4" displayLabel="Secondary Underground Line"/>
+        <ECEnumerator name="Overhead_Transmission_Line" value="5" displayLabel="Overhead Transmission Line"/>
+        <ECEnumerator name="Transmission_Underground_Line" value="6" displayLabel="Transmission Underground Line"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="GasNode_NetworkDataAspect_GasNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="High_Pressure" value="0" displayLabel="High Pressure"/>
+        <ECEnumerator name="Low_Pressure" value="1" displayLabel="Low Pressure"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="GasNode_NetworkDataAspect_GasNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Controllable_Fitting" value="0" displayLabel="Controllable Fitting"/>
+        <ECEnumerator name="Drip" value="1" displayLabel="Drip"/>
+        <ECEnumerator name="Gas_Lamp" value="2" displayLabel="Gas Lamp"/>
+        <ECEnumerator name="Meter_Point" value="3" displayLabel="Meter Point"/>
+        <ECEnumerator name="Non_Controllable_Fitting" value="4" displayLabel="Non Controllable Fitting"/>
+        <ECEnumerator name="Odorizer" value="5" displayLabel="Odorizer"/>
+        <ECEnumerator name="Pressure_Monitoring_Device" value="6" displayLabel="Pressure Monitoring Device"/>
+        <ECEnumerator name="Regulator" value="7" displayLabel="Regulator"/>
+        <ECEnumerator name="Regulator_Station" value="8" displayLabel="Regulator Station"/>
+        <ECEnumerator name="ReliefValve" value="9" displayLabel="ReliefValve"/>
+        <ECEnumerator name="Rural_Tap" value="10" displayLabel="Rural Tap"/>
+        <ECEnumerator name="TownBorderStation" value="11" displayLabel="TownBorderStation"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+        <ECEnumerator name="Valve_Isolation" value="12" displayLabel="Valve Isolation"/>
+        <ECEnumerator name="Valve_Regulating" value="13" displayLabel="Valve Regulating"/>
+        <ECEnumerator name="Fitting" value="14" displayLabel="Fitting"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="GasSegment_NetworkDataAspect_GasConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Pressure_Pipe" value="0" displayLabel="Pressure Pipe"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="GasSegment_NetworkDataAspect_GasNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="High_Pressure" value="0" displayLabel="High Pressure"/>
+        <ECEnumerator name="Low_Pressure" value="1" displayLabel="Low Pressure"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="GasSegment_NetworkDataAspect_GasSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Main_Line" value="0" displayLabel="Main Line"/>
+        <ECEnumerator name="Service_Line" value="1" displayLabel="Service Line"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="POLNode_NetworkDataAspect_POLNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Automotive_Diesel_DF_2" value="0" displayLabel="Automotive Diesel (DF-2)"/>
+        <ECEnumerator name="Bio_Diesel_B20" value="1" displayLabel="Bio-Diesel (B20)"/>
+        <ECEnumerator name="Burner_Fuel_No__1" value="2" displayLabel="Burner Fuel No. 1"/>
+        <ECEnumerator name="Burner_Fuel_No__2" value="3" displayLabel="Burner Fuel No. 2"/>
+        <ECEnumerator name="Burner_Fuel_No__3" value="4" displayLabel="Burner Fuel No. 3"/>
+        <ECEnumerator name="Burner_Fuel_No__4" value="5" displayLabel="Burner Fuel No. 4"/>
+        <ECEnumerator name="Burner_Fuel_No__5_Heavy" value="6" displayLabel="Burner Fuel No. 5 (Heavy)"/>
+        <ECEnumerator name="Burner_Fuel_No__5_Light" value="7" displayLabel="Burner Fuel No. 5 (Light)"/>
+        <ECEnumerator name="Burner_Fuel_No__6" value="8" displayLabel="Burner Fuel No. 6"/>
+        <ECEnumerator name="Compressed_Natural_Gas_CNG" value="9" displayLabel="Compressed Natural Gas (CNG)"/>
+        <ECEnumerator name="E85" value="10" displayLabel="E85"/>
+        <ECEnumerator name="Hydrazine_Water_H_70" value="11" displayLabel="Hydrazine-Water (H-70)"/>
+        <ECEnumerator name="Jet_A" value="12" displayLabel="Jet A"/>
+        <ECEnumerator name="Jet_A_1" value="13" displayLabel="Jet A-1"/>
+        <ECEnumerator name="JP_10" value="14" displayLabel="JP-10"/>
+        <ECEnumerator name="JP_4" value="15" displayLabel="JP-4"/>
+        <ECEnumerator name="JP_5" value="16" displayLabel="JP-5"/>
+        <ECEnumerator name="JP_7" value="17" displayLabel="JP-7"/>
+        <ECEnumerator name="JP_8" value="18" displayLabel="JP-8"/>
+        <ECEnumerator name="JP_Thermally_Stable" value="19" displayLabel="JP (Thermally Stable)"/>
+        <ECEnumerator name="Kerosene" value="20" displayLabel="Kerosene"/>
+        <ECEnumerator name="Liquified_Petroleum_Gas_LPG" value="21" displayLabel="Liquified Petroleum Gas (LPG)"/>
+        <ECEnumerator name="Marine_Diesel" value="22" displayLabel="Marine Diesel"/>
+        <ECEnumerator name="Motor_Gasoline_MOGAS" value="23" displayLabel="Motor Gasoline (MOGAS)"/>
+        <ECEnumerator name="O_250" value="24" displayLabel="O-250"/>
+        <ECEnumerator name="O_278" value="250" displayLabel="O-278"/>
+        <ECEnumerator name="OTTO" value="251" displayLabel="OTTO"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="POLNode_NetworkDataAspect_POLNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Dispenser" value="0" displayLabel="Dispenser"/>
+        <ECEnumerator name="FillStand" value="1" displayLabel="FillStand"/>
+        <ECEnumerator name="Filter_Separator" value="2" displayLabel="Filter Separator"/>
+        <ECEnumerator name="Hydrant_Outlet" value="3" displayLabel="Hydrant Outlet"/>
+        <ECEnumerator name="Injector" value="4" displayLabel="Injector"/>
+        <ECEnumerator name="Loading_Arm" value="5" displayLabel="Loading Arm"/>
+        <ECEnumerator name="Meter" value="6" displayLabel="Meter"/>
+        <ECEnumerator name="Pump" value="7" displayLabel="Pump"/>
+        <ECEnumerator name="Relaxation_Tank" value="8" displayLabel="Relaxation Tank"/>
+        <ECEnumerator name="Strainer" value="9" displayLabel="Strainer"/>
+        <ECEnumerator name="Tank" value="10" displayLabel="Tank"/>
+        <ECEnumerator name="Valve" value="11" displayLabel="Valve"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+        <ECEnumerator name="Access_Point" value="12" displayLabel="Access Point"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="POLSegment_NetworkDataAspect_POLConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Conduit" value="0" displayLabel="Conduit"/>
+        <ECEnumerator name="Pressure_Pipe" value="1" displayLabel="Pressure Pipe"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="POLSegment_NetworkDataAspect_POLNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Automotive_Diesel_DF_2" value="0" displayLabel="Automotive Diesel (DF-2)"/>
+        <ECEnumerator name="Bio_Diesel_B20" value="1" displayLabel="Bio-Diesel (B20)"/>
+        <ECEnumerator name="Burner_Fuel_No__1" value="2" displayLabel="Burner Fuel No. 1"/>
+        <ECEnumerator name="Burner_Fuel_No__2" value="3" displayLabel="Burner Fuel No. 2"/>
+        <ECEnumerator name="Burner_Fuel_No__3" value="4" displayLabel="Burner Fuel No. 3"/>
+        <ECEnumerator name="Burner_Fuel_No__4" value="5" displayLabel="Burner Fuel No. 4"/>
+        <ECEnumerator name="Burner_Fuel_No__5_Heavy" value="6" displayLabel="Burner Fuel No. 5 (Heavy)"/>
+        <ECEnumerator name="Burner_Fuel_No__5_Light" value="7" displayLabel="Burner Fuel No. 5 (Light)"/>
+        <ECEnumerator name="Burner_Fuel_No__6" value="8" displayLabel="Burner Fuel No. 6"/>
+        <ECEnumerator name="Compressed_Natural_Gas_CNG" value="9" displayLabel="Compressed Natural Gas (CNG)"/>
+        <ECEnumerator name="E85" value="10" displayLabel="E85"/>
+        <ECEnumerator name="Hydrazine_Water_H_70" value="11" displayLabel="Hydrazine-Water (H-70)"/>
+        <ECEnumerator name="Jet_A" value="12" displayLabel="Jet A"/>
+        <ECEnumerator name="Jet_A_1" value="13" displayLabel="Jet A-1"/>
+        <ECEnumerator name="JP_10" value="14" displayLabel="JP-10"/>
+        <ECEnumerator name="JP_4" value="15" displayLabel="JP-4"/>
+        <ECEnumerator name="JP_5" value="16" displayLabel="JP-5"/>
+        <ECEnumerator name="JP_7" value="17" displayLabel="JP-7"/>
+        <ECEnumerator name="JP_8" value="18" displayLabel="JP-8"/>
+        <ECEnumerator name="JP_Thermally_Stable" value="19" displayLabel="JP (Thermally Stable)"/>
+        <ECEnumerator name="Kerosene" value="20" displayLabel="Kerosene"/>
+        <ECEnumerator name="Liquified_Petroleum_Gas_LPG" value="21" displayLabel="Liquified Petroleum Gas (LPG)"/>
+        <ECEnumerator name="Marine_Diesel" value="22" displayLabel="Marine Diesel"/>
+        <ECEnumerator name="Motor_Gasoline_MOGAS" value="23" displayLabel="Motor Gasoline (MOGAS)"/>
+        <ECEnumerator name="O_250" value="24" displayLabel="O-250"/>
+        <ECEnumerator name="O_278" value="250" displayLabel="O-278"/>
+        <ECEnumerator name="OTTO" value="251" displayLabel="OTTO"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="POLSegment_NetworkDataAspect_POLSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Installation_Pipeline" value="0" displayLabel="Installation Pipeline"/>
+        <ECEnumerator name="Interterminal_Pipeline" value="1" displayLabel="Interterminal Pipeline"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ReferenceDomainElementAspect_DataSourceType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Utility_Project" value="0" displayLabel="Utility Project"/>
+        <ECEnumerator name="Microstation_External_Element" value="1" displayLabel="Microstation External Element"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StormWaterNode_NetworkDataAspect_StormNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Storm_Water_Only" value="0" displayLabel="Storm Water Only"/>
+        <ECEnumerator name="Combined" value="1" displayLabel="Combined"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StormWaterNode_NetworkDataAspect_StormWaterNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Inlet_Grate" value="0" displayLabel="Inlet Grate"/>
+        <ECEnumerator name="Inlet_Curb_Opening" value="1" displayLabel="Inlet Curb Opening"/>
+        <ECEnumerator name="Inlet_Combined" value="2" displayLabel="Inlet Combined"/>
+        <ECEnumerator name="Inlet_Slotted_Drain" value="3" displayLabel="Inlet Slotted Drain"/>
+        <ECEnumerator name="Manhole" value="4" displayLabel="Manhole"/>
+        <ECEnumerator name="Headwall" value="5" displayLabel="Headwall"/>
+        <ECEnumerator name="Pump" value="6" displayLabel="Pump"/>
+        <ECEnumerator name="Fitting" value="7" displayLabel="Fitting"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StormWaterSegment_NetworkDataAspect_StormNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Storm_Water_Only" value="0" displayLabel="Storm Water Only"/>
+        <ECEnumerator name="Combined" value="1" displayLabel="Combined"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StormWaterSegment_NetworkDataAspect_StormWaterConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Conduit" value="0" displayLabel="Conduit"/>
+        <ECEnumerator name="Filter_Conduit" value="1" displayLabel="Filter Conduit"/>
+        <ECEnumerator name="Channel" value="2" displayLabel="Channel"/>
+        <ECEnumerator name="Gutter" value="4" displayLabel="Gutter"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StormWaterSegment_NetworkDataAspect_StormWaterSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Trunk_Line" value="0" displayLabel="Trunk Line"/>
+        <ECEnumerator name="Lateral" value="1" displayLabel="Lateral"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ThermalNode_NetworkDataAspect_ThermalNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Chilled_Water_Return" value="0" displayLabel="Chilled Water Return"/>
+        <ECEnumerator name="Chilled_Water_Supply" value="1" displayLabel="Chilled Water Supply"/>
+        <ECEnumerator name="Dual_Temperature_Water_Return" value="2" displayLabel="Dual Temperature Water Return"/>
+        <ECEnumerator name="Dual_Temperature_Water_Supply" value="3" displayLabel="Dual Temperature Water Supply"/>
+        <ECEnumerator name="High_Temperature_Hot_Water_Return" value="4" displayLabel="High Temperature Hot Water Return"/>
+        <ECEnumerator name="High_Temperature_Hot_Water_Supply" value="5" displayLabel="High Temperature Hot Water Supply"/>
+        <ECEnumerator name="Low_Temperature_Hot_Water_Return" value="6" displayLabel="Low Temperature Hot Water Return"/>
+        <ECEnumerator name="Low_Temperature_Hot_Water_Supply" value="7" displayLabel="Low Temperature Hot Water Supply"/>
+        <ECEnumerator name="Steam_Return" value="8" displayLabel="Steam Return"/>
+        <ECEnumerator name="Steam_Supply" value="9" displayLabel="Steam Supply"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ThermalNode_NetworkDataAspect_ThermalNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Aquastat" value="0" displayLabel="Aquastat"/>
+        <ECEnumerator name="Condensate_Collector" value="1" displayLabel="Condensate Collector"/>
+        <ECEnumerator name="Control_Valve" value="2" displayLabel="Control Valve"/>
+        <ECEnumerator name="Expansion_Joint" value="3" displayLabel="Expansion Joint"/>
+        <ECEnumerator name="Expansion_Loop" value="4" displayLabel="Expansion Loop"/>
+        <ECEnumerator name="Expansion_Tank" value="5" displayLabel="Expansion Tank"/>
+        <ECEnumerator name="Fitting" value="6" displayLabel="Fitting"/>
+        <ECEnumerator name="Meter_Point" value="7" displayLabel="Meter Point"/>
+        <ECEnumerator name="Production_Structure" value="8" displayLabel="Production Structure"/>
+        <ECEnumerator name="Pump" value="9" displayLabel="Pump"/>
+        <ECEnumerator name="Relief_Valve" value="10" displayLabel="Relief Valve"/>
+        <ECEnumerator name="Strainer" value="11" displayLabel="Strainer"/>
+        <ECEnumerator name="System_Valve" value="12" displayLabel="System Valve"/>
+        <ECEnumerator name="Trap" value="13" displayLabel="Trap"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+        <ECEnumerator name="DisplayLabel" value="14" displayLabel="DisplayLabel"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ThermalSegment_NetworkDataAspect_ThermalConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Conduit" value="0" displayLabel="Conduit"/>
+        <ECEnumerator name="Pressure_Pipe" value="1" displayLabel="Pressure Pipe"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ThermalSegment_NetworkDataAspect_ThermalNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Chilled_Water_Return" value="0" displayLabel="Chilled Water Return"/>
+        <ECEnumerator name="Chilled_Water_Supply" value="1" displayLabel="Chilled Water Supply"/>
+        <ECEnumerator name="Dual_Temperature_Water_Return" value="2" displayLabel="Dual Temperature Water Return"/>
+        <ECEnumerator name="Dual_Temperature_Water_Supply" value="3" displayLabel="Dual Temperature Water Supply"/>
+        <ECEnumerator name="High_Temperature_Hot_Water_Return" value="4" displayLabel="High Temperature Hot Water Return"/>
+        <ECEnumerator name="High_Temperature_Hot_Water_Supply" value="5" displayLabel="High Temperature Hot Water Supply"/>
+        <ECEnumerator name="Low_Temperature_Hot_Water_Return" value="6" displayLabel="Low Temperature Hot Water Return"/>
+        <ECEnumerator name="Low_Temperature_Hot_Water_Supply" value="7" displayLabel="Low Temperature Hot Water Supply"/>
+        <ECEnumerator name="Steam_Return" value="8" displayLabel="Steam Return"/>
+        <ECEnumerator name="Steam_Supply" value="9" displayLabel="Steam Supply"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ThermalSegment_NetworkDataAspect_ThermalSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Main_Line" value="0" displayLabel="Main Line"/>
+        <ECEnumerator name="Service_Line" value="1" displayLabel="Service Line"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WasteWaterNode_NetworkDataAspect_WasteWaterNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Domestic" value="0" displayLabel="Domestic"/>
+        <ECEnumerator name="Industrial" value="1" displayLabel="Industrial"/>
+        <ECEnumerator name="Oily_Waste" value="2" displayLabel="Oily Waste"/>
+        <ECEnumerator name="Ships_Waste" value="3" displayLabel="Ships Waste"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WasteWaterNode_NetworkDataAspect_WasteWaterNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Clean_Out" value="0" displayLabel="Clean Out"/>
+        <ECEnumerator name="Fitting" value="1" displayLabel="Fitting"/>
+        <ECEnumerator name="Manhole" value="2" displayLabel="Manhole"/>
+        <ECEnumerator name="Meter_Point" value="3" displayLabel="Meter Point"/>
+        <ECEnumerator name="Pump" value="4" displayLabel="Pump"/>
+        <ECEnumerator name="Release_Valve" value="5" displayLabel="Release Valve"/>
+        <ECEnumerator name="System_Valve" value="6" displayLabel="System Valve"/>
+        <ECEnumerator name="Treatment_Plant" value="7" displayLabel="Treatment Plant"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+        <ECEnumerator name="Access_Point" value="8" displayLabel="Access Point"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Conduit" value="0" displayLabel="Conduit"/>
+        <ECEnumerator name="Filter_Conduit" value="1" displayLabel="Filter Conduit"/>
+        <ECEnumerator name="Pressure_Pipe" value="2" displayLabel="Pressure Pipe"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Domestic" value="0" displayLabel="Domestic"/>
+        <ECEnumerator name="Industrial" value="1" displayLabel="Industrial"/>
+        <ECEnumerator name="Oily_Waste" value="2" displayLabel="Oily Waste"/>
+        <ECEnumerator name="Ships_Waste" value="3" displayLabel="Ships Waste"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Force_Main" value="0" displayLabel="Force Main"/>
+        <ECEnumerator name="Gravity_Main" value="1" displayLabel="Gravity Main"/>
+        <ECEnumerator name="Lateral_Line" value="2" displayLabel="Lateral Line"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WaterNode_NetworkDataAspect_WaterNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Fire_Protection" value="0" displayLabel="Fire Protection"/>
+        <ECEnumerator name="NonPotable" value="1" displayLabel="NonPotable"/>
+        <ECEnumerator name="Potable" value="2" displayLabel="Potable"/>
+        <ECEnumerator name="Raw_Water" value="3" displayLabel="Raw Water"/>
+        <ECEnumerator name="Salt_Water" value="4" displayLabel="Salt Water"/>
+        <ECEnumerator name="Treated_Water" value="5" displayLabel="Treated Water"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WaterNode_NetworkDataAspect_WaterNodeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Back_Flow_Prevention_Device" value="0" displayLabel="Back Flow Prevention Device"/>
+        <ECEnumerator name="Control_Valve" value="1" displayLabel="Control Valve"/>
+        <ECEnumerator name="Fitting" value="2" displayLabel="Fitting"/>
+        <ECEnumerator name="Hydrant" value="3" displayLabel="Hydrant"/>
+        <ECEnumerator name="Meter_Point" value="4" displayLabel="Meter Point"/>
+        <ECEnumerator name="Pressure_Reducing_Station" value="5" displayLabel="Pressure Reducing Station"/>
+        <ECEnumerator name="Production_Structure" value="6" displayLabel="Production Structure"/>
+        <ECEnumerator name="Pump" value="7" displayLabel="Pump"/>
+        <ECEnumerator name="Relief_Valve" value="8" displayLabel="Relief Valve"/>
+        <ECEnumerator name="Storage_Structure" value="9" displayLabel="Storage Structure"/>
+        <ECEnumerator name="System_Valve" value="10" displayLabel="System Valve"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WaterSegment_NetworkDataAspect_WaterConduitType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Pressure_Pipe" value="0" displayLabel="Pressure Pipe"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WaterSegment_NetworkDataAspect_WaterNetworkType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Fire_Protection" value="0" displayLabel="Fire Protection"/>
+        <ECEnumerator name="NonPotable" value="1" displayLabel="NonPotable"/>
+        <ECEnumerator name="Potable" value="2" displayLabel="Potable"/>
+        <ECEnumerator name="Raw_Water" value="3" displayLabel="Raw Water"/>
+        <ECEnumerator name="Salt_Water" value="4" displayLabel="Salt Water"/>
+        <ECEnumerator name="Treated_Water" value="5" displayLabel="Treated Water"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="WaterSegment_NetworkDataAspect_WaterSegmentType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Main_Line" value="0" displayLabel="Main Line"/>
+        <ECEnumerator name="Service_Line" value="1" displayLabel="Service Line"/>
+        <ECEnumerator name="User_Defined" value="100" displayLabel="User Defined"/>
+    </ECEnumeration>
+    <ECEntityClass typeName="BaseLink_HmiDataSetGeometryAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="HMIGeometryScaledLength" typeName="double" displayLabel="Length (Scaled)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="HmiDataSetGeometry_AuthorityDescription" typeName="string" displayLabel="Authority Description" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="QualityLevel" typeName="BaseLink_HmiDataSetGeometryAspect_QualityLevel_Enum" displayLabel="Quality Level" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="InvestigationLevel" typeName="BaseLink_HmiDataSetGeometryAspect_InvestigationLevel_Enum" displayLabel="Investigation Level" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="Authority" typeName="BaseLink_HmiDataSetGeometryAspect_Authority_Enum" displayLabel="Authority" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="HmiDataSetGeometry_StartX" typeName="double" displayLabel="X (Start)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="HmiDataSetGeometry_StartY" typeName="double" displayLabel="Y (Start)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="HmiDataSetGeometry_EndX" typeName="double" displayLabel="X (End)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="HmiDataSetGeometry_EndY" typeName="double" displayLabel="Y (End)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLink_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="NetworkData_UtilityOwner" typeName="string" displayLabel="Owner" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="NetworkData_UserDefinedElementType" typeName="string" displayLabel="Element Type (User Defined)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="NetworkData_UserDefinedNetworkType" typeName="string" displayLabel="Network Type (User Defined)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="UtiltityOperationalStatus" typeName="BaseLink_NetworkDataAspect_UtiltityOperationalStatus_Enum" displayLabel="Operational Status" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="NetworkData_UserDefinedConduitType" typeName="string" displayLabel="Conduit Type (User Defined)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLink_Physical_SegmentShapeTypeAspect" modifier="Abstract">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SegmentShapeType" typeName="BaseLink_Physical_SegmentShapeTypeAspect_SegmentShapeType_Enum" displayLabel="Shape" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLink_Physical_SegmentShapeType_CircularAspect">
+        <BaseClass>BaseLink_Physical_SegmentShapeTypeAspect</BaseClass>
+        <ECProperty propertyName="SegmentDiameter" typeName="double" displayLabel="Diameter" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0" kindOfQuantity="cifu:LENGTH_DIAMETER"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLink_Physical_SegmentShapeType_NonCircularAspect">
+        <BaseClass>BaseLink_Physical_SegmentShapeTypeAspect</BaseClass>
+        <ECProperty propertyName="SegmentRise" typeName="double" displayLabel="Rise" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SegmentSpan" typeName="double" displayLabel="Span" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLink_PhysicalAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Physical_UpstreamInvert" typeName="double" displayLabel="Invert (Start)" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="Physical_DownstreamInvert" typeName="double" displayLabel="Invert (Stop)" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="Physical_CalculatedSlope" typeName="double" displayLabel="Slope (Calculated)" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="Physical_ConduitUnitLength" typeName="double" displayLabel="Unit Length" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinkMicroStationID" typeName="string" displayLabel="MicroStation 3D ID" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="LinkWallThickness" typeName="double" displayLabel="Wall Thickness" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="GlobalBase_SUE_Aspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElementID" typeName="int" displayLabel="ID" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="Label" typeName="string" displayLabel="Label" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="Notes" typeName="string" displayLabel="Notes" category="General_Utilities_General_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseLinkAspect">
+        <BaseClass>GlobalBase_SUE_Aspect</BaseClass>
+        <ECProperty propertyName="ElevationReference" typeName="string" displayLabel="Elevation Reference" category="References_Utilities_References_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseNode_HmiDataSetGeometryAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="HmiDataSetGeometry_AuthorityDescription" typeName="string" displayLabel="Authority Description" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="QualityLevel" typeName="BaseNode_HmiDataSetGeometryAspect_QualityLevel_Enum" displayLabel="Quality Level" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="InvestigationLevel" typeName="BaseNode_HmiDataSetGeometryAspect_InvestigationLevel_Enum" displayLabel="Investigation Level" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="Authority" typeName="BaseNode_HmiDataSetGeometryAspect_Authority_Enum" displayLabel="Authority" category="Utility_Quality_Utilities_Utility_Quality_Utilities" priority="0"/>
+        <ECProperty propertyName="HmiDataSetGeometry_NodeRotation" typeName="double" displayLabel="Node Rotation" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:ANGLE"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="NetworkData_UtilityOwner" typeName="string" displayLabel="Owner" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="NetworkData_UserDefinedElementType" typeName="string" displayLabel="Element Type (User Defined)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="NetworkData_UserDefinedNetworkType" typeName="string" displayLabel="Network Type (User Defined)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="UtiltityOperationalStatus" typeName="BaseNode_NetworkDataAspect_UtiltityOperationalStatus_Enum" displayLabel="Operational Status" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseNode_PhysicalAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="NodeLength" typeName="double" displayLabel="Length" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="NodeWidth" typeName="double" displayLabel="Width" category="Utility_Footprint_Utilities_Utility_Footprint_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Physical_Elevation" typeName="double" displayLabel="Elevation (Invert)" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="Physical_TopElevation" typeName="double" displayLabel="Elevation (Top)" category="Physical_Utilities_Physical_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="NodeMicroStationID" typeName="string" displayLabel="MicroStation 3D ID" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="NodeMicroStation2dID" typeName="string" displayLabel="MicroStation 2D ID" category="General_Utilities_General_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="BaseNodeAspect">
+        <BaseClass>GlobalBase_SUE_Aspect</BaseClass>
+        <ECProperty propertyName="BaselineFeature" typeName="string" displayLabel="Baseline Feature" category="References_Utilities_References_Utilities" priority="0"/>
+        <ECProperty propertyName="BaselineOffset" typeName="double" displayLabel="Baseline Offset" category="References_Utilities_References_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="BaselineStation" typeName="double" displayLabel="Baseline Station" category="References_Utilities_References_Utilities" priority="0" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="ElevationReference" typeName="string" displayLabel="Elevation Reference" category="References_Utilities_References_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CommunicationNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="CommunicationNetworkType" typeName="CommunicationNode_NetworkDataAspect_CommunicationNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="CommNodeType" typeName="CommunicationNode_NetworkDataAspect_CommNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CommunicationNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="CommunicationSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="CommunicationNetworkType" typeName="CommunicationSegment_NetworkDataAspect_CommunicationNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="CommSegmentType" typeName="CommunicationSegment_NetworkDataAspect_CommSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ComConduitType" typeName="CommunicationSegment_NetworkDataAspect_ComConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CommunicationSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="ConflictNode_ConflictAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Conflict_StartStation" typeName="double" displayLabel="Station (Start)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="Conflict_StopStation" typeName="double" displayLabel="Station (Stop)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="Conflict_LeftOffset" typeName="double" displayLabel="Offset (Left)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Conflict_RightOffset" typeName="double" displayLabel="Offset (Right)" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Conflict_ResponsibleParty" typeName="string" displayLabel="Responsible Party" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="Conflict_Conflicter" typeName="int" displayLabel="Feature A" category="Utility_Data_Subsurface_Utilities_Utility_Data_Subsurface_Utilities" priority="0"/>
+        <ECProperty propertyName="Conflict_Conflictee" typeName="int" displayLabel="Feature B" category="Utility_Data_Subsurface_Utilities_Utility_Data_Subsurface_Utilities" priority="0"/>
+        <ECProperty propertyName="Conflict_Elevation" typeName="double" displayLabel="Elevation" category="Geometry_Utilities_Geometry_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="CurrentStatus" typeName="ConflictNode_ConflictAspect_CurrentStatus_Enum" displayLabel="Current Status" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="RecommendedResolution" typeName="ConflictNode_ConflictAspect_RecommendedResolution_Enum" displayLabel="Recommended Resolution" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="OtherResolutionDescription" typeName="string" displayLabel="Other Resolution Description" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ConflictType" typeName="ConflictNode_ConflictAspect_ConflictType_Enum" displayLabel="Conflict Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="RequiresTestHole" typeName="boolean" displayLabel="Requires Test Hole?" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ConflictNode_HmiDataSetGeometryAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="FeatureA_QualityLevel" typeName="ConflictNode_HmiDataSetGeometryAspect_FeatureA_QualityLevel_Enum" displayLabel="Quality Level (Feature A)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="FeatureB_QualityLevel" typeName="ConflictNode_HmiDataSetGeometryAspect_FeatureB_QualityLevel_Enum" displayLabel="Quality Level (Feature B)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ConflictNodeAspect">
+        <BaseClass>GlobalBase_SUE_Aspect</BaseClass>
+        <ECProperty propertyName="BaselineFeature" typeName="string" displayLabel="Baseline Feature" category="References_Utilities_References_Utilities" priority="0"/>
+        <ECProperty propertyName="BaselineOffset" typeName="double" displayLabel="Baseline Offset" category="References_Utilities_References_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="BaselineStation" typeName="double" displayLabel="Baseline Station" category="References_Utilities_References_Utilities" priority="0" kindOfQuantity="cifu:ELEVATION"/>
+        <ECProperty propertyName="ElevationReference" typeName="string" displayLabel="Elevation Reference" category="References_Utilities_References_Utilities" priority="0"/>
+        <ECProperty propertyName="FeatureDefinitionA" typeName="string" displayLabel="Feature Definition (A)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="FeatureDefinitionB" typeName="string" displayLabel="Feature Definition (B)" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ElectricalNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElectricNetworkType" typeName="ElectricalNode_NetworkDataAspect_ElectricNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ElectricNodeDataType" typeName="ElectricalNode_NetworkDataAspect_ElectricNodeDataType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ElectricalNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="ElectricalSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElectricNetworkType" typeName="ElectricalSegment_NetworkDataAspect_ElectricNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ElectricSegmentType" typeName="ElectricalSegment_NetworkDataAspect_ElectricSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ElectricConduitType" typeName="ElectricalSegment_NetworkDataAspect_ElectricConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ElectricalSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLink_HmiDataSetGeometryAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLink_HmiDataSetGeometryAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLink_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLink_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLink_Physical_SegmentShapeType_CircularAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLink_Physical_SegmentShapeType_CircularAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLink_Physical_SegmentShapeType_NonCircularAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLink_Physical_SegmentShapeType_NonCircularAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLink_PhysicalAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLink_PhysicalAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseLinkAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseLinkAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseNode_HmiDataSetGeometryAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseNode_HmiDataSetGeometryAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseNode_PhysicalAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseNode_PhysicalAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBaseNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BaseNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCommunicationNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CommunicationNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCommunicationNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CommunicationNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCommunicationSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CommunicationSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCommunicationSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CommunicationSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsConflictNode_ConflictAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ConflictNode_ConflictAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsConflictNode_HmiDataSetGeometryAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ConflictNode_HmiDataSetGeometryAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsConflictNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ConflictNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsElectricalNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ElectricalNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsElectricalNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ElectricalNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsElectricalSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ElectricalSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsElectricalSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ElectricalSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GasNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="GasNetworkType" typeName="GasNode_NetworkDataAspect_GasNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="GasNodeType" typeName="GasNode_NetworkDataAspect_GasNodeType_Enum" displayLabel="Gas Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGasNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GasNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GasNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGasNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GasNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GasSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="GasNetworkType" typeName="GasSegment_NetworkDataAspect_GasNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="GasSegmentType" typeName="GasSegment_NetworkDataAspect_GasSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="GasConduitType" typeName="GasSegment_NetworkDataAspect_GasConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGasSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GasSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GasSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGasSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GasSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GenericNodeAssetAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGenericNodeAssetAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GenericNodeAssetAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GenericSegmentAssetAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGenericSegmentAssetAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GenericSegmentAssetAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsGlobalBase_SUE_Aspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GlobalBase_SUE_Aspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="POLNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="POLNetworkType" typeName="POLNode_NetworkDataAspect_POLNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="POLNodeType" typeName="POLNode_NetworkDataAspect_POLNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPOLNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="POLNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="POLNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPOLNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="POLNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="POLSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="POLNetworkType" typeName="POLSegment_NetworkDataAspect_POLNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="POLSegmentType" typeName="POLSegment_NetworkDataAspect_POLSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="POLConduitType" typeName="POLSegment_NetworkDataAspect_POLConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPOLSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="POLSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="POLSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPOLSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="POLSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReferenceDomainElementAspect">
+        <BaseClass>GlobalBase_SUE_Aspect</BaseClass>
+        <ECProperty propertyName="DataSourceType" typeName="ReferenceDomainElementAspect_DataSourceType_Enum" displayLabel="Data Source Type" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="ReferenceDomainElement_DataSource" typeName="string" displayLabel=" Data Source" category="General_Utilities_General_Utilities" priority="0"/>
+        <ECProperty propertyName="ReferenceDomainElement_DataSourceID" typeName="string" displayLabel="Data Source ID" category="General_Utilities_General_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReferenceDomainElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReferenceDomainElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StormWaterNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="StormNetworkType" typeName="StormWaterNode_NetworkDataAspect_StormNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="StormWaterNodeType" typeName="StormWaterNode_NetworkDataAspect_StormWaterNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStormWaterNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StormWaterNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StormWaterNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStormWaterNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StormWaterNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StormWaterSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="StormNetworkType" typeName="StormWaterSegment_NetworkDataAspect_StormNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="StormWaterSegmentType" typeName="StormWaterSegment_NetworkDataAspect_StormWaterSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="StormWaterConduitType" typeName="StormWaterSegment_NetworkDataAspect_StormWaterConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStormWaterSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StormWaterSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StormWaterSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStormWaterSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StormWaterSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ThermalNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ThermalNetworkType" typeName="ThermalNode_NetworkDataAspect_ThermalNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ThermalNodeType" typeName="ThermalNode_NetworkDataAspect_ThermalNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsThermalNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThermalNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ThermalNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsThermalNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThermalNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ThermalSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ThermalNetworkType" typeName="ThermalSegment_NetworkDataAspect_ThermalNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ThermalSegmentType" typeName="ThermalSegment_NetworkDataAspect_ThermalSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="ThermalConduitType" typeName="ThermalSegment_NetworkDataAspect_ThermalConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsThermalSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThermalSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ThermalSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsThermalSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThermalSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WasteWaterNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="WasteWaterNetworkType" typeName="WasteWaterNode_NetworkDataAspect_WasteWaterNetworkType_Enum" displayLabel="Waste Water Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WasteWaterNodeType" typeName="WasteWaterNode_NetworkDataAspect_WasteWaterNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWasteWaterNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WasteWaterNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WasteWaterNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWasteWaterNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WasteWaterNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WasteWaterSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="WasteWaterNetworkType" typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterNetworkType_Enum" displayLabel="Waste Water Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WasteWaterSegmentType" typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WasteWaterConduitType" typeName="WasteWaterSegment_NetworkDataAspect_WasteWaterConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWasteWaterSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WasteWaterSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WasteWaterSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWasteWaterSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WasteWaterSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WaterNode_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="WaterNetworkType" typeName="WaterNode_NetworkDataAspect_WaterNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WaterNodeType" typeName="WaterNode_NetworkDataAspect_WaterNodeType_Enum" displayLabel="Node Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWaterNode_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WaterNode_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WaterNodeAspect">
+        <BaseClass>BaseNodeAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWaterNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WaterNodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WaterSegment_NetworkDataAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="WaterNetworkType" typeName="WaterSegment_NetworkDataAspect_WaterNetworkType_Enum" displayLabel="Network Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WaterSegmentType" typeName="WaterSegment_NetworkDataAspect_WaterSegmentType_Enum" displayLabel="Function" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+        <ECProperty propertyName="WaterConduitType" typeName="WaterSegment_NetworkDataAspect_WaterConduitType_Enum" displayLabel="Conduit Type" category="Utility_Data_Utilities_Utility_Data_Utilities" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWaterSegment_NetworkDataAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WaterSegment_NetworkDataAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="WaterSegmentAspect">
+        <BaseClass>BaseLinkAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsWaterSegmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WaterSegmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <PropertyCategory typeName="General_Subsurface_Utilities_General_Subsurface_Utilities" description="&lt;General&gt; [Subsurface Utilities]" displayLabel="&lt;General&gt; [Subsurface Utilities]" priority="4294899186"/>
+    <PropertyCategory typeName="General_Utilities_General_Utilities" description="&lt;General&gt; [Utilities]" displayLabel="&lt;General&gt; [Utilities]" priority="4294899186"/>
+    <PropertyCategory typeName="Geometry_Subsurface_Utilities_Geometry_Subsurface_Utilities" description="&lt;Geometry&gt; [Subsurface Utilities]" displayLabel="&lt;Geometry&gt; [Subsurface Utilities]" priority="4294899186"/>
+    <PropertyCategory typeName="Geometry_Utilities_Geometry_Utilities" description="&lt;Geometry&gt; [Utilities]" displayLabel="&lt;Geometry&gt; [Utilities]" priority="4294899186"/>
+    <PropertyCategory typeName="Physical_Subsurface_Utilities_Physical_Subsurface_Utilities" description="Physical [Subsurface Utilities]" displayLabel="Physical [Subsurface Utilities]" priority="4294875686"/>
+    <PropertyCategory typeName="Physical_Utilities_Physical_Utilities" description="Physical [Utilities]" displayLabel="Physical [Utilities]" priority="4294875686"/>
+    <PropertyCategory typeName="References_Subsurface_Utilities_References_Subsurface_Utilities" description="References [Subsurface Utilities]" displayLabel="References [Subsurface Utilities]" priority="4294874176"/>
+    <PropertyCategory typeName="References_Utilities_References_Utilities" description="References [Utilities]" displayLabel="References [Utilities]" priority="4294874176"/>
+    <PropertyCategory typeName="Utility_Data_Subsurface_Utilities_Utility_Data_Subsurface_Utilities" description="Utility Data [Subsurface Utilities]" displayLabel="Utility Data [Subsurface Utilities]" priority="4294869646"/>
+    <PropertyCategory typeName="Utility_Data_Utilities_Utility_Data_Utilities" description="Utility Data [Utilities]" displayLabel="Utility Data [Utilities]" priority="4294869646"/>
+    <PropertyCategory typeName="Utility_Footprint_Subsurface_Utilities_Utility_Footprint_Subsurface_Utilities" description="Utility Footprint [Subsurface Utilities]" displayLabel="Utility Footprint [Subsurface Utilities]" priority="4294869646"/>
+    <PropertyCategory typeName="Utility_Footprint_Utilities_Utility_Footprint_Utilities" description="Utility Footprint [Utilities]" displayLabel="Utility Footprint [Utilities]" priority="4294869646"/>
+    <PropertyCategory typeName="Utility_Quality_Subsurface_Utilities_Utility_Quality_Subsurface_Utilities" description="Utility Quality [Subsurface Utilities]" displayLabel="Utility Quality [Subsurface Utilities]" priority="4294869646"/>
+    <PropertyCategory typeName="Utility_Quality_Utilities_Utility_Quality_Utilities" description="Utility Quality [Utilities]" displayLabel="Utility Quality [Utilities]" priority="4294869646"/>
+</ECSchema>

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="CifSubsurface" alias="cifssuf" version="01.00.03" description="iModel Connector schema containing aspect classes with properties from the Subsurface Utilities module as part of Civil Designer applications." xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.14" alias="bis"/>
+    <ECSchemaReference name="CifCommon" version="01.00.03" alias="cifcmn"/>
+    <ECSchemaReference name="CifUnits" version="01.00.01" alias="cifu"/>
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="CLASS_SU_LinkAspect_PROP_SU_CreateTrench_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="NodeToPointAlongLinkRuleAspect_DistanceAlongFrom_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Referenced_link_start_node" value="1" displayLabel="Referenced link start node"/>
+        <ECEnumerator name="Referenced_link_stop_node" value="2" displayLabel="Referenced link stop node"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ReachAspect_NodeDrawType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Box" value="0" displayLabel="Box"/>
+        <ECEnumerator name="Line" value="1" displayLabel="Line"/>
+        <ECEnumerator name="Triangle" value="2" displayLabel="Triangle"/>
+        <ECEnumerator name="Cell" value="3" displayLabel="Cell"/>
+        <ECEnumerator name="Slice" value="4" displayLabel="Slice"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="TapNodeToTrunkLineAspect_ConnectionType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Center" value="0" displayLabel="Center"/>
+        <ECEnumerator name="Soffit___Crown" value="1" displayLabel="Soffit / Crown"/>
+    </ECEnumeration>
+    <ECEntityClass typeName="CLASS_ConduitDefaultsEntityAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="NominalDiameter" typeName="double" displayLabel="Nominal Diameter" category="CategoryInstance_Category_Instance" priority="300000"/>
+        <ECProperty propertyName="InsideDiameter" typeName="double" displayLabel="Inside Diameter" category="CategoryInstance_Category_Instance" priority="299999"/>
+        <ECProperty propertyName="DepthWidthCurve" typeName="string" displayLabel="Depth Width Curve" category="CategoryInstance_Category_Instance" priority="299999"/>
+        <ECProperty propertyName="IrregularChannelSection" typeName="string" displayLabel="Irregular Channel Section" category="CategoryInstance_Category_Instance" priority="299999"/>
+        <ECProperty propertyName="Thickness" typeName="double" displayLabel="Thickness" category="CategoryInstance_Category_Instance" priority="299998"/>
+        <ECProperty propertyName="MinBendRadius" typeName="double" displayLabel="Min. Bend Radius" category="CategoryInstance_Category_Instance" priority="299997"/>
+        <ECProperty propertyName="JointDeflection" typeName="double" displayLabel="Joint Deflection" category="CategoryInstance_Category_Instance" priority="299996"/>
+        <ECProperty propertyName="UnitLength" typeName="double" displayLabel="Unit Length" category="CategoryInstance_Category_Instance" priority="299995"/>
+        <ECProperty propertyName="Rise" typeName="double" displayLabel="Rise" category="CategoryInstance_Category_Instance" priority="300000"/>
+        <ECProperty propertyName="Span" typeName="double" displayLabel="Span" category="CategoryInstance_Category_Instance" priority="299999"/>
+        <ECProperty propertyName="MinCover" typeName="double" displayLabel="Min. Cover" category="CategoryInstance_Category_Instance" priority="299990"/>
+        <ECProperty propertyName="FullArea" typeName="double" displayLabel="Full Area" category="CategoryInstance_Category_Instance" priority="299988"/>
+        <ECProperty propertyName="TopRadius" typeName="double" displayLabel="Top Radius" category="CategoryInstance_Category_Instance" priority="299988"/>
+        <ECProperty propertyName="BottomRadius" typeName="double" displayLabel="Bottom Radius" category="CategoryInstance_Category_Instance" priority="299987"/>
+        <ECProperty propertyName="BottomDistance" typeName="double" displayLabel="Bottom Distance" category="CategoryInstance_Category_Instance" priority="299986"/>
+        <ECProperty propertyName="CornerRadius" typeName="double" displayLabel="Corner Radius" category="CategoryInstance_Category_Instance" priority="299985"/>
+        <ECProperty propertyName="PowerExponent" typeName="double" displayLabel="Power Exponent" category="CategoryInstance_Category_Instance" priority="299997"/>
+        <ECProperty propertyName="TriangleHeight" typeName="double" displayLabel="Triangle Height" category="CategoryInstance_Category_Instance" priority="299997"/>
+        <ECProperty propertyName="BottomWidth" typeName="double" displayLabel="Bottom Width" category="CategoryInstance_Category_Instance" priority="299997"/>
+        <ECProperty propertyName="SideSlopeLeft" typeName="double" displayLabel="Side Slope (Left)" category="CategoryInstance_Category_Instance" priority="299996"/>
+        <ECProperty propertyName="SideSlopeRight" typeName="double" displayLabel="Side Slope (Right)" category="CategoryInstance_Category_Instance" priority="299995"/>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description" category="CategoryInstance_Category_Instance" priority="300000"/>
+        <ECProperty propertyName="ForDesign" typeName="boolean" displayLabel="For Design?" category="CategoryInstance_Category_Instance" priority="299987"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CLASS_IrregularChannelSectionAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="PROP_Offset" typeName="double" displayLabel="Offset" category="StationElevationEntries_StationElevationEntries" priority="300000" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_Elevation" typeName="double" displayLabel="Elevation (Relative)" category="StationElevationEntries_StationElevationEntries" priority="299999"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CLASS_SU_LateralLinkRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="PROP_SU_Skew" typeName="double" displayLabel="Skew to Trunk" category="Utility_Utility" priority="0" kindOfQuantity="cifu:ANGLE"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CLASS_SU_LinkAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="PROP_SU_StartNode" typeName="string" displayLabel="Start Node" category="Utility_Utility" priority="299208"/>
+        <ECProperty propertyName="PROP_SU_StopNode" typeName="string" displayLabel="Stop Node" category="Utility_Utility" priority="299207"/>
+        <ECProperty propertyName="PROP_SU_SetInvertToStart" typeName="boolean" displayLabel="Set Invert to Start?" category="Utility_Utility" priority="299206"/>
+        <ECProperty propertyName="PROP_SU_StartInvert" typeName="double" displayLabel="Start Invert" category="Utility_Utility" priority="299205" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_SetInvertToStop" typeName="boolean" displayLabel="Set Invert to Stop?" category="Utility_Utility" priority="299204"/>
+        <ECProperty propertyName="PROP_SU_StopInvert" typeName="double" displayLabel="Stop Invert" category="Utility_Utility" priority="299203" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_Diameter" typeName="double" displayLabel="Diameter" category="Utility_Utility" priority="299202" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_InterpolateElevations" typeName="boolean" displayLabel="Single Gradient" category="Utility_Utility" priority="299196"/>
+        <ECProperty propertyName="PROP_SU_Description" typeName="string" displayLabel="Description" category="FeatureProperties_Feature" priority="0"/>
+        <ECProperty propertyName="PROP_SU_CreateTrench" typeName="CLASS_SU_LinkAspect_PROP_SU_CreateTrench_BoolEnum" displayLabel="Trench" category="FeatureProperties_Feature" priority="-10"/>
+        <ECProperty propertyName="CIF_ID" typeName="int" displayLabel="Utility ID" category="Utility_Utility" priority="299200"/>
+        <ECProperty propertyName="PROP_SU_NumberOfBarrels" typeName="int" displayLabel="Number of Barrels" category="Utility_Utility" priority="299202"/>
+        <ECProperty propertyName="CalculatedSlope" typeName="double" displayLabel="Slope (Calculated)" category="Utility_Utility" priority="299200" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="PROP_SU_ConstructionSlope" typeName="double" displayLabel="Slope (Construction)" category="Utility_Utility" priority="299199" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="PROP_SU_ConstructionLength" typeName="double" displayLabel="Length (Construction)" category="Utility_Utility" priority="299198" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Length" typeName="double" displayLabel="Length (Unified)" category="Utility_Utility" priority="299198" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_Material" typeName="string" displayLabel="Material" category="Utility_Utility" priority="299197"/>
+        <ECProperty propertyName="PROP_SU_Owner" typeName="string" displayLabel="Owner" category="Utility_Utility" priority="299195"/>
+        <ECProperty propertyName="PROP_SU_Capacity" typeName="double" displayLabel="Capacity (Full Flow)" category="Results_Drainage_Results" priority="299200" kindOfQuantity="cifu:FLOW"/>
+        <ECProperty propertyName="PROP_SU_Flow" typeName="double" displayLabel="Flow" category="Results_Drainage_Results" priority="299199" kindOfQuantity="cifu:FLOW"/>
+        <ECProperty propertyName="PROP_SU_Depth" typeName="double" displayLabel="Depth (Normal)" category="Results_Drainage_Results" priority="299198" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_Velocity" typeName="double" displayLabel="Velocity" category="Results_Drainage_Results" priority="299197" kindOfQuantity="cifu:FLOW_VELOCITY"/>
+        <ECProperty propertyName="PROP_SU_SpreadStart" typeName="double" displayLabel="Spread / Top Width (Start)" category="Results_Drainage_Results" priority="299196" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_SpreadStop" typeName="double" displayLabel="Spread / Top Width (Stop)" category="Results_Drainage_Results" priority="299195" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_DepthIn" typeName="double" displayLabel="Depth (In)" category="Results_Drainage_Results" priority="299194" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_DepthOut" typeName="double" displayLabel="Depth (Out)" category="Results_Drainage_Results" priority="299193" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_SU_RationalFlow" typeName="double" displayLabel="Rational Flow (Gutter)" category="Results_Drainage_Results" priority="299192" kindOfQuantity="cifu:FLOW"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DepthWidthEntityAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Depth" typeName="double" displayLabel="Elevation (Relative)" category="DepthWidthCurve_Depth_Width_Curve" priority="300000" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Width" typeName="double" displayLabel="Width" category="DepthWidthCurve_Depth_Width_Curve" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsCLASS_ConduitDefaultsEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CLASS_ConduitDefaultsEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCLASS_IrregularChannelSectionAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CLASS_IrregularChannelSectionAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCLASS_SU_LateralLinkRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CLASS_SU_LateralLinkRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCLASS_SU_LinkAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CLASS_SU_LinkAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsDepthWidthEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DepthWidthEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="LinkProfileByDTMRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElevationOffset" typeName="double" displayLabel="Vertical Offset" category="Utility_Utility" priority="299201" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ActiveReference" typeName="string" displayLabel="Elevation Reference" category="Utility_Utility" priority="299200"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsLinkProfileByDTMRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LinkProfileByDTMRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="NodeAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="GroundElevation" typeName="double" displayLabel="Ground Elevation" category="Utility_Utility" priority="299210" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="InvertElevation" typeName="double" displayLabel="Invert Elevation" category="Utility_Utility" priority="299209" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="OrientTopToSurface" typeName="boolean" displayLabel="Use Slope of Surface" category="Utility_Utility" priority="299205"/>
+        <ECProperty propertyName="ActiveReference" typeName="string" displayLabel="Elevation Reference" category="Utility_Utility" priority="299200"/>
+        <ECProperty propertyName="ActiveStationOffsetReference" typeName="string" displayLabel="Baseline Reference" category="Utility_Utility" priority="299199"/>
+        <ECProperty propertyName="IndependentConduitElevations" typeName="boolean" displayLabel="Independent Conduit Elevations" category="Utility_Utility" priority="299201"/>
+        <ECProperty propertyName="MatchSlopeofConduit" typeName="boolean" displayLabel="Match Slope of Conduit" category="Utility_Utility" priority="299202"/>
+        <ECProperty propertyName="CIF_ID" typeName="int" displayLabel="Utility ID" category="Utility_Utility" priority="299199"/>
+        <ECProperty propertyName="ElevationIsInvert" typeName="boolean" displayLabel="Elevation is the Invert" category="Utility_Utility" priority="299990"/>
+        <ECProperty propertyName="UseRoadCrossSlope" typeName="boolean" displayLabel="Use Road Cross Slope" category="Utility_Utility" priority="299204"/>
+        <ECProperty propertyName="RoadCrossSlopeDistance" typeName="double" displayLabel="Road Cross Slope Offset" category="Utility_Utility" priority="299203" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PROP_OnlyIncludeContributingSlopes" typeName="boolean" displayLabel="Only Include Contributing Slopes" category="Utility_Utility" priority="299187"/>
+        <ECProperty propertyName="PROP_PROP_CrosssectionOffset" typeName="double" displayLabel="Maximum Offset" category="Utility_Utility" priority="299186" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SetOutElevation" typeName="double" displayLabel="Set Out Elevation" category="Utility_Utility" priority="299208" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SetOutX" typeName="double" displayLabel="Set Out X" category="Utility_Utility" priority="299207" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SetOutY" typeName="double" displayLabel="Set Out Y" category="Utility_Utility" priority="299206" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="BaselineStation" typeName="double" displayLabel="Baseline Station" category="Utility_Utility" priority="299198" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="BaselineOffset" typeName="double" displayLabel="Baseline Offset" category="Utility_Utility" priority="299197" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Depth" typeName="double" displayLabel="Depth (Structure)" category="Utility_Utility" priority="299194" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Width" typeName="double" displayLabel="Width" category="Utility_Utility" priority="299193" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Length" typeName="double" displayLabel="Length" category="Utility_Utility" priority="299192" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Diameter" typeName="double" displayLabel="Diameter" category="Utility_Utility" priority="299191" kindOfQuantity="cifu:LENGTH_DIAMETER"/>
+        <ECProperty propertyName="GrateLength" typeName="double" displayLabel="Grate Length" category="Utility_Utility" priority="299190" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="GrateWidth" typeName="double" displayLabel="Grate Width" category="Utility_Utility" priority="299189" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="CurbOpeningLength" typeName="double" displayLabel="Curb Opening Length" category="Utility_Utility" priority="299188" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LongitudinalSlope" typeName="double" displayLabel="Longitudinal Slope" category="Utility_Utility" priority="299183" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="PROP_Owner" typeName="string" displayLabel="Owner" category="Utility_Utility" priority="299182"/>
+        <ECProperty propertyName="Spread" typeName="double" displayLabel="Spread / Top Width" category="Results_Drainage_Results" priority="299184" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="CapturedFlow" typeName="double" displayLabel="Flow (Captured)" category="Results_Drainage_Results" priority="299181" kindOfQuantity="cifu:FLOW"/>
+        <ECProperty propertyName="BypassedFlow" typeName="double" displayLabel="Flow (Total Bypassed)" category="Results_Drainage_Results" priority="299180" kindOfQuantity="cifu:FLOW"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsNodeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="NodeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="NodeInvertTo3dElementRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="PROP_InvertReferenceName" typeName="string" displayLabel="Invert Reference" category="InvertTo3dReferenceRule_Invert_To_3D_Reference_Rule" priority="300000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsNodeInvertTo3dElementRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="NodeInvertTo3dElementRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="NodeOffsetRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Offset" typeName="double" displayLabel="Vertical Offset" category="Utility_Utility" priority="299980" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsNodeOffsetRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="NodeOffsetRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="NodeToPointAlongLinkRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="DistanceAlong" typeName="double" displayLabel="Distance along link" category="NodeToPointAlongRuleProperties_Node_To_Point_Along_Link_Rule" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="DistanceAlongFrom" typeName="NodeToPointAlongLinkRuleAspect_DistanceAlongFrom_Enum" displayLabel="Distance along measured from:" category="NodeToPointAlongRuleProperties_Node_To_Point_Along_Link_Rule" priority="0"/>
+        <ECProperty propertyName="ReferencedLink" typeName="string" displayLabel="Referenced Link" category="NodeToPointAlongRuleProperties_Node_To_Point_Along_Link_Rule" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsNodeToPointAlongLinkRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="NodeToPointAlongLinkRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PolygonAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="OutflowElement" typeName="string" displayLabel="Outflow Element" category="Utility_Utility" priority="300000"/>
+        <ECProperty propertyName="ActiveReference" typeName="string" displayLabel="Elevation Reference" category="Utility_Utility" priority="299990"/>
+        <ECProperty propertyName="UseScaledArea" typeName="boolean" displayLabel="Use Scaled Area" category="Utility_Utility" priority="299989"/>
+        <ECProperty propertyName="Area" typeName="double" displayLabel="Area (User Defined)" category="Utility_Utility" priority="299987" kindOfQuantity="cifu:AREA"/>
+        <ECProperty propertyName="ScaledArea" typeName="double" displayLabel="Scaled Area" category="Utility_Utility" priority="299988" kindOfQuantity="cifu:AREA"/>
+        <ECProperty propertyName="CIF_ID" typeName="int" displayLabel="Utility ID" category="Utility_Utility" priority="299204"/>
+        <ECProperty propertyName="UnifiedArea" typeName="double" displayLabel="Area (Unified)" category="Utility_Utility" priority="299986" kindOfQuantity="cifu:AREA"/>
+        <ECProperty propertyName="TimeOfConcentration" typeName="double" displayLabel="Time of Concentration (Composite)" category="Utility_Utility" priority="299984"/>
+        <ECProperty propertyName="RunoffCoefficient" typeName="double" displayLabel="Runoff Coefficient (Rational)" category="Utility_Utility" priority="299983"/>
+        <ECProperty propertyName="Intensity" typeName="double" displayLabel="Catchment Intensity" category="Results_Drainage_Results" priority="299986" kindOfQuantity="cifu:RAINFALL_INTENSITY"/>
+        <ECProperty propertyName="RationalFlow" typeName="double" displayLabel="Catchment Rational Flow" category="Results_Drainage_Results" priority="299985" kindOfQuantity="cifu:FLOW"/>
+        <ECProperty propertyName="CatchmentCA" typeName="double" displayLabel="Catchment CA" category="Results_Drainage_Results" priority="299984" kindOfQuantity="cifu:AREA"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPolygonAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PolygonAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PolygonBySurfaceEntityRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="MaxElevation" typeName="double" displayLabel="Top Elevation" category="PolygonBySurfaceEntityRuleAttributes_Polygon_By_Surface_Entity_Rule" priority="299202" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPolygonBySurfaceEntityRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PolygonBySurfaceEntityRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileByLinearEntity3dOffsetRuleAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElevationOffset" typeName="double" displayLabel="Vertical Offset" category="Utility_Utility" priority="300000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileByLinearEntity3dOffsetRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileByLinearEntity3dOffsetRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReachAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Reach_Profile_Run" priority="299999"/>
+        <ECProperty propertyName="HasHaestadProfile" typeName="boolean" displayLabel="Has Extended Profiles" category="Reach_Profile_Run" priority="299997"/>
+        <ECProperty propertyName="NodeDrawType" typeName="ReachAspect_NodeDrawType_Enum" displayLabel="Node Draw Type" category="Reach_Profile_Run" priority="299998"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReachAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReachAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TapNodeToTrunkLineAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="ElevationOffset" typeName="double" displayLabel="Tap Elevation Offset" category="Utility_Utility" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ConnectionType" typeName="TapNodeToTrunkLineAspect_ConnectionType_Enum" displayLabel="Tap Connection Type" category="Utility_Utility" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsTapNodeToTrunkLineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TapNodeToTrunkLineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <PropertyCategory typeName="Area_Area" description="Area" displayLabel="Area" priority="200000"/>
+    <PropertyCategory typeName="CategoryInstance_Category_Instance" description="CategoryInstance" displayLabel="Category Instance" priority="1"/>
+    <PropertyCategory typeName="DepthWidthCurve_Depth_Width_Curve" description="DepthWidthCurve" displayLabel="Depth Width Curve" priority="400000"/>
+    <PropertyCategory typeName="FeatureProperties_Feature" description="FeatureProperties" displayLabel="Feature" priority="299999"/>
+    <PropertyCategory typeName="InvertTo3dReferenceRule_Invert_To_3D_Reference_Rule" description="InvertTo3dReferenceRule" displayLabel="Invert To 3D Reference Rule" priority="100000"/>
+    <PropertyCategory typeName="NodeToPointAlongRuleProperties_Node_To_Point_Along_Link_Rule" description="NodeToPointAlongRuleProperties" displayLabel="Node To Point Along Link Rule" priority="300000"/>
+    <PropertyCategory typeName="PolygonBySurfaceEntityRuleAttributes_Polygon_By_Surface_Entity_Rule" description="PolygonBySurfaceEntityRuleAttributes" displayLabel="Polygon By Surface Entity Rule" priority="0"/>
+    <PropertyCategory typeName="Reach_Profile_Run" description="Reach" displayLabel="Profile Run" priority="299999"/>
+    <PropertyCategory typeName="Results_Drainage_Results" description="Results" displayLabel="Drainage Results" priority="299997"/>
+    <PropertyCategory typeName="StationElevationEntries_StationElevationEntries" description="StationElevationEntries" displayLabel="&lt;- StationElevationEntries -&gt;" priority="300000"/>
+    <PropertyCategory typeName="Utility_Utility" description="Utility" displayLabel="Utility" priority="299999"/>
+</ECSchema>

@@ -125,6 +125,28 @@ describe("SchemaLoaderPerformance", () => {
     imodel.close();
   }
 
+  async function timeBisSchemasLoadingAsync(schemaName: string) {
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
+
+    try {
+      const startTime: number = new Date().getTime();
+      const schemaResult =  await imodel.nativeDb.getSchemaPropsAsync(schemaName);
+
+      const endTime: number = new Date().getTime();
+
+      if (schemaResult === undefined) {
+        throw new Error("Schema does not exist");
+      }
+      const elapsedTime = endTime - startTime;
+
+      reporter.addEntry("SchemaLoaderPerfTest - Async", `Get schema from imodel: ${schemaName}`, "Execution time(ms)", elapsedTime, {});
+    } catch (error) {
+      reporter.addEntry("SchemaLoaderPerfTest - Async", `Get schema from imodel: ${schemaName}`, "Error!", -1, {});
+    }
+
+    imodel.close();
+  }
+
   it("Time BisSchemas data read from imodel", async () => {
     timeBisSchemasLoading("Units");
     timeBisSchemasLoading("Formats");
@@ -145,5 +167,27 @@ describe("SchemaLoaderPerformance", () => {
     timeBisSchemasLoading("CifSubsurface");
     timeBisSchemasLoading("CifSubsurfaceConflictAnalysis");
     timeBisSchemasLoading("CifUnits");
+  });
+
+  it("Time BisSchemas data read from imodel - Async", async () => {
+    void timeBisSchemasLoadingAsync("Units");
+    void timeBisSchemasLoadingAsync("Formats");
+
+    void timeBisSchemasLoadingAsync("BisCore");
+
+    void timeBisSchemasLoadingAsync("ProcessFunctional");
+    void timeBisSchemasLoadingAsync("ProcessPhysical");
+
+    void timeBisSchemasLoadingAsync("CifBridge");
+    void timeBisSchemasLoadingAsync("CifCommon");
+    void timeBisSchemasLoadingAsync("CifGeometricRules");
+    void timeBisSchemasLoadingAsync("CifHydraulicAnalysis");
+    void timeBisSchemasLoadingAsync("CifHydraulicResults");
+    void timeBisSchemasLoadingAsync("CifQuantityTakeoffs");
+    void timeBisSchemasLoadingAsync("CifRail");
+    void timeBisSchemasLoadingAsync("CifRoads");
+    void timeBisSchemasLoadingAsync("CifSubsurface");
+    void timeBisSchemasLoadingAsync("CifSubsurfaceConflictAnalysis");
+    void timeBisSchemasLoadingAsync("CifUnits");
   });
 });

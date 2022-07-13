@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CifRoads" alias="cifrd" version="01.00.01" description="iModel Connector schema containing aspect classes with properties from OpenRoads Designer." xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.12" alias="bis"/>
+    <ECSchemaReference name="CifCommon" version="01.00.01" alias="cifcmn"/>
+    <ECSchemaReference name="CifUnits" version="01.00.01" alias="cifu"/>
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_Ignore_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_PivotEdgeType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Left_Edge" value="0" displayLabel="Left Edge"/>
+        <ECEnumerator name="Right_Edge" value="1" displayLabel="Right Edge"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_PointType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Full_Super" value="4" displayLabel="Full Super"/>
+        <ECEnumerator name="Full_Super_In" value="11" displayLabel="Full Super In"/>
+        <ECEnumerator name="Full_Super_Out" value="12" displayLabel="Full Super Out"/>
+        <ECEnumerator name="Normal_Crown" value="1" displayLabel="Normal Crown"/>
+        <ECEnumerator name="Normal_Crown_In" value="5" displayLabel="Normal Crown In"/>
+        <ECEnumerator name="Normal_Crown_Out" value="6" displayLabel="Normal Crown Out"/>
+        <ECEnumerator name="Reverse_Crown" value="3" displayLabel="Reverse Crown"/>
+        <ECEnumerator name="Reverse_Crown_In" value="9" displayLabel="Reverse Crown In"/>
+        <ECEnumerator name="Reverse_Crown_Out" value="10" displayLabel="Reverse Crown Out"/>
+        <ECEnumerator name="Super_Runoff" value="2" displayLabel="Super Runoff"/>
+        <ECEnumerator name="Super_Runoff_In" value="7" displayLabel="Super Runoff In"/>
+        <ECEnumerator name="Super_Runoff_Out" value="8" displayLabel="Super Runoff Out"/>
+        <ECEnumerator name="Undefined_Type" value="0" displayLabel="Undefined Type"/>
+        <ECEnumerator name="Start_Point" value="13" displayLabel="Start Point"/>
+        <ECEnumerator name="End_Point" value="14" displayLabel="End Point"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_TransitionType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Linear" value="0" displayLabel="Linear"/>
+        <ECEnumerator name="Parabolic" value="1" displayLabel="Parabolic"/>
+        <ECEnumerator name="Reverse_Parabolic" value="2" displayLabel="Reverse Parabolic"/>
+        <ECEnumerator name="Reverse_Biquadratic" value="3" displayLabel="Reverse Biquadratic"/>
+        <ECEnumerator name="Reverse_Cubic" value="4" displayLabel="Reverse Cubic"/>
+        <ECEnumerator name="Reverse_Symmetrical" value="5" displayLabel="Reverse Symmetrical"/>
+        <ECEnumerator name="Reverse_Parabolic_Nonsymmetrical_1" value="6" displayLabel="Reverse Parabolic Nonsymmetrical 1"/>
+        <ECEnumerator name="Reverse_Parabolic_Nonsymmetrical_2" value="7" displayLabel="Reverse Parabolic Nonsymmetrical 2"/>
+    </ECEnumeration>
+    <ECEntityClass typeName="SightVisibilitySectionNamedEntityPropertyProviderAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="SightVisibility_Sight_Visibility" priority="300000"/>
+        <ECProperty propertyName="ExistingSurfaceName" typeName="string" displayLabel="Existing Surface Name" category="SightVisibility_Sight_Visibility" priority="299999"/>
+        <ECProperty propertyName="DesignSurfaceName" typeName="string" displayLabel="Design Surface Name" category="SightVisibility_Sight_Visibility" priority="299998"/>
+        <ECProperty propertyName="HorizontalName" typeName="string" displayLabel="Centerline Reference Name" category="SightVisibility_Sight_Visibility" priority="299997"/>
+        <ECProperty propertyName="EyePositionHorizontalName" typeName="string" displayLabel="Eye Position Reference Name" category="SightVisibility_Sight_Visibility" priority="299996"/>
+        <ECProperty propertyName="ObjectPositionHorizontalName" typeName="string" displayLabel="Object Position Reference Name" category="SightVisibility_Sight_Visibility" priority="299995"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSightVisibilitySectionNamedEntityPropertyProviderAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SightVisibilitySectionNamedEntityPropertyProviderAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SpeedLimitAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SpeedLimit_StartStation" typeName="double" displayLabel="Start Station" category="SpeedSection_Speed_Limit" priority="299999" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="SpeedLimit_StartStation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'SpeedLimit_StartStation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="SpeedLimit_EndStation" typeName="double" displayLabel="End Station" category="SpeedSection_Speed_Limit" priority="299998" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="SpeedLimit_EndStation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'SpeedLimit_EndStation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="SpeedLimit_Speed" typeName="double" displayLabel="Speed" category="SpeedSection_Speed_Limit" priority="299997" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="SpeedLimit_Acceleration" typeName="double" displayLabel="Acceleration" category="SpeedSection_Speed_Limit" priority="299996" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSpeedLimitAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SpeedLimitAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SpeedSectionAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SpeedSection_StartStation" typeName="double" displayLabel="Start Station" category="SpeedSection_Speed_Section" priority="299998" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="SpeedSection_StartStation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'SpeedSection_StartStation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="SpeedSection_EndStation" typeName="double" displayLabel="End Station" category="SpeedSection_Speed_Section" priority="299997" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="SpeedSection_EndStation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'SpeedSection_EndStation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="SpeedSection_Length" typeName="double" displayLabel="Length" category="SpeedSection_Speed_Section" priority="299996" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SpeedSection_Acceleration" typeName="double" displayLabel="Acceleration" category="SpeedSection_Speed_Section" priority="299992" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SpeedSection_Grade" typeName="double" displayLabel="Grade" category="SpeedSection_Speed_Section" priority="299995" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="SpeedSection_MaxGrade" typeName="double" displayLabel="Max Grade" category="SpeedSection_Speed_Section" priority="299993" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="DesignSpeed1" typeName="double" displayLabel="Speed 1" category="SpeedSection_Speed_Section" priority="299991" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed1_End" typeName="double" displayLabel="Speed 1 End" category="SpeedSection_Speed_Section" priority="299990" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed2" typeName="double" displayLabel="Speed 2" category="SpeedSection_Speed_Section" priority="299989" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed2_End" typeName="double" displayLabel="Speed 2 End" category="SpeedSection_Speed_Section" priority="299988" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed3" typeName="double" displayLabel="Speed 3" category="SpeedSection_Speed_Section" priority="299987" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed3_End" typeName="double" displayLabel="Speed 3 End" category="SpeedSection_Speed_Section" priority="299986" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed4" typeName="double" displayLabel="Speed 4" category="SpeedSection_Speed_Section" priority="299985" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed4_End" typeName="double" displayLabel="Speed 4 End" category="SpeedSection_Speed_Section" priority="299984" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed5" typeName="double" displayLabel="Speed 5" category="SpeedSection_Speed_Section" priority="299983" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="DesignSpeed5_End" typeName="double" displayLabel="Speed 5 End" category="SpeedSection_Speed_Section" priority="299982" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description" category="SpeedSection_Speed_Section" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSpeedSectionAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SpeedSectionAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SuperElevationNamedEntityAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SuperElevationNamedEntity_Name" typeName="string" displayLabel="Name" category="Superelevation_Superelevation" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSuperElevationNamedEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SuperElevationNamedEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SuperElevationSectionNamedEntityAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SuperElevationSectionNamedEntity_Name" typeName="string" displayLabel="Name" category="SuperElevationSection_Superelevation_Section" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSuperElevationSectionNamedEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SuperElevationSectionNamedEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SuperElevationTransitionEntityAspect">
+        <BaseClass>cifcmn:CivilPresentation</BaseClass>
+        <ECProperty propertyName="SuperElevationTransitionEntity_Super" typeName="string" displayLabel="Superelevation" category="SuperElevationTransition_Superelevation_Transition" priority="299999"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_Name" typeName="string" displayLabel="Name" category="SuperElevationTransition_Superelevation_Transition" priority="299998"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_Distance" typeName="double" displayLabel="Station" category="SuperElevationTransition_Superelevation_Transition" priority="299997" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_Distance_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'SuperElevationTransitionEntity_Distance' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="SuperElevationTransitionEntity_CurveSet" typeName="string" displayLabel="Curve Set" category="SuperElevationTransition_Superelevation_Transition" priority="299996"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_CrossSlope" typeName="double" displayLabel="Cross Slope" category="SuperElevationTransition_Superelevation_Transition" priority="299995" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_TransitionType" typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_TransitionType_Enum" displayLabel="Transition Type" category="SuperElevationTransition_Superelevation_Transition" priority="299994"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_PivotEdgeType" typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_PivotEdgeType_Enum" displayLabel="Pivot Edge" category="SuperElevationTransition_Superelevation_Transition" priority="299993"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_NonLinearCurveLength" typeName="double" displayLabel="Non Linear Curve Length" category="SuperElevationTransition_Superelevation_Transition" priority="299992"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_PointType" typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_PointType_Enum" displayLabel="Point Type" category="SuperElevationTransition_Superelevation_Transition" priority="299991"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_Ignore" typeName="SuperElevationTransitionEntityAspect_SuperElevationTransitionEntity_Ignore_BoolEnum" displayLabel="Ignore" category="SuperElevationTransition_Superelevation_Transition" priority="299982"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_DistanceConstraintType" typeName="string" displayLabel="Distance Constraint Type" category="DistanceConstraint_Distance_Constraint" priority="299990"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_DistanceConstraintTransition1" typeName="string" displayLabel="Distance Transition 1" category="DistanceConstraint_Distance_Constraint" priority="299989"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_DistanceConstraintTransition2" typeName="string" displayLabel="Distance Transition 2" category="DistanceConstraint_Distance_Constraint" priority="299988"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_DistanceConstraintOffset" typeName="double" displayLabel="Offset" category="DistanceConstraint_Distance_Constraint" priority="299987" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_SlopeConstraintType" typeName="string" displayLabel="Slope Constraint Type" category="SlopeConstraint_Slope_Constraint" priority="299986"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_SlopeConstraintSuperElevation" typeName="string" displayLabel="Superelevation Constraint Name" category="SlopeConstraint_Slope_Constraint" priority="299985"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_SlopeConstraintTransition1" typeName="string" displayLabel="Slope Transition 1" category="SlopeConstraint_Slope_Constraint" priority="299984"/>
+        <ECProperty propertyName="SuperElevationTransitionEntity_SlopeConstraintTransition2" typeName="string" displayLabel="Slope Transition 2" category="SlopeConstraint_Slope_Constraint" priority="299983"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSuperElevationTransitionEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SuperElevationTransitionEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <PropertyCategory typeName="DistanceConstraint_Distance_Constraint" description="DistanceConstraint" displayLabel="Distance Constraint" priority="199800"/>
+    <PropertyCategory typeName="SightVisibility_Sight_Visibility" description="SightVisibility" displayLabel="Sight Visibility" priority="199800"/>
+    <PropertyCategory typeName="SlopeConstraint_Slope_Constraint" description="SlopeConstraint" displayLabel="Slope Constraint" priority="199800"/>
+    <PropertyCategory typeName="SpeedSection_Speed_Limit" description="SpeedSection" displayLabel="Speed Limit" priority="199800"/>
+    <PropertyCategory typeName="SpeedSection_SpeedLimit" description="SpeedSection" displayLabel="&lt;- SpeedLimit -&gt;" priority="199800"/>
+    <PropertyCategory typeName="SpeedSection_Speed_Section" description="SpeedSection" displayLabel="Speed Section" priority="199800"/>
+    <PropertyCategory typeName="Superelevation_Superelevation" description="Superelevation" displayLabel="Superelevation" priority="199800"/>
+    <PropertyCategory typeName="SuperElevationSection_Superelevation_Section" description="SuperElevationSection" displayLabel="Superelevation Section" priority="199800"/>
+    <PropertyCategory typeName="SuperElevationTransition_Superelevation_Transition" description="SuperElevationTransition" displayLabel="Superelevation Transition" priority="199800"/>
+</ECSchema>

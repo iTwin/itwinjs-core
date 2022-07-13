@@ -1,0 +1,1591 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="CifCommon" alias="cifcmn" version="01.00.03" description="iModel Connector schema containing aspect classes with common properties from Civil Infrastructure Framework (CIF) applications." xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.14" alias="bis"/>
+    <ECSchemaReference name="CifUnits" version="01.00.01" alias="cifu"/>
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+    <ECEnumeration typeName="ApplyTemplateCorridorAspect_Mirror_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ApplyTemplateCorridorAspect_Reflect_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CircularArcAspect_LinearElement_CircularArc_DegreeOfCurveDefinition_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Arc" value="0" displayLabel="Arc"/>
+        <ECEnumerator name="Chord" value="1" displayLabel="Chord"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CivilCellAspect_IsValid_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ClosedLinearComplexAspect_ClosedLinearComplex_IsClockWise_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ClosedLineStringAspect_LinearElement_ClosedLineString_IsClockWise_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Yes" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="No" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CurveWideningAspect_CurveWidening_Enabled_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CurveWideningAspect_CurveWidening_Overlap_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Shorten_Transition_Lengths" value="0" displayLabel="Shorten Transition Lengths"/>
+        <ECEnumerator name="Shift_Maximum_Widening_Points_onto_Curves" value="1" displayLabel="Shift Maximum Widening Points onto Curves"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="CurveWideningAspect_CurveWidening_UseSpiralLengthForTransition_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="DistanceAlongSlopeEntityAspect_SlopeStyle_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Constant" value="1" displayLabel="Constant"/>
+        <ECEnumerator name="Linear" value="3" displayLabel="Linear"/>
+        <ECEnumerator name="Reverse_Biquadratic" value="7" displayLabel="Reverse Biquadratic"/>
+        <ECEnumerator name="Reverse_Cubic" value="8" displayLabel="Reverse Cubic"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="DTMEntityBySelectedElementsSourceProviderAspect_FeatureType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Break_Line" value="1" displayLabel="Break Line"/>
+        <ECEnumerator name="Contour" value="4" displayLabel="Contour"/>
+        <ECEnumerator name="Drape_Void" value="8" displayLabel="Drape Void"/>
+        <ECEnumerator name="Hole" value="6" displayLabel="Hole"/>
+        <ECEnumerator name="Boundary" value="0" displayLabel="Boundary"/>
+        <ECEnumerator name="DrapeBoundary" value="28" displayLabel="&lt;- DrapeBoundary -&gt;"/>
+        <ECEnumerator name="Island" value="7" displayLabel="Island"/>
+        <ECEnumerator name="Spot" value="9" displayLabel="Spot"/>
+        <ECEnumerator name="Soft_Break_Line" value="2" displayLabel="Soft Break Line"/>
+        <ECEnumerator name="Void" value="5" displayLabel="Void"/>
+        <ECEnumerator name="BreakVoid" value="25" displayLabel="&lt;- BreakVoid -&gt;"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="DTMEntityImportSourcePropertyProviderAspect_DTM_IncludeSpotFeatures_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="DTMEntityImportSourcePropertyProviderAspect_DTM_NameFeatures_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="EndConditionExceptionsAspect_ECEType_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Left_Override" value="0" displayLabel="Left Override"/>
+        <ECEnumerator name="Right_Override" value="1" displayLabel="Right Override"/>
+        <ECEnumerator name="Left_Transition" value="2" displayLabel="Left Transition"/>
+        <ECEnumerator name="Right_Transition" value="3" displayLabel="Right Transition"/>
+        <ECEnumerator name="Backbone_Only_Left" value="4" displayLabel="Backbone Only (Left)"/>
+        <ECEnumerator name="Backbone_Only_Right" value="5" displayLabel="Backbone Only (Right)"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="EndConditionExceptionsAspect_Enabled_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="FlowLineEntityAspect_FlowLineEntity_Formula_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Gallaway" value="0" displayLabel="Gallaway"/>
+        <ECEnumerator name="Road_Research_Laboratory" value="1" displayLabel="Road Research Laboratory"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="MeshSurfaceEntityAspect_VolumeOption_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Design" value="2" displayLabel="Design"/>
+        <ECEnumerator name="Existing" value="1" displayLabel="Existing"/>
+        <ECEnumerator name="None" value="0" displayLabel="None"/>
+        <ECEnumerator name="Subgrade" value="4" displayLabel="Subgrade"/>
+        <ECEnumerator name="Substrata" value="3" displayLabel="Substrata"/>
+        <ECEnumerator name="Cut" value="5" displayLabel="Cut"/>
+        <ECEnumerator name="Fill" value="6" displayLabel="Fill"/>
+        <ECEnumerator name="Unsuitable" value="7" displayLabel="Unsuitable"/>
+        <ECEnumerator name="Custom" value="8" displayLabel="Custom"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ParametricConstraintAspect_Enabled_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="PointControlAspect_Enabled_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="PointControlAspect_Mode_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Horizontal" value="0" displayLabel="Horizontal"/>
+        <ECEnumerator name="Vertical" value="1" displayLabel="Vertical"/>
+        <ECEnumerator name="Both" value="2" displayLabel="Both"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="PointControlAspect_UseAsSecondaryAlignment_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="True"/>
+        <ECEnumerator name="False" value="0" displayLabel="False"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ReadOnlyCircularArcAspect_LinearElement_CircularArc_DegreeOfCurveDefinition_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Arc" value="0" displayLabel="Arc"/>
+        <ECEnumerator name="Chord" value="1" displayLabel="Chord"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ReadOnlyClosedLinearComplexAspect_ClosedLinearComplex_IsClockWise_BoolEnum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="True" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="False" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="ReadOnlyClosedLineStringAspect_LinearElement_ClosedLineString_IsClockWise_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Yes" value="1" displayLabel="Yes"/>
+        <ECEnumerator name="No" value="0" displayLabel="No"/>
+    </ECEnumeration>
+    <ECEnumeration typeName="StrokingPropertiesClassAspect_StrokingStepMethod_Enum" backingTypeName="int" isStrict="true">
+        <ECEnumerator name="Increment" value="0" displayLabel="Increment"/>
+        <ECEnumerator name="Equal_Distance" value="1" displayLabel="Equal Distance"/>
+    </ECEnumeration>
+    <ECEntityClass typeName="CivilPresentation" modifier="Abstract">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="ApplyTemplateCorridorAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Corridor_Corridor" priority="299999"/>
+        <ECProperty propertyName="HorizontalName" typeName="string" displayLabel="Horizontal Name" category="Corridor_Corridor" priority="299998"/>
+        <ECProperty propertyName="VerticalName" typeName="string" displayLabel="Profile Name" category="Corridor_Corridor" priority="-3"/>
+        <ECProperty propertyName="ExteriorArc" typeName="double" displayLabel="Exterior Corner Sweep Angle" category="Corridor_Corridor" priority="-4" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="Mirror" typeName="ApplyTemplateCorridorAspect_Mirror_BoolEnum" displayLabel="Mirror" category="Corridor_Corridor" priority="-5"/>
+        <ECProperty propertyName="Reflect" typeName="ApplyTemplateCorridorAspect_Reflect_BoolEnum" displayLabel="Reflect" category="Corridor_Corridor" priority="-6"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="LinearElementAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="LinearElement_Length" typeName="double" displayLabel="Length" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_StartPoint" typeName="point3d" displayLabel="Start Point" category="GeometryAttributes_Geometry" priority="299990"/>
+        <ECProperty propertyName="LinearElement_EndPoint" typeName="point3d" displayLabel="End Point" category="GeometryAttributes_Geometry" priority="299980"/>
+        <ECProperty propertyName="LinearElement_Length3d" typeName="double" displayLabel="&lt;- LENGTH 3d -&gt;" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="BSplineAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+        <ECProperty propertyName="BSpline_IsRational" typeName="int" displayLabel="BSpline_IsRational" category="Miscellaneous_BSpline" priority="0"/>
+        <ECProperty propertyName="BSpline_KnotsCount" typeName="int" displayLabel="BSpline_KnotsCount" category="Miscellaneous_BSpline" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ReadOnlyLinearElementAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="LinearElement_Length" typeName="double" displayLabel="Length" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_StartPoint" typeName="point3d" displayLabel="Start Point" category="GeometryAttributes_Geometry" priority="299990"/>
+        <ECProperty propertyName="LinearElement_EndPoint" typeName="point3d" displayLabel="End Point" category="GeometryAttributes_Geometry" priority="299980"/>
+        <ECProperty propertyName="LinearElement_Length3d" typeName="double" displayLabel="&lt;- LENGTH 3d -&gt;" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="CircularArcAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_CircularArc_Radius" typeName="double" displayLabel="Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_CircularArc_Tangent" typeName="double" displayLabel="Tangent" category="GeometryAttributes_Geometry" priority="299960" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_Chord" typeName="double" displayLabel="Chord" category="GeometryAttributes_Geometry" priority="299950" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_CircularArc_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299890" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_CircularArc_DegreeOfCurve" typeName="double" displayLabel="Degree of Curvature" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_CircularArc_DegreeOfCurveDefinition" typeName="CircularArcAspect_LinearElement_CircularArc_DegreeOfCurveDefinition_Enum" displayLabel="Degree of Curvature Definition" category="GeometryAttributes_Geometry" priority="299880"/>
+        <ECProperty propertyName="LinearElement_CircularArc_CenterPoint" typeName="point3d" displayLabel="Center Point" category="GeometryAttributes_Geometry" priority="299860"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CivilCellAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Name_General_Category" priority="299999"/>
+        <ECProperty propertyName="IsValid" typeName="CivilCellAspect_IsValid_BoolEnum" displayLabel="Valid for Placement" category="Name_General_Category" priority="299998"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CivilCellReferenceAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Name_General_Category" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CivilObjectAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Name_General_Category" priority="0"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ReadOnlyLinearComplexAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="ClosedLinearComplexAspect">
+        <BaseClass>ReadOnlyLinearComplexAspect</BaseClass>
+        <ECProperty propertyName="ClosedLinearComplex_IsClockWise" typeName="ClosedLinearComplexAspect_ClosedLinearComplex_IsClockWise_BoolEnum" displayLabel="Clockwise" category="GeometryAttributes_Geometry" priority="299960"/>
+        <ECProperty propertyName="ClosedLinearComplex_Area" typeName="double" displayLabel="Area" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:AREA"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="LineStringAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ClosedLineStringAspect">
+        <BaseClass>LineStringAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+        <ECProperty propertyName="LinearElement_ClosedLineString_IsClockWise" typeName="ClosedLineStringAspect_LinearElement_ClosedLineString_IsClockWise_Enum" displayLabel="Clockwise" category="GeometryAttributes_Geometry" priority="299000"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ProfiledElementAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="SpiralAspect">
+        <BaseClass>ProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Spiral_StartRadius" typeName="double" displayLabel="Start Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndRadius" typeName="double" displayLabel="End Radius" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_Spiral_Constant" typeName="double" displayLabel="Constant" category="GeometryAttributes_Geometry" priority="299860" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongTangent" typeName="double" displayLabel="Long Tangent" category="GeometryAttributes_Geometry" priority="299850" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_ShortTangent" typeName="double" displayLabel="Short Tangent" category="GeometryAttributes_Geometry" priority="299840" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongChord" typeName="double" displayLabel="Long Chord" category="GeometryAttributes_Geometry" priority="299830" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Xs" typeName="double" displayLabel="Xs" category="GeometryAttributes_Geometry" priority="299820" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Ys" typeName="double" displayLabel="Ys" category="GeometryAttributes_Geometry" priority="299810" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_PValue" typeName="double" displayLabel="P" category="GeometryAttributes_Geometry" priority="299800" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="299790" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299780" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299770" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_IntrinsicPoint" typeName="point3d" displayLabel="Intrinsic Point" category="GeometryAttributes_Geometry" priority="299700"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartArcCenterPoint" typeName="point3d" displayLabel="Start Arc Center Point" category="GeometryAttributes_Geometry" priority="299690"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndArcCenterPoint" typeName="point3d" displayLabel="End Arc Center Point" category="GeometryAttributes_Geometry" priority="299680"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ClothoidAspect">
+        <BaseClass>SpiralAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Spiral_StartRadius" typeName="double" displayLabel="Start Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndRadius" typeName="double" displayLabel="End Radius" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_Spiral_Constant" typeName="double" displayLabel="Constant" category="GeometryAttributes_Geometry" priority="299860" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongTangent" typeName="double" displayLabel="Long Tangent" category="GeometryAttributes_Geometry" priority="299850" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_ShortTangent" typeName="double" displayLabel="Short Tangent" category="GeometryAttributes_Geometry" priority="299840" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongChord" typeName="double" displayLabel="Long Chord" category="GeometryAttributes_Geometry" priority="299830" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Xs" typeName="double" displayLabel="Xs" category="GeometryAttributes_Geometry" priority="299820" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Ys" typeName="double" displayLabel="Ys" category="GeometryAttributes_Geometry" priority="299810" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_PValue" typeName="double" displayLabel="P" category="GeometryAttributes_Geometry" priority="299800" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="299790" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299780" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299770" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_IntrinsicPoint" typeName="point3d" displayLabel="Intrinsic Point" category="GeometryAttributes_Geometry" priority="299700"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartArcCenterPoint" typeName="point3d" displayLabel="Start Arc Center Point" category="GeometryAttributes_Geometry" priority="299690"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndArcCenterPoint" typeName="point3d" displayLabel="End Arc Center Point" category="GeometryAttributes_Geometry" priority="299680"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="CompoundElementAspect">
+        <BaseClass>ProfiledElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="CorridorAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Corridor_Corridor" priority="299999"/>
+        <ECProperty propertyName="HorizontalName" typeName="string" displayLabel="Horizontal Name" category="Corridor_Corridor" priority="299998"/>
+        <ECProperty propertyName="UseActiveDesignProfile" typeName="boolean" displayLabel="Use Active Profile" category="Corridor_Corridor" priority="299997"/>
+        <ECProperty propertyName="ProfileEntity" typeName="string" displayLabel="Profile Name" category="Corridor_Corridor" priority="299996"/>
+        <ECProperty propertyName="ActiveStation0" typeName="double" displayLabel="ActiveStation0" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation1" typeName="double" displayLabel="ActiveStation1" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation2" typeName="double" displayLabel="ActiveStation2" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation3" typeName="double" displayLabel="ActiveStation3" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation4" typeName="double" displayLabel="ActiveStation4" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation5" typeName="double" displayLabel="ActiveStation5" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation6" typeName="double" displayLabel="ActiveStation6" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ActiveStation7" typeName="double" displayLabel="ActiveStation7" category="Miscellaneous_Corridor" priority="0">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECEntityClass typeName="CurveWideningAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="CurveWidening_Enabled" typeName="CurveWideningAspect_CurveWidening_Enabled_BoolEnum" displayLabel="Enabled" category="CurveWidening_Curve_Widening" priority="299999"/>
+        <ECProperty propertyName="CurveWidening_Description" typeName="string" displayLabel="Description" category="CurveWidening_Curve_Widening" priority="299998"/>
+        <ECProperty propertyName="CurveWidening_Point" typeName="string" displayLabel="Point" category="CurveWidening_Curve_Widening" priority="299997"/>
+        <ECProperty propertyName="CurveWidening_TransitionOnTangent" typeName="double" displayLabel="Percent Transition on Tangent" category="CurveWidening_Curve_Widening" priority="299996"/>
+        <ECProperty propertyName="CurveWidening_UseSpiralLengthForTransition" typeName="CurveWideningAspect_CurveWidening_UseSpiralLengthForTransition_BoolEnum" displayLabel="Use Spiral Length for Transition" category="CurveWidening_Curve_Widening" priority="299995"/>
+        <ECProperty propertyName="CurveWidening_Overlap" typeName="CurveWideningAspect_CurveWidening_Overlap_Enum" displayLabel="Overlap" category="CurveWidening_Curve_Widening" priority="299994"/>
+        <ECProperty propertyName="CurveWidening_Priority" typeName="int" displayLabel="Priority" category="CurveWidening_Curve_Widening" priority="299993"/>
+        <ECProperty propertyName="CurveWidening_WideningTableFileName" typeName="string" displayLabel="Widening Table" category="CurveWidening_Curve_Widening" priority="299992"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DistanceAlongSlopeEntityAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="ReferenceDistanceAlongEntry" typeName="double" displayLabel="Reference Distance" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299996" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceDistanceAlongEntry_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'ReferenceDistanceAlongEntry' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ReferenceStartDistanceAlongEntry" typeName="double" displayLabel="Start Reference Distance" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299993" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceStartDistanceAlongEntry_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'ReferenceStartDistanceAlongEntry' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ReferenceEndDistanceAlongEntry" typeName="double" displayLabel="End Reference Distance" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299990" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceEndDistanceAlongEntry_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'ReferenceEndDistanceAlongEntry' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="ReferenceSlopeEntry" typeName="double" displayLabel="Slope" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299995" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="ReferenceStartSlopeEntry" typeName="double" displayLabel="Start Slope" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299992" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="ReferenceEndSlopeEntry" typeName="double" displayLabel="End Slope" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299989" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="ReferenceOffsetEntry" typeName="double" displayLabel="Vertical Offset" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299994" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceStartOffsetEntry" typeName="double" displayLabel="Start Vertical Offset" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299991" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceEndOffsetEntry" typeName="double" displayLabel="End Vertical Offset" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299988" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceDesignSpeedEntry" typeName="double" displayLabel="Design Speed" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299987" kindOfQuantity="cifu:VELOCITY"/>
+        <ECProperty propertyName="ReferenceArcLength1Entry" typeName="double" displayLabel="Arc Length 1" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299986" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ReferenceArcLength2Entry" typeName="double" displayLabel="Arc Length 2" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299985" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="SlopeStyle" typeName="DistanceAlongSlopeEntityAspect_SlopeStyle_Enum" displayLabel="Slope Style" category="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" priority="299997"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DTMEntityBySelectedElementsSourceProviderAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="FeatureType" typeName="DTMEntityBySelectedElementsSourceProviderAspect_FeatureType_Enum" displayLabel="FeatureType" category="TerrainModelBySelectedElementAttributes_Create_from_Elements_UnLinked" priority="300000"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="DTMEntityImportSourcePropertyProviderAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="DTM_ObjectSetting" typeName="string" displayLabel="Feature Definition" category="FeatureDefinition_Feature_Definition" priority="299980"/>
+        <ECProperty propertyName="DTM_NamePrefix" typeName="string" displayLabel="Name" category="FeatureDefinition_Feature_Definition" priority="299975"/>
+        <ECProperty propertyName="DTM_IncludeSpotFeatures" typeName="DTMEntityImportSourcePropertyProviderAspect_DTM_IncludeSpotFeatures_BoolEnum" displayLabel="Include Spot Features" category="TriangulationOptions_Triangulation_Options" priority="299965"/>
+        <ECProperty propertyName="DTM_NameFeatures" typeName="DTMEntityImportSourcePropertyProviderAspect_DTM_NameFeatures_BoolEnum" displayLabel="Name all Features" category="TriangulationOptions_Triangulation_Options" priority="299940"/>
+        <ECProperty propertyName="DTM_MaxSideLength" typeName="double" displayLabel="Maximum Side Length" category="TriangulationOptions_Triangulation_Options" priority="299980"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsApplyTemplateCorridorAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ApplyTemplateCorridorAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsBSplineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="BSplineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCircularArcAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CircularArcAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCivilCellAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CivilCellAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCivilCellReferenceAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CivilCellReferenceAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCivilObjectAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CivilObjectAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsClosedLinearComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ClosedLinearComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsClosedLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ClosedLineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsClothoidAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ClothoidAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCompoundElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CompoundElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCorridorAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CorridorAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsCurveWideningAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="CurveWideningAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsDistanceAlongSlopeEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DistanceAlongSlopeEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsDTMEntityBySelectedElementsSourceProviderAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DTMEntityBySelectedElementsSourceProviderAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsDTMEntityImportSourcePropertyProviderAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DTMEntityImportSourcePropertyProviderAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="EndConditionExceptionsAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description" category="EndConditionException_End_Condition_Exception" priority="299998"/>
+        <ECProperty propertyName="Enabled" typeName="EndConditionExceptionsAspect_Enabled_BoolEnum" displayLabel="Enabled" category="EndConditionException_End_Condition_Exception" priority="299999"/>
+        <ECProperty propertyName="ECEType" typeName="EndConditionExceptionsAspect_ECEType_Enum" displayLabel="ECException Type" category="EndConditionException_End_Condition_Exception" priority="299997"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsEndConditionExceptionsAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="EndConditionExceptionsAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="FeatureBaseAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="DefinitionName" typeName="string" displayLabel="Feature Definition" category="FeatureProperties_Feature" priority="299999"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="FeatureAspect">
+        <BaseClass>FeatureBaseAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsFeatureAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="FeatureAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsFeatureBaseAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="FeatureBaseAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="FeatureWithNameAspect">
+        <BaseClass>FeatureBaseAspect</BaseClass>
+        <ECProperty propertyName="FeatureName" typeName="string" displayLabel="Feature Name" category="FeatureProperties_Feature" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsFeatureWithNameAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="FeatureWithNameAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="FlowLineEntityAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="FlowLineEntity_Formula" typeName="FlowLineEntityAspect_FlowLineEntity_Formula_Enum" displayLabel="Formula" category="FlowLineEntity_Aquaplaning" priority="299980"/>
+        <ECProperty propertyName="FlowLineEntity_RainfallIntensity" typeName="double" displayLabel="Rainfall Intensity" category="FlowLineEntity_Aquaplaning" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsFlowLineEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="FlowLineEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="GeographicCoordinateSystemAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="GeographicCoordinateSystem_ImageCoordinateMethodName" typeName="string" displayLabel="Source" category="ProjectionProperties_Geographical_Coordinate_Systems" priority="299990"/>
+        <ECProperty propertyName="GeographicCoordinateSystem_ImageCoordinateDescription" typeName="string" displayLabel="Source Description" category="ProjectionProperties_Geographical_Coordinate_Systems" priority="299980"/>
+        <ECProperty propertyName="GeographicCoordinateSystem_ImageCoordinateUnits" typeName="string" displayLabel="Source Units" category="ProjectionProperties_Geographical_Coordinate_Systems" priority="299970"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsGeographicCoordinateSystemAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="GeographicCoordinateSystemAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="InternalStationEquationAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="BackLocation" typeName="double" displayLabel="BackLocation" category="Miscellaneous_Internal_Station_Equation" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="BackLocation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'BackLocation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BackStation" typeName="string" displayLabel="Back Station" category="StationingProperties_Stationing" priority="299995"/>
+        <ECProperty propertyName="AheadStation" typeName="string" displayLabel="Ahead Station" category="StationingProperties_Stationing" priority="299994"/>
+        <ECProperty propertyName="LengthDifference" typeName="string" displayLabel="Length Difference" category="StationingProperties_Stationing" priority="299993"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsInternalStationEquationAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="InternalStationEquationAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="IntersectionPointStruct">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="IntersectionPointStation" typeName="double" displayLabel="Station" category="Miscellaneous_Intersection_Point" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="IntersectionPointSkewAngle" typeName="double" displayLabel="SkewAngle" category="Miscellaneous_Intersection_Point" priority="0" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="IntersectionPointElevation" typeName="double" displayLabel="Elevation" category="Miscellaneous_Intersection_Point" priority="0" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsIntersectionPointStruct" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="IntersectionPointStruct"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="KeyStationAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Station" typeName="double" displayLabel="Station" category="KeyStation_Key_Station" priority="299999" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="Station_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'Station' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsKeyStationAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="KeyStationAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="Line3dAspect">
+        <BaseClass>ProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Length" typeName="double" displayLabel="Length" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_StartPoint" typeName="point3d" displayLabel="Start Point" category="GeometryAttributes_Geometry" priority="299990"/>
+        <ECProperty propertyName="LinearElement_EndPoint" typeName="point3d" displayLabel="End Point" category="GeometryAttributes_Geometry" priority="299980"/>
+        <ECProperty propertyName="LinearElement_Line3d_Direction" typeName="double" displayLabel="Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsLine3dAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="Line3dAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="LinearComplexAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsLinearComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LinearComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsLinearElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LinearElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="LineAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Line_Direction" typeName="double" displayLabel="Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:BEARING"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsLineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="LineString3dAspect">
+        <BaseClass>ProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString3d_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsLineString3dAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LineString3dAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="LineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="MeshSurfaceEntityAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="MeshSurfaceEntity_Volume" typeName="double" displayLabel="Volume" category="MeshSurfaceEntity_Component_Layer" priority="300000" kindOfQuantity="cifu:VOLUME">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'MeshSurfaceEntity_CivilVolume' instead</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="MeshSurfaceEntity_Depth" typeName="double" displayLabel="Depth" category="MeshSurfaceEntity_Component_Layer" priority="299990" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="MeshSurfaceEntity_Description" typeName="string" displayLabel="Description" category="MeshSurfaceEntity_Component_Layer" priority="299980"/>
+        <ECProperty propertyName="MeshSurfaceEntity_StartStation" typeName="string" displayLabel="Start Station" category="MeshSurfaceEntity_Component_Layer" priority="299950"/>
+        <ECProperty propertyName="MeshSurfaceEntity_EndStation" typeName="string" displayLabel="End Station" category="MeshSurfaceEntity_Component_Layer" priority="299940"/>
+        <ECProperty propertyName="MeshSurfaceEntity_MaterialSubtype" typeName="string" displayLabel="Material Subtype" category="MeshSurfaceEntity_Component_Layer" priority="299930"/>
+        <ECProperty propertyName="MeshSurfaceEntity_SlopedArea" typeName="double" displayLabel="Top Sloped Area" category="MeshQuantities_Civil_Quantities" priority="299920" kindOfQuantity="cifu:AREA"/>
+        <ECProperty propertyName="MeshSurfaceEntity_PlanarArea" typeName="double" displayLabel="Planar Area" category="MeshQuantities_Civil_Quantities" priority="299910" kindOfQuantity="cifu:AREA"/>
+        <ECProperty propertyName="MeshSurfaceEntity_CivilVolume" typeName="double" displayLabel="Volume" category="MeshQuantities_Civil_Quantities" priority="299900" kindOfQuantity="cifu:VOLUME"/>
+        <ECProperty propertyName="VolumeOption" typeName="MeshSurfaceEntityAspect_VolumeOption_Enum" displayLabel="Volume Option" category="MeshSurfaceEntity_Component_Layer" priority="299925"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsMeshSurfaceEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="MeshSurfaceEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ObjectStatusAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="ObjectStatusHandler_ObjectStatus_ObjectName" typeName="string" displayLabel="Name" category="CivilObjectStatusAttributes_Object_Status" priority="299900"/>
+        <ECProperty propertyName="ObjectStatusHandler_ObjectStatus_ShortDescription" typeName="string" displayLabel="Type" category="CivilObjectStatusAttributes_Object_Status" priority="299800"/>
+        <ECProperty propertyName="ObjectStatusHandler_ObjectStatus_Description" typeName="string" displayLabel="Description" category="CivilObjectStatusAttributes_Object_Status" priority="299700"/>
+        <ECProperty propertyName="ObjectStatusHandler_ObjectStatus_ApplicationID" typeName="string" displayLabel="Application" category="CivilObjectStatusAttributes_Object_Status" priority="299600"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsObjectStatusAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ObjectStatusAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ParametricConstraintBaseAspect" modifier="Abstract">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="Label" typeName="string" displayLabel="Constraint Label" category="ParametricConstraint_Parametric_Constraint" priority="299998"/>
+        <ECProperty propertyName="Enabled" typeName="ParametricConstraintAspect_Enabled_BoolEnum" displayLabel="Enabled" category="ParametricConstraint_Parametric_Constraint" priority="299999"/>
+        <ECProperty propertyName="Surface" typeName="string" displayLabel="Surface" category="ParametricConstraint_Parametric_Constraint" priority="-9"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ParametricConstraintAngleAspect">
+        <BaseClass>ParametricConstraintBaseAspect</BaseClass>
+        <ECProperty propertyName="StartAngle" typeName="double" displayLabel="Start Angle" category="ParametricConstraint_Parametric_Constraint" priority="299993" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="StopAngle" typeName="double" displayLabel="Stop Angle" category="ParametricConstraint_Parametric_Constraint" priority="299992" kindOfQuantity="cifu:ANGLE"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsParametricConstraintAngleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ParametricConstraintAngleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ParametricConstraintSlopeAspect">
+        <BaseClass>ParametricConstraintBaseAspect</BaseClass>
+        <ECProperty propertyName="StartSlope" typeName="double" displayLabel="Start Slope" category="ParametricConstraint_Parametric_Constraint" priority="299995" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="StopSlope" typeName="double" displayLabel="Stop Slope" category="ParametricConstraint_Parametric_Constraint" priority="299994" kindOfQuantity="cifu:SLOPE"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsParametricConstraintSlopeAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ParametricConstraintSlopeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ParametricConstraintValueAspect">
+        <BaseClass>ParametricConstraintBaseAspect</BaseClass>
+        <ECProperty propertyName="StartValue" typeName="double" displayLabel="Start Value" category="ParametricConstraint_Parametric_Constraint" priority="299997"/>
+        <ECProperty propertyName="StopValue" typeName="double" displayLabel="Stop Value" category="ParametricConstraint_Parametric_Constraint" priority="299996"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsParametricConstraintValueAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ParametricConstraintValueAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PointControlAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Enabled" typeName="PointControlAspect_Enabled_BoolEnum" displayLabel="Enabled" category="PointControl_PointControl" priority="299999"/>
+        <ECProperty propertyName="ControlDescription" typeName="string" displayLabel="Control Description" category="PointControl_PointControl" priority="299998"/>
+        <ECProperty propertyName="Point" typeName="string" displayLabel="Point" category="PointControl_PointControl" priority="299995"/>
+        <ECProperty propertyName="Mode" typeName="PointControlAspect_Mode_Enum" displayLabel="Mode" category="PointControl_PointControl" priority="299997"/>
+        <ECProperty propertyName="ControlType" typeName="string" displayLabel="Control Type" category="PointControl_PointControl" priority="299996"/>
+        <ECProperty propertyName="PlanElement" typeName="string" displayLabel="Plan Element" category="PointControl_PointControl" priority="299994"/>
+        <ECProperty propertyName="ProfileElement" typeName="string" displayLabel="Profile Element" category="PointControl_PointControl" priority="299993"/>
+        <ECProperty propertyName="Range" typeName="double" displayLabel="Range" category="PointControl_PointControl" priority="299991"/>
+        <ECProperty propertyName="Corridor" typeName="string" displayLabel="Corridor" category="PointControl_PointControl" priority="299990"/>
+        <ECProperty propertyName="ReferenceFeature" typeName="string" displayLabel="Reference Feature" category="PointControl_PointControl" priority="299989"/>
+        <ECProperty propertyName="Superelevation" typeName="string" displayLabel="Superelevation" category="PointControl_PointControl" priority="299988"/>
+        <ECProperty propertyName="Cant" typeName="string" displayLabel="Cant" category="PointControl_PointControl" priority="299995"/>
+        <ECProperty propertyName="ReferencePoint" typeName="string" displayLabel="Reference Point" category="PointControl_PointControl" priority="299987"/>
+        <ECProperty propertyName="Elevation" typeName="double" displayLabel="Elevation" category="PointControl_PointControl" priority="299986"/>
+        <ECProperty propertyName="Grade" typeName="double" displayLabel="Grade" category="PointControl_PointControl" priority="299985" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="UseAsSecondaryAlignment" typeName="PointControlAspect_UseAsSecondaryAlignment_BoolEnum" displayLabel="Use as Secondary Alignment" category="PointControl_PointControl" priority="299984"/>
+        <ECProperty propertyName="Priority" typeName="int" displayLabel="Priority" category="PointControl_PointControl" priority="299983"/>
+        <ECProperty propertyName="HorizontalStartOffset" typeName="double" displayLabel="Horizontal Start Offset" category="PointControl_PointControl" priority="299982"/>
+        <ECProperty propertyName="HorizontalStopOffset" typeName="double" displayLabel="Horizontal Stop Offset" category="PointControl_PointControl" priority="299981"/>
+        <ECProperty propertyName="VerticalStartOffset" typeName="double" displayLabel="Vertical Start Offset" category="PointControl_PointControl" priority="299980"/>
+        <ECProperty propertyName="VerticalStopOffset" typeName="double" displayLabel="Vertical Stop Offset" category="PointControl_PointControl" priority="299979"/>
+        <ECProperty propertyName="ParentCurveWidening" typeName="string" displayLabel="Parent Curve Widening" category="PointControl_PointControl" priority="-22"/>
+        <ECProperty propertyName="CenterCantPoint" typeName="string" displayLabel="Center Cant Point" category="PointControl_PointControl" priority="299994"/>
+        <ECProperty propertyName="LeftCantPoint" typeName="string" displayLabel="Left Cant Point" category="PointControl_PointControl" priority="299993"/>
+        <ECProperty propertyName="RightCantPoint" typeName="string" displayLabel="Right Cant Point" category="PointControl_PointControl" priority="299992"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPointControlAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PointControlAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PointEntity2dAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="PointEntity2dPoint" typeName="point3d" displayLabel="Point" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299999"/>
+        <ECProperty propertyName="PointEntity2d_X" typeName="double" displayLabel="X" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299990" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PointEntity2d_Y" typeName="double" displayLabel="Y" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299980" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PointEntity2d_Elevation" typeName="double" displayLabel="Elevation" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="PointEntity2d_Rotation" typeName="double" displayLabel="Rotation" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299960" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="PointEntity2d_RotationOffset" typeName="double" displayLabel="Rotation Offset" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299955" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="PointEntity2d_RotationReference" typeName="string" displayLabel="Rotation Reference" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299953"/>
+        <ECProperty propertyName="PointEntity2d_AbsoluteAngle" typeName="boolean" displayLabel="Absolute Angle" category="GeometryPointsCategoryAttributes_Geometry_Points" priority="299950"/>
+        <ECProperty propertyName="PointEntity2d_Description" typeName="string" displayLabel="Description" category="FeatureProperties_Feature" priority="299910"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPointEntity2dAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PointEntity2dAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PointGroupAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="PointGroup_NumberOfPoints" typeName="int" displayLabel="Number Of Points" category="PointGroupCategoryAttributes_Point_Group" priority="299999"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPointGroupAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PointGroupAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PointOrderedListAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="PointOrderedList_Elevation" typeName="double" displayLabel="Elevation" category="PointOrderedListAttributes_Point_Ordered_List" priority="299989" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPointOrderedListAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PointOrderedListAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="PortalEntityAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Portal_Portal" priority="299999"/>
+        <ECProperty propertyName="ParametricCell" typeName="string" displayLabel="&lt;- ParametricCell -&gt;" category="Portal_Portal" priority="299990"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsPortalEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PortalEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileElementAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_ProfileElement_DeltaX" typeName="double" displayLabel="DeltaX" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ProfileCircularArcAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="ProfileCircularArc_EndSlope" typeName="double" displayLabel="Slope End" category="GeometryAttributes_Geometry" priority="298950"/>
+        <ECProperty propertyName="ProfileCircularArc_StartSlope" typeName="double" displayLabel="Slope Start" category="GeometryAttributes_Geometry" priority="298960"/>
+        <ECProperty propertyName="ProfileCircularArc_RightTangent" typeName="point3d" displayLabel="Right Tangent" category="GeometryAttributes_Geometry" priority="298940"/>
+        <ECProperty propertyName="ProfileCircularArc_LeftTangent" typeName="point3d" displayLabel="Left Tangent" category="GeometryAttributes_Geometry" priority="298930"/>
+        <ECProperty propertyName="ProfileCircularArc_EndLocalAbscissa" typeName="double" displayLabel="Local Abscissa End" category="GeometryAttributes_Geometry" priority="298920"/>
+        <ECProperty propertyName="ProfileCircularArc_StartLocalAbscissa" typeName="double" displayLabel="Local Abscissa Start" category="GeometryAttributes_Geometry" priority="298910"/>
+        <ECProperty propertyName="ProfileCircularArc_VPIPoint" typeName="point3d" displayLabel="VPI Point" category="GeometryAttributes_Geometry" priority="298900"/>
+        <ECProperty propertyName="ProfileCircularArc_ProjectedLength" typeName="double" displayLabel="Projected Length" category="GeometryAttributes_Geometry" priority="298890" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_RightLength" typeName="double" displayLabel="Right Extent" category="GeometryAttributes_Geometry" priority="298880" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_LeftLength" typeName="double" displayLabel="Left Extent" category="GeometryAttributes_Geometry" priority="298870" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="298990" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="ProfileCircularArc_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299000" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="ProfileCircularArc_Radius" typeName="double" displayLabel="Radius" category="GeometryAttributes_Geometry" priority="298980" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_CenterPoint" typeName="point3d" displayLabel="Center Point" category="GeometryAttributes_Geometry" priority="298970"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileCircularArcAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileCircularArcAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileComplexAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsProfiledElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfiledElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileLineAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_ProfileLine_Slope" typeName="double" displayLabel="Slope" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileLineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileLineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileLineStringAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_ProfileLineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileLineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfileParabolaAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="ProfileParabola_VPIPoint" typeName="point3d" displayLabel="VPI Point" category="GeometryAttributes_Geometry" priority="298950"/>
+        <ECProperty propertyName="ProfileParabola_SummitPoint" typeName="point3d" displayLabel="Summit Point" category="GeometryAttributes_Geometry" priority="298940"/>
+        <ECProperty propertyName="ProfileParabola_StartSlope" typeName="double" displayLabel="Slope Start" category="GeometryAttributes_Geometry" priority="298930"/>
+        <ECProperty propertyName="ProfileParabola_EndSlope" typeName="double" displayLabel="Slope End" category="GeometryAttributes_Geometry" priority="298920"/>
+        <ECProperty propertyName="ProfileParabola_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="298910" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileParabola_LeftLength" typeName="double" displayLabel="Left Extent" category="GeometryAttributes_Geometry" priority="298890" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileParabola_RightLength" typeName="double" displayLabel="Right Extent" category="GeometryAttributes_Geometry" priority="298880" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfileParabolaAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfileParabolaAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ProfilePointbyIntersectionRuleAspect" displayLabel="Profile Intersection Point">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Station" typeName="double" displayLabel="Station" category="ProfilePointbyIntersectionRuleAttributes_Profile_Intersection_Point" priority="299800" kindOfQuantity="cifu:STATION"/>
+        <ECProperty propertyName="Elevation" typeName="double" displayLabel="Elevation" category="ProfilePointbyIntersectionRuleAttributes_Profile_Intersection_Point" priority="299700" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsProfilePointbyIntersectionRuleAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ProfilePointbyIntersectionRuleAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="RadiusTransitionAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="ParameterName" typeName="string" displayLabel="Name" category="Radius_Transition_Setting_Attributes_Radius_Transition_Settings" priority="300000"/>
+        <ECProperty propertyName="ParameterDefaultTransitionLength" typeName="double" displayLabel="Default Transition Length" category="Radius_Transition_Setting_Attributes_Radius_Transition_Settings" priority="300000" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ParameterMinTransitionLength" typeName="double" displayLabel="Minimum Transition Length" category="Radius_Transition_Setting_Attributes_Radius_Transition_Settings" priority="300000" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ParameterRadius" typeName="double" displayLabel="Radius" category="Radius_Transition_Setting_Attributes_Radius_Transition_Settings" priority="300000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsRadiusTransitionAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="RadiusTransitionAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyBSplineAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+        <ECProperty propertyName="BSpline_IsRational" typeName="int" displayLabel="BSpline_IsRational" category="Miscellaneous_Read_Only_BSpline" priority="0"/>
+        <ECProperty propertyName="BSpline_KnotsCount" typeName="int" displayLabel="BSpline_KnotsCount" category="Miscellaneous_Read_Only_BSpline" priority="0"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyBSplineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyBSplineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyCircularArcAspect">
+        <BaseClass>LinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_CircularArc_Radius" typeName="double" displayLabel="Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_CircularArc_Tangent" typeName="double" displayLabel="Tangent" category="GeometryAttributes_Geometry" priority="299960" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_Chord" typeName="double" displayLabel="Chord" category="GeometryAttributes_Geometry" priority="299950" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_CircularArc_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_CircularArc_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299890" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_CircularArc_DegreeOfCurve" typeName="double" displayLabel="Degree of Curvature" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_CircularArc_DegreeOfCurveDefinition" typeName="ReadOnlyCircularArcAspect_LinearElement_CircularArc_DegreeOfCurveDefinition_Enum" displayLabel="Degree of Curvature Definition" category="GeometryAttributes_Geometry" priority="299880"/>
+        <ECProperty propertyName="LinearElement_CircularArc_CenterPoint" typeName="point3d" displayLabel="Center Point" category="GeometryAttributes_Geometry" priority="299860"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyCircularArcAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyCircularArcAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyClosedLinearComplexAspect">
+        <BaseClass>LinearComplexAspect</BaseClass>
+        <ECProperty propertyName="ClosedLinearComplex_IsClockWise" typeName="ReadOnlyClosedLinearComplexAspect_ClosedLinearComplex_IsClockWise_BoolEnum" displayLabel="Clockwise" category="GeometryAttributes_Geometry" priority="299960"/>
+        <ECProperty propertyName="ClosedLinearComplex_Area" typeName="double" displayLabel="Area" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:AREA"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyClosedLinearComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyClosedLinearComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyLineStringAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ReadOnlyClosedLineStringAspect">
+        <BaseClass>ReadOnlyLineStringAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+        <ECProperty propertyName="LinearElement_ClosedLineString_IsClockWise" typeName="ReadOnlyClosedLineStringAspect_LinearElement_ClosedLineString_IsClockWise_Enum" displayLabel="Clockwise" category="GeometryAttributes_Geometry" priority="299000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyClosedLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyClosedLineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfiledElementAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECEntityClass typeName="ReadOnlySpiralAspect">
+        <BaseClass>ReadOnlyProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Spiral_StartRadius" typeName="double" displayLabel="Start Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndRadius" typeName="double" displayLabel="End Radius" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_Spiral_Constant" typeName="double" displayLabel="Constant" category="GeometryAttributes_Geometry" priority="299860" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongTangent" typeName="double" displayLabel="Long Tangent" category="GeometryAttributes_Geometry" priority="299850" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_ShortTangent" typeName="double" displayLabel="Short Tangent" category="GeometryAttributes_Geometry" priority="299840" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongChord" typeName="double" displayLabel="Long Chord" category="GeometryAttributes_Geometry" priority="299830" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Xs" typeName="double" displayLabel="Xs" category="GeometryAttributes_Geometry" priority="299820" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Ys" typeName="double" displayLabel="Ys" category="GeometryAttributes_Geometry" priority="299810" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_PValue" typeName="double" displayLabel="P" category="GeometryAttributes_Geometry" priority="299800" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="299790" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299780" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299770" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_IntrinsicPoint" typeName="point3d" displayLabel="Intrinsic Point" category="GeometryAttributes_Geometry" priority="299700"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartArcCenterPoint" typeName="point3d" displayLabel="Start Arc Center Point" category="GeometryAttributes_Geometry" priority="299690"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndArcCenterPoint" typeName="point3d" displayLabel="End Arc Center Point" category="GeometryAttributes_Geometry" priority="299680"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="ReadOnlyClothoidAspect">
+        <BaseClass>ReadOnlySpiralAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Spiral_StartRadius" typeName="double" displayLabel="Start Radius" category="GeometryAttributes_Geometry" priority="299975" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndRadius" typeName="double" displayLabel="End Radius" category="GeometryAttributes_Geometry" priority="299974" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="299870" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="LinearElement_Spiral_Constant" typeName="double" displayLabel="Constant" category="GeometryAttributes_Geometry" priority="299860" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongTangent" typeName="double" displayLabel="Long Tangent" category="GeometryAttributes_Geometry" priority="299850" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_ShortTangent" typeName="double" displayLabel="Short Tangent" category="GeometryAttributes_Geometry" priority="299840" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_LongChord" typeName="double" displayLabel="Long Chord" category="GeometryAttributes_Geometry" priority="299830" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Xs" typeName="double" displayLabel="Xs" category="GeometryAttributes_Geometry" priority="299820" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_Ys" typeName="double" displayLabel="Ys" category="GeometryAttributes_Geometry" priority="299810" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_PValue" typeName="double" displayLabel="P" category="GeometryAttributes_Geometry" priority="299800" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="299790" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299780" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndDirection" typeName="double" displayLabel="End Direction" category="GeometryAttributes_Geometry" priority="299770" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="LinearElement_Spiral_IntrinsicPoint" typeName="point3d" displayLabel="Intrinsic Point" category="GeometryAttributes_Geometry" priority="299700"/>
+        <ECProperty propertyName="LinearElement_Spiral_StartArcCenterPoint" typeName="point3d" displayLabel="Start Arc Center Point" category="GeometryAttributes_Geometry" priority="299690"/>
+        <ECProperty propertyName="LinearElement_Spiral_EndArcCenterPoint" typeName="point3d" displayLabel="End Arc Center Point" category="GeometryAttributes_Geometry" priority="299680"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyClothoidAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyClothoidAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyCompoundElementAspect">
+        <BaseClass>ReadOnlyProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Length" typeName="double" displayLabel="Length" category="GeometryAttributes_Geometry" priority="299970" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="LinearElement_StartPoint" typeName="point3d" displayLabel="Start Point" category="GeometryAttributes_Geometry" priority="299990"/>
+        <ECProperty propertyName="LinearElement_EndPoint" typeName="point3d" displayLabel="End Point" category="GeometryAttributes_Geometry" priority="299980"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyCompoundElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyCompoundElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyLine3dAspect">
+        <BaseClass>ReadOnlyProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Line3d_Direction" typeName="double" displayLabel="Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLine3dAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLine3dAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLinearComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLinearComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLinearElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLinearElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyLineAspect">
+        <BaseClass>ReadOnlyLinearElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_Line_Direction" typeName="double" displayLabel="Direction" category="GeometryAttributes_Geometry" priority="299900" kindOfQuantity="cifu:BEARING"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyLineString3dAspect">
+        <BaseClass>ReadOnlyProfiledElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_LineString3d_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLineString3dAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLineString3dAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyLineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfileCircularArcAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="ProfileCircularArc_EndSlope" typeName="double" displayLabel="Slope End" category="GeometryAttributes_Geometry" priority="298950"/>
+        <ECProperty propertyName="ProfileCircularArc_StartSlope" typeName="double" displayLabel="Slope Start" category="GeometryAttributes_Geometry" priority="298960"/>
+        <ECProperty propertyName="ProfileCircularArc_RightTangent" typeName="point3d" displayLabel="Right Tangent" category="GeometryAttributes_Geometry" priority="298940"/>
+        <ECProperty propertyName="ProfileCircularArc_LeftTangent" typeName="point3d" displayLabel="Left Tangent" category="GeometryAttributes_Geometry" priority="298930"/>
+        <ECProperty propertyName="ProfileCircularArc_EndLocalAbscissa" typeName="double" displayLabel="Local Abscissa End" category="GeometryAttributes_Geometry" priority="298920"/>
+        <ECProperty propertyName="ProfileCircularArc_StartLocalAbscissa" typeName="double" displayLabel="Local Abscissa Start" category="GeometryAttributes_Geometry" priority="298910"/>
+        <ECProperty propertyName="ProfileCircularArc_VPIPoint" typeName="point3d" displayLabel="VPI Point" category="GeometryAttributes_Geometry" priority="298900"/>
+        <ECProperty propertyName="ProfileCircularArc_ProjectedLength" typeName="double" displayLabel="Projected Length" category="GeometryAttributes_Geometry" priority="298890" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_RightLength" typeName="double" displayLabel="Right Extent" category="GeometryAttributes_Geometry" priority="298880" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_LeftLength" typeName="double" displayLabel="Left Extent" category="GeometryAttributes_Geometry" priority="298870" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_SweepAngle" typeName="double" displayLabel="Sweep Angle" category="GeometryAttributes_Geometry" priority="298990" kindOfQuantity="cifu:ANGLE"/>
+        <ECProperty propertyName="ProfileCircularArc_StartDirection" typeName="double" displayLabel="Start Direction" category="GeometryAttributes_Geometry" priority="299000" kindOfQuantity="cifu:BEARING"/>
+        <ECProperty propertyName="ProfileCircularArc_Radius" typeName="double" displayLabel="Radius" category="GeometryAttributes_Geometry" priority="298980" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileCircularArc_CenterPoint" typeName="point3d" displayLabel="Center Point" category="GeometryAttributes_Geometry" priority="298970"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfileCircularArcAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfileCircularArcAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfileComplexAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfileComplexAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfileComplexAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfiledElementAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfiledElementAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfileLineAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_ProfileLine_Slope" typeName="double" displayLabel="Slope" category="GeometryAttributes_Geometry" priority="299900"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfileLineAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfileLineAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfileLineStringAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="LinearElement_ProfileLineString_VerticesCount" typeName="int" displayLabel="Count" category="GeometryAttributes_Geometry" priority="299000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfileLineStringAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfileLineStringAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ReadOnlyProfileParabolaAspect">
+        <BaseClass>ProfileElementAspect</BaseClass>
+        <ECProperty propertyName="ProfileParabola_VPIPoint" typeName="point3d" displayLabel="VPI Point" category="GeometryAttributes_Geometry" priority="298950"/>
+        <ECProperty propertyName="ProfileParabola_SummitPoint" typeName="point3d" displayLabel="Summit Point" category="GeometryAttributes_Geometry" priority="298940"/>
+        <ECProperty propertyName="ProfileParabola_StartSlope" typeName="double" displayLabel="Slope Start" category="GeometryAttributes_Geometry" priority="298930"/>
+        <ECProperty propertyName="ProfileParabola_EndSlope" typeName="double" displayLabel="Slope End" category="GeometryAttributes_Geometry" priority="298920"/>
+        <ECProperty propertyName="ProfileParabola_KValue" typeName="double" displayLabel="K" category="GeometryAttributes_Geometry" priority="298910" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileParabola_LeftLength" typeName="double" displayLabel="Left Extent" category="GeometryAttributes_Geometry" priority="298890" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileParabola_RightLength" typeName="double" displayLabel="Right Extent" category="GeometryAttributes_Geometry" priority="298880" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlyProfileParabolaAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlyProfileParabolaAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsReadOnlySpiralAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ReadOnlySpiralAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="SecondaryAlignmentAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="SecondaryAlignmentName" typeName="string" displayLabel="Name" category="SecondaryAlignment_Secondary_Alignment" priority="299999"/>
+        <ECProperty propertyName="StartOffset" typeName="double" displayLabel="Start Offset" category="SecondaryAlignment_Secondary_Alignment" priority="299998"/>
+        <ECProperty propertyName="StopOffset" typeName="double" displayLabel="Stop Offset" category="SecondaryAlignment_Secondary_Alignment" priority="-3"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsSecondaryAlignmentAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SecondaryAlignmentAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="ElementOwnsSpiralAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SpiralAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StationEquationAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="BackLocation" typeName="double" displayLabel="BackLocation" category="Miscellaneous_Station_Equation" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="BackLocation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'BackLocation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BackStation" typeName="string" displayLabel="Back Station" category="StationingProperties_Stationing" priority="299995"/>
+        <ECProperty propertyName="AheadStation" typeName="string" displayLabel="Ahead Station" category="StationingProperties_Stationing" priority="299994"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStationEquationAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StationEquationAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StationingEntityAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="AssignedStation" typeName="string" displayLabel="Assigned Station" category="StationingProperties_Stationing" priority="299999"/>
+        <ECProperty propertyName="AssignedLocation" typeName="double" displayLabel="Assigned Location" category="StationingProperties_Stationing" priority="299999" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="AssignedLocation_DistanceAlong" typeName="double" kindOfQuantity="cifu:STATION">
+            <ECCustomAttributes>
+                <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+                <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+                    <Description>Unnecessary duplicate-property. Use 'AssignedLocation' directly</Description>
+                </Deprecated>
+            </ECCustomAttributes>
+        </ECProperty>
+        <ECProperty propertyName="BeginStation" typeName="string" displayLabel="Begin Station" category="StationingProperties_Stationing" priority="299998"/>
+        <ECProperty propertyName="EndStation" typeName="string" displayLabel="End Station" category="StationingProperties_Stationing" priority="299997"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStationingEntityAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StationingEntityAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="StrokingPropertiesClassAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="StrokingStepMethod" typeName="StrokingPropertiesClassAspect_StrokingStepMethod_Enum" displayLabel="Stroking Step Method" category="StrokingDefinition_Stroking_Definition" priority="0"/>
+        <ECProperty propertyName="LinearStroking" typeName="double" displayLabel="Linear Stroking" category="StrokingDefinition_Stroking_Definition" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="CurveStroking" typeName="double" displayLabel="Curve Stroking" category="StrokingDefinition_Stroking_Definition" priority="0" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ProfileStroking" typeName="double" displayLabel="Profile Stroking" category="StrokingDefinition_Stroking_Definition" priority="0" kindOfQuantity="cifu:LENGTH"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsStrokingPropertiesClassAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StrokingPropertiesClassAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TargetAliasAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="TargetAlias_Target_Alias" priority="299999"/>
+        <ECProperty propertyName="Type" typeName="string" displayLabel="Type" category="TargetAlias_Target_Alias" priority="299998"/>
+        <ECProperty propertyName="UseClosest" typeName="boolean" displayLabel="Use Closest" category="TargetAlias_Target_Alias" priority="299997"/>
+        <ECProperty propertyName="Aliases" typeName="string" displayLabel="Aliases" category="TargetAlias_Target_Alias" priority="299996"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsTargetAliasAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TargetAliasAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TemplateDropAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="HorizontalName" typeName="string" displayLabel="Horizontal Name" category="TemplateDrop_Template_Drop" priority="-3"/>
+        <ECProperty propertyName="TemplateName" typeName="string" displayLabel="Template Name" category="TemplateDrop_Template_Drop" priority="0"/>
+        <ECProperty propertyName="Interval" typeName="double" displayLabel="Interval" category="TemplateDrop_Template_Drop" priority="299998" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description" category="TemplateDrop_Template_Drop" priority="-4"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsTemplateDropAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TemplateDropAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="TemplateTransitionAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="StartTemplateName" typeName="string" displayLabel="Start Template Name" category="TemplateTransitionRuleAttributes_Template_Transition" priority="299999"/>
+        <ECProperty propertyName="EndTemplateName" typeName="string" displayLabel="End Template Name" category="TemplateTransitionRuleAttributes_Template_Transition" priority="299998"/>
+        <ECProperty propertyName="Interval" typeName="double" displayLabel="Interval" category="TemplateTransitionRuleAttributes_Template_Transition" priority="299997" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="Description" typeName="string" displayLabel="Description" category="TemplateTransitionRuleAttributes_Template_Transition" priority="299996"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsTemplateTransitionAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="TemplateTransitionAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="ThreeDCutViewAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="StartStation" typeName="double" displayLabel="Start Station" category="ClipVolume_Clip_Volume" priority="299998"/>
+        <ECProperty propertyName="EndStation" typeName="double" displayLabel="End Station" category="ClipVolume_Clip_Volume" priority="299994"/>
+        <ECProperty propertyName="CutOffset" typeName="double" displayLabel="Cut Offset" category="ClipVolume_Clip_Volume" priority="299991" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="BottomElevation" typeName="double" displayLabel="Bottom Elevation" category="ClipVolume_Clip_Volume" priority="299992" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="TopElevation" typeName="double" displayLabel="Top Elevation" category="ClipVolume_Clip_Volume" priority="299996" kindOfQuantity="cifu:LENGTH"/>
+        <ECProperty propertyName="ClipStartStation" typeName="boolean" displayLabel="Clip Start Station" category="ClipVolume_Clip_Volume" priority="299999"/>
+        <ECProperty propertyName="ClipEndStation" typeName="boolean" displayLabel="Clip End Station" category="ClipVolume_Clip_Volume" priority="299995"/>
+        <ECProperty propertyName="ClipBottomElevation" typeName="boolean" displayLabel="Clip Bottom Elevation" category="ClipVolume_Clip_Volume" priority="299993"/>
+        <ECProperty propertyName="ClipTopElevation" typeName="boolean" displayLabel="Clip Top Elevation" category="ClipVolume_Clip_Volume" priority="299997"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsThreeDCutViewAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThreeDCutViewAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="VerticalCurveAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="Name" typeName="string" displayLabel="Name" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+        <ECProperty propertyName="SagMinimum" typeName="double" displayLabel="Sag Minimum" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+        <ECProperty propertyName="SagDefault" typeName="double" displayLabel="Sag Default" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+        <ECProperty propertyName="CrestMinimum" typeName="double" displayLabel="Crest Minimum" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+        <ECProperty propertyName="CrestDefault" typeName="double" displayLabel="Crest Default" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+        <ECProperty propertyName="Speed" typeName="double" displayLabel="Speed" category="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" priority="300000"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsVerticalCurveAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="VerticalCurveAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECEntityClass typeName="VerticalDesignStandardAspect">
+        <BaseClass>CivilPresentation</BaseClass>
+        <ECProperty propertyName="MinimumSlope" typeName="double" displayLabel="Minimum Slope" category="Design_Standard_Attributes_Vertical_Design_Standard" priority="299998" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="MaximumSlope" typeName="double" displayLabel="Maximum Slope" category="Design_Standard_Attributes_Vertical_Design_Standard" priority="299997" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="MaxDifferenceInGrade" typeName="double" displayLabel="Maximum Difference in Grade" category="Design_Standard_Attributes_Vertical_Design_Standard" priority="299993" kindOfQuantity="cifu:SLOPE"/>
+        <ECProperty propertyName="Table" typeName="string" displayLabel="Table" category="Design_Standard_Attributes_Vertical_Design_Standard" priority="299991"/>
+    </ECEntityClass>
+    <ECRelationshipClass typeName="ElementOwnsVerticalDesignStandardAspect" modifier="None" strength="embedding">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:GeometricElement3d"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="VerticalDesignStandardAspect"/>
+        </Target>
+    </ECRelationshipClass>
+    <ECRelationshipClass typeName="GeometricElementBoundsContentForSheet" modifier="None" strength="referencing">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="bounds content for" polymorphic="true">
+            <Class class="bis:GeometricElement"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="has content bounded by" polymorphic="false">
+            <Class class="bis:Sheet"/>
+        </Target>
+    </ECRelationshipClass>
+    <PropertyCategory typeName="CivilObjectStatusAttributes_Object_Status" description="CivilObjectStatusAttributes" displayLabel="Object Status" priority="299990"/>
+    <PropertyCategory typeName="ClipVolume_Clip_Volume" description="ClipVolume" displayLabel="Clip Volume" priority="199800"/>
+    <PropertyCategory typeName="Corridor_Corridor" description="Corridor" displayLabel="Corridor" priority="199800"/>
+    <PropertyCategory typeName="CurveWidening_Curve_Widening" description="CurveWidening" displayLabel="Curve Widening" priority="199800"/>
+    <PropertyCategory typeName="Design_Standard_Attributes_Vertical_Design_Standard" description="Design Standard Attributes" displayLabel="Vertical Design Standard" priority="299999"/>
+    <PropertyCategory typeName="DistanceAlongSlopeEntityProperties_Distance_Along_Slope_Entity" description="DistanceAlongSlopeEntityProperties" displayLabel="Distance Along Slope Entity" priority="0"/>
+    <PropertyCategory typeName="EndConditionException_End_Condition_Exception" description="EndConditionException" displayLabel="End Condition Exception" priority="199800"/>
+    <PropertyCategory typeName="FeatureDefinition_Feature_Definition" description="FeatureDefinition" displayLabel="Feature Definition" priority="299990"/>
+    <PropertyCategory typeName="FeatureProperties_Feature" description="FeatureProperties" displayLabel="Feature" priority="299999"/>
+    <PropertyCategory typeName="FlowLineEntity_Aquaplaning" description="FlowLineEntity" displayLabel="Aquaplaning" priority="100000"/>
+    <PropertyCategory typeName="GeometryAttributes_Geometry" description="GeometryAttributes" displayLabel="Geometry" priority="300000"/>
+    <PropertyCategory typeName="GeometryPointsCategoryAttributes_Geometry_Points" description="GeometryPointsCategoryAttributes" displayLabel="Geometry Points" priority="4294967096"/>
+    <PropertyCategory typeName="KeyStation_Key_Station" description="KeyStation" displayLabel="Key Station" priority="199800"/>
+    <PropertyCategory typeName="MeshQuantities_Civil_Quantities" description="MeshQuantities" displayLabel="Civil Quantities" priority="100000"/>
+    <PropertyCategory typeName="MeshSurfaceEntity_Component_Layer" description="MeshSurfaceEntity" displayLabel="Component Layer" priority="100000"/>
+    <PropertyCategory typeName="Miscellaneous_BSpline" description="Miscellaneous" displayLabel="BSpline" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_BSpline_Presentation" description="Miscellaneous" displayLabel="BSpline_Presentation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_Corridor" description="Miscellaneous" displayLabel="Corridor" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_Corridor_Presentation" description="Miscellaneous" displayLabel="Corridor_Presentation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_Internal_Station_Equation" description="Miscellaneous" displayLabel="Internal Station Equation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_InternalStationEquation_Presentation" description="Miscellaneous" displayLabel="InternalStationEquation_Presentation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_Intersection_Point" description="Miscellaneous" displayLabel="Intersection Point" priority="401000"/>
+    <PropertyCategory typeName="Miscellaneous_IntersectionPointStruct" description="Miscellaneous" displayLabel="IntersectionPointStruct" priority="401000"/>
+    <PropertyCategory typeName="Miscellaneous_Read_Only_BSpline" description="Miscellaneous" displayLabel="Read Only BSpline" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_ReadOnlyBSpline_Presentation" description="Miscellaneous" displayLabel="ReadOnlyBSpline_Presentation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_Station_Equation" description="Miscellaneous" displayLabel="Station Equation" priority="0"/>
+    <PropertyCategory typeName="Miscellaneous_StationEquation_Presentation" description="Miscellaneous" displayLabel="StationEquation_Presentation" priority="0"/>
+    <PropertyCategory typeName="Name_General_Category" description="Name" displayLabel="General Category" priority="300000"/>
+    <PropertyCategory typeName="ParametricConstraint_Parametric_Constraint" description="ParametricConstraint" displayLabel="Parametric Constraint" priority="199800"/>
+    <PropertyCategory typeName="PointControl_PointControl" description="PointControl" displayLabel="PointControl" priority="199800"/>
+    <PropertyCategory typeName="PointGroupCategoryAttributes_Point_Group" description="PointGroupCategoryAttributes" displayLabel="Point Group" priority="4294966996"/>
+    <PropertyCategory typeName="PointOrderedListAttributes_Point_Ordered_List" description="PointOrderedListAttributes" displayLabel="Point Ordered List" priority="0"/>
+    <PropertyCategory typeName="Portal_Portal" description="Portal" displayLabel="Portal" priority="199800"/>
+    <PropertyCategory typeName="ProfilePointbyIntersectionRuleAttributes_Profile_Intersection_Point" description="ProfilePointbyIntersectionRuleAttributes" displayLabel="Profile Intersection Point" priority="0"/>
+    <PropertyCategory typeName="ProjectionProperties_Geographical_Coordinate_Systems" description="ProjectionProperties" displayLabel="Geographical Coordinate Systems" priority="299980"/>
+    <PropertyCategory typeName="Radius_Transition_Setting_Attributes_Radius_Transition_Settings" description="Radius Transition Setting Attributes" displayLabel="Radius Transition Settings" priority="299999"/>
+    <PropertyCategory typeName="SecondaryAlignment_Secondary_Alignment" description="SecondaryAlignment" displayLabel="Secondary Alignment" priority="199800"/>
+    <PropertyCategory typeName="StationingProperties_Stationing" description="StationingProperties" displayLabel="Stationing" priority="0"/>
+    <PropertyCategory typeName="StrokingDefinition_Stroking_Definition" description="StrokingDefinition" displayLabel="Stroking Definition" priority="0"/>
+    <PropertyCategory typeName="TargetAlias_Target_Alias" description="TargetAlias" displayLabel="Target Alias" priority="199800"/>
+    <PropertyCategory typeName="TemplateDrop_Template_Drop" description="TemplateDrop" displayLabel="Template Drop" priority="199800"/>
+    <PropertyCategory typeName="TemplateTransitionRuleAttributes_Template_Transition" description="TemplateTransitionRuleAttributes" displayLabel="Template Transition" priority="300000"/>
+    <PropertyCategory typeName="TerrainModelBySelectedElementAttributes_Create_from_Elements_UnLinked" description="TerrainModelBySelectedElementAttributes" displayLabel="Create from Elements (UnLinked)" priority="299999"/>
+    <PropertyCategory typeName="TriangulationOptions_Triangulation_Options" description="TriangulationOptions" displayLabel="Triangulation Options" priority="299981"/>
+    <PropertyCategory typeName="Vertical_Curve_Setting_Attributes_VerticalCurveSettings" description="Vertical Curve Setting Attributes" displayLabel="&lt;- VerticalCurveSettings -&gt;" priority="299999"/>
+</ECSchema>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="RoadRailUnits" alias="rru" version="01.00.01" description="This contains the unit definitions that are used across Road and Rail schemas" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+    <ECSchemaReference name="Units" version="01.00.05" alias="u"/>
+
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+
+    <KindOfQuantity typeName="ANGLE" displayLabel="Road &amp; Rail Angle" persistenceUnit="u:RAD" presentationUnits="f:DefaultRealU(2)[u:ARC_DEG];f:AngleDMS" relativeError="0.0001"/>
+    <KindOfQuantity typeName="AREA" displayLabel="Road &amp; Rail Area" persistenceUnit="u:SQ_M" presentationUnits="f:DefaultRealU(2)[u:SQ_M];f:DefaultRealU(2)[u:SQ_FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="BEARING" displayLabel="Road &amp; Rail Bearing" persistenceUnit="u:RAD" presentationUnits="f:AngleDMS" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ELEVATION" displayLabel="Road &amp; Rail Elevation" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH" displayLabel="Road &amp; Rail Length" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT];f:DefaultRealU(2)[u:US_SURVEY_FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH_SHORT" displayLabel="Road &amp; Rail Short Length" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(3)[u:M];f:AmerFI" relativeError="0.0001"/>
+    <KindOfQuantity typeName="SLOPE" displayLabel="Road &amp; Rail Slope" persistenceUnit="u:M_PER_M" presentationUnits="f:DefaultRealU(2)[u:M_PER_M];f:DefaultRealU(2)[u:FT_PER_FT]" relativeError="0.0001" />
+    <KindOfQuantity typeName="STATION" displayLabel="Road &amp; Rail Station" persistenceUnit="u:M" presentationUnits="f:StationZ_1000_3[u:M];f:StationZ_100_2[u:FT];f:StationZ_100_2[u:US_SURVEY_FT];f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT];f:DefaultRealU(2)[u:US_SURVEY_FT]" relativeError="0.0001"/>    
+    <KindOfQuantity typeName="VELOCITY" displayLabel="Road &amp; Rail Velocity" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:KM_PER_HR];f:DefaultRealU(2)[u:MPH]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="VOLUME" displayLabel="Road &amp; Rail Volume" persistenceUnit="u:CUB_M" presentationUnits="f:DefaultRealU(2)[u:CUB_M];f:DefaultRealU(2)[u:CUB_FT]" relativeError="0.0001"/>
+</ECSchema>

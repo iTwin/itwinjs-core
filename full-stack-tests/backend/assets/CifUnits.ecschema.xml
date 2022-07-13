@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CifUnits" alias="cifu" version="01.00.01" description="Unit definitions that are used across Civil Infrastructure Framework (CIF) iModel Connector schemas" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+    <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+    <ECSchemaReference name="Units" version="01.00.05" alias="u"/>
+
+    <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>Production</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+
+    <Phenomenon typeName="MONETARY_PER_ENERGY" definition="u:CURRENCY*u:WORK(-1)" displayLabel="Currency per Energy" description="Currency per unit of energy consumed." />
+    <Unit typeName="MONETARY_UNIT_PER_J" phenomenon="MONETARY_PER_ENERGY" unitSystem="u:METRIC" definition="u:MONETARY_UNIT*u:J(-1)" displayLabel="$/J" />
+    <Unit typeName="MONETARY_UNIT_PER_KWH" phenomenon="MONETARY_PER_ENERGY" unitSystem="u:INTERNATIONAL" definition="u:MONETARY_UNIT*u:KWH(-1)" displayLabel="$/kW·h" />
+    <Unit typeName="MONETARY_UNIT_PER_KILOBTU" phenomenon="MONETARY_PER_ENERGY" unitSystem="u:USCUSTOM" definition="u:MONETARY_UNIT*u:KILOBTU(-1)" displayLabel="$/kBtu" />
+
+    <Phenomenon typeName="MONETARY_PER_POWER" definition="u:CURRENCY*u:POWER(-1)" displayLabel="Currency per Power" description="Currency per unit of power." />
+    <Unit typeName="MONETARY_UNIT_PER_W" phenomenon="MONETARY_PER_POWER" unitSystem="u:METRIC" definition="u:MONETARY_UNIT*u:W(-1)" displayLabel="$/W" />
+    <Unit typeName="MONETARY_UNIT_PER_KW" phenomenon="MONETARY_PER_POWER" unitSystem="u:METRIC" definition="u:MONETARY_UNIT*u:KW(-1)" displayLabel="$/kW" />
+    <Unit typeName="MONETARY_UNIT_PER_HP" phenomenon="MONETARY_PER_POWER" unitSystem="u:USCUSTOM" definition="u:MONETARY_UNIT*u:HP(-1)" displayLabel="$/hp" />
+
+    <Phenomenon typeName="MONETARY_PER_VOLUME" definition="u:CURRENCY*u:VOLUME(-1)" displayLabel="Currency per Volume" description="Currency per unit of volume." />
+    <Unit typeName="MONETARY_UNIT_PER_CUB_M" phenomenon="MONETARY_PER_VOLUME" unitSystem="u:METRIC" definition="u:MONETARY_UNIT*u:CUB_M(-1)" displayLabel="$/m³" />
+    <Unit typeName="MONETARY_UNIT_PER_CUB_FT" phenomenon="MONETARY_PER_VOLUME" unitSystem="u:USCUSTOM" definition="u:MONETARY_UNIT*u:CUB_FT(-1)" displayLabel="$/ft³" />
+
+    <Unit typeName="REACTION_PER_SEC" phenomenon="u:FREQUENCY" unitSystem="u:INTERNATIONAL" definition="u:S(-1)" displayLabel="/s" />
+    <Unit typeName="REACTION_PER_MIN" phenomenon="u:FREQUENCY" unitSystem="u:INTERNATIONAL" definition="u:MIN(-1)" displayLabel="/min" />
+    <Unit typeName="REACTION_PER_HR" phenomenon="u:FREQUENCY" unitSystem="u:INTERNATIONAL" definition="u:HR(-1)" displayLabel="/hr" />
+    <Unit typeName="REACTION_PER_DAY" phenomenon="u:FREQUENCY" unitSystem="u:INTERNATIONAL" definition="u:DAY(-1)" displayLabel="/day" />
+
+    <KindOfQuantity typeName="ANGLE" displayLabel="Civil Designer Products Angle" persistenceUnit="u:RAD" presentationUnits="f:DefaultRealU(2)[u:ARC_DEG];f:AngleDMS" relativeError="0.0001"/>
+    <KindOfQuantity typeName="AREA" displayLabel="Civil Designer Products Area" persistenceUnit="u:SQ_M" presentationUnits="f:DefaultRealU(2)[u:SQ_M];f:DefaultRealU(2)[u:SQ_FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="AREA_LARGE" displayLabel="Civil Designer Products Area Large" persistenceUnit="u:SQ_M" presentationUnits="f:DefaultRealU(2)[u:SQ_KM];f:DefaultRealU(2)[u:SQ_MILE]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="BEARING" displayLabel="Civil Designer Products Bearing" persistenceUnit="u:RAD" presentationUnits="f:AngleDMS" relativeError="0.0001"/>
+    <KindOfQuantity typeName="COEFFICIENT" displayLabel="Civil Designer Products Coefficient" persistenceUnit="u:COEFFICIENT" presentationUnits="f:DefaultReal(2)[u:COEFFICIENT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="CONCENTRATION" displayLabel="Civil Designer Products Concentration" persistenceUnit="u:KG_PER_CUB_M" presentationUnits="f:DefaultRealU(2)[u:MG_PER_LITRE];f:DefaultRealU(2)[u:LBM_PER_GALLON]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="COST_PER_UNITVOLUME" displayLabel="Civil Designer Products Cost per Unit Volume" persistenceUnit="MONETARY_UNIT_PER_CUB_M" presentationUnits="f:DefaultRealU(2)[MONETARY_UNIT_PER_CUB_M|$/m³];f:DefaultRealU(2)[MONETARY_UNIT_PER_CUB_FT|$/ft³]" relativeError="0.0001"/>    
+    <KindOfQuantity typeName="CURRENCY" displayLabel="Civil Designer Products Currency" persistenceUnit="u:MONETARY_UNIT" presentationUnits="f:DefaultRealU(2)[u:MONETARY_UNIT|$]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="CURRENCY_PER_ENERGY" displayLabel="Civil Designer Products Currency per Energy" persistenceUnit="MONETARY_UNIT_PER_J" presentationUnits="f:DefaultRealU(2)[MONETARY_UNIT_PER_KWH|$/kW·h];f:DefaultRealU(2)[MONETARY_UNIT_PER_KILOBTU|$/kBtu]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="CURRENTY_PER_POWER" displayLabel="Civil Designer Products Currency per Power" persistenceUnit="MONETARY_UNIT_PER_W" presentationUnits="f:DefaultRealU(2)[MONETARY_UNIT_PER_KW|$/kW];f:DefaultRealU(2)[MONETARY_UNIT_PER_HP|$/hp]" relativeError="0.0001"/>        
+    <KindOfQuantity typeName="DEPTH" displayLabel="Civil Designer Products Depth" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(0)[u:MM];f:DefaultRealU(1)[u:IN]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="DEPTH_LARGE" displayLabel="Civil Designer Products Depth Large" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(3)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ELEVATION" displayLabel="Civil Designer Products Elevation" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(3)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ENERGY" displayLabel="Civil Designer Products Energy" persistenceUnit="u:J" presentationUnits="f:DefaultRealU(2)[u:KWH];f:DefaultRealU(2)[u:KILOBTU]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ENERGY_PER_UNITVOLUME" displayLabel="Civil Designer Products Energy per Unit Volume" persistenceUnit="u:J_PER_CUB_M" presentationUnits="f:DefaultRealU(2)[u:KWH_PER_CUB_M];f:DefaultRealU(2)[u:KWH_PER_MILLION_GALLON]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="FLOW" displayLabel="Civil Designer Products Flow" persistenceUnit="u:CUB_M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:CUB_M_PER_DAY];f:DefaultRealU(2)[u:GALLON_PER_DAY]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="FLOW_SMALL" displayLabel="Civil Designer Products Flow Small" persistenceUnit="u:CUB_M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:LITRE_PER_SEC];f:DefaultRealU(2)[u:CUB_FT_PER_SEC]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="FLOW_VELOCITY" displayLabel="Civil Designer Products Flow Velocity" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:M_PER_SEC];f:DefaultRealU(2)[u:FT_PER_SEC]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="HEADLOSS" displayLabel="Civil Designer Products Headloss" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="INFILTRATION_RATE" displayLabel="Civil Designer Products Infiltration Rate" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:MM_PER_HR];f:DefaultRealU(2)[u:IN_PER_HR]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="INTENSITY" displayLabel="Civil Designer Products Intensity" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:MM_PER_HR];f:DefaultRealU(2)[u:IN_PER_HR]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="KINEMATIC_VISCOSITY" displayLabel="Civil Designer Products Kinematic Viscosity" persistenceUnit="u:SQ_M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:SQ_M_PER_SEC];f:DefaultRealU(2)[u:SQ_FT_PER_SEC]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH" displayLabel="Civil Designer Products Length" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(3)[u:M];f:DefaultRealU(2)[u:FT];f:DefaultRealU(2)[u:US_SURVEY_FT];f:AmerFI" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH_DIAMETER" displayLabel="Civil Designer Products Length Diameter" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:MM];f:DefaultRealU(2)[u:IN]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH_DIAMETER_LARGE" displayLabel="Civil Designer Products Length Diameter" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="LENGTH_SHORT" displayLabel="Civil Designer Products Length Short" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:MM];f:DefaultRealU(2)[u:IN]" relativeError="0.0001"/>    
+    <KindOfQuantity typeName="LENGTH_WIDTH" displayLabel="Civil Designer Products Length Width" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="MASS_RATE" displayLabel="Civil Designer Products Mass Rate" persistenceUnit="u:KG_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:KG_PER_DAY];f:DefaultRealU(2)[u:LBM_PER_DAY]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="PERCENT" displayLabel="Civil Designer Products Percent" persistenceUnit="u:DECIMAL_PERCENT" presentationUnits="f:DefaultRealU(2)[u:PERCENT];f:DefaultReal(2)[u:DECIMAL_PERCENT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="POPULATION" displayLabel="Civil Designer Products Population" persistenceUnit="u:PERSON" presentationUnits="f:DefaultRealU(2)[u:PERSON]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="POWER" displayLabel="Civil Designer Products Power" persistenceUnit="u:W" presentationUnits="f:DefaultRealU(2)[u:KW];f:DefaultRealU(2)[u:HP]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="PRESSURE" displayLabel="Civil Designer Products Pressure" persistenceUnit="u:PA" presentationUnits="f:DefaultRealU(2)[u:KILOPASCAL];f:DefaultRealU(2)[u:PSI]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="RAINFALL_INTENSITY" displayLabel="Civil Designer Products Rainfall Intensity" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:MM_PER_HR];f:DefaultRealU(2)[u:IN_PER_HR]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="REACTION_RATE" displayLabel="Civil Designer Products Reaction Rate" persistenceUnit="u:HZ" presentationUnits="f:DefaultRealU(2)[REACTION_PER_DAY];f:DefaultRealU(2)[REACTION_PER_HR];f:DefaultRealU(2)[REACTION_PER_MIN];f:DefaultRealU(2)[REACTION_PER_SEC]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ROUGHNESS_DARCYWEISBACH" displayLabel="Civil Designer Products Roughness Darcy-Weisbach" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(4)[u:M];f:DefaultRealU(4)[u:FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ROUGHNESS_KUTTERS" displayLabel="Civil Designer Products Roughness Kutters" persistenceUnit="u:COEFFICIENT" presentationUnits="f:DefaultReal(3)[u:COEFFICIENT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ROUGHNESS_MANNINGS" displayLabel="Civil Designer Products Roughness Mannings" persistenceUnit="u:COEFFICIENT" presentationUnits="f:DefaultReal(3)[u:COEFFICIENT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="ROUGHNESS_HAZENWILLIAMS" displayLabel="Civil Designer Products Roughness Hazen-Williams" persistenceUnit="u:COEFFICIENT" presentationUnits="f:DefaultReal(2)[u:COEFFICIENT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="SIDESLOPE" displayLabel="Civil Designer Products Side Slope" persistenceUnit="u:M_HORIZONTAL_PER_M_VERTICAL" presentationUnits="f:DefaultRealU(2)[u:HORIZONTAL_PER_VERTICAL]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="SLOPE" displayLabel="Civil Designer Products Slope" persistenceUnit="u:M_PER_M" presentationUnits="f:DefaultRealU(2)[u:PERCENT_SLOPE];f:DefaultRealU(3)[u:M_PER_M];f:DefaultRealU(2)[u:FT_PER_FT]" relativeError="0.0001" />
+    <KindOfQuantity typeName="STATION" displayLabel="Civil Designer Products Station" persistenceUnit="u:M" presentationUnits="f:StationZ_1000_3[u:M];f:StationZ_100_2[u:FT];f:StationZ_100_2[u:US_SURVEY_FT];f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT];f:DefaultRealU(2)[u:US_SURVEY_FT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="STRESS" displayLabel="Civil Designer Products Stress" persistenceUnit="u:PA" presentationUnits="f:DefaultRealU(2)[u:KILOPASCAL];f:DefaultRealU(2)[u:PSF]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TEMPERATURE" displayLabel="Civil Designer Products Temperature" persistenceUnit="u:K" presentationUnits="f:DefaultRealU(2)[u:CELSIUS];f:DefaultRealU(2)[u:FAHRENHEIT]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TIME_SHORT" displayLabel="Civil Designer Products Time Short" persistenceUnit="u:S" presentationUnits="f:DefaultRealU(2)[u:S]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TIME_EXTENDED" displayLabel="Civil Designer Products Time Extended" persistenceUnit="u:S" presentationUnits="f:DefaultRealU(2)[u:HR]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TIME_MEDIUM" displayLabel="Civil Designer Products Time Medium" persistenceUnit="u:S" presentationUnits="f:DefaultRealU(2)[u:DAY]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TIME_LONG" displayLabel="Civil Designer Products Time Long" persistenceUnit="u:S" presentationUnits="f:DefaultRealU(2)[u:YR]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="TIME_FLOW" displayLabel="Civil Designer Products Time Flow" persistenceUnit="u:S" presentationUnits="f:DefaultRealU(2)[u:MIN]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="VELOCITY" displayLabel="Civil Designer Products Velocity" persistenceUnit="u:M_PER_SEC" presentationUnits="f:DefaultRealU(2)[u:KM_PER_HR];f:DefaultRealU(2)[u:MPH]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="VOLUME" displayLabel="Civil Designer Products Volume" persistenceUnit="u:CUB_M" presentationUnits="f:DefaultRealU(2)[u:CUB_M];f:DefaultRealU(2)[u:CUB_FT];f:DefaultRealU(2)[u:GALLON]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="VOLUME_LARGE" displayLabel="Civil Designer Products Volume Large" persistenceUnit="u:CUB_M" presentationUnits="f:DefaultRealU(2)[u:MILLION_LITRE];f:DefaultRealU(2)[u:MILLION_GALLON]" relativeError="0.0001"/>
+    <KindOfQuantity typeName="WEIR_COEFFICIENT" displayLabel="Civil Designer Products Weir Coefficient" persistenceUnit="u:COEFFICIENT" presentationUnits="f:DefaultReal(2)[u:COEFFICIENT]" relativeError="0.0001"/>    
+</ECSchema>

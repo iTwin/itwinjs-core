@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- =====================================================================================
+|
+|  Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|
+======================================================================================= -->
+<ECSchema schemaName="QuantityTakeoffsAspects" alias="qto" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00.02" alias="bis" />
+    <ECSchemaReference name="AecUnits" version="01.00.01" alias="AECU" />
+
+    <ECEntityClass typeName="QuantityTakeoffAspect" modifier="Abstract" description="An abstract aspect that contains detailed measurement of materials and labor needed to complete a construction project." >
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsQuantityTakeOffAspect" strength="embedding" modifier="None" description="Element may own one or more quantitytakeoffaspects">
+        <BaseClass>bis:ElementOwnsUniqueAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="true">
+            <Class class="QuantityTakeoffAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="DimensionsAspect" description="An aspect that defines basic object measurements: height, length width." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Height" typeName="double" kindOfQuantity="AECU:LENGTH" description="Object's height/depth in meters."/>
+        <ECProperty propertyName="Length" typeName="double" kindOfQuantity="AECU:LENGTH" description="Object's length in meters."/>
+        <ECProperty propertyName="Width" typeName="double" kindOfQuantity="AECU:LENGTH" description="Object's width/thickness in meters."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsDimensionsAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DimensionsAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="DoorAspect" description="An aspect that describes the door type." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Type" typeName="DoorType" description="Type of a door."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsDoorAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="DoorAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="DoorType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Flush"/>
+        <ECEnumerator value="1" displayLabel="Full Glass"/>
+        <ECEnumerator value="2" displayLabel="Half Glass"/>
+        <ECEnumerator value="3" displayLabel="2 Lite"/>
+        <ECEnumerator value="4" displayLabel="Narrow View"/>
+        <ECEnumerator value="5" displayLabel="View"/>
+        <ECEnumerator value="6" displayLabel="Louver - Full"/>
+        <ECEnumerator value="7" displayLabel="Louver - Bottom"/>
+        <ECEnumerator value="8" displayLabel="Louver - Top"/>
+        <ECEnumerator value="9" displayLabel="Half Glass w/ Louver"/>
+        <ECEnumerator value="10" displayLabel="Narrow View w/ Louver"/>
+    </ECEnumeration>
+
+    <ECEntityClass typeName="EnergyPerformanceAspect" description="An aspect that defines the overall energy efficiency rating of a building." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Rating" typeName="double" description="Energy performance rating defined as a number from 0 to 100."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsEnergyPerformanceAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="EnergyPerformanceAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="FoundationAspect" description="An aspect that describes the type of structural foundation." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Type" typeName="FoundationType" description="Type of a structural foundation."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsFoundationAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="FoundationAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="FoundationType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Mat Foundation"/>
+        <ECEnumerator value="1" displayLabel="Pile"/>
+        <ECEnumerator value="2" displayLabel="Pile Cap"/>
+        <ECEnumerator value="3" displayLabel="Spread Footing"/>
+        <ECEnumerator value="4" displayLabel="Strip Footing"/>
+    </ECEnumeration>
+
+    <ECEntityClass typeName="MaterialAspect" description="An aspect that defines the basic properties of a material." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Material" typeName="string" description="Material name."/>
+        <ECProperty propertyName="MaterialDensity" displayLabel="Material Density" typeName="double" kindOfQuantity="AECU:DENSITY" description="Material density described as kilogram per meter cubed."/>
+        <ECProperty propertyName="Weight" typeName="double" kindOfQuantity="AECU:WEIGHT" description="Material weight in kilograms." />
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsMaterialAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="MaterialAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="PerimeterAspect" description="An aspect that defines the length of the outline of a shape - perimeter." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Perimeter" typeName="double" kindOfQuantity="AECU:LENGTH" description="Perimeter of the shape in meters."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsPerimeterAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PerimeterAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="PileAspect" description="An aspect that defines the depth of a vertical structural element of a deep foundation - pile." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="EmbedmentDepth" displayLabel="Embedment Depth" typeName="double" kindOfQuantity="AECU:LENGTH" description="Describes how deep a pile is embedded in meters."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsPileAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PileAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="PipeAspect" description="An aspect that defines the basic measurements of a pipe." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Diameter" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT" description="Diameter of a pipe in meters."/>
+        <ECProperty propertyName="Length" typeName="double" kindOfQuantity="AECU:LENGTH" description="Length of a pipe in meters."/>
+        <ECProperty propertyName="Schedule" typeName="string" description="Schedule of a pipe. The schedule number on a pipe relates to the thickness of the wall on the pipe."/>
+        <ECProperty propertyName="Thickness" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT" description="Thickness of a pipe in meters."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsPipeAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="PipeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="SideAreasAspect" description="An aspect that defines the area measurements for the different sides of a three dimensional object." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="BottomGrossArea" displayLabel="Bottom Gross Area" typeName="double" kindOfQuantity="AECU:AREA" description="Total surface area of the bottom side."/>
+        <ECProperty propertyName="BottomNetArea" displayLabel="Bottom Net Area" typeName="double" kindOfQuantity="AECU:AREA" description="Usable surface area of the bottom side."/>
+        <ECProperty propertyName="LeftSideGrossArea" displayLabel="Left Side Gross Area" typeName="double" kindOfQuantity="AECU:AREA" description="Total surface area of the left side."/>
+        <ECProperty propertyName="LeftSideNetArea" displayLabel="Left Side Net Area" typeName="double" kindOfQuantity="AECU:AREA" description="Usable surface area of the left side."/>
+        <ECProperty propertyName="RightSideGrossArea" displayLabel="Right Side Gross Area" typeName="double" kindOfQuantity="AECU:AREA" description="Total surface area of the right side."/>
+        <ECProperty propertyName="RightSideNetArea" displayLabel="Right Side Net Area" typeName="double" kindOfQuantity="AECU:AREA" description="Usable surface area of the right side." />
+        <ECProperty propertyName="TopGrossArea" displayLabel="Top Gross Area" typeName="double" kindOfQuantity="AECU:AREA" description="Total surface area of the top side."/>
+        <ECProperty propertyName="TopNetArea" displayLabel="Top Net Area" typeName="double" kindOfQuantity="AECU:AREA" description="Usable surface area of the top side."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsSideAreasAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SideAreasAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="SlabAspect" description="An aspect that describes the properties of a large, flat piece of concrete or stone - slab." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="SlabDirection" displayLabel="Slab Direction" typeName="SlabDirectionType" description="Describes in which direction is a slab supported."/>
+        <ECProperty propertyName="Type" typeName="SlabType" description="Type of a slab."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsSlabAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SlabAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="SlabDirectionType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Unknown"/>
+        <ECEnumerator value="1" displayLabel="One Way"/>
+        <ECEnumerator value="2" displayLabel="Two Way"/>
+    </ECEnumeration>
+
+    <ECEnumeration typeName="SlabType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Floor"/>
+        <ECEnumerator value="1" displayLabel="Roof"/>
+        <ECEnumerator value="2" displayLabel="Landing"/>
+        <ECEnumerator value="3" displayLabel="Base Slab"/>
+        <ECEnumerator value="4" displayLabel="User Defined"/>
+        <ECEnumerator value="5" displayLabel="Not Defined"/>
+    </ECEnumeration>
+
+    <ECEntityClass typeName="SlopeAspect" description="An aspect that defines the angle of a slope." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Slope" typeName="double" kindOfQuantity="AECU:ANGLE" description="Angle of a slope in radians."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsSlopeAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SlopeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="StairsAspect" description="An aspect that describes properties of stairs." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="NumberOfRisers" displayLabel="Number of Risers" typeName="int" description="Number of steps/risers in the stairs."/>
+        <ECProperty propertyName="RiserHeight" displayLabel="Riser Height" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT" description="Height of a riser, distance between steps."/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElementOwnsStairsAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StairsAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="StructuralFramingType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Beam"/>
+        <ECEnumerator value="1" displayLabel="Column"/>
+        <ECEnumerator value="2" displayLabel="Vertical Brace"/>
+        <ECEnumerator value="3" displayLabel="Horizontal Brace"/>
+        <ECEnumerator value="4" displayLabel="Pier"/>
+        <ECEnumerator value="5" displayLabel="Pile"/>
+        <ECEnumerator value="6" displayLabel="Purlin"/>
+        <ECEnumerator value="7" displayLabel="Cladding"/>
+    </ECEnumeration>
+
+    <ECEntityClass typeName="StructuralLinearMemberAspect" description="An aspect that describes a straight structural member." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="CrossSectionalArea" displayLabel="Cross-Sectional Area" typeName="double" kindOfQuantity="AECU:AREA" description="Cross-Sectional area of a structural member."/>
+        <ECProperty propertyName="SectionName" displayLabel="Section Name" typeName="string" description="Name of a structural member."/>
+        <ECProperty propertyName="Type" typeName="StructuralFramingType" description="Type of a structural member."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsStructuralLinearMemberAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="StructuralLinearMemberAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="SurfaceAreaAspect" description="An aspect that defines gross and net surface area measurements." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="GrossSurfaceArea" displayLabel="Gross Surface Area" typeName="double" kindOfQuantity="AECU:AREA" description="Total surface area."/>
+        <ECProperty propertyName="NetSurfaceArea" displayLabel="Net Surface Area" typeName="double" kindOfQuantity="AECU:AREA" description="Usable surface area."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsSurfaceAreaAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="SurfaceAreaAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="ThicknessAspect" description="An aspect that defines object's thickness." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Thickness" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT" description="Thickness of an object in meters."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsThicknessAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="ThicknessAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="VolumeAspect" description="An aspect that defines gross and net volumes of an object." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="GrossVolume" displayLabel="Gross Volume" typeName="double" kindOfQuantity="AECU:VOLUME" description="Total volume of an object with packaging."/>
+        <ECProperty propertyName="NetVolume" displayLabel="Net Volume" typeName="double" kindOfQuantity="AECU:VOLUME" description="Volume of an object alone."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsVolumeAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="VolumeAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="WallAspect" description="An aspect that describes the wall type." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Type" typeName="WallType" description="Type of a wall."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsWallAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WallAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="WallType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Movable"/>
+        <ECEnumerator value="1" displayLabel="Parapet"/>
+        <ECEnumerator value="2" displayLabel="Partitioning"/>
+        <ECEnumerator value="3" displayLabel="Plumbing Wall"/>
+        <ECEnumerator value="4" displayLabel="Shear"/>
+        <ECEnumerator value="5" displayLabel="Solid Wall"/>
+        <ECEnumerator value="6" displayLabel="Standard"/>
+        <ECEnumerator value="7" displayLabel="Polygonal"/>
+        <ECEnumerator value="8" displayLabel="Elemented Wall"/>
+        <ECEnumerator value="9" displayLabel="User Defined"/>
+        <ECEnumerator value="10" displayLabel="Not Defined"/>
+    </ECEnumeration>
+
+    <ECEntityClass typeName="WindowAspect" description="An aspect that describes the window type." >
+        <BaseClass>QuantityTakeoffAspect</BaseClass>
+        <ECCustomAttributes>
+            <ClassHasHandler xmlns="BisCore.01.00.00"/>
+        </ECCustomAttributes>
+        <ECProperty propertyName="Type" typeName="WindowType" description="Type of a window."/>
+    </ECEntityClass>
+    
+    <ECRelationshipClass typeName="ElementOwnsWindowAspect" strength="embedding" modifier="None" description="A relationship tieing the specialized quantity takeoff aspect with an element">
+        <BaseClass>ElementOwnsQuantityTakeoffAspect</BaseClass>
+        <Source multiplicity="(1..1)" roleLabel="owns" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is owned by" polymorphic="false">
+            <Class class="WindowAspect"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEnumeration typeName="WindowType" backingTypeName="int" isStrict="true">
+        <ECEnumerator value="0" displayLabel="Casement"/>
+        <ECEnumerator value="1" displayLabel="Single Hung"/>
+        <ECEnumerator value="2" displayLabel="Double Hung"/>
+        <ECEnumerator value="3" displayLabel="Awning"/>
+        <ECEnumerator value="4" displayLabel="Hopper"/>
+        <ECEnumerator value="5" displayLabel="Sliding"/>
+    </ECEnumeration>
+
+</ECSchema>
