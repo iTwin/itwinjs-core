@@ -7,9 +7,8 @@
  * @module Tools
  */
 
-import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
+  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
@@ -356,88 +355,6 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
-
-    return true;
-  }
-}
-
-/** Query the schedule script JSON from an element.
- * @beta
- */
-export class QueryScheduleScriptTool extends DisplayStyleTool {
-  private _sourceId?: string;
-  private _action: "copy" | "break" = "copy";
-  private _includeElementIds = false;
-  private _countElementIds = false;
-  private _expandElementIds = false;
-
-  public static override toolId = "QueryScheduleScript";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
-
-  public async parse(input: string[], vp: Viewport) {
-    const args = parseArgs(input);
-    this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
-    if (!this._sourceId)
-      return false;
-
-    const action = args.get("a") ?? "";
-    this._action = action.length > 0 && "b" === action[0].toLowerCase() ? "break" : "copy";
-
-    this._includeElementIds = this._countElementIds = this._expandElementIds = false;
-    const ids = args.get("e");
-    if (ids && ids.length > 0) {
-      switch (ids[0].toLowerCase()) {
-        case "i":
-          this._includeElementIds = true;
-          break;
-        case "c":
-          this._includeElementIds = this._countElementIds = true;
-          break;
-        case "e":
-          this._includeElementIds = this._expandElementIds = true;
-          break;
-      }
-    }
-
-    return true;
-  }
-
-  public async execute(vp: Viewport) {
-    if (!this._sourceId || !this._action)
-      return false;
-
-    const opts: ElementLoadOptions = {
-      displayStyle: { omitScheduleScriptElementIds: !this._includeElementIds },
-      renderTimeline: { omitScriptElementIds: !this._includeElementIds },
-    };
-
-    let script;
-    const props = await vp.iModel.elements.loadProps(this._sourceId, opts) as any;
-    if (props.script)
-      script = JSON.parse((props.script as RenderTimelineProps).script) as RenderSchedule.ScriptProps;
-    else if (props.jsonProperties?.styles?.scheduleScript)
-      script = props.jsonProperties.styles.scheduleScript as RenderSchedule.ScriptProps;
-
-    if (!script)
-      return false;
-
-    if (this._countElementIds || this._expandElementIds) {
-      for (const model of script) {
-        for (const elem of model.elementTimelines) {
-          const elemIds = typeof elem.elementIds === "string" ? CompressedId64Set.decompressArray(elem.elementIds) : elem.elementIds;
-          if (this._countElementIds)
-            elem.elementIds = elemIds.length as any;
-          else
-            elem.elementIds = elemIds;
-        }
-      }
-    }
-
-    if (this._action === "break")
-      debugger; // eslint-disable-line no-debugger
-    else
-      copyStringToClipboard(JSON.stringify(script, null, 2));
 
     return true;
   }
