@@ -17,6 +17,10 @@ import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-bac
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 
+// This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
+// See: https://github.com/basarat/typescript-book/blob/master/docs/project/external-modules.md#use-case-lazy-loading
+import * as ElectronModuleExports from "electron";
+
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
@@ -144,7 +148,7 @@ export class ElectronHost {
         nativeWindowOpen: true,
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
-      },
+      } as Electron.WebPreferences, // casting is required since nativeWindowOpen was removed in Electron 18.0
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
