@@ -129,6 +129,7 @@ export class AzureFileHandler implements FileHandler {
 
   /** Check if using Azure File Share with UNC path. This is a temporary optimization for Design Review, until they move to using SSD disks. */
   private useBufferedDownload(downloadPath: string): boolean {
+    // https://github.com/iTwin/itwinjs-core/security/code-scanning/2
     if (this._useDownloadBuffer === undefined) {
       return downloadPath.includes("file.core.windows.net");
     } else {
