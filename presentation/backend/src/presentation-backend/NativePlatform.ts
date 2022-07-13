@@ -181,21 +181,10 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
-      return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
-        const interval = setInterval(() => {
-          const pollResult = this._nativeAddon.pollResponse(requestGuid);
-          if (pollResult.error) {
-            if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {
-              reject(new PresentationError(this.getStatus(pollResult.error.status), pollResult.error.message));
-              clearInterval(interval);
-            }
-            return; // ignore 'pending' responses
-          }
-          resolve(this.createSuccessResponse(pollResult));
-          clearInterval(interval);
-        }, 20);
-      });
+      const result = await this._nativeAddon.handleRequest(db, options);
+      if (result.error)
+        throw new PresentationError(this.getStatus(result.error.status), result.error.message);
+      return this.createSuccessResponse(result);
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
       return this.handleResult(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
