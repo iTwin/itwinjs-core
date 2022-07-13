@@ -45,6 +45,7 @@ async function runWebpackBuild(config, name) {
 }
 
 function buildBackend(config) {
+  console.log(config)
   return runWebpackBuild(config, "BACKEND");
 }
 

@@ -25,14 +25,14 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "copy-webpack-plugin": "^6.2.1",
+    "copy-webpack-plugin": "^11.0.0",
     "file-loader": "^6.2.0",
     "findup": "0.1.5",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "lodash": "^4.17.10",
     "resolve": "1.19.0",
-    "source-map-loader": "^1.0.0",
+    "source-map-loader": "^4.0.0",
     "webpack-filter-warnings-plugin": "^1.2.1",
     "webpack-sources": "^1.4.3"
   },
