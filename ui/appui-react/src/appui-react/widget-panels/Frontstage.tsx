@@ -299,7 +299,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       preferredFloatingWidgetSize: widget.defaultFloatingSize,
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
-      hideWithUiWhenFloating: widget.hideWithUiWhenFloating ? widget.hideWithUiWhenFloating : false,
+      hideWithUiWhenFloating: !!widget.hideWithUiWhenFloating,
     });
     tabs.push(widget.id);
   }

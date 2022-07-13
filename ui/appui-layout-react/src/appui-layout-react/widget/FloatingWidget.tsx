@@ -54,9 +54,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
       maxWidth: (isSingleTab && !userSized) ? "60%" : undefined,
     };
   }, [bounds, isSingleTab, minimized, userSized]);
-  const hideFloatingWidget = React.useMemo(() => {
-    return (!!!uiIsVisible && hideWithUiWhenFloating);
-  }, [uiIsVisible, hideWithUiWhenFloating]);
+  const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
     hideFloatingWidget && "nz-hidden",

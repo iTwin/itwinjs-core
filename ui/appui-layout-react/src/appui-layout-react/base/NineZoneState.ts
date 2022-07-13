@@ -1023,12 +1023,10 @@ export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Part
 
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
-  const hideWithUiWhenFloating = args?.hideWithUiWhenFloating ? args.hideWithUiWhenFloating : false;
   return {
     allowedPanelTargets: undefined,
     id,
     label: "",
-    hideWithUiWhenFloating,
     ...args,
   };
 }
@@ -1093,11 +1091,9 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 
 /** @internal */
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
-  const hideWithUiWhenFloating = tabArgs?.hideWithUiWhenFloating ? tabArgs.hideWithUiWhenFloating : false;
   const tab = {
     ...createTabState(id),
     ...tabArgs,
-    hideWithUiWhenFloating,
   };
   return produce(state, (stateDraft) => {
     stateDraft.tabs[id] = tab;
