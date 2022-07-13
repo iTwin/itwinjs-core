@@ -1821,7 +1821,7 @@ export interface CursorUpdatedEventArgs {
 
 // @internal
 export function CustomActivityMessageContent({ initialActivityMessageInfo }: {
-    initialActivityMessageInfo?: ActivityMessageEventArgs;
+    initialActivityMessageInfo: ActivityMessageEventArgs;
 }): JSX.Element;
 
 // @internal
