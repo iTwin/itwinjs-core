@@ -182,9 +182,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public async handleRequest(db: any, options: string) {
       const result = await this._nativeAddon.handleRequest(db, options);
-      if (result.error)
-        throw new PresentationError(this.getStatus(result.error.status), result.error.message);
-      return this.createSuccessResponse(result);
+      return this.handleResult(result);
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
       return this.handleResult(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
