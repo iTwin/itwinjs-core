@@ -76,6 +76,7 @@ export function usePresentationTreeNodeLoader(
       dataSourceOverrides: props.dataSourceOverrides,
       ruleDiagnostics: props.ruleDiagnostics,
       devDiagnostics: props.devDiagnostics,
+      customizeTreeNodeItem: props.customizeTreeNodeItem,
     }),
     [
       props.appendChildrenCountForGroupingNodes,
@@ -85,6 +86,7 @@ export function usePresentationTreeNodeLoader(
       props.pagingSize,
       props.ruleDiagnostics,
       props.ruleset,
+      props.customizeTreeNodeItem,
     ],
   );
 
