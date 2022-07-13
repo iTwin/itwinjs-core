@@ -66,6 +66,9 @@ export interface DownloadRequest {
    * function returns a non-zero value, the download is aborted.
    */
   readonly onProgress?: ProgressFunction;
+
+  /** number of retries for transient failures. Default is 5. */
+  readonly retries?: number;
 }
 
 /** @internal */
@@ -139,21 +142,21 @@ export class V2CheckpointManager {
 
   private static get cloudCache(): IModelJsNative.CloudCache {
     if (!this._cloudCache) {
-      let rootDir = process.env.BLOCKCACHE_DIR;
+      let rootDir = process.env.CHECKPOINT_CACHE_DIR;
       if (!rootDir) {
         rootDir = this.getFolder();
-        Logger.logWarning(loggerCategory, `No BLOCKCACHE_DIR found in process.env, using ${rootDir} instead.`);
+        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${rootDir} instead.`);
       } else {
-        // Make sure the blockcache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
+        // Make sure the checkpoint_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
         if (!(IModelJsFs.existsSync(path.join(rootDir, "portnumber.bcv")))) {
           rootDir = this.getFolder();
-          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided BLOCKCACHE_DIR: ${process.env.BLOCKCACHE_DIR}, using ${rootDir} instead.`);
+          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${rootDir} instead.`);
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
 
-      // Its fine if its not a daemon, but lets just log an info message
+      // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
         Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
     }
@@ -189,7 +192,7 @@ export class V2CheckpointManager {
       const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
         const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
@@ -353,7 +356,16 @@ export class CheckpointManager {
       }
     }
 
-    await this.doDownload(request);
+    let retry = request.retries !== undefined ? request.retries : 5;
+    while (true) {
+      try {
+        await this.doDownload(request);
+        break;
+      } catch (e: any) {
+        if (--retry <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
+          throw e;
+      }
+    }
     return this.updateToRequestedVersion(request);
   }
 

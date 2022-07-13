@@ -23,3 +23,4 @@ export * from "./render/primitives/Strokes";
 export * from "./render/primitives/SurfaceParams";
 export * from "./render/primitives/VertexKey";
 export * from "./render/primitives/VertexTable";
+export * from "./render/primitives/VertexTableSplitter";

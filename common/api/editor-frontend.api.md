@@ -403,6 +403,70 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 }
 
 // @alpha
+export class CreateBoxTool extends SolidPrimitiveTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    get height(): number;
+    set height(value: number);
+    // (undocumented)
+    get heightProperty(): DialogProperty<number>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    get length(): number;
+    set length(value: number);
+    // (undocumented)
+    get lengthProperty(): DialogProperty<number>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    get orthogonal(): boolean;
+    set orthogonal(value: boolean);
+    // (undocumented)
+    get orthogonalProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    get useHeight(): boolean;
+    set useHeight(value: boolean);
+    // (undocumented)
+    get useHeightProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useLength(): boolean;
+    set useLength(value: boolean);
+    // (undocumented)
+    get useLengthProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useWidth(): boolean;
+    set useWidth(value: boolean);
+    // (undocumented)
+    get useWidthProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get width(): number;
+    set width(value: number);
+    // (undocumented)
+    get widthProperty(): DialogProperty<number>;
+    }
+
+// @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -927,6 +991,76 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
+export enum CreateTorusPhase {
+    AcceptAngle = 3,
+    AcceptCenter = 1,
+    AcceptResult = 4,
+    AcceptSecondaryRadius = 2,
+    AcceptStart = 0
+}
+
+// @alpha
+export class CreateTorusTool extends SolidPrimitiveTool {
+    // (undocumented)
+    get angle(): number;
+    set angle(value: number);
+    // (undocumented)
+    get angleProperty(): DialogProperty<number>;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected createPhase: CreateTorusPhase;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    get primaryRadius(): number;
+    set primaryRadius(value: number);
+    // (undocumented)
+    get primaryRadiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get secondaryRadius(): number;
+    set secondaryRadius(value: number);
+    // (undocumented)
+    get secondaryRadiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    get useAngle(): boolean;
+    set useAngle(value: boolean);
+    // (undocumented)
+    get useAngleProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get usePrimaryRadius(): boolean;
+    set usePrimaryRadius(value: boolean);
+    // (undocumented)
+    get usePrimaryRadiusProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get useSecondaryRadius(): boolean;
+    set useSecondaryRadius(value: boolean);
+    // (undocumented)
+    get useSecondaryRadiusProperty(): DialogProperty<boolean>;
     }
 
 // @alpha (undocumented)
