@@ -47,7 +47,7 @@ export class GeoCoordConfig {
         return; // already had this db
 
       IModelHost.platform.enableLocalGcsFiles(false);
-      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${account.accessName}${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
         SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName);
@@ -81,10 +81,9 @@ export class GeoCoordConfig {
     }
   }
 
-  public static loadForImodel(_settings: Settings) {
-    // TODO: Enable when gcs workspaces exist
-    // this.loadDefaultDatabases();
-    // this.loadAll(settings, "gcs/databases");
+  public static loadForImodel(settings: Settings) {
+    this.loadDefaultDatabases();
+    this.loadAll(settings, "gcs/databases");
   }
 }
 
