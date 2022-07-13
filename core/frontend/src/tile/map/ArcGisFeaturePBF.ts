@@ -18,76 +18,86 @@ export class ArcGisFeaturePBF  {
 
   public readRenderGraphics(collection: esriPBuffer.FeatureCollectionPBuffer, context: CanvasRenderingContext2D) {
     const perfoBegin = performance.now();
-    /*
-    const geometryLenths = [3];
-    const geometryCoords = [-50, 256, 256,256, 512, 512];
-
-    context.moveTo(17, 156);
-    context.lineTo(1, 0);
-    context.lineTo(0, 1);
-    context.lineTo(1, 2);
-    context.lineTo(1, 0);
-    context.lineTo(1, 1);
-    context.lineTo(0, 1);
-    context.lineTo(0, 1);
-    context.lineTo(0, 1);
-    context.lineTo(0, 1);
-    context.lineTo(-3, 2);
-    context.stroke();
-    */
 
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    if ( collection.queryResult.featureResult.geometryType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint) {
+    const geomType = collection.queryResult.featureResult.geometryType;
+    // console.log(`Nb Feature: ${collection.queryResult.featureResult.features.length}`);
+    if ( geomType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint) {
       for (const feature of collection.queryResult.featureResult.features) {
         if (feature.geometry.coords && feature.geometry.coords.length >=2 ) {
           context.drawImage(sampleIconImg, feature.geometry.coords[0]-iconSizeHalf, feature.geometry.coords[1]-iconSizeHalf, iconSize, iconSize);
         }
       }
+    } else if (
+      geomType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline ||
+      geomType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon) {
+      const fill = geomType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon;
+
+      for (const feature of collection.queryResult.featureResult.features) {
+        if (feature?.has_geometry) {
+          this.renderPathFeature(feature, context, fill);
+        }
+      }
     }
 
     if ( collection.queryResult.featureResult.geometryType === esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline) {
-      console.log(`Nb Feature: ${collection.queryResult.featureResult.features.length}`);
-      for (const feature of collection.queryResult.featureResult.features) {
-        let coordsOffet = 0;
 
-        const geometryLenths = feature.geometry.lengths;
-        const geometryCoords = feature.geometry.coords;
-        for (const vertexCount of geometryLenths) {
-          context.beginPath();
-          let lastPtX = 0, lastPtY = 0;
-          for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-            const pX = geometryCoords[coordsOffet+(vertexIdx*2)];
-            const pY = geometryCoords[coordsOffet+(vertexIdx*2)+1];
-            if (vertexIdx === 0) {
-              // first vertex is "absolute"
-              context.moveTo(pX, pY);
-              lastPtX = pX;
-              lastPtY = pY;
-            } else {
-              // following vertices are relative to the previous one
-              lastPtX = lastPtX+pX;
-              lastPtY = lastPtY+pY;
-              context.lineTo(lastPtX, lastPtY);
-            }
+    }
+    console.log(`Paint time: ${performance.now() - perfoBegin}`);
+  }
 
-          }
-          coordsOffet+=2*vertexCount;
-          context.stroke();  // Close the path for each
+  protected renderPathFeature(feature: esriPBuffer.FeatureCollectionPBuffer.Feature, context: CanvasRenderingContext2D, fill: boolean) {
+    let coordsOffet = 0;
+
+    const geometryLenths = feature.geometry.lengths;
+    const geometryCoords = feature.geometry.coords;
+    // Begin the path here.
+    // Note: Even though path is closed inside the 'geometryLenths' loop,
+    //       it's import to begin the path only once.
+    context.beginPath();
+    // console.log ("context.beginPath();");
+    for (const vertexCount of geometryLenths) {
+      let lastPtX = 0, lastPtY = 0;
+      for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
+        const pX = geometryCoords[coordsOffet+(vertexIdx*2)];
+        const pY = geometryCoords[coordsOffet+(vertexIdx*2)+1];
+        if (vertexIdx === 0) {
+          // first vertex is "absolute"
+          // console.log (`context.moveTo(${pX}, ${pY});`);
+          context.moveTo(pX, pY);
+          lastPtX = pX;
+          lastPtY = pY;
+        } else {
+          // following vertices are relative to the previous one (not really well documented by ESRI)
+          lastPtX = lastPtX+pX;
+          lastPtY = lastPtY+pY;
+          // console.log (`context.moveTo(${lastPtX}, ${lastPtY});`);
+          context.lineTo(lastPtX, lastPtY);
         }
 
       }
+      coordsOffet+=2*vertexCount;
+      if (fill) {
+        // console.log (`context.closePath();`);
+
+        // ClosePath but do not 'fill' here, only at the very end (otherwise it will mess up holes)
+        context.closePath();
+      }
     }
-    const perfoEnd = performance.now();
-    const perfoTotal = perfoEnd - perfoBegin;
-    console.log(`Paint time: ${perfoTotal}`);
+
+    if (fill) {
+      // console.log (`context.fillStyle = "#0000FF99";`);
+      // console.log (`context.closePath();`);
+      context.fillStyle = "#0000FF99";
+      context.fill();
+    }
+    // console.log (` context.strokeStyle = "yellow";`);
+    // console.log (`context.stroke();`);
+    context.strokeStyle = "yellow";
+    context.stroke();  // draw line path or polygon outline
   }
 
 }
 
-/*
-  protected renderFeaturePath(object: any, context: CanvasRenderingContext2D, options?: EsriFeatureReadOptions) {
-
-  }
-  */
