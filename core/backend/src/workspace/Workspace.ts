@@ -310,7 +310,7 @@ export class ITwinWorkspace implements Workspace {
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
-    this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
+    this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
     this._cloudCacheProps = opts?.cloudCacheProps;
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
