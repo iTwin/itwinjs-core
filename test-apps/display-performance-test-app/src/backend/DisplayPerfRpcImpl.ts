@@ -222,6 +222,9 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return fileNames;
   }
 
+  public override async getAccessToken(): Promise<string> {
+    return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
+  }
 }
 
 /** Auto-register the impl when this file is included. */
