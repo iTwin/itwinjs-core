@@ -3081,6 +3081,8 @@ importers:
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
@@ -3118,6 +3120,8 @@ importers:
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
+      '@itwin/imodels-client-management': 1.0.1
+      '@itwin/oidc-signin-tool': 3.4.1_electron@14.2.9
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.20.0
     devDependencies:
@@ -7186,7 +7190,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/core-webpack-tools/3.2.0_webpack@5.73.0:
     resolution: {integrity: sha512-KaOs+HogMzCZ3zZSm8X7QbfdoHMpO8r8IolcokoveDGV2UNhT76zejDD4nIZvqO1aYD9lEzVhvaRW25c0NUnyA==}
@@ -7355,7 +7358,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
@@ -8382,7 +8384,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8626,6 +8628,10 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.20:
