@@ -46,8 +46,6 @@ import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { XYPointBuckets } from "../../polyface/multiclip/XYPointBuckets";
-import { Matrix3d } from "../../core-geometry";
 
 /* eslint-disable no-console */
 
@@ -971,12 +969,6 @@ describe("CurvePrimitive.TransitionSpiral", () => {
     // chordSum is not so good -- allow it to haver a bigger error.
     ck.testCoordinateWithToleranceFactor(chordSum, trapezoidSum, 1000.0, "spiral length versus chord sum");
     ck.testCoordinate(c.curveLength(), trapezoidSum, "spiral length versus trapezoid sum");
-
-    const rangeA = c.range ();
-    const rangeB = c.rangeBetweenFractionsByClone (0.0, 1.0);
-    const rangeC = c.rangeBetweenFractionsByCount (0.0, 1.0, 5, undefined, 0.0);
-    const rangeD = c.rangeBetweenFractionsByCount (0.0, 1.0, 5, undefined, 0.0);
-    const rangeE = c.rangeBetweenFractionsByCount (0.0, 1.0, 5, undefined, 0.0);
 
     ck.checkpoint("CurvePrimitive.TransitionSpiral");
     expect(ck.getNumErrors()).equals(0);

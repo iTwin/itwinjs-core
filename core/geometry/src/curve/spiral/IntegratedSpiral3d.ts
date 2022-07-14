@@ -23,7 +23,6 @@ import { StrokeOptions } from "../StrokeOptions";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Range3d } from "../../geometry3d/Range";
 import { GeometryQuery } from "../GeometryQuery";
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
