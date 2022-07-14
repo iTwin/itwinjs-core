@@ -136,5 +136,6 @@ export const copyFilesRule = {
   options: {
     name: "static/[name].[hash:6].[ext]",
     postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
+    esModule: false,
   },
 };

@@ -6,8 +6,6 @@ import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
-// eslint-disable-next-line no-duplicate-imports
-import { ipcRenderer } from "electron";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 import type { ITwinElectronApi } from "../common/ITwinElectronApi";
@@ -24,22 +22,23 @@ declare global {
 class ElectronIpc implements IpcSocketFrontend {
   private _api: ITwinElectronApi | IpcRenderer;
   public addListener(channelName: string, listener: IpcListener) {
-    this._api.addListener(channelName, listener);
-    return () => this._api.removeListener(channelName, listener);
+    this._api?.addListener(channelName, listener);
+    return () => this._api?.removeListener(channelName, listener);
   }
   public removeListener(channelName: string, listener: IpcListener) {
-    this._api.removeListener(channelName, listener);
+    this._api?.removeListener(channelName, listener);
   }
   public send(channel: string, ...data: any[]) {
-    this._api.send(channel, ...data);
+    this._api?.send(channel, ...data);
   }
   public async invoke(channel: string, ...args: any[]) {
-    return this._api.invoke(channel, ...args);
+    return this._api?.invoke(channel, ...args);
   }
   constructor() {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    this._api = window.itwinjs ?? ipcRenderer;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this._api = window.itwinjs ?? require("electron").ipcRenderer;
   }
 }
 

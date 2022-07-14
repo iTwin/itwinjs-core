@@ -35,7 +35,7 @@ export class CopyExternalsPlugin {
   }
 
   public async handleModule(currentModule: ExternalModule, outputDir: string, _compilation: Compilation) {
-    console.error(currentModule);
+    // console.error(currentModule);
     const pkgName = this.pathToPackageName(currentModule.userRequest);
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
