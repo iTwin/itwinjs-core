@@ -32,8 +32,8 @@ export class AtmosphericScatteringEditor {
   private readonly _earthRadiusX: LabeledNumericInput;
   private readonly _earthRadiusY: LabeledNumericInput;
   private readonly _earthRadiusZ: LabeledNumericInput;
-  private readonly _atmosphereScale: LabeledNumericInput;
-  // private readonly _earthRadius: LabeledNumericInput;
+  private readonly _atmosphereHeightAboveEarth: LabeledNumericInput;
+  private readonly _minDensityHeightBellowEarth: LabeledNumericInput;
   private readonly _densityFalloff: LabeledNumericInput;
   private readonly _scatteringStrength: LabeledNumericInput;
   private readonly _wavelenghtR: LabeledNumericInput;
@@ -194,20 +194,35 @@ export class AtmosphericScatteringEditor {
     const spanAtmosphereScale = document.createElement("span");
     spanAtmosphereScale.style.display = "flex";
     atmosphericScatteringControlsDiv.appendChild(spanAtmosphereScale);
-    this._atmosphereScale = createLabeledNumericInput({
-      id: "atmosphericScattering_atmosphereScale",
+    this._atmosphereHeightAboveEarth = createLabeledNumericInput({
+      id: "atmosphericScattering_atmosphereHeightAboveEarth",
       parent: spanAtmosphereScale,
       value: 0.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        props.atmosphereScale = value;
+        props.atmosphereHeightAboveEarth = value;
         return props;
       }),
       min: 0.0,
-      max: 2.0,
-      step: 0.01,
+      max: 1000.0,
+      step: 1.0,
       parseAsFloat: true,
-      name: "Atmosphere Scale: ",
+      name: "Atmosphere Height Above Earth: ",
+    });
+    this._minDensityHeightBellowEarth = createLabeledNumericInput({
+      id: "atmosphericScattering_minDensityHeightBellowEarth",
+      parent: spanAtmosphereScale,
+      value: 0.0,
+      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+        const props = this.getAtmosphericScatteringSettingsProps(view);
+        props.minDensityHeightBelowEarth = value;
+        return props;
+      }),
+      min: 0.0,
+      max: 1000.0,
+      step: 1.0,
+      parseAsFloat: true,
+      name: "Min Density Height Below Earth ",
     });
 
     // this._earthRadius = createLabeledNumericInput({
@@ -251,16 +266,16 @@ export class AtmosphericScatteringEditor {
       value: 0.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        const wavelenghts = props.wavelenghts!;
+        const wavelenghts = props.wavelengths!;
         wavelenghts[0] = value;
-        props.wavelenghts = wavelenghts;
+        props.wavelengths = wavelenghts;
         return props;
       }),
       min: 0.0,
       max: 1000.0,
       step: 10,
       parseAsFloat: true,
-      name: "Wavelenght R: ",
+      name: "Wavelength R: ",
     });
     this._wavelenghtR.div.style.marginRight = "0.5em";
 
@@ -270,9 +285,9 @@ export class AtmosphericScatteringEditor {
       value: 0.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        const wavelenghts = props.wavelenghts!;
+        const wavelenghts = props.wavelengths!;
         wavelenghts[1] = value;
-        props.wavelenghts = wavelenghts;
+        props.wavelengths = wavelenghts;
         return props;
       }),
       min: 0.0,
@@ -289,9 +304,9 @@ export class AtmosphericScatteringEditor {
       value: 0.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        const wavelenghts = props.wavelenghts!;
+        const wavelenghts = props.wavelengths!;
         wavelenghts[2] = value;
-        props.wavelenghts = wavelenghts;
+        props.wavelengths = wavelenghts;
         return props;
       }),
       min: 0.0,
@@ -406,13 +421,13 @@ export class AtmosphericScatteringEditor {
     this._earthRadiusX.input.value = settings.earthRadii.x.toString();
     this._earthRadiusY.input.value = settings.earthRadii.y.toString();
     this._earthRadiusZ.input.value = settings.earthRadii.z.toString();
-    this._atmosphereScale.input.value = settings.atmosphereScale.toString();
-    // this._earthRadius.input.value = settings.earthRadius.toString();
+    this._atmosphereHeightAboveEarth.input.value = settings.atmosphereHeightAboveEarth.toString();
+    this._minDensityHeightBellowEarth.input.value = settings.minDensityHeightBelowEarth.toString();
     this._densityFalloff.input.value = settings.densityFalloff.toString();
     this._scatteringStrength.input.value = settings.scatteringStrength.toString();
-    this._wavelenghtR.input.value = settings.wavelenghts[0].toString();
-    this._wavelenghtG.input.value = settings.wavelenghts[1].toString();
-    this._wavelenghtB.input.value = settings.wavelenghts[2].toString();
+    this._wavelenghtR.input.value = settings.wavelengths[0].toString();
+    this._wavelenghtG.input.value = settings.wavelengths[1].toString();
+    this._wavelenghtB.input.value = settings.wavelengths[2].toString();
     this._numInScatteringPoints.input.value = settings.numInScatteringPoints.toString();
     this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
     this._isPlanar.checkbox.checked = settings.isPlanar;

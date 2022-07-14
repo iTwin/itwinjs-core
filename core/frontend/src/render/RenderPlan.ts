@@ -127,9 +127,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   if (isGlobeMode3D) {
     globeCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
     globeRotation = view.iModel.getMapEcefToDb(0).matrix;
-    // globeRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
-
-    globeRadii = Point3d.fromJSON({x:10, y:5, z:20});
+    globeRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
   }
 
   return {

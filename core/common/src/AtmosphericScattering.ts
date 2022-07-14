@@ -13,24 +13,14 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
   {
     earthCenter: { x: 0.0, y: 0.0, z: -6_190_000.0 },
     earthRadii: {x: 10.0, y: 5.0, z: 20.0},
-    atmosphereRadius: 6_290_100.0,
-    atmosphereScale: 0.05,
-    earthRadius: 6_190_000.0,
+    atmosphereHeightAboveEarth: 10.0,
+    minDensityHeightBelowEarth: 10.0,
     densityFalloff: 5.0,
     scatteringStrength: 0.01,
-    wavelenghts: [700.0, 530.0, 440.0],
+    wavelengths: [700.0, 530.0, 440.0],
     numInScatteringPoints: 10,
     numOpticalDepthPoints: 10,
     isPlanar: false,
-    // earthCenter: {x: 1000.0, y: -10000.0, z: -105000.0},
-    // atmosphereRadius: 110000.0,
-    // earthRadius: 9000.0,
-    // densityFalloff: 5.0,
-    // scatteringStrength: 1.0,
-    // wavelenghts: [700.0, 530.0, 440.0],
-    // numInScatteringPoints: 10,
-    // numOpticalDepthPoints: 10,
-    // isPlanar: false,
   };
 
 /**
@@ -39,12 +29,11 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
 export interface AtmosphericScatteringProps {
   earthCenter?: XYZProps;
   earthRadii?: XYZProps;
-  atmosphereRadius?: number;
-  atmosphereScale?: number;
-  earthRadius?: number;
+  atmosphereHeightAboveEarth?: number;
+  minDensityHeightBelowEarth?: number;
   densityFalloff?: number;
   scatteringStrength?: number;
-  wavelenghts?: number[];
+  wavelengths?: number[];
   numInScatteringPoints?: number;
   numOpticalDepthPoints?: number;
   isPlanar?: boolean;
@@ -53,102 +42,45 @@ export interface AtmosphericScatteringProps {
 /**
  * @public
  */
-export class AtmosphericScattering {
+export class AtmosphericScattering implements AtmosphericScatteringProps {
   public readonly earthCenter: Point3d;
   public readonly earthRadii: Point3d;
-  public readonly atmosphereRadius: number;
-  public readonly atmosphereScale: number;
-  public readonly earthRadius: number;
+  public readonly atmosphereHeightAboveEarth: number; // At the poles
+  public readonly minDensityHeightBelowEarth: number; // At the poles
   public readonly densityFalloff: number;
   public readonly scatteringStrength: number;
-  public readonly wavelenghts: number[];
+  public readonly wavelengths: number[];
   public readonly numInScatteringPoints: number;
   public readonly numOpticalDepthPoints: number;
   public readonly isPlanar: boolean;
 
   public equals(other: AtmosphericScattering): boolean {
-    if (this.earthCenter !== other.earthCenter) return false;
-    if (this.atmosphereRadius !== other.atmosphereRadius) return false;
-    if (this.atmosphereScale !== other.atmosphereScale) return false;
-    if (this.earthCenter !== other.earthCenter) return false;
+    if (!this.earthCenter.isAlmostEqual(other.earthCenter)) return false;
+    if (!this.earthRadii.isAlmostEqual(other.earthRadii)) return false;
+    if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
+    if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth) return false;
     if (this.densityFalloff !== other.densityFalloff) return false;
     if (this.scatteringStrength !== other.scatteringStrength) return false;
-    if (this.wavelenghts !== other.wavelenghts) return false;
-    if (this.numInScatteringPoints !== other.numInScatteringPoints)
-      return false;
-    if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints)
-      return false;
+    if (this.wavelengths[0] !== other.wavelengths[0]) return false;
+    if (this.wavelengths[1] !== other.wavelengths[1]) return false;
+    if (this.wavelengths[2] !== other.wavelengths[2]) return false;
+    if (this.numInScatteringPoints !== other.numInScatteringPoints) return false;
+    if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
     if (this.isPlanar !== other.isPlanar) return false;
     return true;
   }
 
   private constructor(json?: AtmosphericScatteringProps) {
-    if (json === undefined) {
-      this.earthCenter = Point3d.fromJSON(
-        defaultAtmosphericScatteringProps.earthCenter
-      );
-      this.earthRadii = Point3d.fromJSON(
-        defaultAtmosphericScatteringProps.earthRadii
-      );
-      this.atmosphereRadius =
-        defaultAtmosphericScatteringProps.atmosphereRadius;
-      this.atmosphereScale = defaultAtmosphericScatteringProps.atmosphereScale;
-      this.earthRadius = defaultAtmosphericScatteringProps.earthRadius;
-      this.densityFalloff = defaultAtmosphericScatteringProps.densityFalloff;
-      this.scatteringStrength =
-        defaultAtmosphericScatteringProps.scatteringStrength;
-      this.wavelenghts = defaultAtmosphericScatteringProps.wavelenghts;
-      this.numInScatteringPoints =
-        defaultAtmosphericScatteringProps.numInScatteringPoints;
-      this.numOpticalDepthPoints =
-        defaultAtmosphericScatteringProps.numOpticalDepthPoints;
-      this.isPlanar = defaultAtmosphericScatteringProps.isPlanar;
-    } else {
-      this.earthCenter =
-        json.earthCenter === undefined
-          ? Point3d.fromJSON(defaultAtmosphericScatteringProps.earthCenter)
-          : Point3d.fromJSON(json.earthCenter);
-      this.earthRadii =
-        json.earthRadii === undefined
-          ? Point3d.fromJSON(defaultAtmosphericScatteringProps.earthRadii)
-          : Point3d.fromJSON(json.earthRadii);
-      this.atmosphereRadius =
-        json.atmosphereRadius === undefined
-          ? defaultAtmosphericScatteringProps.atmosphereRadius
-          : json.atmosphereRadius;
-      this.atmosphereScale =
-        json.atmosphereScale === undefined
-          ? defaultAtmosphericScatteringProps.atmosphereScale
-          : json.atmosphereScale;
-      this.earthRadius =
-        json.earthRadius === undefined
-          ? defaultAtmosphericScatteringProps.earthRadius
-          : json.earthRadius;
-      this.densityFalloff =
-        json.densityFalloff === undefined
-          ? defaultAtmosphericScatteringProps.densityFalloff
-          : json.densityFalloff;
-      this.scatteringStrength =
-        json.scatteringStrength === undefined
-          ? defaultAtmosphericScatteringProps.scatteringStrength
-          : json.scatteringStrength;
-      this.wavelenghts =
-        json.wavelenghts === undefined
-          ? defaultAtmosphericScatteringProps.wavelenghts
-          : json.wavelenghts;
-      this.numInScatteringPoints =
-        json.numInScatteringPoints === undefined
-          ? defaultAtmosphericScatteringProps.numInScatteringPoints
-          : json.numInScatteringPoints;
-      this.numOpticalDepthPoints =
-        json.numOpticalDepthPoints === undefined
-          ? defaultAtmosphericScatteringProps.numOpticalDepthPoints
-          : json.numOpticalDepthPoints;
-      this.isPlanar =
-        json.isPlanar === undefined
-          ? defaultAtmosphericScatteringProps.isPlanar
-          : json.isPlanar;
-    }
+    this.earthCenter = Point3d.fromJSON(json?.earthCenter ?? defaultAtmosphericScatteringProps.earthCenter);
+    this.earthRadii = Point3d.fromJSON(json?.earthRadii ?? defaultAtmosphericScatteringProps.earthRadii);
+    this.atmosphereHeightAboveEarth = json?.atmosphereHeightAboveEarth ?? defaultAtmosphericScatteringProps.atmosphereHeightAboveEarth;
+    this.minDensityHeightBelowEarth = json?.minDensityHeightBelowEarth ?? defaultAtmosphericScatteringProps.minDensityHeightBelowEarth;
+    this.densityFalloff = json?.densityFalloff ?? defaultAtmosphericScatteringProps.densityFalloff;
+    this.scatteringStrength = json?.scatteringStrength ?? defaultAtmosphericScatteringProps.scatteringStrength;
+    this.wavelengths = json?.wavelengths ?? defaultAtmosphericScatteringProps.wavelengths;
+    this.numInScatteringPoints = json?.numInScatteringPoints ?? defaultAtmosphericScatteringProps.numInScatteringPoints;
+    this.numOpticalDepthPoints = json?.numOpticalDepthPoints ?? defaultAtmosphericScatteringProps.numOpticalDepthPoints;
+    this.isPlanar = json?.isPlanar ?? defaultAtmosphericScatteringProps.isPlanar;
   }
 
   public static fromJSON(json?: AtmosphericScatteringProps) {
@@ -159,12 +91,11 @@ export class AtmosphericScattering {
     const json: AtmosphericScatteringProps = {
       earthCenter: this.earthCenter.toJSON(),
       earthRadii: this.earthRadii.toJSON(),
-      atmosphereRadius: this.atmosphereRadius,
-      atmosphereScale: this.atmosphereScale,
-      earthRadius: this.earthRadius,
+      atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
+      minDensityHeightBelowEarth: this.minDensityHeightBelowEarth,
       densityFalloff: this.densityFalloff,
       scatteringStrength: this.scatteringStrength,
-      wavelenghts: this.wavelenghts,
+      wavelengths: this.wavelengths,
       numInScatteringPoints: this.numInScatteringPoints,
       numOpticalDepthPoints: this.numOpticalDepthPoints,
       isPlanar: this.isPlanar,

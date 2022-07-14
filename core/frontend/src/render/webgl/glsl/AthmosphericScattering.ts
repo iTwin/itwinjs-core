@@ -40,7 +40,7 @@ const computeSceneDepthRealityMesh = `
 
 const computeSceneDepthSky = `
   float computeSceneDepth(vec3 rayDirection) {
-    return max_float;
+    return MAX_FLOAT;
   }
 `;
 
@@ -58,26 +58,24 @@ const computeSceneDepthSky = `
  * @returns
  */
 const rayEllipsoidIntersectionGeneric = `
-vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 ellipsoidMatrix, mat3 viewMatrix, vec3 ellipsoidRadii, vec3 rayOrigin, vec3 rayDirection) {
+vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 inverseRotationMatrix, mat3 ellipsoidScaleMatrix, vec3 rayOrigin, vec3 rayDirection) {
   vec3 ro, rd;
 
   // transform ray to be relative to sphere
-  mat3 inverseRotation = inverse(ellipsoidMatrix) * inverse(viewMatrix); // uniform
-  rd = inverseRotation * rayDirection;
-  ro = inverseRotation * (rayOrigin - ellipsoidCenter); // uniform for rayOrigin - ellipsoidCenter
+  rd = inverseRotationMatrix * rayDirection;
+  ro = inverseRotationMatrix * (rayOrigin - ellipsoidCenter); // uniform for rayOrigin - ellipsoidCenter
 
-  mat3 scale = mat3(ellipsoidRadii.x, 0.0, 0.0, 0.0, ellipsoidRadii.y, 0.0, 0.0, 0.0, ellipsoidRadii.z);
-  mat3 scaleInverse = inverse(scale);
+  mat3 inverseEllipsoidScaleMatrix = inverse(ellipsoidScaleMatrix);
 
-  vec3 rdi = normalize(scaleInverse * rd);
-  vec3 roi = scaleInverse * ro;
+  vec3 rdi = normalize(inverseEllipsoidScaleMatrix * rd);
+  vec3 roi = inverseEllipsoidScaleMatrix * ro;
 
   vec2 toAndThrough = raySphere(vec3(0.0), 1.0, roi, rdi);
   if (toAndThrough[1] > 0.0) {
     vec3 pt = roi + rdi * toAndThrough[0];
     return vec2(
-      distance(ro, scale * pt),
-      distance(scale * pt, scale * (pt + rdi * toAndThrough[1]))
+      distance(ro, ellipsoidScaleMatrix * pt),
+      distance(ellipsoidScaleMatrix * pt, ellipsoidScaleMatrix * (pt + rdi * toAndThrough[1]))
     );
   }
   return toAndThrough;
@@ -138,7 +136,7 @@ vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDi
     }
   }
 
-  return vec2(max_float, 0.0);
+  return vec2(MAX_FLOAT, 0.0);
 }
 `;
 
@@ -157,7 +155,7 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
   vec3 rayStep = rayDir * stepSize;
 
   for (int i = 0; i < u_numOpticalDepthPoints; i ++) {
-    float localDensity = densityAtPoint(densitySamplePoint, u_earthCenter, u_earthRadius, u_atmosphereRadius, u_densityFalloff);
+    float localDensity = densityAtPoint(densitySamplePoint);
     opticalDepth += localDensity * stepSize;
     densitySamplePoint += rayStep;
   }
@@ -165,25 +163,46 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
 }
 `;
 
+// /**
+//  * Returns the atmospheric density at a point according to its distance between
+//  * a minimum and maximum density height. Density decreases exponentially,
+//  * modulated by a density falloff coefficient.
+//  *
+//  * @param densitySamplePoint - Point we want to sample density for.
+//  * @param sphereCenterPoint - Center point of the sphere responsible for the atmosphere.
+//  * @param minDensityHeight - Distance from sphereCenterPoint at which density is 0.0.
+//  * @param maxDensityHeight - Distance from sphereCenterPoint at which density is 1.0.
+//  * @param densityFalloff - Coefficient modulating density falloff speed.
+//  * @returns A density value between [0.0 - 1.0].
+//  */
+// const _densityAtPoint = `
+// float densityAtPoint(vec3 densitySamplePoint, vec3 sphereCenterPoint, float minDensityHeight, float maxDensityHeight, float densityFalloff) {
+//   float distanceFromCenter = length(densitySamplePoint - sphereCenterPoint);
+//   float distanceFromMinHeight = distanceFromCenter - minDensityHeight;
+//   float isAboveMinHeight = step(0.0, distanceFromMinHeight);
+//   float minToMaxRatio = isAboveMinHeight * clamp(distanceFromMinHeight / (maxDensityHeight - minDensityHeight), 0.0, 1.0);
+//   return exp(-minToMaxRatio * densityFalloff) * (1.0 - minToMaxRatio);
+// }
+// `;
+
 /**
  * Returns the atmospheric density at a point according to its distance between
  * a minimum and maximum density height. Density decreases exponentially,
  * modulated by a density falloff coefficient.
  *
- * @param densitySamplePoint - Point we want to sample density for.
- * @param sphereCenterPoint - Center point of the sphere responsible for the atmosphere.
- * @param minDensityHeight - Distance from sphereCenterPoint at which density is 0.0.
- * @param maxDensityHeight - Distance from sphereCenterPoint at which density is 1.0.
- * @param densityFalloff - Coefficient modulating density falloff speed.
+ * We find out at what ratio between the minimum density ellipsoid and the
+ * maximum density ellipsoid (the atmosphere's limit) by squeezing the
+ * coordinate space by the minimum density ellipsoid's scale factors, taking
+ * the ellipsoid rotation into account. Then, we find out
+ *
+ * @param point - Point we want to sample density for.
  * @returns A density value between [0.0 - 1.0].
  */
 const densityAtPoint = `
-float densityAtPoint(vec3 densitySamplePoint, vec3 sphereCenterPoint, float minDensityHeight, float maxDensityHeight, float densityFalloff) {
-  float distanceFromCenter = length(densitySamplePoint - sphereCenterPoint);
-  float distanceFromMinHeight = distanceFromCenter - minDensityHeight;
-  float isAboveMinHeight = step(0.0, distanceFromMinHeight);
-  float minToMaxRatio = isAboveMinHeight * clamp(distanceFromMinHeight / (maxDensityHeight - minDensityHeight), 0.0, 1.0);
-  return exp(-minToMaxRatio * densityFalloff) * (1.0 - minToMaxRatio);
+float densityAtPoint(vec3 point) {
+  vec3 pointToMinDensityUnitSphere = u_inverseMinDensityScaleMatrix * u_inverseEllipsoidRotationMatrix * (point - u_earthCenter);
+  float minToMaxRatio = clamp(length(pointToMinDensityUnitSphere) - 1.0 / u_minDensityToAtmosphereScaleFactor - 1.0, 0.0, 1.0);
+  return exp(-minToMaxRatio * u_densityFalloff) * (1.0 - minToMaxRatio);
 }
 `;
 
@@ -197,26 +216,18 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 base
 
   vec3 inScatterPoint = rayOrigin;
   for (int i = 0; i < u_numInScatteringPoints; i++) {
-    float sunRayLength = raySphere(u_earthCenter, u_atmosphereRadius, inScatterPoint, dirToSun)[1];
+    float sunRayLength = rayEllipsoidIntersection(u_earthCenter, u_inverseEllipsoidRotationMatrix, u_atmosphereScaleMatrix, inScatterPoint, dirToSun)[1];
+    // float sunRayLength = raySphere(u_earthCenter, u_atmosphereRadius, inScatterPoint, dirToSun)[1];
     float sunRayOpticalDepth = opticalDepth(inScatterPoint, dirToSun, sunRayLength);
     viewRayOpticalDepth = opticalDepth(inScatterPoint, -rayDir, stepSize * float(i));
     vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * u_scatteringCoefficients);
-    float localDensity = densityAtPoint(inScatterPoint, u_earthCenter, u_earthRadius, u_atmosphereRadius, u_densityFalloff);
+    float localDensity = densityAtPoint(inScatterPoint);
 
-    // inScatteredLight += localDensity * transmittance;
     inScatteredLight += localDensity * transmittance * u_scatteringCoefficients * stepSize;
     inScatterPoint += rayDir * stepSize;
   }
-  // inScatteredLight *= u_scatteringCoefficients * (stepSize / u_earthRadius);
   float originalColorTransmittance = exp(-viewRayOpticalDepth);
-  // if (gl_FragCoord.x / u_vpSize.x > 0.5 && gl_FragCoord.y / u_vpSize.y > 0.5) // TOP RIGHT
-  //   return inScatteredLight;
-  // if (gl_FragCoord.x / u_vpSize.x > 0.5 && gl_FragCoord.y / u_vpSize.y < 0.5) // BOTTOM RIGHT
-  //   return baseColor;
-  // if (gl_FragCoord.x / u_vpSize.x < 0.5 && gl_FragCoord.y / u_vpSize.y < 0.5) // BOTTOM LEFT
-  //   return vec3(originalColorTransmittance);
-  return baseColor * originalColorTransmittance + inScatteredLight; // TOP LEFT
-  // return baseColor * originalColorTransmittance; // TOP LEFT
+  return baseColor * originalColorTransmittance + inScatteredLight;
 }
 `;
 
@@ -226,33 +237,18 @@ vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec4 baseCo
   // the distance it traveled in the atmosphere to reach the fragment.
 
   vec2 atmosphereHitInfo = eyeAtmosphereIntersection(rayDir);
-  // vec2 hitInfo = rayEllipsoidIntersection(u_earthCenter, u_earthRotation, u_viewMatrix, atmosphereRadii, rayOrigin, rayDir);
-  // vec2 hitInfo = raySphere(u_earthCenter, u_atmosphereRadius, rayOrigin, rayDir);
 
   float distanceToAtmosphere = atmosphereHitInfo[0];
+
   // We remove distance through atmosphere beyond the fragment's position
   float distanceThroughAtmosphere = min(atmosphereHitInfo[1], sceneDepth - distanceToAtmosphere);
 
   if (distanceThroughAtmosphere > 0.0) {
     // point on ray where atmosphere starts
-    vec3 pointInAtmosphere = rayDir * (distanceToAtmosphere + epsilon);
-    vec3 light = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere - epsilon * 2.0, baseColor.rgb);
-    // return vec4(1.0, baseColor.gba);
-    // return vec4(rayDir, 1.0);
-    return vec4(1.0);
-    // return vec4(temp, temp, temp, 1.0);
-    // return temp;
-    // return vec4(debugVal, debugVal, debugVal, 1.0);
-    // return vec4(debugVal.rgb, 1.0);
+    vec3 pointInAtmosphere = rayDir * (distanceToAtmosphere + EPSILON);
+    vec3 light = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere - EPSILONx2, baseColor.rgb);
     return vec4(light, baseColor.a);
   }
-  // return vec4(0.0, 0.0, 0.0, 1.0);
-  // return vec4(1.0, baseColor.gba);
-  // return vec4(rayDir, 1.0);
-  // return vec4(temp, temp, temp, 1.0);
-  // return temp;
-  // return vec4(debugVal, debugVal, debugVal, 1.0);
-  // return vec4(debugVal.rgb, 1.0);
   return baseColor;
 }
 `;
@@ -300,7 +296,7 @@ vec4 applyAtmosphericScatteringPlanar(vec3 rayDir, float sceneDepth, vec3 rayOri
   float distanceToAtmosphere;
   vec3 temp;
   float angle = getAngle(rayDir, atmospherePlaneNormal);
-  if (PI / 2.0 - angle > epsilon) {
+  if (PI / 2.0 - angle > EPSILON) {
     temp = vec3(1.0, 1.0, 1.0);
     if (distanceOriginAtmosphere > 0.0) {
       distanceThroughAtmosphere = 0.0;
@@ -310,7 +306,7 @@ vec4 applyAtmosphericScatteringPlanar(vec3 rayDir, float sceneDepth, vec3 rayOri
       distanceThroughAtmosphere = min(sceneDepth, min(u_maxAtmosphereDistance, distance(intersection, rayOrigin)));
       distanceToAtmosphere = 0.0;
     }
-  } else if (angle - PI / 2.0 > epsilon && PI - angle > epsilon) {
+  } else if (angle - PI / 2.0 > EPSILON && PI - angle > EPSILON) {
     temp = vec3(0.0, 0.0, 0.0);
     if (distanceOriginAtmosphere < 0.0) {
       distanceThroughAtmosphere = min(sceneDepth, u_maxAtmosphereDistance);
@@ -337,8 +333,8 @@ vec4 applyAtmosphericScatteringPlanar(vec3 rayDir, float sceneDepth, vec3 rayOri
 
   if (distanceThroughAtmosphere > 0.0) {
     // point on ray where atmosphere starts
-    vec3 pointInAtmosphere = rayOrigin + rayDir * (distanceToAtmosphere + epsilon);
-    vec3 light = calculateScatteringPlanar(pointInAtmosphere, rayDir, distanceThroughAtmosphere - epsilon * 2.0, dirToSun, baseColor.rgb, atmospherePlanePoint, atmospherePlaneNormal);
+    vec3 pointInAtmosphere = rayOrigin + rayDir * (distanceToAtmosphere + EPSILON);
+    vec3 light = calculateScatteringPlanar(pointInAtmosphere, rayDir, distanceThroughAtmosphere - EPSILON * 2.0, dirToSun, baseColor.rgb, atmospherePlanePoint, atmospherePlaneNormal);
 
     if (gl_FragCoord.x / u_vpSize.x > 0.5 && gl_FragCoord.y / u_vpSize.y > 0.5)
       return vec4(temp, 1.0);
@@ -365,10 +361,10 @@ vec3 calculateScatteringPlanar(vec3 rayOrigin, vec3 rayDir, float rayLength, vec
   vec3 inScatterPoint = rayOrigin;
   for (int i = 0; i < u_numInScatteringPoints; i++) {
 
-    if (PI / 2.0 - sunAngle > epsilon) {
+    if (PI / 2.0 - sunAngle > EPSILON) {
       float sunRayLength = distance(linePlaneIntersection(atmospherePlanePoint, atmospherePlaneNormal, inScatterPoint, dirToSun), inScatterPoint);
       sunRayOpticalDepth = opticalDepthPlanar(inScatterPoint, dirToSun, sunRayLength, atmospherePlanePoint, atmospherePlaneNormal);
-    } else if (sunAngle - PI / 2.0 > epsilon) {
+    } else if (sunAngle - PI / 2.0 > EPSILON) {
       float sunRayLength = distance(linePlaneIntersection(earthPlanePoint, atmospherePlaneNormal, inScatterPoint, dirToSun), inScatterPoint);
       sunRayOpticalDepth = opticalDepthPlanar(inScatterPoint, dirToSun, sunRayLength, atmospherePlanePoint, atmospherePlaneNormal);
     } else {
@@ -415,8 +411,8 @@ float getProjectedDistance(vec3 planeNormal, vec3 planePoint, vec3 point) {
 `;
 
 const isLineIntersectingPlane = `
-bool isLineIntersectingPlane(vec3 planePoint, vec3 planeNormal, vec3 linePoint, vec3 lineDir, float epsilon) {
-  return abs(dot(planeNormal, lineDir)) > epsilon;
+bool isLineIntersectingPlane(vec3 planePoint, vec3 planeNormal, vec3 linePoint, vec3 lineDir, float EPSILON) {
+  return abs(dot(planeNormal, lineDir)) > EPSILON;
 }
 `;
 
@@ -479,8 +475,8 @@ const applyAtmosphericScattering = `
   vec3 rayDir = computeRayDir();
   float sceneDepth = computeSceneDepth(rayDir);
 
-  if (u_isPlanar == 1)
-    return applyAtmosphericScatteringPlanar(rayDir, sceneDepth, vec3(0.0), -u_sunDir, baseColor);
+  // if (u_isPlanar == 1)
+  //   return applyAtmosphericScatteringPlanar(rayDir, sceneDepth, vec3(0.0), -u_sunDir, baseColor);
   return applyAtmosphericScatteringSphere(rayDir, sceneDepth, baseColor);
 `;
 
@@ -492,13 +488,11 @@ export function addAtmosphericScattering(
 ) {
   assert(!(isSky && isRealityMesh));
   const frag = builder.frag;
-  frag.addDefine("PI", "3.1415926538");
-
-  frag.addConstant("epsilon", VariableType.Float, `0.000001`);
-
-  frag.addConstant("max_float", VariableType.Float, "3.402823466e+38");
+  frag.addConstant("PI", VariableType.Float, "3.14159265359");
+  frag.addConstant("EPSILON", VariableType.Float, "0.000001");
+  frag.addConstant("EPSILONx2", VariableType.Float, "0.000002");
+  frag.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
   frag.addConstant("u_maxAtmosphereDistance", VariableType.Float, "10000.0");
-  frag.addConstant("ditherStrength", VariableType.Float, "0.1");
 
   frag.addUniform(
     "u_densityFalloff",
@@ -512,18 +506,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
-  frag.addUniform(
-    "u_isPlanar",
-    VariableType.Int,
-    (prog) => {
-      prog.addProgramUniform("u_isPlanar", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindIsPlanar(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-
   frag.addUniform(
     "u_scatteringCoefficients",
     VariableType.Vec3,
@@ -536,7 +518,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_numInScatteringPoints",
     VariableType.Int,
@@ -549,7 +530,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_numOpticalDepthPoints",
     VariableType.Int,
@@ -562,7 +542,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_sunDir",
     VariableType.Vec3,
@@ -573,91 +552,16 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
-  frag.addUniform(
-    "u_viewMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_viewMatrix", (uniform, params) => {
-        uniform.setMatrix3(
-          Matrix3.fromMatrix3d(params.target.uniforms.frustum.viewMatrix.matrix)
-        );
-      });
-    },
-    VariablePrecision.High
-  );
-
   frag.addUniform(
     "u_earthCenter",
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-        params.target.uniforms.atmosphericScattering.bindEarthCenterParam(uniform);
+        params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
       });
     },
     VariablePrecision.High
   );
-
-  // frag.addUniform(
-  //   "u_earthRotation",
-  //   VariableType.Mat3,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_earthRotation", (uniform, params) => {
-  //       uniform.setMatrix3(
-  //         Matrix3.fromMatrix3d(params.target.uniforms.atmosphericScattering.earthRotation)
-  //       );
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
-
-  // frag.addUniform(
-  //   "u_earthRadii",
-  //   VariableType.Vec3,
-  //   (prog) => {
-  //     prog.addProgramUniform("u_earthRadii", (uniform, params) => {
-  //       params.target.uniforms.atmosphericScattering.bindEarthRadii(uniform);
-  //     });
-  //   },
-  //   VariablePrecision.High
-  // );
-
-  frag.addUniform(
-    "u_atmosphereRadius",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_atmosphereRadius", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindAtmosphereRadius(
-          uniform
-        );
-      });
-    },
-    VariablePrecision.High
-  );
-
-  frag.addUniform(
-    "u_earthRadius",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_earthRadius", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindEarthRadius(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-
-  frag.addUniform(
-    "u_vpSize",
-    VariableType.Vec2,
-    (prog) => {
-      prog.addProgramUniform("u_vpSize", (uniform, params) => {
-        params.target.uniforms.viewRect.bindDimensions(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-
   frag.addUniform(
     "u_isEnabled",
     VariableType.Int,
@@ -670,7 +574,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_inverseEllipsoidRotationMatrix",
     VariableType.Mat3,
@@ -681,7 +584,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_ellipsoidToEye",
     VariableType.Vec3,
@@ -692,7 +594,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_atmosphereScaleMatrix",
     VariableType.Mat3,
@@ -703,7 +604,6 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
   frag.addUniform(
     "u_inverseAtmosphereScaleMatrix",
     VariableType.Mat3,
@@ -714,7 +614,16 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
-
+  frag.addUniform(
+    "u_inverseMinDensityScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseMinDensityScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseMinDensityScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
   frag.addUniform(
     "u_atmosphereToEyeInverseScaled",
     VariableType.Vec3,
@@ -725,27 +634,37 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
+  frag.addUniform(
+    "u_minDensityToAtmosphereScaleFactor",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_minDensityToAtmosphereScaleFactor", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindMinDensityToAtmosphereScaleFactor(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addFunction(raySphere);
   frag.addFunction(rayEllipsoidIntersectionGeneric);
   frag.addFunction(eyeAtmosphereIntersection);
 
-  frag.addFunction(linePlaneIntersection);
-  frag.addFunction(isLineIntersectingPlane);
-  frag.addFunction(getAngle);
-  frag.addFunction(getProjectedDistance);
+  // frag.addFunction(linePlaneIntersection);
+  // frag.addFunction(isLineIntersectingPlane);
+  // frag.addFunction(getAngle);
+  // frag.addFunction(getProjectedDistance);
 
   frag.addFunction(densityAtPoint);
-  frag.addFunction(densityAtPointPlanar);
+  // frag.addFunction(densityAtPointPlanar);
 
   frag.addFunction(opticalDepth);
-  frag.addFunction(opticalDepthPlanar);
+  // frag.addFunction(opticalDepthPlanar);
 
   frag.addFunction(calculateScattering);
-  frag.addFunction(calculateScatteringPlanar);
+  // frag.addFunction(calculateScatteringPlanar);
 
   frag.addFunction(applyAtmosphericScatteringSphere);
-  frag.addFunction(applyAtmosphericScatteringPlanar);
+  // frag.addFunction(applyAtmosphericScatteringPlanar);
 
   frag.addFunction(computeRayDirDefault);
   if (isSky) {
@@ -809,7 +728,7 @@ export function _addAtmosphericScattering(
   builder.frag.addConstant("isSky", VariableType.Boolean, _isSky ? "true" : "false");
   builder.frag.addConstant("isMesh", VariableType.Boolean, _isRealityMesh ? "true" : "false");
 
-  builder.frag.addConstant("max_float", VariableType.Float, "3.402823466e+38");
+  builder.frag.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
   builder.frag.addDefine("PI", "3.1415926538");
   // addEyeSpace(builder);
   builder.frag.set(
@@ -832,17 +751,6 @@ export function _addAtmosphericScattering(
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
         params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  builder.frag.addUniform(
-    "u_earthRadius",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_earthRadius", (uniform, params) => {
-        // params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-        params.target.uniforms.atmosphericScattering.bindEarthRadius(uniform);
       });
     },
     VariablePrecision.High
