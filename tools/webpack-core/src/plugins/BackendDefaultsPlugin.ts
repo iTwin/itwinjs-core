@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Compiler, Configuration, DefinePlugin, ProgressPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, ProgressPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
@@ -11,7 +11,6 @@ import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExt
 
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
-const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 const isProductionLikeMode = (

@@ -1525,7 +1525,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.61.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.5_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
@@ -2469,7 +2469,7 @@ importers:
     dependencies:
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       fast-deep-equal: 3.1.3
       fast-sort: 3.2.0
@@ -2732,7 +2732,7 @@ importers:
       '@itwin/core-react': link:../../../ui/core-react
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../../presentation/common
       '@itwin/presentation-components': link:../../../presentation/components
       '@itwin/presentation-frontend': link:../../../presentation/frontend
@@ -2876,7 +2876,7 @@ importers:
       '@itwin/imodels-client-management': 1.1.0
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
       '@itwin/presentation-backend': link:../../../presentation/backend
@@ -3047,7 +3047,7 @@ importers:
       '@itwin/imodels-client-management': 1.1.0
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
       '@itwin/presentation-backend': link:../../../presentation/backend
@@ -3575,7 +3575,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.61.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -3649,7 +3649,7 @@ importers:
       '@itwin/core-react': link:../../ui/core-react
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -3785,7 +3785,7 @@ importers:
       '@itwin/imodels-client-management': 1.1.0
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
       '@itwin/presentation-backend': link:../../presentation/backend
@@ -4274,7 +4274,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@itwin/itwinui-css': 0.61.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.6
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
@@ -4407,7 +4407,7 @@ importers:
       '@itwin/core-telemetry': link:../../core/telemetry
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
       classnames: 2.3.1
       immer: 9.0.6
@@ -4568,7 +4568,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
       classnames: 2.3.1
@@ -4715,7 +4715,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.61.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       dompurify: 2.3.9
       lodash: 4.17.21
@@ -4844,7 +4844,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.61.0
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.1
       eventemitter2: 5.0.1
@@ -4967,7 +4967,7 @@ packages:
   /@axe-core/react/4.3.1:
     resolution: {integrity: sha512-7sgMZbwtSv+DvrnzZLMTfmLGQcTWgIrB6O3NQBP7rKXA61fxt3LNX5Tk6BEs1R+ZKFqoedA5+sNHA5OpgiOz3g==}
     dependencies:
-      axe-core: 4.4.2
+      axe-core: 4.4.3
       requestidlecallback: 0.3.0
     dev: true
 
@@ -5277,7 +5277,7 @@ packages:
       '@babel/compat-data': 7.18.8
       '@babel/core': 7.18.6
       '@babel/helper-validator-option': 7.18.6
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       semver: 6.3.0
 
   /@babel/helper-create-class-features-plugin/7.18.6_@babel+core@7.18.6:
@@ -6625,7 +6625,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.18.6
-      '@itwin/core-webpack-tools': 3.2.4_webpack@5.73.0
+      '@itwin/core-webpack-tools': 3.2.5_webpack@5.73.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.7_41c7cfa01acd197e4cea588c32e4897a
       '@svgr/webpack': 5.5.0
       babel-jest: 27.5.1_@babel+core@7.18.6
@@ -6634,7 +6634,7 @@ packages:
       babel-plugin-named-asset-import: 0.3.8_@babel+core@7.18.6
       babel-preset-react-app: 10.0.1
       bfj: 7.0.2
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       camelcase: 6.3.0
       case-sensitive-paths-webpack-plugin: 2.4.0
       copy-webpack-plugin: 10.2.4_webpack@5.73.0
@@ -6657,7 +6657,7 @@ packages:
       postcss: 8.4.14
       postcss-flexbugs-fixes: 5.0.2_postcss@8.4.14
       postcss-loader: 6.2.1_postcss@8.4.14+webpack@5.73.0
-      postcss-normalize: 10.0.1_ac1b38e48e1855962a70bd4c84c66657
+      postcss-normalize: 10.0.1_a1134d06c5cc05d0348e328c6c380031
       postcss-preset-env: 7.7.2_postcss@8.4.14
       prompts: 2.4.2
       react: 17.0.2
@@ -6727,7 +6727,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.18.6
-      '@itwin/core-webpack-tools': 3.2.4_webpack@5.73.0
+      '@itwin/core-webpack-tools': 3.2.5_webpack@5.73.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.7_41c7cfa01acd197e4cea588c32e4897a
       '@svgr/webpack': 5.5.0
       babel-jest: 27.5.1_@babel+core@7.18.6
@@ -6736,7 +6736,7 @@ packages:
       babel-plugin-named-asset-import: 0.3.8_@babel+core@7.18.6
       babel-preset-react-app: 10.0.1
       bfj: 7.0.2
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       camelcase: 6.3.0
       case-sensitive-paths-webpack-plugin: 2.4.0
       copy-webpack-plugin: 10.2.4_webpack@5.73.0
@@ -6759,7 +6759,7 @@ packages:
       postcss: 8.4.14
       postcss-flexbugs-fixes: 5.0.2_postcss@8.4.14
       postcss-loader: 6.2.1_postcss@8.4.14+webpack@5.73.0
-      postcss-normalize: 10.0.1_ac1b38e48e1855962a70bd4c84c66657
+      postcss-normalize: 10.0.1_a1134d06c5cc05d0348e328c6c380031
       postcss-preset-env: 7.7.2_postcss@8.4.14
       prompts: 2.4.2
       react-app-polyfill: 3.0.0
@@ -7165,8 +7165,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.2.4:
-    resolution: {integrity: sha512-ZQ1qZu6eUREJZabreUEcLwQiBzwWCJbMokBWU/A8PIi7a8vd/+agPJP23xwOweCsApqn7NImR40OiHi1+kqKlg==}
+  /@itwin/certa/3.2.5:
+    resolution: {integrity: sha512-mxTFpuHY7GVcmzqdiZjdfYca1EfR7K8QEZCgILYRhD3xRCm1bXy1Gf0EKfNf2UndNXRzhZdjpQBpyXF+kWANYw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7188,8 +7188,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.2.4_electron@14.2.9:
-    resolution: {integrity: sha512-ZQ1qZu6eUREJZabreUEcLwQiBzwWCJbMokBWU/A8PIi7a8vd/+agPJP23xwOweCsApqn7NImR40OiHi1+kqKlg==}
+  /@itwin/certa/3.2.5_electron@14.2.9:
+    resolution: {integrity: sha512-mxTFpuHY7GVcmzqdiZjdfYca1EfR7K8QEZCgILYRhD3xRCm1bXy1Gf0EKfNf2UndNXRzhZdjpQBpyXF+kWANYw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7213,8 +7213,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-webpack-tools/3.2.4_webpack@5.73.0:
-    resolution: {integrity: sha512-eLjoU0zgOWrrF+BgNScLOKLoXHfJlYAdLWEHxATugHuJ7xa4bv+MzFI8O8xmH9AHhpYPi2/22us3MzB0V7QyFQ==}
+  /@itwin/core-webpack-tools/3.2.5_webpack@5.73.0:
+    resolution: {integrity: sha512-Qh+dhbA0jevk9Taq/ef27Ebd7KkeKxrnxaSZVQPwNXj99p5ngUgzSKhHN1dZipRKtkQ6XTABPjMrTR8sz5LmUA==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -7251,7 +7251,7 @@ packages:
       react-dom: ^16.13.0 || ^17.0.2
     dependencies:
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
-      '@itwin/itwinui-react': 1.40.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.41.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -7299,9 +7299,6 @@ packages:
       - debug
     dev: false
 
-  /@itwin/itwinui-css/0.59.2:
-    resolution: {integrity: sha512-abXL1Jmgy834MzeznoiSV5P1WY+nwyg8awdj2qdfPlmmnGzEuBC9xz9mGBIS7Iq/zMKyUJ3jOitjXUtWBSlDTQ==}
-
   /@itwin/itwinui-css/0.61.0:
     resolution: {integrity: sha512-hdbeabfuZSr53ykzCdu+phQdlwMVYninRt+K+1tnUDJCdPVYOx3WFUltnbq1mCDASF/ZQDpbPFsxY4aQ/tx4Hw==}
 
@@ -7323,13 +7320,13 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
 
-  /@itwin/itwinui-react/1.40.1_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-6rTYCOW1UgbzWi0PSRFqtEYy5lozAr004jiBOqTqz6d7kYd4sJeUFkznrpD1kXNEzBqhJXakqfK9lM527TwDqg==}
+  /@itwin/itwinui-react/1.41.0_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-ly6bd0hcm83rd5eGDgC+4t2QTPCE2sLwlzxiBdWWII/OqezdUZRYxi0arXxnRN227yO3mtks4T6M7OkXgZmP9Q==}
     peerDependencies:
       react: '>=16.8.6 < 19.0.0'
       react-dom: '>=16.8.6 < 19.0.0'
     dependencies:
-      '@itwin/itwinui-css': 0.59.2
+      '@itwin/itwinui-css': 0.61.0
       '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.3.1_react-dom@17.0.2+react@17.0.2
       '@tippyjs/react': 4.2.6_react-dom@17.0.2+react@17.0.2
@@ -7355,7 +7352,7 @@ packages:
   /@itwin/oidc-signin-tool/3.4.1:
     resolution: {integrity: sha512-gMXDaujRT9Kql8MqHJGj6dnHLN3aIGBJt4y7hKKXo24GDKWO1cYCnr1e//Lct7D68Sb85Y6dIrHu5DsYvAkSIw==}
     dependencies:
-      '@itwin/certa': 3.2.4
+      '@itwin/certa': 3.2.5
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -7371,7 +7368,7 @@ packages:
   /@itwin/oidc-signin-tool/3.4.1_electron@14.2.9:
     resolution: {integrity: sha512-gMXDaujRT9Kql8MqHJGj6dnHLN3aIGBJt4y7hKKXo24GDKWO1cYCnr1e//Lct7D68Sb85Y6dIrHu5DsYvAkSIw==}
     dependencies:
-      '@itwin/certa': 3.2.4_electron@14.2.9
+      '@itwin/certa': 3.2.5_electron@14.2.9
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -9875,7 +9872,7 @@ packages:
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       caniuse-lite: 1.0.30001366
       fraction.js: 4.2.0
       normalize-range: 0.1.2
@@ -9906,9 +9903,9 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /axe-core/4.4.2:
-    resolution: {integrity: sha512-LVAaGp/wkkgYJcjmHsoKx4juT1aQvJyPcW09MLCjVTh3V2cc6PnyempiLMNH5iMdfIX/zdbjUx2KDjMLCTdPeA==}
-    engines: {node: '>=12'}
+  /axe-core/4.4.3:
+    resolution: {integrity: sha512-32+ub6kkdhhWick/UjvEwRchgoetXqTK14INLqbGm5U2TzBkBNF3nQtLYm8ovxSkQWArjEQvftCKryjZaATu3w==}
+    engines: {node: '>=4'}
     dev: true
 
   /axios/0.21.4:
@@ -10423,15 +10420,15 @@ packages:
       electron-to-chromium: 1.4.188
     dev: true
 
-  /browserslist/4.21.1:
-    resolution: {integrity: sha512-Nq8MFCSrnJXSc88yliwlzQe3qNe3VntIjhsArW9IJOEPSHNx23FalwApUVbzAWABLhYJJ7y8AynWI/XM8OdfjQ==}
+  /browserslist/4.21.2:
+    resolution: {integrity: sha512-MonuOgAtUB46uP5CezYbRaYKBNt2LxP0yX+Pmj4LkcDFGkn9Cbpi83d9sCjwQDErXsIJSzY5oKGDbgOlF/LPAA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001366
       electron-to-chromium: 1.4.188
       node-releases: 2.0.6
-      update-browserslist-db: 1.0.4_browserslist@4.21.1
+      update-browserslist-db: 1.0.4_browserslist@4.21.2
 
   /bs-logger/0.2.6:
     resolution: {integrity: sha512-pd8DCoxmbgc7hyPKOvxtqNcjYoOsABPQdcCUjGp3d42VR2CX1ORhk2A87oqqu5R1kk+76nsxZupkmyd+MVtCog==}
@@ -10638,7 +10635,7 @@ packages:
   /caniuse-api/3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       caniuse-lite: 1.0.30001366
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
@@ -11229,7 +11226,7 @@ packages:
   /core-js-compat/3.23.4:
     resolution: {integrity: sha512-RkSRPe+JYEoflcsuxJWaiMPhnZoFS51FcIxm53k4KzhISCBTmaGlto9dTIrYuk0hnJc3G6pKufAKepHnBq6B6Q==}
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       semver: 7.0.0
     dev: true
 
@@ -12753,7 +12750,7 @@ packages:
       aria-query: 4.2.2
       array-includes: 3.1.5
       ast-types-flow: 0.0.7
-      axe-core: 4.4.2
+      axe-core: 4.4.3
       axobject-query: 2.2.0
       damerau-levenshtein: 1.0.8
       emoji-regex: 9.2.2
@@ -17609,14 +17606,14 @@ packages:
       postcss-selector-parser: 6.0.10
     dev: true
 
-  /postcss-browser-comments/4.0.0_ac1b38e48e1855962a70bd4c84c66657:
+  /postcss-browser-comments/4.0.0_a1134d06c5cc05d0348e328c6c380031:
     resolution: {integrity: sha512-X9X9/WN3KIvY9+hNERUqX9gncsgBA25XaeR+jshHz2j8+sYyHktHw1JdKuMjeLpGktXidqDhA7b/qm1mrBDmgg==}
     engines: {node: '>=8'}
     peerDependencies:
       browserslist: '>=4'
       postcss: '>=8'
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       postcss: 8.4.14
     dev: true
 
@@ -17676,7 +17673,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       caniuse-api: 3.0.0
       colord: 2.9.2
       postcss: 8.4.14
@@ -17689,7 +17686,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       postcss: 8.4.14
       postcss-value-parser: 4.2.0
     dev: true
@@ -17977,7 +17974,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       caniuse-api: 3.0.0
       cssnano-utils: 3.1.0_postcss@8.4.14
       postcss: 8.4.14
@@ -18012,7 +18009,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       cssnano-utils: 3.1.0_postcss@8.4.14
       postcss: 8.4.14
       postcss-value-parser: 4.2.0
@@ -18155,7 +18152,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       postcss: 8.4.14
       postcss-value-parser: 4.2.0
     dev: true
@@ -18181,7 +18178,7 @@ packages:
       postcss-value-parser: 4.2.0
     dev: true
 
-  /postcss-normalize/10.0.1_ac1b38e48e1855962a70bd4c84c66657:
+  /postcss-normalize/10.0.1_a1134d06c5cc05d0348e328c6c380031:
     resolution: {integrity: sha512-+5w18/rDev5mqERcG3W5GZNMJa1eoYYNGo8gB7tEwaos0ajk3ZXAI4mHGcNT47NE+ZnZD1pEpUOFLvltIwmeJA==}
     engines: {node: '>= 12'}
     peerDependencies:
@@ -18189,9 +18186,9 @@ packages:
       postcss: '>= 8'
     dependencies:
       '@csstools/normalize.css': 12.0.0
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       postcss: 8.4.14
-      postcss-browser-comments: 4.0.0_ac1b38e48e1855962a70bd4c84c66657
+      postcss-browser-comments: 4.0.0_a1134d06c5cc05d0348e328c6c380031
       sanitize.css: 13.0.0
     dev: true
 
@@ -18266,7 +18263,7 @@ packages:
       '@csstools/postcss-trigonometric-functions': 1.0.2_postcss@8.4.14
       '@csstools/postcss-unset-value': 1.0.2_postcss@8.4.14
       autoprefixer: 10.4.7_postcss@8.4.14
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       css-blank-pseudo: 3.0.3_postcss@8.4.14
       css-has-pseudo: 3.0.4_postcss@8.4.14
       css-prefers-color-scheme: 6.0.3_postcss@8.4.14
@@ -18319,7 +18316,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       caniuse-api: 3.0.0
       postcss: 8.4.14
     dev: true
@@ -18854,7 +18851,7 @@ packages:
     dependencies:
       '@babel/code-frame': 7.18.6
       address: 1.2.0
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       chalk: 4.1.2
       cross-spawn: 7.0.3
       detect-port-alt: 1.1.6
@@ -20465,7 +20462,7 @@ packages:
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       postcss: 8.4.14
       postcss-selector-parser: 6.0.10
     dev: true
@@ -21368,13 +21365,13 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /update-browserslist-db/1.0.4_browserslist@4.21.1:
+  /update-browserslist-db/1.0.4_browserslist@4.21.2:
     resolution: {integrity: sha512-jnmO2BEGUjsMOe/Fg9u0oczOe/ppIDZPebzccl1yDWGLFP16Pa1/RM5wEoKYPG2zstNcDuAStejyxsOuKINdGA==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       escalade: 3.1.1
       picocolors: 1.0.0
 
@@ -21753,7 +21750,7 @@ packages:
       '@webassemblyjs/wasm-parser': 1.11.1
       acorn: 8.7.1
       acorn-import-assertions: 1.8.0_acorn@8.7.1
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.10.0
       es-module-lexer: 0.9.3
@@ -21792,7 +21789,7 @@ packages:
       '@webassemblyjs/wasm-parser': 1.11.1
       acorn: 8.7.1
       acorn-import-assertions: 1.8.0_acorn@8.7.1
-      browserslist: 4.21.1
+      browserslist: 4.21.2
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.10.0
       es-module-lexer: 0.9.3
