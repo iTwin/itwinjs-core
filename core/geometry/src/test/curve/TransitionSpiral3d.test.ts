@@ -42,7 +42,6 @@ import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvalua
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurveChainWithDistanceIndex } from "../../core-geometry";
-import path = require("path");
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();
   ck.testTrue(data1.isAlmostEqual(data));
