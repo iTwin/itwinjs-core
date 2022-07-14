@@ -70,7 +70,7 @@ export interface DownloadRequest {
    */
   onProgress?: ProgressFunction;
 
-  /** Number of retries for transient failures. Default is 5. */
+  /** Number of retries for transient failures. Default is 10. */
   readonly retries?: number;
 }
 
@@ -289,7 +289,7 @@ export class CheckpointManager {
       }
     }
 
-    let retry = request.retries ?? 5;
+    let retry = request.retries ?? 10;
     while (true) {
       try {
         await this.doDownload(request);
