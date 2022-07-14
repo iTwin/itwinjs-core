@@ -48,14 +48,16 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
       return;
     }
 
-    this._updateEarthCenter(this.atmosphericScattering.earthCenter, target.uniforms.frustum.viewMatrix); // real
+    this._updateEarthCenter(plan.globeCenter!, target.uniforms.frustum.viewMatrix);
+    // this._updateEarthCenter(this.atmosphericScattering.earthCenter, target.uniforms.frustum.viewMatrix);
     this._updateEllipsoidRotationMatrix(plan.globeRotation!);
     this._updateInverseEllipsoidRotationMatrix(plan.globeRotation!, target.uniforms.frustum.viewMatrix.matrix);
     this._updateEllipsoidToEye();
-    this._updateEarthScaleMatrix(this.atmosphericScattering.earthRadii);
-    this._updateAtmosphereScaleMatrix(this.atmosphericScattering.earthRadii.z, this.atmosphericScattering.atmosphereHeightAboveEarth);
-    this._updateMinDensityScaleMatrix(this.atmosphericScattering.earthRadii.z, this.atmosphericScattering.minDensityHeightBelowEarth);
-    this._updateMinDensityToAtmosphereScaleFactor(this.atmosphericScattering.earthRadii.z, this.atmosphericScattering.atmosphereHeightAboveEarth, this.atmosphericScattering.minDensityHeightBelowEarth);
+    // this._updateEarthScaleMatrix(this.atmosphericScattering.earthRadii);
+    this._updateEarthScaleMatrix(plan.globeRadii!);
+    this._updateAtmosphereScaleMatrix(this.atmosphericScattering.atmosphereHeightAboveEarth);
+    this._updateMinDensityScaleMatrix(this.atmosphericScattering.minDensityHeightBelowEarth);
+    this._updateMinDensityToAtmosphereScaleFactor(this.atmosphericScattering.atmosphereHeightAboveEarth, this.atmosphericScattering.minDensityHeightBelowEarth);
     this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
     this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelengths);
     this._updateNumInScatteringPoints(this.atmosphericScattering.numInScatteringPoints);
@@ -128,8 +130,9 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     }
   }
 
-  private _updateMinDensityToAtmosphereScaleFactor(earthMinRadius: number, atmosphereHeightAboveEarth: number, minDensityHeightBelowEarth: number) {
-    this._minDensityToAtmosphereScaleFactor = earthMinRadius === 0 ? 1.0 : earthMinRadius + atmosphereHeightAboveEarth / earthMinRadius - minDensityHeightBelowEarth;
+  private _updateMinDensityToAtmosphereScaleFactor(atmosphereHeightAboveEarth: number, minDensityHeightBelowEarth: number) {
+    const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
+    this._minDensityToAtmosphereScaleFactor = earthPolarRadius === 0 ? 1.0 : earthPolarRadius + atmosphereHeightAboveEarth / earthPolarRadius - minDensityHeightBelowEarth;
   }
 
   public bindMinDensityToAtmosphereScaleFactor(uniform: UniformHandle): void {
@@ -137,16 +140,16 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
       uniform.setUniform1f(this._minDensityToAtmosphereScaleFactor);
   }
 
-  private _updateAtmosphereScaleMatrix(earthMinRadius: number, heightAboveSurface: number) {
-    const scaleFactor = earthMinRadius === 0 ? 1.0 : (earthMinRadius + heightAboveSurface) / earthMinRadius;
+  private _updateAtmosphereScaleMatrix(heightAboveSurface: number) {
+    const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
+    const scaleFactor =  earthPolarRadius === 0 ? 1.0 : (earthPolarRadius + heightAboveSurface) / earthPolarRadius;
     this._earthScaleMatrix.scale(scaleFactor, this._atmosphereScaleMatrix);
-    this._atmosphereScaleMatrix.computeCachedInverse(true);
   }
 
-  private _updateMinDensityScaleMatrix(earthMinRadius: number, heightBellowSurface: number) {
-    const scaleFactor = earthMinRadius === 0 ? 1.0 : (earthMinRadius - heightBellowSurface) / earthMinRadius;
+  private _updateMinDensityScaleMatrix(heightBellowSurface: number) {
+    const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
+    const scaleFactor = earthPolarRadius === 0 ? 1.0 : (earthPolarRadius - heightBellowSurface) / earthPolarRadius;
     this._earthScaleMatrix.scale(scaleFactor, this._minDensityScaleMatrix);
-    this._minDensityScaleMatrix.computeCachedInverse(true);
   }
 
   private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
@@ -166,7 +169,6 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     this._earthScaleMatrix.setAt(0, 0, earthRadii.x);
     this._earthScaleMatrix.setAt(1, 1, earthRadii.y);
     this._earthScaleMatrix.setAt(2, 2, earthRadii.z);
-    this._earthScaleMatrix.computeCachedInverse(true);
   }
 
   private _updateScatteringCoefficients(scatteringStrength: number, wavelenghts: number[]) {
