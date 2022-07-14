@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -297,6 +297,7 @@ export class CheckpointManager {
       } catch (e: any) {
         if (--retry <= 0 || !e.message?.includes("Failure when receiving data from the peer"))
           throw e;
+        await BeDuration.wait(250);
       }
     }
 
