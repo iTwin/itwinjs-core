@@ -177,8 +177,6 @@ export class MessageManager {
   public static get messages(): Readonly<NotifyMessageDetailsType[]> { return this._messages; }
 
   /** Manager of active messages. */
-  /** @deprecated */
-  // eslint-disable-next-line deprecation/deprecation
   public static get activeMessageManager(): StatusMessageManager { return this._activeMessageManager; }
 
   /** Clear the message list. */

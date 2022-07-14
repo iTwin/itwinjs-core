@@ -3894,7 +3894,6 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 
 // @public
 export class MessageManager {
-    // @deprecated (undocumented)
     static get activeMessageManager(): StatusMessageManager;
     static addMessage(message: NotifyMessageDetailsType): void;
     static addToMessageCenter(message: NotifyMessageDetailsType): void;
