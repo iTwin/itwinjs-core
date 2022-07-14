@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 21 Jun 2022 18:06:33 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+### Updates
+
+- Avoid attempting to load ViewState data from the backend for a BlankConnection.
 
 ## 3.2.4
 Tue, 21 Jun 2022 18:06:33 GMT
