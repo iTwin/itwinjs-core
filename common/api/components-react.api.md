@@ -110,20 +110,20 @@ export interface ActiveMatchInfo {
 }
 
 // @alpha (undocumented)
-export const ActiveRuleGroupContext: React.Context<ActiveRuleGroupContextProps>;
+export const ActiveRuleGroupContext: React_2.Context<ActiveRuleGroupContextProps>;
 
 // @alpha (undocumented)
 export interface ActiveRuleGroupContextProps {
     // (undocumented)
     activeElement: HTMLElement | undefined;
     // (undocumented)
-    onBlur: React.FocusEventHandler<HTMLElement>;
+    onBlur: React_2.FocusEventHandler<HTMLElement>;
     // (undocumented)
-    onFocus: React.FocusEventHandler<HTMLElement>;
+    onFocus: React_2.FocusEventHandler<HTMLElement>;
     // (undocumented)
-    onMouseOut: React.MouseEventHandler<HTMLElement>;
+    onMouseOut: React_2.MouseEventHandler<HTMLElement>;
     // (undocumented)
-    onMouseOver: React.MouseEventHandler<HTMLElement>;
+    onMouseOver: React_2.MouseEventHandler<HTMLElement>;
 }
 
 // @public
@@ -2543,10 +2543,10 @@ export class PropertyFilterBuilderActions {
     setRuleProperty(path: string[], property?: PropertyDescription): void;
     // (undocumented)
     setRuleValue(path: string[], value: PropertyValue): void;
-    }
+}
 
 // @alpha (undocumented)
-export const PropertyFilterBuilderContext: React.Context<PropertyFilterBuilderContextProps>;
+export const PropertyFilterBuilderContext: React_2.Context<PropertyFilterBuilderContextProps>;
 
 // @alpha (undocumented)
 export interface PropertyFilterBuilderContextProps {
@@ -2571,9 +2571,9 @@ export interface PropertyFilterBuilderProps {
     // (undocumented)
     ruleGroupDepthLimit?: number;
     // (undocumented)
-    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React_2.ReactNode;
     // (undocumented)
-    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React_2.ReactNode;
 }
 
 // @alpha (undocumented)
@@ -2665,14 +2665,14 @@ export interface PropertyFilterBuilderRuleRendererProps {
 }
 
 // @alpha (undocumented)
-export const PropertyFilterBuilderRuleRenderingContext: React.Context<PropertyFilterBuilderRuleRenderingContextProps>;
+export const PropertyFilterBuilderRuleRenderingContext: React_2.Context<PropertyFilterBuilderRuleRenderingContextProps>;
 
 // @alpha (undocumented)
 export interface PropertyFilterBuilderRuleRenderingContextProps {
     // (undocumented)
-    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React_2.ReactNode;
     // (undocumented)
-    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React_2.ReactNode;
 }
 
 // @alpha (undocumented)
@@ -4303,7 +4303,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
     // (undocumented)
     protected load(): Observable<LoadedNodeHierarchy>;
     loadNode(parent: TreeModelNode | TreeModelRootNode, _childIndex?: number): Observable<TreeNodeLoadResult>;
-    }
+}
 
 // @public
 export interface TreeNodeLoadResult {

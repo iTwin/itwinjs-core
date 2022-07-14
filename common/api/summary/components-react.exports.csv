@@ -8,7 +8,7 @@ public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React_2.Reac
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
-alpha;ActiveRuleGroupContext: React.Context
+alpha;ActiveRuleGroupContext: React_2.Context
 alpha;ActiveRuleGroupContextProps
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
@@ -283,7 +283,7 @@ public;PropertyEditorProps
 alpha;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
 alpha;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
 alpha;PropertyFilterBuilderActions
-alpha;PropertyFilterBuilderContext: React.Context
+alpha;PropertyFilterBuilderContext: React_2.Context
 alpha;PropertyFilterBuilderContextProps
 alpha;PropertyFilterBuilderProps
 alpha;PropertyFilterBuilderRule
@@ -299,7 +299,7 @@ alpha;PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRuleProperty
 alpha;PropertyFilterBuilderRulePropertyProps
 alpha;PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element
 alpha;PropertyFilterBuilderRuleRendererProps
-alpha;PropertyFilterBuilderRuleRenderingContext: React.Context
+alpha;PropertyFilterBuilderRuleRenderingContext: React_2.Context
 alpha;PropertyFilterBuilderRuleRenderingContextProps
 alpha;PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element
 alpha;PropertyFilterBuilderRuleValueProps
