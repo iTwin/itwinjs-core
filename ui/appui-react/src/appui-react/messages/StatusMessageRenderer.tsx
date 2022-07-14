@@ -12,6 +12,14 @@ import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from 
 import { CommonProps } from "@itwin/core-react";
 import { useActivityMessage } from "./ActivityMessage";
 
+/** Message type for the [[StatusMessageRenderer]] React component
+ * @internal
+ */
+interface StatusMessageRendererrMessage {
+  close: () => void;
+  id: string;
+}
+
 /** Properties for [[StatusMessageRenderer]] component
  * @public
  */
@@ -26,35 +34,49 @@ export interface StatusMessageRendererProps extends CommonProps {
  * @public
  * @deprecated Use `toaster` from iTwinui-react to display status messages.
  */
-export function StatusMessageRenderer(props: StatusMessageRendererProps) {
-  const messages = React.useRef<{close: () => void}[]>([]);
+export function StatusMessageRenderer({
+  closeMessage,
+  cancelActivityMessage: cancelActivityMessageProp,
+  dismissActivityMessage,
+}: StatusMessageRendererProps) {
+  const messages = React.useRef<StatusMessageRendererrMessage[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
-  const lastToastId = React.useRef(0);
+
+  const updateMessages = () => {
+    const updatedMessages = [...messages.current];
+    messages.current.forEach((m) => {
+      if (!MessageManager.activeMessageManager.messages.some((msg) => m.id === msg.id)) {
+        m.close();
+        const index = updatedMessages.findIndex((msg) => msg.id === m.id);
+        updatedMessages.splice(index, 1);
+      }
+    });
+
+    messages.current = updatedMessages;
+  };
 
   React.useEffect(() => {
     const handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
-      const displayedMessage = MessageManager.displayMessage(
-        message,
-        { onRemove: () => props.closeMessage?.(lastToastId.current.toString()) },
-        { placement: "top", order: "descending" }
-      );
-      if(!!displayedMessage) {
-        messages.current.push(displayedMessage);
-        ++lastToastId.current;
-      }
+      updateMessages();
+      const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !messages.current.find((m) => m.id === msg.id));
+      messagesToAdd.forEach((msg) => {
+        const displayedMessage = MessageManager.displayMessage(
+          message,
+          { onRemove: () => closeMessage?.(msg.id) },
+          { placement: "top", order: "descending" }
+        );
+        if(!!displayedMessage)
+          messages.current.push({close: displayedMessage.close, id: msg.id});
+      });
     };
 
     return MessageManager.onMessageAddedEvent.addListener(handleMessageAddedEvent);
-  }, [props]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     /** Respond to clearing the message list */
-    const handleMessagesUpdatedEvent = () => {
-      messages.current.forEach((message) => message.close());
-      messages.current = [];
-    };
-
-    return MessageManager.onMessagesUpdatedEvent.addListener(handleMessagesUpdatedEvent);
+    return MessageManager.onMessagesUpdatedEvent.addListener(updateMessages);
   }, []);
 
   React.useEffect(() => {
@@ -75,12 +97,8 @@ export function StatusMessageRenderer(props: StatusMessageRendererProps) {
 
   const cancelActivityMessage = React.useCallback(() => {
     MessageManager.endActivityMessage(false);
-    props.cancelActivityMessage && props.cancelActivityMessage();
-  }, [props]);
-
-  const dismissActivityMessage = React.useCallback(() => {
-    props.dismissActivityMessage && props.dismissActivityMessage();
-  }, [props]);
+    cancelActivityMessageProp && cancelActivityMessageProp();
+  }, [cancelActivityMessageProp]);
 
   useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 

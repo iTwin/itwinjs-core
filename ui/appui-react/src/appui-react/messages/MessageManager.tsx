@@ -145,8 +145,8 @@ export class MessageManager {
   private static _messages: NotifyMessageDetailsType[] = [];
   private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
-  // eslint-disable-next-line deprecation/deprecation
   private static _activeMessageManager = new StatusMessageManager();
+  private static _animateOutToElement: HTMLElement | null;
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -180,8 +180,6 @@ export class MessageManager {
   /** @deprecated */
   // eslint-disable-next-line deprecation/deprecation
   public static get activeMessageManager(): StatusMessageManager { return this._activeMessageManager; }
-
-  public static animateOutToRef: HTMLElement | null;
 
   /** Clear the message list. */
   public static clearMessages(): void {
@@ -228,8 +226,11 @@ export class MessageManager {
     MessageManager.addMessage(message);
   }
 
-  public static registerAnimateOutRef(el: HTMLElement | null) {
-    this.animateOutToRef = el;
+  /** Set the element where messages should be animated out to on exit.
+   * @param  element `HTMLElement` to animate out to.
+   */
+  public static registerAnimateOutToElement(element: HTMLElement | null) {
+    this._animateOutToElement = element;
   }
 
   /** Display a message.
@@ -250,7 +251,7 @@ export class MessageManager {
         message.msgType === OutputMessageType.Sticky
           ? "persisting"
           : "temporary",
-      animateOutTo: this.animateOutToRef,
+      animateOutTo: this._animateOutToElement,
       ...options,
     };
     toaster.setSettings({ placement: "bottom", order: "ascending", ...settings });

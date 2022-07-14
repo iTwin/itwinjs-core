@@ -3898,8 +3898,6 @@ export class MessageManager {
     static get activeMessageManager(): StatusMessageManager;
     static addMessage(message: NotifyMessageDetailsType): void;
     static addToMessageCenter(message: NotifyMessageDetailsType): void;
-    // (undocumented)
-    static animateOutToRef: HTMLElement | null;
     static clearMessages(): void;
     // @internal (undocumented)
     static closeAllMessages(): void;
@@ -3932,8 +3930,7 @@ export class MessageManager {
     static outputActivityMessage(message: NotifyMessageType, percentComplete: number): boolean;
     static outputMessage(message: NotifyMessageDetailsType): void;
     static outputPrompt(prompt: string): void;
-    // (undocumented)
-    static registerAnimateOutRef(el: HTMLElement | null): void;
+    static registerAnimateOutToElement(element: HTMLElement | null): void;
     static setMaxCachedMessages(max: number): void;
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
@@ -6050,7 +6047,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
-}
+    }
 
 // @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
@@ -6178,7 +6175,7 @@ export interface StatusFieldProps extends CommonProps {
 }
 
 // @public @deprecated
-export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element;
+export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
 
 // @public
 export interface StatusMessageRendererProps extends CommonProps {

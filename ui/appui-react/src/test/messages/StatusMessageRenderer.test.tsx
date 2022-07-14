@@ -19,6 +19,7 @@ describe("StatusMessageRenderer", () => {
 
     notifications = new AppNotificationManager();
     await NoRenderApp.startup();
+    MessageManager.clearMessages();
   });
 
   after(() => {

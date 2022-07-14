@@ -22,7 +22,6 @@ export interface StatusMessage {
 
 /** Manager for Status messages
  * @internal
- * @deprecated
  */
 export class StatusMessageManager {
   private _messages: ReadonlyArray<StatusMessage> = [];

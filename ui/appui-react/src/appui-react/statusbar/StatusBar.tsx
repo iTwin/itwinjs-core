@@ -15,7 +15,6 @@ import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
 import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 
 // cspell:ignore safearea
 
@@ -40,7 +39,7 @@ export interface StatusBarProps extends CommonProps {
  */
 interface StatusBarMessage {
   close: () => void;
-  details: NotifyMessageDetailsType;
+  id: string;
 }
 
 /** Status Bar React component.
@@ -114,24 +113,31 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
-  private _handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
-    const displayedMessage = MessageManager.displayMessage(message);
-    if(!!displayedMessage)
-      this.messages.push({close: displayedMessage.close, details: message});
+  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
+    this._updateMessages();
+    const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !this.messages.find((m) => m.id === msg.id));
+    messagesToAdd.forEach((msg) => {
+      const displayedMessage = MessageManager.displayMessage(msg.messageDetails);
+      if(!!displayedMessage)
+        this.messages.push({close: displayedMessage.close, id: msg.id});
+    });
+  };
+
+  private _updateMessages = () => {
+    const updatedMessages = [...this.messages];
+    this.messages.forEach((m) => {
+      if (!MessageManager.activeMessageManager.messages.some((msg) => m.id === msg.id)) {
+        m.close();
+        const index = updatedMessages.findIndex((msg) => msg.id === m.id);
+        updatedMessages.splice(index, 1);
+      }
+    });
+    this.messages = updatedMessages;
   };
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
-    const updatedMessages: StatusBarMessage[] = [];
-    this.messages.forEach((m) => {
-      const existingMessage = MessageManager.messages.find((msg) => m.details.briefMessage === msg.briefMessage);
-      if (existingMessage) {
-        updatedMessages.push({close: m.close, details: existingMessage});
-      } else {
-        m.close();
-      }
-    });
-    this.messages = updatedMessages;
+    this._updateMessages();
   };
 
   /**
@@ -173,7 +179,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   };
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
-    MessageManager.registerAnimateOutRef(toastTarget);
+    MessageManager.registerAnimateOutToElement(toastTarget);
   };
 }
 

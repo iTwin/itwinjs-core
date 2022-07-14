@@ -50,6 +50,7 @@ describe("StatusBar", () => {
 
     notifications = new AppNotificationManager();
     await NoRenderApp.startup();
+    MessageManager.clearMessages();
   });
 
   after(() => {
@@ -176,40 +177,39 @@ describe("StatusBar", () => {
     await waitForElementToBeRemoved(screen.queryByText("A brief sticky message."));
   });
 
-  // it("StatusBar should render maximum of 3 Sticky messages", async () => {
-  //   MessageManager.maxDisplayedStickyMessages = 3;
+  it("StatusBar should render maximum of 3 Sticky messages", async () => {
+    MessageManager.maxDisplayedStickyMessages = 3;
 
-  //   render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-  //   const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
-  //   act(() => {
-  //     notifications.outputMessage(details1);
-  //   });
-  //   expect(await screen.findByText("A brief message 1.")).to.be.not.null;
-  //   const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 2.", undefined, OutputMessageType.Sticky);
-  //   act(() => {
-  //     notifications.outputMessage(details2);
-  //   });
-  //   expect(await screen.findByText("A brief message 2.")).to.be.not.null;
-  //   const details3 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 3.", undefined, OutputMessageType.Sticky);
-  //   act(() => {
-  //     notifications.outputMessage(details3);
-  //   });
-  //   expect(await screen.findByText("A brief message 3.")).to.be.not.null;
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
+    act(() => {
+      notifications.outputMessage(details1);
+    });
+    expect(await screen.findByText("A brief message 1.")).to.be.not.null;
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 2.", undefined, OutputMessageType.Sticky);
+    act(() => {
+      notifications.outputMessage(details2);
+    });
+    expect(await screen.findByText("A brief message 2.")).to.be.not.null;
+    const details3 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 3.", undefined, OutputMessageType.Sticky);
+    act(() => {
+      notifications.outputMessage(details3);
+    });
+    expect(await screen.findByText("A brief message 3.")).to.be.not.null;
 
-  //   const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
-  //   act(() => {
-  //     notifications.outputMessage(details4);
-  //   });
-  //   expect(await screen.findByText("A brief message 4.")).to.be.null;
+    const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
+    act(() => {
+      notifications.outputMessage(details4);
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief message 1."));
+    expect(await screen.findByText("A brief message 4.")).to.be.not.null;
 
-  //   act(() => {
-  //     MessageManager.closeAllMessages();
-  //   });
-  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 1."));
-  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 2."));
-  //   await waitForElementToBeRemoved(screen.queryByText("A brief message 3."));
-  // });
+    act(() => {
+      MessageManager.closeAllMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief message 4."));
+  });
 
   it("StatusBar should not render a Pointer message", () => {
     render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);

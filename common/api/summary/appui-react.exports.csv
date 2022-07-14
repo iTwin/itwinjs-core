@@ -576,8 +576,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
-public;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element
-deprecated;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element
+public;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
+deprecated;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
 public;StatusMessageRendererProps 
 public;StickyMessage(props: StickyMessageProps): JSX.Element
 deprecated;StickyMessage(props: StickyMessageProps): JSX.Element
