@@ -289,7 +289,8 @@ export class CheckpointManager {
       }
     }
 
-    let retry = request.retries ?? 10;
+    const numRetries = request.retries ?? 10;
+    let retry = numRetries;
     while (true) {
       try {
         await this.doDownload(request);
@@ -297,7 +298,13 @@ export class CheckpointManager {
       } catch (e: any) {
         if (--retry <= 0 || !e.message?.includes("Failure when receiving data from the peer"))
           throw e;
-        await BeDuration.wait(250);
+        const attemptNumber = numRetries - retry;
+        const initialWaitTimeMs = 25;
+        const maxWaitTime = 5000;
+        const endOfRange = Math.min(maxWaitTime, initialWaitTimeMs * 2 ** attemptNumber);
+        // Gets a random number between the endOfRange and the initialWaitTime for "jitter"
+        const timeToWait = Math.floor(Math.random() * (endOfRange - initialWaitTimeMs + 1) + initialWaitTimeMs);
+        await BeDuration.wait(timeToWait);
       }
     }
 
