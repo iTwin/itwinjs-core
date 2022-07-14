@@ -342,7 +342,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       preferredPopoutWidgetSize,
       userSized,
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
-      hideWithUiWhenFloating: widgetDef.hideWithUiWhenFloating ? widgetDef.hideWithUiWhenFloating : false,
+      hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
     });
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
       const floatingContainerId = widgetDef.floatingContainerId ?? getUniqueId();
@@ -869,7 +869,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     iconSpec: widgetDef.iconSpec,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
-    hideWithUiWhenFloating: widgetDef.hideWithUiWhenFloating ? widgetDef.hideWithUiWhenFloating : false,
+    hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
   });
   nineZone.tabs[newTab.id] = newTab;
   if (widgetDef.tabLocation.widgetId in nineZone.widgets) {
