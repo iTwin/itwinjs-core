@@ -5,13 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Link Tests",
+      "name": "execFile Tests",
       "presentation": {
         "group": "0_CoreTests",
         "order": 1
       },
       // extensions/map-layers-auth/src/ArcGis/ArcGisAccessClient.ts
-      "cwd": "${workspaceFolder}/clients/imodelhub",
+      "cwd": "${workspaceFolder}/core/mobile/",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -19,7 +19,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/clients/imodelhub/lib/**/*.js"
+        "${workspaceFolder}/core/mobile/lib/**/*.js"
       ]
     },
     {
