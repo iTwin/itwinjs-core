@@ -12,6 +12,8 @@ import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedEleme
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
+require("./StartupShutdown");
+
 describe("ChangedElements", () => {
   let accessToken: AccessToken;
   let testITwinId: GuidString;

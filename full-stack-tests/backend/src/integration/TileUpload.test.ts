@@ -11,9 +11,12 @@ import {
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";
-import { HubWrappers, TestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { HubUtility } from "../HubUtility";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { startupForIntegration } from "./StartupShutdown";
+
+require("./StartupShutdown");
 
 interface TileContentRequestProps {
   treeId: string;
@@ -67,7 +70,7 @@ describe("TileUpload", () => {
 
   before(async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await TestUtils.shutdownBackend();
+    await IModelHost.shutdown();
 
     const config = new IModelHostConfiguration();
 
@@ -77,7 +80,7 @@ describe("TileUpload", () => {
       accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
 
-    await TestUtils.startBackend(config);
+    startupForIntegration(config);
 
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
@@ -105,8 +108,8 @@ describe("TileUpload", () => {
 
   after(async () => {
     // Re-start backend with default config
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend();
+    await IModelHost.shutdown();
+    startupForIntegration(new IModelHostConfiguration());
   });
 
   it("should upload tile to external cache with metadata", async () => {

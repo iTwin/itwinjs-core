@@ -16,6 +16,8 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
+require("./StartupShutdown");
+
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;

@@ -23,6 +23,8 @@ import {
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
+require("./TransformerTestStartup");
+
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
   let iTwinId: GuidString;

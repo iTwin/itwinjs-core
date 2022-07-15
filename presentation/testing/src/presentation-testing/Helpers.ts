@@ -9,7 +9,7 @@ import * as rimraf from "rimraf";
 // common includes
 import { Guid } from "@itwin/core-bentley";
 // backend includes
-import { IModelHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 // frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
@@ -18,6 +18,7 @@ import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { join } from "path";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -76,7 +77,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   props.backendProps = props.backendProps ?? {};
   if (!props.backendProps.id)
     props.backendProps.id = `test-${Guid.createValue()}`;
-  await IModelHost.startup();
+  const cfg = new IModelHostConfiguration();
+  cfg.cacheDir = join(__dirname, ".cache");
+  await IModelHost.startup(cfg);
   PresentationBackend.initialize(props.backendProps);
 
   // init frontend

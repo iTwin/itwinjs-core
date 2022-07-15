@@ -9,6 +9,8 @@ import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorksp
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
+require("./StartupShutdown");
+
 describe("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
@@ -102,6 +104,8 @@ describe("Cloud workspace containers", () => {
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
     ws2.container.dropWorkspaceDb(ws2);
+    workspace1.close();
+    workspace2.close();
   });
 
 });

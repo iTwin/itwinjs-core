@@ -11,6 +11,8 @@ import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 
+require("./StartupShutdown");
+
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangesets", () => {
   const testAllChangesetOperations = async (accessToken: AccessToken, iTwinId: string, iModelId: GuidString) => {
