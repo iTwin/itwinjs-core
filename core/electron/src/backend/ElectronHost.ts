@@ -92,7 +92,7 @@ export interface WindowSizeAndPositionProps {
 export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof Electron;
+  private static _electron: typeof ElectronModuleExports;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;
