@@ -54,7 +54,7 @@ export class GeoCoordConfig {
         new IModelHost.platform.CloudPrefetch(cloudContainer, gcsDbName);
 
     } catch (e: unknown) {
-      Logger.logError(loggerCat, `${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
+      Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
     }
   }
 
