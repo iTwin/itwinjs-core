@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-telemetry
 
-This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+This log was last generated on Fri, 15 Jul 2022 19:04:43 GMT and should not be manually modified.
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
 
 ## 3.2.5
 Wed, 13 Jul 2022 15:45:52 GMT
