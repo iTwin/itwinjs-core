@@ -2238,9 +2238,9 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.ReadWrite && CodeService.ctor) {
+    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = new CodeService.ctor(briefcaseDb);
+        const codeService = CodeService.createForIModel(briefcaseDb);
         briefcaseDb._codeService = codeService;
       } catch (e: any) {
         if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.

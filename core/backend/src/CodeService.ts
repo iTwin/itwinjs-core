@@ -80,7 +80,7 @@ export namespace CodeService {
     readonly id: CodeService.EntryId;
   }
 
-  export let ctor: undefined | (new (iModelDb: IModelDb) => CodeService);
+  export let createForIModel: undefined | ((iModelDb: IModelDb) => CodeService);
 
   export interface ObtainLockArgs {
     readonly user: string;
