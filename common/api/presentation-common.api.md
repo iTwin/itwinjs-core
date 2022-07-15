@@ -1557,6 +1557,7 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 export interface NavigationPropertyInfo {
     classInfo: ClassInfo;
     isForwardRelationship: boolean;
+    isTargetPolymorphic: boolean;
     targetClassInfo: ClassInfo;
 }
 
@@ -1575,6 +1576,8 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     classInfo: TClassInfoJSON;
     // (undocumented)
     isForwardRelationship: boolean;
+    // (undocumented)
+    isTargetPolymorphic: boolean;
     // (undocumented)
     targetClassInfo: TClassInfoJSON;
 }
