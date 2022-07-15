@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.42",
+      "tag": "@bentley/imodeljs-backend_v2.19.42",
+      "date": "Fri, 15 Jul 2022 13:10:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "increase retries for downloading v2 checkpoints from 5 to 10"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.41",
       "tag": "@bentley/imodeljs-backend_v2.19.41",
       "date": "Mon, 11 Jul 2022 16:02:39 GMT",
