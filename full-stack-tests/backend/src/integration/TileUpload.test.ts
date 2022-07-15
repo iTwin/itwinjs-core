@@ -16,8 +16,6 @@ import { HubUtility } from "../HubUtility";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { startupForIntegration } from "./StartupShutdown";
 
-require("./StartupShutdown");
-
 interface TileContentRequestProps {
   treeId: string;
   contentId: string;
@@ -80,7 +78,7 @@ describe("TileUpload", () => {
       accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
 
-    startupForIntegration(config);
+    await startupForIntegration(config);
 
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
@@ -109,7 +107,7 @@ describe("TileUpload", () => {
   after(async () => {
     // Re-start backend with default config
     await IModelHost.shutdown();
-    startupForIntegration(new IModelHostConfiguration());
+    await startupForIntegration(new IModelHostConfiguration());
   });
 
   it("should upload tile to external cache with metadata", async () => {

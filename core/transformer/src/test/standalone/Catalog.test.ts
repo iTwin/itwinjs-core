@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import {
   DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
-  DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelHost, IModelJsFs, LinkElement,
+  DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,
   PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType, RecipeDefinitionElement, RepositoryLink, SnapshotDb,
   SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
 } from "@itwin/core-backend";
