@@ -174,10 +174,11 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     };
   }, [handleClick, handleDoubleClick]);
   const active = widget.activeTabId === id;
+  const overflown = !widgetTabsEntryContext;
   const className = classnames(
     "nz-widget-tab",
     active && "nz-active",
-    !widgetTabsEntryContext && "nz-overflown",
+    overflown && "nz-overflown",
     undefined === side && widget.minimized && "nz-minimized",
     first && "nz-first",
     last && "nz-last",
@@ -188,7 +189,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
 
   const showIconOnly = React.useContext(IconOnlyOnWidgetTabContext);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
-  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon;
+  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon || overflown;
   return (
     <div
       data-item-id={tab.id}
