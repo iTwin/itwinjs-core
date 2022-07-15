@@ -302,7 +302,6 @@ export class ITwinWorkspace implements Workspace {
       if (cacheProps.clearContents)
         fs.emptyDirSync(cacheProps.rootDir);
       try {
-        console.log(`workspace cache: opening ${cacheProps.rootDir}`);
         this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
       } catch (e) {
         Logger.logError("workspace", `error creating workspace cloud cache in ${cacheProps.rootDir}`);
@@ -367,7 +366,6 @@ export class ITwinWorkspace implements Workspace {
       container.close();
     this._containers.clear();
     if (this._cloudCache) {
-      console.log(`workspace cache: closing ${this._cloudCache.rootDir}`);
       this._cloudCache.destroy();
       this._cloudCache = undefined;
     }
