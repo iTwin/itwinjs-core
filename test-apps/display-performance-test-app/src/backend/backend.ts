@@ -10,8 +10,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -32,15 +31,24 @@ function loadEnv(envFile: string) {
 
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
+  // https://github.com/iTwin/itwinjs-core/security/code-scanning/16
+  // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const iModelHost = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
-  iModelHost.authorizationClient = await initializeAuthorizationClient();
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    let authClient: ElectronMainAuthorization | undefined;
+    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
+      authClient = new ElectronMainAuthorization({
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
+      });
+      iModelHost.authorizationClient = authClient;
+    }
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -48,55 +56,9 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
-    if(iModelHost.authorizationClient)
-      await (iModelHost.authorizationClient as ElectronMainAuthorization).signInSilent();
+
+    if (authClient)
+      await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
-}
-
-async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
-  if(process.env.IMJS_OIDC_HEADLESS) {
-    if(!checkEnvVars(
-      "IMJS_OIDC_CLIENT_ID",
-      "IMJS_OIDC_REDIRECT_URI",
-      "IMJS_OIDC_SCOPE",
-      "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD"
-    ))
-      return undefined;
-    return new TestBrowserAuthorizationClient({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
-      scope: process.env.IMJS_OIDC_SCOPE!,
-      clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
-    }, {
-      email: process.env.IMJS_OIDC_EMAIL!,
-      password: process.env.IMJS_OIDC_PASSWORD!,
-    });
-  } else {
-    if(!checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE"))
-      return undefined;
-    if(ProcessDetector.isElectronAppBackend) {
-      return new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        scope: process.env.IMJS_OIDC_SCOPE!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI,
-      });
-    }
-  }
-  return undefined;
-}
-/**
- * Logs a warning if only some are provided
- * @returns true if all are provided, false if any missing.
- */
-function checkEnvVars(...keys: Array<string>): boolean {
-  const missing = keys.filter((name) => process.env[name] === undefined);
-  if(missing.length === 0)
-    return true;
-  if(missing.length < keys.length) { // Some missing, warn
-    // eslint-disable-next-line no-console
-    console.log(`Skipping auth setup due to missing: ${ missing.join(", ") }`);
-  }
-  return false;
 }
