@@ -31,12 +31,8 @@
     max-width: 18em;
     line-height: 2em;
     padding-left: 0.75em;
-    padding-right: 0.75em;
+    padding-right: 4em;
     height: 1.75em;
-
-    >span {
-      margin-right: 3em;
-    }
 
     >.nz-badge {
       left: 0.25em;
@@ -52,16 +48,7 @@
         width: 0.5em;
         height: 1em;
         transform: rotate(45deg);
-        margin-left: auto;
       }
-    }
-
-    &.nz-first {
-      margin-top: 0.5em;
-    }
-
-    &.nz-last {
-      margin-bottom: 0.5em;
     }
 
     @media (hover: hover) {
