@@ -615,5 +615,6 @@ function fromCompressedNavigationPropertyInfoJSON(compressedNavigationPropertyIn
   return {
     ...compressedNavigationPropertyInfoJSON,
     classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
+    targetClassInfo: { id: compressedNavigationPropertyInfoJSON.targetClassInfo, ...classesMap[compressedNavigationPropertyInfoJSON.targetClassInfo] },
   };
 }
