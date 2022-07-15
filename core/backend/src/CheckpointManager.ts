@@ -66,6 +66,9 @@ export interface DownloadRequest {
    * function returns a non-zero value, the download is aborted.
    */
   readonly onProgress?: ProgressFunction;
+
+  /** number of retries for transient failures. Default is 5. */
+  readonly retries?: number;
 }
 
 /** @internal */
@@ -189,7 +192,7 @@ export class V2CheckpointManager {
       const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
         const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
@@ -353,7 +356,16 @@ export class CheckpointManager {
       }
     }
 
-    await this.doDownload(request);
+    let retry = request.retries !== undefined ? request.retries : 5;
+    while (true) {
+      try {
+        await this.doDownload(request);
+        break;
+      } catch (e: any) {
+        if (--retry <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
+          throw e;
+      }
+    }
     return this.updateToRequestedVersion(request);
   }
 
