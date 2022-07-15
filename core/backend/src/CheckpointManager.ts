@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -70,7 +70,7 @@ export interface DownloadRequest {
    */
   onProgress?: ProgressFunction;
 
-  /** Number of retries for transient failures. Default is 5. */
+  /** Number of retries for transient failures. Default is 10. */
   readonly retries?: number;
 }
 
@@ -289,7 +289,8 @@ export class CheckpointManager {
       }
     }
 
-    let retry = request.retries ?? 5;
+    const numRetries = request.retries ?? 10;
+    let retry = numRetries;
     while (true) {
       try {
         await this.doDownload(request);
@@ -297,6 +298,13 @@ export class CheckpointManager {
       } catch (e: any) {
         if (--retry <= 0 || !e.message?.includes("Failure when receiving data from the peer"))
           throw e;
+        const attemptNumber = numRetries - retry;
+        const initialWaitTimeMs = 25;
+        const maxWaitTime = 5000;
+        const endOfRange = Math.min(maxWaitTime, initialWaitTimeMs * 2 ** attemptNumber);
+        // Gets a random number between the endOfRange and the initialWaitTime for "jitter"
+        const timeToWait = Math.floor(Math.random() * (endOfRange - initialWaitTimeMs + 1) + initialWaitTimeMs);
+        await BeDuration.wait(timeToWait);
       }
     }
 
