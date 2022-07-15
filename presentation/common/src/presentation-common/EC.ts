@@ -162,6 +162,8 @@ export interface NavigationPropertyInfo {
   isForwardRelationship: boolean;
   /** Information about ECProperty's target class */
   targetClassInfo: ClassInfo;
+  /** Is ECProperty's target class polymorphic */
+  isTargetPolymorphic: boolean;
 }
 
 /** @beta */
@@ -199,6 +201,7 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   targetClassInfo: TClassInfoJSON;
+  isTargetPolymorphic: boolean;
 }
 
 /**

@@ -169,6 +169,7 @@ describe("Descriptor", () => {
                 classInfo: ids[3],
                 isForwardRelationship: true,
                 targetClassInfo: ids[4],
+                isTargetPolymorphic: true,
               },
             },
           }],

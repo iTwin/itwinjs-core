@@ -135,7 +135,12 @@ describe("PropertiesField", () => {
         category,
         properties: [{
           property: createTestPropertyInfo({
-            navigationPropertyInfo: { classInfo: createTestECClassInfo(), isForwardRelationship: false, targetClassInfo: createTestECClassInfo() },
+            navigationPropertyInfo: {
+              classInfo: createTestECClassInfo(),
+              isForwardRelationship: false,
+              targetClassInfo: createTestECClassInfo(),
+              isTargetPolymorphic: true,
+            },
           }),
         }],
       }).toJSON();

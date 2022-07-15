@@ -149,6 +149,7 @@ Object {
             "navigationPropertyInfo": Object {
               "classInfo": "0x4",
               "isForwardRelationship": true,
+              "isTargetPolymorphic": true,
               "targetClassInfo": "0x5",
             },
             "type": "TestPropertyType",
