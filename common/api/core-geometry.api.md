@@ -3250,7 +3250,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     popPoint(): void;
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
-    rangeBetweenFractions(fraction0: number, fraction1: number): Range3d;
+    rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
     segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number;
     setFrom(other: LineString3d): void;

@@ -312,7 +312,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     addPartialChild (this._path.children[childCurveIndexA], childFractionA, 1.0, reversed);
     // at least two distinct children are impacted ....
     for (let childIndex = childCurveIndexA + 1; childIndex < childCurveIndexB; childIndex++){
-      addPartialChild (this._path.children[childIndex].clone (), 0.0, 1.0, reversed);
+      addPartialChild (this._path.children[childIndex], 0.0, 1.0, reversed);
     }
     addPartialChild (this._path.children[childCurveIndexB], 0.0, childFractionB, reversed);
   // This reverses array entries but not orientation within each curve ...
@@ -644,7 +644,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
  * * numCalls = number of times closestPoint was called.
  * * numCurvesTested = number of curves tested with full closestPoint
  * * numAssigned = number of times a new minimum value was recorded
- * * numTotalCurves = number of curves that would be tested in worst case.
+ * * numCandidate = number of curves that would be tested in worst case.
  * return an object summarizing closest point test counts
  * @param clear if true, counts are cleared after the return object is formed.
  */
@@ -654,17 +654,17 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       numCalls: this._numCalls,
       numTested: this._numTested,
       numAssigned: this._numAssigned,
-      numCandidate: this._numTotal};
+      numCandidate: this._numCandidate};
 
     if (clear){
-      this._numTested = this._numAssigned = this._numTotal = 0;
+      this._numTested = this._numAssigned = this._numCandidate = 0;
     }
     return a;
   }
   private static _numCalls = 0;
   private static _numTested = 0;
   private static _numAssigned = 0;
-  private static _numTotal = 0;
+  private static _numCandidate = 0;
   /** Search for the curve point that is closest to the spacePoint.
    * * The CurveChainWithDistanceIndex invokes the base class CurvePrimitive method, which
    *     (via a handler) determines a CurveLocation detail among the children.
@@ -686,7 +686,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       const fragment0 = this._fragments[0];
       const fragment1 = this._fragments[this._fragments.length - 1];
       CurveChainWithDistanceIndex._numCalls++;
-      CurveChainWithDistanceIndex._numTotal+= sortedFragments.length;
+      CurveChainWithDistanceIndex._numCandidate+= sortedFragments.length;
       for (const f of sortedFragments) {
         if (f.a >aMin)
           break;
