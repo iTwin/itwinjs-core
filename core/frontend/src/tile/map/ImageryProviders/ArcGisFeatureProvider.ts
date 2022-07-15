@@ -7,7 +7,7 @@
  */
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { assert, base64StringToUint8Array } from "@itwin/core-bentley";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeatureQuery, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeatureQuery, ArcGisFeatureRenderer, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
 import { request, RequestOptions, Response } from "../../../request/Request";
 import { ArcGisFeaturePBF } from "../../internal";
@@ -27,6 +27,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   private _firstRequest = true;
   private _supportsCoordinatesQuantization = true; // TODO Reader this from the layer capabilities
+  // private _supportsCoordinatesQuantization = false;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
@@ -169,6 +170,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         }
       }
 
+      const renderer = new ArcGisFeatureRenderer(ctx, transfo);
       if (this.format === "pbf") {
         const featureReader = new ArcGisFeaturePBF();
         const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
@@ -208,7 +210,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
             }
             await Promise.all(renderPromises);
           } else {
-            featureReader.readRenderGraphics(collection, ctx);
+            featureReader.readRenderGraphics(collection, renderer);
           }
         };
         await renderData();
@@ -224,7 +226,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
           return undefined;
         const featureReader = new ArcGisFeatureJSON();
         featureReader.transform = transfo;
-        featureReader.readRenderGraphics(tileResponse.text, ctx);
+        featureReader.readRenderGraphics(tileResponse.text, renderer);
       }
       this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
