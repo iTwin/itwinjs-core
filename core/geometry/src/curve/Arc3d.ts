@@ -664,6 +664,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param transform optional transform to apply to the arc.
    */
   public extendRange(range: Range3d, transform?: Transform): void {
+    this.extendRangeInSweep (range, this._sweep, transform);
+  }
+  /**
+   * Extend a range to include the range of the arc, using specified range in place of the arc range.
+   * @param range range being extended.
+   * @param transform optional transform to apply to the arc.
+   */
+   public  extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void {
     const trigForm = new SineCosinePolynomial(0, 0, 0);
     const center = this._center.clone(Arc3d._workPointA);
     const vectorU = this._matrix.columnX(Arc3d._workVectorU);
@@ -678,14 +686,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const range1 = Range1d.createNull();
     for (let i = 0; i < 3; i++) {
       trigForm.set(center.at(i), vectorU.at(i), vectorV.at(i));
-      trigForm.rangeInSweep(this._sweep, range1);
+      trigForm.rangeInSweep(sweep, range1);
       lowPoint.setAt(i, range1.low);
       highPoint.setAt(i, range1.high);
     }
     range.extend(lowPoint);
     range.extend(highPoint);
-
   }
+    /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+  public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    const sweep = AngleSweep.createStartEndRadians (this.sweep.fractionToRadians (fraction0), this.sweep.fractionToRadians (fraction1));
+    const range = Range3d.create ();
+    this.extendRangeInSweep (range, sweep, transform);
+    return range;
+  }
+
   /**
    * Set up a SineCosinePolynomial as the function c+u*cos(theta)+v*sin(theta) where
    *  c,u,v are coefficients obtained by evaluating altitude and velocity relative to the plane.

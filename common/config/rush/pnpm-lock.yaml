@@ -780,7 +780,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      i18next: 21.8.13
+      i18next: 21.8.14
       i18next-browser-languagedetector: 6.1.4
       i18next-http-backend: 1.4.1
       i18next-xhr-backend: 3.2.2
@@ -3117,6 +3117,8 @@ importers:
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
@@ -3154,6 +3156,8 @@ importers:
       '@itwin/imodels-access-backend': 1.0.2
       '@itwin/imodels-access-frontend': 1.0.2
       '@itwin/imodels-client-authoring': 1.1.0
+      '@itwin/imodels-client-management': 1.1.0
+      '@itwin/oidc-signin-tool': 3.4.1_electron@14.2.9
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.20.0
     devDependencies:
@@ -4217,7 +4221,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
@@ -4319,7 +4323,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4474,7 +4478,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4645,7 +4649,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4770,7 +4774,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4903,7 +4907,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
-      ts-node: 10.8.2_ee928ac548ac44c173bf0d4654ae2c29
+      ts-node: 10.9.1_ee928ac548ac44c173bf0d4654ae2c29
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -7211,7 +7215,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/core-webpack-tools/3.2.5_webpack@5.73.0:
     resolution: {integrity: sha512-Qh+dhbA0jevk9Taq/ef27Ebd7KkeKxrnxaSZVQPwNXj99p5ngUgzSKhHN1dZipRKtkQ6XTABPjMrTR8sz5LmUA==}
@@ -7380,7 +7383,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
@@ -7536,7 +7538,7 @@ packages:
       istanbul-lib-instrument: 5.2.0
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.1.4
+      istanbul-reports: 3.1.5
       jest-haste-map: 27.5.1
       jest-resolve: 27.5.1
       jest-util: 27.5.1
@@ -7728,7 +7730,7 @@ packages:
   /@loaders.gl/schema/3.2.5:
     resolution: {integrity: sha512-fmaefIjwOfBl1OZFWxZDXZWwXkky+5Ry0ZEsPRp08gV+2WeHF+K4JvFHd12fxulVYDT3QLscn/ZF/QoesWV3qQ==}
     dependencies:
-      '@types/geojson': 7946.0.9
+      '@types/geojson': 7946.0.10
       apache-arrow: 4.0.1
     dev: false
 
@@ -8515,8 +8517,8 @@ packages:
       '@types/node': 16.11.7
     dev: true
 
-  /@types/geojson/7946.0.9:
-    resolution: {integrity: sha512-snVY+R7d0VfUEHdfEe/NTFnz0+Qei0kEGIV8ErryWQwDXNS7uzhVEMcUtZ+uBHXSBcJa0zBcevBE0u41acbodQ==}
+  /@types/geojson/7946.0.10:
+    resolution: {integrity: sha512-Nmh0K3iWQJzniTuPRcJn5hxXkfB1T1pgB89SBig5PlJQU5yocazeu4jATJlaA0GYFKWMqDdvYemoSnF2pXgLVA==}
     dev: false
 
   /@types/glob/5.0.37:
@@ -8657,8 +8659,8 @@ packages:
     resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
-  /@types/node/14.18.21:
-    resolution: {integrity: sha512-x5W9s+8P4XteaxT/jKF0PSb7XEvo5VmqEWgsMlyeY4ZlLK8I6aH6g5TPPyDlLAep+GYf4kefb7HFyc7PAO3m+Q==}
+  /@types/node/14.18.22:
+    resolution: {integrity: sha512-qzaYbXVzin6EPjghf/hTdIbnVW1ErMx8rPzwRNJhlbyJhu2SyqlvjGOY/tbUt6VFyzg56lROcOeSQRInpt63Yw==}
 
   /@types/node/16.11.7:
     resolution: {integrity: sha512-QB5D2sqfSjCmTuWcBWyJ+/44bcjO7VbjSbOE0ucoVbAsSNQc4Lt6QkgkVXkTDwkL4z/beecZNDvVX15D4P8Jbw==}
@@ -9662,7 +9664,7 @@ packages:
     hasBin: true
     dependencies:
       '@types/flatbuffers': 1.10.0
-      '@types/node': 14.18.21
+      '@types/node': 14.18.22
       '@types/text-encoding-utf-8': 1.0.2
       command-line-args: 5.1.1
       command-line-usage: 6.1.1
@@ -10417,7 +10419,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001366
-      electron-to-chromium: 1.4.188
+      electron-to-chromium: 1.4.189
     dev: true
 
   /browserslist/4.21.2:
@@ -10426,7 +10428,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001366
-      electron-to-chromium: 1.4.188
+      electron-to-chromium: 1.4.189
       node-releases: 2.0.6
       update-browserslist-db: 1.0.4_browserslist@4.21.2
 
@@ -12105,8 +12107,8 @@ packages:
       jake: 10.8.5
     dev: true
 
-  /electron-to-chromium/1.4.188:
-    resolution: {integrity: sha512-Zpa1+E+BVmD/orkyz1Z2dAT1XNUuVAHB3GrogfyY66dXN0ZWSsygI8+u6QTDai1ZayLcATDJpcv2Z2AZjEcr1A==}
+  /electron-to-chromium/1.4.189:
+    resolution: {integrity: sha512-dQ6Zn4ll2NofGtxPXaDfY2laIa6NyCQdqXYHdwH90GJQW0LpJJib0ZU/ERtbb0XkBEmUD2eJtagbOie3pdMiPg==}
 
   /electron/14.2.9:
     resolution: {integrity: sha512-7LdJFmqVzO9NLKO0hwOwPA6Kv4GSybGMcej8f2q7fVT4O8mIfL9oo/v4axVjVWm0+58ROQtHv8hYnnAs3ygG0Q==}
@@ -12115,7 +12117,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@electron/get': 1.14.1
-      '@types/node': 14.18.21
+      '@types/node': 14.18.22
       extract-zip: 1.7.0
     transitivePeerDependencies:
       - supports-color
@@ -13785,7 +13787,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.0.4
+      minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
 
@@ -14148,7 +14150,7 @@ packages:
       he: 1.2.0
       param-case: 3.0.4
       relateurl: 0.2.7
-      terser: 5.14.1
+      terser: 5.14.2
     dev: true
 
   /html-minifier/3.5.21:
@@ -14377,8 +14379,8 @@ packages:
       '@babel/runtime': 7.18.6
     dev: false
 
-  /i18next/21.8.13:
-    resolution: {integrity: sha512-DpzwrJq7Y8tjUHxx6ByOkUIjrGYdQI5Mfv4XEI7q2RWdknQ7TaO9bKi8hS/LqYD6pBV5YGxJLReyLkOCxIpouA==}
+  /i18next/21.8.14:
+    resolution: {integrity: sha512-4Yi+DtexvMm/Yw3Q9fllzY12SgLk+Mcmar+rCAccsOPul/2UmnBzoHbTGn/L48IPkFcmrNaH7xTLboBWIbH6pw==}
     dependencies:
       '@babel/runtime': 7.18.6
     dev: false
@@ -14978,8 +14980,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /istanbul-reports/3.1.4:
-    resolution: {integrity: sha512-r1/DshN4KSE7xWEknZLLLLDn5CJybV3nw01VTkp6D5jzLuELlcbudfj/eSQFvrKsJuTVCGnePO7ho82Nw9zzfw==}
+  /istanbul-reports/3.1.5:
+    resolution: {integrity: sha512-nUsEMa9pBt/NOHqbcbeJEgqIlY/K7rVWUX6Lql2orY5e9roQOthbR3vtY4zzf2orPELg80fnxxk9zUyPlgwD1w==}
     engines: {node: '>=8'}
     dependencies:
       html-escaper: 2.0.2
@@ -17044,7 +17046,7 @@ packages:
       istanbul-lib-processinfo: 2.0.3
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.1.4
+      istanbul-reports: 3.1.5
       make-dir: 3.1.0
       node-preload: 0.2.1
       p-map: 3.0.0
@@ -19546,7 +19548,7 @@ packages:
       jest-worker: 26.6.2
       rollup: 2.76.0
       serialize-javascript: 4.0.0
-      terser: 5.14.1
+      terser: 5.14.2
     dev: true
 
   /rollup/2.76.0:
@@ -20814,11 +20816,11 @@ packages:
       jest-worker: 27.5.1
       schema-utils: 3.1.1
       serialize-javascript: 6.0.0
-      terser: 5.14.1
+      terser: 5.14.2
       webpack: 5.73.0
 
-  /terser/5.14.1:
-    resolution: {integrity: sha512-+ahUAE+iheqBTDxXhTisdA8hgvbEG1hHOQ9xmNjeUJSoi6DU/gMrKNcfZjHkyY6Alnuyc+ikYJaxxfHkT3+WuQ==}
+  /terser/5.14.2:
+    resolution: {integrity: sha512-oL0rGeM/WFQCUd0y2QrWxYnq7tfSuKBiqTjRPWrRgB46WD/kiwHwF8T23z78H6Q6kGCuuHcPB+KULHRdxvVGQA==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -21045,8 +21047,8 @@ packages:
     resolution: {integrity: sha512-ZYcdy6/RdwryMm2hcRT3KJanGSQREd5SDkMirdFjhWINe12wht2A26tzBqi3pxPau9Pf3Bq1C7iwzFCOfdm5yQ==}
     dev: false
 
-  /ts-node/10.8.2_ee928ac548ac44c173bf0d4654ae2c29:
-    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
+  /ts-node/10.9.1_ee928ac548ac44c173bf0d4654ae2c29:
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
       '@swc/core': '>=1.2.50'
