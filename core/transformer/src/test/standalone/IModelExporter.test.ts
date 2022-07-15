@@ -15,7 +15,7 @@ import { IModelExportHandler } from "../../IModelExporter";
 import { IModelTransformerTestUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-require("./TransformerTestStartup");
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("IModelExporter", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelExporter");

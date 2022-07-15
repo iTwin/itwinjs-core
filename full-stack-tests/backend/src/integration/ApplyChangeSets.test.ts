@@ -11,7 +11,7 @@ import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 
-require("./StartupShutdown");
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangesets", () => {

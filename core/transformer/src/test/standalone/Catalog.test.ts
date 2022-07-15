@@ -20,7 +20,7 @@ import {
 import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelImporter, IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
 
-require("./TransformerTestStartup");
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 

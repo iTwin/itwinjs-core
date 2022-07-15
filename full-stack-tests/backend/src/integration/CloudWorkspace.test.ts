@@ -9,7 +9,7 @@ import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorksp
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-require("./StartupShutdown");
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("Cloud workspace containers", () => {
 

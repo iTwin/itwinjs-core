@@ -13,7 +13,7 @@ import { Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedu
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelTransformer } from "../../core-transformer";
 
-require("./TransformerTestStartup");
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("RenderTimeline Remap", () => {
   before(() => {

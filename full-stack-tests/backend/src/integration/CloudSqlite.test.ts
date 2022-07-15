@@ -12,7 +12,7 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
-require("./StartupShutdown");
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 export namespace CloudSqliteTest {
   export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };

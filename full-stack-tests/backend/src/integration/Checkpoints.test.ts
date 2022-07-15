@@ -16,7 +16,7 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-require("./StartupShutdown");
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("Checkpoints", () => {
   let daemon: ChildProcess;

@@ -23,7 +23,7 @@ import {
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-require("./TransformerTestStartup");
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");

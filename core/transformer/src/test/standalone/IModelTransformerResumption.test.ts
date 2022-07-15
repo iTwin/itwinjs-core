@@ -15,7 +15,7 @@ import { IModelTransformer, IModelTransformOptions } from "../../IModelTransform
 import { assertIdentityTransformation, HubWrappers, IModelTransformerTestUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-require("./TransformerTestStartup");
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,

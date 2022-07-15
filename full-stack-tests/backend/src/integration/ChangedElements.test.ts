@@ -12,7 +12,7 @@ import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedEleme
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
-require("./StartupShutdown");
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("ChangedElements", () => {
   let accessToken: AccessToken;
