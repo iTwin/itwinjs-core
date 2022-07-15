@@ -32,6 +32,7 @@ export interface CodeIndex {
   forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
 }
 
+/** @internal */
 export interface CodeService {
   readonly codeIndex: CodeIndex;
   synchronizeWithCloud: () => void;
