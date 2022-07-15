@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.2.5",
+      "tag": "@itwin/core-frontend_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Avoid attempting to load ViewState data from the backend for a BlankConnection."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.4",
       "tag": "@itwin/core-frontend_v3.2.4",
       "date": "Tue, 21 Jun 2022 18:06:33 GMT",
