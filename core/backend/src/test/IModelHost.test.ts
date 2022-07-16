@@ -10,9 +10,10 @@ import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { IModelTestUtils, TestUtils } from "./index";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestUtils } from "./TestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelHost", () => {
 
