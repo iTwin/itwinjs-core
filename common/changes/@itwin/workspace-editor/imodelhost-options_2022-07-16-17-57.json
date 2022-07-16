@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/workspace-editor",
-      "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration intance",
+      "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance",
       "type": "none"
     }
   ],
