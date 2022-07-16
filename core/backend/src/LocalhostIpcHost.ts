@@ -9,7 +9,7 @@
 import * as ws from "ws";
 import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "./IpcHost";
-import { IModelHostConfiguration } from "./IModelHost";
+import { IModelHostOptions } from "./IModelHost";
 
 /** @internal */
 export interface LocalhostIpcHostOpts {
@@ -79,7 +79,7 @@ export class LocalhostIpcHost {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
   }
 
-  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostConfiguration }) {
+  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostOptions }) {
     let registerHandler = false;
 
     if (!this._initialized) {
