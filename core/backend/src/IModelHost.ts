@@ -69,6 +69,10 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
+/**
+ * Options for [[IModelHost.startup]]
+ * @public
+ */
 export interface IModelHostOptions {
   /**
    * Root of the directory holding all the files that iTwin.js caches
@@ -86,68 +90,70 @@ export interface IModelHostOptions {
    */
   cacheDir?: LocalDirName;
 
-  /** Options for creating the [[Workspace]]
-    * @beta
-    */
+  /**
+   * Options for creating the [[Workspace]]
+   * @beta
+   */
   workspace?: WorkspaceOpts;
 
   /** The directory where the app's assets are found. */
   appAssetsDir?: LocalDirName;
 
-  /** The kind of iModel hub server to use.
-    * @beta
-    */
+  /**
+   * The kind of iModel hub server to use.
+   * @beta
+   */
   hubAccess?: BackendHubAccess;
 
   /** The Azure blob storage credentials to use for the tile cache service. If omitted and no external service implementation is provided, a local cache will be used.
-    * @beta
-    */
+   * @beta
+   */
   tileCacheAzureCredentials?: AzureBlobStorageCredentials;
 
   /**
-    * @beta
-    * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
-    *       set this property with a custom [[CloudStorageService]].
-    */
+   * @beta
+   * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [[CloudStorageService]].
+   */
   tileCacheService?: CloudStorageService;
 
   /** Whether to restrict tile cache URLs by client IP address (if available).
-    * @beta
-    */
+   * @beta
+   */
   restrictTileUrlsByClientIp?: boolean;
 
   /** Whether to compress cached tiles.
-    * Defaults to `true`.
-    */
+   * Defaults to `true`.
+   */
   compressCachedTiles?: boolean;
 
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
-    * @internal
-    */
+   * @internal
+   */
   tileTreeRequestTimeout?: number;
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
-    * @internal
-    */
+   * @internal
+   */
   tileContentRequestTimeout?: number;
 
   /** The backend will log when a tile took longer to load than this threshold in seconds.
-    * @internal
-    */
+   * @internal
+   */
   logTileLoadTimeThreshold?: number;
 
   /** The backend will log when a tile is loaded with a size in bytes above this threshold.
-    * @internal
-    */
+   * @internal
+   */
   logTileSizeThreshold?: number;
 
   /** Crash-reporting configuration
-    * @alpha
-    */
+   * @alpha
+   */
   crashReportingConfig?: CrashReportingConfig;
 
   /** The AuthorizationClient used to get accessTokens
-    * @beta
-    */
+   * @beta
+   */
   authorizationClient?: AuthorizationClient;
 }
 
@@ -160,13 +166,17 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
 
   public cacheDir?: LocalDirName;
+  /** @beta */
   public workspace?: WorkspaceOpts;
   public appAssetsDir?: LocalDirName;
+  /** @beta */
   public hubAccess?: BackendHubAccess;
   public authorizationClient?: AuthorizationClient;
+  /** @beta */
   public tileCacheService?: CloudStorageService;
   public restrictTileUrlsByClientIp?: boolean;
   public compressCachedTiles?: boolean;
+  /** @beta */
   public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
   public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
   public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
