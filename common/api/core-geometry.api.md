@@ -269,6 +269,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
     endPoint(result?: Point3d): Point3d;
     extendRange(range: Range3d, transform?: Transform): void;
+    extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void;
     fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d;
     fractionToPoint(fraction: number, result?: Point3d): Point3d;
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -294,6 +295,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     radiansToPoint(radians: number, result?: Point3d): Point3d;
     radiansToPointAndDerivative(radians: number, result?: Ray3d): Ray3d;
     radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+    rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
     scaleAboutCenterInPlace(scaleFactor: number): void;
     set(center: Point3d, matrix: Matrix3d, sweep: AngleSweep | undefined): void;
@@ -1439,6 +1441,7 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
+    childIndex(target: CurvePrimitive | undefined): number | undefined;
     get children(): CurvePrimitive[];
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
@@ -1463,7 +1466,9 @@ export class CurveChainWireOffsetContext {
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
     protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
+    protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
+    clonePartialCurve(_fractionA: number, _fractionB: number): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
@@ -1484,6 +1489,12 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
+    static getClosestPointTestCounts(clear?: boolean): {
+        numCalls: number;
+        numTested: number;
+        numAssigned: number;
+        numCandidate: number;
+    };
     isAlmostEqual(other: GeometryQuery): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
@@ -1715,6 +1726,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
     protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     parent?: any;
     abstract quickLength(): number;
+    rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
+    rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d;
+    rangeBetweenFractionsByCount(fraction0: number, fraction1: number, count: number, transform?: Transform, extrapolationFactor?: number): Range3d;
     abstract reverseInPlace(): void;
     // @internal
     static snapAndRestrictDetails(details: CurveLocationDetail[], allowExtend?: boolean, applySnappedCoordinates?: boolean, startEndFractionTolerance?: number, startEndXYZTolerance?: number): void;
@@ -1855,7 +1869,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     endPoint(): Point3d;
     // @internal
     get evaluator(): XYCurveEvaluator;
-    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
     fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d;
@@ -2922,7 +2935,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
     endPoint(): Point3d;
-    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToBearingRadians(activeFraction: number): number;
     fractionToCurvature(activeFraction: number): number | undefined;
     fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform;
@@ -3146,6 +3158,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     get point0Ref(): Point3d;
     get point1Ref(): Point3d;
     quickLength(): number;
+    rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
     set(point0: Point3d, point1: Point3d): void;
     setFrom(other: LineSegment3d): void;
@@ -3237,6 +3250,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     popPoint(): void;
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
+    rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
     segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number;
     setFrom(other: LineString3d): void;
@@ -3877,7 +3891,8 @@ export class Path extends CurveChain {
 
 // @public
 export class PathFragment {
-    constructor(childFraction0: number, childFraction1: number, distance0: number, distance1: number, childCurve: CurvePrimitive);
+    constructor(childFraction0: number, childFraction1: number, distance0: number, distance1: number, childCurve: CurvePrimitive, range?: Range3d);
+    a: number;
     chainDistance0: number;
     chainDistance1: number;
     chainDistanceToAccurateChildFraction(chainDistance: number): number;
@@ -3886,9 +3901,14 @@ export class PathFragment {
     childFraction0: number;
     childFraction1: number;
     childFractionTChainDistance(fraction: number): number;
+    // (undocumented)
+    static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
     containsChildCurveAndChildFraction(curve: CurvePrimitive, fraction: number): boolean;
     fractionScaleFactor(globalDistance: number): number;
+    // (undocumented)
+    quickMinDistanceToChildCurve(spacePoint: Point3d): number;
+    range?: Range3d;
     reverseFractionsAndDistances(totalDistance: number): void;
 }
 
@@ -4522,6 +4542,7 @@ export class PolygonOps {
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
+    static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][];
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumAreaXY(polygons: Point3d[][]): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
@@ -4770,6 +4791,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     expandInPlace(delta: number): void;
     extend(...point: Point3d[]): void;
     extendArray(points: Point3d[] | GrowableXYZArray, transform?: Transform): void;
+    extendInterpolated(xyz0: Point3d, fraction: number, xyz1: Point3d): void;
     extendInverseTransformedArray(points: Point3d[] | GrowableXYZArray, transform: Transform): void;
     extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean;
     extendPoint(point: Point3d, transform?: Transform): void;
@@ -4779,6 +4801,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendTransformedXYZ(transform: Transform, x: number, y: number, z: number): void;
     extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number): void;
     extendTransformTransformedXYZ(transformA: Transform, transformB: Transform, x: number, y: number, z: number): void;
+    extendWhenLarger(other: LowAndHighXYZ, extrapolationFactor: number): void;
     extendXOnly(x: number): void;
     extendXYZ(x: number, y: number, z: number): void;
     extendXYZW(x: number, y: number, z: number, w: number): void;
@@ -4846,6 +4869,7 @@ export abstract class RangeBase {
     static isExtremePoint2d(xy: Point2d): boolean;
     static isExtremePoint3d(xyz: Point3d): boolean;
     static isExtremeValue(x: number): boolean;
+    static multiplyIfPositive(q: number, factor: number, defaultValue?: number): number;
     protected static npcScaleFactor(low: number, high: number): number;
     static rangeToRangeAbsoluteDistance(lowA: number, highA: number, lowB: number, highB: number): number;
 }
@@ -5637,6 +5661,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static curvatureToRadius(curvature: number): number;
     get designProperties(): TransitionConditionalProperties | undefined;
     protected _designProperties: TransitionConditionalProperties | undefined;
+    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
@@ -5645,6 +5670,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number;
     static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number;
     static radiusToCurvature(radius: number): number;
+    rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d;
     abstract refreshComputedProperties(): void;
     // (undocumented)
     get spiralType(): string;

@@ -65,6 +65,10 @@ export class RpcControlChannel {
   /** @internal */
   public async describeEndpoints() {
     this.activateClient();
+    if (!this._channelInterface.interfaceName) {
+      return [];
+    }
+
     return this._describeEndpoints();
   }
 
@@ -154,7 +158,10 @@ export class RpcControlChannel {
   public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
     const op = invocation.request.operation;
     if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {
-      op.interfaceDefinition = this._channelInterface.interfaceName;
+      if (this._channelInterface.interfaceName) {
+        op.interfaceDefinition = this._channelInterface.interfaceName;
+      }
+
       return true;
     }
 

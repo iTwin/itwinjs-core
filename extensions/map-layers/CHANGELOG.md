@@ -1,6 +1,14 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Tue, 21 Jun 2022 18:06:33 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Jul 2022 15:45:53 GMT and should not be manually modified.
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+### Updates
+
+- Use a different resize observer technique to ensure the controlled tree in map suplayer popup is properly sized.
+- Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu.
 
 ## 3.2.4
 Tue, 21 Jun 2022 18:06:33 GMT

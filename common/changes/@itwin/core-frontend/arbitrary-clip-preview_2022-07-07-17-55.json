@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Avoid attempting to load ViewState data from the backend for a BlankConnection.",
+      "comment": "Support non-modifiable preview of a ClipVector that isn't a single ClipShape/ConvexClipPlaneSet.",
       "type": "none"
     }
   ],
