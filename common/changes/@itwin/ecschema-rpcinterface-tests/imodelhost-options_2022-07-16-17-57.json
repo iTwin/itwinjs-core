@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-tests",
+      "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration intance",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-tests"
+}
