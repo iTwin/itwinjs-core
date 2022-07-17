@@ -90,14 +90,14 @@ export interface IModelHostOptions {
    */
   cacheDir?: LocalDirName;
 
+  /** The directory where application assets are found. */
+  appAssetsDir?: LocalDirName;
+
   /**
    * Options for creating the [[Workspace]]
    * @beta
    */
   workspace?: WorkspaceOpts;
-
-  /** The directory where the app's assets are found. */
-  appAssetsDir?: LocalDirName;
 
   /**
    * The kind of iModel hub server to use.
@@ -131,6 +131,7 @@ export interface IModelHostOptions {
    * @internal
    */
   tileTreeRequestTimeout?: number;
+
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
    * @internal
    */
@@ -165,23 +166,32 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
 
+  public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
+
   /** @beta */
   public workspace?: WorkspaceOpts;
-  public appAssetsDir?: LocalDirName;
   /** @beta */
   public hubAccess?: BackendHubAccess;
+  /** @beta */
   public authorizationClient?: AuthorizationClient;
   /** @beta */
   public tileCacheService?: CloudStorageService;
+  /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
   public compressCachedTiles?: boolean;
   /** @beta */
   public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+  /** @internal */
   public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** @internal */
   public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** @internal */
   public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  /** @internal */
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
+  /** @alpha */
+  public crashReportingConfig?: CrashReportingConfig;
 }
 
 /**
@@ -540,13 +550,13 @@ export class IModelHost {
   /** The directory where application assets may be found */
   public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+  /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
    */
   public static get tileTreeRequestTimeout(): number {
     return IModelHost.configuration?.tileTreeRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
   }
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+  /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileContent should wait before returning a "pending" status.
    * @internal
    */
   public static get tileContentRequestTimeout(): number {
