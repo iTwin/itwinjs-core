@@ -2579,12 +2579,14 @@ export class IModelHost {
 export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     appAssetsDir?: LocalDirName;
-    // (undocumented)
+    // @beta (undocumented)
     authorizationClient?: AuthorizationClient;
     // (undocumented)
     cacheDir?: LocalDirName;
     // (undocumented)
     compressCachedTiles?: boolean;
+    // @alpha (undocumented)
+    crashReportingConfig?: CrashReportingConfig;
     // (undocumented)
     static defaultLogTileLoadTimeThreshold: number;
     // (undocumented)
@@ -2593,19 +2595,19 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultTileRequestTimeout: number;
     // @beta (undocumented)
     hubAccess?: BackendHubAccess;
-    // (undocumented)
+    // @internal (undocumented)
     logTileLoadTimeThreshold: number;
-    // (undocumented)
+    // @internal (undocumented)
     logTileSizeThreshold: number;
-    // (undocumented)
+    // @beta (undocumented)
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
     // @beta (undocumented)
     tileCacheService?: CloudStorageService;
-    // (undocumented)
+    // @internal (undocumented)
     tileContentRequestTimeout: number;
-    // (undocumented)
+    // @internal (undocumented)
     tileTreeRequestTimeout: number;
     // @beta (undocumented)
     workspace?: WorkspaceOpts;
