@@ -68,7 +68,7 @@ export class SQLiteDb implements IDisposable {
   }
 
   /** Close SQLiteDb.
-   * @param saveChanges if true, call `saveChanges` before closing db.
+   * @param saveChanges if true, call `saveChanges` before closing db. Otherwise unsaved changes are abandoned.
    */
   public closeDb(saveChanges?: boolean): void {
     if (saveChanges && this.isOpen)
@@ -84,73 +84,54 @@ export class SQLiteDb implements IDisposable {
   public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
 
   /**
-   * 1. open a database
-   * 2. call a function with the database opened. If it is async, await its return.
-   * 3. save all changes and then close the database (even if exceptions are thrown)
+   * Open a database, perform an operation, then close the database.
+   *
+   * Details:
+   * - if database is open, throw an error
+   * - open a database
+   * - call a function with the database opened. If it is async, await its return.
+   * - if function throws, abandon all changes, close database, and rethrow
+   * - save all changes
+   * - close the database
+   * @return value from operation
    */
-  public withOpenDb<T>(args: {
-    /** The name of the database to open */
-    dbName: string;
-    /** either an object with the open parameters or just OpenMode value. */
-    openMode?: OpenMode | SQLiteDb.OpenParams;
-    /** @internal */
-    container?: SQLiteDb.CloudContainer;
-  }, operation: () => T): T {
+  public withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T {
     if (this.isOpen)
       throw new Error("database is already open");
-    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
-    let fromPromise = false;
 
+    const save = () => this.closeDb(true), abandon = () => this.closeDb(false);
+    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
     try {
       const result = operation();
-      if (result instanceof Promise) {
-        fromPromise = true;
-        const doClose = () => this.closeDb(true);
-        result.then(doClose, doClose);
-      }
+      result instanceof Promise ? result.then(save, abandon) : save();
       return result;
-    } finally {
-      if (!fromPromise)
-        this.closeDb(true);
+    } catch (e) {
+      abandon();
+      throw e;
     }
   }
 
   /**
-   * 1. acquire the write lock on a CloudContainer
-   * 2. open a this object with a ReadWrite database in the container
-   * 3. call a function with the database open
-   * 4. close the database
-   * 5. release the write lock and upload changes.
+   * Perform an operation on a database in a CloudContainer with the write lock held.
+   *
+   * Details:
+   * - acquire the write lock on a CloudContainer
+   * - call `withOpenDb` with openMode `ReadWrite`
+   * - upload changes
+   * - release the write lock
+   * @param args arguments to lock the container and open the database
+   * @param operation an operation performed on the database with the write lock held.
+   * @return value from operation
    * @internal
    */
-  public async withLockedContainer<T>(
-    args: {
-      /** the name to be displayed in the event of lock collisions */
-      user: string;
-      /** the name of the database within the container */
-      dbName: string;
-      /** the CloudContainer on which the operation will be performed */
-      container: SQLiteDb.CloudContainer;
-      /** if present, function called when the write lock is currently held by another user. */
-      busyHandler?: CloudSqlite.WriteLockBusyHandler;
-    },
-    /** an operation performed on the database with the write lock held. */
-    operation: () => T) {
-    const fn = () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
-    await CloudSqlite.withWriteLock(args.user, args.container, fn, args.busyHandler);
+  public async withLockedContainer<T>(args: SQLiteDb.LockAndOpenArgs, operation: () => T) {
+    return CloudSqlite.withWriteLock(args.user, args.container, () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
   }
 
   /** vacuum this database
    * @see https://www.sqlite.org/lang_vacuum.html
    */
-  public vacuum(args?: {
-    /** new page size
-     * @see https://www.sqlite.org/pragma.html#pragma_page_size
-     */
-    pageSize?: number;
-    /** if present, name of new file to vacuum into */
-    into?: LocalFileName;
-  }) {
+  public vacuum(args?: SQLiteDb.VacuumDbArgs) {
     this.nativeDb.vacuum(args);
   }
 
@@ -178,12 +159,8 @@ export class SQLiteDb implements IDisposable {
     const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
-      const val: T = callback(stmt);
-      if (val instanceof Promise) {
-        val.then(release, release);
-      } else {
-        release();
-      }
+      const val = callback(stmt);
+      val instanceof Promise ? val.then(release, release) : release();
       return val;
     } catch (err) {
       release();
@@ -203,12 +180,8 @@ export class SQLiteDb implements IDisposable {
     const stmt = this.prepareSqliteStatement(sql);
     const release = () => stmt.dispose();
     try {
-      const val: T = callback(stmt);
-      if (val instanceof Promise) {
-        val.then(release, release);
-      } else {
-        release();
-      }
+      const val = callback(stmt);
+      val instanceof Promise ? val.then(release, release) : release();
       return val;
     } catch (err) {
       release();
@@ -308,10 +281,38 @@ export namespace SQLiteDb {
     openMode: OpenMode;
   }
 
-  /** Parameters for creating a new SQLiteDb */
-  export interface CreateParams extends OpenOrCreateParams {
+  /** Size of a SQLiteDb page in bytes */
+  export interface PageSize {
     /** see https://www.sqlite.org/pragma.html#pragma_page_size */
     pageSize?: number;
   }
+  /** Parameters for creating a new SQLiteDb */
+  export type CreateParams = OpenOrCreateParams & PageSize;
 
+  /** @internal */
+  export interface LockAndOpenArgs {
+    /** the name to be displayed in the event of lock collisions */
+    user: string;
+    /** the name of the database within the container */
+    dbName: string;
+    /** the CloudContainer on which the operation will be performed */
+    container: SQLiteDb.CloudContainer;
+    /** if present, function called when the write lock is currently held by another user. */
+    busyHandler?: CloudSqlite.WriteLockBusyHandler;
+  }
+
+  /** Arguments for `SqliteDb.withOpenDb` */
+  export interface WithOpenDbArgs {
+    /** The name of the database to open */
+    dbName: string;
+    /** either an object with the open parameters or just OpenMode value. */
+    openMode?: OpenMode | SQLiteDb.OpenParams;
+    /** @internal */
+    container?: SQLiteDb.CloudContainer;
+  }
+
+  export interface VacuumDbArgs extends PageSize {
+    /** if present, name of new file to vacuum into */
+    into?: LocalFileName;
+  }
 }
