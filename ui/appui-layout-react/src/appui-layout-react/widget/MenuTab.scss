@@ -1,0 +1,46 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-widget-menuTab {
+  display: flex;
+  line-height: 1.75em;
+  height: 1.75em;
+  padding-right: 3em;
+  cursor: pointer;
+  user-select: none;
+
+  >.nz-icon {
+    width: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  >.nz-badge {
+    left: 0.25em;
+  }
+
+  >.nz-checkmark {
+    position: absolute;
+    right: 0.75em;
+    border-style: solid;
+    border-color: $buic-foreground-primary;
+    border-width: 0 0.15em 0.15em 0;
+    width: 0.5em;
+    height: 1em;
+    transform: rotate(45deg);
+
+    &.nz-hidden {
+      display: none;
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: $buic-foreground-primary;
+    }
+  }
+}

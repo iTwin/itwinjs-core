@@ -21,6 +21,7 @@ import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { WidgetOverflowContext } from "./Overflow";
 import { TabIdContext } from "./ContentRenderer";
+import { WidgetMenuTab } from "./MenuTab";
 
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
@@ -56,10 +57,18 @@ export interface WidgetTabProps extends CommonProps {
   badge?: React.ReactNode;
 }
 
+export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+  const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
+  const overflown = !widgetTabsEntryContext;
+  if (overflown)
+    return <WidgetMenuTab {...props} />;
+  return <WidgetTabComponent {...props} />;
+});
+
 /** Component that displays a tab in a side panel widget.
  * @internal future
  */
-export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+const WidgetTabComponent = React.memo<WidgetTabProps>(function WidgetTabComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const tab = React.useContext(TabStateContext);
   const { first, firstInactive, last } = React.useContext(TabPositionContext);
   const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
@@ -174,22 +183,19 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     };
   }, [handleClick, handleDoubleClick]);
   const active = widget.activeTabId === id;
-  const overflown = !widgetTabsEntryContext;
   const className = classnames(
     "nz-widget-tab",
     active && "nz-active",
-    overflown && "nz-overflown",
     undefined === side && widget.minimized && "nz-minimized",
     first && "nz-first",
     last && "nz-last",
     firstInactive && "nz-first-inactive",
-    widgetTabsEntryContext?.lastNotOverflown && "nz-last-not-overflown",
     props.className,
   );
 
   const showIconOnly = React.useContext(IconOnlyOnWidgetTabContext);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
-  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon || overflown;
+  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon;
   return (
     <div
       data-item-id={tab.id}
@@ -202,7 +208,6 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     >
       {(showWidgetIcon || showIconOnly) && tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
       {showLabel && <span>{tab.label}</span>}
-      {!widgetTabsEntryContext && <div className="nz-icon" />}
       {props.badge && <div className="nz-badge">
         {props.badge}
       </div>}
