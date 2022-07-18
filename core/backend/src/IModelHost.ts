@@ -503,7 +503,7 @@ export class IModelHost {
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = undefined;
     IModelHost.tileStorage = undefined;
-    await IModelHost.appWorkspace.close();
+    IModelHost.appWorkspace.close();
     IModelHost._appWorkspace = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }

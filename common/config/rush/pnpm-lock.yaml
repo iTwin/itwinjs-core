@@ -3107,6 +3107,8 @@ importers:
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
@@ -3144,6 +3146,8 @@ importers:
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
+      '@itwin/imodels-client-management': 1.0.1
+      '@itwin/oidc-signin-tool': 3.3.0_electron@14.2.8
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.19.2
     devDependencies:
@@ -7294,7 +7298,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/cloud-agnostic-core/1.0.0:
     resolution: {integrity: sha512-9lSvBXWknuDqOcSqZ5sDLngdVsUZtKDBsEJxvnQa8fi+e4Rm64Mc/NGf+495k5rYYKpi8dSxt1oxgRrSjAbmfQ==}
@@ -7508,7 +7511,6 @@ packages:
       - electron
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}

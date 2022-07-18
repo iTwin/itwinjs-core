@@ -146,7 +146,7 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args, args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-  await wsFile.close();
+  wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -156,7 +156,7 @@ async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceD
   try {
     await fn(ws, args);
   } finally {
-    await ws.close();
+    ws.close();
   }
 }
 

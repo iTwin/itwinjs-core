@@ -135,6 +135,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_fillZone": false,
       "_floatingContainerId": undefined,
       "_handleSyncUiEvent": [Function],
+      "_hideWithUiWhenFloating": false,
       "_id": "toolWidget",
       "_initialProps": Object {
         "appButton": CommandItemDef {

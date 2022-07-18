@@ -10,13 +10,12 @@ import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { IModelTestUtils, TestUtils } from "./index";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { AzureServerStorage } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-
-/* eslint-disable deprecation/deprecation */
+import { TestUtils } from "./TestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelHost", () => {
 
@@ -118,6 +117,7 @@ describe("IModelHost", () => {
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
   });
 
+  /* eslint-disable deprecation/deprecation */
   it("should set Azure cloud storage provider for tile cache given credentials", async () => {
     const config = new IModelHostConfiguration();
     config.tileCacheAzureCredentials = {
@@ -210,6 +210,7 @@ describe("IModelHost", () => {
     assert.isUndefined(IModelHost.tileStorage);
     assert.isUndefined(IModelHost.tileUploader);
   });
+  /* eslint-enable deprecation/deprecation */
 
   // TODO:
   it.skip("should cleanup everything on shutdown", () => {

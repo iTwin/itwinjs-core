@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers",
-      "comment": "Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu.",
+      "comment": "Fixed FeatureInfo provider registration when Map Layers Widget is initialized.",
       "type": "none"
     }
   ],

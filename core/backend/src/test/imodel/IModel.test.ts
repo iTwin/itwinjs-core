@@ -32,8 +32,9 @@ import {
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions } from "../TestUtils";
 
 // spell-checker: disable
 

@@ -14,7 +14,8 @@ import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../RpcBackend";
-import { IModelTestUtils, TestUtils } from "../index";
+import { TestUtils } from "../TestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
