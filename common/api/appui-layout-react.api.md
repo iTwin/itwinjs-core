@@ -2462,6 +2462,8 @@ export interface TabState {
     // (undocumented)
     readonly canPopout?: boolean;
     // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
+    // (undocumented)
     readonly iconSpec?: IconSpec;
     // (undocumented)
     readonly id: string;

@@ -2803,7 +2803,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     addContainer(toAdd: ITwinWorkspaceContainer): void;
     // (undocumented)
-    close(): Promise<void>;
+    close(): void;
     // (undocumented)
     get cloudCache(): IModelJsNative.CloudCache;
     // (undocumented)
@@ -2834,13 +2834,13 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     // (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     // (undocumented)
-    close(): Promise<void>;
+    close(): void;
     // (undocumented)
     readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
     // (undocumented)
     get dirName(): string;
     // (undocumented)
-    dropWorkspaceDb(toDrop: WorkspaceDb): Promise<void>;
+    dropWorkspaceDb(toDrop: WorkspaceDb): void;
     // (undocumented)
     readonly filesDir: LocalDirName;
     // (undocumented)
@@ -2876,7 +2876,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 export class ITwinWorkspaceDb implements WorkspaceDb {
     constructor(props: WorkspaceDb.Props, container: WorkspaceContainer);
     // (undocumented)
-    close(): Promise<void>;
+    close(): void;
     readonly container: WorkspaceContainer;
     dbFileName: string;
     readonly dbName: WorkspaceDb.DbName;
@@ -4701,7 +4701,7 @@ export class WebMercatorModel extends SpatialModel {
 
 // @beta
 export interface Workspace {
-    close(): Promise<void>;
+    close(): void;
     readonly cloudCache?: IModelJsNative.CloudCache;
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
@@ -4748,7 +4748,7 @@ export namespace WorkspaceContainer {
 export interface WorkspaceContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
-    close(): Promise<void>;
+    close(): void;
     readonly cloudContainer?: IModelJsNative.CloudContainer;
     dropWorkspaceDb(container: WorkspaceDb): void;
     readonly filesDir: LocalDirName;

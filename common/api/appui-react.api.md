@@ -2275,6 +2275,7 @@ export const expandWidget: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5008,6 +5009,7 @@ export const setPanelSize: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5201,6 +5203,7 @@ export const setWidgetLabel: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5375,6 +5378,7 @@ export const setWidgetState: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5613,6 +5617,7 @@ export const showWidget: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -7493,6 +7498,9 @@ export class WidgetDef {
     get floatingContainerId(): string | undefined;
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
+    set hideWithUiWhenFloating(hide: boolean | undefined);
+    // (undocumented)
+    get hideWithUiWhenFloating(): boolean;
     // (undocumented)
     get iconSpec(): IconSpec;
     set iconSpec(spec: IconSpec);
