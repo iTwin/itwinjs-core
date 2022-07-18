@@ -1557,10 +1557,15 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 export interface NavigationPropertyInfo {
     classInfo: ClassInfo;
     isForwardRelationship: boolean;
+    isTargetPolymorphic: boolean;
+    targetClassInfo: ClassInfo;
 }
 
 // @beta (undocumented)
 export namespace NavigationPropertyInfo {
+    export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfo;
     export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
     export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -1574,6 +1579,10 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     classInfo: TClassInfoJSON;
     // (undocumented)
     isForwardRelationship: boolean;
+    // (undocumented)
+    isTargetPolymorphic: boolean;
+    // (undocumented)
+    targetClassInfo: TClassInfoJSON;
 }
 
 // @public
