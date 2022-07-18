@@ -45,6 +45,7 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
     <div
       className={className}
       ref={ref}
+      title={tab.label}
     >
       {props.badge && <div className="nz-badge">
         {props.badge}

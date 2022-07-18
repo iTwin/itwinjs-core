@@ -23,6 +23,13 @@
     left: 0.25em;
   }
 
+  >span {
+    max-width: 15em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   >.nz-checkmark {
     position: absolute;
     right: 0.75em;

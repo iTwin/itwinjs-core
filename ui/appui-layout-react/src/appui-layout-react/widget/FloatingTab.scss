@@ -26,6 +26,9 @@
   }
 
   >span {
+    max-width: 12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: $nz-widget-tab-font-size;
   }
 }
