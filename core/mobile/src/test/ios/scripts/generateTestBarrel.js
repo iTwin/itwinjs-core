@@ -33,7 +33,6 @@ function populateBarrel(fromDir) {
     }
     else if (filename.endsWith(filter)) {
       nTestFileFound++;
-      // https://github.com/iTwin/itwinjs-core/security/code-scanning/15
       fs.appendFileSync(fileId, `require("./${path.relative(testDir, filename).replace("\\/g", "/")}")\r\n`);
     };
   };

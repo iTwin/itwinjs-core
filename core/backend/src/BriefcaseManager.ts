@@ -485,7 +485,6 @@ export class BriefcaseManager {
       activityId: "",
       applicationId: IModelHost.applicationId,
       applicationVersion: IModelHost.applicationVersion,
-      // https://github.com/iTwin/itwinjs-core/security/code-scanning/23
       sessionId: IModelHost.sessionId,
       accessToken: "", // IModelHost.getAccessToken(); ACCESS_TOKEN_NEEDS_WORK
     };

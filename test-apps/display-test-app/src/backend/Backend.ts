@@ -190,7 +190,6 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
 };
 
 export const loadBackendConfig = (): DtaConfiguration => {
-  // https://github.com/iTwin/itwinjs-core/security/code-scanning/17
   // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 

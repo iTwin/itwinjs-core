@@ -30,8 +30,7 @@ app.use("/", (req, resp, next) => {
 app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
-  // https://github.com/iTwin/itwinjs-core/security/code-scanning/5 file path traversal
-  if (!filePath.includes('..')) {
+  if (!filePath.includes("..")) {
     resp.sendFile(path.resolve("/", filePath), {
       headers: (sourceMap) && {
         "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
