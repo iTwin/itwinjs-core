@@ -138,6 +138,7 @@ export function useTabInteractions<T extends HTMLElement>({
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const widget = React.useContext(WidgetStateContext);
   assert(!!widget);
+  const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
 
   const clickCount = React.useRef(0);
   const doubleClickTimer = React.useRef(new Timer(300));
@@ -146,6 +147,7 @@ export function useTabInteractions<T extends HTMLElement>({
 
   const { id } = tab;
   const { id: widgetId } = widget;
+  const overflown = !widgetTabsEntryContext;
 
   const handleClick = React.useCallback(() => {
     dispatch({
@@ -174,12 +176,17 @@ export function useTabInteractions<T extends HTMLElement>({
     assert(!!ref.current);
     assert(!!initialPointerPosition.current);
     const nzBounds = measure();
+    const nzOffset = new Point(-nzBounds.left, -nzBounds.top);
     let bounds = Rectangle.create(ref.current.getBoundingClientRect());
-    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+    bounds = bounds.offset(nzOffset);
     const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
-    const position = bounds.topLeft();
+    let position = bounds.topLeft();
     const size = widgetContext.measure();
     const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
+    if (overflown) {
+      position = initialPointerPosition.current.offset(nzOffset);
+      position = position.offset({ x: -7, y: -7 });
+    }
     handleDragTabStart({
       initialPointerPosition: Point.create(initialPointerPosition.current),
       widgetSize,
@@ -197,7 +204,7 @@ export function useTabInteractions<T extends HTMLElement>({
 
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, handleDragTabStart, dispatch, floatingWidgetId, side, widgetId, id, onDragStart]);
+  }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, handleDragTabStart, dispatch, floatingWidgetId, side, widgetId, id, onDragStart, overflown]);
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
     e.type === "touchstart" && floatingWidgetId && dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
