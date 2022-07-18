@@ -139,12 +139,17 @@ describe("TransitionSpiral3d", () => {
     for (const transform of [
       Transform.createTranslationXYZ(2, 3, 1),
       Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 5), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10))),
-      Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 5), Matrix3d.createUniformScale(2.0))]) {
+      Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 5), Matrix3d.createUniformScale(2.0)),
+      Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 5), Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(10)))]) {
       const spiralB = spiralA.cloneTransformed(transform);
       ck.testTransformedPoint3d(transform, spiralA.startPoint(), spiralB.startPoint(), "spiral.startPoint ()");
       ck.testTransformedPoint3d(transform, spiralA.endPoint(), spiralB.endPoint(), "spiral.endPoint ()");
-      for (const f of [0.25, 0.35, 0.98])
-        ck.testTransformedPoint3d(transform, spiralA.fractionToPoint(f), spiralB.fractionToPoint(f), "spiral.fractionToPoint ()");
+      const rangeB = spiralB.range ();
+      for (const f of [0.25, 0.35, 0.98]){
+        const pointB = spiralB.fractionToPoint (f);
+        ck.testTransformedPoint3d(transform, spiralA.fractionToPoint(f), pointB, "spiral.fractionToPoint ()");
+        ck.testTrue (rangeB.containsPoint (pointB), "rotated spiral range contains spiral points");
+      }
     }
 
     const options = StrokeOptions.createForCurves();
