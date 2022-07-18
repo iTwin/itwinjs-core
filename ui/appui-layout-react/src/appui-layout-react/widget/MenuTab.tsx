@@ -10,9 +10,10 @@ import "./MenuTab.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Icon } from "@itwin/core-react";
-import { TabStateContext } from "./Tab";
+import { TabStateContext, useTabInteractions } from "./Tab";
 import { WidgetStateContext } from "./Widget";
 import { assert } from "@itwin/core-bentley";
+import { WidgetOverflowContext } from "./Overflow";
 
 /** @internal */
 export interface WidgetMenuTabProps extends CommonProps {
@@ -24,14 +25,27 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
   const tab = React.useContext(TabStateContext);
   const widget = React.useContext(WidgetStateContext);
   assert(!!widget);
+  const overflowContext = React.useContext(WidgetOverflowContext);
+  assert(!!overflowContext);
   const { id } = tab;
+  const closeOverflow = React.useCallback(() => {
+    overflowContext.close();
+  }, [overflowContext]);
+  const ref = useTabInteractions({
+    onDragStart: closeOverflow,
+    onClick: closeOverflow,
+    onDoubleClick: closeOverflow,
+  });
   const active = widget.activeTabId === id;
   const className = classnames(
     "nz-widget-menuTab",
     props.className,
   );
   return (
-    <div className={className}>
+    <div
+      className={className}
+      ref={ref}
+    >
       {props.badge && <div className="nz-badge">
         {props.badge}
       </div>}
