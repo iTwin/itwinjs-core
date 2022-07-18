@@ -191,6 +191,15 @@ export namespace NavigationPropertyInfo {
   export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo {
     return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo), targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo) };
   }
+
+  /** Deserialize [[NavigationPropertyInfo]] from compressed JSON */
+  export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfo {
+    return {
+      ...compressedNavigationPropertyInfoJSON,
+      classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
+      targetClassInfo: { id: compressedNavigationPropertyInfoJSON.targetClassInfo, ...classesMap[compressedNavigationPropertyInfoJSON.targetClassInfo] },
+    };
+  }
 }
 
 /**
