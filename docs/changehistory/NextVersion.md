@@ -74,7 +74,7 @@ Reduced API surface of an `ElectronApp` class to only allow white-listed APIs fr
 
 ## IModelHostOptions
 
-The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions] interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup option. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
+The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
 
 ## Deprecations
 
