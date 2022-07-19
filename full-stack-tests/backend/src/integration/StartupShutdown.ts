@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
@@ -26,14 +26,15 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
-export async function startupForIntegration(cfg: IModelHostConfiguration) {
+export async function startupForIntegration(cfg?: IModelHostOptions) {
+  cfg = cfg ?? {};
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
   return IModelHost.startup(cfg);
 }
 before(async () => {
-  return startupForIntegration(new IModelHostConfiguration());
+  return startupForIntegration();
 });
 
 after(async () => {
