@@ -14,6 +14,8 @@ import { Id64String } from "./Id";
  * @public
  */
 export type ConcreteEntityId =
+  /* a model instance, should have an accompanying element */
+  | `m${Id64String}`
   /* an element instance, because models must be submodeling an element, they count as elements currently */
   | `e${Id64String}`
   /* an aspect instance */
@@ -26,7 +28,10 @@ export type ConcreteEntityId =
  */
 export class ConcreteEntityIds {
   // for additional utilities that require runtime backend classes, see ConcreteEntityIds in `@itwin/core-backend`
-  public static isElementOrModel(id: ConcreteEntityId) {
+  public static isModel(id: ConcreteEntityId) {
+    return id[0] === "m";
+  }
+  public static isElement(id: ConcreteEntityId) {
     return id[0] === "e";
   }
   public static isAspect(id: ConcreteEntityId) {
