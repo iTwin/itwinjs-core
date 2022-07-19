@@ -596,8 +596,11 @@ export class IModelHost {
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
       this.setupAzureTileCache(credentials);
     }
-    if(service)
+    if(service) {
+      if(!storage)
+        Logger.logWarning(loggerCategory, "Using tileCacheService without tileCacheStorage is unsupported");
       IModelHost.tileCacheService = service; // eslint-disable-line deprecation/deprecation
+    }
     if(storage)
       IModelHost.tileStorage = new TileStorage(storage);
   }
