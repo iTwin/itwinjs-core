@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, PrimitiveTypeCode, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
@@ -182,10 +182,14 @@ export class IModelCloneContext {
   public cloneElementAspect(sourceElementAspect: ElementAspect): ElementAspectProps {
     const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();
     targetElementAspectProps.id = undefined;
-    sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
+    sourceElementAspect.forEachProperty((propertyName, propertyMetaData) => {
       if (propertyMetaData.isNavigation) {
-        if (sourceElementAspect.asAny[propertyName]?.id) {
-          (targetElementAspectProps as any)[propertyName].id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
+        const navProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
+        if (navProp?.id) {
+          // TODO: need to get whether the relationship points to an element or aspect
+          propertyMetaData.relationshipClass;
+          const navPropRelClass = (sourceElementAspect.iModel.getJsClass(navProp.relClassName) );
+          navProp.id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
         }
       } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.findTargetElementId(sourceElementAspect.asAny[propertyName]);
