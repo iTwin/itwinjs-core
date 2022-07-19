@@ -263,6 +263,20 @@ export class Logger {
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
   }
+
+  /** Construct an object with the classic Logger `log*` functions but with the  category argument removed and
+   * the given category always used in its place.
+   * @param category  The category of messages logged through this logger object
+   */
+  public static makeCategorizedLogger(category: string) {
+    return {
+      logTrace: this.logTrace.bind(Logger, category),
+      logError: this.logError.bind(Logger, category),
+      logWarning: this.logWarning.bind(Logger, category),
+      logException: this.logException.bind(Logger, category),
+      logInfo: this.logInfo.bind(Logger, category),
+    };
+  }
 }
 
 /** Simple performance diagnostics utility.
