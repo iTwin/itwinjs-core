@@ -6,14 +6,15 @@
 
 .nz-widget-menuTab {
   display: flex;
-  line-height: 1.75em;
-  height: 1.75em;
-  padding-right: 3em;
+  line-height: 2em;
+  height: 2em;
   cursor: pointer;
   user-select: none;
+  padding-right: 3em;
+  padding-left: 0.5em;
 
   &.nz-no-icon {
-    padding-left: 1em;
+    padding-left: 1.25em;
   }
 
   >.nz-icon {
@@ -24,6 +25,7 @@
   }
 
   >.nz-badge {
+    position: absolute;
     left: 0.25em;
   }
 
