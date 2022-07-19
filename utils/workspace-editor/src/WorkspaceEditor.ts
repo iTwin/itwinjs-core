@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
   SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
@@ -543,15 +543,14 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       return cmd(args);
 
     try {
-      const config = new IModelHostConfiguration();
-      config.workspace = {
+      const workspace = {
         containerDir: args.directory,
         cloudCacheProps: {
           nRequests: args.nRequests,
           curlDiagnostics: args.curlDiagnostics,
         },
       };
-      await IModelHost.startup(config);
+      await IModelHost.startup({ workspace });
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
