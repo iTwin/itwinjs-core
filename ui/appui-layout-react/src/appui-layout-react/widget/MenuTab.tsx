@@ -14,6 +14,7 @@ import { TabStateContext, useTabInteractions } from "./Tab";
 import { WidgetStateContext } from "./Widget";
 import { assert } from "@itwin/core-bentley";
 import { WidgetOverflowContext } from "./Overflow";
+import { ShowWidgetIconContext } from "../base/NineZone";
 
 /** @internal */
 export interface WidgetMenuTabProps extends CommonProps {
@@ -27,6 +28,7 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
   assert(!!widget);
   const overflowContext = React.useContext(WidgetOverflowContext);
   assert(!!overflowContext);
+  const showWidgetIcon = React.useContext(ShowWidgetIconContext);
   const { id } = tab;
   const closeOverflow = React.useCallback(() => {
     overflowContext.close();
@@ -39,6 +41,7 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
   const active = widget.activeTabId === id;
   const className = classnames(
     "nz-widget-menuTab",
+    !showWidgetIcon && "nz-no-icon",
     props.className,
   );
   return (
@@ -50,7 +53,9 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
       {props.badge && <div className="nz-badge">
         {props.badge}
       </div>}
-      <div className="nz-icon">{tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}</div>
+      {showWidgetIcon && <div className="nz-icon">
+        {tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
+      </div>}
       <span>{tab.label}</span>
       <div className={classnames(
         "nz-checkmark",

@@ -12,6 +12,10 @@
   cursor: pointer;
   user-select: none;
 
+  &.nz-no-icon {
+    padding-left: 1em;
+  }
+
   >.nz-icon {
     width: 2em;
     display: flex;
