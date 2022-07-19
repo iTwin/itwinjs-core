@@ -31,6 +31,9 @@ export class Unit extends SchemaItem {
   protected _numerator: number;
   protected _denominator: number;
   protected _offset: number;
+  protected _isNumeratorExplicitlyDefined: boolean = false;
+  protected _isDenominatorExplicitlyDefined: boolean = false;
+  protected _isOffsetExplicitlyDefined: boolean = false;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -47,6 +50,9 @@ export class Unit extends SchemaItem {
   public get numerator(): number { return this._numerator; }
   public get offset(): number { return this._offset; }
   public get denominator(): number { return this._denominator; }
+  public get HasNumerator(): boolean { return this._isNumeratorExplicitlyDefined; }
+  public get HasDenominator(): boolean { return this._isDenominatorExplicitlyDefined; }
+  public get HasOffset(): boolean { return this._isOffsetExplicitlyDefined; }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -78,11 +84,11 @@ export class Unit extends SchemaItem {
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
-    if (undefined !== this.numerator)
+    if (this.HasNumerator)
       schemaJson.numerator = this.numerator;
-    if (undefined !== this.denominator)
+    if (this.HasDenominator)
       schemaJson.denominator = this.denominator;
-    if (undefined !== this.offset)
+    if (this.HasOffset)
       schemaJson.offset = this.offset;
     return schemaJson;
   }
@@ -104,9 +110,12 @@ export class Unit extends SchemaItem {
     }
 
     itemElement.setAttribute("definition", this.definition);
-    itemElement.setAttribute("numerator", this.numerator.toString());
-    itemElement.setAttribute("denominator", this.denominator.toString());
-    itemElement.setAttribute("offset", this.offset.toString());
+    if (this.HasNumerator)
+      itemElement.setAttribute("numerator", this.numerator.toString());
+    if (this.HasDenominator)
+      itemElement.setAttribute("denominator", this.denominator.toString());
+    if (this.HasOffset)
+      itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
   }
@@ -142,16 +151,19 @@ export class Unit extends SchemaItem {
       this._definition = unitProps.definition;
 
     if (undefined !== unitProps.numerator) {
+      this._isNumeratorExplicitlyDefined = true;
       if (unitProps.numerator !== this._numerator)
         this._numerator = unitProps.numerator;
     }
 
     if (undefined !== unitProps.denominator) {
+      this._isDenominatorExplicitlyDefined = true;
       if (unitProps.denominator !== this._denominator)
         this._denominator = unitProps.denominator;
     }
 
     if (undefined !== unitProps.offset) {
+      this._isOffsetExplicitlyDefined = true;
       if (unitProps.offset !== this._offset)
         this._offset = unitProps.offset;
     }

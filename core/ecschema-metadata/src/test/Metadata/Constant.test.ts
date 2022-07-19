@@ -332,6 +332,99 @@ describe("Constant", () => {
       assert.strictEqual(constantSerialization.definition, "PI");
       assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
+
+    it("async - when only numerator property is defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+        numerator: 5.5,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(true, true);
+
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.name).eql("TestConstant");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
+      expect(constantSerialization.schema).eql("TestSchema");
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).to.be.undefined;
+    });
+
+    it("async - when only denominator property is defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+        denominator: 5.1,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(true, true);
+
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.name).eql("TestConstant");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
+      expect(constantSerialization.schema).eql("TestSchema");
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+
+      expect(constantSerialization.numerator).to.be.undefined;
+      expect(constantSerialization.denominator).eql(5.1);
+    });
+
+    it("sync - when numerator and denominator properties are undefined", () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+      });
+
+      const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const json = JSON.stringify(testConst);
+      const constantSerialization = JSON.parse(json);
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+
+      expect(constantSerialization.numerator).to.be.undefined;
+      expect(constantSerialization.denominator).to.be.undefined;
+    });
   });
 
   describe("toXml", () => {
@@ -345,7 +438,7 @@ describe("Constant", () => {
     });
     const newDom = createEmptyXmlDocument();
 
-    it("should properly serialize", async () => {
+    it("should properly serialize with all defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
       const testConstant = await ecSchema.getItem<Constant>("TestConstant");
@@ -356,6 +449,68 @@ describe("Constant", () => {
       expect(serialized.getAttribute("denominator")).to.eql("5.1");
       expect(serialized.getAttribute("numerator")).to.eql("5.5");
       expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+    });
+
+    it("when only numerator property is defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+        numerator: 5.5,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testConstant = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testConstant);
+      const serialized = await testConstant!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Constant");
+      expect(serialized.getAttribute("definition")).to.eql("PI");
+      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+      expect(serialized.getAttribute("denominator")).to.eql("");
+      expect(serialized.getAttribute("numerator")).to.eql("5.5");
+    });
+
+    it("when only denominator property is defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+        denominator: 5.1,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testConstant = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testConstant);
+      const serialized = await testConstant!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Constant");
+      expect(serialized.getAttribute("definition")).to.eql("PI");
+      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+      expect(serialized.getAttribute("denominator")).to.eql("5.1");
+      expect(serialized.getAttribute("numerator")).to.eql("");
+    });
+
+    it("when numerator and denominator properties are not defined", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Test Constant",
+        description: "testing a constant",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "PI",
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testConstant = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testConstant);
+      const serialized = await testConstant!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Constant");
+      expect(serialized.getAttribute("definition")).to.eql("PI");
+      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+      expect(serialized.getAttribute("denominator")).to.eql("");
+      expect(serialized.getAttribute("numerator")).to.eql("");
     });
   });
 });

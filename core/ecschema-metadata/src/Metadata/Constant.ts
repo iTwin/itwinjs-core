@@ -27,6 +27,8 @@ export class Constant extends SchemaItem {
   protected _definition: string;
   protected _numerator: number;
   protected _denominator: number;
+  protected _isNumeratorExplicitlyDefined: boolean = false;
+  protected _isDenominatorExplicitlyDefined: boolean = false;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -40,6 +42,8 @@ export class Constant extends SchemaItem {
   public get definition(): string { return this._definition; }
   public get numerator(): number { return this._numerator; }
   public get denominator(): number { return this._denominator; }
+  public get HasNumerator(): boolean { return this._isNumeratorExplicitlyDefined; }
+  public get HasDenominator(): boolean { return this._isDenominatorExplicitlyDefined; }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
@@ -51,9 +55,10 @@ export class Constant extends SchemaItem {
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon.fullName;
     schemaJson.definition = this.definition;
-    if (this.numerator !== undefined)
+    if (this.HasNumerator)
       schemaJson.numerator = this.numerator;
-    schemaJson.denominator = this.denominator;
+    if (this.HasDenominator)
+      schemaJson.denominator = this.denominator;
     return schemaJson as ConstantProps;
   }
 
@@ -61,9 +66,9 @@ export class Constant extends SchemaItem {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("definition", this.definition);
-    if (undefined !== this.numerator)
+    if (this.HasNumerator)
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (undefined !== this.denominator)
+    if (this.HasDenominator)
       itemElement.setAttribute("denominator", this.denominator.toString());
 
     const phenomenon = await this.phenomenon;
@@ -95,11 +100,13 @@ export class Constant extends SchemaItem {
       this._definition = constantProps.definition;
 
     if (undefined !== constantProps.numerator) {
+      this._isNumeratorExplicitlyDefined = true;
       if (constantProps.numerator !== this._numerator)
         this._numerator = constantProps.numerator;
     }
 
     if (undefined !== constantProps.denominator) {
+      this._isDenominatorExplicitlyDefined = true;
       if (constantProps.denominator !== this._denominator)
         this._denominator = constantProps.denominator;
     }
