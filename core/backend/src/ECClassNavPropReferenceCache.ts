@@ -23,7 +23,9 @@ export class SchemaNotInCacheErr extends Error {
 /** @internal */
 export type EntityRefType = "m" | "e" | "a" | "r";
 
-/** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
+/**
+ * A cache of the entity type referenced by navprops in ec schemas.
+ * The transformer needs the referenced type to determine how to resolve references.
  * @internal
  */
 export class ECClassNavPropReferenceCache {

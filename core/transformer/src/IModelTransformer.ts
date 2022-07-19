@@ -355,7 +355,7 @@ export class IModelTransformer extends IModelExportHandler {
       /* eslint-enable deprecation/deprecation */
     }
     this.targetDb = this.importer.targetDb;
-    // initialize the IModelCloneContext
+    // create the IModelCloneContext, it must be initialized later
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
 
@@ -487,9 +487,8 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
-   * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
-   * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
-   *       You must await the returned promise as well in this case. The synchronous behavior has not changed but is deprecated and won't process everything.
+   * @note This method is called from all `process*` functions and should never need to be called directly
+   * @deprecated call [[initialize]] instead, it does the same thing among other initialization
    */
   public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
   /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
@@ -690,17 +689,11 @@ export class IModelTransformer extends IModelExportHandler {
     const missingReferences = new Set<string>();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
-<<<<<<< HEAD
-    for (const referenceId of entity.getReferenceIds()) {
-      const referenceState = ElementProcessState.fromElementAndTransformer(referenceId, this);
+    for (const referenceId of entity.getReferenceConcreteIds()) {
+      const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
       if (!referenceState.needsImport)
         continue;
 
-=======
-    for (const referenceId of entity.getReferenceConcreteIds()) {
-      const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
-      if (!referenceState.needsImport) continue;
->>>>>>> 3259296621 (starting to use concrete entity id in transformer, add more utils)
       Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
       const exists = EntityUnifier.exists(this.sourceDb, { id: referenceId });
       if (!exists) {
@@ -748,6 +741,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processElement(sourceElementId: Id64String): Promise<void> {
+    await this.initialize();
     if (sourceElementId === IModel.rootSubjectId) {
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported");
     }
@@ -759,6 +753,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processChildElements(sourceElementId: Id64String): Promise<void> {
+    await this.initialize();
     return this.exporter.exportChildElements(sourceElementId);
   }
 
@@ -803,16 +798,10 @@ export class IModelTransformer extends IModelExportHandler {
     if (unresolvedReferencesProcessStates.length > 0) {
       for (const processState of unresolvedReferencesProcessStates) {
         // must export element first if not done so
-<<<<<<< HEAD
-        if (processState.needsElemImport)
-          await this.exporter.exportElement(processState.elementId);
-
-        if (processState.needsModelImport)
-          await this.exporter.exportModel(processState.elementId);
-=======
-        if (processState.needsSelfImport) await this.exporter.exportElement(processState.id);
-        if (processState.needsSubModelImport) await this.exporter.exportModel(processState.id);
->>>>>>> 3259296621 (starting to use concrete entity id in transformer, add more utils)
+        if (processState.needsSelfImport)
+          await this.exporter.exportElement(processState.id);
+        if (processState.needsSubModelImport)
+          await this.exporter.exportModel(processState.id);
       }
     }
   }
@@ -931,6 +920,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processModel(sourceModeledElementId: Id64String): Promise<void> {
+    await this.initialize();
     return this.exporter.exportModel(sourceModeledElementId);
   }
 
@@ -941,6 +931,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): Promise<void> {
+    await this.initialize();
     this.targetDb.models.getModel(targetModelId); // throws if Model does not exist
     this.context.remapElement(sourceModelId, targetModelId); // set remapping in case importModelContents is called directly
     return this.exporter.exportModelContents(sourceModelId, elementClassFullName);
@@ -948,6 +939,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Cause all sub-models that recursively descend from the specified Subject to be exported from the source iModel and imported into the target iModel. */
   private async processSubjectSubModels(sourceSubjectId: Id64String): Promise<void> {
+    await this.initialize();
     // import DefinitionModels first
     const childDefinitionPartitionSql = `SELECT ECInstanceId FROM ${DefinitionPartition.classFullName} WHERE Parent.Id=:subjectId`;
     await this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, async (statement: ECSqlStatement) => {
@@ -1020,6 +1012,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processRelationships(baseRelClassFullName: string): Promise<void> {
+    await this.initialize();
     return this.exporter.exportRelationships(baseRelClassFullName);
   }
 
@@ -1123,10 +1116,20 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
     const targetAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
+    this.collectUnmappedReferences(sourceAspect);
     const targetId = this.importer.importElementUniqueAspect(targetAspectProps);
     this.context.remapElementAspect(sourceAspect.id, targetId);
+    this.resolvePendingReferences(sourceAspect);
   }
 
+  // TODO: ideally we'd match the behavior of the element export which:
+  // 1. tries to find a remapping, transforms the props
+  // 2. if the element hasn't changed (LastMod), we're done
+  // 3. otherwise collect unmapped references in its ec data
+  // 4. import the element (the id must have been found, by code or remap if it's an update)
+  // 5. create a remapping now that it's imported
+  // 6. resolve any pending references now that it's imported
+  // 7. add provenance
   /** Override of [IModelExportHandler.onExportElementMultiAspects]($transformer) that imports ElementMultiAspects into the target iModel when they are exported from the source iModel.
    * This override calls [[onTransformElementAspect]] for each ElementMultiAspect and then [IModelImporter.importElementMultiAspects]($transformer) to update the target iModel.
    * @note ElementMultiAspects are handled as a group to make it easier to differentiate between insert, update, and delete.
@@ -1134,28 +1137,13 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspects[0].element.id);
     // Transform source ElementMultiAspects into target ElementAspectProps
-    const targetAspectPropsArray = sourceAspects.map((sourceAspect) =>
-      this.onTransformElementAspect(sourceAspect, targetElementId)
-    );
-    // TODO: ideally we'd match the behavior of the element export which:
-    // 1. tries to find a remapping, transforms the props
-    // 2. if the element hasn't changed (LastMod), we're done
-    // 3. otherwise collect unmapped references in its ec data
-    // 4. import the element (the id must have been found, by code or remap) if it's an update
-    // 5. create a remapping now that it's imported
-    // 6. resolve any pending references now that it's imported
-    // 7. add provenance
+    const targetAspectPropsArray = sourceAspects.map((srcA) => this.onTransformElementAspect(srcA, targetElementId));
     sourceAspects.forEach((a) => this.collectUnmappedReferences(a));
-
     // const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
     const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
       const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
-      return (
-        !this._options.includeSourceProvenance ||
-        !isExternalSourceAspectFromTransformer
-      );
+      return !this._options.includeSourceProvenance || !isExternalSourceAspectFromTransformer;
     });
-
     for (let i = 0; i < targetIds.length; ++i) {
       this.context.remapElementAspect(sourceAspects[i].id, targetIds[i]);
       this.resolvePendingReferences(sourceAspects[i]);
@@ -1197,6 +1185,7 @@ export class IModelTransformer extends IModelExportHandler {
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
   public async processSchemas(): Promise<void> {
+    // we do not need to initialize for this since no entities are exported
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
@@ -1214,6 +1203,8 @@ export class IModelTransformer extends IModelExportHandler {
  * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
  */
   public async processFonts(): Promise<void> {
+    // we do not need to initialize for this since no entities are exported
+    await this.initialize();
     return this.exporter.exportFonts();
   }
 
@@ -1226,6 +1217,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processCodeSpecs(): Promise<void> {
+    await this.initialize();
     return this.exporter.exportCodeSpecs();
   }
 
@@ -1233,6 +1225,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public async processCodeSpec(codeSpecName: string): Promise<void> {
+    await this.initialize();
     return this.exporter.exportCodeSpecByName(codeSpecName);
   }
 
@@ -1248,12 +1241,31 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Recursively import all Elements and sub-Models that descend from the specified Subject */
   public async processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void> {
+    await this.initialize();
     this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
     this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
     return this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
+  }
+
+  /** state to prevent reinitialization, @see [[initialize]] */
+  private _initialized = false;
+
+  /**
+   * Initialize prerequisites of processing.
+   * Called by all `process*` functions implicitly.
+   * Overriders must call `super.initialize()` first
+   */
+  protected async initialize() {
+    // ^^ or just deprecate (externally) initFromExternalSourceAspects and suggest people use initialize instead
+    if (this._initialized) return;
+
+    await this.context.initialize();
+    // eslint-disable-next-line deprecation/deprecation
+    this.initFromExternalSourceAspects();
+    this._initialized = true;
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
@@ -1263,7 +1275,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processAll()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initFromExternalSourceAspects();
+    await this.initialize();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
@@ -1499,7 +1511,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initFromExternalSourceAspects({accessToken, startChangesetId});
+    await this.initialize();
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 

@@ -14,6 +14,8 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
+import { ECClassNavPropReferenceCache } from "./ECClassNavPropReferenceCache";
+import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -25,6 +27,8 @@ export class IModelCloneContext {
   public readonly targetDb: IModelDb;
   /** The native import context */
   private _nativeContext: IModelJsNative.ImportContext;
+  /** the cache of types referenced by navigation properties */
+  private _navPropRefCache: ECClassNavPropReferenceCache = new ECClassNavPropReferenceCache();
 
   /** Construct a new IModelCloneContext.
    * @param sourceDb The source IModelDb.
@@ -34,6 +38,21 @@ export class IModelCloneContext {
     this.sourceDb = sourceDb;
     this.targetDb = (undefined !== targetDb) ? targetDb : sourceDb;
     this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
+  }
+
+  public async initialize() {
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    await this.sourceDb.withPreparedStatement("SELECT Name FROM ECDbMeta.ECSchemaDef", async (stmt) => {
+      const schemaName = stmt.getValue(0).getString();
+      const schema = schemaLoader.getSchema(schemaName);
+      await this._navPropRefCache.initSchema(schema);
+    });
+  }
+
+  public async create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext> {
+    const instance = new IModelCloneContext(...args);
+    await instance.initialize();
+    return instance;
   }
 
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */
@@ -186,10 +205,18 @@ export class IModelCloneContext {
       if (propertyMetaData.isNavigation) {
         const navProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (navProp?.id) {
-          // TODO: need to get whether the relationship points to an element or aspect
-          propertyMetaData.relationshipClass;
-          const navPropRelClass = (sourceElementAspect.iModel.getJsClass(navProp.relClassName) );
-          navProp.id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
+          const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
+          switch (navPropRefType) {
+            case "e":
+            case "m":
+              navProp.id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
+              break;
+            case "a":
+              navProp.id = this.findTargetAspectId(sourceElementAspect.asAny[propertyName].id);
+              break;
+            case "r":
+              break;
+          }
         }
       } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.findTargetElementId(sourceElementAspect.asAny[propertyName]);
