@@ -9,8 +9,9 @@
 import "./FloatingTab.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { Icon } from "@itwin/core-react";
 import { isPanelTarget, isTabTarget, isWidgetTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
-import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
+import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, ShowWidgetIconContext, TabsStateContext } from "../base/NineZone";
 import { getWidgetPanelSectionId, TabTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";
 
@@ -22,6 +23,7 @@ export function FloatingTab() {
   const tabs = React.useContext(TabsStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = draggedTab?.tabId;
+  const tab = id ? tabs[id] : undefined;
   const onDrag = React.useCallback<NonNullable<UseDragTabArgs["onDrag"]>>((dragBy) => {
     id && dispatch({
       type: "WIDGET_TAB_DRAG",
@@ -64,6 +66,7 @@ export function FloatingTab() {
     onDrag,
     onDragEnd,
   });
+  const showWidgetIcon = React.useContext(ShowWidgetIconContext);
   const style = draggedTab && CssProperties.transformFromPosition(draggedTab.position);
   const className = classnames(
     "nz-widget-floatingTab",
@@ -74,7 +77,8 @@ export function FloatingTab() {
       className={className}
       style={style}
     >
-      <span>{id && tabs[id].label}</span>
+      {showWidgetIcon && tab?.iconSpec && <Icon iconSpec={tab.iconSpec} />}
+      <span>{tab && tab.label}</span>
     </div>
   );
 }
