@@ -50,8 +50,6 @@ export class ECClassNavPropReferenceCache {
       return;
     }
 
-    this._initedSchemas.add(schema.name);
-
     const classMap = new Map<string, Map<string, EntityRefType>>();
     this._propQualifierToRefType.set(schema.name, classMap);
 
@@ -90,6 +88,8 @@ export class ECClassNavPropReferenceCache {
         propMap.set(prop.name, refType);
       }
     }
+
+    this._initedSchemas.add(schema.name);
   }
 
   public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | EntityRefType {
