@@ -58,11 +58,11 @@ describe("MenuTab", () => {
     container.getElementsByClassName("nz-widget-menuTab").length.should.eq(1);
   });
 
-  it("should render with badge and icon", () => {
+  it("should render with badge and icon", async () => {
     let state = createNineZoneState();
     state = addPanelWidget(state, "top", "w1", ["t1"]);
     state = addTab(state, "t1", { iconSpec: <div>icon</div> });
-    const { container } = render(
+    const { findByText } = render(
       <ShowWidgetIconContext.Provider value={true}>
         <WidgetMenuTab badge={<div>badge</div>} />
       </ShowWidgetIconContext.Provider>,
@@ -75,8 +75,8 @@ describe("MenuTab", () => {
         />,
       }
     );
-    container.getElementsByClassName("nz-badge").length.should.eq(1);
-    container.getElementsByClassName("nz-icon").length.should.eq(1);
+    await findByText("icon");
+    await findByText("badge");
   });
 
   it("should close overflow menu", () => {
