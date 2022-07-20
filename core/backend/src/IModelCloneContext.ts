@@ -14,7 +14,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
-import { ECClassNavPropReferenceCache, EntityRefType } from "./ECClassNavPropReferenceCache";
+import { ECClassNavPropReferenceCache, EntityRefType, nameForEntityRefType } from "./ECClassNavPropReferenceCache";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
@@ -217,8 +217,8 @@ export class IModelCloneContext {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
           const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
-          // TODO: get a name for this 'enum' value
-          const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${navPropRefType}', this is a bug.`); };
+          // this must be called after we check if it was undefined so we can use the non-null assertion safely.
+          const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${nameForEntityRefType(navPropRefType!)}', this is a bug.`); };
           const throwOnNotInCache = () => { throw Error(`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`); };
           const targetEntityId
             = navPropRefType === EntityRefType.Element || navPropRefType === EntityRefType.Model

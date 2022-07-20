@@ -37,7 +37,7 @@ const nameForEntityRefTypeMap = {
   [EntityRefType.CodeSpec]: "CodeSpec",
 } as const;
 
-function nameForEntityRefType(entityRefType: EntityRefType) {
+export function nameForEntityRefType(entityRefType: EntityRefType) {
   return nameForEntityRefTypeMap[entityRefType];
 }
 
@@ -78,7 +78,8 @@ export class ECClassNavPropReferenceCache {
       for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
-        const constraints = (relClass.strengthDirection === StrengthDirection.Forward ? relClass.source : relClass.target).constraintClasses;
+        // for nav props no need to check relClass.strengthDirection, it always points to the source class
+        const constraints = relClass.source.constraintClasses;
         assert(constraints !== undefined);
         const constraint = await constraints[0];
         let bisRootForConstraint: ECClass = constraint;
