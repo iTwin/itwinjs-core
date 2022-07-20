@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { ECClass, Schema } from "@itwin/ecschema-metadata";
+import { ECClass, Mixin, Schema } from "@itwin/ecschema-metadata";
 import assert = require("assert");
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
@@ -37,8 +37,7 @@ export class ECClassNavPropReferenceCache {
     /* eslint-disable quote-props, @typescript-eslint/naming-convention */
     "Element": "e",
     "Model": "m",
-    "ElementUniqueAspect": "a",
-    "ElementMultiAspect": "a",
+    "ElementAspect": "a",
     "ElementRefersToElements": "r",
     "ElementDrivesElement": "r",
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
@@ -58,18 +57,16 @@ export class ECClassNavPropReferenceCache {
       classMap.set(ecclass.name, propMap);
 
       for (const prop of ecclass.properties ?? []) {
-        if (!prop.isNavigation()) return;
+        if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
         const constraints = relClass.target.constraintClasses;
         assert(constraints !== undefined);
         const constraint = await constraints[0];
         let bisRootForConstraint: ECClass = constraint;
         await constraint.traverseBaseClasses((baseClass) => {
-          // All entity classes must inherit from a BisCore class, and no BisCore classes have only mixin bases (there is a test for that),
-          // so we skip pruning mixins hierarchies since the (depth-first) traversal's first traversed path to a root
-          // will therefore never have mixins. Once we see that we've switched from the first root path in the depth-first search
-          // by moving laterally through the hierarchy rather than just up to the next base class, we can terminate early
-          // FIXME: test the assumption that no root paths have mixins
+          // The depth first traversal will descend all the way to the root class before making any lateral traversal
+          // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarch)
+          // Once we see that we've moved laterally, we can terminate early
           const isFirstTest = bisRootForConstraint === constraint;
           const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
           const stillTraversingRootPath = isFirstTest || !traversalSwitchedRootPath;
@@ -78,6 +75,11 @@ export class ECClassNavPropReferenceCache {
           bisRootForConstraint = baseClass;
           return false;
         });
+        // if the root class of the constraint was a mixin, use its AppliesToEntityClass
+        if (bisRootForConstraint instanceof Mixin) {
+          assert(bisRootForConstraint.appliesTo !== undefined, "The referenced AppliesToEntityClass could not be found, how did it pass schema validation?");
+          bisRootForConstraint = await bisRootForConstraint.appliesTo;
+        }
         const refType = ECClassNavPropReferenceCache.bisRootClassToRefType[bisRootForConstraint.name];
         // FIXME: write a test on this assumption by iterating through biscore schema metadata and ensuring all classes have one of
         // the above bases
