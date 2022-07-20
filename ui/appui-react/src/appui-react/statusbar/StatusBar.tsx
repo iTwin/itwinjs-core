@@ -117,7 +117,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this._updateMessages();
     const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !this.messages.find((m) => m.id === msg.id));
     messagesToAdd.forEach((msg) => {
-      const displayedMessage = MessageManager.displayMessage(msg.messageDetails);
+      const displayedMessage = MessageManager.displayMessage(msg.messageDetails, { onRemove: () => this._closeMessage(msg.id) });
       if(!!displayedMessage)
         this.messages.push({close: displayedMessage.close, id: msg.id});
     });
@@ -176,6 +176,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this.setState({
       openWidget,
     });
+  };
+
+  private _closeMessage = (id: string) => {
+    MessageManager.activeMessageManager.remove(id);
+    MessageManager.updateMessages();
   };
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {

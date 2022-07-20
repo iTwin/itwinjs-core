@@ -62,7 +62,7 @@ export function StatusMessageRenderer({
       messagesToAdd.forEach((msg) => {
         const displayedMessage = MessageManager.displayMessage(
           message,
-          { onRemove: () => closeMessage?.(msg.id) },
+          { onRemove: () => onRemove(msg.id) },
           { placement: "top", order: "descending" }
         );
         if(!!displayedMessage)
@@ -94,6 +94,12 @@ export function StatusMessageRenderer({
 
     return MessageManager.onActivityMessageCancelledEvent.addListener(handleActivityMessageCancelledEvent);
   }, []);
+
+  const onRemove = React.useCallback((id: string) => {
+    MessageManager.activeMessageManager.remove(id);
+    MessageManager.updateMessages();
+    closeMessage?.(id);
+  }, [closeMessage]);
 
   const cancelActivityMessage = React.useCallback(() => {
     MessageManager.endActivityMessage(false);
