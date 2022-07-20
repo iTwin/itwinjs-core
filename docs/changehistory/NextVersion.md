@@ -13,6 +13,7 @@ Table of contents:
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
   - [Tool Settings title](tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
+- [IModelHostOptions](#imodelhostoptions)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -70,6 +71,10 @@ By default, when the Tool Settings widget is floating, the title will read "Tool
 ## ElectronApp changes
 
 Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
+
+## IModelHostOptions
+
+The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
 
 ## Deprecations
 

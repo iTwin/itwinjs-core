@@ -757,7 +757,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (!Range3d.isNull(other) && !Range3d.isNull (this)) {
       this.high.x += RangeBase.multiplyIfPositive (this.high.x -other.high.x, extrapolationFactor);
       this.high.y += RangeBase.multiplyIfPositive (this.high.y - other.high.y, extrapolationFactor);
-      this.high.z = RangeBase.multiplyIfPositive (this.high.z - other.high.z, extrapolationFactor);
+      this.high.z += RangeBase.multiplyIfPositive (this.high.z - other.high.z, extrapolationFactor);
       this.low.x -= RangeBase.multiplyIfPositive (other.low.x - this.low.x, extrapolationFactor);
       this.low.y -= RangeBase.multiplyIfPositive (other.low.y - this.low.y, extrapolationFactor);
       this.low.z -= RangeBase.multiplyIfPositive (other.low.z - this.low.z, extrapolationFactor);
