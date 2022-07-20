@@ -213,20 +213,22 @@ export class IModelCloneContext {
     targetElementAspectProps.id = undefined;
     sourceElementAspect.forEachProperty((propertyName, propertyMetaData) => {
       if (propertyMetaData.isNavigation) {
-        const navProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
-        if (navProp?.id) {
+        // copy via spread to prevent altering the source
+        const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
+        if (sourceNavProp?.id) {
           const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
-          switch (navPropRefType) {
-            case "e":
-            case "m":
-              navProp.id = this.findTargetElementId(sourceElementAspect.asAny[propertyName].id);
-              break;
-            case "a":
-              navProp.id = this.findTargetAspectId(sourceElementAspect.asAny[propertyName].id);
-              break;
-            case "r":
-              break;
-          }
+          // TODO: get a name for this enum value
+          const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${navPropRefType}', this is a bug.`); };
+          const throwOnNotInCache = () => { throw Error(`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`); };
+          const targetEntityId
+            = navPropRefType === "e" || navPropRefType === "m"
+              ? this.findTargetElementId(sourceNavProp.id)
+            : navPropRefType === "a"
+              ? this.findTargetAspectId(sourceNavProp.id)
+            : navPropRefType === undefined
+              ? throwOnNotInCache()
+            : throwOnUnhandled();
+          (targetElementAspectProps as any)[propertyName].id = targetEntityId;
         }
       } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.findTargetElementId(sourceElementAspect.asAny[propertyName]);
