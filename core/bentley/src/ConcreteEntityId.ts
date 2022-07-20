@@ -8,20 +8,31 @@
 
 import { Id64String } from "./Id";
 
+
+/**
+ * Types of concrete entities. Used for storing strings in JavaScript reference-equality containers which encode
+ * low-level entity information.
+ * @note the values of this enum are unstable, do not depend upon their values between versions of iTwin.js
+ *       (e.g. do not serialize them and load them in another version of iTwin.js and expect them to work)
+ * // FIXME implement this test
+ * @note the string value of each variant is required/guaranteed to be 1 character, this is confirmed in tests
+ * @see ConcreteEntityId
+ * @alpha
+ */
+export enum ConcreteEntityTypes {
+  Model = "m",
+  Element = "e",
+  ElementAspect = "a",
+  Relationship = "r",
+  CodeSpec = "c",
+}
+
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
  * @public
  */
-export type ConcreteEntityId =
-  /* a model instance, should have an accompanying element */
-  | `m${Id64String}`
-  /* an element instance, because models must be submodeling an element, they count as elements currently */
-  | `e${Id64String}`
-  /* an aspect instance */
-  | `a${Id64String}`
-  /** a relationship entity, so a link table relationship instance */
-  | `r${Id64String}`;
+export type ConcreteEntityId = `${ConcreteEntityTypes}${Id64String}`;
 
 /** Utility functions for ConcreteEntityId which is a subset of string
  * @public
@@ -29,21 +40,21 @@ export type ConcreteEntityId =
 export class ConcreteEntityIds {
   // for additional utilities that require runtime backend classes, see ConcreteEntityIds in `@itwin/core-backend`
   public static isModel(id: ConcreteEntityId) {
-    return id[0] === "m";
+    return id[0] === ConcreteEntityTypes.Model;
   }
   public static isElement(id: ConcreteEntityId) {
-    return id[0] === "e";
+    return id[0] === ConcreteEntityTypes.Element;
   }
-  public static isAspect(id: ConcreteEntityId) {
-    return id[0] === "a";
+  public static isElementAspect(id: ConcreteEntityId) {
+    return id[0] === ConcreteEntityTypes.ElementAspect;
   }
-  /**  */
   public static isRelationship(id: ConcreteEntityId) {
-    return id[0] === "r";
+    return id[0] === ConcreteEntityTypes.Relationship;
+  }
+  public static isCodeSpec(id: ConcreteEntityId) {
+    return id[0] === ConcreteEntityTypes.CodeSpec;
   }
   public static toId64(id: ConcreteEntityId) {
-    // FIXME: write a test looping through the enum values (turn m|e|a|r into an enum) and making sure they
-    // are each 1 character
     return id.slice(1);
   }
 }
