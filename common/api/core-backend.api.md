@@ -2623,6 +2623,8 @@ export interface IModelHostOptions {
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @beta
+    enableOpenTelemetry?: boolean;
+    // @beta
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -2638,8 +2640,6 @@ export interface IModelHostOptions {
     tileContentRequestTimeout?: number;
     // @internal
     tileTreeRequestTimeout?: number;
-    // @beta
-    enableOpenTelemetry?: boolean;
     // @beta
     workspace?: WorkspaceOpts;
 }
