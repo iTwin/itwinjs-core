@@ -205,17 +205,13 @@ export class AnalysisStyleDisplacement {
 
 // @public
 export interface AnalysisStyleDisplacementProps {
-    // (undocumented)
     channelName: string;
-    // (undocumented)
     scale?: number;
 }
 
 // @public
 export interface AnalysisStyleProps {
-    // (undocumented)
     displacement?: AnalysisStyleDisplacementProps;
-    // (undocumented)
     normalChannelName?: string;
     scalar?: AnalysisStyleThematicProps;
 }
@@ -233,11 +229,8 @@ export class AnalysisStyleThematic {
 
 // @public
 export interface AnalysisStyleThematicProps {
-    // (undocumented)
     channelName: string;
-    // (undocumented)
     range: Range1dProps;
-    // (undocumented)
     thematicSettings?: ThematicGradientSettingsProps;
 }
 
@@ -409,9 +402,7 @@ export interface BackgroundMapProps {
     nonLocatable?: boolean;
     // @beta
     planarClipMask?: PlanarClipMaskProps;
-    // (undocumented)
     providerData?: never;
-    // (undocumented)
     providerName?: never;
     terrainSettings?: TerrainProps;
     transparency?: number | false;
@@ -531,9 +522,7 @@ export interface BaseReaderOptions {
 
 // @public
 export interface BasicPlanarClipMaskArgs {
-    // (undocumented)
     invert?: boolean;
-    // (undocumented)
     transparency?: number;
 }
 
@@ -1642,19 +1631,15 @@ export class ContextRealityModel {
 
 // @public
 export interface ContextRealityModelProps {
-    // (undocumented)
     appearanceOverrides?: FeatureAppearanceProps;
-    // (undocumented)
     classifiers?: SpatialClassifierProps[];
     description?: string;
     name?: string;
-    // @alpha (undocumented)
+    // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
-    // (undocumented)
     planarClipMask?: PlanarClipMaskProps;
-    // @beta (undocumented)
+    // @beta
     rdSourceKey?: RealityDataSourceKey;
-    // (undocumented)
     realityDataId?: string;
     tilesetUrl: string;
 }
@@ -2024,15 +2009,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-    // (undocumented)
     ao?: AmbientOcclusion.Props;
-    // (undocumented)
     environment?: EnvironmentProps;
-    // (undocumented)
     hline?: HiddenLine.SettingsProps;
-    // (undocumented)
     lights?: LightSettingsProps;
-    // (undocumented)
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
@@ -2040,9 +2020,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     sceneLights?: {
         sunDir?: XYZProps;
     };
-    // (undocumented)
     solarShadows?: SolarShadowSettingsProps;
-    // (undocumented)
     thematic?: ThematicDisplayProps;
 }
 
@@ -2176,38 +2154,24 @@ export interface DisplayStyleSettingsOptions {
 
 // @public
 export interface DisplayStyleSettingsProps {
-    // (undocumented)
     analysisFraction?: number;
-    // (undocumented)
     analysisStyle?: AnalysisStyleProps;
-    // (undocumented)
     backgroundColor?: ColorDefProps;
-    // (undocumented)
     backgroundMap?: PersistentBackgroundMapProps;
-    // (undocumented)
     clipStyle?: ClipStyleProps;
-    // (undocumented)
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
-    // @beta (undocumented)
+    // @beta
     mapImagery?: MapImageryProps;
     modelOvr?: DisplayStyleModelAppearanceProps[];
-    // (undocumented)
     monochromeColor?: ColorDefProps;
-    // (undocumented)
     monochromeMode?: MonochromeMode;
-    // (undocumented)
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-    // (undocumented)
     renderTimeline?: Id64String;
-    // (undocumented)
     scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
-    // (undocumented)
     timePoint?: number;
-    // (undocumented)
     viewflags?: ViewFlagProps;
-    // (undocumented)
     whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
@@ -2676,21 +2640,13 @@ export interface ElementProps extends EntityProps {
 
 // @public
 export interface EmphasizeElementsProps {
-    // (undocumented)
     alwaysDrawn?: Id64Array;
-    // (undocumented)
     alwaysDrawnExclusiveEmphasized?: Id64Array;
-    // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
-    // (undocumented)
     defaultAppearance?: FeatureAppearanceProps;
-    // (undocumented)
     isAlwaysDrawnExclusive?: boolean;
-    // (undocumented)
     neverDrawn?: Id64Array;
-    // (undocumented)
     unanimatedAppearance?: FeatureAppearanceProps;
-    // (undocumented)
     wantEmphasis?: boolean;
 }
 
@@ -2805,9 +2761,7 @@ export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
 
 // @public
 export interface EnvironmentProps {
-    // (undocumented)
     ground?: GroundPlaneProps;
-    // (undocumented)
     sky?: SkyBoxProps;
 }
 
@@ -2925,21 +2879,13 @@ export class FeatureAppearance {
 
 // @public
 export interface FeatureAppearanceProps {
-    // (undocumented)
     emphasized?: true;
-    // (undocumented)
     ignoresMaterial?: true;
-    // (undocumented)
     linePixels?: LinePixels;
-    // (undocumented)
     nonLocatable?: true;
-    // (undocumented)
     rgb?: RgbColorProps;
-    // (undocumented)
     transparency?: number;
-    // (undocumented)
     viewDependentTransparency?: true;
-    // (undocumented)
     weight?: number;
 }
 
@@ -3215,9 +3161,7 @@ export class FresnelSettings {
 
 // @public
 export interface FresnelSettingsProps {
-    // (undocumented)
     intensity?: number;
-    // (undocumented)
     invert?: boolean;
 }
 
@@ -4038,11 +3982,8 @@ export namespace HiddenLine {
         readonly visible: Style;
     }
     export interface SettingsProps {
-        // (undocumented)
         hidden?: StyleProps;
-        // (undocumented)
         transThreshold?: number;
-        // (undocumented)
         visible?: StyleProps;
     }
     export class Style {
@@ -5047,9 +4988,7 @@ export class LightSettings {
     static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
     readonly hemisphere: HemisphereLights;
-    // (undocumented)
     readonly numCels: number;
-    // (undocumented)
     readonly portraitIntensity: number;
     // (undocumented)
     readonly solar: SolarLight;
@@ -5515,7 +5454,6 @@ export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     elementIds?: never;
     // @internal (undocumented)
     exclude?: never;
-    // (undocumented)
     modelIds?: Iterable<Id64String>;
     // @internal (undocumented)
     priority?: never;
@@ -6104,16 +6042,11 @@ export enum PlanarClipMaskPriority {
 
 // @public
 export interface PlanarClipMaskProps {
-    // (undocumented)
     invert?: boolean;
     mode: PlanarClipMaskMode;
-    // (undocumented)
     modelIds?: CompressedId64Set;
-    // (undocumented)
     priority?: number;
-    // (undocumented)
     subCategoryOrElementIds?: CompressedId64Set;
-    // (undocumented)
     transparency?: number;
 }
 
@@ -6141,17 +6074,13 @@ export class PlanProjectionSettings {
     // @internal
     constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
-    // (undocumented)
     readonly elevation?: number;
-    // (undocumented)
     readonly enforceDisplayPriority?: boolean;
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
-    // (undocumented)
     readonly overlay: boolean;
     // (undocumented)
     toJSON(): PlanProjectionSettingsProps;
-    // (undocumented)
     readonly transparency?: number;
 }
 
@@ -6324,7 +6253,6 @@ export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     exclude?: never;
     // @internal (undocumented)
     modelIds?: never;
-    // (undocumented)
     priority: number;
 }
 
@@ -8542,11 +8470,8 @@ export class SpatialClassifierFlags {
 
 // @public
 export interface SpatialClassifierFlagsProps {
-    // (undocumented)
     inside: SpatialClassifierInsideDisplay;
-    // (undocumented)
     isVolumeClassifier?: boolean;
-    // (undocumented)
     outside: SpatialClassifierOutsideDisplay;
 }
 
@@ -8568,14 +8493,10 @@ export enum SpatialClassifierOutsideDisplay {
 
 // @public
 export interface SpatialClassifierProps {
-    // (undocumented)
     expand: number;
-    // (undocumented)
     flags: SpatialClassifierFlagsProps;
     isActive?: boolean;
-    // (undocumented)
     modelId: Id64String;
-    // (undocumented)
     name: string;
 }
 
@@ -8647,7 +8568,6 @@ export class SubCategoryAppearance {
 // @public (undocumented)
 export namespace SubCategoryAppearance {
     export interface Props {
-        // (undocumented)
         color?: ColorDefProps;
         // @internal (undocumented)
         dontLocate?: boolean;
@@ -8655,21 +8575,13 @@ export namespace SubCategoryAppearance {
         dontPlot?: boolean;
         // @internal (undocumented)
         dontSnap?: boolean;
-        // (undocumented)
         fill?: ColorDefProps;
-        // (undocumented)
         invisible?: boolean;
-        // (undocumented)
         material?: Id64String;
-        // (undocumented)
         priority?: number;
-        // (undocumented)
         style?: Id64String;
-        // (undocumented)
         transp?: number;
-        // (undocumented)
         transpFill?: number;
-        // (undocumented)
         weight?: number;
     }
 }
@@ -8677,25 +8589,19 @@ export namespace SubCategoryAppearance {
 // @public
 export class SubCategoryOverride {
     get anyOverridden(): boolean;
-    // (undocumented)
     readonly color?: ColorDef;
     static defaults: SubCategoryOverride;
     equals(other: SubCategoryOverride): boolean;
     static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride;
-    // (undocumented)
     readonly invisible?: boolean;
-    // (undocumented)
     readonly material?: Id64String;
     override(appearance: SubCategoryAppearance): SubCategoryAppearance;
-    // (undocumented)
     readonly priority?: number;
     // @internal
     readonly style?: Id64String;
     // @internal
     toJSON(): SubCategoryAppearance.Props;
-    // (undocumented)
     readonly transparency?: number;
-    // (undocumented)
     readonly weight?: number;
 }
 
@@ -8705,7 +8611,6 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     elementIds?: never;
     // @internal (undocumented)
     exclude?: never;
-    // (undocumented)
     modelIds?: Iterable<Id64String>;
     // @internal (undocumented)
     priority?: never;
@@ -9618,16 +9523,13 @@ export interface ViewFlagProps {
     grid?: boolean;
     hidEdges?: boolean;
     monochrome?: boolean;
-    // (undocumented)
     noCameraLights?: boolean;
     noConstruct?: boolean;
     noDim?: boolean;
     noFill?: boolean;
     noMaterial?: boolean;
     noPattern?: boolean;
-    // (undocumented)
     noSolarLight?: boolean;
-    // (undocumented)
     noSourceLights?: boolean;
     noStyle?: boolean;
     noTexture?: boolean;

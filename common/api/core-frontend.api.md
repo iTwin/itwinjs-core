@@ -9918,7 +9918,6 @@ export class SpatialModelState extends GeometricModel3dState {
 // @internal
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     [Symbol.iterator](): Iterator<TileTreeReference>;
-    // (undocumented)
     setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
     update(): void;
 }
@@ -13035,7 +13034,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
-    // (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
@@ -13057,9 +13055,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     get backgroundMapGeometry(): BackgroundMapGeometry | undefined;
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // (undocumented)
     changeBackgroundMapProps(props: BackgroundMapProps): void;
-    // (undocumented)
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
@@ -13073,7 +13069,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
-    // (undocumented)
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
@@ -13098,7 +13093,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get devicePixelRatio(): number;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // (undocumented)
     get displayStyle(): DisplayStyleState;
     set displayStyle(style: DisplayStyleState);
     // (undocumented)
@@ -13184,7 +13178,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get isSnapAdjustmentRequired(): boolean;
     isSubCategoryVisible(id: Id64String): boolean;
     get lastFlashedElementId(): Id64String | undefined;
-    // (undocumented)
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
@@ -13263,7 +13256,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     setFeatureOverrideProviderChanged(): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
-    // @internal (undocumented)
+    // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
@@ -13279,7 +13272,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
-    // (undocumented)
     get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
@@ -13291,7 +13283,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get tileSizeModifier(): number;
     // @internal
     get tileUserId(): number;
-    // (undocumented)
     get timePoint(): number | undefined;
     set timePoint(time: number | undefined);
     // @internal (undocumented)
@@ -13343,7 +13334,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & MarginOptions & OnViewExtentsError): ViewStatus;
     zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & MarginOptions & ZoomToOptions): Promise<void>;
-    // (undocumented)
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
     zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions & MarginOptions): void;
@@ -13485,7 +13475,6 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
     abstract allow3dManipulations(): boolean;
-    // (undocumented)
     get analysisStyle(): AnalysisStyle | undefined;
     // @internal (undocumented)
     abstract applyPose(props: ViewPose): this;

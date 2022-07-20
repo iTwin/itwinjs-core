@@ -189,7 +189,6 @@ export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean | {
         excludeOutliers: boolean;
     };
-    // (undocumented)
     preserveElementIdsForFiltering?: boolean;
     simplifyElementGeometry?: boolean;
 }
