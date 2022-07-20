@@ -122,6 +122,12 @@ export interface IModelHostOptions {
    */
   restrictTileUrlsByClientIp?: boolean;
 
+  /**
+   * Whether to enable OpenTelemetry tracing
+   * @beta
+   */
+  useOpenTelemetry?: boolean;
+
   /** Whether to compress cached tiles.
    * Defaults to `true`.
    */
@@ -401,7 +407,7 @@ export class IModelHost {
     this.logStartup();
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-    initializeRpcBackend();
+    initializeRpcBackend(options.useOpenTelemetry);
 
     if (this._platform === undefined) {
       try {
