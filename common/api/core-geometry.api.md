@@ -2191,7 +2191,7 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
 
 // @public
 export class GrowableBlockedArray {
-    constructor(blockSize: number, initialBlocks?: number);
+    constructor(blockSize: number, initialBlocks?: number, growthFactor?: number);
     addBlock(newData: number[]): void;
     blockCapacity(): number;
     protected blockIndexToDoubleIndex(blockIndex: number): number;
@@ -2200,11 +2200,13 @@ export class GrowableBlockedArray {
     clear(): void;
     static compareLexicalBlock(data: Float64Array, blockSize: number, ia: number, ib: number): number;
     component(blockIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array, sourceCount?: number, destOffset?: number): void;
     protected _data: Float64Array;
     distanceBetweenBlocks(blockIndexA: number, blockIndexB: number): number;
     distanceBetweenSubBlocks(blockIndexA: number, blockIndexB: number, iBegin: number, iEnd: number): number;
-    ensureBlockCapacity(blockCapacity: number): void;
+    ensureBlockCapacity(blockCapacity: number, applyGrowthFactor?: boolean): void;
     getWithinBlock(blockIndex: number, indexWithinBlock: number): number;
+    protected _growthFactor: number;
     protected _inUse: number;
     protected newBlockIndex(): number;
     get numBlocks(): number;
