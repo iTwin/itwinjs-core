@@ -397,7 +397,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
@@ -415,7 +415,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
@@ -441,7 +441,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.Metric;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
@@ -458,7 +458,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
@@ -476,7 +476,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
@@ -494,10 +494,10 @@ describe("PresentationManager", () => {
       const manager = new PresentationManager({ addon: addonMock.object });
       const managerUsedSpy = sinon.spy();
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: "[]" }));
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: "{}" }));
 
       manager.setOnManagerUsedHandler(managerUsedSpy);
@@ -599,7 +599,7 @@ describe("PresentationManager", () => {
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -613,7 +613,7 @@ describe("PresentationManager", () => {
     it("doesn't register ruleset if `rulesetOrId` is a string", async () => {
       const rulesetId = faker.random.word();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -638,7 +638,7 @@ describe("PresentationManager", () => {
       };
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
@@ -679,7 +679,7 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       const serialized = JSON.stringify(addonResponse);
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: JSON.stringify(addonResponse) }));
       return JSON.parse(serialized);
     };
@@ -689,7 +689,7 @@ describe("PresentationManager", () => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
-      })), moq.Times.once());
+      }), undefined), moq.Times.once());
     };
     const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
       // verify the addon was called with correct params
@@ -1052,7 +1052,7 @@ describe("PresentationManager", () => {
           prev: {},
           rulesetOrId: "test",
         });
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         expect(result).to.deep.eq({ changes: [] });
       });
 
@@ -1067,7 +1067,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
 
       it("uses manager's `activeLocale` for comparison", async () => {
@@ -2068,7 +2068,7 @@ describe("PresentationManager", () => {
     });
 
     it("throws on invalid addon response", async () => {
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
+      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => (undefined as any));
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
