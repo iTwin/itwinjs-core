@@ -9,8 +9,6 @@ const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 export class ArcGisFeaturePBF  {
 
   public readRenderGraphics(collection: esriPBuffer.FeatureCollectionPBuffer, renderer: ArcGisFeatureRenderer) {
-    const perfoBegin = performance.now();
-
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
@@ -35,6 +33,5 @@ export class ArcGisFeaturePBF  {
         }
       }
     }
-    console.log(`Paint time: ${performance.now() - perfoBegin}`);
   }
 }

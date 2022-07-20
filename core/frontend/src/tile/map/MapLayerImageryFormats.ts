@@ -165,7 +165,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGIS";
   public static override async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(url, credentials, ignoreCache);
+    return ArcGisUtilities.validateSource(url, ["map"], credentials, ignoreCache);
   }
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);
@@ -198,8 +198,11 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
-  public static override formatId = "ArcGisFeature";
+  public static override formatId = "ArcGISFeature";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new ArcGisFeatureProvider(settings); }
+  public static override async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    return ArcGisUtilities.validateSource(url, ["query"], credentials, ignoreCache);
+  }
 }
 
 /** @internal */

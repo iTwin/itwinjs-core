@@ -120,7 +120,7 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, capabilitiesFilter: string[], credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -135,16 +135,17 @@ export class ArcGisUtilities {
         return { status: MapLayerSourceStatus.InvalidCredentials};
     }
 
-    // Check this service support map queries
-    let hasMapCapability = false;
+    // Check this service support the expected queries
+    let hasCapabilities = false;
     try {
-      if (json.capabilities
-        && typeof json.capabilities === "string"
-        && json.capabilities.toLowerCase().includes("map")) {
-        hasMapCapability = true;
+      if (json.capabilities && typeof json.capabilities === "string" ) {
+        const capabilities: string = json.capabilities;
+        const capsArray: string[] = capabilities.split(",").map((entry) => entry.toLowerCase());
+        const filtered = capsArray.filter((element, _index, _array) => capabilitiesFilter.includes(element));
+        hasCapabilities = (filtered.length === capabilitiesFilter.length);
       }
-    } catch { }
-    if (!hasMapCapability) {
+    }catch { }
+    if (!hasCapabilities) {
       return { status: MapLayerSourceStatus.InvalidFormat};
     }
 

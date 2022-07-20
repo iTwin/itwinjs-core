@@ -52,6 +52,7 @@ export * from "./ImdlReader";
 export * from "./map/FeatureCollectionGenerated";
 export * from "./map/ArcGISTileMap";
 export * from "./map/ArcGisFeatureQuery";
+export * from "./map/ArcGisSymbologyRenderer";
 export * from "./map/ArcGisFeatureRenderer";
 export * from "./map/ArcGisFeatureJSON";
 export * from "./map/ArcGisFeaturePBF";

@@ -5,12 +5,11 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { assert, base64StringToUint8Array } from "@itwin/core-bentley";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeatureQuery, ArcGisFeatureRenderer, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
+import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { ArcGisErrorCode, ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeaturePBF, ArcGisFeatureQuery, ArcGisFeatureRenderer, ArcGisSymbologyRenderer, ArcGisUtilities, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
 import { request, RequestOptions, Response } from "../../../request/Request";
-import { ArcGisFeaturePBF } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -20,6 +19,8 @@ const samplePngIcon = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAGXRFWHRTb
 const sampleIconImg = new Image();
 sampleIconImg.src = `data:image/png;base64,${samplePngIcon}`;
 
+const loggerCategory = "ArcGISFeatureProvider";
+
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
 * @internal
 */
@@ -27,14 +28,22 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   private _firstRequest = true;
   private _supportsCoordinatesQuantization = true; // TODO Reader this from the layer capabilities
-  // private _supportsCoordinatesQuantization = false;
+  private _layerId = 0;
+  private _layerInfo: any;
+  public serviceJson: any;
+  private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
+
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
 
   public override async initialize(): Promise<void> {
-    /*
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
+
+    let json;
+    try {
+      json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
+    } catch {
+    }
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
@@ -45,11 +54,69 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         this.onStatusChanged.raiseEvent(this);
       }
     }
+    this.serviceJson = json;
 
-    if (json !== undefined) {
-      // this.serviceJson = json;
+    if (this._settings.subLayers.length >= 0) {
+      for (const layer of this._settings.subLayers) {
+
+        if (layer.visible && typeof layer.id === "number") {
+          this._layerId = layer.id;
+          break;
+        }
+      }
+    } else if (json !== undefined) {
+      // No sublayers were specified on the layerSettings object, lets find a default one in the capabilities
+
+      // Check layer metadata
+      if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
+
+        const hasDefaultVisibility = Object.keys(this.serviceJson.layers[0]).includes("defaultVisibility");
+        if (hasDefaultVisibility) {
+          for (const layer of this.serviceJson.layers) {
+            if (layer.defaultVisibility) {
+              this._layerId = layer.id;
+            }
+          }
+        } else {
+          // On some older servers, the default visiblity is on the layer capabilities (i.e. not the service capabilities)
+          for (const layer of this.serviceJson.layers) {
+            const layerJson = await this.getLayerMetadata(layer.id);
+            if (!layerJson) {
+              continue;
+            }
+
+            if (layerJson.defaultVisibility) {
+              this._layerId = layer.id;
+              this._layerInfo = layerJson;
+              break;
+            }
+          }
+        }
+
+      } else {
+        // There is no layer to publish? Something is off with this server..
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
     }
-*/
+    // Make sure we cache layer info (i.e. rendering info)
+    if (!this._layerInfo) {
+      this._layerInfo = await this.getLayerMetadata(this._layerId);
+    }
+
+    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
+
+  }
+
+  protected  async getLayerMetadata(layerId: number) {
+    let json;
+    try {
+      const url = new URL(this._settings.url);
+      url.pathname = `${url.pathname}/${layerId}`;
+      json = await ArcGisUtilities.getServiceJson(url.toString(), this.getRequestAuthorization());
+    } catch {
+
+    }
+    return json;
   }
 
   public override get tileSize(): number { return 512; }
@@ -138,10 +205,16 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
+      Logger.logError(loggerCategory, "No canvas context available for loading tile.");
       assert(!"no canvas context");
       return undefined;
     }
 
+    if (!this._symbologyRenderer) {
+      Logger.logError(loggerCategory, "No symbology renderer available for loading tile.");
+      assert(!"No symbology renderer");
+      return undefined;
+    }
     try {
 
       // Compute transform if CoordinatesQuantization is not supported by service
@@ -170,7 +243,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         }
       }
 
-      const renderer = new ArcGisFeatureRenderer(ctx, transfo);
+      const renderer = new ArcGisFeatureRenderer(ctx, this._symbologyRenderer, transfo);
       if (this.format === "pbf") {
         const featureReader = new ArcGisFeaturePBF();
         const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
@@ -230,10 +303,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       }
       this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      console.log(`error occurred, ${e}`);
+      Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}.`);
     }
-
-    let error = 0;
 
     try {
       const dataUrl =  canvas.toDataURL("image/png");
@@ -241,12 +312,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       const dataUrl2 = dataUrl.substring(header.length);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
-      error = 1;
-      console.log(`error occurred, ${e}`);
+      Logger.logError(loggerCategory, `Exception occured while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
     }
-    if (error)
-      // eslint-disable-next-line no-console
-      console.log("error occurred");
 
     return undefined;
 
