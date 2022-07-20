@@ -5086,7 +5086,7 @@ describe("Schema comparison tests", () => {
   });
 
   describe("Constant delta tests", () => {
-    it.only("No Schema B Constant, all diagnostics reported", async () => {
+    it("No Schema B Constant, all diagnostics reported", async () => {
       const aItems = {
         ConstantA: {
           schemaItemType: "Constant",
