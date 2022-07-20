@@ -28,31 +28,22 @@ export class Unit extends SchemaItem {
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
-  protected _numerator: number;
-  protected _denominator: number;
-  protected _offset: number;
-  protected _isNumeratorExplicitlyDefined: boolean = false;
-  protected _isDenominatorExplicitlyDefined: boolean = false;
-  protected _isOffsetExplicitlyDefined: boolean = false;
+  protected _numerator?: number;
+  protected _denominator?: number;
+  protected _offset?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
-    this._numerator = 1.0;
-    this._denominator = 1.0;
-    this._offset = 0.0;
   }
 
   public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
   public get definition(): string { return this._definition; }
-  public get numerator(): number { return this._numerator; }
-  public get offset(): number { return this._offset; }
-  public get denominator(): number { return this._denominator; }
-  public get HasNumerator(): boolean { return this._isNumeratorExplicitlyDefined; }
-  public get HasDenominator(): boolean { return this._isDenominatorExplicitlyDefined; }
-  public get HasOffset(): boolean { return this._isOffsetExplicitlyDefined; }
+  public get numerator(): number | undefined { return this._numerator; }
+  public get offset(): number | undefined { return this._offset; }
+  public get denominator(): number | undefined { return this._denominator; }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -84,11 +75,11 @@ export class Unit extends SchemaItem {
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
-    if (this.HasNumerator)
+    if (this.numerator !== undefined)
       schemaJson.numerator = this.numerator;
-    if (this.HasDenominator)
+    if (this.denominator !== undefined)
       schemaJson.denominator = this.denominator;
-    if (this.HasOffset)
+    if (this.offset !== undefined)
       schemaJson.offset = this.offset;
     return schemaJson;
   }
@@ -110,11 +101,11 @@ export class Unit extends SchemaItem {
     }
 
     itemElement.setAttribute("definition", this.definition);
-    if (this.HasNumerator)
+    if (this.numerator !== undefined)
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.HasDenominator)
+    if (this.denominator !== undefined)
       itemElement.setAttribute("denominator", this.denominator.toString());
-    if (this.HasOffset)
+    if (this.offset !== undefined)
       itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
@@ -151,19 +142,16 @@ export class Unit extends SchemaItem {
       this._definition = unitProps.definition;
 
     if (undefined !== unitProps.numerator) {
-      this._isNumeratorExplicitlyDefined = true;
       if (unitProps.numerator !== this._numerator)
         this._numerator = unitProps.numerator;
     }
 
     if (undefined !== unitProps.denominator) {
-      this._isDenominatorExplicitlyDefined = true;
       if (unitProps.denominator !== this._denominator)
         this._denominator = unitProps.denominator;
     }
 
     if (undefined !== unitProps.offset) {
-      this._isOffsetExplicitlyDefined = true;
       if (unitProps.offset !== this._offset)
         this._offset = unitProps.offset;
     }
