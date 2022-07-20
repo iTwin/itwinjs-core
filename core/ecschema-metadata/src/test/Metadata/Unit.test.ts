@@ -386,46 +386,6 @@ describe("Unit", () => {
       expect(unitSerialization.offset).to.be.undefined;
     });
 
-    it("sync - when only denominator property is defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "Test unit",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-        denominator: 10
-      });
-
-      const ecSchema = await Schema.fromJsonSync(schemaJson, new SchemaContext());
-      const unit = await ecSchema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const unitSerialization = unit!.toJSON(true, true);
-
-      expect(unitSerialization.denominator).to.equal(10);
-      expect(unitSerialization.numerator).to.be.undefined;
-      expect(unitSerialization.offset).to.be.undefined;
-    });
-
-    it("async - when only offset property is defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "Test unit",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-        offset: 10
-      });
-
-      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecSchema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const unitSerialization = unit!.toJSON(true, true);
-
-      expect(unitSerialization.offset).to.equal(10);
-      expect(unitSerialization.denominator).to.be.undefined;
-      expect(unitSerialization.numerator).to.be.undefined;
-    });
-
     it("async - when denominator and offset properties are defined", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
@@ -445,25 +405,6 @@ describe("Unit", () => {
       expect(unitSerialization.offset).to.equal(10);
       expect(unitSerialization.denominator).to.equal(12);
       expect(unitSerialization.numerator).to.be.undefined;
-    });
-
-    it("sync - when numerator,denominator and offset properties are not defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "Test unit",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-      });
-
-      const ecSchema = await Schema.fromJsonSync(schemaJson, new SchemaContext());
-      const unit = await ecSchema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const unitSerialization = unit!.toJSON(true, true);
-
-      expect(unitSerialization.denominator).to.be.undefined;
-      expect(unitSerialization.numerator).to.be.undefined;
-      expect(unitSerialization.offset).to.be.undefined;
     });
   });
 
@@ -515,46 +456,6 @@ describe("Unit", () => {
       expect(serialized.getAttribute("offset")).to.eql("");
     });
 
-    it("when only denominator property is defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-        denominator: 2.4,
-      });
-
-      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecschema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const serialized = await unit!.toXml(newDom);
-
-      expect(serialized.getAttribute("numerator")).to.eql("");
-      expect(serialized.getAttribute("denominator")).to.eql("2.4");
-      expect(serialized.getAttribute("offset")).to.eql("");
-    });
-
-    it("when only offset property is defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-        offset: 4,
-      });
-
-      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecschema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const serialized = await unit!.toXml(newDom);
-
-      expect(serialized.getAttribute("numerator")).to.eql("");
-      expect(serialized.getAttribute("denominator")).to.eql("");
-      expect(serialized.getAttribute("offset")).to.eql("4");
-    });
-
     it("when denominator and offset properties are defined", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
@@ -574,25 +475,6 @@ describe("Unit", () => {
       expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("2.4");
       expect(serialized.getAttribute("offset")).to.eql("4");
-    });
-
-    it("when numerator, denominator and offset properties are not defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Millimeter",
-        description: "A unit defining the millimeter metric unit of length",
-        phenomenon: "TestSchema.TestPhenomenon",
-        unitSystem: "TestSchema.TestUnitSystem",
-        definition: "[MILLI]*Units.MM",
-      });
-
-      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecschema.getItem<Unit>("TestUnit");
-      assert.isDefined(unit);
-      const serialized = await unit!.toXml(newDom);
-
-      expect(serialized.getAttribute("numerator")).to.eql("");
-      expect(serialized.getAttribute("denominator")).to.eql("");
-      expect(serialized.getAttribute("offset")).to.eql("");
     });
   });
 });

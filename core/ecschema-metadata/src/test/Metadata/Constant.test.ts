@@ -379,28 +379,6 @@ describe("Constant", () => {
       expect(constantSerialization.numerator).to.be.undefined;
       expect(constantSerialization.denominator).eql(5.1);
     });
-
-    it("sync - when numerator and denominator properties are undefined", () => {
-      const schemaJson = createSchemaJson({
-        label: "Test Constant",
-        description: "testing a constant",
-        phenomenon: "TestSchema.TestPhenomenon",
-        definition: "PI",
-      });
-
-      const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
-      assert.isDefined(ecSchema);
-      const testItem = ecSchema.getItemSync<Constant>("TestConstant");
-      assert.isDefined(testItem);
-      assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
-      const testConst: Constant = testItem as Constant;
-      assert.isDefined(testConst);
-      const json = JSON.stringify(testConst);
-      const constantSerialization = JSON.parse(json);
-
-      expect(constantSerialization.numerator).to.be.undefined;
-      expect(constantSerialization.denominator).to.be.undefined;
-    });
   });
 
   describe("toXml", () => {
@@ -462,24 +440,6 @@ describe("Constant", () => {
       const serialized = await testConstant!.toXml(newDom);
 
       expect(serialized.getAttribute("denominator")).to.eql("5.1");
-      expect(serialized.getAttribute("numerator")).to.eql("");
-    });
-
-    it("when numerator and denominator properties are not defined", async () => {
-      const schemaJson = createSchemaJson({
-        label: "Test Constant",
-        description: "testing a constant",
-        phenomenon: "TestSchema.TestPhenomenon",
-        definition: "PI",
-      });
-
-      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-      assert.isDefined(ecSchema);
-      const testConstant = await ecSchema.getItem<Constant>("TestConstant");
-      assert.isDefined(testConstant);
-      const serialized = await testConstant!.toXml(newDom);
-
-      expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("numerator")).to.eql("");
     });
   });
