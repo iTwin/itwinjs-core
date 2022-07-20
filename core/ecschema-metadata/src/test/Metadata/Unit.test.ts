@@ -381,9 +381,6 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
-      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
-      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
       expect(unitSerialization.numerator).to.equal(10);
       expect(unitSerialization.denominator).to.be.undefined;
       expect(unitSerialization.offset).to.be.undefined;
@@ -404,9 +401,6 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
-      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
-      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
       expect(unitSerialization.denominator).to.equal(10);
       expect(unitSerialization.numerator).to.be.undefined;
       expect(unitSerialization.offset).to.be.undefined;
@@ -427,9 +421,6 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
-      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
-      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
       expect(unitSerialization.offset).to.equal(10);
       expect(unitSerialization.denominator).to.be.undefined;
       expect(unitSerialization.numerator).to.be.undefined;
@@ -451,9 +442,6 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
-      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
-      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
       expect(unitSerialization.offset).to.equal(10);
       expect(unitSerialization.denominator).to.equal(12);
       expect(unitSerialization.numerator).to.be.undefined;
@@ -473,9 +461,6 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
-      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
-      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
       expect(unitSerialization.denominator).to.be.undefined;
       expect(unitSerialization.numerator).to.be.undefined;
       expect(unitSerialization.offset).to.be.undefined;
@@ -524,11 +509,7 @@ describe("Unit", () => {
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Unit");
-      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
-      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
-      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+
       expect(serialized.getAttribute("numerator")).to.eql("5.1");
       expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("offset")).to.eql("");
@@ -548,11 +529,7 @@ describe("Unit", () => {
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Unit");
-      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
-      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
-      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+
       expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("2.4");
       expect(serialized.getAttribute("offset")).to.eql("");
@@ -572,11 +549,7 @@ describe("Unit", () => {
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Unit");
-      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
-      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
-      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+
       expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("offset")).to.eql("4");
@@ -597,11 +570,7 @@ describe("Unit", () => {
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Unit");
-      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
-      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
-      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+
       expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("2.4");
       expect(serialized.getAttribute("offset")).to.eql("4");
@@ -620,11 +589,7 @@ describe("Unit", () => {
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Unit");
-      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
-      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
-      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+
       expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("offset")).to.eql("");

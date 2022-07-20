@@ -351,17 +351,6 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
-      expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("01.02.03");
-      expect(constantSerialization.schema).eql("TestSchema");
-
-      expect(constantSerialization.label).eql("Test Constant");
-      expect(constantSerialization.description).eql("testing a constant");
-
-      assert.strictEqual(constantSerialization.definition, "PI");
-      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
-
       expect(constantSerialization.numerator).eql(5.5);
       expect(constantSerialization.denominator).to.be.undefined;
     });
@@ -384,17 +373,6 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
-      expect(constantSerialization.name).eql("TestConstant");
-      expect(constantSerialization.schemaVersion).eql("01.02.03");
-      expect(constantSerialization.schema).eql("TestSchema");
-
-      expect(constantSerialization.label).eql("Test Constant");
-      expect(constantSerialization.description).eql("testing a constant");
-
-      assert.strictEqual(constantSerialization.definition, "PI");
-      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
-
       expect(constantSerialization.numerator).to.be.undefined;
       expect(constantSerialization.denominator).eql(5.1);
     });
@@ -416,11 +394,6 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const json = JSON.stringify(testConst);
       const constantSerialization = JSON.parse(json);
-
-      expect(constantSerialization.label).eql("Test Constant");
-      expect(constantSerialization.description).eql("testing a constant");
-      assert.strictEqual(constantSerialization.definition, "PI");
-      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
 
       expect(constantSerialization.numerator).to.be.undefined;
       expect(constantSerialization.denominator).to.be.undefined;
@@ -465,9 +438,7 @@ describe("Constant", () => {
       const testConstant = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Constant");
-      expect(serialized.getAttribute("definition")).to.eql("PI");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+
       expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("numerator")).to.eql("5.5");
     });
@@ -486,9 +457,7 @@ describe("Constant", () => {
       const testConstant = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Constant");
-      expect(serialized.getAttribute("definition")).to.eql("PI");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+
       expect(serialized.getAttribute("denominator")).to.eql("5.1");
       expect(serialized.getAttribute("numerator")).to.eql("");
     });
@@ -506,9 +475,7 @@ describe("Constant", () => {
       const testConstant = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("Constant");
-      expect(serialized.getAttribute("definition")).to.eql("PI");
-      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+
       expect(serialized.getAttribute("denominator")).to.eql("");
       expect(serialized.getAttribute("numerator")).to.eql("");
     });
