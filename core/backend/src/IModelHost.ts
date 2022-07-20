@@ -126,7 +126,7 @@ export interface IModelHostOptions {
    * Whether to enable OpenTelemetry tracing
    * @beta
    */
-  useOpenTelemetry?: boolean;
+  enableOpenTelemetry?: boolean;
 
   /** Whether to compress cached tiles.
    * Defaults to `true`.
@@ -407,7 +407,7 @@ export class IModelHost {
     this.logStartup();
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-    initializeRpcBackend(options.useOpenTelemetry);
+    initializeRpcBackend(options.enableOpenTelemetry);
 
     if (this._platform === undefined) {
       try {

@@ -57,7 +57,7 @@ export class RpcTrace {
 
 let initialized = false;
 /** @internal */
-export function initializeRpcBackend(useOpenTelemetry: boolean = false) {
+export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;
 
@@ -65,7 +65,7 @@ export function initializeRpcBackend(useOpenTelemetry: boolean = false) {
 
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 
-  if (useOpenTelemetry) {
+  if (enableOpenTelemetry) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const api = require("@opentelemetry/api");
