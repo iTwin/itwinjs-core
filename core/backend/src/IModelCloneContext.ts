@@ -46,6 +46,8 @@ export class IModelCloneContext {
       SELECT Name FROM ECDbMeta.ECSchemaDef
       -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
       WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+      -- ensure schema dependency order
+      ORDER BY ECInstanceId
     `, async (stmt) => {
       let status: DbResult;
       while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
