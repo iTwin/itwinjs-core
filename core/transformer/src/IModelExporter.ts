@@ -301,8 +301,16 @@ export class IModelExporter {
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
   public async exportSchemas(): Promise<void> {
-    const sql = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
-    let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    const sql = `
+      SELECT Name, VersionMajor, VersionWrite, VersionMinor
+      FROM ECDbMeta.ECSchemaDef
+      ${this.wantSystemSchemas ? `
+      -- schemas inserted before biscore are system schemas
+      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+      ` : ""}
+      -- ensure schema dependency order
+      ORDER BY ECInstanceId
+    `;
     const schemaNamesToExport: string[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -310,11 +318,8 @@ export class IModelExporter {
         const versionMajor = statement.getValue(1).getInteger();
         const versionWrite = statement.getValue(2).getInteger();
         const versionMinor = statement.getValue(3).getInteger();
-        if (!readyToExport) {
-          readyToExport = schemaName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
-        }
         const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
-        if (readyToExport && this.handler.shouldExportSchema(schemaKey)) {
+        if (this.handler.shouldExportSchema(schemaKey)) {
           schemaNamesToExport.push(schemaName);
         }
       }
