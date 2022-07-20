@@ -12,7 +12,7 @@ import { SchemaItemType } from "../ECObjects";
  * @internal
  */
 export class UnitConversion {
-  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
+  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) { }
 
   /**
    * Converts x using UnitConversion
@@ -79,9 +79,10 @@ export class UnitConversion {
    * @internal
    */
   public static from(unit: Unit | Constant): UnitConversion {
-    if (unit.schemaItemType === SchemaItemType.Unit)
-      return new UnitConversion(unit.denominator / unit.numerator, -unit.offset);
+    if (unit.schemaItemType === SchemaItemType.Unit) {
+      return new UnitConversion((unit.denominator ?? 1.0) / (unit.numerator ?? 1.0), -(unit.offset ?? 0.0));
+    }
 
-    return new UnitConversion(unit.denominator / unit.numerator, 0.0);
+    return new UnitConversion((unit.denominator ?? 1.0) / (unit.numerator ?? 1.0), 0.0);
   }
 }
