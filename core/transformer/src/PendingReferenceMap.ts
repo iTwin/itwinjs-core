@@ -6,9 +6,10 @@
  * @module Utils
  */
 
-import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds, Model } from "@itwin/core-backend";
+import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds, Element, Model } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
 
+// FIXME: cosolidate this with ConcreteEntityId somehow? Or at least use an enum too?
 /**
  * An encoding of a reference to an entity
  * m = model (submodel of an element)

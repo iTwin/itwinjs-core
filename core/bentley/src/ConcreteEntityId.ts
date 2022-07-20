@@ -42,6 +42,8 @@ export class ConcreteEntityIds {
     return id[0] === "r";
   }
   public static toId64(id: ConcreteEntityId) {
+    // FIXME: write a test looping through the enum values (turn m|e|a|r into an enum) and making sure they
+    // are each 1 character
     return id.slice(1);
   }
 }

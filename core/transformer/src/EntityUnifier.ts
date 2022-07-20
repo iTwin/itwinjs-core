@@ -8,7 +8,7 @@
  * for entity-generic operations in the transformer
  */
 import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Model, Relationship } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIds, Id64String } from "@itwin/core-bentley";
 import { DbResult, ElementAspectProps, ElementProps, IModelError, ModelProps, RelationshipProps } from "@itwin/core-common";
 import { IModelTransformer } from "./IModelTransformer";
 
@@ -47,8 +47,17 @@ export namespace EntityUnifier {
     else unreachable(entity);
   }
 
-  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String }) {
-    if ("entity" in arg) {
+  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { concreteEntityId: ConcreteEntityId }) {
+    if ("concreteEntityId" in arg) {
+      const id = ConcreteEntityIds.toId64(arg.concreteEntityId);
+      return db.withPreparedStatement("SELECT 1 FROM bis.Element WHERE ECInstanceId=?", (stmt) => {
+        stmt.bindId(1, id);
+        const matchesResult = stmt.step();
+        if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
+        if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
+        else throw new IModelError(matchesResult, "query failed");
+      });
+    } else if ("entity" in arg) {
       return db.withPreparedStatement(`SELECT 1 FROM [${arg.entity.schemaName}].[${arg.entity.className}] WHERE ECInstanceId=?`, (stmt) => {
         stmt.bindId(1, arg.entity.id);
         const matchesResult = stmt.step();
@@ -60,7 +69,9 @@ export namespace EntityUnifier {
       return db.withPreparedStatement(`
         SELECT 1 FROM (
           -- all possible bis core root types
-          -- TODO: create a test verifying the assumption that this is all of them...
+          -- FIXME: create a test verifying the assumption that this is all of them...
+          -- Should probably construct this query at module import time from the same list that the test uses
+          -- for a single source of truth
           SELECT ECInstanceId FROM bis.Element
           UNION ALL
           SELECT ECInstanceId FROM bis.ElementMultiAspect
