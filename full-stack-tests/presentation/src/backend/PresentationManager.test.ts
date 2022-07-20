@@ -122,6 +122,7 @@ describe("PresentationManager", () => {
   });
 
   describe("Cancel request", () => {
+
     it("cancels 'getNodes' request", async () => {
       await using(new PresentationManager(), async (manager) => {
         const cancelEvent = new BeEvent<() => void>();
@@ -139,6 +140,7 @@ describe("PresentationManager", () => {
         await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
       });
     });
+
   });
 
 });
