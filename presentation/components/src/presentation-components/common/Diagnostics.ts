@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@itwin/presentation-common";
+import { ClientDiagnosticsHandler, ClientDiagnosticsOptions, DiagnosticsLoggerSeverity, DiagnosticsOptions } from "@itwin/presentation-common";
 import { createCombinedDiagnosticsHandler } from "@itwin/presentation-frontend";
 
 /**
@@ -22,7 +22,7 @@ export interface DiagnosticsProps {
     /** Severity of log messages to capture. Defaults to "error" when not set. */
     severity?: DiagnosticsLoggerSeverity;
     /** Handler of resulting logs. */
-    handler: DiagnosticsHandler;
+    handler: ClientDiagnosticsHandler;
   };
 
   /**
@@ -34,8 +34,10 @@ export interface DiagnosticsProps {
     severity?: DiagnosticsLoggerSeverity;
     /** Should performance metric be captured. */
     perf?: boolean;
+    /** Get version of presentation backend. */
+    backendVersion?: boolean;
     /** Handler of resulting logs. */
-    handler: DiagnosticsHandler;
+    handler: ClientDiagnosticsHandler;
   };
 }
 
@@ -45,7 +47,7 @@ export interface DiagnosticsProps {
  *
  * @alpha
  */
-export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined {
+export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined {
   if (!props.ruleDiagnostics && !props.devDiagnostics)
     return undefined;
 
@@ -57,7 +59,7 @@ export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOp
   if (props.ruleDiagnostics?.severity)
     options.editor = props.ruleDiagnostics.severity;
 
-  let handler: DiagnosticsHandler;
+  let handler: ClientDiagnosticsHandler;
   // istanbul ignore else
   if (props.devDiagnostics && props.ruleDiagnostics && props.devDiagnostics.handler !== props.ruleDiagnostics.handler)
     handler = createCombinedDiagnosticsHandler([props.devDiagnostics.handler, props.ruleDiagnostics.handler]);
@@ -68,6 +70,7 @@ export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOp
 
   return {
     ...options,
+    ...(props.devDiagnostics?.backendVersion ? { backendVersion: props.devDiagnostics.backendVersion } : undefined),
     handler: handler!,
   };
 }

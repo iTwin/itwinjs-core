@@ -873,6 +873,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
         showDuration={false}
         totalDuration={duration}
         timeZoneOffset={-300}
+        dateFormatOptions={{ locales: "en-US", options: { year: "numeric", month: "short", day: "numeric" } }}
+        timeFormatOptions={{ locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } }}
         componentId={"sampleApp-timeZoneOffset"}
       />
     );
@@ -880,12 +882,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     const startDateLabel = renderedComponent.getByTestId("test-start-date");
     expect(startDateLabel).not.to.be.null;
-    expect(startDateLabel.innerHTML).to.equal("6/30/2016");
+    expect(startDateLabel.innerHTML).to.equal("Jun 30, 2016");
 
     const startTimeLabel = renderedComponent.getByTestId("test-start-time");
     expect(startTimeLabel).not.to.be.null;
-    expect(startTimeLabel.innerHTML).to.equal("7:00:00 PM");
+    expect(startTimeLabel.innerHTML).to.equal("07:00:00 PM");
   });
+
   it("should mark today's date on the timeline", () => {
     const duration = 10 * 1000;
     const todayDate = new Date();

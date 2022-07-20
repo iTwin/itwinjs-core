@@ -71,7 +71,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapLayerOptions } = useSourceMapContext();
+  const mapTypesOptions = mapLayerOptions?.mapTypeOptions;
   const iTwinId = activeViewport?.iModel?.iTwinId;
   const iModelId = activeViewport?.iModel?.iModelId;
 
@@ -122,14 +123,14 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
               if (status === MapLayerSourceStatus.Valid) {
-                const layerSettings = mapLayerSettings.toLayerSettings(subLayers);
+                const settings = mapLayerSettings.toLayerSettings(subLayers);
 
-                if (layerSettings) {
-                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
+                if (settings) {
+                  activeViewport.displayStyle.attachMapLayer({settings, isOverlay});
 
                   activeViewport.invalidateRenderPlan();
 
-                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: layerSettings.name, sourceUrl: layerSettings.url });
+                  const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: settings.name, sourceUrl: settings.url });
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
                 }
 

@@ -155,6 +155,7 @@ Object {
           "right": 0,
           "top": 0,
         },
+        "hidden": false,
         "home": Object {
           "side": "left",
           "widgetId": undefined,

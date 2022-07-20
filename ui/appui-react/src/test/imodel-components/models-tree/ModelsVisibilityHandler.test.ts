@@ -104,8 +104,8 @@ describe("ModelsVisibilityHandler", () => {
       });
     props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement"))), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       .returns(async function* () {
-        const list = new Array<{ id: Id64String, subjectId: Id64String, content?: string }>();
-        props.subjectModels.forEach((modelInfos, subjectId) => modelInfos.forEach((modelInfo) => list.push({ id: modelInfo.id, subjectId, content: modelInfo.content })));
+        const list = new Array<{ id: Id64String, parentId: Id64String, content?: string }>();
+        props.subjectModels.forEach((modelInfos, subjectId) => modelInfos.forEach((modelInfo) => list.push({ id: modelInfo.id, parentId: subjectId, content: modelInfo.content })));
         while (list.length)
           yield list.shift();
       });

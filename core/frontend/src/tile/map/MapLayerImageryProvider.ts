@@ -6,8 +6,9 @@
  * @module MapLayers
  */
 
-import { BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
@@ -15,6 +16,7 @@ import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
+const earthRadius = 6378137;
 
 const doDebugToolTips = false;
 
@@ -55,7 +57,7 @@ export abstract class MapLayerImageryProvider {
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
-  public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
@@ -100,16 +102,19 @@ export abstract class MapLayerImageryProvider {
       return undefined;
     if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
       return undefined;
+
     let imageFormat: ImageSourceFormat;
-    switch (tileResponse.header["content-type"]) {
-      case "image/jpeg":
-        imageFormat = ImageSourceFormat.Jpeg;
-        break;
-      case "image/png":
-        imageFormat = ImageSourceFormat.Png;
-        break;
-      default:
-        return undefined;
+
+    // Note: 'includes' is used here instead of exact comparison because we encountered
+    // some servers that would give content type such as 'image/png;charset=UTF-8'.
+    const contentType: string = tileResponse.header["content-type"].toLowerCase();
+    if (contentType.includes("image/jpeg")){
+      imageFormat = ImageSourceFormat.Jpeg;
+    } else if (contentType.includes("image/png")){
+      imageFormat = ImageSourceFormat.Png;
+    } else {
+      assert(false, "Invalid tile content type");
+      return undefined;
     }
 
     return new ImageSource(byteArray, imageFormat);
@@ -205,6 +210,17 @@ export abstract class MapLayerImageryProvider {
   public getEPSG3857Y(latitude: number): number {
     const y = Math.log(Math.tan((90.0 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
     return y * 20037508.34 / 180.0;
+  }
+
+  // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
+  public getEPSG4326Lon(x3857: number): number {
+    return Angle.radiansToDegrees(x3857/earthRadius);
+  }
+
+  // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
+  public getEPSG4326Lat(y3857: number): number {
+    const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI/2);
+    return Angle.radiansToDegrees(y);
   }
 
   // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.

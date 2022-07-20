@@ -10,7 +10,7 @@ import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, UiAdmin } from "@itwin/appui-abstract";
-import { toDateString, toTimeString, UiComponents } from "@itwin/components-react";
+import { DateFormatOptions, toDateString, toTimeString, UiComponents } from "@itwin/components-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
@@ -93,7 +93,10 @@ export interface TimelineComponentProps {
   timeZoneOffset?: number;
   /** Display a marker on the timeline rail to indicate current date - will only work if starDate and endDate are defined */
   markDate?: TimelineDateMarkerProps;
-
+  /** Options used to format date string. If not defined it will user browser default locale settings. */
+  dateFormatOptions?: DateFormatOptions;
+  /** Options used to format time string. If not defined it will user browser default locale settings. */
+  timeFormatOptions?: DateFormatOptions;
 }
 /** @internal */
 interface TimelineComponentState {
@@ -267,13 +270,15 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   // set the current duration, which will call the OnChange callback
   private _setDuration = (currentDuration: number) => {
+    const actualDuration = Math.min(this.state.totalDuration, (Math.max(currentDuration, 0)));
+
     this._timeLastCycle = new Date().getTime();
     // istanbul ignore else
     if (!this._unmounted)
-      this.setState({ currentDuration });
+      this.setState({ currentDuration: actualDuration });
     // istanbul ignore else
     if (this.props.onChange) {
-      const fraction = currentDuration / this.state.totalDuration;
+      const fraction = actualDuration / this.state.totalDuration;
       this.props.onChange(fraction);
     }
   };
@@ -356,7 +361,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     // istanbul ignore else
     if (newValue !== undefined) {
       this.setState(
-        () => ({ repeat: newValue}),
+        () => ({ repeat: newValue }),
         () => {
           // istanbul ignore else
           if (this.props.onSettingsChange) {
@@ -368,7 +373,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   private _onRepeatChanged = () => {
     this.setState(
-      (prevState) => ({ repeat: !prevState.repeat}),
+      (prevState) => ({ repeat: !prevState.repeat }),
       () => {
         // istanbul ignore else
         if (this.props.onSettingsChange) {
@@ -388,7 +393,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   private _onSetTotalDuration = (milliseconds: number) => {
     this.setState(
-      { totalDuration: milliseconds},
+      { totalDuration: milliseconds },
       () => {
         // istanbul ignore else
         if (this.props.onSettingsChange) {
@@ -400,10 +405,10 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): JSX.Element {
     const label = item.label;
     const checked = currentTimelineDuration === item.timelineDuration;
-    const icon = checked ? <span className="icon icon-checkmark" />:<span />;
+    const icon = checked ? <span className="icon icon-checkmark" /> : <span />;
     return (
       <MenuItem key={index} icon={icon}
-        onClick={() => {this._onSetTotalDuration(item.timelineDuration); close();}} >
+        onClick={() => { this._onSetTotalDuration(item.timelineDuration); close(); }} >
         {label}
       </MenuItem>
     );
@@ -431,15 +436,15 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       let keyIndex = 0;
       if (this.state.includeRepeat) {
         const checked = this.state.repeat;
-        const icon = checked ? <span className="icon icon-checkmark" />:<span />;
-        itemNodes.push (<MenuItem key={++keyIndex} onClick={()=>{this._onRepeatChanged(); close();}} icon={icon}>
+        const icon = checked ? <span className="icon icon-checkmark" /> : <span />;
+        itemNodes.push(<MenuItem key={++keyIndex} onClick={() => { this._onRepeatChanged(); close(); }} icon={icon}>
           {this._repeatLabel}
         </MenuItem>);
-        itemNodes.push (<MenuDivider key={++keyIndex} />);
+        itemNodes.push(<MenuDivider key={++keyIndex} />);
       }
 
       contextMenuItems.forEach((item: TimelineMenuItemProps, index: number) => {
-        itemNodes.push(this._createMenuItemNode(item, index+keyIndex+1, totalDuration, close));
+        itemNodes.push(this._createMenuItemNode(item, index + keyIndex + 1, totalDuration, close));
       });
 
       return itemNodes;
@@ -455,7 +460,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   public override render() {
-    const { startDate, endDate, showDuration, timeZoneOffset } = this.props;
+    const { startDate, endDate, showDuration, timeZoneOffset, dateFormatOptions, timeFormatOptions } = this.props;
     const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
@@ -473,13 +478,13 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             title={UiIModelComponents.translate("timeline.step")} />
           <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
             title={UiIModelComponents.translate("timeline.backward")} />
-          <span className="current-date">{toDateString(currentDate, timeZoneOffset)}</span>
+          <span className="current-date">{toDateString(currentDate, timeZoneOffset, dateFormatOptions)}</span>
         </div>
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
-            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate, timeZoneOffset)}</span>}
+            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate, timeZoneOffset, dateFormatOptions)}</span>}
+            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate, timeZoneOffset, timeFormatOptions)}</span>}
             {showDuration && <span className="duration-start-time">{durationString}</span>}
           </div>
           <Scrubber
@@ -498,7 +503,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           />
           <div className="end-time-container">
             {hasDates && <span className="end-date">{toDateString(endDate, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate, timeZoneOffset, timeFormatOptions)}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
           {minimized && this._renderSettings()}

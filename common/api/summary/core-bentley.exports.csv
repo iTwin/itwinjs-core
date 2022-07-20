@@ -9,7 +9,6 @@ public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
-beta;AuthStatus
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
@@ -46,6 +45,8 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
+alpha;class ErrorCategory 
+beta;ExtractLiterals
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -109,8 +110,13 @@ beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
+alpha;SpanKind
+alpha;class StatusCategory
+alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
 beta;StatusCodeWithMessage
 public;StopWatch
+alpha;class SuccessCategory 
+alpha;Tracing
 public;TransientIdSequence
 public;UnexpectedErrors
 public;using

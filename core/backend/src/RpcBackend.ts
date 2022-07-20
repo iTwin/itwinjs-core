@@ -8,11 +8,12 @@
 
 // cspell:ignore calltrace
 
-import * as multiparty from "multiparty";
-import * as FormData from "form-data";
+import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
-import { assert, Logger } from "@itwin/core-bentley";
+import * as FormData from "form-data";
+import * as multiparty from "multiparty";
+import { IModelHost } from "./IModelHost";
 
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
@@ -43,6 +44,14 @@ export class RpcTrace {
   public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
     return RpcTrace._storage.run(activity, fn);
   }
+
+  /** Start the processing of an RpcActivity inside an OpenTelemetry span */
+  public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
+    return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
+      attributes: { ...RpcInvocation.sanitizeForLog(activity) },
+      kind: SpanKind.SERVER,
+    });
+  }
 }
 
 let initialized = false;
@@ -55,12 +64,22 @@ export function initializeRpcBackend() {
 
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const api = require("@opentelemetry/api");
+    const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
+    Tracing.enableOpenTelemetry(tracer, api);
+    RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
+  } catch (_e) { }
+
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
   Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
 
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();
     RpcMultipart.writeValueToForm(form, value);
+    // Type information for FormData is lying. It actually extends Stream but not Readable, although it appears to work
+    // fine for now.
     return form;
   };
 
@@ -110,4 +129,3 @@ export function initializeRpcBackend() {
     });
   };
 }
-

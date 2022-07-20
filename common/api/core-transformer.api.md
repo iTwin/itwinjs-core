@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { CodeSpec } from '@itwin/core-common';
+import { CompressedId64Set } from '@itwin/core-bentley';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
 import { Element } from '@itwin/core-backend';
 import { ElementAspect } from '@itwin/core-backend';
@@ -26,6 +27,7 @@ import { Relationship } from '@itwin/core-backend';
 import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
+import { SQLiteDb } from '@itwin/core-backend';
 
 // @beta
 export class IModelExporter {
@@ -52,9 +54,15 @@ export class IModelExporter {
     exportRelationships(baseRelClassFullName: string): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
+    protected getAdditionalStateJson(): any;
     protected get handler(): IModelExportHandler;
+    protected loadAdditionalStateJson(_additionalState: any): void;
+    // @internal
+    loadStateFromJson(state: IModelExporterState): void;
     progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;
+    // @internal
+    saveStateToJson(): IModelExporterState;
     shouldExportElement(element: Element): boolean;
     readonly sourceDb: IModelDb;
     visitElements: boolean;
@@ -63,6 +71,36 @@ export class IModelExporter {
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
     }
+
+// @internal
+export interface IModelExporterState {
+    // (undocumented)
+    additionalState?: any;
+    // (undocumented)
+    excludedCodeSpecNames: string[];
+    // (undocumented)
+    excludedElementAspectClassFullNames: string[];
+    // (undocumented)
+    excludedElementCategoryIds: CompressedId64Set;
+    // (undocumented)
+    excludedElementClassNames: string[];
+    // (undocumented)
+    excludedElementIds: CompressedId64Set;
+    // (undocumented)
+    excludedRelationshipClassNames: string[];
+    // (undocumented)
+    exporterClass: string;
+    // (undocumented)
+    visitElements: boolean;
+    // (undocumented)
+    visitRelationships: boolean;
+    // (undocumented)
+    wantGeometry: boolean;
+    // (undocumented)
+    wantSystemSchemas: boolean;
+    // (undocumented)
+    wantTemplateModels: boolean;
+}
 
 // @beta
 export abstract class IModelExportHandler {
@@ -97,11 +135,15 @@ export class IModelImporter implements Required<IModelImportOptions> {
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
+    protected getAdditionalStateJson(): any;
     importElement(elementProps: ElementProps): Id64String;
     importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
+    protected loadAdditionalStateJson(_additionalState: any): void;
+    // @internal
+    loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
@@ -120,11 +162,27 @@ export class IModelImporter implements Required<IModelImportOptions> {
     get preserveElementIdsForFiltering(): boolean;
     set preserveElementIdsForFiltering(val: boolean);
     progressInterval: number;
+    // @internal
+    saveStateToJson(): IModelImporterState;
     // @deprecated
     get simplifyElementGeometry(): boolean;
     set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;
     }
+
+// @internal
+export interface IModelImporterState {
+    // (undocumented)
+    additionalState?: any;
+    // (undocumented)
+    doNotUpdateElementIds: CompressedId64Set;
+    // (undocumented)
+    importerClass: string;
+    // (undocumented)
+    options: IModelImportOptions;
+    // (undocumented)
+    targetDbId: string;
+}
 
 // @beta
 export interface IModelImportOptions {
@@ -143,9 +201,16 @@ export class IModelTransformer extends IModelExportHandler {
     detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
     readonly exporter: IModelExporter;
+    protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
+    // @internal
+    static readonly jsStateTable = "TransformerJsState";
+    // @internal
+    static readonly lastProvenanceEntityInfoTable = "LastProvenanceEntityInfo";
+    protected loadAdditionalStateJson(_additionalState: any): void;
+    protected loadStateFromDb(db: SQLiteDb): void;
     onDeleteElement(sourceElementId: Id64String): void;
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
@@ -182,6 +247,9 @@ export class IModelTransformer extends IModelExportHandler {
     get provenanceDb(): IModelDb;
     static get provenanceElementAspectClasses(): (typeof Entity)[];
     static get provenanceElementClasses(): (typeof Entity)[];
+    static resumeTransformation<SubClass extends new (...a: any[]) => IModelTransformer = typeof IModelTransformer>(this: SubClass, statePath: string, ...constructorArgs: ConstructorParameters<SubClass>): InstanceType<SubClass>;
+    protected saveStateToDb(db: SQLiteDb): void;
+    saveStateToFile(nativeStatePath: string): void;
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     shouldExportElement(_sourceElement: Element): boolean;
@@ -197,7 +265,9 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    // @deprecated
     danglingPredecessorsBehavior?: "reject" | "ignore";
+    danglingReferencesBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;

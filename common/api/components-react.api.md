@@ -109,6 +109,23 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
+// @alpha (undocumented)
+export const ActiveRuleGroupContext: React.Context<ActiveRuleGroupContextProps>;
+
+// @alpha (undocumented)
+export interface ActiveRuleGroupContextProps {
+    // (undocumented)
+    activeElement: HTMLElement | undefined;
+    // (undocumented)
+    onBlur: React.FocusEventHandler<HTMLElement>;
+    // (undocumented)
+    onFocus: React.FocusEventHandler<HTMLElement>;
+    // (undocumented)
+    onMouseOut: React.MouseEventHandler<HTMLElement>;
+    // (undocumented)
+    onMouseOver: React.MouseEventHandler<HTMLElement>;
+}
+
 // @public
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
 
@@ -395,6 +412,9 @@ export interface BreadcrumbUpdateEventArgs {
     // (undocumented)
     oldDataProvider: TreeDataProvider;
 }
+
+// @internal (undocumented)
+export function buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined;
 
 // @beta
 export interface CategorizedPropertyItem extends FlatGridItemBase {
@@ -701,6 +721,14 @@ export interface DateFieldProps extends CommonProps {
     onDateChange?: (day: Date) => void;
     readOnly?: boolean;
     timeDisplay?: TimeDisplay;
+}
+
+// @public
+export interface DateFormatOptions {
+    // (undocumented)
+    locales?: string | string[] | undefined;
+    // (undocumented)
+    options?: Intl.DateTimeFormatOptions | undefined;
 }
 
 // @alpha
@@ -1219,16 +1247,22 @@ export enum FlatGridItemType {
 // @public
 export class FloatTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Float): string;
-}
+    }
 
 // @internal
 export function formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined;
 
 // @public
 export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
+
+// @alpha (undocumented)
+export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string;
+
+// @alpha (undocumented)
+export function getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[];
 
 // @internal
 export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string;
@@ -1573,10 +1607,10 @@ export class IntlFormatter implements DateFormatter {
 // @public
 export class IntTypeConverter extends NumericTypeConverterBase {
     // (undocumented)
-    convertFromString(value: string): number;
+    convertFromString(value: string): number | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Int): string;
-}
+    }
 
 // @public
 export interface IPropertyDataFilterer {
@@ -1635,6 +1669,12 @@ export interface IPropertyValueRenderer {
 // @internal
 export function isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem;
 
+// @alpha (undocumented)
+export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup;
+
+// @alpha (undocumented)
+export function isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup;
+
 // @public
 export const isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider;
 
@@ -1655,6 +1695,9 @@ export function isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): 
 
 // @public
 export function isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode;
+
+// @alpha (undocumented)
+export function isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean;
 
 // @public
 export interface ItemColorOverrides {
@@ -2193,7 +2236,9 @@ export class OrthogonalDirectionHelpers {
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
     constructor(dataProvider: TDataProvider, modelSource: TreeModelSource, pageSize: number);
     dispose(): void;
-    protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+    // (undocumented)
+    protected load(): Observable<LoadedNodeHierarchy>;
+    loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult>;
     get pageSize(): number;
     }
 
@@ -2475,12 +2520,236 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
+// @alpha (undocumented)
+export type PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup;
+
+// @alpha (undocumented)
+export function PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element;
+
+// @alpha (undocumented)
+export class PropertyFilterBuilderActions {
+    constructor(setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void);
+    // (undocumented)
+    addItem(path: string[], itemType: "RULE_GROUP" | "RULE"): void;
+    // (undocumented)
+    removeItem(path: string[]): void;
+    // (undocumented)
+    setRuleGroupOperator(path: string[], operator: PropertyFilterRuleGroupOperator): void;
+    // (undocumented)
+    setRuleOperator(path: string[], operator: PropertyFilterRuleOperator): void;
+    // (undocumented)
+    setRuleProperty(path: string[], property?: PropertyDescription): void;
+    // (undocumented)
+    setRuleValue(path: string[], value: PropertyValue): void;
+    }
+
+// @alpha (undocumented)
+export const PropertyFilterBuilderContext: React.Context<PropertyFilterBuilderContextProps>;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderContextProps {
+    // (undocumented)
+    actions: PropertyFilterBuilderActions;
+    // (undocumented)
+    onRulePropertySelected?: (property: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderProps {
+    // (undocumented)
+    onFilterChanged: (filter?: PropertyFilter) => void;
+    // (undocumented)
+    onRulePropertySelected?: (property: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
+    // (undocumented)
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    // (undocumented)
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRule {
+    // (undocumented)
+    groupId: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    operator?: PropertyFilterRuleOperator;
+    // (undocumented)
+    property?: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroup {
+    // (undocumented)
+    groupId?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    items: PropertyFilterBuilderRuleGroupItem[];
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+}
+
+// @alpha (undocumented)
+export type PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule;
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroupOperatorProps {
+    // (undocumented)
+    onChange: (operator: PropertyFilterRuleGroupOperator) => void;
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleGroupRendererProps {
+    // (undocumented)
+    group: PropertyFilterBuilderRuleGroup;
+    // (undocumented)
+    path: string[];
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleOperatorProps {
+    // (undocumented)
+    onChange: (operator: PropertyFilterRuleOperator) => void;
+    // (undocumented)
+    operator?: PropertyFilterRuleOperator;
+    // (undocumented)
+    property: PropertyDescription;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRulePropertyProps {
+    // (undocumented)
+    onSelectedPropertyChanged: (property?: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    selectedProperty?: PropertyDescription;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleRendererProps {
+    // (undocumented)
+    path: string[];
+    // (undocumented)
+    rule: PropertyFilterBuilderRule;
+}
+
+// @alpha (undocumented)
+export const PropertyFilterBuilderRuleRenderingContext: React.Context<PropertyFilterBuilderRuleRenderingContextProps>;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleRenderingContextProps {
+    // (undocumented)
+    ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+    // (undocumented)
+    ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+}
+
+// @alpha (undocumented)
+export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderRuleValueProps {
+    // (undocumented)
+    onChange: (value: PropertyValue) => void;
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterBuilderState {
+    // (undocumented)
+    rootGroup: PropertyFilterBuilderRuleGroup;
+}
+
 // @public
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
 // @public
 export type PropertyFilterChangesListener = () => void;
+
+// @alpha (undocumented)
+export interface PropertyFilterRule {
+    // (undocumented)
+    operator: PropertyFilterRuleOperator;
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PropertyFilterRuleGroup {
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
+    // (undocumented)
+    rules: Array<PropertyFilter>;
+}
+
+// @alpha (undocumented)
+export enum PropertyFilterRuleGroupOperator {
+    // (undocumented)
+    And = 0,
+    // (undocumented)
+    Or = 1
+}
+
+// @alpha (undocumented)
+export enum PropertyFilterRuleOperator {
+    // (undocumented)
+    Greater = 4,
+    // (undocumented)
+    GreaterOrEqual = 5,
+    // (undocumented)
+    IsEqual = 2,
+    // (undocumented)
+    IsFalse = 1,
+    // (undocumented)
+    IsNotEqual = 3,
+    // (undocumented)
+    IsNotNull = 10,
+    // (undocumented)
+    IsNull = 9,
+    // (undocumented)
+    IsTrue = 0,
+    // (undocumented)
+    Less = 6,
+    // (undocumented)
+    LessOrEqual = 7,
+    // (undocumented)
+    Like = 8
+}
 
 // @public
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
@@ -3559,7 +3828,7 @@ export interface TimeSpec {
 }
 
 // @public
-export const toDateString: (date: Date, timeZoneOffset?: number | undefined) => string;
+export const toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string;
 
 // @public
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
@@ -3730,7 +3999,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
 
 // @public
-export const toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string;
+export const toTimeString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
@@ -4028,7 +4297,9 @@ export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNo
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
     constructor(dataProvider: TDataProvider, modelSource: TreeModelSource);
     dispose(): void;
-    protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
+    // (undocumented)
+    protected load(): Observable<LoadedNodeHierarchy>;
+    loadNode(parent: TreeModelNode | TreeModelRootNode, _childIndex?: number): Observable<TreeNodeLoadResult>;
     }
 
 // @public
@@ -4043,6 +4314,7 @@ export const TreeNodeRenderer: React.MemoExoticComponent<(props: TreeNodeRendere
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
     checkboxRenderer?: NodeCheckboxRenderer;
+    children?: React.ReactNode;
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
@@ -4191,6 +4463,12 @@ export function usePropertyData(props: {
 }): {
     value: import("../PropertyDataProvider").PropertyData | undefined;
     inProgress: boolean;
+};
+
+// @alpha (undocumented)
+export function usePropertyFilterBuilderState(): {
+    state: PropertyFilterBuilderState;
+    actions: PropertyFilterBuilderActions;
 };
 
 // @beta

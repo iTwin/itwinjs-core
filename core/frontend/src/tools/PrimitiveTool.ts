@@ -178,9 +178,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onUndoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onUndoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }
@@ -196,9 +196,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onRedoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onRedoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }

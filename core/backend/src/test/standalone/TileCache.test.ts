@@ -2,23 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
+import { expect } from "chai";
 import * as path from "path";
-import { CloudSqlite } from "@bentley/imodeljs-native";
-import { DbResult, Guid, Logger } from "@itwin/core-bentley";
+import * as sinon from "sinon";
+import { Guid, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
-import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { RpcTrace } from "../../RpcBackend";
-import { IModelTestUtils, TestUtils } from "../index";
+import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-
-import { HubMock } from "..";
 import { GeometricModel3d } from "../../Model";
+import { RpcTrace } from "../../RpcBackend";
+import { TestUtils } from "../TestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
@@ -49,7 +46,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       continue;
 
     iModelTileTreeIdToString;
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false as const }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
@@ -80,22 +77,21 @@ describe("TileCache open v1", () => {
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
     const iModel = SnapshotDb.openFile(dbPath);
-    assert.isDefined(iModel);
+    expect(iModel);
     // Generate tile
     const tileProps = await getTileProps(iModel);
-    assert.isDefined(tileProps);
+    expect(tileProps);
     await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     const tilesCache = `${iModel.pathName}.Tiles`;
-    assert.isTrue(IModelJsFs.existsSync(tilesCache));
+    expect(IModelJsFs.existsSync(tilesCache)).true;
 
     iModel.close();
   };
   it("should create .tiles file next to .bim with default cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await TestUtils.shutdownBackend();
-    const config = new IModelHostConfiguration();
-    await TestUtils.startBackend(config);
+    await TestUtils.startBackend();
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
@@ -106,8 +102,9 @@ describe("TileCache open v1", () => {
   it("should create .tiles file next to .bim with set cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await TestUtils.shutdownBackend();
-    const config = new IModelHostConfiguration();
-    config.cacheDir = path.join(__dirname, ".cache");
+    const config = {
+      cacheDir: path.join(__dirname, ".cache"),
+    };
     await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
@@ -129,49 +126,30 @@ describe("TileCache, open v2", async () => {
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
     snapshot.saveChanges();
     snapshot.close();
-    // Mock iModelHub
-    const mockCheckpointV2: V2CheckpointAccessProps = {
-      accountName: "testAccount",
-      containerId: `imodelblocks-${iModelId}`,
-      sasToken: "testSAS",
-      dbName: "testDb",
-      storageType: "azure?sas=1",
-    };
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
+    const key = `${iModelId}\$${changeset.id}`;
     const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
-
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
-    // Mock blockcacheVFS daemon
-    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
-
-    process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointProps = { accessToken: "dummy", iTwinId, iModelId, changeset };
-
-    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => Logger.stringifyMetaData());
-    const errorStringify = sinon.spy(Logger, "stringifyMetaData");
-
-    const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
-    assert.equal(errorLogStub.callCount, 1); // checkpoint token expiry bad
-    assert.equal(errorStringify.getCall(0).returnValue, ""); // not from RPC, no metadata
-
+    const tempFileBase = path.join(IModelHost.cacheDir, key);
+    const checkpoint = SnapshotDb.openFile(dbPath, { key, tempFileBase });
+    expect(checkpoint.nativeDb.getTempFileBaseName()).equals(tempFileBase);
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
-    assert.isDefined(tileProps);
-    errorStringify.resetHistory();
+    expect(tileProps).not.undefined;
 
-    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
-    assert.equal(errorLogStub.callCount, 2); // checkpoint token expiry bad, should be logged with RPC info
+    sinon.stub(Logger, "logError").callsFake(() => Logger.stringifyMetaData());
+    const errorStringify = sinon.spy(Logger, "stringifyMetaData");
 
-    assert.include(errorStringify.getCall(0).returnValue, `"ActivityId":"${fakeRpc.activityId}"`); // from rpc, should include RPC activity
-    expect(errorStringify.getCall(0).returnValue).to.not.include("token"); // but token should not appear
+    await RpcTrace.run(fakeRpc, async () => {
+      Logger.logError("fake", "fake message");
+      return tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    });
 
-    // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
-    const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);
-    assert.isTrue(IModelJsFs.existsSync(`${tempFileBase}.Tiles`));
+    const logMsg = errorStringify.getCall(0).returnValue;
+    expect(logMsg).includes(`"ActivityId":"${fakeRpc.activityId}"`); // from rpc, should include RPC activity
+    expect(logMsg).to.not.include("token"); // but token should not appear
+
+    expect(IModelJsFs.existsSync(`${tempFileBase}.Tiles`)).true;
     checkpoint.close();
   });
 });

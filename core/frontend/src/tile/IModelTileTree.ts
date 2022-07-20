@@ -9,8 +9,8 @@
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps,
+  BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -25,9 +25,10 @@ import {
 /** @internal */
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;
-  readonly edgesRequired: boolean;
+  readonly edges: EdgeOptions | false;
   readonly batchType: BatchType;
   readonly is3d: boolean;
+  readonly timeline: RenderSchedule.ModelTimeline | undefined;
 }
 
 // Overrides nothing.
@@ -386,7 +387,8 @@ export class IModelTileTree extends TileTree {
   public get viewFlagOverrides() { return viewFlagOverrides; }
 
   public get batchType(): BatchType { return this._options.batchType; }
-  public get hasEdges(): boolean { return this._options.edgesRequired; }
+  public get edgeOptions(): EdgeOptions | false { return this._options.edges; }
+  public get timeline(): RenderSchedule.ModelTimeline | undefined { return this._options.timeline; }
 
   public override get loadPriority(): TileLoadPriority {
     // If the model has been modified, we want to prioritize keeping its graphics up to date.

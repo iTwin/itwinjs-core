@@ -125,6 +125,13 @@ export enum ContentFlags {
    * @beta
    */
   IncludeInputKeys = 1 << 8,
+
+  /**
+   * Produce content descriptor that is not intended for querying content. Allows the implementation to omit certain
+   * operations to make obtaining content descriptor faster.
+   * @internal
+   */
+  DescriptorOnly = 1 << 9,
 }
 
 /**

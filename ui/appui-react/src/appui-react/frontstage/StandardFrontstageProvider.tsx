@@ -19,6 +19,7 @@ import { Widget } from "../widgets/Widget";
 import { ViewToolWidgetComposer } from "../widgets/ViewToolWidgetComposer";
 import { StatusBarWidgetComposerControl } from "../widgets/StatusBarWidgetComposerControl";
 import { StagePanelState } from "../stagepanels/StagePanelDef";
+import { ToolItemDef } from "../shared/ToolItemDef";
 
 /** Properties of a [[WidgetPanelProps]] component
  * @public
@@ -52,6 +53,8 @@ export interface StandardFrontstageProps {
   cornerButton?: React.ReactNode;
   /** Set to true if default Navigation aid is not desired */
   hideNavigationAid?: boolean;
+  /** Set to true if no tool setting dock is needed. Typically only used in modal stages. */
+  hideToolSettings?: boolean;
   /** Set to true if no status bar is needed in stage */
   hideStatusBar?: boolean;
   /** Props used to set initial size and state of panel. Defaults to:
@@ -71,6 +74,11 @@ export interface StandardFrontstageProps {
    * supports. See [[DefaultContentToolsAppData]] for an example.
    */
   applicationData?: any;
+  /** The defaultTool is is started when then frontstage loads and whenever any other tools exit.
+   * Most of the time, this is the Element Selection Tool (CoreTools.selectElementCommand).
+   * Your app can specify its own tool or another core tool as default with this property.
+   */
+  defaultTool?: ToolItemDef;
 }
 
 /**
@@ -94,7 +102,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         key={this.props.id}
         id={this.props.id}
         version={this.props.version ?? 1.0}
-        defaultTool={CoreTools.selectElementCommand}
+        defaultTool={this.props.defaultTool ?? CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={true}
         usage={this.props.usage}
@@ -123,9 +131,11 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         toolSettings={
           <Zone
             widgets={
-              [
-                <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />,
-              ]}
+              this.props.hideToolSettings ? [] :
+                [
+                  <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />,
+                ]
+            }
           />
         }
         statusBar={

@@ -5,8 +5,10 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, RenderMode, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties } from "@itwin/core-common";
+import { comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties,
+} from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -19,14 +21,12 @@ import {
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
+  timeline?: RenderSchedule.ModelTimeline;
 }
 
 function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
-  let cmp = compareStrings(lhs.modelId, rhs.modelId);
-  if (0 === cmp)
-    cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
-
-  return 0 === cmp ? compareIModelTileTreeIds(lhs, rhs) : cmp;
+  return compareStrings(lhs.modelId, rhs.modelId) || compareStringsOrUndefined(lhs.animationId, rhs.animationId)
+    || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
 }
 
 class ClassifierTreeSupplier implements TileTreeSupplier {
@@ -52,14 +52,14 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
-    const options = {
-      edgesRequired: false,
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, {
+      edges: false,
       allowInstancing: false,
       is3d: true,
       batchType: id.type,
-    };
+      timeline: id.timeline,
+    });
 
-    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     return new IModelTileTree(params, id);
   }
 
@@ -68,8 +68,9 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
   }
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
     for (const tree of trees)
-      if (tree.id.animationId === scriptSourceId)
+      if (scriptSourceId === tree.id.animationId)
         modelIds.add(tree.id.modelId);
   }
 
@@ -185,12 +186,12 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const script = source?.scheduleState;
-  const animationId = (undefined !== script) ? script.getModelAnimationId(classifier.modelId) : undefined;
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
   return {
     modelId: classifier.modelId,
     type,
     expansion: classifier.expand,
-    animationId,
+    animationId: scriptInfo?.animationId,
+    timeline: scriptInfo?.timeline,
   };
 }

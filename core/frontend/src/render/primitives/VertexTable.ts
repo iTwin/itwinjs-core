@@ -8,11 +8,13 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList } from "@itwin/core-common";
+import {
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
+} from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
 /**
@@ -20,7 +22,7 @@ import { EdgeParams } from "./EdgeParams";
  * The order of the indices specifies the order in which vertices are drawn.
  * @internal
  */
-export class VertexIndices {
+export class VertexIndices implements Iterable<number> {
   public readonly data: Uint8Array;
 
   /**
@@ -68,6 +70,15 @@ export class VertexIndices {
 
     return indices;
   }
+
+  public [Symbol.iterator]() {
+    function * iterator(indices: VertexIndices) {
+      for (let i = 0; i < indices.length; i++)
+        yield indices.decodeIndex(i);
+    }
+
+    return iterator(this);
+  }
 }
 
 /** @internal */
@@ -77,8 +88,8 @@ export interface Dimensions {
 }
 
 /** @internal */
-export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
-  const maxSize = IModelApp.renderSystem.maxTextureSize;
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize?: number): Dimensions {
+  maxSize = maxSize ?? IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
   if (nRgba < maxSize)
@@ -239,6 +250,13 @@ export class VertexTable implements VertexTableProps {
   }
 }
 
+/** @internal */
+export interface VertexTableWithIndices {
+  vertices: VertexTable;
+  indices: VertexIndices;
+  material?: SurfaceMaterial;
+}
+
 /**
  * Describes mesh geometry to be submitted to the rendering system.
  * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.
@@ -247,7 +265,7 @@ export class VertexTable implements VertexTableProps {
 export class MeshParams {
   public readonly vertices: VertexTable;
   public readonly surface: SurfaceParams;
-  public readonly edges?: EdgeParams;
+  public edges?: EdgeParams;
   public readonly isPlanar: boolean;
   public readonly auxChannels?: AuxChannelTable;
 
@@ -718,14 +736,14 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
 function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: SurfaceType } {
   if (args.points instanceof QPoint3dList)
-    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>); // wtf compiler?
+    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>);
   else
-    return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>); // seriously wtf?
+    return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>);
 }
 
 function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
   if (args.points instanceof QPoint3dList)
-    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>); // wtf compiler?
+    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
   else
-    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>); // seriously wtf?
+    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
 }

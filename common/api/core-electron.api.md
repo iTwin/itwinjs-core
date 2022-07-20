@@ -7,6 +7,7 @@
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
+import { ExtractLiterals } from '@itwin/core-bentley';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
@@ -15,10 +16,11 @@ import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 
 // @beta
+export type DialogModuleMethod = ExtractLiterals<AsyncMethodsOf<Electron.Dialog>, "showMessageBox" | "showOpenDialog" | "showSaveDialog">;
+
+// @beta
 export class ElectronApp {
-    static callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>): Promise<PromiseReturnType<Electron.App[T]>>;
-    static callDialog<T extends AsyncMethodsOf<Electron.Dialog>>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
-    static callShell<T extends AsyncMethodsOf<Electron.Shell>>(methodName: T, ...args: Parameters<Electron.Shell[T]>): Promise<PromiseReturnType<Electron.Shell[T]>>;
+    static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)

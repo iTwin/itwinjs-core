@@ -19,7 +19,7 @@ import * as dotenvExpand from "dotenv-expand";
 
 void (async () => {
   try {
-    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
+    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env") });
     if (!envResult.error) {
       dotenvExpand(envResult);
     }
@@ -165,8 +165,26 @@ void (async () => {
           type: "boolean",
           default: false,
         },
+        isolateElements: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids",
+          type: "string",
+        },
+        isolateTrees: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids, or one of their children",
+          type: "string",
+        },
+        loadSourceGeometry: {
+          desc: "load geometry from the source as JSON while transforming, for easier (but not performant) transforming of geometry",
+          type: "boolean",
+          default: false,
+        },
+        cloneUsingJsonGeometry: {
+          desc: "sets cloneUsingBinaryGeometry in the transformer options to true, which is slower but allows simple editing of geometry in javascript.",
+          type: "boolean",
+          default: false,
+        },
       })
-      .parse();
+      .parseSync();
 
     IModelHubUtils.setHubEnvironment(args.hub);
 
@@ -327,6 +345,7 @@ void (async () => {
 
     const transformerOptions: TransformerOptions = {
       ...args,
+      cloneUsingBinaryGeometry: !args.cloneUsingJsonGeometry,
       excludeSubCategories: args.excludeSubCategories?.split(","),
       excludeCategories: args.excludeCategories?.split(","),
     };
@@ -334,6 +353,20 @@ void (async () => {
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(await acquireAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+    } else if (args.isolateElements !== undefined || args.isolateTrees !== undefined) {
+      const isolateTrees = args.isolateTrees !== undefined;
+      const isolateArg = args.isolateElements ?? args.isolateTrees;
+      assert(isolateArg !== undefined);
+      const isolateList = isolateArg.split(",");
+      const transformer = await Transformer.transformIsolated(sourceDb, targetDb, isolateList, isolateTrees, transformerOptions);
+      Logger.logInfo(
+        loggerCategory,
+        [
+          "remapped elements:",
+          isolateList.map((id) => `${id}=>${transformer.context.findTargetElementId(id)}`).join(", "),
+        ].join("\n")
+      );
+      transformer.dispose();
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }
