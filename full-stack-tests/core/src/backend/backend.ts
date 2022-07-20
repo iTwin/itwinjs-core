@@ -12,7 +12,7 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
@@ -78,7 +78,7 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  const iModelHost = new IModelHostConfiguration();
+  const iModelHost: IModelHostOptions = {};
 
   // Bootstrap the cloud environment
   const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);

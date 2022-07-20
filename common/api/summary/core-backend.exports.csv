@@ -184,7 +184,8 @@ public;IModelDb
 internal;TileContentState
 internal;Tiles
 public;IModelHost
-public;IModelHostConfiguration
+public;IModelHostConfiguration 
+public;IModelHostOptions
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats

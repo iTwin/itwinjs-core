@@ -2530,7 +2530,7 @@ export class IModelHost {
         exactMatch?: boolean;
     }): string;
     // (undocumented)
-    static configuration?: IModelHostConfiguration;
+    static configuration?: IModelHostOptions;
     // @internal (undocumented)
     static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
@@ -2564,7 +2564,7 @@ export class IModelHost {
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
-    static startup(configuration?: IModelHostConfiguration): Promise<void>;
+    static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
     // @internal
@@ -2580,7 +2580,45 @@ export class IModelHost {
 }
 
 // @public
-export class IModelHostConfiguration {
+export class IModelHostConfiguration implements IModelHostOptions {
+    // (undocumented)
+    appAssetsDir?: LocalDirName;
+    // @beta (undocumented)
+    authorizationClient?: AuthorizationClient;
+    // (undocumented)
+    cacheDir?: LocalDirName;
+    // (undocumented)
+    compressCachedTiles?: boolean;
+    // @alpha (undocumented)
+    crashReportingConfig?: CrashReportingConfig;
+    // (undocumented)
+    static defaultLogTileLoadTimeThreshold: number;
+    // (undocumented)
+    static defaultLogTileSizeThreshold: number;
+    // (undocumented)
+    static defaultTileRequestTimeout: number;
+    // @beta (undocumented)
+    hubAccess?: BackendHubAccess;
+    // @internal (undocumented)
+    logTileLoadTimeThreshold: number;
+    // @internal (undocumented)
+    logTileSizeThreshold: number;
+    // @beta (undocumented)
+    restrictTileUrlsByClientIp?: boolean;
+    // @beta (undocumented)
+    tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+    // @beta (undocumented)
+    tileCacheService?: CloudStorageService;
+    // @internal (undocumented)
+    tileContentRequestTimeout: number;
+    // @internal (undocumented)
+    tileTreeRequestTimeout: number;
+    // @beta (undocumented)
+    workspace?: WorkspaceOpts;
+}
+
+// @public
+export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
     // @beta
     authorizationClient?: AuthorizationClient;
@@ -2588,18 +2626,12 @@ export class IModelHostConfiguration {
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
-    // @internal
-    static defaultLogTileLoadTimeThreshold: number;
-    // @internal
-    static defaultLogTileSizeThreshold: number;
-    // @internal
-    static defaultTileRequestTimeout: number;
     // @beta
     hubAccess?: BackendHubAccess;
     // @internal
-    logTileLoadTimeThreshold: number;
+    logTileLoadTimeThreshold?: number;
     // @internal
-    logTileSizeThreshold: number;
+    logTileSizeThreshold?: number;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -2607,9 +2639,9 @@ export class IModelHostConfiguration {
     // @beta
     tileCacheService?: CloudStorageService;
     // @internal
-    tileContentRequestTimeout: number;
+    tileContentRequestTimeout?: number;
     // @internal
-    tileTreeRequestTimeout: number;
+    tileTreeRequestTimeout?: number;
     // @beta
     workspace?: WorkspaceOpts;
 }
@@ -2781,7 +2813,7 @@ export class IpcHost {
 // @public
 export interface IpcHostOpts {
     // (undocumented)
-    iModelHost?: IModelHostConfiguration;
+    iModelHost?: IModelHostOptions;
     // (undocumented)
     ipcHost?: {
         socket?: IpcSocketBackend;
@@ -3107,7 +3139,7 @@ export class LocalhostIpcHost {
     // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
-        iModelHost?: IModelHostConfiguration;
+        iModelHost?: IModelHostOptions;
     }): Promise<void>;
 }
 
