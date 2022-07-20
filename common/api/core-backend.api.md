@@ -2639,6 +2639,8 @@ export interface IModelHostOptions {
     // @internal
     tileTreeRequestTimeout?: number;
     // @beta
+    useOpenTelemetry?: boolean;
+    // @beta
     workspace?: WorkspaceOpts;
 }
 
@@ -2762,7 +2764,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 // @internal (undocumented)
-export function initializeRpcBackend(): void;
+export function initializeRpcBackend(useOpenTelemetry?: boolean): void;
 
 // @beta
 export interface InstanceChange {
