@@ -93,10 +93,8 @@ export class GrowableXYArray extends IndexedXYCollection {
   /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyCapacity) {
-      if (applyGrowthFactor) {
+      if (applyGrowthFactor)
         pointCapacity *= this._growthFactor;
-        if (pointCapacity < 4) pointCapacity = 4;
-      }
       const prevData = this._data;
       this._data = new Float64Array(pointCapacity * 2);
       this.copyData(prevData, this._xyInUse);
@@ -297,7 +295,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * push coordinates from the source array to the end of this array.
    * @param source source array
    * @param sourceIndex xy index within the source.  If undefined, push entire contents of source
-   * @returns true if sourceIndex is valid.
+   * @returns number of points pushed.
    */
   public pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number {
     // full array push  . . .

@@ -94,10 +94,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /** If necessary, increase the capacity to the new number of points.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyzCapacity) {
-      if (applyGrowthFactor) {
+      if (applyGrowthFactor)
         pointCapacity *= this._growthFactor;
-        if (pointCapacity < 4) pointCapacity = 4;
-      }
       const prevData = this._data;
       this._data = new Float64Array(pointCapacity * 3);
       this.copyData(prevData, this._xyzInUse);
@@ -182,7 +180,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * Any json object satisfying Point3d.isXAndY
    * * A Float64Array of doubles, interpreted as xyzxyz
    * * An array of any of the above
-   * @returns the number of points added.
    */
   public pushFrom(p: any) {
     if (p instanceof Point3d)
