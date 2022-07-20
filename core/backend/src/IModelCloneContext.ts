@@ -217,7 +217,7 @@ export class IModelCloneContext {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
           const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
-          // TODO: get a name for this enum value
+          // TODO: get a name for this 'enum' value
           const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${navPropRefType}', this is a bug.`); };
           const throwOnNotInCache = () => { throw Error(`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`); };
           const targetEntityId
@@ -228,7 +228,8 @@ export class IModelCloneContext {
             : navPropRefType === undefined
               ? throwOnNotInCache()
             : throwOnUnhandled();
-          (targetElementAspectProps as any)[propertyName].id = targetEntityId;
+          // spread the property in case toJSON did not deep-clone
+          (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
         }
       } else if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.findTargetElementId(sourceElementAspect.asAny[propertyName]);

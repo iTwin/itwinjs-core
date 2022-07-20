@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { ECClass, Mixin, Schema } from "@itwin/ecschema-metadata";
+import { ECClass, Mixin, Schema, StrengthDirection } from "@itwin/ecschema-metadata";
 import assert = require("assert");
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
@@ -40,6 +40,7 @@ export class ECClassNavPropReferenceCache {
     "ElementAspect": "a",
     "ElementRefersToElements": "r",
     "ElementDrivesElement": "r",
+    "CodeSpec": "c" as any, // FIXME
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 
@@ -59,7 +60,7 @@ export class ECClassNavPropReferenceCache {
       for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
-        const constraints = relClass.target.constraintClasses;
+        const constraints = (relClass.strengthDirection === StrengthDirection.Forward ? relClass.source : relClass.target).constraintClasses;
         assert(constraints !== undefined);
         const constraint = await constraints[0];
         let bisRootForConstraint: ECClass = constraint;
@@ -85,7 +86,7 @@ export class ECClassNavPropReferenceCache {
         // the above bases
         assert(
           refType !== undefined,
-          `This is a bug. An unknown root class '${bisRootForConstraint.name}' was encountered while populating the nav prop reference type cache.`
+          `An unknown root class '${bisRootForConstraint.name}' was encountered while populating the nav prop reference type cache. This is a bug.`
         );
         propMap.set(prop.name.toLowerCase(), refType);
       }
