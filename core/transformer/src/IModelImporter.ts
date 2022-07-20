@@ -36,7 +36,7 @@ export interface IModelImportOptions {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
-  /** @see [IModelTransformOptions]($transformer) */
+  /** See [IModelTransformOptions]($transformer) */
   preserveElementIdsForFiltering?: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @default false
