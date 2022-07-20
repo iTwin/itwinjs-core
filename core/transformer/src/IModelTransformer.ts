@@ -186,7 +186,7 @@ class EntityProcessState {
   ) {}
   public static fromEntityAndTransformer(concreteEntityId: ConcreteEntityId, transformer: IModelTransformer): EntityProcessState {
     const entityId = ConcreteEntityIds.toId64(concreteEntityId);
-    if (ConcreteEntityIds.isAspect(concreteEntityId)) {
+    if (ConcreteEntityIds.isElementAspect(concreteEntityId)) {
       return new EntityProcessState(concreteEntityId, transformer.context.findTargetAspectId(entityId) === Id64.invalid);
     }
     if (ConcreteEntityIds.isRelationship(concreteEntityId)) {
