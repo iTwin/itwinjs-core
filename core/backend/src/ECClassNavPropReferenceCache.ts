@@ -8,7 +8,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ECClass, Mixin, Schema, StrengthDirection } from "@itwin/ecschema-metadata";
-import assert = require("assert");
+import * as assert from "assert";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
 
@@ -19,9 +19,27 @@ export class SchemaNotInCacheErr extends Error {
   public constructor() { super("Schema was not in cache, initialize that schema"); }
 }
 
-// TODO: try out an enum
+// FIXME: consolidate with ConcreteEntityId
 /** @internal */
-export type EntityRefType = "m" | "e" | "a" | "r";
+export enum EntityRefType {
+  Model = "m",
+  Element = "e",
+  Aspect = "a",
+  Relationship = "r",
+  CodeSpec = "c",
+}
+
+const nameForEntityRefTypeMap = {
+  [EntityRefType.Model]: "Model",
+  [EntityRefType.Element]: "Element",
+  [EntityRefType.Aspect]: "Aspect",
+  [EntityRefType.Relationship]: "Relationship",
+  [EntityRefType.CodeSpec]: "CodeSpec",
+} as const;
+
+function nameForEntityRefType(entityRefType: EntityRefType) {
+  return nameForEntityRefTypeMap[entityRefType];
+}
 
 /**
  * A cache of the entity type referenced by navprops in ec schemas.
@@ -35,12 +53,12 @@ export class ECClassNavPropReferenceCache {
 
   private static bisRootClassToRefType: Record<string, EntityRefType | undefined> = {
     /* eslint-disable quote-props, @typescript-eslint/naming-convention */
-    "Element": "e",
-    "Model": "m",
-    "ElementAspect": "a",
-    "ElementRefersToElements": "r",
-    "ElementDrivesElement": "r",
-    "CodeSpec": "c" as any, // FIXME
+    "Element": EntityRefType.Element,
+    "Model": EntityRefType.Model,
+    "ElementAspect": EntityRefType.Aspect,
+    "ElementRefersToElements": EntityRefType.Relationship,
+    "ElementDrivesElement": EntityRefType.Relationship,
+    "CodeSpec": EntityRefType.CodeSpec,
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 

@@ -14,7 +14,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
-import { ECClassNavPropReferenceCache } from "./ECClassNavPropReferenceCache";
+import { ECClassNavPropReferenceCache, EntityRefType } from "./ECClassNavPropReferenceCache";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
@@ -221,9 +221,9 @@ export class IModelCloneContext {
           const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${navPropRefType}', this is a bug.`); };
           const throwOnNotInCache = () => { throw Error(`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`); };
           const targetEntityId
-            = navPropRefType === "e" || navPropRefType === "m"
+            = navPropRefType === EntityRefType.Element || navPropRefType === EntityRefType.Model
               ? this.findTargetElementId(sourceNavProp.id)
-            : navPropRefType === "a"
+            : navPropRefType === EntityRefType.Aspect
               ? this.findTargetAspectId(sourceNavProp.id)
             : navPropRefType === undefined
               ? throwOnNotInCache()
