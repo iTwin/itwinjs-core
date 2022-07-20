@@ -50,13 +50,13 @@ export class ECClassNavPropReferenceCache {
     }
 
     const classMap = new Map<string, Map<string, EntityRefType>>();
-    this._propQualifierToRefType.set(schema.name, classMap);
+    this._propQualifierToRefType.set(schema.name.toLowerCase(), classMap);
 
     for (const ecclass of schema.getClasses()) {
       const propMap = new Map<string, EntityRefType>();
-      classMap.set(ecclass.name, propMap);
+      classMap.set(ecclass.name.toLowerCase(), propMap);
 
-      for (const prop of ecclass.properties ?? []) {
+      for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
         const constraints = relClass.target.constraintClasses;
@@ -87,7 +87,7 @@ export class ECClassNavPropReferenceCache {
           refType !== undefined,
           `This is a bug. An unknown root class '${bisRootForConstraint.name}' was encountered while populating the nav prop reference type cache.`
         );
-        propMap.set(prop.name, refType);
+        propMap.set(prop.name.toLowerCase(), refType);
       }
     }
 
@@ -96,7 +96,10 @@ export class ECClassNavPropReferenceCache {
 
   public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | EntityRefType {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
-    return this._propQualifierToRefType.get(schemaName)?.get(className)?.get(propName);
+    return this._propQualifierToRefType
+      .get(schemaName.toLowerCase())
+      ?.get(className.toLowerCase())
+      ?.get(propName.toLowerCase());
   }
 
   public clear() {
