@@ -974,6 +974,9 @@ export const getFieldByName: (fields: Field[], name: string | undefined, recurse
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
+// @alpha (undocumented)
+export function getLocalizedStringEN(key: string): any;
+
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;
@@ -1533,6 +1536,29 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
 // @public
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+
+// @internal (undocumented)
+export class LocalizationHelper {
+    constructor(props: LocalizationHelperProps);
+    // (undocumented)
+    getLocalizedContent(content: Content): Content;
+    // (undocumented)
+    getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
+    // (undocumented)
+    getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
+    // (undocumented)
+    getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodes(nodes: Node[]): Node[];
+    // (undocumented)
+    getLocalizedString(text: string): string;
+    }
+
+// @internal (undocumented)
+export interface LocalizationHelperProps {
+    // (undocumented)
+    getLocalizedString: (key: string) => string;
+}
 
 // @beta
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {

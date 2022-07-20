@@ -14,7 +14,7 @@ import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalizedStringEN, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
   MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
   PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
@@ -27,7 +27,7 @@ import {
   createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
@@ -37,7 +37,6 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
-import { getLocalesDirectory } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -90,7 +89,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
-            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
@@ -104,7 +102,6 @@ describe("PresentationManager", () => {
 
       it("creates with props", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        const testLocale = faker.random.locale();
         const testThreadsCount = 999;
         const hierarchyCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -125,7 +122,7 @@ describe("PresentationManager", () => {
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
-          localeDirectories: [testLocale, testLocale],
+          getLocalizedString: getLocalizedStringEN,
           workerThreadsCount: testThreadsCount,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
@@ -147,7 +144,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
-            localeDirectories: [getLocalesDirectory("/test"), testLocale],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
@@ -167,7 +163,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
-            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
@@ -187,7 +182,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
-            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
@@ -205,7 +199,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
-            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
@@ -230,7 +223,6 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
-            localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
@@ -308,40 +300,6 @@ describe("PresentationManager", () => {
         addon.verifyAll();
       });
 
-      it("sets up default locale directories", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({}), (_manager) => { });
-        expect(constructorSpy).to.be.calledOnce;
-        expect(constructorSpy.firstCall.firstArg).to.containSubset({
-          localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-        });
-      });
-
-      it("sets up default locale directories using `presentationAssetsRoot` as string if supplied", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ presentationAssetsRoot: "/test" }), (_manager) => { });
-        expect(constructorSpy).to.be.calledOnce;
-        expect(constructorSpy.firstCall.firstArg).to.containSubset({
-          localeDirectories: [getLocalesDirectory("/test")],
-        });
-      });
-
-      it("sets up default locale directories using `presentationAssetsRoot.common` if supplied", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_manager) => { });
-        expect(constructorSpy).to.be.calledOnce;
-        expect(constructorSpy.firstCall.firstArg).to.containSubset({
-          localeDirectories: [getLocalesDirectory("/common-test")],
-        });
-      });
-
-      it("sets up active locale if supplied", () => {
-        const locale = faker.random.locale();
-        using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
-          expect(manager.activeLocale).to.eq(locale);
-        });
-      });
-
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
@@ -374,53 +332,9 @@ describe("PresentationManager", () => {
     });
 
     it("returns initialization props", () => {
-      const props = { defaultLocale: faker.random.locale() };
+      const props = {};
       using(new PresentationManager(props), (newManager) => {
         expect(newManager.props).to.equal(props);
-      });
-    });
-
-  });
-
-  describe("defaultLocale", () => {
-
-    const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
-    beforeEach(() => {
-      addonMock.reset();
-    });
-
-    it("uses manager's defaultLocale when not specified in request options", async () => {
-      const imodelMock = moq.Mock.ofType<IModelDb>();
-      const rulesetId = faker.random.word();
-      const locale = faker.random.locale().toLowerCase();
-      await using(new PresentationManager({ addon: addonMock.object, defaultLocale: locale }), async (manager) => {
-        addonMock
-          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-            const request = JSON.parse(serializedRequest);
-            return request.params.locale === locale;
-          }), undefined))
-          .returns(async () => ({ result: "{}" }))
-          .verifiable(moq.Times.once());
-        await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
-        addonMock.verifyAll();
-      });
-    });
-
-    it("ignores manager's defaultLocale when locale is specified in request options", async () => {
-      const imodelMock = moq.Mock.ofType<IModelDb>();
-      const rulesetId = faker.random.word();
-      const locale = faker.random.locale().toLowerCase();
-      await using(new PresentationManager({ addon: addonMock.object, defaultLocale: faker.random.locale().toLowerCase() }), async (manager) => {
-        expect(manager.activeLocale).to.not.eq(locale);
-        addonMock
-          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-            const request = JSON.parse(serializedRequest);
-            return request.params.locale === locale;
-          }), undefined))
-          .returns(async () => ({ result: "{}" }))
-          .verifiable(moq.Times.once());
-        await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
-        addonMock.verifyAll();
       });
     });
 
@@ -1069,77 +983,6 @@ describe("PresentationManager", () => {
         };
         await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-      });
-
-      it("uses manager's `activeLocale` for comparison", async () => {
-        manager.activeLocale = "test";
-
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.CompareHierarchies,
-          params: {
-            prevRulesetId: "test",
-            prevRulesetVariables: "[]",
-            currRulesetId: "test",
-            currRulesetVariables: "[]",
-            locale: "test",
-            expandedNodeKeys: "[]",
-          },
-        };
-
-        // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = {
-          changes: [],
-        };
-        setup(addonResponse);
-
-        // test
-        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: "test",
-          },
-          rulesetOrId: "test",
-          expandedNodeKeys: [],
-        };
-        const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
-      });
-
-      it("uses `locale` from options for comparison", async () => {
-        manager.activeLocale = "manager's locale";
-
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.CompareHierarchies,
-          params: {
-            prevRulesetId: "test",
-            prevRulesetVariables: "[]",
-            currRulesetId: "test",
-            currRulesetVariables: "[]",
-            locale: "options locale",
-            expandedNodeKeys: "[]",
-          },
-        };
-
-        // what the addon returns
-        const addonResponse: HierarchyCompareInfoJSON = {
-          changes: [],
-        };
-        setup(addonResponse);
-
-        // test
-        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: "test",
-          },
-          rulesetOrId: "test",
-          locale: "options locale",
-          expandedNodeKeys: [],
-        };
-        const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
     });

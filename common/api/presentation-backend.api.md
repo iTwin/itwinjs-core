@@ -85,7 +85,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
 
 // @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
+export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -248,12 +248,16 @@ export interface PresentationManagerProps {
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
     // @deprecated
     enableSchemasPreload?: boolean;
+    // @internal (undocumented)
+    getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
+    // @deprecated
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | {

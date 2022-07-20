@@ -208,12 +208,16 @@ export interface PresentationManagerProps {
   /**
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
+   *
+   * @deprecated
    */
   localeDirectories?: string[];
 
   /**
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
+   *
+   * @deprecated
    */
   defaultLocale?: string;
 
@@ -296,6 +300,9 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
+
+  /** @internal */
+  getLocalizedString?: (key: string) => string;
 }
 
 /**

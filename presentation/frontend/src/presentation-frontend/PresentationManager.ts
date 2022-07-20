@@ -13,12 +13,12 @@ import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, LocalizationHelper, Node, NodeKey,
   NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
   SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
-import { LocalizationHelper } from "./LocalizationHelper";
+import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
@@ -130,7 +130,7 @@ export class PresentationManager implements IDisposable {
     this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
-    this._localizationHelper = new LocalizationHelper();
+    this._localizationHelper = new FrontendLocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
     if (IpcApp.isValid) {
@@ -414,7 +414,11 @@ export class PresentationManager implements IDisposable {
    */
   public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined> {
     await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    // istanbul ignore if
+    if (!results)
+      return undefined;
+    return this._localizationHelper.getLocalizedElementProperties(results);
   }
 
   /**
