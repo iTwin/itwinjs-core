@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
@@ -42,10 +42,18 @@ export class IModelCloneContext {
 
   public async initialize() {
     const schemaLoader = new IModelSchemaLoader(this.sourceDb);
-    await this.sourceDb.withPreparedStatement("SELECT Name FROM ECDbMeta.ECSchemaDef", async (stmt) => {
-      const schemaName = stmt.getValue(0).getString();
-      const schema = schemaLoader.getSchema(schemaName);
-      await this._navPropRefCache.initSchema(schema);
+    await this.sourceDb.withPreparedStatement(`
+      SELECT Name FROM ECDbMeta.ECSchemaDef
+      -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
+      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+    `, async (stmt) => {
+      let status: DbResult;
+      while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
+        const schemaName = stmt.getValue(0).getString();
+        const schema = schemaLoader.getSchema(schemaName);
+        await this._navPropRefCache.initSchema(schema);
+      }
+      if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
     });
   }
 

@@ -66,13 +66,26 @@ export class ECClassNavPropReferenceCache {
         assert(constraints !== undefined);
         const constraint = await constraints[0];
         let bisRootForConstraint: ECClass = constraint;
-        await constraint.traverseBaseClasses((c) => { bisRootForConstraint = c; return false; });
+        await constraint.traverseBaseClasses((baseClass) => {
+          // All entity classes must inherit from a BisCore class, and no BisCore classes have only mixin bases (there is a test for that),
+          // so we skip pruning mixins hierarchies since the (depth-first) traversal's first traversed path to a root
+          // will therefore never have mixins. Once we see that we've switched from the first root path in the depth-first search
+          // by moving laterally through the hierarchy rather than just up to the next base class, we can terminate early
+          // FIXME: test the assumption that no root paths have mixins
+          const isFirstTest = bisRootForConstraint === constraint;
+          const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
+          const stillTraversingRootPath = isFirstTest || !traversalSwitchedRootPath;
+          if (!stillTraversingRootPath)
+            return true; // stop traversal early
+          bisRootForConstraint = baseClass;
+          return false;
+        });
         const refType = ECClassNavPropReferenceCache.bisRootClassToRefType[bisRootForConstraint.name];
         // FIXME: write a test on this assumption by iterating through biscore schema metadata and ensuring all classes have one of
         // the above bases
         assert(
           refType !== undefined,
-          "This is a bug. An unknown root class was encountered while populating the nav prop reference type cache."
+          `This is a bug. An unknown root class '${bisRootForConstraint.name}' was encountered while populating the nav prop reference type cache.`
         );
         propMap.set(prop.name, refType);
       }
