@@ -373,7 +373,7 @@ describe("Unit", () => {
         phenomenon: "TestSchema.TestPhenomenon",
         unitSystem: "TestSchema.TestUnitSystem",
         definition: "[MILLI]*Units.MM",
-        numerator: 10
+        numerator: 10,
       });
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
@@ -394,7 +394,7 @@ describe("Unit", () => {
         unitSystem: "TestSchema.TestUnitSystem",
         definition: "[MILLI]*Units.MM",
         denominator: 12,
-        offset: 10
+        offset: 10,
       });
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
@@ -437,7 +437,7 @@ describe("Unit", () => {
     });
 
     it("Numerator is explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
-      const schemaJson = createSchemaJson({
+      const testSchemaJson = createSchemaJson({
         label: "Millimeter",
         description: "A unit defining the millimeter metric unit of length",
         phenomenon: "TestSchema.TestPhenomenon",
@@ -446,7 +446,7 @@ describe("Unit", () => {
         numerator: 5.1,
       });
 
-      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
@@ -457,7 +457,7 @@ describe("Unit", () => {
     });
 
     it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
-      const schemaJson = createSchemaJson({
+      const testSchemaJson = createSchemaJson({
         label: "Millimeter",
         description: "A unit defining the millimeter metric unit of length",
         phenomenon: "TestSchema.TestPhenomenon",
@@ -467,7 +467,7 @@ describe("Unit", () => {
         offset: 4,
       });
 
-      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
