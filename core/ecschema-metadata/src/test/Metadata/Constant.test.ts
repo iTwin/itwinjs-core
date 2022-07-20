@@ -336,7 +336,7 @@ describe("Constant", () => {
       assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
     });
 
-    it("async - when only numerator property is defined", async () => {
+    it("Numerator is explicitly set, default values of numerator and denominator should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Test Constant",
         description: "testing a constant",
@@ -358,7 +358,7 @@ describe("Constant", () => {
       expect(constantSerialization.denominator).to.be.undefined;
     });
 
-    it("async - when only denominator property is defined", async () => {
+    it("Denominator is explicitly set, default values of numerator and denominator should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Test Constant",
         description: "testing a constant",
@@ -405,7 +405,7 @@ describe("Constant", () => {
       expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
     });
 
-    it("when only numerator property is defined", async () => {
+    it("Numerator is explicitly set, default values of numerator and denominator should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Test Constant",
         description: "testing a constant",
@@ -424,7 +424,7 @@ describe("Constant", () => {
       expect(serialized.getAttribute("numerator")).to.eql("5.5");
     });
 
-    it("when only denominator property is defined", async () => {
+    it("Denominator is explicitly set, default values of numerator and denominator should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Test Constant",
         description: "testing a constant",

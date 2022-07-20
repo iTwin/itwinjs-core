@@ -366,7 +366,7 @@ describe("Unit", () => {
       expect(unitSerialization.definition).to.eql("[MILLI]*M");
     });
 
-    it("async - when only numerator property is defined", async () => {
+    it("Numerator is explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
         description: "Test unit",
@@ -386,7 +386,7 @@ describe("Unit", () => {
       expect(unitSerialization.offset).to.be.undefined;
     });
 
-    it("async - when denominator and offset properties are defined", async () => {
+    it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
         description: "Test unit",
@@ -436,7 +436,7 @@ describe("Unit", () => {
       expect(serialized.getAttribute("offset")).to.eql("4");
     });
 
-    it("when only numerator property is defined", async () => {
+    it("Numerator is explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
         description: "A unit defining the millimeter metric unit of length",
@@ -456,7 +456,7 @@ describe("Unit", () => {
       expect(serialized.getAttribute("offset")).to.eql("");
     });
 
-    it("when denominator and offset properties are defined", async () => {
+    it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
       const schemaJson = createSchemaJson({
         label: "Millimeter",
         description: "A unit defining the millimeter metric unit of length",
