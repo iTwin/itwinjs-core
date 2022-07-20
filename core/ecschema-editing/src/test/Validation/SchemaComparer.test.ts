@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
+import {
+  AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, Unit,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
@@ -5085,7 +5086,7 @@ describe("Schema comparison tests", () => {
   });
 
   describe("Constant delta tests", () => {
-    it("No Schema B Constant, all diagnostics reported", async () => {
+    it.only("No Schema B Constant, all diagnostics reported", async () => {
       const aItems = {
         ConstantA: {
           schemaItemType: "Constant",
@@ -5115,8 +5116,8 @@ describe("Schema comparison tests", () => {
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "phenomenon" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "definition" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false)).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false)).to.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false)).to.be.undefined;
     });
 
     it("Different phenomenon, diagnostic reported", async () => {
