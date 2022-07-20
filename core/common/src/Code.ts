@@ -6,22 +6,25 @@
  * @module Codes
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
  * @public
  * @extensions
  */
-export type CodeScopeProps = Id64String;
+export type CodeScopeProps = Id64String | GuidString;
 
 /** The wire format for a Code
  * @public
  * @extensions
  */
 export interface CodeProps {
+  /** The stringified 64-bit Id of the code spec for this code. */
   spec: Id64String;
+  /** Either the ElementId or the FederationGuid of the element that provides the scope for this code. */
   scope: CodeScopeProps;
+  /** the value of this code. May be undefined. */
   value?: string;
 }
 

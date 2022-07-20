@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CloudSqlite } from "@bentley/imodeljs-native";
-import { BentleyError, GuidString, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, GuidString, MarkRequired } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
@@ -14,7 +14,39 @@ import { SettingObject } from "./workspace/Settings";
  * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
  * locally, this copy is always up-to-date as of those changes.
  * @internal */
-export interface CodeIndex {
+export interface CodeIndexRead {
+  findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
+  findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
+  isCodePresent: (guid: CodeService.CodeGuid) => boolean;
+  findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
+  getCode: (guid: CodeService.CodeGuid) => CodeService.CodeFullEntry | undefined;
+  getCodeSpec: (props: CodeService.SpecNameOrId) => CodeService.SpecEntry;
+  forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
+  forAllCodeSpecs: (iter: CodeService.EntryIdIterator, filter?: CodeService.ValueFilter) => void;
+}
+
+/**
+ * Calling any of these methods first obtains the write lock for the code service, performs the operation, and then releases the lock.
+ * @internal */
+export interface CodeServiceWrite {
+  addAllCodeSpecs: (iModel: IModelDb) => void;
+  addAllCodes: (iModel: IModelDb) => void;
+  reserveCode: (code: CodeService.ProposedCode) => void;
+  reserveCodes: (args: { codes: CodeService.ProposedCode[], allOrNothing?: true }) => void;
+  reserveNextAvailableCode: (arg: { code: CodeService.ProposedCodeProps, from: CodeService.SequenceScope }) => void;
+  reserveNextAvailableCodes: (arg: { codes: CodeService.ProposedCodeProps[], from: CodeService.SequenceScope, asManyAsPossible?: true }) => void;
+  updateCode: (props: CodeService.UpdatedCode) => void;
+  deleteCodes: (guid: GuidString[]) => void;
+  insertCodeSpec: (val: CodeService.NameAndJson, type?: string) => void;
+}
+
+/** @internal */
+export interface CodeService extends CodeServiceWrite {
+  readonly codeIndex: CodeIndexRead;
+  readonly lockArgs: CodeService.ObtainLockArgs;
+  sasToken: AccessToken;
+
+  synchronizeWithCloud: () => void;
   /**
    * Verify that the Code of a to-be-inserted or to-be-updated Element:
    * 1. has already been reserved,
@@ -23,32 +55,13 @@ export interface CodeIndex {
    * If not, throw an exception. Elements with no CodeValue are ignored.
    */
   verifyCode: (props: CodeService.ElementCodeProps) => void;
-
-  findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
-  findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
-  isCodePresent: (guid: CodeService.CodeGuid) => boolean;
-  findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
-  getCode: (guid: CodeService.CodeGuid) => CodeService.CodeFullEntry | undefined;
-  forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
-}
-
-/** @internal */
-export interface CodeService {
-  readonly codeIndex: CodeIndex;
-  synchronizeWithCloud: () => void;
-  reserveNextAvailableCode: (arg: CodeService.ReserveNextArgs & { code: CodeService.ProposedCodeProps }) => Promise<void>;
-  reserveNextAvailableCodes: (arg: CodeService.ReserveNextArgs & { codes: CodeService.ProposedCodeProps[], asManyAsPossible?: true }) => Promise<void>;
-  reserveCode: (code: CodeService.ProposedCode & CodeService.ObtainLockArgs) => Promise<void>;
-  reserveCodes: (args: { codes: CodeService.ProposedCode[], allOrNothing?: true } & CodeService.ObtainLockArgs) => Promise<void>;
-  deleteCode: (guid: CodeService.CodeGuid & CodeService.ObtainLockArgs) => Promise<void>;
-  updateCode: (props: CodeService.UpdatedCode & CodeService.ObtainLockArgs) => Promise<void>;
 }
 
 /** @internal */
 export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
   export function registerSequence(seq: CodeSequence) { codeSequences.set(seq.sequenceName, seq); }
-  export function getSequence(name: string) {
+  export function getSequence(name: string): CodeSequence {
     const seq = codeSequences.get(name);
     if (!seq)
       throw new Error("SequenceNotFound", -1, `code sequence ${name} not found`);
@@ -84,10 +97,10 @@ export namespace CodeService {
   export let createForIModel: undefined | ((iModelDb: IModelDb) => CodeService);
 
   export interface ObtainLockArgs {
-    readonly user: string;
-    readonly nRetries?: number;
-    readonly retryDelayMs?: number;
-    readonly onFailure?: CloudSqlite.WriteLockBusyHandler;
+    user?: string;
+    nRetries: number;
+    retryDelayMs: number;
+    onFailure?: CloudSqlite.WriteLockBusyHandler;
   }
 
   export interface ReserveNextArgs extends ObtainLockArgs {
@@ -97,7 +110,7 @@ export namespace CodeService {
     readonly iModel: IModelDb;
     readonly props: {
       readonly code: CodeProps;
-      readonly federationGuid?: GuidString;
+      federationGuid?: GuidString;
     };
   }
 
