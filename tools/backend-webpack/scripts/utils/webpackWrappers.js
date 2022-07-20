@@ -9,7 +9,7 @@ const { PrettyLoggingPlugin } = require("@itwin/core-webpack-tools");
 
 function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
   try {
-    // config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess));
+    config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess));
     compiler = webpack(config);
   } catch (err) {
     console.log(`${chalk.red.inverse(name)} ${chalk.bold.red("Failed to configure webpack.\n")}`);
