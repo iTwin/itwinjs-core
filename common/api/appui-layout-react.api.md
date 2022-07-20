@@ -3091,7 +3091,7 @@ export interface UserProfileProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useTabInteractions<T extends HTMLElement>({ onClick, onDoubleClick, onDragStart, onPointerDown, }: UseTabInteractionsArgs): (instance: T | null | undefined) => void;
+export function useTabInteractions<T extends HTMLElement>({ onClick, onDoubleClick, onDragStart, }: UseTabInteractionsArgs): (instance: T | null | undefined) => void;
 
 // @internal (undocumented)
 export interface UseTabInteractionsArgs {
@@ -3101,8 +3101,6 @@ export interface UseTabInteractionsArgs {
     onDoubleClick?: () => void;
     // (undocumented)
     onDragStart?: () => void;
-    // (undocumented)
-    onPointerDown?: (args: PointerCaptorArgs, e: PointerCaptorEvent) => void;
 }
 
 // @internal (undocumented)

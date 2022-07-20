@@ -59,6 +59,7 @@ export const WidgetMenuTab = React.memo<WidgetMenuTabProps>(function WidgetMenuT
       <span>{tab.label}</span>
       <div className={classnames(
         "nz-checkmark",
+        // istanbul ignore next
         !active && "nz-hidden",
       )} />
     </div>

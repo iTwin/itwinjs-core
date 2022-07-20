@@ -77,7 +77,7 @@ export function FloatingTab() {
       className={className}
       style={style}
     >
-      {showWidgetIcon && tab?.iconSpec && <Icon iconSpec={tab.iconSpec} />}
+      {showWidgetIcon && tab && tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
       <span>{tab && tab.label}</span>
     </div>
   );

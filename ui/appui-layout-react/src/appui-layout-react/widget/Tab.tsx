@@ -21,6 +21,7 @@ import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { TabIdContext } from "./ContentRenderer";
 import { WidgetMenuTab } from "./MenuTab";
+import { WidgetOverflowContext } from "./Overflow";
 
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
@@ -60,8 +61,8 @@ export interface WidgetTabProps extends CommonProps {
  * @internal future
  */
 export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);
-  const overflown = !widgetTabsEntryContext;
+  const widgetOverflow = React.useContext(WidgetOverflowContext);
+  const overflown = !!widgetOverflow;
   if (overflown)
     return <WidgetMenuTab {...props} />;
   return <WidgetTabComponent {...props} />;
@@ -119,7 +120,6 @@ export interface UseTabInteractionsArgs {
   onClick?: () => void;
   onDoubleClick?: () => void;
   onDragStart?: () => void;
-  onPointerDown?: (args: PointerCaptorArgs, e: PointerCaptorEvent) => void;
 }
 
 /** @internal */
@@ -127,7 +127,6 @@ export function useTabInteractions<T extends HTMLElement>({
   onClick,
   onDoubleClick,
   onDragStart,
-  onPointerDown,
 }: UseTabInteractionsArgs) {
   const tab = React.useContext(TabStateContext);
   const widgetContext = React.useContext(WidgetContext);
@@ -209,11 +208,10 @@ export function useTabInteractions<T extends HTMLElement>({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: floatingWidgetId,
     });
-    onPointerDown?.(args, e);
 
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
     dragStartTimer.current.start();
-  }, [dispatch, floatingWidgetId, onPointerDown]);
+  }, [dispatch, floatingWidgetId]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
     if (!initialPointerPosition.current)
       return;
