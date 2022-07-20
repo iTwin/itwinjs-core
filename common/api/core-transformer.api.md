@@ -158,13 +158,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
     optimizeGeometry(options: OptimizeGeometryOptions): void;
     readonly options: Required<IModelImportOptions>;
-    // @deprecated (undocumented)
+    // @deprecated
     get preserveElementIdsForFiltering(): boolean;
     set preserveElementIdsForFiltering(val: boolean);
     progressInterval: number;
     // @internal
     saveStateToJson(): IModelImporterState;
-    // @deprecated (undocumented)
+    // @deprecated
     get simplifyElementGeometry(): boolean;
     set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;

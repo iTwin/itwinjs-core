@@ -96,7 +96,7 @@ export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
  * @public
  */
 export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: Iterable<Id64String>;
   /** The elements used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   elementIds: Iterable<Id64String>;

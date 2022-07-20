@@ -73,7 +73,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
-   * @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
+   * See [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
    * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
   public get preserveElementIdsForFiltering(): boolean {
@@ -84,7 +84,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
-   * @see [[IModelImportOptions.simplifyElementGeometry]]
+   * See [[IModelImportOptions.simplifyElementGeometry]]
    * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): boolean {

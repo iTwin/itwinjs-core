@@ -2620,7 +2620,6 @@ export interface ElementLoadProps extends ElementLoadOptions {
 export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     elementIds: Iterable<Id64String>;
     exclude?: boolean;
-    // (undocumented)
     modelIds?: Iterable<Id64String>;
     // @internal (undocumented)
     priority?: never;
