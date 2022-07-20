@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
+import { RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
+import { FakeFrontendStorage } from "./FakeFrontendStorage";
 import { openIModel } from "./openIModel";
 import { signIn } from "./signIn";
 import { Surface } from "./Surface";
@@ -51,22 +52,6 @@ async function openFile(filename: string, writable: boolean): Promise<IModelConn
   const iModelConnection = await openIModel(filename, writable);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
-}
-
-// eslint-disable-next-line deprecation/deprecation
-class FakeTileCache extends CloudStorageTileCache {
-  public constructor() { super(); }
-
-  // eslint-disable-next-line deprecation/deprecation
-  protected override async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
-    const init: RequestInit = {
-      headers: container.headers,
-      method: "GET",
-    };
-
-    const url = `${container.url}/${this.formResourceName(id)}`;
-    return fetch(url, init);
-  }
 }
 
 function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
@@ -124,8 +109,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   if (configuration.useFakeCloudStorageTileCache)
-    // eslint-disable-next-line deprecation/deprecation
-    (CloudStorageTileCache as any)._instance = new FakeTileCache();
+    tileAdminProps.tileStorage = new FakeFrontendStorage();
 
   return [renderSystemOptions, tileAdminProps];
 }
