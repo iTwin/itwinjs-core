@@ -609,7 +609,7 @@ export class IModelTransformer extends IModelExportHandler {
       const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
       if (!referenceState.needsImport) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
-      const exists = EntityUnifier.exists(this.sourceDb, { id: referenceId });
+      const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       if (!exists) {
         Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);
         switch (this._options.danglingReferencesBehavior) {
