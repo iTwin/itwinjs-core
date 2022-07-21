@@ -9,7 +9,9 @@
 import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
-/** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
+/**
+ * The identity of the element defining the scope for a Code value.
+ * For query input, may either be an ElementId or a FederationGuid. When returned from a query, it will be an ElementId.
  * @public
  * @extensions
  */

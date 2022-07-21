@@ -385,7 +385,7 @@ export interface ElementLoadOptions {
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
-  code?: CodeProps;
+  code?: Required<CodeProps>;
   federationGuid?: GuidString;
 }
 

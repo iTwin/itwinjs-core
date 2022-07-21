@@ -54,7 +54,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _db: IModelJsNative.AnyDb | undefined;
 
   public constructor(private _sql: string) { }
-  public get stmt(): IModelJsNative.SqliteStatement { return this._stmt! }
+  public get stmt(): IModelJsNative.SqliteStatement { return this._stmt!; }
   public get sql() { return this._sql; }
 
   /** Check if this statement has been prepared successfully or not */

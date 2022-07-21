@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CloudSqlite } from "@bentley/imodeljs-native";
-import { AccessToken, BentleyError, GuidString, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, GuidString, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
@@ -14,7 +14,7 @@ import { SettingObject } from "./workspace/Settings";
  * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
  * locally, this copy is always up-to-date as of those changes.
  * @internal */
-export interface CodeIndexRead {
+export interface CodeIndex {
   findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
   findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
   isCodePresent: (guid: CodeService.CodeGuid) => boolean;
@@ -25,27 +25,14 @@ export interface CodeIndexRead {
   forAllCodeSpecs: (iter: CodeService.EntryIdIterator, filter?: CodeService.ValueFilter) => void;
 }
 
-/**
- * Calling any of these methods first obtains the write lock for the code service, performs the operation, and then releases the lock.
- * @internal */
-export interface CodeServiceWrite {
-  addAllCodeSpecs: (iModel: IModelDb) => void;
-  addAllCodes: (iModel: IModelDb) => void;
-  reserveCode: (code: CodeService.ProposedCode) => void;
-  reserveCodes: (args: { codes: CodeService.ProposedCode[], allOrNothing?: true }) => void;
-  reserveNextAvailableCode: (arg: { code: CodeService.ProposedCodeProps, from: CodeService.SequenceScope }) => void;
-  reserveNextAvailableCodes: (arg: { codes: CodeService.ProposedCodeProps[], from: CodeService.SequenceScope, asManyAsPossible?: true }) => void;
-  updateCode: (props: CodeService.UpdatedCode) => void;
-  deleteCodes: (guid: GuidString[]) => void;
-  insertCodeSpec: (val: CodeService.NameAndJson, type?: string) => void;
-}
-
 /** @internal */
-export interface CodeService extends CodeServiceWrite {
-  readonly codeIndex: CodeIndexRead;
-  readonly lockArgs: CodeService.ObtainLockArgs;
+export interface CodeService {
+  readonly codeIndex: CodeIndex;
+  readonly lockParams: CodeService.ObtainLockParams;
+  readonly source: CodeService.AuthorAndOrigin;
   sasToken: AccessToken;
 
+  close: () => void;
   synchronizeWithCloud: () => void;
   /**
    * Verify that the Code of a to-be-inserted or to-be-updated Element:
@@ -55,6 +42,19 @@ export interface CodeService extends CodeServiceWrite {
    * If not, throw an exception. Elements with no CodeValue are ignored.
    */
   verifyCode: (props: CodeService.ElementCodeProps) => void;
+  addCodeSpec: (val: CodeService.NameAndJson, type?: string) => Promise<void>;
+  addAllCodeSpecs: () => Promise<void>;
+  addAllCodes: () => Promise<void>;
+  reserveCode: (code: CodeService.ProposedCode) => Promise<void>;
+  reserveCodes: (args: { codes: CodeService.ProposedCode[], allOrNothing?: true }) => Promise<void>;
+  reserveNextAvailableCode: (arg: { code: CodeService.ProposedCodeProps, from: CodeService.SequenceScope }) => Promise<void>;
+  reserveNextAvailableCodes: (arg: { codes: CodeService.ProposedCodeProps[], from: CodeService.SequenceScope, asManyAsPossible?: true }) => Promise<void>;
+  updateCode: (props: CodeService.UpdatedCode) => Promise<void>;
+  updateCodes: (args: { props: CodeService.UpdatedCode[], allOrNothing?: true }) => Promise<void>;
+  deleteCodes: (guid: GuidString[]) => Promise<void>;
+
+  makeScopeAndSpec: (props: CodeProps) => CodeService.ScopeAndSpec;
+  makeProposedCode: (arg: { code: Required<CodeProps>, props: CodeService.ProposedCodeProps }) => CodeService.ProposedCode;
 }
 
 /** @internal */
@@ -80,32 +80,33 @@ export namespace CodeService {
   export type TableName = string;
   export type TableIterator<T> = (id: T) => IteratorReturn;
   export type EntryIdIterator = TableIterator<EntryId>;
-  export type CodeIterator = TableIterator<CodeService.CodeGuid>;
+  export type CodeIterator = TableIterator<CodeGuid>;
   export type AuthorEntry = TableEntry;
   export type SpecEntry = TableEntry;
   export type OriginEntry = TableEntry;
 
   export type IndexProps = CloudSqlite.AccountAccessProps & CloudSqlite.ContainerProps & CloudSqlite.DbNameProp;
 
-  export interface TableData extends CodeService.NameAndJson {
+  export interface TableData extends NameAndJson {
     readonly type: string;
   }
   export interface TableEntry extends TableData {
-    readonly id: CodeService.EntryId;
+    readonly id: EntryId;
   }
 
   export let createForIModel: undefined | ((iModelDb: IModelDb) => CodeService);
 
-  export interface ObtainLockArgs {
+  export interface ObtainLockParams {
     user?: string;
     nRetries: number;
     retryDelayMs: number;
     onFailure?: CloudSqlite.WriteLockBusyHandler;
   }
 
-  export interface ReserveNextArgs extends ObtainLockArgs {
-    readonly from: CodeService.SequenceScope;
+  export interface ReserveNextArgs {
+    readonly from: SequenceScope;
   }
+
   export interface ElementCodeProps {
     readonly iModel: IModelDb;
     readonly props: {
@@ -117,26 +118,26 @@ export namespace CodeService {
   export interface SpecNameAndId { readonly idxId: EntryId, readonly name: string }
 
   export type SpecNameOrId = SpecNameAndId |
-  { readonly name: CodeService.CodeSpecName, idxId?: never, type?: string } |
+  { readonly name: CodeSpecName, idxId?: never, type?: string } |
   { readonly idxId: EntryId, name?: never, type?: string };
 
   export interface ScopeAndSpec {
     readonly spec: SpecNameOrId;
-    readonly scope: CodeService.ScopeGuid;
+    readonly scope: ScopeGuid;
   }
 
   export interface ScopeSpecAndValue extends ScopeAndSpec {
-    readonly value: CodeService.CodeValue;
+    readonly value: CodeValue;
   }
 
   export interface CodeEntry {
     readonly spec: SpecNameOrId;
-    readonly scope: CodeService.ScopeGuid;
-    readonly value: CodeService.CodeValue;
-    readonly guid: CodeService.CodeGuid;
-    readonly originId: EntryId;
+    readonly scope: ScopeGuid;
+    readonly value: CodeValue;
+    readonly guid: CodeGuid;
+    readonly origin: CodeOriginName;
     readonly flags?: Flags;
-    readonly authorId?: EntryId;
+    readonly author?: AuthorName;
     readonly json?: SettingObject;
   }
   export type CodeFullEntry = CodeEntry & { readonly spec: SpecNameAndId };
@@ -151,7 +152,7 @@ export namespace CodeService {
 
   export interface CodeFilter extends ValueFilter {
     readonly spec?: SpecNameOrId;
-    readonly scope?: CodeService.ScopeGuid;
+    readonly scope?: ScopeGuid;
   }
 
   export type ErrorId =
@@ -171,13 +172,15 @@ export namespace CodeService {
     "MissingInput" |
     "MissingSpec" |
     "NoCodeIndex" |
+    "SequenceFull" |
     "ReserveErrors" |
     "SequenceNotFound" |
     "SqlLogicError" |
+    "UpdateErrors" |
     "ValueIsInUse";
 
   export class Error extends BentleyError {
-    constructor(public errorId: ErrorId, errNum: number, message: string, public problems?: ReserveProblem[]) {
+    constructor(public errorId: ErrorId, errNum: number, message: string, public problems?: ReserveProblem[] | UpdateProblem[]) {
       super(errNum, message);
     }
   }
@@ -196,13 +199,16 @@ export namespace CodeService {
     readonly value: CodeValue;
   }
 
+  export interface AuthorAndOrigin {
+    readonly origin: Mutable<NameAndJson>;
+    readonly author: Mutable<NameAndJson>;
+  }
+
   export interface ProposedCodeProps {
     value?: CodeValue;
     readonly guid: CodeGuid;
     readonly flags?: Flags;
     readonly json?: SettingObject;
-    readonly origin: NameAndJson;
-    readonly author: NameAndJson;
   }
 
   export interface SequenceScope extends ScopeAndSpec {
@@ -214,6 +220,12 @@ export namespace CodeService {
 
   export interface ReserveProblem {
     readonly code: ProposedCode;
+    readonly errorId: ErrorId;
+    readonly message: string;
+  }
+
+  export interface UpdateProblem {
+    readonly prop: UpdatedCode;
     readonly errorId: ErrorId;
     readonly message: string;
   }
