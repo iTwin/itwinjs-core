@@ -22,17 +22,17 @@ declare global {
 class ElectronIpc implements IpcSocketFrontend {
   private _api: ITwinElectronApi | IpcRenderer;
   public addListener(channelName: string, listener: IpcListener) {
-    this._api?.addListener(channelName, listener);
-    return () => this._api?.removeListener(channelName, listener);
+    this._api.addListener(channelName, listener);
+    return () => this._api.removeListener(channelName, listener);
   }
   public removeListener(channelName: string, listener: IpcListener) {
-    this._api?.removeListener(channelName, listener);
+    this._api.removeListener(channelName, listener);
   }
   public send(channel: string, ...data: any[]) {
-    this._api?.send(channel, ...data);
+    this._api.send(channel, ...data);
   }
   public async invoke(channel: string, ...args: any[]) {
-    return this._api?.invoke(channel, ...args);
+    return this._api.invoke(channel, ...args);
   }
   constructor() {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
