@@ -4,7 +4,7 @@ Presenting information to the user in their preferred locale (language, date and
 
 ## Language translation
 
-String localization is handled in a conventional way. Rather than specifying strings directly, a "key" is passed to the `Localization.getLocalizedString` method, which retrieves the corresponding string for the current locale for presentation to the user.
+String localization is handled in a conventional way. Rather than specifying strings directly, a "key" is passed to the [Localization.getLocalizedString]($common) method, which retrieves the corresponding string for the current locale for presentation to the user.
 
 For that to work, the localization system needs a dictionary of key-to-string substitutions for each expected locale. That dictionary is spread over a number of JSON files that are placed into a locale-specific directory in the application's "public" folder on the server. The key consists of a namespace (which identifies the specific JSON file in the locale directory, and thus must be unique across all packages in use), followed by a colon, followed by a period delimited tag that identifies the object within the JSON file.
 
@@ -58,7 +58,7 @@ For example, suppose you are developing an application called SafetyBase and you
 
 Note: German was translated from English in Google Translate.
 
-By default, the IModelApp uses an instance of [ITwinLocalization]($i18n) for localization purposes. Below, a user-created instance of ITwinLocalization will be passed in to IModelApp to demonstrate how a custom [Localization]($common) implementation could be used instead.
+By default, the IModelApp uses an instance of [ITwinLocalization]($i18n) for localization purposes. Below, a user-created instance of this class will be passed in to IModelApp to demonstrate how a custom [Localization]($common) implementation could be used instead.
 
 ```ts
 import { IModelApp } from "@itwin/core-frontend";
@@ -76,9 +76,7 @@ await IModelApp.startup({ localization: myCustomLocalization });
 
 ```
 
-Additionally, the ITwinLocalization constructor accepts [LocalizationOptions]($i18n) which may provide enough customization to avoid creating a custom Localization implementation (if non-default behavior is required).
-
-To utilize the localization dictionaries, first initialize the localization instance to register any namespaces. `Localization.initialize` takes in a list of namespaces to register.
+To utilize the localization dictionaries, first initialize the localization instance to register any namespaces. [Localization.initialize]($common) takes in a list of namespaces to register. [Localization.registerNamespace]($common) takes only a single namespace string at a time.
 
 ```ts
 const namespaces: string[] = ["SafetyBaseMessages"];
@@ -88,9 +86,9 @@ await IModelApp.localization.initialize(namespaces);
 await IModelApp.localization.registerNamespace("AnotherNamespace");
 ```
 
-Registering a namespace starts the process of retrieving the relevant namespace JSON file(s) corresponding to the set language/locale. This action returns a Promise which will be fulfilled when the file(s) is retrieved and ready to be accessed by the Localization instance, thus it is required to `await` for this process to finish. In the example above, the `Localization.initialize` call is retrieving the `public/locale/en/SafetyBaseMessages.json` file and the `Localization.registerNamespace` call will attempt to find a `public/locale/en/AnotherNamespace.json` file.
+Registering a namespace starts the process of retrieving the relevant namespace JSON file(s) corresponding to the set language/locale. This action returns a Promise which will be fulfilled when the file(s) is retrieved and ready to be accessed by the Localization instance, thus it is required to `await` for this process to finish. In the example above, the [Localization.initialize]($common) call is retrieving the `public/locale/en/SafetyBaseMessages.json` file and the [Localization.registerNamespace]($common) call will attempt to find a `public/locale/en/AnotherNamespace.json` file.
 
-Now, a locale-specific string can be requested with the `Localization.getLocalizedString` method. To specify the value to grab from the localization dictionary, specify its key in the following format: The namespace, followed by a colon, followed by a period-delimited tag that identifies the object within the JSON file. For example, "SafetyBaseMessages:info.login.loggedIn" is the key for the info.login.loggedIn value in the SafetyBaseMessages namespace.
+Now, a locale-specific string can be requested with the [Localization.getLocalizedString]($common) method. To specify the value to grab from the localization dictionary, specify its key in the following format: The namespace, followed by a colon, followed by a period-delimited tag that identifies the object within the JSON file. For example, "SafetyBaseMessages:info.login.loggedIn" is the key for the info.login.loggedIn value in the SafetyBaseMessages namespace.
 
 ```ts
 const myUsername = "John_Smith_123"
@@ -101,9 +99,9 @@ IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedI
 // returns "You are logged in as John_Smith_123."
 ```
 
-Notice how in the second statement, "{{username}}" from SafetyBaseMessages:info.login.loggedIn's value was replaced with "John_Smith_123". The `Localization.getLocalizedString` method accepts an optional key-value dictionary argument. The method will then substitute the values in this dictionary with corresponding keys in the localized string as long as they are surrounded by {{ }}. This substitution is called "interpolation" in internationalization terminology.
+Notice how in the second statement, "{{username}}" from SafetyBaseMessages:info.login.loggedIn's value was replaced with "John_Smith_123". The [Localization.getLocalizedString]($common) method accepts an optional key-value dictionary argument. The method will then substitute the values in this dictionary with corresponding keys in the localized string as long as they are surrounded by {{ }}. This substitution is called "interpolation" in internationalization terminology.
 
-Specific to the ITwinLocalization class, the browser is used to detect the language if none is set. However, if that fails, the langauge will be set to English. Additionally, the selected language can be manually changed by calling the `Localization.changeLanguage` interface method. Changing the language requires reacquiring the relevant namespace JSON files, so use `await` to wait for the returned Promise to resolve.
+Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect the language if none is set. However, if that fails, the langauge will be set to English. Additionally, the selected language can be manually changed by calling the [Localization.changeLanguage]($common) interface method. Changing the language requires reacquiring the relevant namespace JSON files, so use `await` to wait for the returned Promise to resolve.
 
 ```ts
 await IModelApp.localization.changeLanguage("de");
@@ -126,9 +124,11 @@ IModelApp.localization.getLocalizedKeys("Hello, %{SafetyBaseMessages:info.login.
 // returns "Hello, You are logged in as {{username}}."
 ```
 
-### Powered by i18Next
+### Powered by i18next
 
-Behind the scenes, iTwin.js uses the [i18Next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example given above. iTwin.js initializes i18next with a set of options that are usually fine for all applications. If you want different options, you can use i18next directly from your application, or instantiate an instance of iTwin.js' I18N class, which provides some convenience methods for waiting for the read to finish, etc.
+Behind the scenes, iTwin.js uses the [i18next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example given above.
+
+As mentioned above, [IModelApp.localization]($frontend) uses an instance of the [ITwinLocalization]($i18n) class by default, which initializes i18next with a set of options that are usually fine for all applications. If you want different options, you could instantiate your own instance of [ITwinLocalization]($i18n) and pass in your own [LocalizationOptions]($i18n) to [ITwinLocalization.constructor]($i18n). Alternatively, you could create your own implementation of the iTwin.js [Localization]($common) interface or even import and use the i18next package directly.
 
 ### A Note About HTML in Localized Strings
 
@@ -179,7 +179,7 @@ If you omit the "flyover" key, the keyin property is used for the flyover text. 
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts
-const firstPrompt: string = IModelApp.getLocalizedString("SafetyBaseTools:Place.Sprinkler.prompt1");
+const firstPrompt: string = IModelApp.localization.getLocalizedString("SafetyBaseTools:Place.Sprinkler.prompt1");
 // returns "Enter Sprinkler origin."
 ```
 
