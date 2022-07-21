@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-telemetry",
-      "comment": "Upgrade to Webpack 5",
+      "comment": "",
       "type": "none"
     }
   ],

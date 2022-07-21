@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Upgrade to Webpack 5",
+      "comment": "",
       "type": "none"
     }
   ],
