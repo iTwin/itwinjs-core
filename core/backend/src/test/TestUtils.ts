@@ -7,7 +7,7 @@ import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost, IModelHostConfiguration } from "../IModelHost";
+import { IModelHost, IModelHostOptions } from "../IModelHost";
 
 /** Class for simple test timing */
 export class Timer {
@@ -56,8 +56,8 @@ export class TestUtils {
    * - concurrentQuery.current === 4
    * - cacheDir === path.join(__dirname, ".cache")
    */
-  public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    const cfg = config ?? new IModelHostConfiguration();
+  public static async startBackend(config?: IModelHostOptions): Promise<void> {
+    const cfg = config ?? {};
     if (ProcessDetector.isIOSAppBackend) {
       cfg.cacheDir = undefined; // Let the native side handle the cache.
     } else {

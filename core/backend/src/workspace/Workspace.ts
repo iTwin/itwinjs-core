@@ -10,8 +10,8 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { CloudSqlite, IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
+import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { BeEvent, DbResult, Logger, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -250,7 +250,7 @@ export interface Workspace {
   loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
 
   /** Close this Workspace. All WorkspaceContainers are dropped. */
-  close(): Promise<void>;
+  close(): void;
 }
 
 /**
@@ -279,7 +279,7 @@ export interface WorkspaceContainer {
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
-  close(): Promise<void>;
+  close(): void;
 }
 
 /** @internal */
@@ -301,14 +301,19 @@ export class ITwinWorkspace implements Workspace {
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
       if (cacheProps.clearContents)
         fs.emptyDirSync(cacheProps.rootDir);
-      this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
+      try {
+        this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
+      } catch (e) {
+        Logger.logError("workspace", `error creating workspace cloud cache in ${cacheProps.rootDir}`);
+        throw e;
+      }
     }
     return this._cloudCache;
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
-    this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
+    this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
     this._cloudCacheProps = opts?.cloudCacheProps;
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
@@ -355,13 +360,15 @@ export class ITwinWorkspace implements Workspace {
     this.settings.addJson(`${db.container.id}/${db.dbName}/${settingRsc}`, priority, setting);
   }
 
-  public async close(): Promise<void> {
+  public close() {
     this.settings.close();
     for (const [_id, container] of this._containers)
-      await container.close();
+      container.close();
     this._containers.clear();
-    this._cloudCache?.destroy();
-    this._cloudCache = undefined;
+    if (this._cloudCache) {
+      this._cloudCache.destroy();
+      this._cloudCache = undefined;
+    }
   }
 
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
@@ -561,18 +568,18 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return db;
   }
 
-  public async dropWorkspaceDb(toDrop: WorkspaceDb) {
+  public dropWorkspaceDb(toDrop: WorkspaceDb) {
     const name = toDrop.dbName;
     const wsDb = this._wsDbs.get(name);
     if (wsDb === toDrop) {
       this._wsDbs.delete(name);
-      await wsDb.close();
+      wsDb.close();
     }
   }
 
-  public async close() {
+  public close() {
     for (const [_name, db] of this._wsDbs)
-      await db.close();
+      db.close();
     this._wsDbs.clear();
     this.cloudContainer?.disconnect();
   }
@@ -627,7 +634,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
-  public async close() {
+  public close() {
     if (this.isOpen) {
       this.onClose.raiseEvent();
       this.sqliteDb.closeDb();

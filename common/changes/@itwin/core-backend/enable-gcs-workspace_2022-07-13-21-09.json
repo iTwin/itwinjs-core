@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
