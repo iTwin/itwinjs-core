@@ -6063,8 +6063,8 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;

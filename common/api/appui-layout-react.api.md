@@ -9,7 +9,6 @@
 import { CommonProps } from '@itwin/core-react';
 import { Draft } from 'immer';
 import { IconSpec } from '@itwin/core-react';
-import { Interaction } from 'scheduler/tracing';
 import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
 import { Omit as Omit_2 } from '@itwin/core-react';
@@ -2051,14 +2050,14 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
         zones: {
-            1: import("./Zone").ZoneManagerProps;
-            2: import("./Zone").ZoneManagerProps;
-            3: import("./Zone").ZoneManagerProps;
-            4: import("./Zone").ZoneManagerProps;
-            7: import("./Zone").ZoneManagerProps;
-            6: import("./Zone").ZoneManagerProps;
-            8: import("./Zone").ZoneManagerProps;
-            9: import("./Zone").ZoneManagerProps;
+            1: ZoneManagerProps;
+            2: ZoneManagerProps;
+            3: ZoneManagerProps;
+            4: ZoneManagerProps;
+            7: ZoneManagerProps;
+            6: ZoneManagerProps;
+            8: ZoneManagerProps;
+            9: ZoneManagerProps;
         };
         draggedWidget?: DraggedWidgetManagerProps | undefined;
         isInFooterMode: boolean;
