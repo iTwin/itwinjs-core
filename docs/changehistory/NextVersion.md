@@ -81,7 +81,7 @@ The argument for [IModelHost.startup]($backend) has been changed from [IModelHos
 
 ## Tooling
 
-The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now requires a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update. If you would like to continue using _webpack@^4_, please use versions ~3.2.0 of these packages.
+The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
 
 ## Deprecations
 
