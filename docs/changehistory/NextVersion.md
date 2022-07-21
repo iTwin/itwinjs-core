@@ -11,10 +11,13 @@ Table of contents:
 - [Frontend category APIs](#frontend-category-apis)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
-  - [Tool Settings title](tool-settings-title)
+  - [Tool Settings title](#tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
 - [IModelHostOptions](#imodelhostoptions)
+- [Tooling](#tooling)
 - [Deprecations](#deprecations)
+  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-mobile](#itwincore-mobile)
 
 ## Display system
 
@@ -76,6 +79,10 @@ Reduced API surface of an `ElectronApp` class to only allow white-listed APIs fr
 
 The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
 
+## Tooling
+
+The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now requires a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update. If you would like to continue using _webpack@^4_, please use versions ~3.2.0 of these packages.
+
 ## Deprecations
 
 ### @itwin/core-bentley
@@ -89,5 +96,3 @@ The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.g
 IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
 
 IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
-
-
