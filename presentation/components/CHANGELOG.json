@@ -2,6 +2,12 @@
   "name": "@itwin/presentation-components",
   "entries": [
     {
+      "version": "3.2.5",
+      "tag": "@itwin/presentation-components_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.4",
       "tag": "@itwin/presentation-components_v3.2.4",
       "date": "Tue, 21 Jun 2022 18:06:33 GMT",

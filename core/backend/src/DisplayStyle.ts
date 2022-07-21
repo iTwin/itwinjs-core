@@ -94,20 +94,18 @@ export abstract class DisplayStyle extends DefinitionElement {
         settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
     }
 
-    // eslint-disable-next-line deprecation/deprecation
     if (settings.renderTimeline) {
       const renderTimeline = context.findTargetElementId(settings.renderTimeline);
       if (Id64.isValid(renderTimeline))
         settings.renderTimeline = renderTimeline;
       else
         delete settings.renderTimeline;
-    } else if (settings.scheduleScript) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (settings.scheduleScript) {
       const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
       if (scheduleScript.length > 0)
-        settings.scheduleScript = scheduleScript; // eslint-disable-line deprecation/deprecation
+        settings.scheduleScript = scheduleScript;
       else
-        delete settings.scheduleScript; // eslint-disable-line deprecation/deprecation
+        delete settings.scheduleScript;
     }
   }
 
@@ -120,8 +118,7 @@ export abstract class DisplayStyle extends DefinitionElement {
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
-    } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (this.settings.scheduleScriptProps) {
       script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
       sourceId = this.id;
     }

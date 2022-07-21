@@ -518,6 +518,9 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
+// @beta
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -618,6 +621,7 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
+        hasPair(pair: Uint32Pair): boolean;
         get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Set<number>>;

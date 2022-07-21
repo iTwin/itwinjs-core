@@ -52,12 +52,14 @@ function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRg
   return { width, height };
 }
 
-export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
     return false;
 
-  return hilites.elements.has(feature.elementId.lower, feature.elementId.upper) ||
-    hilites.subcategories.has(feature.subCategoryId.lower, feature.subCategoryId.upper);
+  if ("union" === hilites.modelSubCategoryMode)
+    return isModelHilited || hilites.elements.hasPair(feature.elementId) || hilites.subcategories.hasPair(feature.subCategoryId);
+
+  return hilites.elements.hasPair(feature.elementId) || (isModelHilited && hilites.subcategories.hasPair(feature.subCategoryId));
 }
 
 /** @internal */
@@ -88,6 +90,8 @@ export class FeatureOverrides implements WebGLDisposable {
   public get anyOpaque() { return this._anyOpaque; }
   public get anyHilited() { return this._anyHilited; }
 
+  /** For tests. */
+  public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
   public get isUniformFlashed() {
@@ -148,7 +152,7 @@ export class FeatureOverrides implements WebGLDisposable {
     const allowEmphasis = true !== this._options.noEmphasis;
 
     const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const isModelHilited = allowHilite && hilites.models.has(modelIdParts.lower, modelIdParts.upper);
+    const isModelHilited = allowHilite && hilites.models.hasPair(modelIdParts);
 
     this._anyOpaque = this._anyTranslucent = this._anyViewIndependentTranslucent = this._anyHilited = false;
 
@@ -188,7 +192,7 @@ export class FeatureOverrides implements WebGLDisposable {
       }
 
       let flags = app.nonLocatable ? OvrFlags.NonLocatable : OvrFlags.None;
-      if (isModelHilited || (allowHilite && isFeatureHilited(feature, hilites))) {
+      if (allowHilite && isFeatureHilited(feature, hilites, isModelHilited)) {
         flags |= OvrFlags.Hilited;
         this._anyHilited = true;
       }
@@ -259,46 +263,48 @@ export class FeatureOverrides implements WebGLDisposable {
 
   // NB: If hilites is undefined, it means that the hilited set has not changed.
   private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
-    const allowHilite = true !== this._options.noHilite;
-    const allowFlash = true !== this._options.noFlash;
-
-    this._anyOverridden = this._anyHilited = false;
-
-    let isModelHilited = false;
-    let needElemId = allowFlash && undefined !== flashed;
-    let needSubCatId = false;
-    if (undefined !== hilites) {
-      const modelId = Id64.getUint32Pair(map.modelId);
-      isModelHilited = allowHilite && hilites.models.has(modelId.lower, modelId.upper);
-      needSubCatId = !isModelHilited && allowHilite && !hilites.subcategories.isEmpty;
-      needElemId = needElemId || (!isModelHilited && allowHilite && !hilites.elements.isEmpty);
+    if (!hilites || true === this._options.noHilite) {
+      this.updateFlashed(data, map, flashed);
+      return;
     }
 
+    const allowFlash = true !== this._options.noFlash;
+    const intersect = "intersection" === hilites.modelSubCategoryMode;
+
+    let isModelHilited = false;
+    if (!hilites.models.isEmpty) {
+      const modelId = Id64.getUint32Pair(map.modelId);
+      isModelHilited = hilites.models.hasPair(modelId);
+    }
+
+    this._anyOverridden = this._anyHilited = false;
     for (let i = 0; i < map.numFeatures; i++) {
-      const dataIndex = i * 4 * 2;
+      const dataIndex = i* 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
-        // Do the same thing as when applying feature overrides - if it's invisible, none of the other flags matter
-        // (and if we don't check this we can end up rendering silhouettes around invisible elements in selection set)
+        // If it's invisible, none of the other flags matter. We can't flash it and don't want to hilite it.
         this._anyOverridden = true;
         continue;
       }
 
-      let isFlashed = false;
-      let isHilited = undefined !== hilites ? isModelHilited : (0 !== (oldFlags & OvrFlags.Hilited));
-
-      if (needElemId) {
-        const elemId = map.getElementIdPair(i);
-        if (undefined !== flashed && allowFlash)
-          isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
-
-        if (!isHilited && allowHilite && undefined !== hilites)
-          isHilited = hilites.elements.has(elemId.lower, elemId.upper);
+      let elemId;
+      let isHilited = isModelHilited && !intersect;
+      if (!isHilited && !hilites.elements.isEmpty) {
+        elemId = map.getElementIdPair(i);
+        isHilited = hilites.elements.hasPair(elemId);
       }
 
-      if (needSubCatId && !isHilited && allowHilite) {
-        const subcat = map.getSubCategoryIdPair(i);
-        isHilited = hilites!.subcategories.has(subcat.lower, subcat.upper);
+      if (!isHilited && !hilites.subcategories.isEmpty) {
+        if (isModelHilited || !intersect) {
+          const subcat = map.getSubCategoryIdPair(i);
+          isHilited = hilites.subcategories.hasPair(subcat);
+        }
+      }
+
+      let isFlashed = false;
+      if (flashed && allowFlash) {
+        elemId = elemId ?? map.getElementIdPair(i);
+        isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
       }
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
@@ -309,6 +315,36 @@ export class FeatureOverrides implements WebGLDisposable {
         this._anyOverridden = true;
         this._anyHilited = this._anyHilited || isHilited || OvrFlags.None !== (newFlags & OvrFlags.Emphasized);
       }
+    }
+
+    this.updateUniformSymbologyFlags();
+  }
+
+  private updateFlashed(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair): void {
+    if (true === this._options.noFlash)
+      return;
+
+    this._anyOverridden = false;
+
+    for (let i = 0; i < map.numFeatures; i++) {
+      const dataIndex = i * 4 * 2;
+      const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
+      if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
+        // If it's invisible, none of the other flags matter and we can't flash it.
+        this._anyOverridden = true;
+        continue;
+      }
+
+      let isFlashed = false;
+      if (flashed) {
+        const elemId = map.getElementIdPair(i);
+        isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
+      }
+
+      const newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
+      data.setOvrFlagsAtIndex(dataIndex, newFlags);
+      if (OvrFlags.None !== newFlags)
+        this._anyOverridden = true;
     }
 
     this.updateUniformSymbologyFlags();

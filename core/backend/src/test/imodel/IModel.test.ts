@@ -32,8 +32,9 @@ import {
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions } from "../TestUtils";
 
 // spell-checker: disable
 
@@ -2093,7 +2094,7 @@ describe("iModel", () => {
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
-    process.env.BLOCKCACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
@@ -2103,7 +2104,7 @@ describe("iModel", () => {
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
-    process.env.BLOCKCACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
     await imodel1.refreshContainerSas(accessToken);
   });

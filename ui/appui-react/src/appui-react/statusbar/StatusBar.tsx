@@ -14,8 +14,7 @@ import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from 
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-import { StatusMessage } from "../messages/StatusMessageManager";
-import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
+import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
 
 // cspell:ignore safearea
 
@@ -24,10 +23,7 @@ import { StatusMessagesContainer } from "../messages/StatusMessagesContainer";
  */
 interface StatusBarState {
   openWidget: StatusBarFieldId;
-  messages: ReadonlyArray<StatusMessage>;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
-  isActivityMessageVisible: boolean;
-  toastTarget: HTMLElement | null;
 }
 
 /** Properties for the [[StatusBar]] React component
@@ -41,10 +37,19 @@ export interface StatusBarProps extends CommonProps {
   isInFooterMode?: boolean;
 }
 
+/** Message type for the [[StatusBar]] React component
+ * @internal
+ */
+interface StatusBarMessage {
+  close: () => void;
+  id: string;
+}
+
 /** Status Bar React component.
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
+  private messages: StatusBarMessage[] = [];
 
   /** @internal */
   constructor(props: StatusBarProps) {
@@ -52,10 +57,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
     this.state = {
       openWidget: null,
-      messages: MessageManager.activeMessageManager.messages,
       activityMessageInfo: undefined,
-      isActivityMessageVisible: false,
-      toastTarget: null,
     };
   }
 
@@ -107,7 +109,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
     MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
 
-    MessageManager.activeMessageManager.initialize();
     MessageManager.updateMessages();
   }
 
@@ -119,12 +120,30 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
-    this.setState({ messages: MessageManager.activeMessageManager.messages });
+    this._updateMessages();
+    const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !this.messages.find((m) => m.id === msg.id));
+    messagesToAdd.forEach((msg) => {
+      const displayedMessage = MessageManager.displayMessage(msg.messageDetails, { onRemove: () => this._closeMessage(msg.id) });
+      if(!!displayedMessage)
+        this.messages.push({close: displayedMessage.close, id: msg.id});
+    });
+  };
+
+  private _updateMessages = () => {
+    const updatedMessages = [...this.messages];
+    this.messages.forEach((m) => {
+      if (!MessageManager.activeMessageManager.messages.some((msg) => m.id === msg.id)) {
+        m.close();
+        const index = updatedMessages.findIndex((msg) => msg.id === m.id);
+        updatedMessages.splice(index, 1);
+      }
+    });
+    this.messages = updatedMessages;
   };
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
-    this.setState({ messages: MessageManager.activeMessageManager.messages });
+    this._updateMessages();
   };
 
   /**
@@ -132,10 +151,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    * @param args  New values to set for ActivityMessage
    */
   private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
-    this.setState((prevState) => ({
+    this.setState({
       activityMessageInfo: args,
-      isActivityMessageVisible: args.restored ? true : prevState.isActivityMessageVisible,
-    }));
+    });
   };
 
   /**
@@ -143,24 +161,13 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _handleActivityMessageCancelledEvent = () => {
     this.setState({
-      isActivityMessageVisible: false,
+      activityMessageInfo: undefined,
     });
   };
 
   private getFooterMessages(): React.ReactNode {
-    if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible) && this.state.messages.length === 0)
-      return null;
-
     return (
-      <StatusMessagesContainer
-        messages={this.state.messages}
-        activityMessageInfo={this.state.activityMessageInfo}
-        isActivityMessageVisible={this.state.isActivityMessageVisible}
-        toastTarget={this.state.toastTarget}
-        closeMessage={this._closeMessage}
-        cancelActivityMessage={this._cancelActivityMessage}
-        dismissActivityMessage={this._dismissActivityMessage}
-      />
+      <CustomActivityMessageRenderer settings={{placement: "bottom"}} activityMessageInfo={this.state.activityMessageInfo} cancelActivityMessage={this._cancelActivityMessage} />
     );
   }
 
@@ -169,16 +176,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _cancelActivityMessage = () => {
     MessageManager.endActivityMessage(false);
-    this._dismissActivityMessage();
-  };
-
-  /**
-   * Dismisses ActivityMessage
-   */
-  private _dismissActivityMessage = () => {
-    this.setState({
-      isActivityMessageVisible: false,
-    });
   };
 
   private _handleOpenWidget = (openWidget: StatusBarFieldId) => {
@@ -193,7 +190,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   };
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
-    this.setState({ toastTarget });
+    MessageManager.registerAnimateOutToElement(toastTarget);
   };
 }
 

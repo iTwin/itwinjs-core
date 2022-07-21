@@ -18,6 +18,7 @@
   color: $buic-foreground-disabled;
   pointer-events: none;
   opacity: $nz-dragged-widget-opacity;
+  gap: 6px;
 
   @include uicore-z-index(drag-preview);
 
@@ -26,6 +27,9 @@
   }
 
   >span {
+    max-width: 12em;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: $nz-widget-tab-font-size;
   }
 }

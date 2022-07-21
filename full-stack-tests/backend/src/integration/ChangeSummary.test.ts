@@ -16,6 +16,8 @@ import {
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
   if (IModelJsFs.existsSync(cacheFilePath))
