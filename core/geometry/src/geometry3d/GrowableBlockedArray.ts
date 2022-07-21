@@ -69,6 +69,19 @@ export class GrowableBlockedArray {
       this._data.set(source.subarray(0, count), offset);
   }
 
+  /**
+   * Make a copy of the (active) blocks in this array.
+   * (The clone does NOT get excess capacity)
+   */
+  public clone(): GrowableBlockedArray {
+    const newBlocks = new GrowableBlockedArray(this.numPerBlock, this.numBlocks, this._growthFactor);
+    newBlocks.copyData(this._data, this.numBlocks);
+    newBlocks._inUse = this.numBlocks;
+    return newBlocks;
+  }
+
+  /** computed property: length (in blocks, not doubles) */
+  public get length(): number { return this._inUse; }
   /** computed property: length (in blocks, not doubles) */
   public get numBlocks(): number { return this._inUse; }
   /** property: number of data values per block */

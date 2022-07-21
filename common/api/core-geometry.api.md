@@ -2198,6 +2198,7 @@ export class GrowableBlockedArray {
     protected _blockSize: number;
     checkedComponent(blockIndex: number, componentIndex: number): number | undefined;
     clear(): void;
+    clone(): GrowableBlockedArray;
     static compareLexicalBlock(data: Float64Array, blockSize: number, ia: number, ib: number): number;
     component(blockIndex: number, componentIndex: number): number;
     protected copyData(source: Float64Array, sourceCount?: number, destOffset?: number): void;
@@ -2208,6 +2209,7 @@ export class GrowableBlockedArray {
     getWithinBlock(blockIndex: number, indexWithinBlock: number): number;
     protected _growthFactor: number;
     protected _inUse: number;
+    get length(): number;
     protected newBlockIndex(): number;
     get numBlocks(): number;
     get numPerBlock(): number;

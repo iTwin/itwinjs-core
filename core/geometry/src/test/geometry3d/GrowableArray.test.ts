@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { GrowableXYArray } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -714,5 +715,100 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("GrowableArray", () => {
+  it("growthFactor", () => {
+    const ck = new Checker();
+
+    const compareContents = (a0: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, a1: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, count: number): boolean => {
+      if (a0.length !== a1.length || count > a0.length)
+        return false;
+      if (a0 instanceof GrowableBlockedArray && a1 instanceof GrowableBlockedArray) {
+        if (a0.numPerBlock !== a1.numPerBlock)
+          return false;
+        for (let iBlock = 0; iBlock < count; ++iBlock)
+          for (let iComponent = 0; iComponent < a0.numPerBlock; ++iComponent)
+            if (!ck.testExactNumber(a0.component(iBlock, iComponent), a1.component(iBlock, iComponent), "Original array contents preserved"))
+              return false;
+      } else if (a0 instanceof GrowableFloat64Array && a1 instanceof GrowableFloat64Array) {
+        for (let i = 0; i < count; ++i)
+          if (!ck.testExactNumber(a0.atUncheckedIndex(i), a1.atUncheckedIndex(i), "Original array contents preserved"))
+            return false;
+      } else if ((a0 instanceof GrowableXYZArray && a1 instanceof GrowableXYZArray) || (a0 instanceof GrowableXYArray && a1 instanceof GrowableXYArray)) {
+        const numComponents = a0 instanceof GrowableXYZArray ? 3 : 2;
+        for (let iPoint = 0; iPoint < count; ++iPoint)
+          for(let iComponent = 0; iComponent < numComponents; ++iComponent)
+            if (!ck.testExactNumber(a0.component(iPoint, iComponent), a1.component(iPoint, iComponent), "Original array contents preserved"))
+              return false;
+      } else {
+        return false;
+      }
+      return true;
+    };
+
+    const getCapacity = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray): number => {
+      if (array instanceof GrowableBlockedArray)
+        return array.blockCapacity();
+      if (array instanceof GrowableFloat64Array)
+        return array.capacity();
+      if (array instanceof GrowableXYZArray)
+        return array.float64Data().length / 3;
+      return array.float64Data().length / 2;
+    };
+
+    const ensureCapacity = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, newCapacity: number, applyGrowthFactor: boolean) => {
+      if (array instanceof GrowableBlockedArray)
+        array.ensureBlockCapacity(newCapacity, applyGrowthFactor);
+      else
+        array.ensureCapacity(newCapacity, applyGrowthFactor);
+    };
+
+    const testGrowthFactor = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, growthFactor: number | undefined) => {
+      const caps1: number[] = [4,7,15,33];
+      for (const newCap of caps1) {
+        const oldArray = array.clone();   // in general, preserves only active structs
+        const oldCap = getCapacity(array);
+        ensureCapacity(array, newCap, false);
+        if (ck.testExactNumber(Math.max(oldCap, newCap), getCapacity(array), "ensureCapacity without growthFactor yields expected capacity")) {
+          if (!compareContents(oldArray, array, oldArray.length))
+            return;
+        }
+      }
+      if (growthFactor === undefined || growthFactor < 1)
+        growthFactor = 1.5;   // the default growth factor in growable arrays
+
+      const caps2: number[] = [30,33,40,57];
+      for (const newCap of caps2) {
+        const oldArray = array.clone();   // in general, preserves only active structs
+        const oldCap = getCapacity(array);
+        ensureCapacity(array, newCap, true);
+        if (ck.testExactNumber(newCap <= oldCap ? oldCap : Math.trunc(growthFactor * newCap), getCapacity(array), "ensureCapacity with growthFactor yields expected capacity")) {
+          if (!compareContents(oldArray, array, oldArray.length))
+            return;
+        }
+      }
+    };
+
+    const initialCapacity = 7;
+    const growthFactors: (number | undefined)[] = [undefined, -0.5, 0, .6, 1, 1.3, 1.5, 2, 2.7, 3];
+    const values: number[] = [-18,3.14,2.718281828459045,4.66920];
+    for (const growthFactor of growthFactors) {
+      const a0 = new GrowableBlockedArray(5, initialCapacity, growthFactor);
+      a0.addBlock(values);
+      testGrowthFactor(a0, growthFactor);
+
+      const a1 = new GrowableFloat64Array(initialCapacity, growthFactor);
+      a1.pushArray(values);
+      testGrowthFactor(a1, growthFactor);
+
+      const a2 = new GrowableXYArray(initialCapacity, growthFactor);
+      for (const val of values) a2.pushXY(val, val);
+      testGrowthFactor(a2, growthFactor);
+
+      const a3 = new GrowableXYZArray(initialCapacity, growthFactor);
+      for (const val of values) a3.pushXYZ(val, val, val);
+      testGrowthFactor(a3, growthFactor);
+    }
+  });
 });
