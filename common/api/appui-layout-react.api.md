@@ -9,6 +9,8 @@
 import { CommonProps } from '@itwin/core-react';
 import { Draft } from 'immer';
 import { IconSpec } from '@itwin/core-react';
+import { Interaction } from 'scheduler/tracing';
+import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
 import { Omit as Omit_2 } from '@itwin/core-react';
 import { OmitChildrenProp } from '@itwin/core-react';
@@ -2340,6 +2342,8 @@ export class StatusHelpers {
     // (undocumented)
     static getCssClassName(status: Status): string;
     static readonly INFORMATION_CLASS_NAME = "nz-status-information";
+    // (undocumented)
+    static severityToStatus(severity: MessageSeverity): Status;
     static readonly SUCCESS_CLASS_NAME = "nz-status-success";
     static readonly WARNING_CLASS_NAME = "nz-status-warning";
 }

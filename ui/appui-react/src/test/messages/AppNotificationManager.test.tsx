@@ -52,7 +52,7 @@ describe("AppNotificationManager", () => {
     const spyMethod = sinon.spy(MessageManager, "addMessage");
     const alertBoxMethod = sinon.spy(MessageManager, "showAlertMessageBox");
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.Alert);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Success, "A brief message.", "A detailed message.", OutputMessageType.Alert);
     notifications.outputMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
     expect(alertBoxMethod.calledOnce).to.be.true;

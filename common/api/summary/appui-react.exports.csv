@@ -34,9 +34,10 @@ public;ActiveContentChangedEventArgs
 internal;ActiveFrontstageDefProvider({ frontstageDef }:
 public;ActivityCenterField 
 public;ActivityMessage(props: ActivityMessageProps): JSX.Element
+deprecated;ActivityMessage(props: ActivityMessageProps): JSX.Element
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
-public;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
+public;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element
 public;ActivityMessagePopupProps 
 public;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
@@ -191,6 +192,8 @@ internal;CursorPopupUpdatePositionEventArgs
 internal;CursorPrompt
 public;CursorUpdatedEvent 
 public;CursorUpdatedEventArgs
+internal;CustomActivityMessageContent({ initialActivityMessageInfo }:
+internal;CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element
 public;CustomItemDef 
 public;CustomItemProps 
 public;DeepReadonly
@@ -574,9 +577,11 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
-public;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null
+public;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
+deprecated;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
 public;StatusMessageRendererProps 
 public;StickyMessage(props: StickyMessageProps): JSX.Element
+deprecated;StickyMessage(props: StickyMessageProps): JSX.Element
 public;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
@@ -610,6 +615,7 @@ deprecated;TaskPropsList
 public;ThemeManager: ConnectedComponent
 public;TileLoadingIndicator 
 public;ToastMessage(props: ToastMessageProps): JSX.Element
+deprecated;ToastMessage(props: ToastMessageProps): JSX.Element
 public;ToastMessageProps
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
@@ -685,6 +691,7 @@ public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
 public;useActiveStageId(): string
 public;useActiveViewport(): ScreenViewport | undefined
+internal;useActivityMessage({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): void
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 public;useBackstageManager: () => BackstageManager
