@@ -2609,7 +2609,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta (undocumented)
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
