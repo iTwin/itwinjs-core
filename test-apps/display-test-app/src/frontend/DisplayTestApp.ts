@@ -9,7 +9,6 @@ import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { FakeFrontendStorage } from "./FakeFrontendStorage";
 import { openIModel } from "./openIModel";
 import { signIn } from "./signIn";
 import { Surface } from "./Surface";
@@ -107,9 +106,6 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
-
-  if (configuration.useFakeCloudStorageTileCache)
-    tileAdminProps.tileStorage = new FakeFrontendStorage();
 
   return [renderSystemOptions, tileAdminProps];
 }

@@ -21,7 +21,6 @@ import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { FakeServerStorage } from "./FakeServerStorage";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -210,13 +209,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   }
-
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
-    iModelHost.tileCacheStorage = new FakeServerStorage(
-      path.normalize(path.join(__dirname, "tiles")),
-      "http://localhost:3001/tiles"
-    );
 
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)
