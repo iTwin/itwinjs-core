@@ -39,7 +39,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
-      layout: StandardContentLayouts.twoHorizontalSplit,
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "imodel-open",

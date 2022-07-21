@@ -62,7 +62,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "LocalFileOpenGroup",
-      layout: StandardContentLayouts.twoHorizontalSplit,
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "file-open",
