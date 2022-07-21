@@ -20,16 +20,25 @@ const sampleIconImg = new Image();
 sampleIconImg.src = `data:image/png;base64,${samplePngIcon}`;
 
 const loggerCategory = "ArcGISFeatureProvider";
+interface ArcGisFeatureUrl {
+  url: string;
+  envelope: ArcGisExtent;
+}
+
+interface ArcGisFeatureReponse {
+  response: Promise<Response>;
+  envelope: ArcGisExtent;
+}
 
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
 * @internal
 */
 export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
-  private _firstRequest = true;
   private _supportsCoordinatesQuantization = true; // TODO Reader this from the layer capabilities
   private _layerId = 0;
   private _layerInfo: any;
+  private _format: ArcGisFeatureFormat|undefined;
   public serviceJson: any;
   private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
 
@@ -44,8 +53,11 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
     } catch {
     }
-    if (json === undefined)
+
+    if (json === undefined) {
+      Logger.logError(loggerCategory, "Could not get service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
 
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
@@ -101,6 +113,20 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     // Make sure we cache layer info (i.e. rendering info)
     if (!this._layerInfo) {
       this._layerInfo = await this.getLayerMetadata(this._layerId);
+
+      // Check supported query formats: JSON and PBF are currently implemented by this provider
+      // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
+      if (this._layerInfo.supportedQueryFormats) {
+        const formats: string[] = this._layerInfo.supportedQueryFormats.split(", ");
+        if (formats.includes("PBF")) {
+          this._format = "PBF";
+        } else if (formats.includes ("JSON"))  {
+          this._format = "JSON";
+        } else {
+          Logger.logError(loggerCategory, "Could not get service JSON");
+          throw new ServerError(IModelStatus.ValidationFailed, "");
+        }
+      }
     }
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
@@ -120,21 +146,21 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   public override get tileSize(): number { return 512; }
-  public get format(): ArcGisFeatureFormat { return "pbf"; }
-  // public get format(): ArcGisFeatureFormat { return "json"; }
-
+  public get format(): ArcGisFeatureFormat|undefined { return this._format; }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
-  // We dont use this method inside this provider, but since this is an anstract method, we need to define something
+  // We dont use this method inside this provider (see constructFeatureUrl), but since this is an anstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
-
     return "";
   }
 
-  public constructUrlObj(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): {url: string, envelope: ArcGisExtent} {
+  public constructFeatureUrl(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): ArcGisFeatureUrl | undefined {
 
+    if (!this.format) {
+      return undefined;
+    }
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
 
     const tileEnvelope = {
@@ -152,10 +178,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         extent: tileEnvelope,
       };
     }
-
-    // const url = new ArcGisFeatureQuery("https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/PhillyTransportationImprovementProject/FeatureServer",
-    const url = new ArcGisFeatureQuery(this._settings.url,
-      0,
+    const url = new ArcGisFeatureQuery(
+      this._settings.url,
+      this._layerId,
       this.format,
       {
         geometry: refineEnvelope ?? tileEnvelope,
@@ -170,11 +195,18 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<{response: Promise<Response> , envelope: ArcGisExtent} | undefined> {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "json" ? "text" : "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
-    const tileUrl =  this.constructUrlObj(row, column, zoomLevel, refineEnvelope);
-    if (tileUrl.url.length === 0)
+    if (!this.format) {
+      assert(!"No supported query format");
       return undefined;
+    }
+
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "JSON" ? "text" : "arraybuffer" };
+    tileRequestOptions.auth = this.getRequestAuthorization();
+    const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, refineEnvelope);
+    if (!tileUrl || tileUrl.url.length === 0) {
+      Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
+      return undefined;
+    }
 
     return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
   }
@@ -188,16 +220,6 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    /*
-    zoomLevel = 10;
-    row = 385;
-    column = 301;
-
-    if (this._firstRequest)
-      this._firstRequest = false;
-    else
-      return undefined;
-      */
 
     const canvas = document.createElement("canvas");
     canvas.width = this.tileSize;
@@ -244,7 +266,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       }
 
       const renderer = new ArcGisFeatureRenderer(ctx, this._symbologyRenderer, transfo);
-      if (this.format === "pbf") {
+      if (this.format === "PBF") {
         const featureReader = new ArcGisFeaturePBF();
         const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
           const dx = (envelope.xmax - envelope.xmin) * 0.5;
@@ -316,7 +338,6 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     return undefined;
-
   }
 
 }

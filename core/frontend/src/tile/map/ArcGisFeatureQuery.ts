@@ -27,7 +27,7 @@ export interface FeatureQueryQuantizationParams {
   tolerance: number;
 }
 
-export type ArcGisFeatureFormat = "json" | "pbf";
+export type ArcGisFeatureFormat = "JSON" | "PBF";
 
 // Based on official documentation:
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm
