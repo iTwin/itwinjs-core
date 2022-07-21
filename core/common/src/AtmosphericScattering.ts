@@ -13,14 +13,16 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
   {
     earthCenter: { x: 0.0, y: 0.0, z: -6_190_000.0 },
     earthRadii: {x: 10.0, y: 5.0, z: 20.0},
-    atmosphereHeightAboveEarth: 10.0,
+    atmosphereHeightAboveEarth: 30000.0,
     minDensityHeightBelowEarth: 10.0,
     densityFalloff: 5.0,
-    scatteringStrength: 0.01,
+    scatteringStrength: 0.000002,
     wavelengths: [700.0, 530.0, 440.0],
     numInScatteringPoints: 10,
     numOpticalDepthPoints: 10,
     isPlanar: false,
+    inScatteringIntensity: 1.0,
+    outScatteringIntensity: 1.0,
   };
 
 /**
@@ -37,6 +39,8 @@ export interface AtmosphericScatteringProps {
   numInScatteringPoints?: number;
   numOpticalDepthPoints?: number;
   isPlanar?: boolean;
+  inScatteringIntensity?: number;
+  outScatteringIntensity?: number;
 }
 
 /**
@@ -53,6 +57,8 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
   public readonly numInScatteringPoints: number;
   public readonly numOpticalDepthPoints: number;
   public readonly isPlanar: boolean;
+  public readonly inScatteringIntensity: number;
+  public readonly outScatteringIntensity: number;
 
   public equals(other: AtmosphericScattering): boolean {
     if (!this.earthCenter.isAlmostEqual(other.earthCenter)) return false;
@@ -67,6 +73,8 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
     if (this.numInScatteringPoints !== other.numInScatteringPoints) return false;
     if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
     if (this.isPlanar !== other.isPlanar) return false;
+    if (this.inScatteringIntensity !== other.inScatteringIntensity) return false;
+    if (this.outScatteringIntensity !== other.outScatteringIntensity) return false;
     return true;
   }
 
@@ -81,6 +89,8 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
     this.numInScatteringPoints = json?.numInScatteringPoints ?? defaultAtmosphericScatteringProps.numInScatteringPoints;
     this.numOpticalDepthPoints = json?.numOpticalDepthPoints ?? defaultAtmosphericScatteringProps.numOpticalDepthPoints;
     this.isPlanar = json?.isPlanar ?? defaultAtmosphericScatteringProps.isPlanar;
+    this.inScatteringIntensity = json?.inScatteringIntensity ?? defaultAtmosphericScatteringProps.inScatteringIntensity;
+    this.outScatteringIntensity = json?.outScatteringIntensity ?? defaultAtmosphericScatteringProps.outScatteringIntensity;
   }
 
   public static fromJSON(json?: AtmosphericScatteringProps) {
@@ -99,6 +109,8 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
       numInScatteringPoints: this.numInScatteringPoints,
       numOpticalDepthPoints: this.numOpticalDepthPoints,
       isPlanar: this.isPlanar,
+      inScatteringIntensity: this.inScatteringIntensity,
+      outScatteringIntensity: this.outScatteringIntensity,
     };
     return json;
   }

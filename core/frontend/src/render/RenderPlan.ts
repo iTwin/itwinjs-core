@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ClipVector, Constant, Matrix3d, Point3d, Transform, Vector3d, XYZ } from "@itwin/core-geometry";
+import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, AtmosphericScattering, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
@@ -50,6 +50,7 @@ export interface RenderPlan {
   readonly globeCenter?: Point3d;
   readonly globeRotation?: Matrix3d;
   readonly globeRadii?: Point3d;
+  readonly terrainEnabled?: boolean;
 }
 
 /** @internal */
@@ -124,11 +125,12 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   let globeCenter;
   let globeRotation;
   let globeRadii;
+  let terrainEnabled;
   if (isGlobeMode3D) {
     globeCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
     globeRotation = view.iModel.getMapEcefToDb(0).matrix;
     globeRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
-    // globeRadii = Point3d.fromJSON({x:100, y:300, z:50});
+    terrainEnabled = view.displayStyle.backgroundMapSettings.applyTerrain;
   }
 
   return {
@@ -160,5 +162,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     globeCenter,
     globeRotation,
     globeRadii,
+    terrainEnabled,
   };
 }

@@ -26,12 +26,15 @@ export class AtmosphericScatteringEditor {
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _update: (view: ViewState) => void;
 
-  private readonly _earthCenterX: LabeledNumericInput;
-  private readonly _earthCenterY: LabeledNumericInput;
-  private readonly _earthCenterZ: LabeledNumericInput;
-  private readonly _earthRadiusX: LabeledNumericInput;
-  private readonly _earthRadiusY: LabeledNumericInput;
-  private readonly _earthRadiusZ: LabeledNumericInput;
+  // private readonly _earthCenterX: LabeledNumericInput;
+  // private readonly _earthCenterY: LabeledNumericInput;
+  // private readonly _earthCenterZ: LabeledNumericInput;
+  // private readonly _earthRadiusX: LabeledNumericInput;
+  // private readonly _earthRadiusY: LabeledNumericInput;
+  // private readonly _earthRadiusZ: LabeledNumericInput;
+  private readonly _inScatteringIntensity: LabeledNumericInput;
+  private readonly _outScatteringIntensity: LabeledNumericInput;
+
   private readonly _atmosphereHeightAboveEarth: LabeledNumericInput;
   private readonly _minDensityHeightBellowEarth: LabeledNumericInput;
   private readonly _densityFalloff: LabeledNumericInput;
@@ -83,112 +86,145 @@ export class AtmosphericScatteringEditor {
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
-    const spanEarthCenter = document.createElement("span");
-    spanEarthCenter.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanEarthCenter);
-    this._earthCenterX = createLabeledNumericInput({
-      id: "atmosphericScattering_earthCenterX",
-      parent: spanEarthCenter,
-      value: 0.0,
+    // const spanEarthCenter = document.createElement("span");
+    // spanEarthCenter.style.display = "flex";
+    // atmosphericScatteringControlsDiv.appendChild(spanEarthCenter);
+    // this._earthCenterX = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthCenterX",
+    //   parent: spanEarthCenter,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthCenter = Vector3d.fromJSON(props.earthCenter);
+    //     props.earthCenter = {x: value, y: earthCenter.y, z: earthCenter.z};
+    //     return props;
+    //   }),
+    //   min: -1000.0,
+    //   max: 1000.0,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Earth Center X: ",
+    // });
+
+    // this._earthCenterY = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthCenterY",
+    //   parent: spanEarthCenter,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthCenter = Vector3d.fromJSON(props.earthCenter);
+    //     props.earthCenter = {x: earthCenter.x, y: value, z: earthCenter.z};
+    //     return props;
+    //   }),
+    //   min: -1000.0,
+    //   max: 1000.0,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Y: ",
+    // });
+
+    // this._earthCenterZ = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthCenterZ",
+    //   parent: spanEarthCenter,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthCenter = Vector3d.fromJSON(props.earthCenter);
+    //     props.earthCenter = {x: earthCenter.x, y: earthCenter.y, z: value};
+    //     return props;
+    //   }),
+    //   min: -10000000.0,
+    //   max: 1000,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Z: ",
+    // });
+
+    // const spanEarthRadii = document.createElement("span");
+    // spanEarthRadii.style.display = "flex";
+    // atmosphericScatteringControlsDiv.appendChild(spanEarthRadii);
+    // this._earthRadiusX = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthRadiusX",
+    //   parent: spanEarthRadii,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthRadii = Vector3d.fromJSON(props.earthRadii);
+    //     props.earthRadii = {x: value, y: earthRadii.y, z: earthRadii.z};
+    //     return props;
+    //   }),
+    //   min: -1000.0,
+    //   max: 1000.0,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Earth radius X: ",
+    // });
+
+    // this._earthRadiusY = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthRadiusY",
+    //   parent: spanEarthRadii,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthRadii = Vector3d.fromJSON(props.earthRadii);
+    //     props.earthRadii = {x: earthRadii.x, y: value, z: earthRadii.z};
+    //     return props;
+    //   }),
+    //   min: -1000.0,
+    //   max: 1000.0,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Y: ",
+    // });
+
+    // this._earthRadiusZ = createLabeledNumericInput({
+    //   id: "atmosphericScattering_earthRadiusZ",
+    //   parent: spanEarthRadii,
+    //   value: 0.0,
+    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
+    //     const props = this.getAtmosphericScatteringSettingsProps(view);
+    //     const earthRadii = Vector3d.fromJSON(props.earthRadii);
+    //     props.earthRadii = {x: earthRadii.x, y: earthRadii.y, z: value};
+    //     return props;
+    //   }),
+    //   min: -1000.0,
+    //   max: 1000.0,
+    //   step: 1.0,
+    //   parseAsFloat: true,
+    //   name: "Z: ",
+    // });
+    const spanIntensity = document.createElement("span");
+    spanIntensity.style.display = "flex";
+    atmosphericScatteringControlsDiv.appendChild(spanIntensity);
+    this._inScatteringIntensity = createLabeledNumericInput({
+      id: "atmosphericScattering_inScatteringIntensity",
+      parent: spanIntensity,
+      value: 1.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthCenter = Vector3d.fromJSON(props.earthCenter);
-        props.earthCenter = {x: value, y: earthCenter.y, z: earthCenter.z};
+        props.inScatteringIntensity = value;
         return props;
       }),
-      min: -1000.0,
+      min: 0.0,
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "Earth Center X: ",
+      name: "inScatteringIntensity: ",
     });
-
-    this._earthCenterY = createLabeledNumericInput({
-      id: "atmosphericScattering_earthCenterY",
-      parent: spanEarthCenter,
-      value: 0.0,
+    this._outScatteringIntensity = createLabeledNumericInput({
+      id: "atmosphericScattering_outScatteringIntensity",
+      parent: spanIntensity,
+      value: 1.0,
       handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
         const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthCenter = Vector3d.fromJSON(props.earthCenter);
-        props.earthCenter = {x: earthCenter.x, y: value, z: earthCenter.z};
+        props.outScatteringIntensity = value;
         return props;
       }),
-      min: -1000.0,
+      min: 0.0,
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "Y: ",
-    });
-
-    this._earthCenterZ = createLabeledNumericInput({
-      id: "atmosphericScattering_earthCenterZ",
-      parent: spanEarthCenter,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthCenter = Vector3d.fromJSON(props.earthCenter);
-        props.earthCenter = {x: earthCenter.x, y: earthCenter.y, z: value};
-        return props;
-      }),
-      min: -10000000.0,
-      max: 1000,
-      step: 1.0,
-      parseAsFloat: true,
-      name: "Z: ",
-    });
-
-    const spanEarthRadii = document.createElement("span");
-    spanEarthRadii.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanEarthRadii);
-    this._earthRadiusX = createLabeledNumericInput({
-      id: "atmosphericScattering_earthRadiusX",
-      parent: spanEarthRadii,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthRadii = Vector3d.fromJSON(props.earthRadii);
-        props.earthRadii = {x: value, y: earthRadii.y, z: earthRadii.z};
-        return props;
-      }),
-      min: -1000.0,
-      max: 1000.0,
-      step: 1.0,
-      parseAsFloat: true,
-      name: "Earth radius X: ",
-    });
-
-    this._earthRadiusY = createLabeledNumericInput({
-      id: "atmosphericScattering_earthRadiusY",
-      parent: spanEarthRadii,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthRadii = Vector3d.fromJSON(props.earthRadii);
-        props.earthRadii = {x: earthRadii.x, y: value, z: earthRadii.z};
-        return props;
-      }),
-      min: -1000.0,
-      max: 1000.0,
-      step: 1.0,
-      parseAsFloat: true,
-      name: "Y: ",
-    });
-
-    this._earthRadiusZ = createLabeledNumericInput({
-      id: "atmosphericScattering_earthRadiusZ",
-      parent: spanEarthRadii,
-      value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScatteringProps => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
-        const earthRadii = Vector3d.fromJSON(props.earthRadii);
-        props.earthRadii = {x: earthRadii.x, y: earthRadii.y, z: value};
-        return props;
-      }),
-      min: -1000.0,
-      max: 1000.0,
-      step: 1.0,
-      parseAsFloat: true,
-      name: "Z: ",
+      name: "outScatteringIntensity: ",
     });
 
     const spanAtmosphereScale = document.createElement("span");
@@ -415,12 +451,15 @@ export class AtmosphericScatteringEditor {
   private updateAtmosphericScatteringUI(view: ViewState) {
     const settings = this.getAtmosphericScatteringSettings(view);
 
-    this._earthCenterX.input.value = settings.earthCenter.x.toString();
-    this._earthCenterY.input.value = settings.earthCenter.y.toString();
-    this._earthCenterZ.input.value = settings.earthCenter.z.toString();
-    this._earthRadiusX.input.value = settings.earthRadii.x.toString();
-    this._earthRadiusY.input.value = settings.earthRadii.y.toString();
-    this._earthRadiusZ.input.value = settings.earthRadii.z.toString();
+    // this._earthCenterX.input.value = settings.earthCenter.x.toString();
+    // this._earthCenterY.input.value = settings.earthCenter.y.toString();
+    // this._earthCenterZ.input.value = settings.earthCenter.z.toString();
+    // this._earthRadiusX.input.value = settings.earthRadii.x.toString();
+    // this._earthRadiusY.input.value = settings.earthRadii.y.toString();
+    // this._earthRadiusZ.input.value = settings.earthRadii.z.toString();
+    this._inScatteringIntensity.input.value = settings.inScatteringIntensity.toString();
+    this._outScatteringIntensity.input.value = settings.outScatteringIntensity.toString();
+
     this._atmosphereHeightAboveEarth.input.value = settings.atmosphereHeightAboveEarth.toString();
     this._minDensityHeightBellowEarth.input.value = settings.minDensityHeightBelowEarth.toString();
     this._densityFalloff.input.value = settings.densityFalloff.toString();
