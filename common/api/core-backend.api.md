@@ -2627,6 +2627,8 @@ export interface IModelHostOptions {
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @beta
+    enableOpenTelemetry?: boolean;
+    // @beta
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -2766,7 +2768,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 // @internal (undocumented)
-export function initializeRpcBackend(): void;
+export function initializeRpcBackend(enableOpenTelemetry?: boolean): void;
 
 // @beta
 export interface InstanceChange {

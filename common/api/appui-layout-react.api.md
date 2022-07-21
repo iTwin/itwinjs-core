@@ -2049,14 +2049,14 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
         zones: {
-            1: ZoneManagerProps;
-            2: ZoneManagerProps;
-            3: ZoneManagerProps;
-            4: ZoneManagerProps;
-            6: ZoneManagerProps;
-            7: ZoneManagerProps;
-            8: ZoneManagerProps;
-            9: ZoneManagerProps;
+            1: import("./Zone").ZoneManagerProps;
+            2: import("./Zone").ZoneManagerProps;
+            3: import("./Zone").ZoneManagerProps;
+            4: import("./Zone").ZoneManagerProps;
+            7: import("./Zone").ZoneManagerProps;
+            6: import("./Zone").ZoneManagerProps;
+            8: import("./Zone").ZoneManagerProps;
+            9: import("./Zone").ZoneManagerProps;
         };
         draggedWidget?: DraggedWidgetManagerProps | undefined;
         isInFooterMode: boolean;
@@ -3088,6 +3088,19 @@ export interface UserProfileProps extends CommonProps {
     initials?: string;
     onClick?: () => void;
     safeAreaInsets?: SafeAreaInsets;
+}
+
+// @internal (undocumented)
+export function useTabInteractions<T extends HTMLElement>({ onClick, onDoubleClick, onDragStart, }: UseTabInteractionsArgs): (instance: T | null | undefined) => void;
+
+// @internal (undocumented)
+export interface UseTabInteractionsArgs {
+    // (undocumented)
+    onClick?: () => void;
+    // (undocumented)
+    onDoubleClick?: () => void;
+    // (undocumented)
+    onDragStart?: () => void;
 }
 
 // @internal (undocumented)
