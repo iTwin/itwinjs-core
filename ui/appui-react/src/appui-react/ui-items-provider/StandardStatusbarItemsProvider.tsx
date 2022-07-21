@@ -48,6 +48,7 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
   public override provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (!this._defaultItems || this._defaultItems.messageCenter) {
+      // eslint-disable-next-line deprecation/deprecation
       const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
     }

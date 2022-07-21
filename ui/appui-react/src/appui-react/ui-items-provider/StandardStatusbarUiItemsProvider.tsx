@@ -50,6 +50,7 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.messageCenter) {
+      // eslint-disable-next-line deprecation/deprecation
       const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
     }

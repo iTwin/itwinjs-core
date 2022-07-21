@@ -38,7 +38,9 @@ interface MessageCenterState {
  * @public
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
-  /** Message center dialog target. */
+  /** Message center dialog target.
+   * @deprecated Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
+  */
   targetRef?: React.Ref<HTMLElement>;
 }
 
@@ -157,10 +159,12 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   }
 
   private _handleTargetRef = (target: HTMLDivElement | null) => {
-    if (typeof this.props.targetRef === "function")
-      this.props.targetRef(target);
-    else if (this.props.targetRef)
-      (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = target;
+    // eslint-disable-next-line deprecation/deprecation
+    const ref = this.props.targetRef;
+    if (typeof ref === "function")
+      ref(target);
+    else if (ref)
+      (ref as React.MutableRefObject<HTMLElement | null>).current = target;
     this.setState({ target });
   };
 

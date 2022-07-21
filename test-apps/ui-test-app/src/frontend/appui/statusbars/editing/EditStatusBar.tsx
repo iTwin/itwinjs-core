@@ -8,14 +8,11 @@ import { StatusBarSection } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ClearEmphasisStatusField, ConfigurableUiManager, MessageCenterField, SectionsStatusField, SelectionInfoField,
   SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs,
-  TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField, withMessageCenterFieldProps,
+  TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField,
 } from "@itwin/appui-react";
 import { FooterSeparator } from "@itwin/appui-layout-react";
 import { DisplayStyleField } from "../../statusfields/DisplayStyleField";
 import { PushPullStatusField } from "../../statusfields/editing/PushPullStatusField";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 
 export class EditStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
@@ -25,7 +22,7 @@ export class EditStatusBarWidgetControl extends StatusBarWidgetControl {
       this._statusBarItems = [
         StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistanceField />),
         StatusBarItemUtilities.createStatusBarItem("ToolAssistanceSeparator", StatusBarSection.Left, 15, (<FooterSeparator />)),
-        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenter />),
+        StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenterField />),
         StatusBarItemUtilities.createStatusBarItem("MessageCenterSeparator", StatusBarSection.Left, 25, (<FooterSeparator />)),
         StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 10, <DisplayStyleField />),
         StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 20, <ActivityCenterField />),
