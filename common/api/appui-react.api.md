@@ -3890,6 +3890,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
+    // @deprecated
     targetRef?: React.Ref<HTMLElement>;
 }
 
@@ -7873,8 +7874,8 @@ export enum WidgetType {
     ToolSettings = 4
 }
 
-// @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
+// @public @deprecated
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "targetRef" | "openWidget" | "isInFooterMode" | "onOpenWidget">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {

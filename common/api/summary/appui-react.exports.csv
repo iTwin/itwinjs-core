@@ -793,6 +793,7 @@ internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
 public;withMessageCenterFieldProps: 
+deprecated;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
 deprecated;withStatusFieldProps: 
