@@ -326,6 +326,26 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public override clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d {
     return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    // (This is cheap -- don't bother testing for fraction0===fraction1)
+    if (!transform){
+      const range = Range3d.create();
+      range.extendInterpolated (this._point0, fraction0, this._point1);
+      range.extendInterpolated (this._point0, fraction1, this._point1);
+      return range;
+    }
+    const point0 = this.fractionToPoint (fraction0);
+    const point1 = this.fractionToPoint (fraction1);
+    if (transform){
+      transform.multiplyPoint3d (point0, point0);
+      transform.multiplyPoint3d (point1, point1);
+    }
+    return Range3d.create (point0, point1);
+  }
 
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).

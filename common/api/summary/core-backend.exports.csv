@@ -186,7 +186,8 @@ public;IModelDb
 internal;TileContentState
 internal;Tiles
 public;IModelHost
-public;IModelHostConfiguration
+public;IModelHostConfiguration 
+public;IModelHostOptions
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
@@ -199,7 +200,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
-internal;initializeRpcBackend(): void
+internal;initializeRpcBackend(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost

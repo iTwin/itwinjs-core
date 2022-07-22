@@ -2396,6 +2396,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
+      '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
@@ -2420,6 +2421,7 @@ importers:
       nyc: ^15.1.0
       react: ^17.0.0
       react-dom: ^17.0.0
+      react-select: 3.2.0
       react-test-renderer: ^17.0.0
       rimraf: ^3.0.2
       rxjs: ^6.6.2
@@ -2436,6 +2438,7 @@ importers:
       fast-deep-equal: 3.1.3
       fast-sort: 3.1.3
       micro-memoize: 4.0.10
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       rxjs: 6.6.7
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -2461,6 +2464,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/react': 17.0.45
       '@types/react-dom': 17.0.17
+      '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.7_139404e387ad12a3919093d103c0dae6
@@ -3077,6 +3081,8 @@ importers:
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/imodels-client-management': ^1.0.1
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
@@ -3114,6 +3120,8 @@ importers:
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
+      '@itwin/imodels-client-management': 1.0.1
+      '@itwin/oidc-signin-tool': 3.4.1_electron@14.2.9
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.20.0
     devDependencies:
@@ -3501,7 +3509,6 @@ importers:
       '@types/bunyan': ^1.8.4
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
-      '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
       cpx2: ^3.0.0
       cross-env: ^5.1.4
@@ -3516,7 +3523,6 @@ importers:
       react: ^17.0.0
       react-dom: ^17.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.2.0
       rimraf: ^3.0.2
       semver: ^7.3.5
       symlink-dir: ~4.0.3
@@ -3545,7 +3551,6 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       semver: 7.3.7
     devDependencies:
       '@bentley/react-scripts': 5.0.0-dev.4_react@17.0.2+typescript@4.4.4
@@ -3554,7 +3559,6 @@ importers:
       '@types/bunyan': 1.8.8
       '@types/react': 17.0.45
       '@types/react-dom': 17.0.17
-      '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
       cpx2: 3.0.2
       cross-env: 5.2.1
@@ -3592,14 +3596,12 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@reduxjs/toolkit': ^1.5.0
       '@types/react': ^17.0.37
-      '@types/react-select': 3.0.26
       classnames: ^2.3.1
       cpx2: ^3.0.0
       eslint: ^7.11.0
       react: ^17.0.0
       react-dom: ^17.0.0
       react-redux: ^7.2.2
-      react-select: 3.2.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
@@ -3624,12 +3626,10 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/react': 17.0.45
-      '@types/react-select': 3.0.26
       cpx2: 3.0.2
       eslint: 7.32.0
       rimraf: 3.0.2
@@ -3692,7 +3692,6 @@ importers:
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/react-router-dom': ^5.1.7
-      '@types/react-select': 3.0.26
       '@types/react-table': ^7.0.18
       '@types/semver': ^7.3.9
       classnames: ^2.3.1
@@ -3713,7 +3712,6 @@ importers:
       react-redux: ^7.2.2
       react-resize-detector: ^6.7.6
       react-router-dom: ^5.2.0
-      react-select: 3.2.0
       react-table: ^7.1.0
       redux: ^4.1.0
       rimraf: ^3.0.2
@@ -3772,7 +3770,6 @@ importers:
       react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
       react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
       react-router-dom: 5.3.3_react@17.0.2
-      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.8.0_react@17.0.2
       redux: 4.2.0
       semver: 7.3.7
@@ -3789,7 +3786,6 @@ importers:
       '@types/react-dom': 17.0.17
       '@types/react-redux': 7.1.24
       '@types/react-router-dom': 5.3.3
-      '@types/react-select': 3.0.26
       '@types/react-table': 7.7.12
       '@types/semver': 7.3.10
       cpx2: 3.0.2
@@ -4474,6 +4470,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ^1.38.1
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
@@ -4484,6 +4481,7 @@ importers:
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
       '@types/chai-string': ^1.4.1
+      '@types/chai-subset': 1.3.1
       '@types/enzyme': 3.9.3
       '@types/faker': ^4.1.0
       '@types/linkify-it': ~2.1.0
@@ -4506,6 +4504,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
       chai-string: ^1.5.0
+      chai-subset: 1.6.0
       classnames: ^2.3.1
       cpx2: ^3.0.0
       enzyme: 3.10.0
@@ -4548,6 +4547,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.59.1
+      '@itwin/itwinui-icons-react': 1.10.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.39.0_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
@@ -4584,6 +4584,7 @@ importers:
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
       '@types/chai-string': 1.4.2
+      '@types/chai-subset': 1.3.1
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
       '@types/linkify-it': 2.1.0
@@ -4604,6 +4605,7 @@ importers:
       chai-jest-snapshot: 2.0.0_chai@4.3.6
       chai-spies: 1.0.0_chai@4.3.6
       chai-string: 1.5.0_chai@4.3.6
+      chai-subset: 1.6.0
       cpx2: 3.0.2
       enzyme: 3.10.0
       enzyme-to-json: 3.6.2_enzyme@3.10.0
@@ -7188,7 +7190,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/core-webpack-tools/3.2.0_webpack@5.73.0:
     resolution: {integrity: sha512-KaOs+HogMzCZ3zZSm8X7QbfdoHMpO8r8IolcokoveDGV2UNhT76zejDD4nIZvqO1aYD9lEzVhvaRW25c0NUnyA==}
@@ -7357,7 +7358,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: true
 
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
@@ -8384,7 +8384,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8628,6 +8628,10 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.20:
@@ -21796,7 +21800,7 @@ packages:
     dev: true
 
   /to-fast-properties/2.0.0:
-    resolution: {integrity: sha1-3F5pjL0HkmW8c+A3doGk5Og/YW4=}
+    resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
 
   /to-object-path/0.3.0:

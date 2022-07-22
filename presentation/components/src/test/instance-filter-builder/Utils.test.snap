@@ -1,0 +1,296 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createInstanceFilterPropertyInfos creates property infos when fields are in different categories category 1`] = `
+Array [
+  Object {
+    "field": Object {
+      "category": "nested1",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop1",
+            "type": "string",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "[Nested Category 1] Properties Field",
+      "name": "nested1/#PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [
+      "0x1",
+    ],
+  },
+  Object {
+    "field": Object {
+      "category": "nested21",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop2",
+            "type": "number",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "[Nested Category 2] [Nested Category 2 1] Properties Field",
+      "name": "nested2/nested21/#PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [
+      "0x1",
+    ],
+  },
+]
+`;
+
+exports[`createInstanceFilterPropertyInfos creates property infos when fields are in root category 1`] = `
+Array [
+  Object {
+    "field": Object {
+      "category": "root",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop1",
+            "type": "string",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "Properties Field",
+      "name": "#PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [
+      "0x1",
+    ],
+  },
+  Object {
+    "field": Object {
+      "category": "root",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop2",
+            "type": "number",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "Properties Field",
+      "name": "#PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [
+      "0x1",
+    ],
+  },
+]
+`;
+
+exports[`createInstanceFilterPropertyInfos creates property infos when property fields are in nested fields 1`] = `
+Array [
+  Object {
+    "field": Object {
+      "category": "root",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop1",
+            "type": "string",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "Properties Field",
+      "name": "#NestedContentField$PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [],
+  },
+  Object {
+    "field": Object {
+      "category": "root",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "prop2",
+            "type": "number",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    "propertyDescription": Object {
+      "displayLabel": "Properties Field",
+      "name": "#NestedContentField$PropertiesField",
+      "typename": "string",
+    },
+    "sourceClassIds": Array [],
+  },
+]
+`;
+
+exports[`createPresentationInstanceFilter finds properties fields for property description 1`] = `
+Object {
+  "conditions": Array [
+    Object {
+      "field": Object {
+        "category": "root",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "propField1",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x1",
+                "label": "Class Label",
+                "name": "SchemaName:ClassName",
+              },
+              "name": "prop1",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+      "operator": 9,
+      "value": undefined,
+    },
+    Object {
+      "field": Object {
+        "category": "root",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Properties Field",
+        "name": "propField1",
+        "priority": 0,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x1",
+                "label": "Class Label",
+                "name": "SchemaName:ClassName",
+              },
+              "name": "prop1",
+              "type": "string",
+            },
+          },
+        ],
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+      "operator": 9,
+      "value": undefined,
+    },
+  ],
+  "operator": 0,
+}
+`;
