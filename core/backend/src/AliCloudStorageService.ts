@@ -43,7 +43,7 @@ declare namespace OSS { // eslint-disable-line no-redeclare
 
 /**
  * @beta
- * @deprecated
+ * @deprecated Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
  */
 export class AliCloudStorageService extends CloudStorageService {
   private _client: OSS;
