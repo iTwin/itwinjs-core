@@ -14,6 +14,7 @@ Table of contents:
   - [Tool Settings title](tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
 - [IModelHostOptions](#imodelhostoptions)
+- [Cloud storage changes](#cloud-storage-changes)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -75,6 +76,13 @@ Reduced API surface of an `ElectronApp` class to only allow white-listed APIs fr
 ## IModelHostOptions
 
 The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
+
+## Cloud storage changes
+The existing beta implementation of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) has been deprecated in favor of [iTwin/object-storage](https://github.com/iTwin/object-storage).
+
+`IModelHost.tileCacheService` remains to support older frontends, in which case `IModelHost.tileStorage` still has to be setup. Both are taken care of if `IModelHostOptions.tileCacheAzureCredentials` are used.
+
+A different cloud provider may be set in `IModelHostOptions.tileCacheStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
 
 ## Deprecations
 
