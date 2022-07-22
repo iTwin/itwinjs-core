@@ -281,12 +281,12 @@ export class HemisphereLights {
  * @extensions
  */
 export interface FresnelSettingsProps {
-  /** @see [[FresnelSettings.intensity]].
+  /** See [[FresnelSettings.intensity]].
    * Default value: 0
    */
   intensity?: number;
 
-  /** @see [[FresnelSettings.invert]].
+  /** See [[FresnelSettings.invert]].
    * Default value: false
    */
   invert?: boolean;
@@ -427,10 +427,10 @@ export class LightSettings {
   public readonly solar: SolarLight;
   public readonly ambient: AmbientLight;
   public readonly hemisphere: HemisphereLights;
-  /** @see [[LightSettingsProps.portrait]]. */
+  /** See [[LightSettingsProps.portrait]]. */
   public readonly portraitIntensity: number;
   public readonly specularIntensity: number;
-  /** @see [[LightSettingsProps.numCels]]. */
+  /** See [[LightSettingsProps.numCels]]. */
   public readonly numCels: number;
   public readonly fresnel: FresnelSettings;
 

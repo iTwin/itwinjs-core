@@ -137,27 +137,27 @@ export interface RealityDataSourceProps {
  * @extensions
  */
 export interface ContextRealityModelProps {
-  /** @see [[ContextRealityModel.rdSourceKey]].
+  /** See [[ContextRealityModel.rdSourceKey]].
    * @beta
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
-  /** @see [[ContextRealityModel.orbitGtBlob]].
+  /** See [[ContextRealityModel.orbitGtBlob]].
    * @alpha
    */
   orbitGtBlob?: OrbitGtBlobProps;
-  /** @see [[ContextRealityModel.realityDataId]]. */
+  /** See [[ContextRealityModel.realityDataId]]. */
   realityDataId?: string;
   /** An optional, user-friendly name for the reality model suitable for display in a user interface. */
   name?: string;
   /** An optional, user-friendly description of the reality model suitable for display in a user interface. */
   description?: string;
-  /** @see [[ContextRealityModel.classifiers]]. */
+  /** See [[ContextRealityModel.classifiers]]. */
   classifiers?: SpatialClassifierProps[];
-  /** @see [[ContextRealityModel.planarClipMask]]. */
+  /** See [[ContextRealityModel.planarClipMask]]. */
   planarClipMask?: PlanarClipMaskProps;
-  /** @see [[ContextRealityModel.appearanceOverrides]]. */
+  /** See [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;
 }
 
