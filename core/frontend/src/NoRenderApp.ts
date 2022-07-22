@@ -69,5 +69,6 @@ export class NoRenderApp {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
     await IModelApp.startup(opts);
+    IModelApp.noRender = true;
   }
 }

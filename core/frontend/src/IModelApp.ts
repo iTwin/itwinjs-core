@@ -190,6 +190,7 @@ export class IModelApp {
   private static _toolAdmin: ToolAdmin;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
+  private static _noRender = false;
   private static _wantEventLoop = false;
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
@@ -353,6 +354,7 @@ export class IModelApp {
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
+    this._noRender = false;
 
     this._setupRpcRequestContext();
 
@@ -459,7 +461,14 @@ export class IModelApp {
   }
 
   /** @internal */
+  public static get noRender() { return this._noRender; }
+  public static set noRender(render: boolean) { this._noRender = render; }
+
+  /** @internal */
   public static requestNextAnimation() {
+    // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
+    if (IModelApp._noRender) return;
+
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
       requestAnimationFrame(IModelApp.eventLoop);
