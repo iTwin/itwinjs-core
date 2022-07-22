@@ -5175,10 +5175,8 @@ export abstract class InteractiveTool extends Tool {
     // @beta
     applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean>;
     beginDynamics(): void;
-    // @beta
     bumpToolSetting(_settingIndex?: number): Promise<boolean>;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
-    // @beta
     protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean;
     decorate(_context: DecorateContext): void;
     decorateSuspended(_context: DecorateContext): void;
@@ -5190,10 +5188,8 @@ export abstract class InteractiveTool extends Tool {
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // @internal (undocumented)
     protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any>;
-    // @beta
     protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string>;
-    // @beta
     protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void;
     initLocateElements(enableLocate?: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     // (undocumented)
@@ -5230,17 +5226,14 @@ export abstract class InteractiveTool extends Tool {
     onTouchTap(_ev: BeTouchEvent): Promise<EventHandled>;
     onUnsuspend(): Promise<void>;
     receivedDownEvent: boolean;
-    // @beta
     reloadToolSettingsProperties(): void;
     // @internal (undocumented)
     protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean;
     // @internal (undocumented)
     protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean;
-    // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // @internal (undocumented)
     protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void;
-    // @beta
     syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
     // @internal (undocumented)
