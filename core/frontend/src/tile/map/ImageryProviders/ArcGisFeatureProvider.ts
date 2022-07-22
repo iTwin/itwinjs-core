@@ -20,14 +20,68 @@ const sampleIconImg = new Image();
 sampleIconImg.src = `data:image/png;base64,${samplePngIcon}`;
 
 const loggerCategory = "ArcGISFeatureProvider";
+
+/**
+* @internal
+*/
 interface ArcGisFeatureUrl {
   url: string;
   envelope: ArcGisExtent;
 }
 
-interface ArcGisFeatureReponse {
-  response: Promise<Response>;
-  envelope: ArcGisExtent;
+/**
+* @internal
+*/
+interface ArcGisResponseData {
+  data: any;
+  exceedTransferLimit: boolean;
+}
+
+/**
+* @internal
+*/
+class ArcGisFeatureReponse {
+
+  public readonly format: ArcGisFeatureFormat;
+  public readonly envelope: ArcGisExtent;
+
+  private _response: Promise<Response>;
+
+  constructor(format: ArcGisFeatureFormat,  response: Promise<Response>, envelope: ArcGisExtent) {
+    this.format = format;
+    this._response = response;
+    this.envelope = envelope;
+  }
+
+  public async getResponseData(): Promise<ArcGisResponseData|undefined> {
+
+    let data: any|undefined;
+    try {
+      const tileResponse = await this._response;
+      if (tileResponse === undefined || tileResponse.status !== 200  )
+        return undefined;
+
+      if (this.format === "PBF") {
+        const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+        if (!byteArray || (byteArray.length === 0))
+          return undefined;
+
+        data = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
+        const collection = data as esriPBuffer.FeatureCollectionPBuffer;
+        return {data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit};
+
+      } else {
+        if (tileResponse.text === undefined)
+          return undefined;
+
+        data  = JSON.parse(tileResponse.text);
+        return {data, exceedTransferLimit: data?.exceededTransferLimit};
+      }
+
+    } catch(_e) {
+      return undefined;
+    }
+  }
 }
 
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
@@ -41,6 +95,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   private _format: ArcGisFeatureFormat|undefined;
   public serviceJson: any;
   private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
+  private static readonly _nbSubTiles = 2;
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
@@ -133,11 +188,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       if (this._layerInfo.supportsCoordinatesQuantization) {
         this._supportsCoordinatesQuantization = true;
       }
-
     }
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
-
   }
 
   protected  async getLayerMetadata(layerId: number) {
@@ -215,7 +268,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       return undefined;
     }
 
-    return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
+    // return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
+    return new ArcGisFeatureReponse(this.format, request(tileUrl.url, tileRequestOptions), tileUrl.envelope);
   }
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){
@@ -268,71 +322,69 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
         transfo = matrix.asTransform;
         if (!transfo)  {
+          Logger.logError(loggerCategory, `Could not compute data transformation for tile (${zoomLevel}/${row}/${column})`);
           assert(!"Could not compute world to canvas transform");
         }
       }
 
       const renderer = new ArcGisFeatureRenderer(ctx, this._symbologyRenderer, transfo);
-      if (this.format === "PBF") {
-        const featureReader = new ArcGisFeaturePBF();
-        const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
-          const dx = (envelope.xmax - envelope.xmin) * 0.5;
-          const dy = (envelope.xmax - envelope.xmin) * 0.5;
-          const subEnvelopes: ArcGisExtent[] = [];
-          for (let posX=0; posX<2; posX++) {
-            for (let posY=0; posY<2; posY++) {
-              subEnvelopes.push({
-                xmin: envelope.xmin + (dx*posX), ymin: envelope.ymin + (dy*posY),
-                xmax: envelope.xmin + (dx*(posX+1)), ymax: envelope.ymin + (dy*(posY+1)),
-                spatialReference: {wkid:102100, latestWkid:3857},
-              });
-            }
+      const featureReader = this.format === "PBF" ? new ArcGisFeaturePBF() : new ArcGisFeatureJSON();
+
+      const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
+        const dx = (envelope.xmax - envelope.xmin) * 0.5;
+        const dy = (envelope.xmax - envelope.xmin) * 0.5;
+        const subEnvelopes: ArcGisExtent[] = [];
+        for (let posX=0; posX<ArcGisFeatureProvider._nbSubTiles; posX++) {
+          for (let posY=0; posY<ArcGisFeatureProvider._nbSubTiles; posY++) {
+            subEnvelopes.push({
+              xmin: envelope.xmin + (dx*posX), ymin: envelope.ymin + (dy*posY),
+              xmax: envelope.xmin + (dx*(posX+1)), ymax: envelope.ymin + (dy*(posY+1)),
+              spatialReference: {wkid:102100, latestWkid:3857},
+            });
           }
-          return subEnvelopes;
-        };
+        }
+        return subEnvelopes;
+      };
 
-        const renderData = async (envelope?: ArcGisExtent) => {
-          const tileData = await this.fetchTile(row, column, zoomLevel, envelope);
-          if (!tileData)
+      // The stategy here is simple: we make a request for an area that represents the current tile (i.e envelope),
+      // the server will either return the requested data OR a 'exceedTransferLimit' message (too much data to transfert).
+      // In the latter case, we subdivise the previous request enveloppe in for 4 sub-envelopes,
+      // and repeat again until we get data.
+      const renderData = async (envelope?: ArcGisExtent) => {
+        let response: ArcGisFeatureReponse | undefined;
+        let responseData: ArcGisResponseData | undefined;
+        try {
+          response = await this.fetchTile(row, column, zoomLevel, envelope);
+          if (!response) {
+            Logger.logError(loggerCategory, `Error occured while fetching tile (${zoomLevel}/${row}/${column})`);
             return ;
-          const tileResponse = await tileData.response;
-          if (tileResponse === undefined || tileResponse.status !== 200  )
-            return ;
-
-          const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
-          if (!byteArray || (byteArray.length === 0))
-            return ;
-
-          const collection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
-          if (collection?.queryResult?.featureResult?.exceededTransferLimit) {
-            const subEnvelopes = getSubEnvelopes(tileData.envelope);
-            const renderPromises = [];
-            for (const subEnvelope of subEnvelopes) {
-              renderPromises.push(renderData(subEnvelope));
-            }
-            await Promise.all(renderPromises);
-          } else {
-            featureReader.readRenderGraphics(collection, renderer);
           }
-        };
-        await renderData();
-      } else {
-        const tileData = await this.fetchTile(row, column, zoomLevel);
-        if (!tileData)
-          return undefined;
-        const tileResponse = await tileData.response;
-        if (tileResponse === undefined || tileResponse.status !== 200  )
-          return undefined;
 
-        if (tileResponse.text === undefined)
-          return undefined;
-        const featureReader = new ArcGisFeatureJSON();
-        featureReader.transform = transfo;
-        featureReader.readRenderGraphics(tileResponse.text, renderer);
-      }
+          responseData = await response.getResponseData();
+          if (!responseData) {
+            Logger.logError(loggerCategory, `Could not get response data for tile (${zoomLevel}/${row}/${column})`);
+            return ;
+          }
+        } catch (e) {
+          Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+          return;
+        }
+
+        if (responseData.exceedTransferLimit) {
+          const subEnvelopes = getSubEnvelopes(response.envelope);
+          const renderPromises = [];
+          for (const subEnvelope of subEnvelopes) {
+            renderPromises.push(renderData(subEnvelope));
+          }
+          await Promise.all(renderPromises);
+        } else {
+          featureReader.readAndRender(responseData.data, renderer);
+        }
+      };
+      await renderData();
       this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}.`);
+      Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
     }
 
     try {
@@ -346,6 +398,4 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     return undefined;
   }
-
 }
-

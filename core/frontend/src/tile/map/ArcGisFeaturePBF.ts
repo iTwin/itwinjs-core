@@ -8,7 +8,7 @@ const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 
 export class ArcGisFeaturePBF  {
 
-  public readRenderGraphics(collection: esriPBuffer.FeatureCollectionPBuffer, renderer: ArcGisFeatureRenderer) {
+  public readAndRender(collection: esriPBuffer.FeatureCollectionPBuffer, renderer: ArcGisFeatureRenderer) {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
