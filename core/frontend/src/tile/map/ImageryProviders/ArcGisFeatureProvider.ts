@@ -35,7 +35,7 @@ interface ArcGisFeatureReponse {
 */
 export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
-  private _supportsCoordinatesQuantization = true; // TODO Reader this from the layer capabilities
+  private _supportsCoordinatesQuantization = false;
   private _layerId = 0;
   private _layerInfo: any;
   private _format: ArcGisFeatureFormat|undefined;
@@ -127,6 +127,13 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
           throw new ServerError(IModelStatus.ValidationFailed, "");
         }
       }
+
+      // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
+      // If not supported, transformation will be applied client side.
+      if (this._layerInfo.supportsCoordinatesQuantization) {
+        this._supportsCoordinatesQuantization = true;
+      }
+
     }
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
@@ -194,7 +201,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   }
 
-  private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<{response: Promise<Response> , envelope: ArcGisExtent} | undefined> {
+  private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<ArcGisFeatureReponse | undefined> {
     if (!this.format) {
       assert(!"No supported query format");
       return undefined;
