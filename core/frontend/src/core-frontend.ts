@@ -228,3 +228,7 @@ import "./extension/ExtensionRuntime";
  * @docs-group-description MapLayers
  * Classes supporting map layers display.
  */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
+*/
