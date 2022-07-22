@@ -8,45 +8,29 @@
 
 import "./SectionTargets.scss";
 import * as React from "react";
-import { assert } from "@itwin/core-bentley";
-import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
-import { WidgetTarget } from "./WidgetTarget";
-import { WidgetIdContext } from "../widget/Widget";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";
+import { WidgetState } from "../base/NineZoneState";
+import { MergeTarget } from "./MergeTarget";
 
 /** @internal */
-export const SectionTargets = withTargetVersion("2", function SectionTargets() {
-  const type = useWidgetTargetsType();
+export interface SectionTargetsProps {
+  widgetId: WidgetState["id"];
+}
+
+/** @internal */
+export const SectionTargets = withTargetVersion("2", function SectionTargets(props: SectionTargetsProps) {
   const direction = useTargetDirection();
-  const widgetId = React.useContext(WidgetIdContext);
-  let targets;
-  if (type === "merge") {
-    targets = <WidgetTarget widgetId={widgetId} />;
-  } else {
-    targets = <>
-      <SectionTarget sectionIndex={0}  />
-      <WidgetTarget widgetId={widgetId} />
-      <SectionTarget sectionIndex={1} />
-    </>;
-  }
+  const { widgetId } = props;
   return (
     <TargetContainer
       className="nz-target-sectionTargets"
       direction={direction}
     >
-      {targets}
+      <SectionTarget sectionIndex={0}  />
+      <MergeTarget widgetId={widgetId} />
+      <SectionTarget sectionIndex={1} />
     </TargetContainer>
   );
 });
-
-function useWidgetTargetsType(): "merge" | "sections" {
-  const panelState = React.useContext(PanelStateContext);
-  assert(!!panelState);
-
-  if (panelState.widgets.length === 1)
-    return "sections";
-
-  return "merge";
-}

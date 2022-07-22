@@ -54,7 +54,7 @@ describe("PanelTargets", () => {
         wrapper: (props) => <Wrapper state={state} {...props} />, // eslint-disable-line react/display-name
       }
     );
-    container.getElementsByClassName("nz-target-widgetTarget").length.should.eq(1);
+    container.getElementsByClassName("nz-target-mergeTarget").length.should.eq(1);
     container.getElementsByClassName("nz-target-sectionTarget").length.should.eq(2);
   });
 
@@ -74,7 +74,7 @@ describe("PanelTargets", () => {
         wrapper: (props) => <Wrapper state={state} {...props} />, // eslint-disable-line react/display-name
       }
     );
-    container.getElementsByClassName("nz-target-widgetTarget").length.should.eq(2);
+    container.getElementsByClassName("nz-target-mergeTarget").length.should.eq(2);
     container.getElementsByClassName("nz-target-sectionTarget").length.should.eq(0);
   });
 

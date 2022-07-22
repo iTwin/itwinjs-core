@@ -6,7 +6,7 @@ import * as React from "react";
 import { render } from "@testing-library/react";
 import { addFloatingWidget, createNineZoneState, NineZoneState, TargetOptionsContext, WidgetIdContext, WidgetState } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
-import { FloatingWidgetTargets } from "../../appui-layout-react/target/FloatingWidgetTargets";
+import { WidgetTarget } from "../../appui-layout-react/target/WidgetTarget";
 
 interface WrapperProps {
   state: NineZoneState;
@@ -27,16 +27,16 @@ function Wrapper({ children, state, widgetId }: React.PropsWithChildren<WrapperP
   );
 }
 
-describe("FloatingWidgetTargets", () => {
-  it("should render a panel target", () => {
+describe("WidgetTarget", () => {
+  it("should render a merge target", () => {
     let state = createNineZoneState();
     state = addFloatingWidget(state, "fw1", ["ft1"]);
     const { container } = render(
-      <FloatingWidgetTargets />,
+      <WidgetTarget />,
       {
         wrapper: (props) => <Wrapper state={state} widgetId="fw1" {...props} />, // eslint-disable-line react/display-name
       }
     );
-    container.getElementsByClassName("nz-target-widgetTarget").length.should.eq(1);
+    container.getElementsByClassName("nz-target-mergeTarget").length.should.eq(1);
   });
 });

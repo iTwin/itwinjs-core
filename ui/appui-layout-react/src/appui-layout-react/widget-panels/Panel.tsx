@@ -23,6 +23,7 @@ import { SectionOutline } from "../outline/SectionOutline";
 import { PanelOutline } from "../outline/PanelOutline";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { PanelTarget } from "./PanelTarget";
+import { SectionTargets } from "../target/SectionTargets";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -362,6 +363,8 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     };
   }, [dispatch, panel.collapsed, panel.pinned, panel.side, autoCollapseUnpinnedPanels]);
 
+  const singleSection = panel.widgets.length === 1;
+  const showSectionTargets = singleSection && !panel.collapsed;
   /* istanbul ignore next */
   return (
     <WidgetPanelContext.Provider value={widgetPanel}>
@@ -382,6 +385,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
           className="nz-content"
           style={contentStyle}
         >
+          {singleSection && <SectionOutline sectionIndex={0} />}
           {panel.widgets.map((widgetId, index, array) => {
             const last = index === array.length - 1;
 
@@ -417,8 +421,9 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
               </React.Fragment>
             );
           })}
+          {singleSection && <SectionOutline sectionIndex={1} />}
         </div>
-        <SectionOutlines />
+        {showSectionTargets && <SectionTargets widgetId={panel.widgets[0]} />}
         {panel.resizable &&
           <div className="nz-grip-container">
             <WidgetPanelGrip className="nz-grip" />
@@ -661,13 +666,4 @@ function getSize(horizontal: boolean, size: SizeProps) {
 
 function getPanelSize(horizontal: boolean, size: SizeProps) {
   return horizontal ? size.height : size.width;
-}
-
-function SectionOutlines() {
-  return (
-    <>
-      <SectionOutline sectionIndex={0} />
-      <SectionOutline sectionIndex={1} />
-    </>
-  );
 }

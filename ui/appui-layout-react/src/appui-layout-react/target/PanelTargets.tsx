@@ -14,9 +14,9 @@ import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
 import { isHorizontalPanelState } from "../base/NineZoneState";
 import { PanelTarget } from "./PanelTarget";
-import { WidgetTarget } from "./WidgetTarget";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";
+import { MergeTarget } from "./MergeTarget";
 
 /** @internal */
 export const PanelTargets = withTargetVersion("2", function PanelTargets() {
@@ -38,13 +38,13 @@ export const PanelTargets = withTargetVersion("2", function PanelTargets() {
   } else if (type === "single-widget") {
     targets = <>
       <SectionTarget sectionIndex={0} />
-      <WidgetTarget widgetId={panel.widgets[0]} />
+      <MergeTarget widgetId={panel.widgets[0]} />
       <SectionTarget sectionIndex={1} />
     </>;
   } else if (type === "two-widgets") {
     targets = <>
-      <WidgetTarget widgetId={panel.widgets[0]} />
-      <WidgetTarget widgetId={panel.widgets[1]} />
+      <MergeTarget widgetId={panel.widgets[0]} />
+      <MergeTarget widgetId={panel.widgets[1]} />
     </>;
   }
   return (

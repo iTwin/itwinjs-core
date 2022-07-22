@@ -38,7 +38,7 @@ export const SectionOutline = withTargetVersion("2", function SectionOutline(pro
     <div
       className={className}
       style={{
-        ...style,
+        ...hidden ? {} : style,
         ...props.style,
       }}
     />

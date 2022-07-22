@@ -7,48 +7,21 @@
  */
 
 import "./WidgetTarget.scss";
-import classnames from "classnames";
 import * as React from "react";
-import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
+import { WidgetIdContext } from "../widget/Widget";
+import { TargetContainer } from "./TargetContainer";
+import { withTargetVersion } from "./TargetOptions";
+import { MergeTarget } from "./MergeTarget";
 
 /** @internal */
-export interface WidgetTargetProps {
-  widgetId: WidgetState["id"];
-}
-
-/** @internal */
-export function WidgetTarget(props: WidgetTargetProps) {
-  const { widgetId } = props;
-  const cursorType = React.useContext(CursorTypeContext);
-  const draggedTab = React.useContext(DraggedTabContext);
-  const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
-  const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
-  // istanbul ignore next
-  const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
-  const className = classnames(
-    "nz-target-widgetTarget",
-    // istanbul ignore next
-    targeted && "nz-targeted",
-    hidden && "nz-hidden",
-    // istanbul ignore next
-    cursorType && getCursorClassName(cursorType),
-  );
+export const WidgetTarget = withTargetVersion("2", function WidgetTarget() {
+  const widgetId = React.useContext(WidgetIdContext);
   return (
-    <div
-      className={className}
-      ref={ref}
-    />
+    <TargetContainer
+      className="nz-target-widgetTarget"
+      direction="horizontal"
+    >
+      <MergeTarget widgetId={widgetId} />
+    </TargetContainer>
   );
-}
-
-function useTargetArgs(widgetId: WidgetState["id"]) {
-  return React.useMemo<WidgetTargetState>(() => {
-    return {
-      type: "widget",
-      widgetId,
-    };
-  }, [widgetId]);
-}
+});
