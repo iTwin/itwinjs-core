@@ -9,14 +9,16 @@ import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
+import { threadId } from "worker_threads";
+
+export const MAX_SAMPLE_POINTS = 20;
+export const MESH_PROJECTION_CUTOFF_HEIGHT = 500_000;
 
 export class AtmosphericScatteringUniforms implements WebGLDisposable {
   private _atmosphereHeightAboveEarth = 0.0;
   private readonly _earthCenter = new Point3d();
   private readonly _ellipsoidRotationMatrix = new Matrix3d();
-  private readonly _earthRadii = new Point3d();
   private _atmosphericScattering?: AtmosphericScattering;
-  // private _scratchPoint3d = new Point3d();
   private _scratchVector3d = new Vector3d();
   private _scratchMatrix3d = new Matrix3d();
   private _scatteringCoefficients = new Float32Array(3);
@@ -54,19 +56,13 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
       return;
     }
 
-    this._updateIsTerrainEnabled(plan.terrainEnabled!);
-
-    this._updateEarthCenter(plan.globeCenter!, target.uniforms.frustum.viewMatrix);
-    // this._updateEarthCenter(this.atmosphericScattering.earthCenter, target.uniforms.frustum.viewMatrix);
-    this._updateEllipsoidRotationMatrix(plan.globeRotation!);
-    this._updateInverseEllipsoidRotationMatrix(plan.globeRotation!, target.uniforms.frustum.viewMatrix.matrix);
+    this._updateEarthCenter(plan.ellipsoidCenter!, target.uniforms.frustum.viewMatrix);
+    this._updateEllipsoidRotationMatrix(plan.ellipsoidRotation!);
+    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoidRotation!, target.uniforms.frustum.viewMatrix.matrix);
     this._updateEllipsoidToEye();
-
     this._updateInScatteringIntensity(this.atmosphericScattering.inScatteringIntensity);
     this._updateOutScatteringIntensity(this.atmosphericScattering.outScatteringIntensity);
-
-    // this._updateEarthScaleMatrix(this.atmosphericScattering.earthRadii);
-    this._updateEarthScaleMatrix(plan.globeRadii!);
+    this._updateEarthScaleMatrix(plan.ellipsoidRadii!);
     this._updateAtmosphereHeightAboveEarth(this.atmosphericScattering.atmosphereHeightAboveEarth);
     this._updateAtmosphereScaleMatrix(this.atmosphericScattering.atmosphereHeightAboveEarth);
     this._updateMinDensityScaleMatrix(this.atmosphericScattering.minDensityHeightBelowEarth);
@@ -76,6 +72,27 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
     this._updateNumInScatteringPoints(this.atmosphericScattering.numInScatteringPoints);
     this._updateNumOpticalDepthPoints(this.atmosphericScattering.numOpticalDepthPoints);
     this._updateIsPlanar(this.atmosphericScattering.isPlanar);
+  }
+
+  public bindInverseRotationInverseEarthScaleMatrix(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      this._earthScaleMatrix.multiplyMatrixInverseMatrix(this._inverseEllipsoidRotationMatrix, this._scratchMatrix3d);
+      uniform.setMatrix3(Matrix3.fromMatrix3d(this._scratchMatrix3d));
+    }
+  }
+
+  public bindInverseRotationInverseAtmosphereScaleMatrix(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      this._atmosphereScaleMatrix.multiplyMatrixInverseMatrix(this._inverseEllipsoidRotationMatrix, this._scratchMatrix3d);
+      uniform.setMatrix3(Matrix3.fromMatrix3d(this._scratchMatrix3d));
+    }
+  }
+
+  public bindInverseRotationInverseMinDensityScaleMatrix(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      this._minDensityScaleMatrix.multiplyMatrixInverseMatrix(this._inverseEllipsoidRotationMatrix, this._scratchMatrix3d);
+      uniform.setMatrix3(Matrix3.fromMatrix3d(this._scratchMatrix3d));
+    }
   }
 
   private _updateInScatteringIntensity(inScatteringIntensity: number) {
@@ -94,10 +111,6 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   public bindOutScatteringIntensity(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._outScatteringIntensity);
-  }
-
-  private _updateIsTerrainEnabled(isTerrainEnabled: boolean) {
-    this._isTerrainEnabled = isTerrainEnabled;
   }
 
   public bindIsTerrainEnabled(uniform: UniformHandle): void {
@@ -163,8 +176,6 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   public bindInverseMinDensityScaleMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setMatrix3(Matrix3.fromMatrix3d(this._minDensityScaleMatrix.inverse()!));
-    // eslint-disable-next-line no-console
-    console.log(`inverseMatrix: ${this._minDensityScaleMatrix.inverse()!.toJSON().toString()}`);
   }
 
   public bindEarthToEyeInverseScaled(uniform: UniformHandle): void {
@@ -183,14 +194,13 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
 
   private _updateMinDensityToAtmosphereScaleFactor(atmosphereHeightAboveEarth: number, minDensityHeightBelowEarth: number) {
     const earthPolarRadius = this._earthScaleMatrix.at(2, 2);
-    this._minDensityToAtmosphereScaleFactor = earthPolarRadius === 0 ? 1.0 : (earthPolarRadius + atmosphereHeightAboveEarth) / (earthPolarRadius - minDensityHeightBelowEarth);
+    const divider = earthPolarRadius - minDensityHeightBelowEarth;
+    this._minDensityToAtmosphereScaleFactor = (earthPolarRadius === 0 || divider === 0) ? 1.0 : (earthPolarRadius + atmosphereHeightAboveEarth) / divider;
   }
 
   public bindMinDensityToAtmosphereScaleFactor(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform1f(this._minDensityToAtmosphereScaleFactor);
-    // eslint-disable-next-line no-console
-    console.log(`scaleFactor: ${this._minDensityToAtmosphereScaleFactor}`);
   }
 
   private _updateAtmosphereScaleMatrix(heightAboveSurface: number) {
@@ -235,11 +245,11 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   }
 
   private _updateNumInScatteringPoints(numInScatteringPoints: number) {
-    this._numInScatteringPoints = numInScatteringPoints;
+    this._numInScatteringPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numInScatteringPoints));
   }
 
   private _updateNumOpticalDepthPoints(numOpticalDepthPoints: number) {
-    this._numOpticalDepthPoints = numOpticalDepthPoints;
+    this._numOpticalDepthPoints = Math.max(0, Math.min(MAX_SAMPLE_POINTS, numOpticalDepthPoints));
   }
 
   private _updateIsPlanar(isPlanar: boolean) {
@@ -259,8 +269,6 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable {
   public bindScatteringCoefficients(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform3fv(this._scatteringCoefficients);
-    // eslint-disable-next-line no-console
-    console.log(`coefficients: r:${this._scatteringCoefficients[0]} g:${this._scatteringCoefficients[1]} b:${this._scatteringCoefficients[2]}`);
   }
 
   public bindNumInScatteringPoints(uniform: UniformHandle): void {

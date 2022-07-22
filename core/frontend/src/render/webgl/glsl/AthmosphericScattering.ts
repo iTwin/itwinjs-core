@@ -14,13 +14,14 @@ import { WebGLContext } from "@itwin/webgl-compatibility";
 import { ShaderProgram } from "../ShaderProgram";
 import { AttributeMap } from "../AttributeMap";
 import { AtmosphericScatteringViewportQuadGeometry } from "../CachedGeometry";
+import { MAX_SAMPLE_POINTS, MESH_PROJECTION_CUTOFF_HEIGHT } from "../AtmosphericScatteringUniforms";
 
 // #region GENERAL
 
 const computeRayDirDefault = `
-  vec3 computeRayDir() {
-    return normalize(v_eyeSpace);
-  }
+vec3 computeRayDir() {
+  return normalize(v_eyeSpace);
+}
 `;
 
 const computeSceneDepthDefault = `
@@ -29,39 +30,43 @@ const computeSceneDepthDefault = `
   }
 `;
 
-const computeSceneDepthRealityMesh = `
-  float computeSceneDepth(vec3 rayDirection) {
-    if (u_isMapTile)
-      return projectedOntoEarthEllipsoidSceneDepth(rayDirection);
-    return length(v_eyeSpace);
-  }
-`;
+// const computeSceneDepthRealityMesh = `
+// float computeSceneDepth(vec3 rayDirection) {
+//   if (u_isMapTile) {
+//     return projectedOntoEarthEllipsoidSceneDepth(rayDirection);
+//   }
+//   return length(v_eyeSpace);
+// }
+// `;
 
 const computeSceneDepthSky = `
-  float computeSceneDepth(vec3 rayDirection) {
-    return MAX_FLOAT;
-  }
+float computeSceneDepth(vec3 rayDirection) {
+  return MAX_FLOAT;
+}
 `;
 
 // #endregion GENERAL
 // #region SPHERE
 
 /**
+ * Computes the intersection of a ray with an ellipsoid and returns two values:
+ * 1. The length from the ray's origin to the point it first intersects with the ellipsoid.
+ * 2. The length from the first point the ray intersects with the sphere to the second point it intersects with the ellipsoid.
  *
- * @param ellipsoidCenter - Center of globe (earth) in view coordinates.
- * @param ellipsoidMatrix - Rotation matrix from Ecef to world.
- * @param viewMatrix - Rotation matrix from world to view.
- * @param ellipsoidRadii - Radiuses of ellipsoid in Ecef coordinate space.
- * @param rayOrigin
- * @param rayDirection
- * @returns
+ * @param ellipsoidCenter - Center of the ellipsoid in view coordinates.
+ * @param inverseRotationMatrix - Transformation matrix to invert the ecdb to world and world to eye rotations.
+ * @param ellipsoidScaleMatrix - Diagonal matrix where the diagonal represents the x, y and z radii of the ellipsoid.
+ * @param inverseEllipsoidScaleMatrix - Transpose (also inverse) of the ellipsoidScaleMatrix.
+ * @param rayOrigin - The starting point of the ray in eye space.
+ * @param rayDir - The direction of the ray.
+ * @returns A vec2 of float values representing the ray's distance to and through the ellipsoid.
  */
 const rayEllipsoidIntersectionGeneric = `
-vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 inverseRotationMatrix, mat3 ellipsoidScaleMatrix, mat3 inverseEllipsoidScaleMatrix, vec3 rayOrigin, vec3 rayDirection) {
+vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 inverseRotationMatrix, mat3 ellipsoidScaleMatrix, mat3 inverseEllipsoidScaleMatrix, vec3 rayOrigin, vec3 rayDir) {
   vec3 ro, rd;
 
   // transform ray to be relative to sphere
-  rd = inverseRotationMatrix * rayDirection;
+  rd = inverseRotationMatrix * rayDir;
   ro = inverseRotationMatrix * (rayOrigin - ellipsoidCenter); // uniform for rayOrigin - ellipsoidCenter
 
   vec3 rdi = normalize(inverseEllipsoidScaleMatrix * rd);
@@ -79,42 +84,69 @@ vec2 rayEllipsoidIntersection(vec3 ellipsoidCenter, mat3 inverseRotationMatrix, 
 }
 `;
 
+/**
+ * Computes the intersection of a ray originating from the eye space origin (0.0, 0.0, 0.0) with the atmosphere ellipsoid:
+ * 1. The length from the ray's origin to the point it first intersects with the ellipsoid.
+ * 2. The length from the first point the ray intersects with the sphere to the second point it intersects with the ellipsoid.
+ *
+ * @param rayDir - The direction of the ray.
+ * @returns A vec2 of float values representing the ray's distance to and through the ellipsoid.
+ */
 const eyeAtmosphereIntersection = `
-vec2 eyeAtmosphereIntersection(vec3 rayDirection) {
-
-  // transform ray to be relative to sphere
-  vec3 rd = normalize(u_inverseAtmosphereScaleMatrix * u_inverseEllipsoidRotationMatrix * rayDirection);
-
-  vec2 toAndThrough = raySphere(vec3(0.0), 1.0, u_atmosphereToEyeInverseScaled, rd);
-  if (toAndThrough[1] > 0.0) {
-    vec3 pt = u_atmosphereToEyeInverseScaled + rd * toAndThrough[0];
-    return vec2(
-      distance(u_ellipsoidToEye, u_atmosphereScaleMatrix * pt),
-      distance(u_atmosphereScaleMatrix * pt, u_atmosphereScaleMatrix * (pt + rd * toAndThrough[1]))
-    );
-  }
-  return toAndThrough;
+vec2 eyeAtmosphereIntersection(vec3 rayDir) {
+  return _eyeEllipsoidIntersection(
+    rayDir, u_atmosphereToEyeInverseScaled, u_atmosphereScaleMatrix,
+    u_inverseRotationInverseAtmosphereScaleMatrix
+  );
 }
 `;
 
+/**
+ * Computes the intersection of a ray originating from the eye space origin (0.0, 0.0, 0.0) with the earth ellipsoid:
+ * 1. The length from the ray's origin to the point it first intersects with the ellipsoid.
+ * 2. The length from the first point the ray intersects with the sphere to the second point it intersects with the ellipsoid.
+ *
+ * @param rayDir - The direction of the ray.
+ * @returns A vec2 of float values representing the ray's distance to and through the ellipsoid.
+ */
 const eyeEarthIntersection = `
-vec2 eyeEarthIntersection(vec3 rayDirection) {
+vec2 eyeEarthIntersection(vec3 rayDir) {
+  return _eyeEllipsoidIntersection(
+    rayDir, u_earthToEyeInverseScaled, u_earthScaleMatrix,
+    u_inverseRotationInverseEarthScaleMatrix
+  );
+}
+`;
 
+const _eyeEllipsoidIntersection = `
+vec2 _eyeEllipsoidIntersection(vec3 rayDir, vec3 rayOriginToUnitSphere, mat3 ellipsoidScaleMatrix, mat3 inverseEllipsoidRotationAndScaleMatrix) {
   // transform ray to be relative to sphere
-  vec3 rd = normalize(u_inverseEarthScaleMatrix * u_inverseEllipsoidRotationMatrix * rayDirection);
+  vec3 rayDirToEllipsoid = normalize(inverseEllipsoidRotationAndScaleMatrix * rayDir);
 
-  vec2 toAndThrough = raySphere(vec3(0.0), 1.0, u_earthToEyeInverseScaled, rd);
+  vec2 toAndThrough = raySphere(vec3(0.0), 1.0, rayOriginToUnitSphere, rayDirToEllipsoid);
   if (toAndThrough[1] > 0.0) {
-    vec3 pt = u_earthToEyeInverseScaled + rd * toAndThrough[0];
+    vec3 point = rayDirToEllipsoid * toAndThrough[0] + rayOriginToUnitSphere;
+    vec3 scaledPoint = ellipsoidScaleMatrix * point;
     return vec2(
-      distance(u_ellipsoidToEye, u_earthScaleMatrix * pt),
-      distance(u_earthScaleMatrix * pt, u_earthScaleMatrix * (pt + rd * toAndThrough[1]))
+      distance(u_ellipsoidToEye, scaledPoint),
+      distance(scaledPoint, ellipsoidScaleMatrix * (rayDirToEllipsoid * toAndThrough[1] + point))
     );
   }
   return toAndThrough;
 }
 `;
 
+/**
+ * Computes the intersection of a ray with a sphere and returns two values:
+ * 1. The length from the ray's origin to the point it first intersects with the sphere.
+ * 2. The length from the first point the ray intersects with the sphere to the second point it intersects with the sphere.
+ *
+ * @param sphereCenter - The center point of the sphere in eye space.
+ * @param sphereRadius - The radius of the sphere.
+ * @param rayOrigin - The starting point of the ray in eye space.
+ * @param rayDir - The direction of the ray.
+ * @returns A vec2 of float values representing the ray's distance to and through the sphere.
+ */
 const raySphere = `
 vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDir) {
   vec3 offset = rayOrigin - sphereCenter;
@@ -122,27 +154,26 @@ vec2 raySphere(vec3 sphereCenter, float sphereRadius, vec3 rayOrigin, vec3 rayDi
   float b = 2.0 * dot(offset, rayDir);
   float c = dot(offset, offset) - sphereRadius * sphereRadius;
   float d = b * b - 4.0 * a * c;
-
   if (d > 0.0) {
     float s = sqrt(d);
     float distanceToSphereNear = max(0.0, (-b - s) / (2.0 * a));
     float distanceToSphereFar = (-b + s) / (2.0 * a);
-
     if (distanceToSphereFar >= 0.0) {
       return vec2(distanceToSphereNear, distanceToSphereFar - distanceToSphereNear);
     }
   }
-
   return vec2(MAX_FLOAT, 0.0);
 }
 `;
 
 /**
- * Returns
+ * Returns the optical depth of a ray going through the atmosphere,
+ * taking into account atmosphere density.
  *
- * @param
- * @param
- * @returns
+ * @param rayOrigin - The starting point in eye space of the ray we calculate optical depth from.
+ * @param rayDir - The direction of the ray.
+ * @param rayLength - The length of the ray.
+ * @returns A float in the range [0.0, rayLength] representing optical depth.
  */
 const opticalDepth = `
 float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
@@ -153,34 +184,12 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
 
   for (int i = 0; i < u_numOpticalDepthPoints; i ++) {
     float localDensity = densityAtPoint(densitySamplePoint);
-    opticalDepth += localDensity * stepSize;
+    opticalDepth += localDensity;
     densitySamplePoint += rayStep;
   }
-  return opticalDepth;
+  return opticalDepth  * stepSize;
 }
 `;
-
-// /**
-//  * Returns the atmospheric density at a point according to its distance between
-//  * a minimum and maximum density height. Density decreases exponentially,
-//  * modulated by a density falloff coefficient.
-//  *
-//  * @param densitySamplePoint - Point we want to sample density for.
-//  * @param sphereCenterPoint - Center point of the sphere responsible for the atmosphere.
-//  * @param minDensityHeight - Distance from sphereCenterPoint at which density is 0.0.
-//  * @param maxDensityHeight - Distance from sphereCenterPoint at which density is 1.0.
-//  * @param densityFalloff - Coefficient modulating density falloff speed.
-//  * @returns A density value between [0.0 - 1.0].
-//  */
-// const _densityAtPoint = `
-// float densityAtPoint(vec3 densitySamplePoint, vec3 sphereCenterPoint, float minDensityHeight, float maxDensityHeight, float densityFalloff) {
-//   float distanceFromCenter = length(densitySamplePoint - sphereCenterPoint);
-//   float distanceFromMinHeight = distanceFromCenter - minDensityHeight;
-//   float isAboveMinHeight = step(0.0, distanceFromMinHeight);
-//   float minToMaxRatio = isAboveMinHeight * clamp(distanceFromMinHeight / (maxDensityHeight - minDensityHeight), 0.0, 1.0);
-//   return exp(-minToMaxRatio * densityFalloff) * (1.0 - minToMaxRatio);
-// }
-// `;
 
 /**
  * Returns the atmospheric density at a point according to its distance between
@@ -197,9 +206,11 @@ float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
  */
 const densityAtPoint = `
 float densityAtPoint(vec3 point) {
-  vec3 pointToMinDensityUnitSphere = u_inverseMinDensityScaleMatrix * u_inverseEllipsoidRotationMatrix * (point - u_earthCenter);
-  float minToMaxRatio = max(length(pointToMinDensityUnitSphere) - 1.0, 0.0) / (u_minDensityToAtmosphereScaleFactor - 1.0);
-  return exp(-minToMaxRatio * u_densityFalloff) * (1.0 - minToMaxRatio);
+  vec3 pointToMinDensityUnitSphere = u_inverseRotationInverseMinDensityScaleMatrix * (point - u_earthCenter);
+  float atmosphereDistanceFromUnitSphere = u_minDensityToAtmosphereScaleFactor - 1.0;
+  float distanceNotZero = atmosphereDistanceFromUnitSphere == 0.0 ? 0.0 : 1.0;
+  float minToMaxRatio = distanceNotZero * (max(length(pointToMinDensityUnitSphere) - 1.0, 0.0) / atmosphereDistanceFromUnitSphere);
+  return exp(-minToMaxRatio * u_densityFalloff / length(u_earthCenter)) * (1.0 - minToMaxRatio);
 }
 `;
 
@@ -211,17 +222,27 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 base
   float viewRayOpticalDepth;
   vec3 inScatterPoint = rayOrigin;
 
+  float viewRayOpticalDepthValues[MAX_SAMPLE_POINTS];
+  vec3 viewRaySamplePoint = rayOrigin + step;
+  for (int i = 1; i < u_numInScatteringPoints; i++) {
+    viewRayOpticalDepthValues[i-1] = densityAtPoint(viewRaySamplePoint) * stepSize;
+    viewRaySamplePoint += step;
+  }
+
   for (int i = 0; i < u_numInScatteringPoints; i++) {
     float sunRayLength = rayEllipsoidIntersection(u_earthCenter, u_inverseEllipsoidRotationMatrix, u_atmosphereScaleMatrix, u_inverseAtmosphereScaleMatrix, inScatterPoint, u_sunDir)[1];
     float sunRayOpticalDepth = opticalDepth(inScatterPoint, u_sunDir, sunRayLength);
-    viewRayOpticalDepth = opticalDepth(inScatterPoint, rayDir, stepSize * float(i));
+    viewRayOpticalDepth = 0.0;
+    for (int j = 0; j < i; j++) {
+      viewRayOpticalDepth += viewRayOpticalDepthValues[j];
+    }
     vec3 transmittance = exp(-((sunRayOpticalDepth + viewRayOpticalDepth) / u_earthScaleMatrix[2][2]) * u_scatteringCoefficients);
 
     inScatteredLight += densityAtPoint(inScatterPoint) * transmittance;
     inScatterPoint += step;
   }
-  inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize;
-  float originalColorTransmittance = exp(-viewRayOpticalDepth / u_earthScaleMatrix[2][2]) * u_outScatteringIntensity;
+  inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize / u_earthScaleMatrix[2][2];
+  float originalColorTransmittance = exp(-viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity);
   return baseColor * originalColorTransmittance + inScatteredLight;
 }
 `;
@@ -490,7 +511,8 @@ export function addAtmosphericScattering(
   frag.addConstant("EPSILON", VariableType.Float, "0.000001");
   frag.addConstant("EPSILONx2", VariableType.Float, "EPSILON * 2.0");
   frag.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
-  // frag.addConstant("u_maxAtmosphereDistance", VariableType.Float, "100000.0");
+  frag.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
+  frag.addConstant("MESH_PROJECTION_CUTOFF_HEIGHT", VariableType.Float, `${MESH_PROJECTION_CUTOFF_HEIGHT}.0`);
 
   frag.addUniform(
     "u_earthScaleMatrix",
@@ -623,16 +645,6 @@ export function addAtmosphericScattering(
     VariablePrecision.High
   );
   frag.addUniform(
-    "u_inverseMinDensityScaleMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_inverseMinDensityScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseMinDensityScaleMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  frag.addUniform(
     "u_atmosphereToEyeInverseScaled",
     VariableType.Vec3,
     (prog) => {
@@ -683,16 +695,6 @@ export function addAtmosphericScattering(
     VariablePrecision.High
   );
   frag.addUniform(
-    "u_inverseEarthScaleMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_inverseEarthScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseEarthScaleMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  frag.addUniform(
     "u_earthScaleMatrix",
     VariableType.Mat3,
     (prog) => {
@@ -702,8 +704,39 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
+  frag.addUniform(
+    "u_inverseRotationInverseAtmosphereScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseAtmosphereScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  frag.addUniform(
+    "u_inverseRotationInverseEarthScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseEarthScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseEarthScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  frag.addUniform(
+    "u_inverseRotationInverseMinDensityScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseMinDensityScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseMinDensityScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addFunction(raySphere);
+  frag.addFunction(_eyeEllipsoidIntersection);
   frag.addFunction(densityAtPoint);
 
   frag.addFunction(rayEllipsoidIntersectionGeneric);
@@ -729,17 +762,18 @@ export function addAtmosphericScattering(
   frag.addFunction(computeRayDirDefault);
   if (isSky) {
     frag.addFunction(computeSceneDepthSky);
-  } else if (isRealityMesh) {
-    frag.addUniform("u_isMapTile", VariableType.Boolean, (program) => {
-      program.addGraphicUniform("u_isMapTile", (uniform, params) => {
-        uniform.setUniform1i(params.geometry.asRealityMesh!.isMapTile ? 1 : 0);
-      });
-    });
-    frag.addFunction(projectedOntoEarthEllipsoidSceneDepth);
-    frag.addFunction(computeSceneDepthRealityMesh);
   } else {
     frag.addFunction(computeSceneDepthDefault);
   }
+  // else if (isRealityMesh) {
+  //   frag.addUniform("u_isMapTile", VariableType.Boolean, (program) => {
+  //     program.addGraphicUniform("u_isMapTile", (uniform, params) => {
+  //       uniform.setUniform1i(params.geometry.asRealityMesh!.isMapTile ? 1 : 0);
+  //     });
+  //   });
+  //   frag.addFunction(projectedOntoEarthEllipsoidSceneDepth);
+  //   frag.addFunction(computeSceneDepthRealityMesh);
+  // }
 
   frag.set(
     FragmentShaderComponent.ApplyAtmosphericScattering,

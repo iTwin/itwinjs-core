@@ -47,10 +47,9 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
-  readonly globeCenter?: Point3d;
-  readonly globeRotation?: Matrix3d;
-  readonly globeRadii?: Point3d;
-  readonly terrainEnabled?: boolean;
+  readonly ellipsoidCenter?: Point3d;
+  readonly ellipsoidRotation?: Matrix3d;
+  readonly ellipsoidRadii?: Point3d;
 }
 
 /** @internal */
@@ -105,10 +104,10 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-  const atmosphericScattering = (style.is3d() && view.displayStyle.viewFlags.atmosphericScattering) ? style.settings.atmosphericScattering : undefined;
+  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
+  const atmosphericScattering = (style.is3d() && isGlobeMode3D && view.displayStyle.viewFlags.atmosphericScattering) ? style.settings.atmosphericScattering : undefined;
 
   let upVector;
-  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
   if (isGlobeMode3D) {
     const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
@@ -122,15 +121,13 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   if (analysisStyle?.thematic)
     analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
-  let globeCenter;
-  let globeRotation;
-  let globeRadii;
-  let terrainEnabled;
+  let ellipsoidCenter;
+  let ellipsoidRotation;
+  let ellipsoidRadii;
   if (isGlobeMode3D) {
-    globeCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
-    globeRotation = view.iModel.getMapEcefToDb(0).matrix;
-    globeRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
-    terrainEnabled = view.displayStyle.backgroundMapSettings.applyTerrain;
+    ellipsoidCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
+    ellipsoidRotation = view.iModel.getMapEcefToDb(0).matrix;
+    ellipsoidRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
   }
 
   return {
@@ -159,9 +156,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
-    globeCenter,
-    globeRotation,
-    globeRadii,
-    terrainEnabled,
+    ellipsoidCenter,
+    ellipsoidRotation,
+    ellipsoidRadii,
   };
 }

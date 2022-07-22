@@ -5,23 +5,19 @@
 /** @packageDocumentation
  * @module DisplayStyles
  */
-
-import { Point3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
 export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringProps> =
   {
-    earthCenter: { x: 0.0, y: 0.0, z: -6_190_000.0 },
-    earthRadii: {x: 10.0, y: 5.0, z: 20.0},
-    atmosphereHeightAboveEarth: 30000.0,
-    minDensityHeightBelowEarth: 10.0,
-    densityFalloff: 5.0,
-    scatteringStrength: 0.000002,
+    atmosphereHeightAboveEarth: 100000.0,
+    minDensityHeightBelowEarth: 0.0,
+    densityFalloff: 1.0,
+    scatteringStrength: 5,
     wavelengths: [700.0, 530.0, 440.0],
     numInScatteringPoints: 10,
     numOpticalDepthPoints: 10,
     isPlanar: false,
-    inScatteringIntensity: 1.0,
+    inScatteringIntensity: 6.0,
     outScatteringIntensity: 1.0,
   };
 
@@ -29,8 +25,6 @@ export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringPr
  * @public
  */
 export interface AtmosphericScatteringProps {
-  earthCenter?: XYZProps;
-  earthRadii?: XYZProps;
   atmosphereHeightAboveEarth?: number;
   minDensityHeightBelowEarth?: number;
   densityFalloff?: number;
@@ -47,8 +41,6 @@ export interface AtmosphericScatteringProps {
  * @public
  */
 export class AtmosphericScattering implements AtmosphericScatteringProps {
-  public readonly earthCenter: Point3d;
-  public readonly earthRadii: Point3d;
   public readonly atmosphereHeightAboveEarth: number; // At the poles
   public readonly minDensityHeightBelowEarth: number; // At the poles
   public readonly densityFalloff: number;
@@ -61,8 +53,6 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
   public readonly outScatteringIntensity: number;
 
   public equals(other: AtmosphericScattering): boolean {
-    if (!this.earthCenter.isAlmostEqual(other.earthCenter)) return false;
-    if (!this.earthRadii.isAlmostEqual(other.earthRadii)) return false;
     if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
     if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth) return false;
     if (this.densityFalloff !== other.densityFalloff) return false;
@@ -79,8 +69,6 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
   }
 
   private constructor(json?: AtmosphericScatteringProps) {
-    this.earthCenter = Point3d.fromJSON(json?.earthCenter ?? defaultAtmosphericScatteringProps.earthCenter);
-    this.earthRadii = Point3d.fromJSON(json?.earthRadii ?? defaultAtmosphericScatteringProps.earthRadii);
     this.atmosphereHeightAboveEarth = json?.atmosphereHeightAboveEarth ?? defaultAtmosphericScatteringProps.atmosphereHeightAboveEarth;
     this.minDensityHeightBelowEarth = json?.minDensityHeightBelowEarth ?? defaultAtmosphericScatteringProps.minDensityHeightBelowEarth;
     this.densityFalloff = json?.densityFalloff ?? defaultAtmosphericScatteringProps.densityFalloff;
@@ -99,8 +87,6 @@ export class AtmosphericScattering implements AtmosphericScatteringProps {
 
   public toJSON(): AtmosphericScatteringProps {
     const json: AtmosphericScatteringProps = {
-      earthCenter: this.earthCenter.toJSON(),
-      earthRadii: this.earthRadii.toJSON(),
       atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
       minDensityHeightBelowEarth: this.minDensityHeightBelowEarth,
       densityFalloff: this.densityFalloff,
