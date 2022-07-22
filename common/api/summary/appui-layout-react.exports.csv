@@ -486,6 +486,8 @@ beta;UserProfile
 deprecated;UserProfile 
 beta;UserProfileProps 
 deprecated;UserProfileProps 
+internal;useTabInteractions
+internal;UseTabInteractionsArgs
 internal;UseTabTargetArgs
 internal;useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs

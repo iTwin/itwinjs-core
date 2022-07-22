@@ -13,7 +13,7 @@ import { PointProps } from "@itwin/appui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext, UiIsVisibleContext } from "../base/NineZone";
+import { NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
@@ -36,8 +36,11 @@ export interface FloatingWidgetProps {
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const { id, bounds, userSized } = props.floatingWidget;
-  const { minimized, tabs } = props.widget;
+  const { minimized, tabs, activeTabId } = props.widget;
   const isSingleTab = 1 === tabs.length;
+  const tabsState = React.useContext(TabsStateContext);
+  const activeTab = tabsState[activeTabId];
+  const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
   const uiIsVisible = React.useContext(UiIsVisibleContext);
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
@@ -51,10 +54,11 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
       maxWidth: (isSingleTab && !userSized) ? "60%" : undefined,
     };
   }, [bounds, isSingleTab, minimized, userSized]);
+  const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
-    !!!uiIsVisible && "nz-hidden",
-  ), [minimized, uiIsVisible]);
+    hideFloatingWidget && "nz-hidden",
+  ), [minimized, hideFloatingWidget]);
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>

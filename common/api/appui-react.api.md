@@ -138,6 +138,8 @@ import { Subtract } from '@itwin/presentation-common';
 import { Tab } from '@itwin/appui-layout-react';
 import { TabMode } from '@itwin/appui-layout-react';
 import { TabState } from '@itwin/appui-layout-react';
+import { ToasterSettings } from '@itwin/itwinui-react/cjs/core/Toast/Toaster';
+import { ToastOptions } from '@itwin/itwinui-react';
 import { Tool } from '@itwin/core-frontend';
 import { ToolAdmin } from '@itwin/core-frontend';
 import { ToolAssistanceInstruction } from '@itwin/core-frontend';
@@ -459,7 +461,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     render(): React.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
 
 // @public
@@ -475,7 +477,7 @@ export interface ActivityMessageEventArgs {
 }
 
 // @public
-export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null;
+export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
 
 // @public
 export interface ActivityMessagePopupProps extends CommonProps {
@@ -1817,6 +1819,14 @@ export interface CursorUpdatedEventArgs {
     oldPt: PointProps;
 }
 
+// @internal
+export function CustomActivityMessageContent({ initialActivityMessageInfo }: {
+    initialActivityMessageInfo: ActivityMessageEventArgs;
+}): JSX.Element;
+
+// @internal
+export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element;
+
 // @public
 export class CustomItemDef extends ActionButtonItemDef {
     constructor(props: CustomItemProps);
@@ -2262,6 +2272,7 @@ export const expandWidget: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -3891,6 +3902,9 @@ export class MessageManager {
     // @internal (undocumented)
     static closeAllMessages(): void;
     static displayInputFieldMessage(target: HTMLElement, messageText: NotifyMessageType, detailedMessage?: NotifyMessageType, priority?: OutputMessagePriority): void;
+    static displayMessage(message: NotifyMessageDetailsType, options?: ToastOptions, settings?: ToasterSettings): {
+        close: () => void;
+    } | undefined;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetailsType): string;
     static getIconType(details: NotifyMessageDetailsType): MessageBoxIconType;
@@ -3916,6 +3930,7 @@ export class MessageManager {
     static outputActivityMessage(message: NotifyMessageType, percentComplete: number): boolean;
     static outputMessage(message: NotifyMessageDetailsType): void;
     static outputPrompt(prompt: string): void;
+    static registerAnimateOutToElement(element: HTMLElement | null): void;
     static setMaxCachedMessages(max: number): void;
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
@@ -4995,6 +5010,7 @@ export const setPanelSize: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5188,6 +5204,7 @@ export const setWidgetLabel: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5362,6 +5379,7 @@ export const setWidgetState: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5600,6 +5618,7 @@ export const showWidget: (base: {
             readonly canPopout?: boolean | undefined;
             readonly userSized?: boolean | undefined;
             readonly isFloatingStateWindowResizable?: boolean | undefined;
+            readonly hideWithUiWhenFloating?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -6032,7 +6051,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
-}
+    }
 
 // @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
@@ -6159,8 +6178,8 @@ export interface StatusFieldProps extends CommonProps {
     openWidget?: StatusBarFieldId;
 }
 
-// @public
-export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null;
+// @public @deprecated
+export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
 
 // @public
 export interface StatusMessageRendererProps extends CommonProps {
@@ -6172,7 +6191,7 @@ export interface StatusMessageRendererProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @public
+// @public @deprecated
 export function StickyMessage(props: StickyMessageProps): JSX.Element;
 
 // @public
@@ -6377,7 +6396,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     render(): JSX.Element;
     }
 
-// @public
+// @public @deprecated
 export function ToastMessage(props: ToastMessageProps): JSX.Element;
 
 // @public
@@ -7068,6 +7087,9 @@ export function useActiveStageId(): string;
 // @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
+// @internal
+export function useActivityMessage({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): void;
+
 // @public
 export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined;
 
@@ -7480,6 +7502,9 @@ export class WidgetDef {
     get floatingContainerId(): string | undefined;
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
+    set hideWithUiWhenFloating(hide: boolean | undefined);
+    // (undocumented)
+    get hideWithUiWhenFloating(): boolean;
     // (undocumented)
     get iconSpec(): IconSpec;
     set iconSpec(spec: IconSpec);
