@@ -8,7 +8,6 @@
 
 import * as os from "os";
 import * as path from "path";
-import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
