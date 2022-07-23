@@ -292,27 +292,7 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!ProcessDetector.isMobileAppBackend)
-      this.validateNativePlatformVersion();
-
     platform.logger = Logger;
-  }
-
-  private static validateNativePlatformVersion(): void {
-    const disable = true;
-    if (disable)
-      return;
-
-    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
-    const thisVersion = this.platform.version;
-    if (semver.satisfies(thisVersion, requiredVersion))
-      return;
-    if (NativeLibrary.isDevBuild) {
-      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
-      return;
-    }
-    this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
