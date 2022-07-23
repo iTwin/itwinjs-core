@@ -8,7 +8,6 @@
 
 import * as os from "os";
 import * as path from "path";
-import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
@@ -292,23 +291,7 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!ProcessDetector.isMobileAppBackend)
-      this.validateNativePlatformVersion();
-
     platform.logger = Logger;
-  }
-
-  private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
-    const thisVersion = this.platform.version;
-    if (semver.satisfies(thisVersion, requiredVersion))
-      return;
-    if (NativeLibrary.isDevBuild) {
-      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
-      return;
-    }
-    this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
