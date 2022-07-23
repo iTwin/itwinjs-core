@@ -299,6 +299,10 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
+    const disable = true;
+    if (disable)
+      return;
+
     const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
