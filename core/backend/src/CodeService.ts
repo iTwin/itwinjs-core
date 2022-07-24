@@ -74,7 +74,7 @@ export namespace CodeService {
   export type CodeValue = string;
   export type CodeGuid = GuidString;
   export type ScopeGuid = GuidString;
-  export type Flags = number;
+  export type CodeState = number;
   export type IteratorReturn = void | "stop";
   export type EntryId = number;
   export type TableName = string;
@@ -136,7 +136,7 @@ export namespace CodeService {
     readonly value: CodeValue;
     readonly guid: CodeGuid;
     readonly origin: CodeOriginName;
-    readonly flags?: Flags;
+    readonly state?: CodeState;
     readonly author?: AuthorName;
     readonly json?: SettingObject;
   }
@@ -177,7 +177,8 @@ export namespace CodeService {
     "SequenceNotFound" |
     "SqlLogicError" |
     "UpdateErrors" |
-    "ValueIsInUse";
+    "ValueIsInUse" |
+    "WrongVersion";
 
   export class Error extends BentleyError {
     constructor(public errorId: ErrorId, errNum: number, message: string, public problems?: ReserveProblem[] | UpdateProblem[]) {
@@ -207,7 +208,7 @@ export namespace CodeService {
   export interface ProposedCodeProps {
     value?: CodeValue;
     readonly guid: CodeGuid;
-    readonly flags?: Flags;
+    readonly state?: CodeState;
     readonly json?: SettingObject;
   }
 
