@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Added an option to iModelApp singleton to that prevents requstAnimationFrame from being called. It's intended use is for environments outside of certa running NoRenderApp",
+      "comment": "",
       "type": "none"
     }
   ],
