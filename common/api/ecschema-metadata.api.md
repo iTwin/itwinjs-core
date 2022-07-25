@@ -96,6 +96,8 @@ export class Constant extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
     protected _denominator: number;
     // (undocumented)
     fromJSON(constantProps: ConstantProps): Promise<void>;
@@ -103,6 +105,8 @@ export class Constant extends SchemaItem {
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
     get numerator(): number;
+    // (undocumented)
+    get hasNumerator(): boolean;
     // (undocumented)
     protected _numerator: number;
     // (undocumented)
@@ -2022,6 +2026,8 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
     protected _denominator: number;
     // (undocumented)
     fromJSON(unitProps: UnitProps): Promise<void>;
@@ -2032,9 +2038,13 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get numerator(): number;
     // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
     protected _numerator: number;
     // (undocumented)
     get offset(): number;
+    // (undocumented)
+    get hasOffset(): boolean;
     // (undocumented)
     protected _offset: number;
     // (undocumented)
