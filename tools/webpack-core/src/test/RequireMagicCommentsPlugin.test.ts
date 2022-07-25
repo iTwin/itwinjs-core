@@ -30,7 +30,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and addExternalPrefix handler", async () => {
@@ -42,7 +42,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve not converted", async () => {
@@ -55,7 +55,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve converted", async () => {
@@ -69,7 +69,7 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve not converted and addExternalPrefix handler", async () => {
@@ -81,7 +81,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve converted and addExternalPrefix handler", async () => {
@@ -94,7 +94,7 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with copyfile comments and addCopyFileSuffix handler", async () => {
@@ -107,8 +107,8 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
-    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   it("should work with copyfile comments, addCopyFileSuffix, and resolve converted", async () => {
@@ -122,8 +122,8 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "./bar.txt"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
-    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   it("should work with copyfile comments, addCopyFileSuffix, and resolve not converted", async () => {
@@ -136,8 +136,8 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
-    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.91b123.txt"), "utf8")).to.equal("This is bar.txt");
+    expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
+    expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
   afterEach(() => {

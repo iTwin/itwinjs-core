@@ -46,6 +46,7 @@ export class CopyExternalsPlugin {
       // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
       this._logger?.warn(warning);
+      // TODO: only warn if a required dependency, Module.reasons was removed in webpack@5, figure out how to determine what kind of dep it is
       compilation.warnings.push(new WebpackError(`${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`));
       return;
     }
@@ -80,7 +81,7 @@ export class CopyExternalsPlugin {
   }
 
   private async copyPackage(pkgName: string, outDir: string, pathToPackage: string) {
-    this._logger?.info(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
+    this._logger?.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
     await fs.copy(pathToPackage, path.resolve(outDir, "node_modules", pkgName), { dereference: true });
   }
 
