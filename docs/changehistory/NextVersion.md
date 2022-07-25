@@ -14,6 +14,7 @@ Table of contents:
   - [Tool Settings title](tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
 - [IModelHostOptions](#imodelhostoptions)
+- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
 - [Deprecations](#deprecations)
 
 ## Display system
@@ -75,6 +76,10 @@ Reduced API surface of an `ElectronApp` class to only allow white-listed APIs fr
 ## IModelHostOptions
 
 The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
+
+## Progress API for downloading changesets
+
+[BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
 
 ## Deprecations
 
