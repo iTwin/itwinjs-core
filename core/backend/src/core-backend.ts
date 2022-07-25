@@ -158,7 +158,7 @@ export * from "./IModelDb"; // must be last
  * Classes for working with cloud storage using AliCloud.
  */
 /**
- * @docs-group-description TleStorage
+ * @docs-group-description TileStorage
  * Class for working with cloud storage using iTwin/object-storage cloud providers
  */
 /**
