@@ -124,7 +124,7 @@ export interface IModelHostOptions {
   /**
    * @beta
    * @note A reference implementation is set for AzureServerStorage from @itwin/object-storage-azure if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
-   *       set this property with a custom [[ServerStorage]].
+   *       set this property with a custom ServerStorage.
    */
   tileCacheStorage?: ServerStorage;
 
@@ -647,7 +647,7 @@ export class IModelHost {
         dependencyName: "azure",
         accountName: credentials.account,
         accountKey: credentials.accessKey,
-        baseUrl: `https://${credentials.account}.blob.core.windows.net`,
+        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
       },
     };
     const ioc: Container = new Container();

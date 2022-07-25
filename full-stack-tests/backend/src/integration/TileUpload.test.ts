@@ -77,6 +77,7 @@ describe("TileUpload (tileCacheService)", () => {
       tileCacheAzureCredentials: {
         account: "devstoreaccount1",
         accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+        baseUrl: "http://127.0.0.1:10000",
       },
     };
 
@@ -174,6 +175,7 @@ describe("TileUpload", () => {
     config.tileCacheAzureCredentials = {
       account: "devstoreaccount1",
       accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+      baseUrl: "http://127.0.0.1:10000",
     };
 
     await startupForIntegration(config);
