@@ -194,7 +194,7 @@ export class IModelApp {
   private static _toolAdmin: ToolAdmin;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
-  private static _noRender = false;
+  private static _noRender: boolean;
   private static _wantEventLoop = false;
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
