@@ -56,27 +56,33 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param source array to copy from
    * @param sourceCount copy the first sourceCount points; all points if undefined
    * @param destOffset copy to instance array starting at this point index; zero if undefined
+   * @return count and offset of points copied
    */
-  private copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
     // validate inputs and convert from points to entries
-    let offset = (undefined !== destOffset) ? destOffset * 2 : 0;
-    if (offset < 0)
-      offset = 0;
-    if (offset >= this._data.length)
-      return;
-    let count = (undefined !== sourceCount) ? sourceCount * 2 : source.length;
-    if (count > source.length)
-      count = source.length;
-    if (offset + count > this._data.length)
-      count = this._data.length - offset;
-    if (count % 2 !== 0)
-      count -= count % 2;
-    if (count <= 0)
-      return;
-    if (count === source.length)
-      this._data.set(source, offset);
+    let myOffset = (undefined !== destOffset) ? destOffset * 2 : 0;
+    if (myOffset < 0)
+      myOffset = 0;
+    if (myOffset >= this._data.length)
+      return {count: 0, offset: 0};
+    let myCount = (undefined !== sourceCount) ? sourceCount * 2 : source.length;
+    if (myCount > 0) {
+      if (myCount > source.length)
+        myCount = source.length;
+      if (myOffset + myCount > this._data.length)
+        myCount = this._data.length - myOffset;
+      if (myCount % 2 !== 0)
+        myCount -= myCount % 2;
+    }
+    if (myCount <= 0)
+      return {count: 0, offset: 0};
+    if (myCount === source.length)
+      this._data.set(source, myOffset);
+    else if (source instanceof Float64Array)
+      this._data.set(source.subarray(0, myCount), myOffset);
     else
-      this._data.set(source.subarray(0, count), offset);
+      this._data.set(source.slice(0, myCount), myOffset);
+    return {count: myCount / 2, offset: myOffset / 2};
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */

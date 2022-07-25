@@ -45,26 +45,30 @@ export class GrowableFloat64Array {
    * @param source array to copy from
    * @param sourceCount copy the first sourceCount entries; all entries if undefined
    * @param destOffset copy to instance array starting at this index; zero if undefined
+   * @return count and offset of entries copied
    */
-  private copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number) {
-    let offset = destOffset ?? 0;
-    if (offset < 0)
-      offset = 0;
-    if (offset >= this._data.length)
-      return;
-    let count = sourceCount ?? source.length;
-    if (count > source.length)
-      count = source.length;
-    if (offset + count > this._data.length)
-      count = this._data.length - offset;
-    if (count <= 0)
-      return;
-    if (count === source.length)
-      this._data.set(source, offset);
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+    let myOffset = destOffset ?? 0;
+    if (myOffset < 0)
+      myOffset = 0;
+    if (myOffset >= this._data.length)
+      return {count: 0, offset: 0};
+    let myCount = sourceCount ?? source.length;
+    if (myCount > 0) {
+      if (myCount > source.length)
+        myCount = source.length;
+      if (myOffset + myCount > this._data.length)
+        myCount = this._data.length - myOffset;
+    }
+    if (myCount <= 0)
+      return {count: 0, offset: 0};
+    if (myCount === source.length)
+      this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
-      this._data.set(source.subarray(0, count), offset);
+      this._data.set(source.subarray(0, myCount), myOffset);
     else
-      this._data.set(source.slice(0, count), offset);
+      this._data.set(source.slice(0, myCount), myOffset);
+    return {count: myCount, offset: myOffset};
   }
 
   /**

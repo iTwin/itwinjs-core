@@ -2201,7 +2201,10 @@ export class GrowableBlockedArray {
     clone(): GrowableBlockedArray;
     static compareLexicalBlock(data: Float64Array, blockSize: number, ia: number, ib: number): number;
     component(blockIndex: number, componentIndex: number): number;
-    protected copyData(source: Float64Array, sourceCount?: number, destOffset?: number): void;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     protected _data: Float64Array;
     distanceBetweenBlocks(blockIndexA: number, blockIndexB: number): number;
     distanceBetweenSubBlocks(blockIndexA: number, blockIndexB: number, iBegin: number, iEnd: number): number;
@@ -2227,6 +2230,10 @@ export class GrowableFloat64Array {
     clone(maintainExcessCapacity?: boolean): GrowableFloat64Array;
     static compare(a: any, b: any): number;
     compressAdjacentDuplicates(tolerance?: number): void;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(contents: Float64Array | number[]): GrowableFloat64Array;
     ensureCapacity(newCapacity: number, applyGrowthFactor?: boolean): void;
     front(): number;
@@ -2253,6 +2260,10 @@ export class GrowableXYArray extends IndexedXYCollection {
     clone(): GrowableXYArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(data: XAndY[] | GrowableXYZArray): GrowableXYArray;
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
@@ -2315,6 +2326,10 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     clone(result?: GrowableXYZArray): GrowableXYZArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;

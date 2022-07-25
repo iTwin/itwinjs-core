@@ -38,7 +38,7 @@ export class GrowableBlockedArray {
   public constructor(blockSize: number, initialBlocks: number = 8, growthFactor?: number) {
     this._data = new Float64Array(initialBlocks * blockSize);
     this._inUse = 0;
-    this._blockSize = blockSize;
+    this._blockSize = blockSize > 0 ? blockSize : 1;
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
 
@@ -46,27 +46,33 @@ export class GrowableBlockedArray {
    * @param source array to copy from
    * @param sourceCount copy the first sourceCount blocks; all blocks if undefined
    * @param destOffset copy to instance array starting at this block index; zero if undefined
+   * @return count and offset of blocks copied
    */
-  protected copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
     // validate inputs and convert from blocks to entries
-    let offset = (undefined !== destOffset) ? destOffset * this.numPerBlock : 0;
-    if (offset < 0)
-      offset = 0;
-    if (offset >= this._data.length)
-      return;
-    let count = (undefined !== sourceCount) ? sourceCount * this.numPerBlock : source.length;
-    if (count > source.length)
-      count = source.length;
-    if (offset + count > this._data.length)
-      count = this._data.length - offset;
-    if (count % this.numPerBlock !== 0)
-      count -= count % this.numPerBlock;
-    if (count <= 0)
-      return;
-    if (count === source.length)
-      this._data.set(source, offset);
+    let myOffset = (undefined !== destOffset) ? destOffset * this.numPerBlock : 0;
+    if (myOffset < 0)
+      myOffset = 0;
+    if (myOffset >= this._data.length)
+      return {count: 0, offset: 0};
+    let myCount = (undefined !== sourceCount) ? sourceCount * this.numPerBlock : source.length;
+    if (myCount > 0) {
+      if (myCount > source.length)
+        myCount = source.length;
+      if (myOffset + myCount > this._data.length)
+        myCount = this._data.length - myOffset;
+      if (myCount % this.numPerBlock !== 0)
+        myCount -= myCount % this.numPerBlock;
+    }
+    if (myCount <= 0)
+      return {count: 0, offset: 0};
+    if (myCount === source.length)
+      this._data.set(source, myOffset);
+    else if (source instanceof Float64Array)
+      this._data.set(source.subarray(0, myCount), myOffset);
     else
-      this._data.set(source.subarray(0, count), offset);
+      this._data.set(source.slice(0, myCount), myOffset);
+    return {count: myCount / this.numPerBlock, offset: myOffset / this.numPerBlock};
   }
 
   /**
