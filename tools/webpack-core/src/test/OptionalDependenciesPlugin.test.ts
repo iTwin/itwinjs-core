@@ -38,8 +38,8 @@ describe("OptionalDependenciesPlugin", () => {
       "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js": `console.log("This is bar");`,
     });
 
-    const result = await runWebpack(testConfig, vol);
-    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require("./bar")`);
+    const { logging } = await runWebpack(testConfig, vol);
+    expect(logging?.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require("./bar")`);
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
@@ -50,8 +50,8 @@ describe("OptionalDependenciesPlugin", () => {
       "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js": `console.log("This is bar");`,
     });
 
-    const result = await runWebpack(testConfig, vol);
-    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(<<expression>>)`);
+    const { logging } = await runWebpack(testConfig, vol);
+    expect(logging?.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include(`Ignoring require(<<expression>>)`);
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
@@ -62,8 +62,8 @@ describe("OptionalDependenciesPlugin", () => {
       "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js": `console.log("This is bar");`,
     });
 
-    const result = await runWebpack(testConfig, vol);
-    expect(result.logging.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include("Ignoring non-call require expression");
+    const { logging } = await runWebpack(testConfig, vol);
+    expect(logging?.IgnoreOptionalDependenciesPlugin.entries[0].message).to.include("Ignoring non-call require expression");
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 

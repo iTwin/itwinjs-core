@@ -4,25 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as fs from "fs-extra";
-import { Compiler, Configuration, Stats, webpack } from "webpack";
+import { Compiler, Configuration, Stats, StatsCompilation, webpack } from "webpack";
 const MODULE = require("module");
 const { usedDeps } = require("../utils/resolve-recurse/resolve");
 
-function createTestCompiler(config: Configuration, vol?: any) {
-  let compiler: any;
-  try {
-    compiler = webpack(config);
-  } catch (err) {
-    console.log(err);
-  }
+function createTestCompiler(config: Configuration, vol?: any): Compiler {
+  const compiler = webpack(config);
   if (vol) compiler.inputFileSystem = vol;
   return compiler;
 }
 
-export async function runWebpack(config: Configuration, vol?: any) {
-  const compiler = createTestCompiler(config, vol) as Compiler;
+export async function runWebpack(config: Configuration, vol?: any): Promise<StatsCompilation> {
+  const compiler = createTestCompiler(config, vol);
   return new Promise<any>((resolve, reject) => {
-    compiler.run((err: any, stats?: Stats) => (err) ? reject(err) : resolve(stats?.toJson({ logging: true })));
+    compiler.run((err?: Error | null, stats?: Stats) => (err) ? reject(err) : resolve(stats?.toJson({ logging: true })));
   });
 }
 
