@@ -10,7 +10,7 @@ import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { GeometricModel3d, IModelDb, IModelHost, IModelHostOptions, RpcTrace } from "@itwin/core-backend";
+import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
@@ -21,6 +21,13 @@ interface TileContentRequestProps {
   contentId: string;
   guid: string;
 }
+
+/** https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#well-known-storage-account-and-key */
+const tileCacheAzureCredentials: AzureBlobStorageCredentials = {
+  account: "devstoreaccount1",
+  accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+  baseUrl: "https://127.0.0.1:10000/devstoreaccount1",
+};
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
 export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
@@ -72,17 +79,7 @@ describe("TileUpload (tileCacheService)", () => {
     // Shutdown IModelHost to allow this test to use it.
     await IModelHost.shutdown();
 
-    // Default account and key for azurite
-    const config: IModelHostOptions = {
-      tileCacheAzureCredentials: {
-        account: "devstoreaccount1",
-        accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-        baseUrl: "http://127.0.0.1:10000",
-      },
-    };
-
-    await startupForIntegration(config);
-
+    await startupForIntegration({ tileCacheAzureCredentials });
     assert.isDefined(IModelHost.tileCacheService);
     IModelHost.applicationId = "TestApplication";
 
@@ -170,15 +167,7 @@ describe("TileUpload", () => {
     // Shutdown IModelHost to allow this test to use it.
     await IModelHost.shutdown();
 
-    const config: IModelHostOptions = {};
-    // Default account and key for azurite
-    config.tileCacheAzureCredentials = {
-      account: "devstoreaccount1",
-      accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-      baseUrl: "http://127.0.0.1:10000",
-    };
-
-    await startupForIntegration(config);
+    await startupForIntegration({ tileCacheAzureCredentials });
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
 
