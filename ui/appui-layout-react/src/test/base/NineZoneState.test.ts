@@ -31,13 +31,21 @@ describe("isHorizontalPanelState", () => {
 });
 
 describe("isWidgetDragDropTargetState", () => {
-  it("returns false if not a widget drop target", () => {
+  it("returns `true`", () => {
+    isWidgetDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
     isWidgetDragDropTargetState({ type: "floatingWidget", newFloatingWidgetId: "", size: { height: 0, width: 0 } }).should.false;
   });
 });
 
 describe("isTabDragDropTargetState", () => {
-  it("returns false if not a tab drop target", () => {
+  it("returns `true`", () => {
+    isTabDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
     isTabDragDropTargetState({ type: "window" }).should.false;
   });
 });

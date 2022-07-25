@@ -18,4 +18,15 @@ describe("useTargetDirection", () => {
     });
     result.current.should.eq("horizontal");
   });
+
+  it("should return `vertical`", () => {
+    const { result } = renderHook(() => useTargetDirection(), {
+      wrapper: (props) => (  // eslint-disable-line react/display-name
+        <PanelSideContext.Provider value="left">
+          {props.children}
+        </PanelSideContext.Provider>
+      ),
+    });
+    result.current.should.eq("vertical");
+  });
 });
