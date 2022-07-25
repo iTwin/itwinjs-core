@@ -123,7 +123,9 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** If present, determines whether iModelApp is a NoRenderApp */
+  /** If present, determines whether iModelApp is a NoRenderApp
+   *  @internal
+   */
   noRender?: boolean;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
@@ -271,10 +273,6 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
-  /** If the app is a NoRenderApp
-  * @internal
-  */
-    public static get noRender() { return this._noRender; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
   /** The root URL for the assets 'public' folder.
