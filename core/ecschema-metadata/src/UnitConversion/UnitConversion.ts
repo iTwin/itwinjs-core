@@ -79,10 +79,9 @@ export class UnitConversion {
    * @internal
    */
   public static from(unit: Unit | Constant): UnitConversion {
-    if (unit.schemaItemType === SchemaItemType.Unit) {
-      return new UnitConversion((unit.denominator ?? 1.0) / (unit.numerator ?? 1.0), -(unit.offset ?? 0.0));
-    }
+    if (unit.schemaItemType === SchemaItemType.Unit)
+      return new UnitConversion(unit.denominator / unit.numerator, -unit.offset);
 
-    return new UnitConversion((unit.denominator ?? 1.0) / (unit.numerator ?? 1.0), 0.0);
+    return new UnitConversion(unit.denominator / unit.numerator, 0.0);
   }
 }

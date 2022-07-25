@@ -41,9 +41,13 @@ export class Unit extends SchemaItem {
   public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
   public get definition(): string { return this._definition; }
-  public get numerator(): number | undefined { return this._numerator; }
-  public get offset(): number | undefined { return this._offset; }
-  public get denominator(): number | undefined { return this._denominator; }
+  public get numerator(): number { return this._numerator ?? 1.0; }
+  public get offset(): number { return this._offset ?? 0.0; }
+  public get denominator(): number { return this._denominator ?? 1.0; }
+
+  public hasNumerator(): boolean { return (typeof this._numerator !== 'undefined') }
+  public hasOffset(): boolean { return (typeof this._offset !== 'undefined') }
+  public hasDenominator(): boolean { return (typeof this._denominator !== 'undefined') }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -75,11 +79,11 @@ export class Unit extends SchemaItem {
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
-    if (this.numerator !== undefined)
+    if (this.hasNumerator())
       schemaJson.numerator = this.numerator;
-    if (this.denominator !== undefined)
+    if (this.hasDenominator())
       schemaJson.denominator = this.denominator;
-    if (this.offset !== undefined)
+    if (this.hasOffset())
       schemaJson.offset = this.offset;
     return schemaJson;
   }
@@ -101,11 +105,11 @@ export class Unit extends SchemaItem {
     }
 
     itemElement.setAttribute("definition", this.definition);
-    if (this.numerator !== undefined)
+    if (this.hasNumerator())
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.denominator !== undefined)
+    if (this.hasDenominator())
       itemElement.setAttribute("denominator", this.denominator.toString());
-    if (this.offset !== undefined)
+    if (this.hasOffset())
       itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;

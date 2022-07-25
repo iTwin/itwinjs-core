@@ -36,8 +36,11 @@ export class Constant extends SchemaItem {
 
   public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
   public get definition(): string { return this._definition; }
-  public get numerator(): number | undefined { return this._numerator; }
-  public get denominator(): number | undefined { return this._denominator; }
+  public get numerator(): number { return this._numerator ?? 1.0; }
+  public get denominator(): number { return this._denominator ?? 1.0; }
+
+  public hasNumerator(): boolean { return (typeof this._numerator !== 'undefined') }
+  public hasDenominator(): boolean { return (typeof this._denominator !== 'undefined') }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
@@ -49,9 +52,9 @@ export class Constant extends SchemaItem {
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon.fullName;
     schemaJson.definition = this.definition;
-    if (this.numerator !== undefined)
+    if (this.hasNumerator())
       schemaJson.numerator = this.numerator;
-    if (this.denominator !== undefined)
+    if (this.hasDenominator())
       schemaJson.denominator = this.denominator;
     return schemaJson as ConstantProps;
   }
@@ -60,9 +63,9 @@ export class Constant extends SchemaItem {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("definition", this.definition);
-    if (this.numerator !== undefined)
+    if (this.hasNumerator())
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.denominator !== undefined)
+    if (this.hasDenominator())
       itemElement.setAttribute("denominator", this.denominator.toString());
 
     const phenomenon = await this.phenomenon;
