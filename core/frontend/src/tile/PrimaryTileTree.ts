@@ -517,7 +517,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   [Symbol.iterator](): Iterator<TileTreeReference>;
   /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
   update(): void;
-  /** @see SpatialViewState.setTileTreeReferencesDeactivated. */
+  /** See SpatialViewState.setTileTreeReferencesDeactivated. */
   setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
 }
 
