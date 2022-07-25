@@ -21,8 +21,12 @@ export interface ClientDiagnostics extends Diagnostics {
 
 /** @alpha */
 export interface DiagnosticsOptions {
-  /** Measure performance */
-  perf?: boolean;
+  /**
+   * Flag specifying that performance should be measured, or
+   * minimum duration in milliseconds for which performance metric should be included.
+   * If not set, performance will not be measured.
+   */
+  perf?: boolean | { duration: number };
   /** Severity for developer log messages */
   dev?: boolean | DiagnosticsLoggerSeverity;
   /** Severity for presentation rules' editor log messages */
