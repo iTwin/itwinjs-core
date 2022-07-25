@@ -10,7 +10,7 @@ import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
+import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, IModelHostOptions, RpcTrace } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
@@ -79,7 +79,9 @@ describe("TileUpload (tileCacheService)", () => {
     // Shutdown IModelHost to allow this test to use it.
     await IModelHost.shutdown();
 
-    await startupForIntegration({ tileCacheAzureCredentials });
+    const config: IModelHostOptions = {tileCacheAzureCredentials};
+
+    await startupForIntegration(config);
     assert.isDefined(IModelHost.tileCacheService);
     IModelHost.applicationId = "TestApplication";
 
@@ -93,7 +95,7 @@ describe("TileUpload (tileCacheService)", () => {
     // Get URL for cached tile
     const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheAzureCredentials!.account, config.tileCacheAzureCredentials!.accessKey);
     const pipeline = Azure.newPipeline(credentials);
-    blobService = new Azure.BlobServiceClient(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
+    blobService = new Azure.BlobServiceClient(tileCacheAzureCredentials.baseUrl!, pipeline);
 
     // Point tileCacheService towards azurite URL
     // eslint-disable-next-line deprecation/deprecation
