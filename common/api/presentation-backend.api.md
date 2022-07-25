@@ -33,7 +33,7 @@ import { InstanceKey } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
-import { Node } from '@itwin/presentation-common';
+import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
@@ -216,7 +216,7 @@ export class PresentationManager {
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
     getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
     getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
@@ -281,7 +281,7 @@ export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
     getRulesets(): Promise<Ruleset[]>;
     insertRuleset(ruleset: Ruleset, options?: RulesetInsertOptions): Promise<Id64String>;
-    }
+}
 
 // @public
 export interface RulesetEmbedderProps {
@@ -311,7 +311,7 @@ export class RulesetManagerImpl implements RulesetManager {
     clear(): void;
     get(id: string): RegisteredRuleset | undefined;
     remove(ruleset: RegisteredRuleset | [string, string]): boolean;
-    }
+}
 
 // @public
 export interface RulesetVariablesManager {
@@ -372,7 +372,6 @@ export interface UnitSystemFormat {
     // (undocumented)
     unitSystems: UnitSystemKey[];
 }
-
 
 // (No @packageDocumentation comment for this package)
 

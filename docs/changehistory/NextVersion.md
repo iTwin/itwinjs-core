@@ -14,6 +14,7 @@ Table of contents:
   - [Tool Settings title](#tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
 - [IModelHostOptions](#imodelhostoptions)
+- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
 - [Tooling](#tooling)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
@@ -46,6 +47,7 @@ Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder](
 ### Hiliting models and subcategories
 
 Support for hiliting models and subcategories using [HiliteSet]($frontend) has been promoted from `@beta` to `@public`. This allows applications to toggle hiliting of all elements belonging to a set of [Model]($backend)s and/or [SubCategory]($backend)'s. This feature can work in one of two modes, specified by [HiliteSet.modelSubCategoryMode]($frontend):
+
 - Union - an element will be hilited if either its model or its subcategory is hilited; or
 - Intersection - an element will be hilited if both its model and its subcategory are hilited.
 
@@ -56,6 +58,7 @@ Applications often work with [Category]($backend)'s instead of subcategories. Yo
 A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
 
 [IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
+
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
@@ -68,9 +71,11 @@ When a widget is in floating state, it will not automatically hide when the rest
 ### Tool Settings title
 
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
+
 ```ts
   UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
+
 ## ElectronApp changes
 
 Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
@@ -78,6 +83,10 @@ Reduced API surface of an `ElectronApp` class to only allow white-listed APIs fr
 ## IModelHostOptions
 
 The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
+
+## Progress API for downloading changesets
+
+[BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
 
 ## Tooling
 

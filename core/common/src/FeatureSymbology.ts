@@ -31,21 +31,21 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void 
  * @extensions
  */
 export interface FeatureAppearanceProps {
-  /** @see [[FeatureAppearance.rgb]]. */
+  /** See [[FeatureAppearance.rgb]]. */
   rgb?: RgbColorProps;
-  /** @see [[FeatureAppearance.weight]]. */
+  /** See [[FeatureAppearance.weight]]. */
   weight?: number;
-  /** @see [[FeatureAppearance.transparency]]. */
+  /** See [[FeatureAppearance.transparency]]. */
   transparency?: number;
-  /** @see [[FeatureAppearance.viewDependentTransparency]]. */
+  /** See [[FeatureAppearance.viewDependentTransparency]]. */
   viewDependentTransparency?: true;
-  /** @see [[FeatureAppearance.linePixels]]. */
+  /** See [[FeatureAppearance.linePixels]]. */
   linePixels?: LinePixels;
-  /** @see [[FeatureAppearance.ignoresMaterial]]. */
+  /** See [[FeatureAppearance.ignoresMaterial]]. */
   ignoresMaterial?: true;
-  /** @see [[FeatureAppearance.nonLocatable]]. */
+  /** See [[FeatureAppearance.nonLocatable]]. */
   nonLocatable?: true;
-  /** @see [[FeatureAppearance.emphasized]]. */
+  /** See [[FeatureAppearance.emphasized]]. */
   emphasized?: true;
 }
 

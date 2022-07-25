@@ -91,7 +91,7 @@ export class DownloaderXhr extends Downloader {
     downloadText(method: string, requestURL: string, requestHeaders: StringMap<string>, postText: string, postData: ABuffer, responseHeaders: StringMap<string>): Promise<string>;
     // (undocumented)
     downloadText2(requestURL: string): Promise<string>;
-    }
+}
 
 // @internal (undocumented)
 export class OnlineEngine extends CRSEngine {
@@ -110,7 +110,7 @@ export class OPCReader extends PointCloudReader {
     getFileBounds(): OrbitGtBounds;
     getFileCRS(): string;
     getFileName(): string;
-    getFileReader(): FileReader;
+    getFileReader(): FileReader_2;
     getFileStorage(): FileStorage;
     getLevelBlockGrid(level: int32_35): Grid;
     getLevelCount(): int32_35;
@@ -313,7 +313,7 @@ export class OrbitGtDataManager {
     isLoadingData(): boolean;
     isTileLoaded(tileIndex: OrbitGtTileIndex): OrbitGtPointData;
     loadData(frameData: OrbitGtFrameData): Promise<OrbitGtFrameData>;
-    }
+}
 
 // @internal (undocumented)
 export class OrbitGtFrameData {
@@ -352,7 +352,7 @@ export class OrbitGtLevel {
     getKey(): string;
     getTileGrid(): Grid;
     setBlockList(blockList: Array<Block>): void;
-    }
+}
 
 // @internal (undocumented)
 export class OrbitGtLine {
@@ -426,7 +426,7 @@ export class OrbitGtTileLoadSorter implements OrbitGtComparator<OrbitGtTileIndex
     static readonly _CLASSNAME_: string;
     // (undocumented)
     compare(tile1: OrbitGtTileIndex, tile2: OrbitGtTileIndex): int32_22;
-    }
+}
 
 // @internal (undocumented)
 export class OrbitGtTransform {
@@ -496,7 +496,7 @@ export class OrbitGtViewTree {
     renderView3D(viewRequest: OrbitGtIViewRequest, levelsToLoad: OrbitGtAList<OrbitGtLevel>, blocksToLoad: OrbitGtAList<OrbitGtBlockIndex>, tilesToLoad: OrbitGtAList<OrbitGtTileIndex>, tilesToRender: OrbitGtAList<OrbitGtPointData>): void;
     setBlockTiles(blockIndex: OrbitGtBlockIndex, tileIndexes: Array<OrbitGtTileIndex>): void;
     setLevelBlocks(level: OrbitGtLevel, blockIndexes: Array<OrbitGtBlockIndex>): void;
-    }
+}
 
 // @internal (undocumented)
 export class PageCachedFile extends FileStorage {
@@ -506,7 +506,7 @@ export class PageCachedFile extends FileStorage {
     printStatistics(clear: boolean): void;
     readFilePart(fileName: string, offset: ALong, size: int32_37): Promise<ABuffer>;
     readFileParts(fileName: string, ranges: OrbitGtAList<FileRange>): Promise<OrbitGtAList<FileContent>>;
-    }
+}
 
 // @internal (undocumented)
 export class PointCloudReader {
@@ -578,7 +578,6 @@ export class UrlFS extends FileStorage {
     // (undocumented)
     responseSize: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 
