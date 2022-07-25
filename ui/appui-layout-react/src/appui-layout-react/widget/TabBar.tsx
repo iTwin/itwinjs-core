@@ -119,7 +119,6 @@ export function useDrag<T extends HTMLElement>(
 ) {
   const doubleClickTimer = React.useRef(new Timer(300));
   const clickCount = React.useRef(0);
-  const dragStartTimer = React.useRef<Timer>(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
 
   React.useEffect(() => {
@@ -138,13 +137,11 @@ export function useDrag<T extends HTMLElement>(
 
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
-    dragStartTimer.current.start();
     e.type === "touchstart" && onTouchStart && onTouchStart();
   }, [onTouchStart]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
     if (initialPointerPosition.current) {
       onDragStart && onDragStart(initialPointerPosition.current);
-      dragStartTimer.current.stop();
       initialPointerPosition.current = undefined;
       return;
     }
@@ -153,23 +150,9 @@ export function useDrag<T extends HTMLElement>(
   const handlePointerUp = React.useCallback(() => {
     clickCount.current++;
     doubleClickTimer.current.start();
-    dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
     onDragEnd && onDragEnd();
   }, [onDragEnd]);
-
-  React.useEffect(() => {
-    const listener = () => {
-      assert(!!initialPointerPosition.current);
-      onDragStart && onDragStart(initialPointerPosition.current);
-      initialPointerPosition.current = undefined;
-    };
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(listener);
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [onDragStart]);
   const ref = usePointerCaptor<T>(handlePointerDown, handlePointerMove, handlePointerUp);
   return ref;
 }

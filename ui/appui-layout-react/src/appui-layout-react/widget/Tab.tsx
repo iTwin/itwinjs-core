@@ -142,7 +142,6 @@ export function useTabInteractions<T extends HTMLElement>({
 
   const clickCount = React.useRef(0);
   const doubleClickTimer = React.useRef(new Timer(300));
-  const dragStartTimer = React.useRef(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
 
   const { id } = tab;
@@ -202,7 +201,6 @@ export function useTabInteractions<T extends HTMLElement>({
     });
     onDragStart?.();
 
-    dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
   }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, handleDragTabStart, dispatch, floatingWidgetId, side, widgetId, id, onDragStart, overflown]);
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
@@ -212,9 +210,9 @@ export function useTabInteractions<T extends HTMLElement>({
     });
 
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
-    dragStartTimer.current.start();
   }, [dispatch, floatingWidgetId]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
+    // istanbul ignore next
     if (!initialPointerPosition.current)
       return;
     const distance = initialPointerPosition.current.getDistanceTo({ x: args.clientX, y: args.clientY });
@@ -226,20 +224,12 @@ export function useTabInteractions<T extends HTMLElement>({
     clickCount.current++;
     initialPointerPosition.current = undefined;
     doubleClickTimer.current.start();
-    dragStartTimer.current.stop();
   }, []);
 
   const pointerCaptorRef = usePointerCaptor<T>(handlePointerDown, handlePointerMove, handlePointerUp);
   const ref = React.useRef<T>();
   const refs = useRefs(pointerCaptorRef, ref);
 
-  React.useEffect(() => {
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(handleDragStart);
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [handleDragStart]);
   React.useEffect(() => {
     const timer = doubleClickTimer.current;
     timer.setOnExecute(() => {
