@@ -51,14 +51,14 @@ export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTab
 }
 
 /** Properties of [[WidgetTab]] component.
- * @internal future
+ * @internal
  */
 export interface WidgetTabProps extends CommonProps {
   badge?: React.ReactNode;
 }
 
 /** Component that displays a tab in a side panel widget.
- * @internal future
+ * @internal
  */
 export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const tab = React.useContext(TabStateContext);

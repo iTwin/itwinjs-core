@@ -43,7 +43,7 @@ export type HorizontalPanelSide = TopPanelSide | BottomPanelSide;
 /** @internal */
 export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 
-/** @internal future */
+/** @internal */
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
 // istanbul ignore next

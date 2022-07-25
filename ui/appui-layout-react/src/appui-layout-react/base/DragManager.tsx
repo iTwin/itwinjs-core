@@ -553,7 +553,7 @@ interface Dragged {
 }
 
 type DragEventHandler = (item: DragItem, info: DragInfo, target: DropTargetState | undefined) => void;
-type TargetChangedEventHandler = (target: DropTargetState | undefined) => void;
+type DropTargetChangedEventHandler = (target: DropTargetState | undefined) => void;
 
 /** @internal */
 export class DragManager {
@@ -562,7 +562,7 @@ export class DragManager {
   private _onDragUpdateEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEmitter = new EventEmitter<DragEventHandler>();
   private _onDragEndEmitter = new EventEmitter<DragEventHandler>();
-  private _onTargetChangedEmitter = new EventEmitter<TargetChangedEventHandler>();
+  private _onTargetChangedEmitter = new EventEmitter<DropTargetChangedEventHandler>();
 
   public isDragged(item: DragItem) {
     return !!this._dragged && this._dragged.item.id === item.id && this._dragged.item.type === item.type;
@@ -605,7 +605,7 @@ export class DragManager {
     return this._onDragEndEmitter;
   }
 
-  public get onTargetChanged(): Event<TargetChangedEventHandler> {
+  public get onTargetChanged(): Event<DropTargetChangedEventHandler> {
     return this._onTargetChangedEmitter;
   }
 
