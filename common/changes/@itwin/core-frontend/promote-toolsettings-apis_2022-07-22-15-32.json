@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote Tool Settings APIs to public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

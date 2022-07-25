@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
 } from "../../appui-layout-react";
 import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
-  it("should render", () => {
+  it("should render", async () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1", { label: "tab 1" });
@@ -22,14 +22,35 @@ describe("FloatingTab", () => {
         position: new Point(10, 20).toProps(),
       });
     });
-    const { container } = render(
+    const { findByText } = render(
       <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingTab />
       </TestNineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    await findByText("tab 1");
+  });
+
+  it("should render with icon", async () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1", iconSpec: <div>icon</div> });
+    nineZone = produce(nineZone, (draft) => {
+      draft.draggedTab = createDraggedTabState("t1", {
+        position: new Point(10, 20).toProps(),
+      });
+    });
+    const { findByText } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <ShowWidgetIconContext.Provider value={true}>
+          <FloatingTab />
+        </ShowWidgetIconContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    await findByText("icon");
   });
 
   it("should dispatch WIDGET_TAB_DRAG", () => {

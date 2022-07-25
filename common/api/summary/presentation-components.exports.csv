@@ -8,6 +8,8 @@ public;ContentDataProviderProps
 public;ControlledPresentationTreeFilteringProps
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
+alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[]
+internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
@@ -27,6 +29,9 @@ internal;getFavoritesCategory: () => CategoryDescription
 public;IContentDataProvider 
 public;IFavoritePropertiesDataProvider
 public;IFilteredPresentationTreeDataProvider 
+alpha;INSTANCE_FILTER_FIELD_SEPARATOR = "#"
+alpha;InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.Element
+alpha;InstanceFilterBuilderProps
 beta;InstanceKeyValueRenderer 
 public;IPresentationDataProvider 
 public;IPresentationLabelsProvider
@@ -37,6 +42,11 @@ internal;IPropertiesAppender
 public;IUnifiedSelectionComponent
 internal;PRESENTATION_TREE_NODE_KEY = "__presentation-components/key"
 public;PresentationComponentsLoggerCategory
+alpha;PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition
+alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element
+alpha;PresentationInstanceFilterBuilderProps
+alpha;PresentationInstanceFilterCondition
+alpha;PresentationInstanceFilterConditionGroup
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
@@ -52,6 +62,7 @@ alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JS
 alpha;PresentationTreeNodeRendererProps 
 alpha;PresentationTreeRenderer(props: TreeRendererProps): JSX.Element
 public;PropertyDataProviderWithUnifiedSelectionProps
+alpha;PropertyInfo
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart
 internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise
@@ -60,7 +71,7 @@ public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
-beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
+beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React_2.ReactElement
 beta;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
@@ -68,6 +79,7 @@ public;UnifiedSelectionTreeEventHandlerParams
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
+alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult

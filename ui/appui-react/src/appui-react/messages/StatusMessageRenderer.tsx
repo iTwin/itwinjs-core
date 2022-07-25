@@ -8,11 +8,17 @@
 
 import "./StatusMessageRenderer.scss";
 import * as React from "react";
-import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
 import { CommonProps } from "@itwin/core-react";
-import { StatusMessage } from "./StatusMessageManager";
-import { StatusMessagesContainer } from "./StatusMessagesContainer";
+import { useActivityMessage } from "./ActivityMessage";
+
+/** Message type for the [[StatusMessageRenderer]] React component
+ * @internal
+ */
+interface StatusMessageRendererrMessage {
+  close: () => void;
+  id: string;
+}
 
 /** Properties for [[StatusMessageRenderer]] component
  * @public
@@ -26,79 +32,81 @@ export interface StatusMessageRendererProps extends CommonProps {
 /** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message without a StatusBar.
  * @note This component was formerly named MessageRenderer in previous releases.
  * @public
+ * @deprecated Use `toaster` from iTwinui-react to display status messages.
  */
-export function StatusMessageRenderer(props: StatusMessageRendererProps) {
-  const [messages, setMessages] = React.useState<ReadonlyArray<StatusMessage>>(MessageManager.activeMessageManager.messages);
+export function StatusMessageRenderer({
+  closeMessage,
+  cancelActivityMessage: cancelActivityMessageProp,
+  dismissActivityMessage,
+}: StatusMessageRendererProps) {
+  const messages = React.useRef<StatusMessageRendererrMessage[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
-  const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);
+
+  const updateMessages = () => {
+    const updatedMessages = [...messages.current];
+    messages.current.forEach((m) => {
+      if (!MessageManager.activeMessageManager.messages.some((msg) => m.id === msg.id)) {
+        m.close();
+        const index = updatedMessages.findIndex((msg) => msg.id === m.id);
+        updatedMessages.splice(index, 1);
+      }
+    });
+
+    messages.current = updatedMessages;
+  };
 
   React.useEffect(() => {
-    const handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
-      setMessages(MessageManager.activeMessageManager.messages);
+    const handleMessageAddedEvent = ({ message }: MessageAddedEventArgs) => {
+      updateMessages();
+      const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !messages.current.find((m) => m.id === msg.id));
+      messagesToAdd.forEach((msg) => {
+        const displayedMessage = MessageManager.displayMessage(
+          message,
+          { onRemove: () => onRemove(msg.id) },
+          { placement: "top", order: "descending" }
+        );
+        if(!!displayedMessage)
+          messages.current.push({close: displayedMessage.close, id: msg.id});
+      });
     };
 
     return MessageManager.onMessageAddedEvent.addListener(handleMessageAddedEvent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
     /** Respond to clearing the message list */
-    const handleMessagesUpdatedEvent = () => {
-      setMessages(MessageManager.activeMessageManager.messages);
-    };
-
-    return MessageManager.onMessagesUpdatedEvent.addListener(handleMessagesUpdatedEvent);
+    return MessageManager.onMessagesUpdatedEvent.addListener(updateMessages);
   }, []);
 
   React.useEffect(() => {
     const handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
       setActivityMessageInfo(args);
-      if (args.restored)
-        setIsActivityMessageVisible(true);
     };
 
     return MessageManager.onActivityMessageUpdatedEvent.addListener(handleActivityMessageUpdatedEvent);
-  }, [isActivityMessageVisible]);
+  }, []);
 
   React.useEffect(() => {
     const handleActivityMessageCancelledEvent = () => {
       setActivityMessageInfo(undefined);
-      setIsActivityMessageVisible(false);
     };
 
     return MessageManager.onActivityMessageCancelledEvent.addListener(handleActivityMessageCancelledEvent);
   }, []);
 
-  const closeMessage = React.useCallback((id: string) => {
+  const onRemove = React.useCallback((id: string) => {
     MessageManager.activeMessageManager.remove(id);
     MessageManager.updateMessages();
-    props.closeMessage && props.closeMessage(id);
-  }, [props]);
+    closeMessage?.(id);
+  }, [closeMessage]);
 
   const cancelActivityMessage = React.useCallback(() => {
     MessageManager.endActivityMessage(false);
-    props.cancelActivityMessage && props.cancelActivityMessage();
-  }, [props]);
+    cancelActivityMessageProp && cancelActivityMessageProp();
+  }, [cancelActivityMessageProp]);
 
-  const dismissActivityMessage = React.useCallback(() => {
-    setIsActivityMessageVisible(false);
-    props.dismissActivityMessage && props.dismissActivityMessage();
-  }, [props]);
+  useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 
-  if (!(activityMessageInfo && isActivityMessageVisible) && messages.length === 0)
-    return null;
-
-  return (
-    <div className={classnames("uifw-message-renderer", props.className)} style={props.style}>
-      <StatusMessagesContainer
-        messages={messages}
-        activityMessageInfo={activityMessageInfo}
-        isActivityMessageVisible={isActivityMessageVisible}
-        toastTarget={null}
-        closeMessage={closeMessage}
-        cancelActivityMessage={cancelActivityMessage}
-        dismissActivityMessage={dismissActivityMessage}
-      />
-
-    </div>
-  );
+  return <></>;
 }
