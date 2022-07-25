@@ -123,8 +123,8 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
-   *       set this property with a custom [[CloudStorageService]].
+   * @note A reference implementation is set for [[AzureServerStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [[ServerStorage]].
    */
   tileCacheStorage?: ServerStorage;
 
