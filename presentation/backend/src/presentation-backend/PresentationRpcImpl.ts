@@ -60,7 +60,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       cleanupHandler: (id, _, reason) => {
         if (reason !== "request") {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
-          this._cancelEvents.get(id)!.raiseEvent();
+          // istanbul ignore next
+          this._cancelEvents.get(id)?.raiseEvent();
         }
         this._cancelEvents.delete(id);
       },

@@ -10,6 +10,7 @@ import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { BeEvent } from "@itwin/core-bentley";
+import sinon from "sinon";
 
 describe("default NativePlatform", () => {
 
@@ -97,16 +98,17 @@ describe("default NativePlatform", () => {
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
-    it("adds listener to cancel event", async () => {
-      const cancelMock = moq.Mock.ofType<() => void>();
+    it("adds listener to cancel event and calls it only after first invocation", async () => {
+      const cancelFunction = sinon.spy();
       const cancelEvent: BeEvent<() => void> = new BeEvent<() => void>();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelMock.object }));
+        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelFunction }));
       expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
       cancelEvent.raiseEvent();
-      cancelMock.verify((x) => x(), moq.Times.once());
+      cancelEvent.raiseEvent();
+      expect(cancelFunction.calledOnce).to.be.true;
     });
 
   });
