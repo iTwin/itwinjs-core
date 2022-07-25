@@ -123,6 +123,8 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, determines whether iModelApp is a NoRenderApp */
+  noRender?: boolean;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
@@ -226,7 +228,6 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
-
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
@@ -270,6 +271,10 @@ export class IModelApp {
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** If the app is a NoRenderApp
+  * @internal
+  */
+    public static get noRender() { return this._noRender; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
   /** The root URL for the assets 'public' folder.
@@ -354,7 +359,7 @@ export class IModelApp {
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
-    this._noRender = false;
+    this._noRender = opts.noRender ?? false;
 
     this._setupRpcRequestContext();
 
@@ -459,10 +464,6 @@ export class IModelApp {
         IModelApp.requestIntervalAnimation();
     }
   }
-
-  /** @internal */
-  public static get noRender() { return this._noRender; }
-  public static set noRender(render: boolean) { this._noRender = render; }
 
   /** @internal */
   public static requestNextAnimation() {
