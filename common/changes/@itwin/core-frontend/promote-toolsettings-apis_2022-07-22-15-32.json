@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Avoid attempting to load ViewState data from the backend for a BlankConnection.",
+      "comment": "Promote Tool Settings APIs to public.",
       "type": "none"
     }
   ],

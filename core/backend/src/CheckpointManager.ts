@@ -41,10 +41,20 @@ export interface CheckpointProps extends TokenArg {
   readonly reattachSafetySeconds?: number;
 }
 
+/** Return value from [[ProgressFunction]].
+ *  @public
+ */
+export enum ProgressStatus {
+  /** Continue download. */
+  Continue = 0,
+  /** Abort download. */
+  Abort = 1,
+}
+
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
  *  @public
  */
-export type ProgressFunction = (loaded: number, total: number) => number;
+export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
 
 /** The parameters that specify a request to download a checkpoint file from iModelHub.
  * @internal
@@ -267,6 +277,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
+    // eslint-disable-next-line deprecation/deprecation
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }

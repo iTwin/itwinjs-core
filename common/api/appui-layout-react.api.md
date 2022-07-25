@@ -9,6 +9,7 @@ import * as CSS from 'csstype';
 import { Draft } from 'immer';
 import { IconSpec } from '@itwin/core-react';
 import { Interaction } from 'scheduler/tracing';
+import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
 import { Omit } from '@itwin/core-react';
 import { OmitChildrenProp } from '@itwin/core-react';
@@ -2096,8 +2097,8 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
             2: import("./Zone").ZoneManagerProps;
             3: import("./Zone").ZoneManagerProps;
             4: import("./Zone").ZoneManagerProps;
-            6: import("./Zone").ZoneManagerProps;
             7: import("./Zone").ZoneManagerProps;
+            6: import("./Zone").ZoneManagerProps;
             8: import("./Zone").ZoneManagerProps;
             9: import("./Zone").ZoneManagerProps;
         };
@@ -2383,6 +2384,8 @@ export class StatusHelpers {
     // (undocumented)
     static getCssClassName(status: Status): string;
     static readonly INFORMATION_CLASS_NAME = "nz-status-information";
+    // (undocumented)
+    static severityToStatus(severity: MessageSeverity): Status;
     static readonly SUCCESS_CLASS_NAME = "nz-status-success";
     static readonly WARNING_CLASS_NAME = "nz-status-warning";
 }
@@ -2523,6 +2526,8 @@ export interface TabState {
     readonly allowedPanelTargets?: PanelSide[];
     // (undocumented)
     readonly canPopout?: boolean;
+    // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
     // (undocumented)
     readonly iconSpec?: IconSpec;
     // (undocumented)
@@ -3105,6 +3110,19 @@ export interface UserProfileProps extends CommonProps {
     initials?: string;
     onClick?: () => void;
     safeAreaInsets?: SafeAreaInsets;
+}
+
+// @internal (undocumented)
+export function useTabInteractions<T extends HTMLElement>({ onClick, onDoubleClick, onDragStart, }: UseTabInteractionsArgs): (instance: T | null | undefined) => void;
+
+// @internal (undocumented)
+export interface UseTabInteractionsArgs {
+    // (undocumented)
+    onClick?: () => void;
+    // (undocumented)
+    onDoubleClick?: () => void;
+    // (undocumented)
+    onDragStart?: () => void;
 }
 
 // @internal (undocumented)

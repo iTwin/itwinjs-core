@@ -29,6 +29,7 @@ export interface TabState {
   readonly canPopout?: boolean;
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
+  readonly hideWithUiWhenFloating?: boolean;
 }
 
 /** @internal */
