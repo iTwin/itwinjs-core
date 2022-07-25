@@ -10,7 +10,6 @@ import "./TabBar.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@itwin/core-react";
-import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
