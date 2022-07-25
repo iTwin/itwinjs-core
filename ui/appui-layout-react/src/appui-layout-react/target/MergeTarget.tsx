@@ -12,7 +12,7 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
+import { WidgetDropTargetState, WidgetState } from "../base/NineZoneState";
 
 /** @internal */
 export interface MergeTargetProps {
@@ -45,7 +45,7 @@ export function MergeTarget(props: MergeTargetProps) {
 }
 
 function useTargetArgs(widgetId: WidgetState["id"]) {
-  return React.useMemo<WidgetTargetState>(() => {
+  return React.useMemo<WidgetDropTargetState>(() => {
     return {
       type: "widget",
       widgetId,

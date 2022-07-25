@@ -12,7 +12,7 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetState, WidgetTargetState } from "../base/NineZoneState";
+import { WidgetDropTargetState, WidgetState } from "../base/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
 import { TabOutline } from "../outline/TabOutline";
 import { withTargetVersion } from "./TargetOptions";
@@ -43,7 +43,7 @@ export const TitleBarTarget = withTargetVersion("2", function TitleBarTarget() {
 });
 
 function useTargetArgs(widgetId: WidgetState["id"]) {
-  return React.useMemo<WidgetTargetState>(() => {
+  return React.useMemo<WidgetDropTargetState>(() => {
     return {
       type: "widget",
       widgetId,

@@ -15,8 +15,8 @@ import {
 import {
   addWidgetTabToPanelSection,
   convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
-  isTabDropTargetState,
-  isWidgetDropTargetState,
+  isTabDragDropTargetState,
+  isWidgetDragDropTargetState,
   NineZoneState,
 } from "../../appui-layout-react/base/NineZoneState";
 
@@ -30,15 +30,15 @@ describe("isHorizontalPanelState", () => {
   });
 });
 
-describe("isWidgetDropTargetState", () => {
+describe("isWidgetDragDropTargetState", () => {
   it("returns false if not a widget drop target", () => {
-    isWidgetDropTargetState({ type: "floatingWidget", newFloatingWidgetId: "", size: { height: 0, width: 0 } }).should.false;
+    isWidgetDragDropTargetState({ type: "floatingWidget", newFloatingWidgetId: "", size: { height: 0, width: 0 } }).should.false;
   });
 });
 
-describe("isTabDropTargetState", () => {
+describe("isTabDragDropTargetState", () => {
   it("returns false if not a tab drop target", () => {
-    isTabDropTargetState({ type: "window" }).should.false;
+    isTabDragDropTargetState({ type: "window" }).should.false;
   });
 });
 

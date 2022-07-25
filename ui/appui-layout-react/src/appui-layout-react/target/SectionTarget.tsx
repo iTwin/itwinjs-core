@@ -14,7 +14,7 @@ import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
-import { SectionTargetState } from "../base/NineZoneState";
+import { SectionDropTargetState } from "../base/NineZoneState";
 
 /** @internal */
 export interface SectionTargetProps {
@@ -63,7 +63,7 @@ export function SectionTarget(props: SectionTargetProps) {
 export function useSectionTargetArgs(sectionIndex: number) {
   const side = React.useContext(PanelSideContext);
   const newWidgetId = React.useMemo(() => getUniqueId(), []);
-  return React.useMemo<SectionTargetState>(() => {
+  return React.useMemo<SectionDropTargetState>(() => {
     assert(!!side);
     return {
       type: "section",

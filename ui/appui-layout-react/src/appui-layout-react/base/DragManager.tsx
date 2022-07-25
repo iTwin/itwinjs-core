@@ -12,7 +12,7 @@ import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";
-import { DropTargetState, isTabDropTargetState, isWidgetDropTargetState, PanelTargetState, TabDropTargetState, TabState, TabTargetState, WidgetDropTargetState, WidgetState } from "./NineZoneState";
+import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, TabState, WidgetDragDropTargetState, WidgetState } from "./NineZoneState";
 import { getUniqueId } from "./NineZone";
 
 /** @internal */
@@ -29,7 +29,7 @@ export interface TabDragStartArgs extends DragStartArgs {
 export interface UseDragTabArgs {
   tabId: TabState["id"];
   onDrag?: (dragBy: PointProps) => void;
-  onDragEnd?: (target: TabDropTargetState) => void;
+  onDragEnd?: (target: TabDragDropTargetState) => void;
 }
 
 /** @internal */
@@ -50,8 +50,8 @@ export function useDragTab(args: UseDragTabArgs) {
     if (!onDragEnd)
       return;
 
-    let tabTarget: TabDropTargetState;
-    if (target && isTabDropTargetState(target)) {
+    let tabTarget: TabDragDropTargetState;
+    if (target && isTabDragDropTargetState(target)) {
       tabTarget = target;
     } else {
       const tabInfo = info as TabDragInfo;
@@ -88,7 +88,7 @@ export interface UseDragWidgetArgs {
   widgetId: WidgetState["id"];
   onDragStart?: (updateWidget: UpdateWidgetDragItemFn, initialPointerPosition: PointProps) => void;
   onDrag?: (dragBy: PointProps) => void;
-  onDragEnd?: (target: WidgetDropTargetState) => void;
+  onDragEnd?: (target: WidgetDragDropTargetState) => void;
 }
 
 /** @internal */
@@ -115,8 +115,8 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     if (!onDragEnd)
       return;
 
-    let widgetTarget: WidgetDropTargetState;
-    if (target && isWidgetDropTargetState(target)) {
+    let widgetTarget: WidgetDragDropTargetState;
+    if (target && isWidgetDragDropTargetState(target)) {
       widgetTarget = target;
     } else {
       widgetTarget = {
@@ -294,7 +294,7 @@ export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
   boolean,  // targeted
 ] {
   const { tabIndex, widgetId } = args;
-  const target = React.useMemo<TabTargetState>(() => ({
+  const target = React.useMemo<TabDropTargetState>(() => ({
     type: "tab",
     tabIndex,
     widgetId,
@@ -314,7 +314,7 @@ export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
   boolean,  // targeted
 ] {
   const { side, newWidgetId } = args;
-  const target = React.useMemo<PanelTargetState>(() => ({
+  const target = React.useMemo<PanelDropTargetState>(() => ({
     type: "panel",
     side,
     newWidgetId,
