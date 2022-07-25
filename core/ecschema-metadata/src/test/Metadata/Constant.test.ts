@@ -112,26 +112,24 @@ describe("Constant", () => {
       phenomenon: "TestSchema.TestPhenomenon",
     });
 
-    it("async - should succeed with defaults", async () => {
+    it("async - should succeed with defaults with minimum required properties provided", async () => {
       const ecSchema = await Schema.fromJson(minimumRequired, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = await ecSchema.getItem<Constant>("TestConstant");
       assert.isDefined(testItem);
 
-      // default properties are now undefined
-      expect(testItem!.numerator).to.be.undefined;
-      expect(testItem!.denominator).to.be.undefined;
+      expect(testItem!.numerator).eql(1);
+      expect(testItem!.denominator).eql(1);
     });
 
-    it("sync - should succeed with defaults", () => {
+    it("sync - should succeed with defaults with minimum required properties provided", () => {
       const ecSchema = Schema.fromJsonSync(minimumRequired, new SchemaContext());
       assert.isDefined(ecSchema);
       const testItem = ecSchema.getItemSync<Constant>("TestConstant");
       assert.isDefined(testItem);
 
-      // default properties are now undefined
-      expect(testItem!.numerator).to.be.undefined;
-      expect(testItem!.denominator).to.be.undefined;
+      expect(testItem!.numerator).eql(1);
+      expect(testItem!.denominator).eql(1);
     });
 
     // Missing phenomenon

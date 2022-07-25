@@ -5116,8 +5116,8 @@ describe("Schema comparison tests", () => {
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.code === SchemaCompareCodes.SchemaItemMissing ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "phenomenon" ? true : false)).to.not.be.undefined;
       expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "definition" ? true : false)).to.not.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false)).to.be.undefined;
-      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false)).to.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "numerator" ? true : false)).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.ecDefinition === itemA && d.messageArgs && d.messageArgs[0] === "denominator" ? true : false)).to.not.be.undefined;
     });
 
     it("Different phenomenon, diagnostic reported", async () => {
