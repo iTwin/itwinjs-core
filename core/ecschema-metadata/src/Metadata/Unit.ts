@@ -44,10 +44,9 @@ export class Unit extends SchemaItem {
   public get numerator(): number { return this._numerator ?? 1.0; }
   public get offset(): number { return this._offset ?? 0.0; }
   public get denominator(): number { return this._denominator ?? 1.0; }
-
-  public hasNumerator(): boolean { return (typeof this._numerator !== 'undefined') }
-  public hasOffset(): boolean { return (typeof this._offset !== 'undefined') }
-  public hasDenominator(): boolean { return (typeof this._denominator !== 'undefined') }
+  public get hasNumerator(): boolean { return (typeof this._numerator !== "undefined"); }
+  public get hasOffset(): boolean { return (typeof this._offset !== "undefined"); }
+  public get hasDenominator(): boolean { return (typeof this._denominator !== "undefined"); }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -79,11 +78,11 @@ export class Unit extends SchemaItem {
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
-    if (this.hasNumerator())
+    if (this.hasNumerator)
       schemaJson.numerator = this.numerator;
-    if (this.hasDenominator())
+    if (this.hasDenominator)
       schemaJson.denominator = this.denominator;
-    if (this.hasOffset())
+    if (this.hasOffset)
       schemaJson.offset = this.offset;
     return schemaJson;
   }
@@ -105,11 +104,11 @@ export class Unit extends SchemaItem {
     }
 
     itemElement.setAttribute("definition", this.definition);
-    if (this.hasNumerator())
+    if (this.hasNumerator)
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (this.hasDenominator())
+    if (this.hasDenominator)
       itemElement.setAttribute("denominator", this.denominator.toString());
-    if (this.hasOffset())
+    if (this.hasOffset)
       itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
