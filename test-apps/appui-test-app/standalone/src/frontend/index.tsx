@@ -10,7 +10,8 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
-import { SafeAreaInsets, TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react";
+import { SafeAreaInsets } from "@itwin/appui-layout-react";
+import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageManager,

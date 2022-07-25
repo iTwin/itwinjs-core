@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addFloatingWidget, createNineZoneState, NineZoneState, TargetOptionsContext, WidgetIdContext, WidgetState } from "../../appui-layout-react";
-import { TestNineZoneProvider } from "../Providers";
+import { addFloatingWidget, createNineZoneState, NineZoneState, WidgetIdContext, WidgetState } from "../../appui-layout-react";
+import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { WidgetTarget } from "../../appui-layout-react/target/WidgetTarget";
+import { TestNineZoneProvider } from "../Providers";
 
 interface WrapperProps {
   state: NineZoneState;

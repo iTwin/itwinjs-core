@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneState, PanelStateContext, TargetOptionsContext } from "../../appui-layout-react";
-import { TestNineZoneProvider } from "../Providers";
+import { addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
+import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { PanelTargets } from "../../appui-layout-react/target/PanelTargets";
+import { TestNineZoneProvider } from "../Providers";
 
 interface WrapperProps {
   state: NineZoneState;

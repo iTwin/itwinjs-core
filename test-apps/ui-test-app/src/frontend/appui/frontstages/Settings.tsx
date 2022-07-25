@@ -9,7 +9,7 @@
 import "./Settings.scss";
 import * as React from "react";
 import { FrameworkAccuDraw, UiFramework } from "@itwin/appui-react";
-import { TargetOptionsContext } from "@itwin/appui-layout-react";
+import { TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../../index";
 

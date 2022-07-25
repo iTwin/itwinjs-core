@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, NineZoneState, PanelStateContext, TargetOptionsContext } from "../../appui-layout-react";
+import { addPanelWidget, createNineZoneState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
+import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { TestNineZoneProvider } from "../Providers";
 import { SectionTargets } from "../../appui-layout-react/target/SectionTargets";
 

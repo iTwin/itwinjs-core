@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { createNineZoneState, TargetOptionsContext } from "../../appui-layout-react";
+import { createNineZoneState } from "../../appui-layout-react";
+import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { TestNineZoneProvider } from "../Providers";
 import { TabOutline } from "../../appui-layout-react/outline/TabOutline";
 
