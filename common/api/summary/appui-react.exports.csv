@@ -126,6 +126,7 @@ deprecated;CommandLaunchBackstageItem
 public;CommandLaunchBackstageItemProps 
 deprecated;CommandLaunchBackstageItemProps 
 public;ConditionalField 
+deprecated;ConditionalField 
 public;ConditionalFieldProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
@@ -233,7 +234,8 @@ beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
 beta;FloatingViewportContentControl 
 beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
-public;FooterModeField 
+public;FooterModeField(props: FooterModeFieldProps): JSX.Element
+deprecated;FooterModeField(props: FooterModeFieldProps): JSX.Element
 public;FooterModeFieldProps 
 beta;FrameworkAccuDraw 
 public;FrameworkReducer: (state: CombinedReducerState
@@ -792,8 +794,10 @@ internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
 public;withMessageCenterFieldProps: 
+deprecated;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
+deprecated;withStatusFieldProps: 
 internal;Workflow 
 deprecated;Workflow 
 internal;WorkflowActivatedEvent 

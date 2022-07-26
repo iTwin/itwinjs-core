@@ -4764,6 +4764,8 @@ export interface IModelAppOptions {
     locateManager?: ElementLocateManager;
     // @beta
     mapLayerOptions?: MapLayerOptions;
+    // @internal
+    noRender?: boolean;
     notifications?: NotificationManager;
     // @beta
     publicPath?: string;

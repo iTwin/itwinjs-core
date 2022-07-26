@@ -706,6 +706,7 @@ export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
 // @beta
 export interface FooterIndicatorProps extends CommonProps {
     children?: React_2.ReactNode;
+    // @deprecated
     isInFooterMode?: boolean;
     onClick?: (event: React_2.MouseEvent) => void;
     title?: string;
