@@ -475,15 +475,20 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** @internal */
-  protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._modelOverrides.get(idLo, idHi); }
+  protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
+    return this._modelOverrides.get(idLo, idHi);
+  }
+
   /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
-    const app = this._elementOverrides.get(idLo, idHi);
-    if (app !== undefined)
-      return app;
+    const elemApp = this._elementOverrides.get(idLo, idHi);
+    const nodeApp = this.animationNodeOverrides.get(animationNodeId);
+    if (elemApp)
+      return nodeApp ? nodeApp.extendAppearance(elemApp) : elemApp;
 
-    return this.animationNodeOverrides.get(animationNodeId);
+    return nodeApp;
   }
+
   /** @internal */
   protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
 

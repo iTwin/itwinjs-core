@@ -347,7 +347,7 @@ describe("FeatureOverrides", () => {
     expectAppearance(0, green);
   });
 
-  it.only("animation overrides extend element overrides", () => {
+  it("animation overrides extend element overrides", () => {
     const ovrs = new Overrides();
 
     const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
