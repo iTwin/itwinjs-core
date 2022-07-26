@@ -91,6 +91,8 @@ The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.g
 
 ### @itwin/core-geometry
 
+Growable array constructors now take an optional growth factor to control additional capacity during memory reallocations (default 1.5). This can make repeated additions to these arrays more efficient. Affected classes are [GrowableBlockedArray]($core-geometry), [GrowableFloat64Array]($core-geometry), [GrowableXYArray]($core-geometry), and [GrowableXYZArray]($core-geometry). In addition, loops in `ensureCapacity`, `pushBlockCopy`, `resize`, `clone`, etc. have been replaced with more efficient calls to typed array `set`, `copyWithin`, `fill`.
+
 The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is deprecated in favor of the more appropriately named new method `setXYAtCheckedPointIndex`.
 
 ### @itwin/core-mobile
