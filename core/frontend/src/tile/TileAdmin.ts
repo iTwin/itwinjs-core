@@ -5,7 +5,6 @@
 /** @packageDocumentation
  * @module Tiles
  */
-
 import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
@@ -300,6 +299,7 @@ export class TileAdmin {
       if(this._cloudStorage !== undefined) {
         this._tileStorage = new TileStorage(this._cloudStorage);
       } else {
+        await import("reflect-metadata");
         const azureFrontend = await import("@itwin/object-storage-azure/lib/frontend");
         const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
         this._tileStorage = new TileStorage(azureStorage);
