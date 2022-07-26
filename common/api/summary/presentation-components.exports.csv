@@ -71,7 +71,7 @@ public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
-beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
+beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React_2.ReactElement
 beta;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 

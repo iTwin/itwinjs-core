@@ -43,7 +43,7 @@ exports[`WidgetTab should render first inactive 1`] = `
 
 exports[`WidgetTab should render last not overflown 1`] = `
 <div
-  class="nz-widget-tab nz-active nz-last-not-overflown"
+  class="nz-widget-tab nz-active"
   data-item-id="t1"
   data-item-type="widget-tab"
   role="tab"
@@ -65,21 +65,9 @@ exports[`WidgetTab should render minimized 1`] = `
 </div>
 `;
 
-exports[`WidgetTab should render overflown 1`] = `
-<div
-  class="nz-widget-tab nz-active"
-  data-item-id="t1"
-  data-item-type="widget-tab"
-  role="tab"
-  title=""
->
-  <span />
-</div>
-`;
-
 exports[`WidgetTab should render tab with icon only 1`] = `
 <div
-  class="nz-widget-tab nz-active nz-last-not-overflown"
+  class="nz-widget-tab nz-active"
   data-item-id="t1"
   data-item-type="widget-tab"
   role="tab"
@@ -93,7 +81,7 @@ exports[`WidgetTab should render tab with icon only 1`] = `
 
 exports[`WidgetTab should render tab with text and icon 1`] = `
 <div
-  class="nz-widget-tab nz-active nz-last-not-overflown"
+  class="nz-widget-tab nz-active"
   data-item-id="t1"
   data-item-type="widget-tab"
   role="tab"
