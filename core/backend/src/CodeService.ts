@@ -13,7 +13,7 @@ import { SettingObject } from "./workspace/Settings";
  * A readonly index of all used and reserved Codes for one or more iModels. The CodeIndex may be slightly out-of-date
  * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
  * locally, this copy is always up-to-date as of those changes.
- * @internal */
+ */
 export interface CodeIndex {
   findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
   findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
@@ -25,7 +25,6 @@ export interface CodeIndex {
   forAllCodeSpecs: (iter: CodeService.EntryIdIterator, filter?: CodeService.ValueFilter) => void;
 }
 
-/** @internal */
 export interface CodeService {
   readonly codeIndex: CodeIndex;
   readonly lockParams: CodeService.ObtainLockParams;
@@ -57,7 +56,6 @@ export interface CodeService {
   makeProposedCode: (arg: { code: Required<CodeProps>, props: CodeService.ProposedCodeProps }) => CodeService.ProposedCode;
 }
 
-/** @internal */
 export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
   export function registerSequence(seq: CodeSequence) { codeSequences.set(seq.sequenceName, seq); }
@@ -85,7 +83,7 @@ export namespace CodeService {
   export type SpecEntry = TableEntry;
   export type OriginEntry = TableEntry;
 
-  export type IndexProps = CloudSqlite.AccountAccessProps & CloudSqlite.ContainerProps & CloudSqlite.DbNameProp;
+  export type IndexProps = CloudSqlite.AccountAccessProps & CloudSqlite.ContainerProps & { dbName?: string };
 
   export interface TableData extends NameAndJson {
     readonly type: string;
