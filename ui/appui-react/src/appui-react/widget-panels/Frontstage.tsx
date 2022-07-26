@@ -723,6 +723,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
       draft.tabs[tab.id] = {
         ...tab,
         label: getWidgetLabel(widgetDef?.label ?? "undefined"),
+        hideWithUiWhenFloating: widgetDef?.hideWithUiWhenFloating,
         iconSpec: widgetDef?.iconSpec,
         canPopout: widgetDef?.canPopout,
         isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
