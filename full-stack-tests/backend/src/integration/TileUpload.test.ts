@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
@@ -15,6 +14,7 @@ import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { startupForIntegration } from "./StartupShutdown";
+import { Readable } from "stream";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -64,6 +64,17 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   }
 
   return undefined;
+}
+
+async function streamToBuffer(stream: Readable): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks = Array<Uint8Array>();
+    stream.on("data", (data) =>
+      chunks.push(data instanceof Buffer ? data : Buffer.from(data))
+    );
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
 }
 
 /* eslint-disable deprecation/deprecation */
@@ -139,19 +150,13 @@ describe("TileUpload (tileCacheService)", () => {
     blob = containerUrl.getBlockBlobClient(blobName);
     const blobProperties = await blob.getProperties();
     const blobStream = (await blob.download()).readableStreamBody!;
-    const decompressor: NodeJS.ReadableStream = IModelHost.compressCachedTiles ? blobStream.pipe(zlib.createGunzip()) : blobStream;
-
-    let tileSize = 0;
-    decompressor.on("data", (chunk: Buffer | string) => { tileSize += chunk.length; });
-    await new Promise((resolve, reject) => {
-      decompressor.on("end", resolve).on("error", reject);
-    });
+    const blobBuffer = await streamToBuffer(blobStream as Readable);
 
     // Verify metadata in blob properties
     assert.isDefined(blobProperties.metadata);
     assert.isDefined(blobProperties.metadata!.tilegenerationtime);
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
+    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), blobBuffer.byteLength);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
@@ -212,21 +217,14 @@ describe("TileUpload", () => {
 
     // Query tile from tile cache
     objectReference = getTileObjectReference(iModel.iModelId, iModel.changeset.id, tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
-    const blobStream = await IModelHost.tileStorage!.storage.download(objectReference, "stream");
+    const blobBuffer = await IModelHost.tileStorage!.storage.download(objectReference, "buffer");
     const blobProperties = await IModelHost.tileStorage!.storage.getObjectProperties(objectReference);
-    const decompressor: NodeJS.ReadableStream = IModelHost.compressCachedTiles ? blobStream.pipe(zlib.createGunzip()) : blobStream;
-
-    let tileSize = 0;
-    decompressor.on("data", (chunk: Buffer | string) => { tileSize += chunk.length; });
-    await new Promise((resolve, reject) => {
-      decompressor.on("end", resolve).on("error", reject);
-    });
 
     // Verify metadata in blob properties
     assert.isDefined(blobProperties.metadata);
     assert.isDefined(blobProperties.metadata!.tilegenerationtime);
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
+    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), blobBuffer.byteLength);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
