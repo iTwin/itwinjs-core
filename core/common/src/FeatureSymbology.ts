@@ -502,7 +502,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
       return undefined;
 
     const app = this.animationNodeOverrides.get(animationNodeId);
-    if (this._ignoreAnimationOverrides.length === 0)
+    if (!app || this._ignoreAnimationOverrides.length === 0)
       return app;
 
     const args = scratchIgnoreAnimationOverridesArgs;
