@@ -3,18 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, IModelHostOptions, RpcTrace } from "@itwin/core-backend";
+import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { startupForIntegration } from "./StartupShutdown";
-import { Readable } from "stream";
 import { gunzip } from "zlib";
 import { promisify } from "util";
 
@@ -23,14 +21,6 @@ interface TileContentRequestProps {
   contentId: string;
   guid: string;
 }
-
-/** https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#well-known-storage-account-and-key */
-const tileCacheAzureCredentials: AzureBlobStorageCredentials = {
-  account: "devstoreaccount1",
-  accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-  baseUrl: "http://127.0.0.1:10000/devstoreaccount1",
-};
-
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
 export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
   const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
@@ -64,111 +54,15 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       guid,
     };
   }
-
   return undefined;
 }
 
-async function streamToBuffer(stream: Readable): Promise<Buffer> {
-  return new Promise<Buffer>((resolve, reject) => {
-    const chunks = Array<Uint8Array>();
-    stream.on("data", (data) =>
-      chunks.push(data instanceof Buffer ? data : Buffer.from(data))
-    );
-    stream.on("end", () => resolve(Buffer.concat(chunks)));
-    stream.on("error", reject);
-  });
-}
-
-/* eslint-disable deprecation/deprecation */
-describe("TileUpload (tileCacheService)", () => {
-  let accessToken: AccessToken;
-  let testITwinId: GuidString;
-  let testIModelId: GuidString;
-  let tileRpcInterface: IModelTileRpcInterface;
-  let blobService: Azure.BlobServiceClient;
-  let blob: Azure.BlockBlobClient | undefined;
-
-  before(async () => {
-    // Shutdown IModelHost to allow this test to use it.
-    await IModelHost.shutdown();
-
-    const config: IModelHostOptions = {tileCacheAzureCredentials};
-
-    await startupForIntegration(config);
-    assert.isDefined(IModelHost.tileCacheService);
-    IModelHost.applicationId = "TestApplication";
-
-    RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
-
-    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    testITwinId = await HubUtility.getTestITwinId(accessToken);
-    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
-
-    // Get URL for cached tile
-    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheAzureCredentials!.account, config.tileCacheAzureCredentials!.accessKey);
-    const pipeline = Azure.newPipeline(credentials);
-    blobService = new Azure.BlobServiceClient(tileCacheAzureCredentials.baseUrl!, pipeline);
-
-    // Point tileCacheService towards azurite URL
-    (IModelHost.tileCacheService as any)._service = blobService;
-
-    // Open and close the iModel to ensure it works and is closed
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
-    assert.isDefined(iModel);
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
-
-    IModelHost.tileCacheService?.initialize();
-  });
-
-  after(async () => {
-    // Delete cached tile
-    if(blob)
-      await blob.delete();
-    // Re-start backend with default config
-    await IModelHost.shutdown();
-    await startupForIntegration();
-  });
-
-  it("should upload tile to external cache with metadata", async () => {
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
-    assert.isDefined(iModel);
-
-    // Generate tile
-    const tileProps = await getTileProps(iModel);
-    assert.isDefined(tileProps);
-    const tile = await RpcTrace.run({
-      accessToken,
-      activityId: "",
-      applicationId: "",
-      applicationVersion: "",
-      sessionId: "",
-    }, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
-
-    assert.equal(tile, TileContentSource.ExternalCache);
-
-    // Query tile from tile cache
-    const blobName = CloudStorageTileCache.getCache().formResourceName({ ...tileProps!, tokenProps: {} as IModelRpcProps });
-    const containerUrl = blobService.getContainerClient(testIModelId);
-    blob = containerUrl.getBlockBlobClient(blobName);
-    const blobProperties = await blob.getProperties();
-    const blobStream = (await blob.download()).readableStreamBody!;
-    const blobBuffer = await streamToBuffer(blobStream as Readable);
-
-    const tileSize = IModelHost.compressCachedTiles
-      ? (await promisify(gunzip)(blobBuffer)).byteLength
-      : blobBuffer.byteLength;
-
-    // Verify metadata in blob properties
-    assert.isDefined(blobProperties.metadata);
-    assert.isDefined(blobProperties.metadata!.tilegenerationtime);
-    assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
-  });
-});
-/* eslint-enable deprecation/deprecation */
+/** https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#well-known-storage-account-and-key */
+const tileCacheAzureCredentials: AzureBlobStorageCredentials = {
+  account: "devstoreaccount1",
+  accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+  baseUrl: "http://127.0.0.1:10000/devstoreaccount1",
+};
 
 describe("TileUpload", () => {
   let tileRpcInterface: IModelTileRpcInterface;
