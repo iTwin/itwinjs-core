@@ -46,11 +46,11 @@ export enum SpatialClassifierOutsideDisplay {
  * @extensions
  */
 export interface SpatialClassifierFlagsProps {
-  /** @see [[SpatialClassifierFlags.inside]]. */
+  /** See [[SpatialClassifierFlags.inside]]. */
   inside: SpatialClassifierInsideDisplay;
-  /** @see [[SpatialClassifierFlags.outside]]. */
+  /** See [[SpatialClassifierFlags.outside]]. */
   outside: SpatialClassifierOutsideDisplay;
-  /** @see [[SpatialClassifierFlags.isVolumeClassifier]]. */
+  /** See [[SpatialClassifierFlags.isVolumeClassifier]]. */
   isVolumeClassifier?: boolean;
 }
 
@@ -117,16 +117,16 @@ export class SpatialClassifierFlags {
  * @extensions
  */
 export interface SpatialClassifierProps {
-  /** @see [[SpatialClassifier.modelId]]. */
+  /** See [[SpatialClassifier.modelId]]. */
   modelId: Id64String;
-  /** @see [[SpatialClassifier.expand]]. */
+  /** See [[SpatialClassifier.expand]]. */
   expand: number;
-  /** @see [[SpatialClassifier.flags]]. */
+  /** See [[SpatialClassifier.flags]]. */
   flags: SpatialClassifierFlagsProps;
-  /** @see [[SpatialClassifier.name]]. */
+  /** See [[SpatialClassifier.name]]. */
   name: string;
   /** Records whether this is the active classifier.
-   * @see [[SpatialClassifier.active]].
+   * See [[SpatialClassifier.active]].
    */
   isActive?: boolean;
 }
