@@ -335,13 +335,9 @@ export interface BackendHubAccess {
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
-    downloadChangeset: (arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps[]>;
-    // @internal
+    downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
+    downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
+    // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -666,7 +662,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     toJSON(): ChannelRootAspectProps;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
@@ -1025,12 +1021,27 @@ export class DocumentPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @beta
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
+    targetDir: LocalDirName;
+}
+
+// @beta
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
+    targetDir: LocalDirName;
+}
+
 // @internal (undocumented)
 export interface DownloadJob {
     // (undocumented)
     promise?: Promise<any>;
     // (undocumented)
     request: DownloadRequest;
+}
+
+// @beta
+export interface DownloadProgressArg {
+    progressCallback?: ProgressFunction;
 }
 
 // @internal
@@ -2206,17 +2217,11 @@ export class HubMock {
     }): Promise<void>;
     static destroy(iModelId: GuidString): void;
     // (undocumented)
-    static downloadChangeset(arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
+    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
     // (undocumented)
-    static downloadChangesets(arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
+    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // (undocumented)
     static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
-    // (undocumented)
-    static downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
     // (undocumented)
     static findLocalHub(iModelId: GuidString): LocalHub;
     static getChangesetFromNamedVersion(arg: IModelIdArg & {
@@ -3682,7 +3687,13 @@ export interface ProcessChangesetOptions {
 }
 
 // @public
-export type ProgressFunction = (loaded: number, total: number) => number;
+export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
+
+// @public
+export enum ProgressStatus {
+    Abort = 1,
+    Continue = 0
+}
 
 // @public
 export type PullChangesArgs = ToChangesetArgs;
