@@ -546,7 +546,6 @@ public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
-public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
@@ -580,7 +579,6 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
