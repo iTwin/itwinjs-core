@@ -15,12 +15,12 @@ export type Mutable<T> = {
 
 /** Make a new type from an existing type `T`, with set of required properties `K` optional.
  * @public
-*/
+ */
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 /** Make a new type from an existing type `T`, with set of optional properties `K` required.
  * @public
-*/
+ */
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 /** Generically represents a class `T`, for use in type annotations.
@@ -98,3 +98,7 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
+/** Extracts a subset of literals `U` from a union of literals `T` in a type-safe way.
+ * @beta
+ */
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;

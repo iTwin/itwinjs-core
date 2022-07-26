@@ -43,7 +43,7 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parseFormat(data: Readonly<TItem>): FormatProps;
   public abstract parseUnitSystem(data: Readonly<TItem>): UnitSystemProps;
 
-  public abstract getProperties(data: Readonly<TItem>): Iterable<PropertyTuple<TProperty>>;
+  public abstract getProperties(data: Readonly<TItem>, itemName: string): Iterable<PropertyTuple<TProperty>>;
   public abstract parsePrimitiveProperty(data: Readonly<TProperty>): PrimitivePropertyProps;
   public abstract parseStructProperty(data: Readonly<TProperty>): StructPropertyProps;
   public abstract parsePrimitiveArrayProperty(data: Readonly<TProperty>): PrimitiveArrayPropertyProps;

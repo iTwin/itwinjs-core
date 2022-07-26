@@ -18,10 +18,10 @@ describe("ActivityCenter", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          <ActivityCenterField isInFooterMode={isInFooterMode} />
         </>
       );
     }

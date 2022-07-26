@@ -850,7 +850,15 @@ export class ToolAdmin {
       return;
 
     const buttonMask = (event.ev as MouseEvent).buttons;
-    const cancelDrag = (current.isDragging(BeButton.Data) && !(buttonMask & 1)) || (current.isDragging(BeButton.Reset) && !(buttonMask & 2)) || (current.isDragging(BeButton.Middle) && !(buttonMask & 4));
+    let cancelDrag = false;
+
+    current.button.forEach((button, buttonNum) => {
+      if (button.isDragging && !(buttonMask & (1 << buttonNum))) {
+        button.isDragging = button.isDown = false;
+        cancelDrag = true;
+      }
+    });
+
     if (cancelDrag)
       await tool.onReinitialize();
   }
@@ -879,7 +887,8 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      if (adjustPoint && undefined !== ev.viewport)
+      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
+      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
         this.adjustPoint(ev.point, ev.viewport);
     }
 
@@ -1041,7 +1050,7 @@ export class ToolAdmin {
 
       IModelApp.accuDraw.onMotion(ev);
 
-      const tool = this.activeTool;
+      let tool = this.activeTool;
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
@@ -1050,10 +1059,16 @@ export class ToolAdmin {
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
 
-        if (undefined !== tool && isValidLocation)
-          tool.receivedDownEvent = true;
+        if (undefined !== tool) {
+          if (!isValidLocation)
+            tool = undefined;
+          else if (forceStartDrag)
+            tool.receivedDownEvent = true;
+          else if (!tool.receivedDownEvent)
+            tool = undefined;
+        }
 
-        await this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        await this.onStartDrag(ev, tool);
         return;
       }
 
@@ -1234,8 +1249,11 @@ export class ToolAdmin {
         if (tool instanceof PrimitiveTool)
           tool.autoLockTarget();
 
+        // Process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
+        IModelApp.accuDraw.processHints();
+
         // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-        this.updateDynamics(undefined, true);
+        this.updateDynamics(undefined, true, true);
         break;
       }
 
@@ -1313,7 +1331,7 @@ export class ToolAdmin {
 
     if (changed === EventHandled.Yes) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      this.updateDynamics();
+      this.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
     }
   }
 
@@ -1470,7 +1488,7 @@ export class ToolAdmin {
       await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onInputCollectorExit();
-    this.updateDynamics();
+    this.updateDynamics(undefined, undefined, true);
   }
 
   /** @internal */
@@ -1521,7 +1539,7 @@ export class ToolAdmin {
       await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onViewToolExit();
-    this.updateDynamics();
+    this.updateDynamics(undefined, undefined, true);
   }
 
   /** @internal */

@@ -22,6 +22,7 @@ export interface DtaConfiguration {
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
   enableExternalTextures?: boolean; // default true
+  enableFrontendScheduleScripts?: boolean; // default true
   disableMagnification?: boolean;
   disableBRepCache?: boolean; // default true
   preserveShaderSourceCode?: boolean;
@@ -38,6 +39,7 @@ export interface DtaConfiguration {
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
+  errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
   minimumSpatialTolerance?: number; // default undefined (no minimum)
@@ -102,11 +104,17 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_NO_EXTERNAL_TEXTURES)
     configuration.enableExternalTextures = false;
 
+  if (undefined !== process.env.IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS)
+    configuration.enableFrontendScheduleScripts = false;
+
   if (undefined !== process.env.IMJS_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
   if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE)
     configuration.disableBRepCache = true;
+
+  if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS)
+    configuration.errorOnMissingUniform = false;
 
   if (undefined !== process.env.IMJS_DEBUG_SHADERS)
     configuration.debugShaders = true;

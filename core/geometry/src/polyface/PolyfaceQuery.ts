@@ -906,14 +906,18 @@ export class PolyfaceQuery {
       if (data.pointIndex[i] === vertexIndex)
         data.edgeVisible[i] = value;
   }
-  /** Load all half edges from a mesh to an IndexedEdgeMatcher */
-  public static createIndexedEdges(visitor: PolyfaceVisitor): IndexedEdgeMatcher {
+  /** Load all half edges from a mesh to an IndexedEdgeMatcher.
+   * @param polyface a mesh, or a visitor assumed to have numWrap === 1
+  */
+  public static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher {
+    if (polyface instanceof Polyface)
+      return this.createIndexedEdges(polyface.createVisitor(1));
     const edges = new IndexedEdgeMatcher();
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      const numEdges = visitor.pointCount - 1;
+    polyface.reset();
+    while (polyface.moveToNextFacet()) {
+      const numEdges = polyface.pointCount - 1;
       for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+        edges.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
       }
     }
     return edges;

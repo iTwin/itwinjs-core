@@ -7,7 +7,7 @@ import {
   ECClassModifier, EntityClass, Enumeration, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
-  StructArrayProperty, StructClass, StructProperty,
+  StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -361,5 +361,283 @@ describe("Property creation tests", () => {
 
     property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
     expect(property).to.be.undefined;
+  });
+
+  it("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await testSchema.getItem<EntityClass>("testEntity");
+
+    const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
+
+    expect(result).to.eql({});
+    expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).to.be.true;
+  });
+
+  it("CustomAttribute defined in different schema, instance added to class successfully.", async () => {
+    const schemaAJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SchemaA",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+        },
+      },
+      references: [
+        {
+          name: "SchemaB",
+          version: "1.2.3",
+        },
+      ],
+    };
+
+    const schemaBJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SchemaB",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    await Schema.fromJson(schemaBJson, context);
+    const schemaA = await Schema.fromJson(schemaAJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await schemaA.getItem<EntityClass>("testEntity");
+
+    const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "SchemaB.testCustomAttribute" });
+
+    expect(result).to.eql({});
+    expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
+  });
+
+  it("Adding CustomAttribute to a class that does not exist fails as expected.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
+
+    const result = await testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" });
+    expect(result.errorMessage).to.eql(`Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
+  });
+
+  it("CustomAttribute defined in same schema, instance added to property successfully.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "testProperty",
+            },
+          ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await testSchema.getItem<EntityClass>("testEntity");
+    const property = await testClass?.getProperty("testProperty");
+
+    const result = await testEditor.entities.addCustomAttributeToProperty(testClass?.key as SchemaItemKey, "testProperty", { className: "testCustomAttribute" });
+
+    expect(result).to.eql({});
+    expect(property!.customAttributes && property!.customAttributes.has("testCustomAttribute")).to.be.true;
+  });
+
+  it("CustomAttribute defined in different schema, instance added property successfully.", async () => {
+    const schemaAJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SchemaA",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "testProperty",
+            },
+          ],
+        },
+      },
+      references: [
+        {
+          name: "SchemaB",
+          version: "1.2.3",
+        },
+      ],
+    };
+
+    const schemaBJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SchemaB",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    await Schema.fromJson(schemaBJson, context);
+    const schemaA = await Schema.fromJson(schemaAJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await schemaA.getItem<EntityClass>("testEntity");
+    const property = await testClass?.getProperty("testProperty");
+
+    const result = await testEditor.entities.addCustomAttributeToProperty(testClass?.key as SchemaItemKey, "testProperty", { className: "SchemaB.testCustomAttribute" });
+
+    expect(result).to.eql({});
+    expect(property!.customAttributes && property!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
+  });
+
+  it("Adding a CustomAttribute to a property with bad SchemaItemKey fails as expected.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "testProperty",
+            },
+          ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
+
+    const result = await testEditor.entities.addCustomAttributeToProperty(badKey, "testProperty", { className: "testCustomAttribute" });
+    expect(result.errorMessage).to.eql(`Class ${badKey.name} was not found in schema ${testSchema.schemaKey.toString(true)}`);
+  });
+
+  it("Adding a CustomAttribute to a non-existent property fails as expected.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testEntity: {
+          schemaItemType: "EntityClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "testProperty",
+            },
+          ],
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await testSchema.getItem<UnitSystem>("testEntity");
+
+    const result = await testEditor.entities.addCustomAttributeToProperty(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" });
+    expect(result.errorMessage).to.eql(`Property with the name badPropertyName could not be found in the class ${testClass?.key.fullName}.`);
+  });
+
+  it("Adding a CustomAttribute to a class with an unsupported SchemaItemType fails as expected.", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      version: "1.2.3",
+      alias: "vs",
+      items: {
+        testUnitSystem: {
+          schemaItemType: "UnitSystem",
+        },
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      },
+    };
+
+    context = new SchemaContext();
+    testSchema = await Schema.fromJson(schemaJson, context);
+    testEditor = new SchemaContextEditor(context);
+    const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
+
+    const result = await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
+    expect(result.errorMessage).to.eql("Schema item type not supported");
   });
 });

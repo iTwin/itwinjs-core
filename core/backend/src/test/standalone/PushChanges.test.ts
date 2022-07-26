@@ -3,16 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import {
+  Code, ColorDef, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
+} from "@itwin/core-common";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorDef, GeometryParams, GeometryPartProps,
-  GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
-} from "@itwin/core-common";
+  BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory,
+  SubCategory, Subject,
+} from "../../core-backend";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../core-backend";
-import { HubMock } from "../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubWrappers } from "..";
+import { HubMock } from "../../HubMock";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestIModelWriter {
   public static insertGeometryPart(iModel: IModelDb, definitionModelId: Id64String): Id64String {
@@ -80,7 +82,7 @@ describe("PushChangesTest (#integration)", () => {
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
-    HubMock.startup("PushChangesTest");
+    HubMock.startup("PushChangesTest", KnownTestLocations.outputDir);
 
     accessToken = "manager token";
     iTwinId = HubMock.iTwinId;

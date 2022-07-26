@@ -108,6 +108,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   public override render() {
+    // eslint-disable-next-line deprecation/deprecation
     const isOpen = this.props.openWidget === this._className;
     return (
       <>

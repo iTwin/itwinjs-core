@@ -5,8 +5,6 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,
@@ -14,11 +12,15 @@ import {
   SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
 } from "@itwin/core-backend";
 import { KnownTestLocations as BackendKnownTestLocations, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@itwin/core-common";
+import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelImporter, IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 

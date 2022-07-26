@@ -219,6 +219,29 @@ export interface ClassInfoJSON {
     name: string;
 }
 
+// @alpha (undocumented)
+export interface ClientDiagnostics extends Diagnostics {
+    // (undocumented)
+    backendVersion?: string;
+}
+
+// @public (undocumented)
+export interface ClientDiagnosticsAttribute {
+    // @alpha (undocumented)
+    diagnostics?: ClientDiagnosticsOptions;
+}
+
+// @alpha (undocumented)
+export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
+
+// @alpha (undocumented)
+export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
+    // (undocumented)
+    backendVersion?: boolean;
+    // (undocumented)
+    handler: ClientDiagnosticsHandler;
+}
+
 // @internal (undocumented)
 export interface CommonIpcParams {
     // (undocumented)
@@ -235,6 +258,17 @@ export interface CompressedClassInfoJSON {
 
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
+
+// @alpha
+export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
+    // (undocumented)
+    elementIds: Id64String[];
+    // (undocumented)
+    scope: SelectionScopeProps;
+}
+
+// @alpha (undocumented)
+export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
 // @public @deprecated
 export interface ConditionContainer {
@@ -264,6 +298,8 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 
 // @public
 export enum ContentFlags {
+    // @internal
+    DescriptorOnly = 512,
     DistinctValues = 16,
     // @beta
     IncludeInputKeys = 256,
@@ -520,7 +556,10 @@ export interface DescriptorSource {
 }
 
 // @alpha (undocumented)
-export type DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void;
+export interface Diagnostics {
+    // (undocumented)
+    logs?: DiagnosticsScopeLogs[];
+}
 
 // @alpha (undocumented)
 export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
@@ -556,12 +595,6 @@ export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
     perf?: boolean;
-}
-
-// @alpha (undocumented)
-export interface DiagnosticsOptionsWithHandler extends DiagnosticsOptions {
-    // (undocumented)
-    handler: DiagnosticsHandler;
 }
 
 // @alpha (undocumented)
@@ -796,6 +829,14 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
+// @alpha (undocumented)
+export interface ElementSelectionScopeProps {
+    // (undocumented)
+    ancestorLevel?: number;
+    // (undocumented)
+    id: "element";
+}
+
 // @public
 export interface EnumerationChoice {
     label: string;
@@ -811,7 +852,7 @@ export interface EnumerationInfo {
 // @alpha (undocumented)
 export interface ExpandedNodeUpdateRecord {
     // (undocumented)
-    node: Node;
+    node: Node_2;
     // (undocumented)
     position: number;
 }
@@ -1301,6 +1342,9 @@ export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: number[];
 }
 
+// @internal (undocumented)
+export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel>;
+
 // @beta
 export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel>;
 
@@ -1617,7 +1661,7 @@ export interface NoCategoryIdentifier {
 }
 
 // @public
-export interface Node {
+interface Node_2 {
     // @deprecated
     backColor?: string;
     description?: string;
@@ -1645,20 +1689,21 @@ export interface Node {
 }
 
 // @public (undocumented)
-export namespace Node {
-    export function fromJSON(json: NodeJSON | string): Node;
+namespace Node_2 {
+    function fromJSON(json: NodeJSON | string): Node_2;
     // @internal (undocumented)
-    export function fromPartialJSON(json: PartialNodeJSON): PartialNode;
+    function fromPartialJSON(json: PartialNodeJSON): PartialNode;
     // @internal
-    export function listFromJSON(json: NodeJSON[] | string): Node[];
+    function listFromJSON(json: NodeJSON[] | string): Node_2[];
     // @internal
-    export function listReviver(key: string, value: any): any;
+    function listReviver(key: string, value: any): any;
     // @internal
-    export function reviver(key: string, value: any): any;
-    export function toJSON(node: Node): NodeJSON;
+    function reviver(key: string, value: any): any;
+    function toJSON(node: Node_2): NodeJSON;
     // @internal (undocumented)
-    export function toPartialJSON(node: PartialNode): PartialNodeJSON;
+    function toPartialJSON(node: PartialNode): PartialNodeJSON;
 }
+export { Node_2 as Node }
 
 // @public
 export interface NodeArtifactsRule extends RuleBase {
@@ -1687,7 +1732,7 @@ export interface NodeDeletionInfoJSON {
 
 // @public
 export interface NodeInsertionInfo {
-    node: Node;
+    node: Node_2;
     parent?: NodeKey;
     position: number;
     // (undocumented)
@@ -1774,7 +1819,7 @@ export interface NodePathElement {
     filteringData?: NodePathFilteringData;
     index: number;
     isMarked?: boolean;
-    node: Node;
+    node: Node_2;
 }
 
 // @public (undocumented)
@@ -1842,7 +1887,8 @@ export interface NodeUpdateInfoJSON {
 }
 
 // @public
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
+export { Omit_2 as Omit }
 
 // @public
 export type Paged<TOptions extends {}> = TOptions & {
@@ -1867,7 +1913,7 @@ export interface ParentCategoryIdentifier {
 }
 
 // @public
-export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type PartialBy<T, K extends keyof T> = Omit_2<T, K> & Partial<Pick<T, K>>;
 
 // @public
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
@@ -1882,7 +1928,7 @@ export namespace PartialHierarchyModification {
 export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
 
 // @public
-export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
+export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 
 // @public
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
@@ -1915,6 +1961,8 @@ export interface PresentationIpcInterface {
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
+    // @alpha (undocumented)
+    computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
     // @beta (undocumented)
@@ -1956,9 +2004,9 @@ export class PresentationRpcInterface extends RpcInterface {
 }
 
 // @public
-export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
+export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit_2<TManagerRequestOptions, "imodel" | "diagnostics"> & {
     clientId?: string;
-    diagnostics?: DiagnosticsOptions;
+    diagnostics?: RpcDiagnosticsOptions;
 };
 
 // @public
@@ -1967,7 +2015,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
 // @public
 export interface PresentationRpcResponseData<TResult = undefined> {
     // @alpha (undocumented)
-    diagnostics?: DiagnosticsScopeLogs[];
+    diagnostics?: ClientDiagnostics;
     errorMessage?: string;
     result?: TResult;
     statusCode: PresentationStatus;
@@ -2424,10 +2472,10 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 
 // @public
 export interface RequestOptions<TIModel> {
-    // @alpha (undocumented)
-    diagnostics?: DiagnosticsOptionsWithHandler;
     imodel: TIModel;
     locale?: string;
+    // @internal
+    transport?: "unparsed-json";
     unitSystem?: UnitSystemKey;
 }
 
@@ -2455,54 +2503,57 @@ export interface RootNodeRule extends NavigationRuleBase {
     ruleType: RuleTypes.RootNodes;
 }
 
+// @alpha (undocumented)
+export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
+
 // @internal
 export class RpcRequestsHandler implements IDisposable {
     constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
+    computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<DescriptorJSON | undefined>;
+    getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<{
+    getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<{
         total: number;
         items: KeySetJSON;
     }>;
     // (undocumented)
-    getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<number>;
+    getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
     // (undocumented)
-    getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps>): Promise<ContentSourcesRpcResult>;
+    getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult>;
     // (undocumented)
-    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
+    getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<LabelDefinitionJSON>;
     // (undocumented)
-    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
+    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // (undocumented)
-    getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
+    getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
+    getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
     // (undocumented)
-    getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>): Promise<{
+    getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<{
         descriptor: DescriptorJSON;
         contentSet: PagedResponse<ItemJSON>;
     } | undefined>;
     // (undocumented)
-    getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>): Promise<PagedResponse<ItemJSON>>;
+    getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<PagedResponse<ItemJSON>>;
     // (undocumented)
-    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<PagedResponse<LabelDefinitionJSON>>;
+    getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<LabelDefinitionJSON>>;
     // (undocumented)
-    getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<PagedResponse<DisplayValueGroupJSON>>;
+    getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
-    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>>;
+    getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
-    getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
+    getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]>;
     // (undocumented)
     readonly maxRequestRepeatCount: number;
-    request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
-    }
+    request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
+}
 
 // @internal
 export interface RpcRequestsHandlerProps {
@@ -2539,7 +2590,7 @@ export class RulesetsFactory {
         ruleset: Ruleset;
         description: string;
     }>;
-    }
+}
 
 // @public
 export type RulesetVariable = BooleanRulesetVariable | StringRulesetVariable | IntRulesetVariable | IntsRulesetVariable | Id64RulesetVariable | Id64sRulesetVariable;
@@ -2685,6 +2736,11 @@ export interface SelectionScope {
     id: string;
     label: string;
 }
+
+// @alpha (undocumented)
+export type SelectionScopeProps = ElementSelectionScopeProps | {
+    id: string;
+};
 
 // @public
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {
@@ -2866,7 +2922,7 @@ export interface SubCondition {
 }
 
 // @public
-export type Subtract<T, K> = Omit<T, keyof K>;
+export type Subtract<T, K> = Omit_2<T, keyof K>;
 
 // @public
 export interface SupplementationInfo {
@@ -3012,7 +3068,6 @@ export enum VariableValueTypes {
     IntArray = "int[]",
     String = "string"
 }
-
 
 // (No @packageDocumentation comment for this package)
 

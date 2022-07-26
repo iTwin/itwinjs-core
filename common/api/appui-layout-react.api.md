@@ -4,25 +4,25 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { CommonProps } from '@itwin/core-react';
-import * as CSS from 'csstype';
 import { Draft } from 'immer';
 import { IconSpec } from '@itwin/core-react';
-import { Interaction } from 'scheduler/tracing';
+import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
-import { Omit } from '@itwin/core-react';
+import { Omit as Omit_2 } from '@itwin/core-react';
 import { OmitChildrenProp } from '@itwin/core-react';
 import { Point } from '@itwin/core-react';
 import { PointProps } from '@itwin/appui-abstract';
 import { PopupProps } from '@itwin/core-react';
-import * as PropTypes from 'prop-types';
-import * as React from 'react';
+import * as React_2 from 'react';
 import { Rectangle } from '@itwin/core-react';
 import { RectangleProps } from '@itwin/core-react';
 import { SizeProps } from '@itwin/core-react';
 
 // @internal (undocumented)
-export const ActiveTabIdContext: React.Context<string>;
+export const ActiveTabIdContext: React_2.Context<string>;
 
 // @internal (undocumented)
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
@@ -37,16 +37,19 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
 
 // @internal
+export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): void;
+
+// @internal
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
 export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState;
 
 // @internal (undocumented)
-export const AnimateDockedToolSettingsContext: React.Context<boolean>;
+export const AnimateDockedToolSettingsContext: React_2.Context<boolean>;
 
 // @internal
-export class AppButton extends React.PureComponent<AppButtonProps> {
+export class AppButton extends React_2.PureComponent<AppButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -58,13 +61,13 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 }
 
 // @internal
-export const AppContent: React.NamedExoticComponent<object>;
+export const AppContent: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export const AutoCollapseUnpinnedPanelsContext: React.Context<boolean>;
+export const AutoCollapseUnpinnedPanelsContext: React_2.Context<boolean>;
 
 // @internal
-export class BackArrow extends React.PureComponent<BackArrowProps> {
+export class BackArrow extends React_2.PureComponent<BackArrowProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -76,7 +79,7 @@ export interface BackArrowProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal
-export class BackButton extends React.PureComponent<BackButtonProps> {
+export class BackButton extends React_2.PureComponent<BackButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -86,7 +89,7 @@ export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoC
 }
 
 // @internal
-export class Backstage extends React.PureComponent<BackstageProps> {
+export class Backstage extends React_2.PureComponent<BackstageProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -101,18 +104,18 @@ export class Backstage extends React.PureComponent<BackstageProps> {
 export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
 
 // @internal
-export class BackstageItem extends React.PureComponent<BackstageItemProps> {
+export class BackstageItem extends React_2.PureComponent<BackstageItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface BackstageItemProps extends CommonProps {
-    badge?: React.ReactNode;
+    badge?: React_2.ReactNode;
     children?: string;
     // (undocumented)
     groupPriority?: number;
-    icon?: React.ReactNode;
+    icon?: React_2.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
     // (undocumented)
@@ -126,9 +129,9 @@ export interface BackstageItemProps extends CommonProps {
 
 // @internal
 export interface BackstageProps extends CommonProps {
-    children?: React.ReactNode;
-    footer?: React.ReactNode;
-    header?: React.ReactNode;
+    children?: React_2.ReactNode;
+    footer?: React_2.ReactNode;
+    header?: React_2.ReactNode;
     isOpen?: boolean;
     onClose?: () => void;
     safeAreaInsets?: SafeAreaInsets;
@@ -136,13 +139,13 @@ export interface BackstageProps extends CommonProps {
 }
 
 // @internal
-export class BackstageSeparator extends React.PureComponent<CommonProps> {
+export class BackstageSeparator extends React_2.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class BackTarget extends React.PureComponent<BackTargetProps> {
+export class BackTarget extends React_2.PureComponent<BackTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -190,20 +193,20 @@ export interface CellProps {
 }
 
 // @internal
-export const CenterContent: React.NamedExoticComponent<object>;
+export const CenterContent: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export const CenterContentNodeContext: React.Context<React.ReactNode>;
+export const CenterContentNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @internal
-export class Columns extends React.PureComponent<ColumnsProps> {
+export class Columns extends React_2.PureComponent<ColumnsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ColumnsProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @alpha @deprecated
@@ -216,7 +219,7 @@ export const containHorizontally: (componentBounds: RectangleProps, containerBou
 export const containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 
 // @internal (undocumented)
-export const ContentNodeContext: React.Context<React.ReactNode>;
+export const ContentNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @internal
 export type ContentZoneId = 5;
@@ -286,9 +289,9 @@ export class Css {
 // @internal
 export class CssProperties {
     // (undocumented)
-    static fromBounds(props: RectangleProps): React_2.CSSProperties;
+    static fromBounds(props: RectangleProps): React.CSSProperties;
     // (undocumented)
-    static fromPosition(props: PointProps): React_2.CSSProperties;
+    static fromPosition(props: PointProps): React.CSSProperties;
     // (undocumented)
     static transformFromPosition(props: PointProps): {
         transform: string;
@@ -299,18 +302,18 @@ export class CssProperties {
 export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing";
 
 // @internal (undocumented)
-export const CursorTypeContext: React.Context<CursorType | undefined>;
+export const CursorTypeContext: React_2.Context<CursorType | undefined>;
 
 // @beta
-export class Dialog extends React.PureComponent<DialogProps> {
+export class Dialog extends React_2.PureComponent<DialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
 export interface DialogProps extends CommonProps {
-    children?: React.ReactNode;
-    titleBar?: React.ReactNode;
+    children?: React_2.ReactNode;
+    titleBar?: React_2.ReactNode;
 }
 
 // @beta @deprecated
@@ -364,7 +367,7 @@ export class DisabledResizeHandlesHelpers {
 }
 
 // @internal (undocumented)
-export const Dock: React.NamedExoticComponent<object>;
+export const Dock: React_2.NamedExoticComponent<object>;
 
 // @internal
 export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
@@ -373,7 +376,7 @@ export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
 export function DockedToolSettings(props: DockedToolSettingsProps): JSX.Element;
 
 // @internal
-export const DockedToolSettingsHandle: React.NamedExoticComponent<DockedToolSettingsHandleProps>;
+export const DockedToolSettingsHandle: React_2.NamedExoticComponent<DockedToolSettingsHandleProps>;
 
 // @internal
 export interface DockedToolSettingsHandleProps extends CommonProps {
@@ -382,7 +385,7 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 }
 
 // @internal
-export const DockedToolSettingsOverflow: React.MemoExoticComponent<React.ForwardRefExoticComponent<DockedToolSettingsOverflowProps & React.RefAttributes<HTMLDivElement>>>;
+export const DockedToolSettingsOverflow: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<DockedToolSettingsOverflowProps & React_2.RefAttributes<HTMLDivElement>>>;
 
 // @internal
 export interface DockedToolSettingsOverflowProps extends CommonProps {
@@ -392,8 +395,8 @@ export interface DockedToolSettingsOverflowProps extends CommonProps {
 
 // @internal
 export interface DockedToolSettingsProps extends CommonProps {
-    children?: React.ReactNode;
-    panelContainer?: React.ComponentType;
+    children?: React_2.ReactNode;
+    panelContainer?: React_2.ComponentType;
 }
 
 // @internal
@@ -406,13 +409,13 @@ export interface DockedToolSettingsState {
 export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState | undefined;
 
 // @internal (undocumented)
-export const DraggedPanelSideContext: React.Context<PanelSide | undefined>;
+export const DraggedPanelSideContext: React_2.Context<PanelSide | undefined>;
 
 // @internal (undocumented)
-export const DraggedResizeHandleContext: React.Context<FloatingWidgetResizeHandle | undefined>;
+export const DraggedResizeHandleContext: React_2.Context<FloatingWidgetResizeHandle | undefined>;
 
 // @internal (undocumented)
-export const DraggedTabContext: React.Context<boolean>;
+export const DraggedTabContext: React_2.Context<boolean>;
 
 // @internal
 export interface DraggedTabState {
@@ -425,10 +428,10 @@ export interface DraggedTabState {
 }
 
 // @internal (undocumented)
-export const DraggedTabStateContext: React.Context<DraggedTabState | undefined>;
+export const DraggedTabStateContext: React_2.Context<DraggedTabState | undefined>;
 
 // @internal (undocumented)
-export const DraggedWidgetIdContext: React.Context<string | undefined>;
+export const DraggedWidgetIdContext: React_2.Context<string | undefined>;
 
 // @internal
 export class DraggedWidgetManager {
@@ -449,7 +452,7 @@ export interface DraggedWidgetManagerProps {
 }
 
 // @internal
-export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleState> {
+export class DragHandle extends React_2.PureComponent<DragHandleProps, DragHandleState> {
     // (undocumented)
     render(): JSX.Element;
     // (undocumented)
@@ -488,23 +491,23 @@ export class DragManager {
     // (undocumented)
     isDraggedType(type: DragItem["type"]): boolean;
     // (undocumented)
-    get onDrag(): Event<DragEventHandler>;
+    get onDrag(): Event_2<DragEventHandler>;
     // (undocumented)
-    get onDragEnd(): Event<DragEventHandler>;
+    get onDragEnd(): Event_2<DragEventHandler>;
     // (undocumented)
-    get onDragStart(): Event<DragEventHandler>;
-    }
+    get onDragStart(): Event_2<DragEventHandler>;
+}
 
 // @internal (undocumented)
-export const DragManagerContext: React.Context<DragManager>;
+export const DragManagerContext: React_2.Context<DragManager>;
 
 // @internal (undocumented)
-export const DragProvider: React.NamedExoticComponent<DragProviderProps>;
+export const DragProvider: React_2.NamedExoticComponent<DragProviderProps>;
 
 // @internal (undocumented)
 export interface DragProviderProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
@@ -523,39 +526,40 @@ export function Ellipsis(props: CommonProps): JSX.Element;
 export function eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean;
 
 // @internal (undocumented)
-export interface Event<T extends EventHandler> {
+interface Event_2<T extends EventHandler> {
     // (undocumented)
     add(handler: T): void;
     // (undocumented)
     remove(handler: T): void;
 }
+export { Event_2 as Event }
 
 // @internal (undocumented)
-export class EventEmitter<T extends EventHandler> implements Event<T> {
+export class EventEmitter<T extends EventHandler> implements Event_2<T> {
     // (undocumented)
     add(handler: T): void;
     // (undocumented)
     emit(...args: Parameters<T>): void;
     // (undocumented)
     remove(handler: T): void;
-    }
+}
 
 // @internal
 export type EventHandler = (...args: any[]) => void;
 
 // @internal
-export class ExpandableButton extends React.PureComponent<ExpandableButtonProps> {
+export class ExpandableButton extends React_2.PureComponent<ExpandableButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ExpandableButtonProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @beta @deprecated
-export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
+export class ExpandableItem extends React_2.PureComponent<ExpandableItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -565,7 +569,7 @@ export interface ExpandableItemProps extends CommonProps {
     hideIndicator?: boolean;
     isActive?: boolean;
     isDisabled?: boolean;
-    panel?: React.ReactNode;
+    panel?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
@@ -578,7 +582,7 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
 export function FloatingTab(): JSX.Element;
 
 // @internal (undocumented)
-export const FloatingWidget: React.NamedExoticComponent<FloatingWidgetProps>;
+export const FloatingWidget: React_2.NamedExoticComponent<FloatingWidgetProps>;
 
 // @internal (undocumented)
 export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]): void;
@@ -603,7 +607,7 @@ export interface FloatingWidgetClearUserSizedAction {
 export function floatingWidgetClearUserSizedFlag(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]): void;
 
 // @internal (undocumented)
-export const FloatingWidgetContext: React.Context<FloatingWidgetState | undefined>;
+export const FloatingWidgetContext: React_2.Context<FloatingWidgetState | undefined>;
 
 // @internal
 export interface FloatingWidgetHomeState {
@@ -616,7 +620,7 @@ export interface FloatingWidgetHomeState {
 }
 
 // @internal (undocumented)
-export const FloatingWidgetIdContext: React.Context<string | undefined>;
+export const FloatingWidgetIdContext: React_2.Context<string | undefined>;
 
 // @internal (undocumented)
 export interface FloatingWidgetProps {
@@ -640,7 +644,7 @@ export interface FloatingWidgetResizeAction {
 export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 // @internal
-export const FloatingWidgets: React.NamedExoticComponent<object>;
+export const FloatingWidgets: React_2.NamedExoticComponent<object>;
 
 // @internal
 export interface FloatingWidgetSendBackAction {
@@ -671,12 +675,14 @@ export interface FloatingWidgetsState {
 }
 
 // @internal (undocumented)
-export const FloatingWidgetsStateContext: React.Context<FloatingWidgetsState>;
+export const FloatingWidgetsStateContext: React_2.Context<FloatingWidgetsState>;
 
 // @internal
 export interface FloatingWidgetState {
     // (undocumented)
     readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly hidden?: boolean;
     // (undocumented)
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
@@ -689,7 +695,7 @@ export interface FloatingWidgetState {
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined;
 
 // @internal @deprecated
-export class Footer extends React.PureComponent<FooterProps> {
+export class Footer extends React_2.PureComponent<FooterProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -699,14 +705,14 @@ export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
 
 // @beta
 export interface FooterIndicatorProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     isInFooterMode?: boolean;
-    onClick?: (event: React.MouseEvent) => void;
+    onClick?: (event: React_2.MouseEvent) => void;
     title?: string;
 }
 
 // @beta
-export class FooterPopup extends React.PureComponent<FooterPopupProps> {
+export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
     // (undocumented)
@@ -729,16 +735,16 @@ export interface FooterPopupProps extends Partial<PopupProps> {
 
 // @internal @deprecated
 export interface FooterProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     isInFooterMode?: boolean;
-    messages?: React.ReactNode;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    messages?: React_2.ReactNode;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     safeAreaInsets?: SafeAreaInsets;
 }
 
 // @public
-export class FooterSeparator extends React.PureComponent<FooterSeparatorProps> {
+export class FooterSeparator extends React_2.PureComponent<FooterSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -748,7 +754,7 @@ export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
 // @internal
-export function getChildKey(child: React.ReactNode, index: number): string;
+export function getChildKey(child: React_2.ReactNode, index: number): string;
 
 // @internal (undocumented)
 export const getClosedWidgetTabIndex: (tabIndex: number) => number;
@@ -832,49 +838,49 @@ export const getZoneCell: (id: ZoneId) => Cell;
 export const getZoneIdFromCell: (cell: CellProps) => WidgetZoneId;
 
 // @alpha @deprecated
-export class Group extends React.PureComponent<GroupProps> {
+export class Group extends React_2.PureComponent<GroupProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @alpha @deprecated
-export class GroupColumn extends React.PureComponent<GroupColumnProps> {
+export class GroupColumn extends React_2.PureComponent<GroupColumnProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @alpha @deprecated
 export interface GroupColumnProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @alpha @deprecated
 export interface GroupProps extends CommonProps, NoChildrenProps {
-    columns?: React.ReactNode;
+    columns?: React_2.ReactNode;
     title?: string;
 }
 
 // @internal
-export class GroupTool extends React.PureComponent<GroupToolProps> {
+export class GroupTool extends React_2.PureComponent<GroupToolProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class GroupToolExpander extends React.PureComponent<GroupToolExpanderProps> {
+export class GroupToolExpander extends React_2.PureComponent<GroupToolExpanderProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" | "children">, NoChildrenProps {
+export interface GroupToolExpanderProps extends Omit_2<GroupToolProps, "isActive" | "children">, NoChildrenProps {
 }
 
 // @internal
 export interface GroupToolProps extends CommonProps {
-    badge?: React.ReactNode;
-    children?: React.ReactNode;
-    icon?: React.ReactNode;
+    badge?: React_2.ReactNode;
+    children?: React_2.ReactNode;
+    icon?: React_2.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
     isFocused?: boolean;
@@ -1016,7 +1022,7 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
-export const IconOnlyOnWidgetTabContext: React.Context<boolean>;
+export const IconOnlyOnWidgetTabContext: React_2.Context<boolean>;
 
 // @internal (undocumented)
 export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps): void;
@@ -1052,32 +1058,32 @@ export function isTabTarget(target: DragTarget): target is TabTarget;
 export function isWidgetTarget(target: DragTarget): target is WidgetTarget_2;
 
 // @beta @deprecated
-export class Item extends React.PureComponent<ItemProps> {
+export class Item extends React_2.PureComponent<ItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta @deprecated
 export interface ItemProps extends CommonProps {
-    badge?: React.ReactNode;
-    icon?: React.ReactNode;
+    badge?: React_2.ReactNode;
+    icon?: React_2.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
     onClick?: () => void;
-    onKeyDown?: (e: React.KeyboardEvent) => void;
+    onKeyDown?: (e: React_2.KeyboardEvent) => void;
     onSizeKnown?: (size: SizeProps) => void;
     title?: string;
 }
 
 // @internal
-export class Items extends React.PureComponent<ItemsProps> {
+export class Items extends React_2.PureComponent<ItemsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ItemsProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     direction: OrthogonalDirection;
 }
 
@@ -1085,10 +1091,10 @@ export interface ItemsProps extends CommonProps {
 export type LeftPanelSide = "left";
 
 // @internal (undocumented)
-export const MeasureContext: React.Context<() => Rectangle>;
+export const MeasureContext: React_2.Context<() => Rectangle>;
 
 // @internal
-export class MergeTarget extends React.PureComponent<MergeTargetProps> {
+export class MergeTarget extends React_2.PureComponent<MergeTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1099,81 +1105,81 @@ export interface MergeTargetProps extends CommonProps {
 }
 
 // @internal @deprecated
-export class Message extends React.PureComponent<StatusMessageProps> {
+export class Message extends React_2.PureComponent<StatusMessageProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class MessageButton extends React.PureComponent<MessageButtonProps> {
+export class MessageButton extends React_2.PureComponent<MessageButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface MessageButtonProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     onClick?: () => void;
 }
 
 // @internal
-export class MessageCenter extends React.PureComponent<MessageCenterProps> {
+export class MessageCenter extends React_2.PureComponent<MessageCenterProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class MessageCenterDialog extends React.PureComponent<MessageCenterDialogProps> {
+export class MessageCenterDialog extends React_2.PureComponent<MessageCenterDialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface MessageCenterDialogProps extends CommonProps {
-    buttons?: React.ReactNode;
-    children?: React.ReactNode;
+    buttons?: React_2.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     prompt?: string;
-    tabs?: React.ReactNode;
+    tabs?: React_2.ReactNode;
     title?: string;
 }
 
 // @internal
-export class MessageCenterMessage extends React.PureComponent<MessageCenterMessageProps> {
+export class MessageCenterMessage extends React_2.PureComponent<MessageCenterMessageProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface MessageCenterMessageProps extends CommonProps {
-    children?: React.ReactNode;
-    icon?: React.ReactNode;
+    children?: React_2.ReactNode;
+    icon?: React_2.ReactNode;
 }
 
 // @internal
 export interface MessageCenterProps extends FooterIndicatorProps {
     children?: string;
-    indicatorRef?: React.Ref<HTMLDivElement>;
+    indicatorRef?: React_2.Ref<HTMLDivElement>;
     label?: string;
     onClick?: () => void;
-    targetRef?: React.Ref<HTMLDivElement>;
+    targetRef?: React_2.Ref<HTMLDivElement>;
 }
 
 // @internal
-export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps> {
+export class MessageCenterTab extends React_2.PureComponent<MessageCenterTabProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface MessageCenterTabProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     isActive?: boolean;
     onClick?: () => void;
 }
 
 // @internal
-export class MessageHyperlink extends React.PureComponent<MessageHyperlinkProps> {
+export class MessageHyperlink extends React_2.PureComponent<MessageHyperlinkProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1185,38 +1191,38 @@ export interface MessageHyperlinkProps extends CommonProps {
 }
 
 // @internal
-export class MessageLayout extends React.PureComponent<MessageLayoutProps> {
+export class MessageLayout extends React_2.PureComponent<MessageLayoutProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface MessageLayoutProps extends CommonProps {
-    buttons?: React.ReactNode;
-    children?: React.ReactNode;
-    progress?: React.ReactNode;
+    buttons?: React_2.ReactNode;
+    children?: React_2.ReactNode;
+    progress?: React_2.ReactNode;
 }
 
 // @internal
-export class MessageProgress extends React.PureComponent<ProgressProps> {
+export class MessageProgress extends React_2.PureComponent<ProgressProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export const NavigationArea: React.NamedExoticComponent<NavigationAreaProps>;
+export const NavigationArea: React_2.NamedExoticComponent<NavigationAreaProps>;
 
 // @internal
 export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
-    horizontalToolbar?: React.ReactNode;
-    navigationAid?: React.ReactNode;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    verticalToolbar?: React.ReactNode;
+    horizontalToolbar?: React_2.ReactNode;
+    navigationAid?: React_2.ReactNode;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    verticalToolbar?: React_2.ReactNode;
 }
 
 // @internal @deprecated
-export class NestedGroup extends React.PureComponent<NestedGroupProps> {
+export class NestedGroup extends React_2.PureComponent<NestedGroupProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1265,13 +1271,13 @@ export function NineZone(props: NineZoneProps): JSX.Element;
 export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
-export const NineZoneContext: React.Context<NineZoneState>;
+export const NineZoneContext: React_2.Context<NineZoneState>;
 
 // @internal
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 
 // @internal (undocumented)
-export const NineZoneDispatchContext: React.Context<NineZoneDispatch>;
+export const NineZoneDispatchContext: React_2.Context<NineZoneDispatch>;
 
 // @internal (undocumented)
 export interface NineZoneLabels {
@@ -1296,7 +1302,7 @@ export interface NineZoneLabels {
 }
 
 // @internal (undocumented)
-export const NineZoneLabelsContext: React.Context<NineZoneLabels | undefined>;
+export const NineZoneLabelsContext: React_2.Context<NineZoneLabels | undefined>;
 
 // @internal
 export class NineZoneManager {
@@ -1330,7 +1336,7 @@ export class NineZoneManager {
     setZones<TProps extends NineZoneManagerProps>(zones: TProps["zones"], props: TProps): TProps;
     // (undocumented)
     showWidget<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps;
-    }
+}
 
 // @internal (undocumented)
 export interface NineZoneManagerHiddenWidget {
@@ -1392,7 +1398,7 @@ export interface NineZoneProps {
     // (undocumented)
     autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     dispatch: NineZoneDispatch;
     // (undocumented)
@@ -1402,13 +1408,13 @@ export interface NineZoneProps {
     // (undocumented)
     state: NineZoneState;
     // (undocumented)
-    tab?: React.ReactNode;
+    tab?: React_2.ReactNode;
     // (undocumented)
-    toolSettingsContent?: React.ReactNode;
+    toolSettingsContent?: React_2.ReactNode;
     // (undocumented)
     uiIsVisible?: boolean;
     // (undocumented)
-    widgetContent?: React.ReactNode;
+    widgetContent?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
@@ -1535,7 +1541,7 @@ export class OrthogonalDirectionHelpers {
 }
 
 // @internal
-export class Outline extends React.PureComponent<OutlineProps> {
+export class Outline extends React_2.PureComponent<OutlineProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1546,7 +1552,7 @@ export interface OutlineProps extends CommonProps {
 }
 
 // @internal
-export class Overflow extends React.PureComponent<OverflowProps> {
+export class Overflow extends React_2.PureComponent<OverflowProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1557,7 +1563,7 @@ export interface OverflowProps extends ExpandableItemProps {
 }
 
 // @alpha @deprecated
-export class Panel extends React.PureComponent<PanelProps> {
+export class Panel extends React_2.PureComponent<PanelProps> {
     // @deprecated
     static get isPanelOpen(): boolean;
     // (undocumented)
@@ -1576,7 +1582,7 @@ export interface PanelInitializeAction {
 
 // @alpha @deprecated
 export interface PanelProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal
@@ -1613,25 +1619,25 @@ export interface PanelSetSplitterPercentAction {
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
 // @internal (undocumented)
-export const PanelSideContext: React.Context<PanelSide | undefined>;
+export const PanelSideContext: React_2.Context<PanelSide | undefined>;
 
 // @internal (undocumented)
 export const panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide];
 
 // @internal
-export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
+export class PanelsProvider extends React_2.PureComponent<PanelsProviderProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(): void;
     // (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @internal
 export interface PanelsProviderProps {
-    children?: (items: React.ReactNode) => React.ReactNode;
-    items?: React.ReactNode;
+    children?: (items: React_2.ReactNode) => React_2.ReactNode;
+    items?: React_2.ReactNode;
     panels: HTMLElement | null;
 }
 
@@ -1648,7 +1654,7 @@ export interface PanelsState {
 }
 
 // @internal (undocumented)
-export const PanelsStateContext: React.Context<PanelsState>;
+export const PanelsStateContext: React_2.Context<PanelsState>;
 
 // @internal
 export interface PanelState {
@@ -1677,10 +1683,10 @@ export interface PanelState {
 }
 
 // @internal (undocumented)
-export const PanelStateContext: React.Context<PanelState | undefined>;
+export const PanelStateContext: React_2.Context<PanelState | undefined>;
 
 // @internal (undocumented)
-export const PanelTarget: React.NamedExoticComponent<object>;
+export const PanelTarget: React_2.NamedExoticComponent<object>;
 
 // @internal
 export interface PanelToggleCollapsedAction {
@@ -1707,7 +1713,7 @@ export interface PanelToggleSpanAction {
 }
 
 // @internal (undocumented)
-export const PanelWidget: React.MemoExoticComponent<React.ForwardRefExoticComponent<PanelWidgetProps & React.RefAttributes<WidgetComponent>>>;
+export const PanelWidget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<PanelWidgetProps & React_2.RefAttributes<WidgetComponent>>>;
 
 // @internal
 export interface PanelWidgetDragStartAction {
@@ -1742,10 +1748,10 @@ export interface PanelWidgetProps {
 }
 
 // @internal (undocumented)
-export const PinToggle: React.NamedExoticComponent<object>;
+export const PinToggle: React_2.NamedExoticComponent<object>;
 
 // @internal
-export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
+export class PointerCaptor extends React_2.PureComponent<PointerCaptorProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1775,7 +1781,7 @@ export interface PointerCaptorProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const PopoutToggle: React.NamedExoticComponent<object>;
+export const PopoutToggle: React_2.NamedExoticComponent<object>;
 
 // @internal
 export interface PopoutWidgetSendBackAction {
@@ -1857,7 +1863,7 @@ export class ResizeDirectionHelpers {
 }
 
 // @internal
-export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
+export class ResizeGrip extends React_2.PureComponent<ResizeGripProps, ResizeGripState> {
     // (undocumented)
     render(): JSX.Element;
     // (undocumented)
@@ -1943,19 +1949,19 @@ export class SafeAreaInsetsHelpers {
 }
 
 // @internal
-export const ScrollableWidgetContent: React.NamedExoticComponent<ScrollableWidgetContentProps>;
+export const ScrollableWidgetContent: React_2.NamedExoticComponent<ScrollableWidgetContentProps>;
 
 // @internal
 export interface ScrollableWidgetContentProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     itemId?: string;
     // (undocumented)
     providerId?: string;
 }
 
 // @internal (undocumented)
-export const SendBack: React.NamedExoticComponent<object>;
+export const SendBack: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState;
@@ -1964,7 +1970,7 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
 export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps): void;
 
 // @internal (undocumented)
-export const ShowWidgetIconContext: React.Context<boolean>;
+export const ShowWidgetIconContext: React_2.Context<boolean>;
 
 // @internal (undocumented)
 export class ShrinkBottom extends ShrinkVerticalStrategy {
@@ -2044,19 +2050,19 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
         zones: {
-            1: import("./Zone").ZoneManagerProps;
-            2: import("./Zone").ZoneManagerProps;
-            3: import("./Zone").ZoneManagerProps;
-            4: import("./Zone").ZoneManagerProps;
-            6: import("./Zone").ZoneManagerProps;
-            7: import("./Zone").ZoneManagerProps;
-            8: import("./Zone").ZoneManagerProps;
-            9: import("./Zone").ZoneManagerProps;
+            1: ZoneManagerProps;
+            2: ZoneManagerProps;
+            3: ZoneManagerProps;
+            4: ZoneManagerProps;
+            7: ZoneManagerProps;
+            6: ZoneManagerProps;
+            8: ZoneManagerProps;
+            9: ZoneManagerProps;
         };
-        draggedWidget?: import("./Widget").DraggedWidgetManagerProps | undefined;
+        draggedWidget?: DraggedWidgetManagerProps | undefined;
         isInFooterMode: boolean;
-        target?: import("./Zones").ZonesManagerTargetProps | undefined;
-        widgets: import("./Zones").ZonesManagerWidgetsProps;
+        target?: ZonesManagerTargetProps | undefined;
+        widgets: ZonesManagerWidgetsProps;
         zonesBounds: RectangleProps;
         floatingZonesBounds?: RectangleProps | undefined;
     };
@@ -2092,47 +2098,47 @@ export interface SizeAndPositionProps extends SizeProps, PointProps {
 }
 
 // @internal
-export class Snap extends React.PureComponent<SnapProps> {
+export class Snap extends React_2.PureComponent<SnapProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal @deprecated
-export class SnapMode extends React.PureComponent<SnapModeProps> {
+export class SnapMode extends React_2.PureComponent<SnapModeProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class SnapModePanel extends React.PureComponent<SnapModePanelProps> {
+export class SnapModePanel extends React_2.PureComponent<SnapModePanelProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface SnapModePanelProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     title?: string;
 }
 
 // @internal
 export interface SnapModeProps extends FooterIndicatorProps {
     children?: string;
-    icon?: React.ReactNode;
-    indicatorRef?: React.Ref<HTMLDivElement>;
+    icon?: React_2.ReactNode;
+    indicatorRef?: React_2.Ref<HTMLDivElement>;
     onClick?: () => void;
 }
 
 // @internal
 export interface SnapProps extends CommonProps {
     children?: string;
-    icon?: React.ReactNode;
+    icon?: React_2.ReactNode;
     isActive?: boolean;
     onClick?: () => void;
 }
 
 // @internal
-export class Splitter extends React.PureComponent<SplitterProps, SplitterState> {
+export class Splitter extends React_2.PureComponent<SplitterProps, SplitterState> {
     constructor(props: SplitterProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2142,23 +2148,23 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal
-export class SplitterPaneTarget extends React.PureComponent<MergeTargetProps> {
+export class SplitterPaneTarget extends React_2.PureComponent<MergeTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface SplitterProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     isGripHidden?: boolean;
     isVertical?: boolean;
 }
 
 // @internal
-export class SplitterTarget extends React.PureComponent<SplitterTargetProps> {
+export class SplitterTarget extends React_2.PureComponent<SplitterTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2170,17 +2176,17 @@ export interface SplitterTargetProps extends MergeTargetProps {
 }
 
 // @internal
-export class Stacked extends React.PureComponent<StackedProps> {
+export class Stacked extends React_2.PureComponent<StackedProps> {
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal
 export interface StackedProps extends CommonProps, NoChildrenProps {
-    content?: React.ReactNode;
-    contentRef?: React.Ref<HTMLDivElement>;
+    content?: React_2.ReactNode;
+    contentRef?: React_2.Ref<HTMLDivElement>;
     disabledResizeHandles?: DisabledResizeHandles;
     fillZone?: boolean;
     horizontalAnchor: HorizontalAnchor;
@@ -2189,15 +2195,15 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
     isFloating?: boolean;
     isOpen?: boolean;
     isTabBarVisible?: boolean;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     onResize?: (resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void;
-    tabs?: React.ReactNode;
+    tabs?: React_2.ReactNode;
     verticalAnchor: VerticalAnchor;
 }
 
 // @internal
-export class StagePanel extends React.PureComponent<StagePanelProps> {
+export class StagePanel extends React_2.PureComponent<StagePanelProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2233,7 +2239,7 @@ export interface StagePanelManagerProps {
 
 // @internal
 export interface StagePanelProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     onResize?: (resizeBy: number) => void;
     onToggleCollapse?: () => void;
     safeAreaInsets?: SafeAreaInsets;
@@ -2242,7 +2248,7 @@ export interface StagePanelProps extends CommonProps {
 }
 
 // @internal
-export class StagePanels extends React.PureComponent<StagePanelsProps> {
+export class StagePanels extends React_2.PureComponent<StagePanelsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2279,15 +2285,15 @@ export interface StagePanelsManagerProps {
 
 // @internal
 export interface StagePanelsProps extends CommonProps {
-    bottomPanel?: React.ReactNode;
-    children?: React.ReactNode;
-    leftPanel?: React.ReactNode;
-    rightPanel?: React.ReactNode;
-    topPanel?: React.ReactNode;
+    bottomPanel?: React_2.ReactNode;
+    children?: React_2.ReactNode;
+    leftPanel?: React_2.ReactNode;
+    rightPanel?: React_2.ReactNode;
+    topPanel?: React_2.ReactNode;
 }
 
 // @internal
-export class StagePanelTarget extends React.PureComponent<StagePanelTargetProps> {
+export class StagePanelTarget extends React_2.PureComponent<StagePanelTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2335,39 +2341,41 @@ export class StatusHelpers {
     // (undocumented)
     static getCssClassName(status: Status): string;
     static readonly INFORMATION_CLASS_NAME = "nz-status-information";
+    // (undocumented)
+    static severityToStatus(severity: MessageSeverity): Status;
     static readonly SUCCESS_CLASS_NAME = "nz-status-success";
     static readonly WARNING_CLASS_NAME = "nz-status-warning";
 }
 
 // @internal
 export interface StatusMessageProps extends CommonProps {
-    children?: React.ReactNode;
-    icon?: React.ReactNode;
+    children?: React_2.ReactNode;
+    icon?: React_2.ReactNode;
     status: Status;
 }
 
 // @internal
-export class Tab extends React.PureComponent<TabProps> {
+export class Tab extends React_2.PureComponent<TabProps> {
     // (undocumented)
     static defaultProps: TabDefaultProps;
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal (undocumented)
-export const TabBarButtons: React.NamedExoticComponent<object>;
+export const TabBarButtons: React_2.NamedExoticComponent<object>;
 
 // @internal
-export class TabGroup extends React.PureComponent<TabGroupProps> {
+export class TabGroup extends React_2.PureComponent<TabGroupProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface TabGroupProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     handle: HandleMode;
     horizontalAnchor: HorizontalAnchor;
     isCollapsed?: boolean;
@@ -2375,7 +2383,7 @@ export interface TabGroupProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const TabIdContext: React.Context<string>;
+export const TabIdContext: React_2.Context<string>;
 
 // @internal
 export enum TabMode {
@@ -2397,10 +2405,10 @@ export class TabModeHelpers {
 }
 
 // @internal (undocumented)
-export const TabNodeContext: React.Context<React.ReactNode>;
+export const TabNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @internal (undocumented)
-export const TabPositionContext: React.Context<TabPositionContextArgs>;
+export const TabPositionContext: React_2.Context<TabPositionContextArgs>;
 
 // @internal (undocumented)
 export interface TabPositionContextArgs {
@@ -2414,8 +2422,8 @@ export interface TabPositionContextArgs {
 
 // @internal
 export interface TabProps extends CommonProps {
-    badge?: React.ReactNode;
-    children?: React.ReactNode;
+    badge?: React_2.ReactNode;
+    children?: React_2.ReactNode;
     horizontalAnchor: HorizontalAnchor;
     isCollapsed?: boolean;
     isProtruding: boolean;
@@ -2430,7 +2438,7 @@ export interface TabProps extends CommonProps {
 }
 
 // @internal
-export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
+export class TabSeparator extends React_2.PureComponent<TabSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2448,7 +2456,7 @@ export interface TabsState {
 }
 
 // @internal (undocumented)
-export const TabsStateContext: React.Context<TabsState>;
+export const TabsStateContext: React_2.Context<TabsState>;
 
 // @internal
 export interface TabState {
@@ -2456,6 +2464,8 @@ export interface TabState {
     readonly allowedPanelTargets?: PanelSide[];
     // (undocumented)
     readonly canPopout?: boolean;
+    // (undocumented)
+    readonly hideWithUiWhenFloating?: boolean;
     // (undocumented)
     readonly iconSpec?: IconSpec;
     // (undocumented)
@@ -2475,7 +2485,7 @@ export interface TabState {
 }
 
 // @internal (undocumented)
-export const TabStateContext: React.Context<TabState>;
+export const TabStateContext: React_2.Context<TabState>;
 
 // @internal
 export interface TabTargetFloatingWidgetState {
@@ -2523,43 +2533,43 @@ export interface TabTargetWidgetState {
 }
 
 // @internal
-export class Title extends React.PureComponent<TitleProps> {
+export class Title extends React_2.PureComponent<TitleProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export class TitleBar extends React.PureComponent<TitleBarProps> {
+export class TitleBar extends React_2.PureComponent<TitleBarProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class TitleBarButton extends React.PureComponent<TitleBarButtonProps> {
+export class TitleBarButton extends React_2.PureComponent<TitleBarButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface TitleBarButtonProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     onClick?: () => void;
     title?: string;
 }
 
 // @beta
 export interface TitleBarProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     title?: string;
 }
 
 // @internal
 export interface TitleProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal @deprecated
-export class Toast extends React.PureComponent<ToastProps, ToastState> {
+export class Toast extends React_2.PureComponent<ToastProps, ToastState> {
     constructor(props: ToastProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2569,7 +2579,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
     static readonly defaultProps: ToastDefaultProps;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal
 export type ToastDefaultProps = Pick<ToastProps, "timeout">;
@@ -2577,67 +2587,67 @@ export type ToastDefaultProps = Pick<ToastProps, "timeout">;
 // @internal
 export interface ToastProps extends CommonProps, NoChildrenProps {
     animateOutTo?: HTMLElement | null;
-    content?: React.ReactNode;
+    content?: React_2.ReactNode;
     onAnimatedOut?: () => void;
     timeout: number;
 }
 
 // @internal
-export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
+export type ToastStyle = Pick<React_2.CSSProperties, "width" | "height">;
 
 // @internal
-export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
+export class ToolAssistance extends React_2.PureComponent<ToolAssistanceProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDialogProps> {
+export class ToolAssistanceDialog extends React_2.PureComponent<ToolAssistanceDialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolAssistanceDialogProps extends CommonProps {
-    buttons?: React.ReactNode;
-    children?: React.ReactNode;
+    buttons?: React_2.ReactNode;
+    children?: React_2.ReactNode;
     title?: string;
 }
 
 // @internal
-export class ToolAssistanceInstruction extends React.PureComponent<ToolAssistanceInstructionProps> {
+export class ToolAssistanceInstruction extends React_2.PureComponent<ToolAssistanceInstructionProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolAssistanceInstructionProps extends CommonProps {
-    image: React.ReactNode;
+    image: React_2.ReactNode;
     isNew?: boolean;
     text: string;
 }
 
 // @internal
-export class ToolAssistanceItem extends React.PureComponent<ToolAssistanceItemProps> {
+export class ToolAssistanceItem extends React_2.PureComponent<ToolAssistanceItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolAssistanceItemProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal
 export interface ToolAssistanceProps extends FooterIndicatorProps {
     children?: string;
-    icons?: React.ReactNode;
-    indicatorRef?: React.Ref<HTMLDivElement>;
+    icons?: React_2.ReactNode;
+    indicatorRef?: React_2.Ref<HTMLDivElement>;
     onClick?: () => void;
 }
 
 // @internal
-export class ToolAssistanceSeparator extends React.PureComponent<ToolAssistanceSeparatorProps> {
+export class ToolAssistanceSeparator extends React_2.PureComponent<ToolAssistanceSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2648,7 +2658,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
 }
 
 // @beta @deprecated
-export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
+export class Toolbar extends React_2.PureComponent<ToolbarProps, ToolbarState> {
     // (undocumented)
     static readonly defaultProps: {
         expandsTo: Direction;
@@ -2663,14 +2673,14 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
 }
 
 // @internal
-export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
+export class ToolbarButton extends React_2.PureComponent<ToolbarButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolbarButtonProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     mouseProximity?: number;
     onClick?: () => void;
     small?: boolean;
@@ -2678,17 +2688,17 @@ export interface ToolbarButtonProps extends CommonProps {
 }
 
 // @internal
-export const ToolbarDirectionContext: React.Context<Direction>;
+export const ToolbarDirectionContext: React_2.Context<Direction>;
 
 // @internal
-export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
+export class ToolbarIcon extends React_2.PureComponent<ToolbarIconProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolbarIconProps extends ToolbarButtonProps {
-    icon?: React.ReactNode;
+    icon?: React_2.ReactNode;
     mouseProximity?: number;
     small?: boolean;
 }
@@ -2702,7 +2712,7 @@ export interface ToolbarItem {
 // @internal
 export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
     // (undocumented)
-    readonly toolbarItemRef?: React.Ref<TItem>;
+    readonly toolbarItemRef?: React_2.Ref<TItem>;
 }
 
 // @beta @deprecated
@@ -2724,43 +2734,43 @@ export class ToolbarPanelAlignmentHelpers {
 // @beta @deprecated
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
-    items?: React.ReactNode;
+    items?: React_2.ReactNode;
     panelAlignment?: ToolbarPanelAlignment;
 }
 
 // @internal
-export class Tools extends React.PureComponent<ToolsProps> {
+export class Tools extends React_2.PureComponent<ToolsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export class ToolsArea extends React.PureComponent<ToolsAreaProps> {
+export class ToolsArea extends React_2.PureComponent<ToolsAreaProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
 export interface ToolsAreaProps extends CommonProps, NoChildrenProps {
-    button?: React.ReactNode;
-    horizontalToolbar?: React.ReactNode;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    verticalToolbar?: React.ReactNode;
+    button?: React_2.ReactNode;
+    horizontalToolbar?: React_2.ReactNode;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    verticalToolbar?: React_2.ReactNode;
 }
 
 // @internal
 export interface ToolSettingProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal
-export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
+export class ToolSettings extends React_2.PureComponent<ToolSettingsProps> {
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal
 export interface ToolSettingsDockAction {
@@ -2777,14 +2787,14 @@ export interface ToolSettingsDragStartAction {
 }
 
 // @internal (undocumented)
-export const ToolSettingsNodeContext: React.Context<React.ReactNode>;
+export const ToolSettingsNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @internal
 export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element;
 
 // @internal
 export interface ToolSettingsOverflowPanelProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     onClose: () => void;
     // (undocumented)
@@ -2795,16 +2805,16 @@ export interface ToolSettingsOverflowPanelProps extends CommonProps {
 
 // @internal
 export interface ToolSettingsProps extends CommonProps {
-    buttons?: React.ReactNode;
-    children?: React.ReactNode;
-    contentRef?: React.Ref<HTMLDivElement>;
+    buttons?: React_2.ReactNode;
+    children?: React_2.ReactNode;
+    contentRef?: React_2.Ref<HTMLDivElement>;
     fillZone?: boolean;
     lastPosition?: PointProps;
     onDrag?: (dragged: PointProps) => void;
     onDragEnd?: () => void;
     onDragStart?: (initialPosition: PointProps) => void;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     onResize?: (resizeBy: number, handle: ResizeHandle) => void;
     title?: string;
 }
@@ -2813,10 +2823,10 @@ export interface ToolSettingsProps extends CommonProps {
 export type ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState;
 
 // @internal (undocumented)
-export const ToolSettingsStateContext: React.Context<ToolSettingsState>;
+export const ToolSettingsStateContext: React_2.Context<ToolSettingsState>;
 
 // @internal
-export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
+export class ToolSettingsTab extends React_2.PureComponent<ToolSettingsTabProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2826,11 +2836,11 @@ export const toolSettingsTabId = "nz-tool-settings-tab";
 
 // @internal
 export interface ToolSettingsTabProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     onClick?: () => void;
-    onKeyDown?: (e: React.KeyboardEvent) => void;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onKeyDown?: (e: React_2.KeyboardEvent) => void;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     title?: string;
 }
 
@@ -2850,17 +2860,17 @@ export enum ToolSettingsWidgetMode {
 
 // @internal
 export interface ToolsProps extends CommonProps, NoChildrenProps {
-    button?: React.ReactNode;
-    horizontalToolbar?: React.ReactNode;
+    button?: React_2.ReactNode;
+    horizontalToolbar?: React_2.ReactNode;
     isNavigation?: boolean;
-    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     preserveSpace?: boolean;
-    verticalToolbar?: React.ReactNode;
+    verticalToolbar?: React_2.ReactNode;
 }
 
 // @beta @deprecated
-export class Tooltip extends React.PureComponent<TooltipProps> {
+export class Tooltip extends React_2.PureComponent<TooltipProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2869,15 +2879,15 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
     static readonly defaultProps: TooltipDefaultProps;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @beta @deprecated
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
 // @beta @deprecated
 export interface TooltipProps extends CommonProps {
-    children?: React.ReactNode;
-    icon?: React.ReactNode;
+    children?: React_2.ReactNode;
+    icon?: React_2.ReactNode;
     onSizeChanged?: (size: SizeProps) => void;
     position: PointProps;
 }
@@ -2886,7 +2896,7 @@ export interface TooltipProps extends CommonProps {
 export type TopPanelSide = "top";
 
 // @internal (undocumented)
-export const UiIsVisibleContext: React.Context<boolean>;
+export const UiIsVisibleContext: React_2.Context<boolean>;
 
 // @internal (undocumented)
 export class UpdateWindowResizeSettings implements ResizeStrategy {
@@ -2914,7 +2924,7 @@ export function useAnimatePanelWidgets(): {
     handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
     handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
     handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
-    getRef(widgetId: WidgetState["id"]): React.Ref<WidgetComponent>;
+    getRef(widgetId: WidgetState["id"]): React_2.Ref<WidgetComponent>;
     transition: PanelWidgetProps["transition"];
     sizes: {
         [id: string]: PanelWidgetProps["size"];
@@ -3040,20 +3050,20 @@ export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 export function useMode(widgetId: string): "fit" | "fill" | "minimized";
 
 // @internal
-export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [
-    ReadonlyArray<string> | undefined,
-    (size: number) => void,
-    (size: number) => void,
-    (key: string) => (size: number) => void
+export function useOverflow(children: React_2.ReactNode, activeChildIndex?: number): [
+ReadonlyArray<string> | undefined,
+(size: number) => void,
+(size: number) => void,
+(key: string) => (size: number) => void
 ];
 
 // @internal (undocumented)
-export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T>;
+export function usePanelsAutoCollapse<T extends Element>(): React_2.Ref<T>;
 
 // @internal (undocumented)
 export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
-    React.Ref<T>,
-    boolean
+React_2.Ref<T>,
+boolean
 ];
 
 // @internal (undocumented)
@@ -3069,7 +3079,7 @@ export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: P
 export const useResizeGrip: <T extends HTMLElement>() => [(instance: T | null) => void, boolean, boolean];
 
 // @beta @deprecated
-export class UserProfile extends React.PureComponent<UserProfileProps> {
+export class UserProfile extends React_2.PureComponent<UserProfileProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3084,9 +3094,22 @@ export interface UserProfileProps extends CommonProps {
 }
 
 // @internal (undocumented)
+export function useTabInteractions<T extends HTMLElement>({ onClick, onDoubleClick, onDragStart, }: UseTabInteractionsArgs): (instance: T | null | undefined) => void;
+
+// @internal (undocumented)
+export interface UseTabInteractionsArgs {
+    // (undocumented)
+    onClick?: () => void;
+    // (undocumented)
+    onDoubleClick?: () => void;
+    // (undocumented)
+    onDragStart?: () => void;
+}
+
+// @internal (undocumented)
 export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
-    React.Ref<T>,
-    boolean
+React_2.Ref<T>,
+boolean
 ];
 
 // @internal (undocumented)
@@ -3108,8 +3131,8 @@ export function useTransientState(onSave?: () => void, onRestore?: () => void): 
 
 // @internal (undocumented)
 export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [
-    React.Ref<T>,
-    boolean
+React_2.Ref<T>,
+boolean
 ];
 
 // @internal (undocumented)
@@ -3154,7 +3177,7 @@ export interface VerticalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
-export const Widget: React.MemoExoticComponent<React.ForwardRefExoticComponent<WidgetProps & React.RefAttributes<WidgetComponent>>>;
+export const Widget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<WidgetProps & React_2.RefAttributes<WidgetComponent>>>;
 
 // @internal (undocumented)
 export interface WidgetComponent {
@@ -3163,24 +3186,24 @@ export interface WidgetComponent {
 }
 
 // @alpha @deprecated
-export class WidgetContent extends React.PureComponent<WidgetContentProps> {
+export class WidgetContent extends React_2.PureComponent<WidgetContentProps> {
     // (undocumented)
     componentDidUpdate(): void;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @internal (undocumented)
-export const WidgetContentContainer: React.NamedExoticComponent<object>;
+export const WidgetContentContainer: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export const WidgetContentContainersContext: React.Context<WidgetContentContainers>;
+export const WidgetContentContainersContext: React_2.Context<WidgetContentContainers>;
 
 // @internal (undocumented)
-export const WidgetContentManager: React.NamedExoticComponent<WidgetContentManagerProps>;
+export const WidgetContentManager: React_2.NamedExoticComponent<WidgetContentManagerProps>;
 
 // @internal (undocumented)
-export const WidgetContentManagerContext: React.Context<WidgetContentManagerContextArgs>;
+export const WidgetContentManagerContext: React_2.Context<WidgetContentManagerContextArgs>;
 
 // @internal (undocumented)
 export interface WidgetContentManagerContextArgs {
@@ -3195,27 +3218,27 @@ export interface WidgetContentManagerContextArgs {
 // @internal (undocumented)
 export interface WidgetContentManagerProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
-export const WidgetContentNodeContext: React.Context<React.ReactNode>;
+export const WidgetContentNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @alpha @deprecated
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
     anchor: HorizontalAnchor;
-    containerRef?: React.Ref<HTMLDivElement>;
-    content?: React.ReactNode;
+    containerRef?: React_2.Ref<HTMLDivElement>;
+    content?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
-export const WidgetContentRenderer: React.NamedExoticComponent<WidgetContentRendererProps>;
+export const WidgetContentRenderer: React_2.NamedExoticComponent<WidgetContentRendererProps>;
 
 // @internal (undocumented)
-export const WidgetContentRenderers: React.NamedExoticComponent<object>;
+export const WidgetContentRenderers: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export const WidgetContext: React.Context<WidgetContextArgs>;
+export const WidgetContext: React_2.Context<WidgetContextArgs>;
 
 // @internal (undocumented)
 export interface WidgetContextArgs {
@@ -3244,7 +3267,7 @@ export interface WidgetDragEndAction {
 }
 
 // @internal (undocumented)
-export const WidgetIdContext: React.Context<string>;
+export const WidgetIdContext: React_2.Context<string>;
 
 // @internal
 export interface WidgetManagerProps {
@@ -3264,7 +3287,7 @@ export function WidgetMenu(props: WidgetMenuProps): JSX.Element;
 // @internal (undocumented)
 export interface WidgetMenuProps extends CommonProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     onClose?: () => void;
     // (undocumented)
@@ -3274,15 +3297,15 @@ export interface WidgetMenuProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const WidgetOverflow: React.NamedExoticComponent<WidgetOverflowProps>;
+export const WidgetOverflow: React_2.NamedExoticComponent<WidgetOverflowProps>;
 
 // @internal (undocumented)
-export const WidgetOverflowContext: React.Context<WidgetOverflowContextArgs | undefined>;
+export const WidgetOverflowContext: React_2.Context<WidgetOverflowContextArgs | undefined>;
 
 // @internal (undocumented)
 export interface WidgetOverflowProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     hidden?: boolean;
     // (undocumented)
@@ -3290,10 +3313,10 @@ export interface WidgetOverflowProps {
 }
 
 // @internal (undocumented)
-export const WidgetPanel: React.NamedExoticComponent<WidgetPanelProps>;
+export const WidgetPanel: React_2.NamedExoticComponent<WidgetPanelProps>;
 
 // @internal (undocumented)
-export const WidgetPanelContext: React.Context<WidgetPanelContextArgs | undefined>;
+export const WidgetPanelContext: React_2.Context<WidgetPanelContextArgs | undefined>;
 
 // @internal (undocumented)
 export interface WidgetPanelContextArgs {
@@ -3314,7 +3337,7 @@ export interface WidgetPanelExpanderProps {
 export function WidgetPanelExpanders(): JSX.Element;
 
 // @internal
-export const WidgetPanelGrip: React.NamedExoticComponent<CommonProps>;
+export const WidgetPanelGrip: React_2.NamedExoticComponent<CommonProps>;
 
 // @internal (undocumented)
 export interface WidgetPanelProps {
@@ -3325,7 +3348,7 @@ export interface WidgetPanelProps {
 }
 
 // @internal
-export const WidgetPanelProvider: React.NamedExoticComponent<WidgetPanelProviderProps>;
+export const WidgetPanelProvider: React_2.NamedExoticComponent<WidgetPanelProviderProps>;
 
 // @internal
 export interface WidgetPanelProviderProps {
@@ -3334,15 +3357,15 @@ export interface WidgetPanelProviderProps {
 }
 
 // @internal
-export const WidgetPanels: React.NamedExoticComponent<WidgetPanelsProps>;
+export const WidgetPanels: React_2.NamedExoticComponent<WidgetPanelsProps>;
 
 // @internal
-export const WidgetPanelsContent: React.MemoExoticComponent<React.ForwardRefExoticComponent<WidgetPanelsContentProps & React.RefAttributes<HTMLDivElement>>>;
+export const WidgetPanelsContent: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<WidgetPanelsContentProps & React_2.RefAttributes<HTMLDivElement>>>;
 
 // @internal
 export interface WidgetPanelsContentProps extends CommonProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     pinnedBottom?: boolean;
     // (undocumented)
@@ -3355,14 +3378,14 @@ export interface WidgetPanelsContentProps extends CommonProps {
 
 // @internal
 export interface WidgetPanelsProps extends CommonProps {
-    centerContent?: React.ReactNode;
-    children?: React.ReactNode;
+    centerContent?: React_2.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
 export interface WidgetProps extends CommonProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     onTransitionEnd?(): void;
     // (undocumented)
@@ -3370,12 +3393,12 @@ export interface WidgetProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const WidgetProvider: React.NamedExoticComponent<WidgetProviderProps>;
+export const WidgetProvider: React_2.NamedExoticComponent<WidgetProviderProps>;
 
 // @internal (undocumented)
 export interface WidgetProviderProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     widget: WidgetState;
 }
@@ -3387,7 +3410,7 @@ export interface WidgetsState {
 }
 
 // @internal (undocumented)
-export const WidgetsStateContext: React.Context<WidgetsState>;
+export const WidgetsStateContext: React_2.Context<WidgetsState>;
 
 // @internal
 export interface WidgetState {
@@ -3404,13 +3427,13 @@ export interface WidgetState {
 }
 
 // @internal (undocumented)
-export const WidgetStateContext: React.Context<WidgetState | undefined>;
+export const WidgetStateContext: React_2.Context<WidgetState | undefined>;
 
 // @internal
-export const WidgetTab: React.NamedExoticComponent<WidgetTabProps>;
+export const WidgetTab: React_2.NamedExoticComponent<WidgetTabProps>;
 
 // @internal (undocumented)
-export const WidgetTabBar: React.NamedExoticComponent<WidgetTabBarProps>;
+export const WidgetTabBar: React_2.NamedExoticComponent<WidgetTabBarProps>;
 
 // @internal (undocumented)
 export interface WidgetTabBarProps {
@@ -3499,7 +3522,7 @@ export interface WidgetTabPopoutAction {
 // @internal
 export interface WidgetTabProps extends CommonProps {
     // (undocumented)
-    badge?: React.ReactNode;
+    badge?: React_2.ReactNode;
 }
 
 // @internal (undocumented)
@@ -3514,15 +3537,15 @@ export interface WidgetTabProviderProps extends TabPositionContextArgs {
 }
 
 // @internal (undocumented)
-export const WidgetTabs: React.NamedExoticComponent<object>;
+export const WidgetTabs: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export const WidgetTabsEntryContext: React.Context<WidgetTabsEntryContextArgs | undefined>;
+export const WidgetTabsEntryContext: React_2.Context<WidgetTabsEntryContextArgs | undefined>;
 
 // @internal (undocumented)
 export interface WidgetTabsEntryContextProviderProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     getOnResize: (id: string) => (w: number) => void;
     // (undocumented)
@@ -3532,10 +3555,10 @@ export interface WidgetTabsEntryContextProviderProps {
 }
 
 // @internal (undocumented)
-export const WidgetTabsEntryProvider: React.NamedExoticComponent<WidgetTabsEntryContextProviderProps>;
+export const WidgetTabsEntryProvider: React_2.NamedExoticComponent<WidgetTabsEntryContextProviderProps>;
 
 // @internal
-export const WidgetTabTarget: React.NamedExoticComponent<WidgetTabTargetProps>;
+export const WidgetTabTarget: React_2.NamedExoticComponent<WidgetTabTargetProps>;
 
 // @internal (undocumented)
 export interface WidgetTabTargetProps {
@@ -3546,7 +3569,7 @@ export interface WidgetTabTargetProps {
 }
 
 // @internal (undocumented)
-export const WidgetTarget: React.NamedExoticComponent<WidgetTargetProps>;
+export const WidgetTarget: React_2.NamedExoticComponent<WidgetTargetProps>;
 
 // @internal
 export interface WidgetTargetFloatingWidgetState {
@@ -3590,9 +3613,9 @@ export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 export const widgetZoneIds: ReadonlyArray<WidgetZoneId>;
 
 // @alpha @deprecated
-export const withContainIn: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
+export const withContainIn: <ComponentProps extends {}>(Component: React_2.ComponentType<ComponentProps>) => {
     new (props: (ComponentProps & WithContainInProps) | Readonly<ComponentProps & WithContainInProps>): {
-        ref: React.RefObject<HTMLDivElement>;
+        ref: React_2.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;
         getComponentBounds(root: HTMLElement): Rectangle;
@@ -3602,15 +3625,15 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithContainInProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -3621,7 +3644,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: ComponentProps & WithContainInProps, context: any): {
-        ref: React.RefObject<HTMLDivElement>;
+        ref: React_2.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;
         getComponentBounds(root: HTMLElement): Rectangle;
@@ -3631,15 +3654,15 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithContainInProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithContainInProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -3649,7 +3672,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React.Context<any> | undefined;
+    contextType?: React_2.Context<any> | undefined;
 };
 
 // @alpha @deprecated
@@ -3659,7 +3682,7 @@ export interface WithContainInProps {
 }
 
 // @internal
-export const withDragInteraction: <P extends {}, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => JSX.Element;
+export const withDragInteraction: <P extends {}, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => JSX.Element;
 
 // @internal
 export interface WithDragInteractionProps {
@@ -3669,7 +3692,7 @@ export interface WithDragInteractionProps {
 }
 
 // @internal
-export class Zone extends React.PureComponent<ZoneProps> {
+export class Zone extends React_2.PureComponent<ZoneProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3721,7 +3744,7 @@ export interface ZoneManagerProps {
 // @internal
 export interface ZoneProps extends CommonProps {
     bounds?: RectangleProps;
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     id: WidgetZoneId;
     isFloating?: boolean;
     isHidden?: boolean;
@@ -3730,7 +3753,7 @@ export interface ZoneProps extends CommonProps {
 }
 
 // @internal
-export class Zones extends React.PureComponent<ZonesProps> {
+export class Zones extends React_2.PureComponent<ZonesProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3848,7 +3871,7 @@ export class ZonesManager {
     readonly shrinkTop: UpdateWindowResizeSettings;
     // (undocumented)
     readonly topZones: TopZones;
-    }
+}
 
 // @internal
 export interface ZonesManagerProps {
@@ -3902,7 +3925,7 @@ export type ZonesManagerZonesProps = {
 
 // @internal
 export interface ZonesProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     isHidden?: boolean;
 }
 
@@ -3933,7 +3956,6 @@ export interface ZoneWindowResizeSettings {
     // (undocumented)
     vStart: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

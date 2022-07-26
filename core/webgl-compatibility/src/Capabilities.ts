@@ -76,6 +76,7 @@ const buggyIntelMatchers = [
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
 const buggyMaliMatchers = [
   /Mali-G71/,
+  /Mali-G72/,
   /Mali-G76/,
 ];
 
@@ -267,6 +268,7 @@ export class Capabilities {
     this._driverBugs = {};
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+
     if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.msaaWillHang = true;
 
@@ -314,7 +316,9 @@ export class Capabilities {
       && !ProcessDetector.isIOSBrowser
       // Samsung Galaxy Note 8 exhibits same issue as described above for iOS >= 15.
       // It uses specifically Mali-G71 MP20 but reports its renderer as follows.
-      && unmaskedRenderer !== "Mali-G71";
+      // Samsung Galaxy A50 and S9 exhibits same issue; they use Mali-G72.
+      // HUAWEI P30 exhibits same issue; it uses Mali-G76.
+      && unmaskedRenderer !== "Mali-G71" && unmaskedRenderer !== "Mali-G72" && unmaskedRenderer !== "Mali-G76";
 
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;

@@ -156,9 +156,9 @@ export namespace FeatureSymbology {
           this.override({ modelId: realityModel.modelId, appearance: realityModel.appearanceOverrides });
       });
 
-      const script = style.scheduleState;
+      const script = style.scheduleScript;
       if (script)
-        script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
+        script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
       if (!view.is3d())
         return;

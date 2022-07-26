@@ -226,6 +226,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
       return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
 
+    // istanbul ignore else
     if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.size > 0) {
       let allElementsForceHidden = true;
       for await (const elementId of elementIds.getElementIds()) {
@@ -404,58 +405,67 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 }
 
-interface ModelInfo {
-  id: Id64String;
-  isHidden: boolean;
-}
-
 class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
-  private _subjectModels: Map<Id64String, ModelInfo[]> | undefined;
+  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
   private _init: Promise<void> | undefined;
 
   constructor(imodel: IModelConnection) {
     this._imodel = imodel;
   }
 
-  private async initSubjectsHierarchy() {
-    this._subjectsHierarchy = new Map();
-    const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-    const result = this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    for await (const row of result) {
-      let list = this._subjectsHierarchy.get(row.parentId);
-      if (!list) {
-        list = [];
-        this._subjectsHierarchy.set(row.parentId, list);
-      }
-      list.push(row.id);
-    }
-  }
-
   private async initSubjectModels() {
-    this._subjectModels = new Map();
-    const ecsql = `
-      SELECT p.ECInstanceId id, s.ECInstanceId subjectId, json_extract(p.JsonProperties, '$.PhysicalPartition.Model.Content') content
-      FROM bis.InformationPartitionElement p
-      INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
-      INNER JOIN bis.Subject s ON (s.ECInstanceId = p.Parent.Id OR json_extract(s.JsonProperties, '$.Subject.Model.TargetPartition') = printf('0x%x', p.ECInstanceId))
-      WHERE NOT m.IsPrivate`;
-    const result = this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    for await (const row of result) {
-      let list = this._subjectModels.get(row.subjectId);
+    const querySubjects = (): AsyncIterableIterator<{ id: Id64String, parentId?: Id64String, targetPartitionId?: Id64String }> => {
+      const subjectsQuery = `
+        SELECT ECInstanceId id, Parent.Id parentId, json_extract(JsonProperties, '$.Subject.Model.TargetPartition') targetPartitionId
+        FROM bis.Subject
+      `;
+      return this._imodel.query(subjectsQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    };
+    const queryModels = (): AsyncIterableIterator<{ id: Id64String, parentId: Id64String }> => {
+      const modelsQuery = `
+        SELECT p.ECInstanceId id, p.Parent.Id parentId
+        FROM bis.InformationPartitionElement p
+        INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
+        WHERE NOT m.IsPrivate
+      `;
+      return this._imodel.query(modelsQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    };
+
+    function pushToMap<TKey, TValue>(map: Map<TKey, TValue[]>, key: TKey, value: TValue) {
+      let list = map.get(key);
       if (!list) {
         list = [];
-        this._subjectModels.set(row.subjectId, list);
+        map.set(key, list);
       }
-      const isHidden = row.content !== undefined;
-      list.push({ id: row.id, isHidden });
+      list.push(value);
+    }
+
+    this._subjectsHierarchy = new Map();
+    const targetPartitionSubjects = new Map<Id64String, Id64String[]>();
+    for await (const subject of querySubjects()) {
+      if (subject.parentId)
+        pushToMap(this._subjectsHierarchy, subject.parentId, subject.id);
+      if (subject.targetPartitionId)
+        pushToMap(targetPartitionSubjects, subject.targetPartitionId, subject.id);
+    }
+
+    this._subjectModels = new Map();
+    for await (const model of queryModels()) {
+      const subjectIds = targetPartitionSubjects.get(model.id) ?? [];
+      if (!subjectIds.includes(model.parentId))
+        subjectIds.push(model.parentId);
+
+      subjectIds.forEach((subjectId) => {
+        pushToMap(this._subjectModels!, subjectId, model.id);
+      });
     }
   }
 
   private async initCache() {
     if (!this._init) {
-      this._init = Promise.all([this.initSubjectModels(), this.initSubjectsHierarchy()]).then(() => { });
+      this._init = this.initSubjectModels().then(() => { });
     }
     return this._init;
   }
@@ -463,7 +473,7 @@ class SubjectModelIdsCache {
   private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
     const subjectModelIds = this._subjectModels!.get(subjectId);
     if (subjectModelIds)
-      modelIds.push(...subjectModelIds.map((info) => info.id));
+      modelIds.push(...subjectModelIds);
 
     const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
     if (childSubjectIds)
