@@ -4,6 +4,7 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
@@ -3075,6 +3076,11 @@ export enum VariableValueTypes {
     IntArray = "int[]",
     String = "string"
 }
+
+// @public
+export type WithCancelEvent<TOptions extends {}> = TOptions & {
+    cancelEvent?: BeEvent<() => void>;
+};
 
 
 // (No @packageDocumentation comment for this package)
