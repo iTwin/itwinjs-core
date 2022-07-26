@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { gunzip, gzip } from "zlib";
+import { promisify } from "util";
 import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 /** @beta */
 export class TileStorage {
@@ -33,10 +36,11 @@ export class TileStorage {
 
   public async uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void> {
     try {
-      const reference = getTileObjectReference(iModelId, changesetId, treeId, contentId, guid);
-      if(await this.storage.baseDirectoryExists(reference) === false)
-        await this.storage.createBaseDirectory(reference);
-      await this.storage.upload(reference, Buffer.from(content.buffer), metadata);
+      await this.storage.upload(
+        getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
+        Buffer.from(IModelHost.compressCachedTiles ? await promisify(gzip)(content.buffer) : content.buffer),
+        metadata
+      );
     } catch (err) {
       this.logException("Failed to upload tile", err);
       throw err;
@@ -49,7 +53,7 @@ export class TileStorage {
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
         "buffer"
       );
-      return buffer;
+      return IModelHost.compressCachedTiles ? await promisify(gunzip)(buffer) : buffer;
     } catch (err) {
       this.logException("Failed to download tile", err);
       throw err;

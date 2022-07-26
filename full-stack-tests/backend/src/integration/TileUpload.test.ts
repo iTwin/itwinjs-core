@@ -15,6 +15,8 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { startupForIntegration } from "./StartupShutdown";
 import { Readable } from "stream";
+import { gunzip } from "zlib";
+import { promisify } from "util";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -109,13 +111,14 @@ describe("TileUpload (tileCacheService)", () => {
     blobService = new Azure.BlobServiceClient(tileCacheAzureCredentials.baseUrl!, pipeline);
 
     // Point tileCacheService towards azurite URL
-    // eslint-disable-next-line deprecation/deprecation
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
     const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
+
+    IModelHost.tileCacheService?.initialize();
   });
 
   after(async () => {
@@ -152,11 +155,15 @@ describe("TileUpload (tileCacheService)", () => {
     const blobStream = (await blob.download()).readableStreamBody!;
     const blobBuffer = await streamToBuffer(blobStream as Readable);
 
+    const tileSize = IModelHost.compressCachedTiles
+      ? (await promisify(gunzip)(blobBuffer)).byteLength
+      : blobBuffer.byteLength;
+
     // Verify metadata in blob properties
     assert.isDefined(blobProperties.metadata);
     assert.isDefined(blobProperties.metadata!.tilegenerationtime);
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), blobBuffer.byteLength);
+    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
@@ -188,6 +195,8 @@ describe("TileUpload", () => {
     const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModel);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
+
+    await IModelHost.tileStorage!.initialize(iModelId);
   });
 
   after(async () => {
@@ -220,11 +229,15 @@ describe("TileUpload", () => {
     const blobBuffer = await IModelHost.tileStorage!.storage.download(objectReference, "buffer");
     const blobProperties = await IModelHost.tileStorage!.storage.getObjectProperties(objectReference);
 
+    const tileSize = IModelHost.compressCachedTiles
+      ? (await promisify(gunzip)(blobBuffer)).byteLength
+      : blobBuffer.byteLength;
+
     // Verify metadata in blob properties
     assert.isDefined(blobProperties.metadata);
     assert.isDefined(blobProperties.metadata!.tilegenerationtime);
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), blobBuffer.byteLength);
+    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
