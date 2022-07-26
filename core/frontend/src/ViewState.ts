@@ -284,7 +284,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  /** See [DisplayStyleSettings.analysisStyle]($common). */
   public get analysisStyle(): AnalysisStyle | undefined {
     return this.displayStyle.settings.analysisStyle;
   }
