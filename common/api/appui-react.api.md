@@ -2353,10 +2353,7 @@ export class FocusToolSettings extends Tool {
 }
 
 // @public @deprecated
-export class FooterModeField extends React_2.PureComponent<FooterModeFieldProps> {
-    // (undocumented)
-    render(): React_2.ReactNode;
-}
+export function FooterModeField(props: FooterModeFieldProps): JSX.Element;
 
 // @public
 export interface FooterModeFieldProps extends StatusFieldProps {
