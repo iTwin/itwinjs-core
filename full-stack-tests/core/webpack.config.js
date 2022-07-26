@@ -35,7 +35,7 @@ function createConfig(shouldInstrument) {
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
     devtool: "nosources-source-map",
-    // resolve: { mainFields: ["main", "module"] },
+    resolve: { mainFields: ["module", "main"] },
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
