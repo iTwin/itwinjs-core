@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-
+import "reflect-metadata"; // for @itwin/object-storage-azure in getTileStorage()
 import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";

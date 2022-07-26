@@ -947,6 +947,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "reflect-metadata",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "require-dir",
       "allowedCategories": [ "tools" ]
     },
