@@ -498,7 +498,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   private getElementAnimationOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
-    if (this.animationNodeOverrides.size === 0)
+    if (0 === animationNodeId || this.animationNodeOverrides.size === 0)
       return undefined;
 
     const app = this.animationNodeOverrides.get(animationNodeId);
