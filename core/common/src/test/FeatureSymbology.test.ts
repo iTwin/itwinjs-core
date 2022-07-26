@@ -12,11 +12,7 @@ import { LinePixels } from "../LinePixels";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
 import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  FeatureAppearanceProvider,
-  FeatureAppearanceSource,
-  FeatureOverrides,
+  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides, IgnoreAnimationOverridesArgs,
 } from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
@@ -400,6 +396,42 @@ describe("FeatureOverrides", () => {
   });
 
   it("ignores other overrides if animation node is invisible", () => {
+  });
+
+  it("ignores animation color/transparency overrides if specified", () => {
+    const ovrs = new Overrides();
+
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    ovrs.overrideAnimationNode(1, red);
+    ovrs.overrideAnimationNode(5, green);
+    ovrs.overrideAnimationNode(10, blue);
+
+    ovrs.ignoreAnimationOverrides((args) => args.elementId.lower > 5);
+    ovrs.ignoreAnimationOverrides((args) => args.animationNodeId < 5);
+
+    const expectAppearance = (elemId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elemId), "0x1", undefined, nodeId);
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    expectAppearance("0x1", 10, blue);
+    expectAppearance("0x1", 5, green);
+
+    expectAppearance("0x10", 10, FeatureAppearance.defaults);
+    expectAppearance("0x1", 1, FeatureAppearance.defaults);
+    expectAppearance("0x6", 5, FeatureAppearance.defaults);
+
+    const black = FeatureAppearance.fromRgb(ColorDef.black);
+    ovrs.setDefaultOverrides(black);
+    expectAppearance("0x10", 10, black);
+    expectAppearance("0x1", 1, black);
+    expectAppearance("0x6", 5, black);
+  });
+
+  it("does not ignore animation visibility overrides", () => {
   });
 
   it("applies conflict strategy", () => {

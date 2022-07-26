@@ -361,6 +361,18 @@ export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureApp
  */
 export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
 
+export interface IgnoreAnimationOverridesArgs {
+  readonly elementId: Readonly<Id64.Uint32Pair>;
+  readonly animationNodeId: number;
+}
+
+export type IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean;
+
+const scratchIgnoreAnimationOverridesArgs = {
+  elementId: { lower: 0, upper: 0 },
+  animationNodeId: 0,
+};
+
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).
  * Individual aspects of a feature's appearance - like visibility, color, and transparency - are overridden by supplying a [[FeatureAppearance]].
  * Those overrides can be specified on the basis of the feature's model, element, and/or subcategory. A default set of overrides can also be specified to
@@ -386,6 +398,8 @@ export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | O
  * @public
  */
 export class FeatureOverrides implements FeatureAppearanceSource {
+  /** @internal */
+  protected readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[] = [];
   /** Ids of elements that should never be drawn. This takes precedence over [[alwaysDrawn]]. @internal */
   protected readonly _neverDrawn = new Id64.Uint32Set();
   /** Ids of elements that should always be drawn. [[neverDrawn]] takes precedence over this set. @internal */
@@ -440,6 +454,10 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public readonly animationNodeOverrides = new Map<number, FeatureAppearance>();
 
+  public ignoreAnimationOverrides(ignore: IgnoreAnimationOverrides): void {
+    this._ignoreAnimationOverrides.push(ignore);
+  }
+
   /** Overrides applied to features for which no other overrides are defined */
   public get defaultOverrides(): FeatureAppearance { return this._defaultOverrides; }
   /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
@@ -479,10 +497,25 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return this._modelOverrides.get(idLo, idHi);
   }
 
+  private getElementAnimationOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
+    if (this.animationNodeOverrides.size === 0)
+      return undefined;
+
+    const app = this.animationNodeOverrides.get(animationNodeId);
+    if (this._ignoreAnimationOverrides.length === 0)
+      return app;
+
+    const args = scratchIgnoreAnimationOverridesArgs;
+    args.elementId.lower = idLo;
+    args.elementId.upper = idHi;
+    args.animationNodeId = animationNodeId;
+    return this._ignoreAnimationOverrides.some((ignore) => ignore(args)) ? undefined : app;
+  }
+
   /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const elemApp = this._elementOverrides.get(idLo, idHi);
-    const nodeApp = this.animationNodeOverrides.get(animationNodeId);
+    const nodeApp = this.getElementAnimationOverrides(idLo, idHi, animationNodeId);
     if (elemApp)
       return nodeApp ? nodeApp.extendAppearance(elemApp) : elemApp;
 
