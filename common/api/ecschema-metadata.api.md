@@ -102,9 +102,9 @@ export class Constant extends SchemaItem {
     // (undocumented)
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
-    hasDenominator(): boolean;
+    get hasDenominator(): boolean;
     // (undocumented)
-    hasNumerator(): boolean;
+    get hasNumerator(): boolean;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
@@ -2032,11 +2032,11 @@ export class Unit extends SchemaItem {
     // (undocumented)
     fromJSONSync(unitProps: UnitProps): void;
     // (undocumented)
-    hasDenominator(): boolean;
+    get hasDenominator(): boolean;
     // (undocumented)
-    hasNumerator(): boolean;
+    get hasNumerator(): boolean;
     // (undocumented)
-    hasOffset(): boolean;
+    get hasOffset(): boolean;
     // @alpha (undocumented)
     static isUnit(object: any): object is Unit;
     // (undocumented)
