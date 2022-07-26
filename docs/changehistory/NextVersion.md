@@ -88,7 +88,7 @@ The argument for [IModelHost.startup]($backend) has been changed from [IModelHos
 ## RPC over IPC
 
 When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
-After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and IPC) is sent over the WebSocket.
+After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
 This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
 
 ## Deprecations
