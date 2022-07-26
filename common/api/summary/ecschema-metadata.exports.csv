@@ -45,6 +45,7 @@ beta;EnumerationProps
 beta;EnumeratorProps
 beta;Format 
 beta;FormatProps 
+alpha;IModelSchemaLoader
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater

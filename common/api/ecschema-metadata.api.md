@@ -10,6 +10,7 @@ import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { IModelDb } from '@itwin/core-backend';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversion as UnitConversion_2 } from '@itwin/core-quantity';
@@ -716,6 +717,14 @@ export interface FormatProps extends SchemaItemProps {
     readonly type: string;
     // (undocumented)
     readonly uomSeparator?: string;
+}
+
+// @alpha
+export class IModelSchemaLoader {
+    // @internal
+    constructor(_iModel: IModelDb);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta

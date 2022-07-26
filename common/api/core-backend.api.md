@@ -170,7 +170,6 @@ import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
-import type { Schema as Schema_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1339,7 +1338,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
     updateString(rscName: WorkspaceResource.Name, val: string): void;
-    }
+}
 
 // @public
 class Element_2 extends Entity {
@@ -2427,7 +2426,7 @@ export abstract class IModelDb extends IModel {
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     // @beta
     get workspace(): Workspace;
-    }
+}
 
 // @public (undocumented)
 export namespace IModelDb {
@@ -2707,14 +2706,6 @@ export { IModelJsNative }
 export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
     readonly iModelName: string;
-}
-
-// @alpha
-export class IModelSchemaLoader {
-    // @internal
-    constructor(_iModel: IModelDb);
-    getSchema<T extends Schema_2>(schemaName: string): T;
-    tryGetSchema<T extends Schema_2>(schemaName: string): T | undefined;
 }
 
 // @public
@@ -4025,7 +4016,7 @@ export class SettingsSchemas {
     static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
-    }
+}
 
 // @beta
 export type SettingType = JSONSchemaType;
@@ -4640,7 +4631,7 @@ export class V2CheckpointManager {
     static getFileName(checkpoint: CheckpointProps): LocalFileName;
     // (undocumented)
     static getFolder(): LocalDirName;
-    }
+}
 
 // @public
 export interface ValidationError {

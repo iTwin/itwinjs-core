@@ -34,6 +34,7 @@ deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
+deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -70,7 +71,10 @@ public;DisplayStyle3d
 public;DisplayStyleCreationOptions 
 public;DocumentListModel 
 public;DocumentPartition 
+beta;DownloadChangesetArg 
+beta;DownloadChangesetRangeArg 
 internal;DownloadJob
+beta;DownloadProgressArg
 internal;DownloadRequest
 internal;Downloads
 public;Drawing 
@@ -190,7 +194,6 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
-alpha;IModelSchemaLoader
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -262,7 +265,8 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
-public;ProgressFunction = (loaded: number, total: number) => number
+public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
+public;ProgressStatus
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
