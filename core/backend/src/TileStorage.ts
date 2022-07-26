@@ -33,11 +33,10 @@ export class TileStorage {
 
   public async uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void> {
     try {
-      await this.storage.upload(
-        getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
-        Buffer.from(content.buffer),
-        metadata
-      );
+      const reference = getTileObjectReference(iModelId, changesetId, treeId, contentId, guid);
+      if(await this.storage.baseDirectoryExists(reference) === false)
+        await this.storage.createBaseDirectory(reference);
+      await this.storage.upload(reference, Buffer.from(content.buffer), metadata);
     } catch (err) {
       this.logException("Failed to upload tile", err);
       throw err;
