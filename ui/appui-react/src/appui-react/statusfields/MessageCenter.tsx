@@ -71,6 +71,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   public override componentDidMount() {
     this._unloadMessagesUpdatedHandler = MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent, this);
     this._removeOpenMessagesCenterHandler = MessageManager.onOpenMessageCenterEvent.addListener(this._handleOpenMessageCenterEvent, this);
+    MessageManager.registerAnimateOutToElement(this._indicator.current);
   }
 
   /** @internal */
