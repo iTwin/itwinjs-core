@@ -77,6 +77,7 @@ export class SubCategoriesCache {
         missing.add(catId);
       }
     }
+
     return missing;
   }
 
@@ -115,13 +116,54 @@ export class SubCategoriesCache {
     set.add(subCategoryId);
     this._appearances.set(subCategoryId, appearance);
   }
+
+  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
+    // Eliminate duplicates...
+    const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
+    const req = this.load(categoryIds);
+    if (req)
+      await req.promise;
+
+    const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
+    for (const categoryId of categoryIds) {
+      const subCategoryIds = this._byCategoryId.get(categoryId);
+      if (!subCategoryIds)
+        continue;
+
+      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
+      map.set(categoryId, { id: categoryId, subCategories });
+    }
+
+    return map;
+  }
+
+  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
+    // Eliminate duplicates...
+    const subCategoryIds = new Set<string>(typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds);
+    const req = this.load(categoryId);
+    if (req)
+      await req.promise;
+
+    return this.mapSubCategoryInfos(categoryId, subCategoryIds);
+  }
+
+  private mapSubCategoryInfos(categoryId: Id64String, subCategoryIds: Set<Id64String>): Map<Id64String, IModelConnection.Categories.SubCategoryInfo> {
+    const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+    for (const id of subCategoryIds) {
+      const appearance = this._appearances.get(id);
+      assert(undefined !== appearance);
+      if (appearance)
+        map.set(id, { id, categoryId, appearance });
+    }
+
+    return map;
+  }
 }
 
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
 export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
-
   export type Result = SubCategoryResultRow[];
 
   export class Request {

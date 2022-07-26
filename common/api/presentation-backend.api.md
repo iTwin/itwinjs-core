@@ -4,12 +4,15 @@
 
 ```ts
 
+import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
 import { ContentRequestOptions } from '@itwin/presentation-common';
 import { ContentSourcesRequestOptions } from '@itwin/presentation-common';
 import { Descriptor } from '@itwin/presentation-common';
 import { DescriptorOverrides } from '@itwin/presentation-common';
+import { Diagnostics } from '@itwin/presentation-common';
+import { DiagnosticsOptions } from '@itwin/presentation-common';
 import { DiagnosticsScopeLogs } from '@itwin/presentation-common';
 import { DisplayLabelRequestOptions } from '@itwin/presentation-common';
 import { DisplayLabelsRequestOptions } from '@itwin/presentation-common';
@@ -32,13 +35,13 @@ import { LabelDefinition } from '@itwin/presentation-common';
 import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
-import { NodeKeyJSON } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
 import { Prioritized } from '@itwin/presentation-common';
 import { RegisteredRuleset } from '@itwin/presentation-common';
 import { Ruleset } from '@itwin/presentation-common';
+import { RulesetVariable } from '@itwin/presentation-common';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
@@ -47,6 +50,21 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpdateInfoJSON } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
+
+// @public (undocumented)
+export interface BackendDiagnosticsAttribute {
+    // @alpha (undocumented)
+    diagnostics?: BackendDiagnosticsOptions;
+}
+
+// @alpha (undocumented)
+export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+
+// @alpha (undocumented)
+export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
+    // (undocumented)
+    handler: BackendDiagnosticsHandler;
+}
 
 // @public
 export interface ContentCacheConfig {
@@ -63,9 +81,6 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
 // @internal (undocumented)
 export const getLocalesDirectory: (assetsDirectory: string) => string;
@@ -172,35 +187,41 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
-    activeLocale: string | undefined;
-    activeUnitSystem: UnitSystemKey | undefined;
+    get activeLocale(): string | undefined;
+    set activeLocale(value: string | undefined);
+    get activeUnitSystem(): UnitSystemKey | undefined;
+    set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
     computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
-    }): Promise<KeySet>;
+    } & BackendDiagnosticsAttribute): Promise<KeySet>;
+    // @alpha (undocumented)
+    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     dispose(): void;
-    getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined>;
-    getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
-    getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number>;
+    getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
+    getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
+    getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
-    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
+    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
+    // @internal (undocumented)
+    getDetail(): PresentationManagerDetail;
+    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+    getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // @alpha
-    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
-    getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
+    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
+    getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
-    getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
-    getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
-    getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node[]>;
+    getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
+    getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
-    getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
+    getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     // @internal (undocumented)

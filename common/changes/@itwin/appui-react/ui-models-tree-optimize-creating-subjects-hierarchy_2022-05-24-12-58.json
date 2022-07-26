@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Models Tree: Optimize creating subjects hierarchy",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

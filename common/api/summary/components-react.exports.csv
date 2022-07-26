@@ -8,6 +8,8 @@ public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactN
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
+alpha;ActiveRuleGroupContext: React.Context
+alpha;ActiveRuleGroupContextProps
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
 public;AsyncErrorMessage
@@ -45,6 +47,7 @@ beta;BreadcrumbUpdateEvent
 deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
 deprecated;BreadcrumbUpdateEventArgs
+internal;buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined
 beta;CategorizedPropertyItem 
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict
@@ -78,6 +81,7 @@ public;class DataControllerBase
 internal;DataRowItem 
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
+public;DateFormatOptions
 alpha;DatePicker(props: DatePickerProps): JSX.Element
 alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
@@ -128,6 +132,8 @@ beta;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
+alpha;getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string
+alpha;getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[]
 internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getPropertyRecordAsString(label: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -175,6 +181,8 @@ beta;IPropertyGridModel
 beta;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
+alpha;isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup
+alpha;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
@@ -182,6 +190,7 @@ public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDa
 public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
 public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
 public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+alpha;isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
@@ -273,8 +282,36 @@ public;PropertyEditingArgs
 public;class PropertyEditorBase 
 public;PropertyEditorManager
 public;PropertyEditorProps 
+alpha;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
+alpha;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
+alpha;PropertyFilterBuilderActions
+alpha;PropertyFilterBuilderContext: React.Context
+alpha;PropertyFilterBuilderContextProps
+alpha;PropertyFilterBuilderProps
+alpha;PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroup
+alpha;PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupOperatorProps
+alpha;PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupRendererProps
+alpha;PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleOperatorProps
+alpha;PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element
+alpha;PropertyFilterBuilderRulePropertyProps
+alpha;PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleRendererProps
+alpha;PropertyFilterBuilderRuleRenderingContext: React.Context
+alpha;PropertyFilterBuilderRuleRenderingContextProps
+alpha;PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element
+alpha;PropertyFilterBuilderRuleValueProps
+alpha;PropertyFilterBuilderState
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
+alpha;PropertyFilterRule
+alpha;PropertyFilterRuleGroup
+alpha;PropertyFilterRuleGroupOperator
+alpha;PropertyFilterRuleOperator
 public;PropertyGrid 
 public;PropertyGridCategory
 deprecated;PropertyGridCategory
@@ -396,7 +433,7 @@ deprecated;ThemedEnumPropertyEditor
 internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
 internal;TimeFieldProps
 internal;TimeSpec
-public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 public;ToggleEditor 
 public;TogglePropertyEditor 
 public;Toolbar(props: ToolbarProps): JSX.Element
@@ -418,7 +455,7 @@ public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
-public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 public;TreeActions
 public;TreeCheckboxStateChangeEventArgs
@@ -469,6 +506,7 @@ public;useAsyncValue:
 alpha;useDebouncedAsyncValue
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
+alpha;usePropertyFilterBuilderState():
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:

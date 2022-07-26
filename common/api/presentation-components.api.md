@@ -7,14 +7,16 @@
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
+import { ClassId } from '@itwin/presentation-common';
+import { ClassInfo } from '@itwin/presentation-common';
+import { ClientDiagnosticsHandler } from '@itwin/presentation-common';
+import { ClientDiagnosticsOptions } from '@itwin/presentation-common';
 import { ColumnDescription } from '@itwin/components-react';
 import { Content } from '@itwin/presentation-common';
 import { DelayLoadedTreeNodeItem } from '@itwin/components-react';
 import { Descriptor } from '@itwin/presentation-common';
 import { DescriptorOverrides } from '@itwin/presentation-common';
-import { DiagnosticsHandler } from '@itwin/presentation-common';
 import { DiagnosticsLoggerSeverity } from '@itwin/presentation-common';
-import { DiagnosticsOptionsWithHandler } from '@itwin/presentation-common';
 import { EditorDescription } from '@itwin/presentation-common';
 import { EnumerationInfo } from '@itwin/presentation-common';
 import { FavoritePropertiesScope } from '@itwin/presentation-frontend';
@@ -26,6 +28,7 @@ import { HierarchyUpdateRecord } from '@itwin/presentation-common';
 import { HighlightableTreeProps } from '@itwin/components-react';
 import { IContentVisitor } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
+import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InstanceKey } from '@itwin/presentation-common';
@@ -48,12 +51,17 @@ import { PageOptions as PageOptions_2 } from '@itwin/components-react';
 import { ProcessFieldHierarchiesProps } from '@itwin/presentation-common';
 import { ProcessMergedValueProps } from '@itwin/presentation-common';
 import { ProcessPrimitiveValueProps } from '@itwin/presentation-common';
+import { PropertiesField } from '@itwin/presentation-common';
 import { PropertyData } from '@itwin/components-react';
 import { PropertyDataChangeEvent } from '@itwin/components-react';
 import { PropertyDataFiltererBase } from '@itwin/components-react';
 import { PropertyDataFilterResult } from '@itwin/components-react';
 import { PropertyDescription } from '@itwin/appui-abstract';
+import { PropertyFilter } from '@itwin/components-react';
+import { PropertyFilterRuleGroupOperator } from '@itwin/components-react';
+import { PropertyFilterRuleOperator } from '@itwin/components-react';
 import { PropertyRecord } from '@itwin/appui-abstract';
+import { PropertyValue } from '@itwin/appui-abstract';
 import { PropertyValueRendererContext } from '@itwin/components-react';
 import * as React from 'react';
 import { RenderedItemsRange } from '@itwin/components-react';
@@ -79,6 +87,8 @@ import { TreeEventHandler } from '@itwin/components-react';
 import { TreeModelChanges } from '@itwin/components-react';
 import { TreeModelSource } from '@itwin/components-react';
 import { TreeNodeItem } from '@itwin/components-react';
+import { TreeNodeRendererProps } from '@itwin/components-react';
+import { TreeRendererProps } from '@itwin/components-react';
 import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { TypeDescription } from '@itwin/presentation-common';
@@ -146,7 +156,7 @@ export interface ControlledPresentationTreeFilteringProps {
 }
 
 // @alpha
-export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
+export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
 
 // @internal (undocumented)
 export function createFieldInfo(field: Field, namePrefix?: string): {
@@ -157,6 +167,12 @@ export function createFieldInfo(field: Field, namePrefix?: string): {
     renderer: RendererDescription | undefined;
     enum: EnumerationInfo | undefined;
 };
+
+// @alpha (undocumented)
+export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[];
+
+// @internal (undocumented)
+export function createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined;
 
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
@@ -183,12 +199,13 @@ export interface DiagnosticsProps {
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
         perf?: boolean;
-        handler: DiagnosticsHandler;
+        backendVersion?: boolean;
+        handler: ClientDiagnosticsHandler;
     };
     // @alpha
     ruleDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        handler: DiagnosticsHandler;
+        handler: ClientDiagnosticsHandler;
     };
 }
 
@@ -327,6 +344,34 @@ export interface IFilteredPresentationTreeDataProvider extends IPresentationTree
     nodeMatchesFilter(node: TreeNodeItem): boolean;
 }
 
+// @alpha (undocumented)
+export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
+
+// @alpha (undocumented)
+export function InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface InstanceFilterBuilderProps {
+    // (undocumented)
+    classes: ClassInfo[];
+    // (undocumented)
+    onClassDeselected: (selectedClass: ClassInfo) => void;
+    // (undocumented)
+    onClassSelected: (selectedClass: ClassInfo) => void;
+    // (undocumented)
+    onClearClasses: () => void;
+    // (undocumented)
+    onFilterChanged: (filter?: PropertyFilter) => void;
+    // (undocumented)
+    onPropertySelected?: (property: PropertyDescription) => void;
+    // (undocumented)
+    properties: PropertyDescription[];
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
+    // (undocumented)
+    selectedClasses: ClassInfo[];
+}
+
 // @beta
 export class InstanceKeyValueRenderer implements IPropertyValueRenderer {
     // (undocumented)
@@ -385,6 +430,44 @@ export enum PresentationComponentsLoggerCategory {
     Hierarchy = "presentation-components.Hierarchy",
     // (undocumented)
     Package = "presentation-components"
+}
+
+// @alpha (undocumented)
+export type PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition;
+
+// @alpha (undocumented)
+export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterBuilderProps {
+    // (undocumented)
+    descriptor: Descriptor;
+    // (undocumented)
+    enableClassFilteringByProperties?: boolean;
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
+    // (undocumented)
+    ruleGroupDepthLimit?: number;
+}
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterCondition {
+    // (undocumented)
+    field: PropertiesField;
+    // (undocumented)
+    operator: PropertyFilterRuleOperator;
+    // (undocumented)
+    value?: PropertyValue;
+}
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterConditionGroup {
+    // (undocumented)
+    conditions: PresentationInstanceFilter[];
+    // (undocumented)
+    operator: PropertyFilterRuleGroupOperator;
 }
 
 // @public
@@ -522,12 +605,34 @@ export interface PresentationTreeNodeLoaderResult {
     onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
+// @alpha (undocumented)
+export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
+    // (undocumented)
+    onFilter?: (item: TreeNodeItem) => void;
+}
+
+// @alpha (undocumented)
+export function PresentationTreeRenderer(props: TreeRendererProps): JSX.Element;
+
 // @public
 export interface PropertyDataProviderWithUnifiedSelectionProps {
     dataProvider: IPresentationPropertyDataProvider;
     requestedContentInstancesLimit?: number;
     // @internal (undocumented)
     selectionHandler?: SelectionHandler;
+}
+
+// @alpha (undocumented)
+export interface PropertyInfo {
+    // (undocumented)
+    field: PropertiesField;
+    // (undocumented)
+    propertyDescription: PropertyDescription;
+    // (undocumented)
+    sourceClassIds: ClassId[];
 }
 
 // @internal (undocumented)
@@ -672,6 +777,17 @@ export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProv
 
 // @internal (undocumented)
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
+
+// @alpha (undocumented)
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean): {
+    onPropertySelected: (property: PropertyDescription) => void;
+    onClearClasses: () => void;
+    onClassDeselected: (classInfo: ClassInfo) => void;
+    onClassSelected: (classInfo: ClassInfo) => void;
+    properties: PropertyDescription[];
+    classes: ClassInfo[];
+    selectedClasses: ClassInfo[];
+};
 
 // @public
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult;

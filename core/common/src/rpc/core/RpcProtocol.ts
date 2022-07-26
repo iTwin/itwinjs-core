@@ -11,6 +11,7 @@ import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
@@ -37,6 +38,7 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
   caching: RpcResponseCacheControl;
   ip?: string;
   protocolVersion?: number;
+  parametersOverride?: any[];
 }
 
 /** An RPC operation request fulfillment.
@@ -100,8 +102,8 @@ export enum RpcProtocolVersion {
  */
 export interface RpcManagedStatus {
   iTwinRpcCoreResponse: true;
-  managedStatus: "pending" | "notFound";
-  responseValue: string;
+  managedStatus: "pending" | "notFound" | "noContent";
+  responseValue: string | { message: string } | RpcNotFoundResponse;
 }
 
 /** An application protocol for an RPC interface.
@@ -185,9 +187,6 @@ export abstract class RpcProtocol {
   public async fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment> {
     return new (this.invocationType)(this, request).fulfillment;
   }
-
-  /** @internal */
-  public async initialize(_token?: IModelRpcProps): Promise<void> { }
 
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {

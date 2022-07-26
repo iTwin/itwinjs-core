@@ -6,9 +6,9 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
-import { IModelAppOptions } from "./IModelApp";
+import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /** @internal */
 export interface LocalHostIpcAppOpts {
@@ -68,6 +68,12 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 }
 
+class LocalSession extends IpcSession {
+  public override async handleRpc(info: InterceptedRpcRequest) {
+    return IpcApp.callIpcChannel("RPC", "request", info);
+  }
+}
+
 /**
  * To be used only by test applications that want to test web-based editing using localhost.
  *  @internal
@@ -91,5 +97,10 @@ export class LocalhostIpcApp {
     }
 
     await IpcApp.startup(this._ipc, opts);
+
+    if (!IpcSession.active) {
+      IpcSession.start(new LocalSession());
+      IModelApp.onBeforeShutdown.addListener(() => IpcSession.stop());
+    }
   }
 }

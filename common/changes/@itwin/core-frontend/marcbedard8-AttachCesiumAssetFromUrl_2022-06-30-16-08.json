@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Restore the possibility to attach any cesium asset using getCesiumAssetUrl",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

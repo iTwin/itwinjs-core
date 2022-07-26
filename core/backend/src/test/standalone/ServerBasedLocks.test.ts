@@ -15,8 +15,9 @@ import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Server-based locks", () => {
   const createVersion0 = async () => {
@@ -37,7 +38,7 @@ describe("Server-based locks", () => {
 
   afterEach(() => sinonRestore());
   before(async () => {
-    HubMock.startup("ServerBasedLocks");
+    HubMock.startup("ServerBasedLocks", KnownTestLocations.outputDir);
 
     const iModelProps = {
       iModelName: "server locks test",

@@ -32,6 +32,7 @@ export interface StatusMessagesContainerProps {
 
 /** Component that renders one or more Toast, Sticky or Activity messages
  * @internal
+ * @deprecated
  */
 export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
   const [containerElement, setContainerElement] = React.useState<HTMLDivElement | null>(null);
@@ -71,6 +72,7 @@ export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
             if (message.messageDetails.msgType === OutputMessageType.Toast) {
               messageNode = (
                 <li key={message.id}>
+                  {/* eslint-disable-next-line deprecation/deprecation */}
                   <ToastMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
                     closeMessage={props.closeMessage} toastTarget={props.toastTarget} />
                 </li>
@@ -78,6 +80,7 @@ export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
             } else if (message.messageDetails.msgType === OutputMessageType.Sticky) {
               messageNode = (
                 <li key={message.id}>
+                  {/* eslint-disable-next-line deprecation/deprecation */}
                   <StickyMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
                     closeMessage={props.closeMessage} />
                 </li>
@@ -88,6 +91,7 @@ export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
         }
         {(props.activityMessageInfo !== undefined && props.isActivityMessageVisible) &&
           <li key="activity-message">
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActivityMessage
               activityMessageInfo={props.activityMessageInfo}
               cancelActivityMessage={props.cancelActivityMessage}

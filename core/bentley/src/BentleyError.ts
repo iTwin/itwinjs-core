@@ -307,15 +307,6 @@ export enum IModelHubStatus {
   InitializationTimeout = IMODELHUBERROR_REQUESTERRORBASE + 7,
 }
 
-/** Authentication Errors
- * @beta Internal? Right package?
- */
-export enum AuthStatus {
-  Success = 0,
-  AUTHSTATUS_BASE = 0x22000,
-  Error = AUTHSTATUS_BASE,
-}
-
 /** GeoServiceStatus errors
  * @public
  */
@@ -664,7 +655,6 @@ export class BentleyError extends Error {
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
-      case AuthStatus.Error: return "Authorization error";
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";

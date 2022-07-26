@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "deprecate danglingPredecessorsBehavior in favor of danglingReferencesBehavior",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

@@ -8,10 +8,12 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { IModelTestUtils, TestUtils } from "./index";
 import { AzureBlobStorage } from "../CloudStorageBackend";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { TestUtils } from "./TestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelHost", () => {
 
@@ -96,7 +98,7 @@ describe("IModelHost", () => {
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     const cacheSubDir = "imodels";
 
     // Test cache default location
@@ -114,7 +116,7 @@ describe("IModelHost", () => {
   });
 
   it("should set Azure cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -134,7 +136,7 @@ describe("IModelHost", () => {
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     const setUseTileCacheStub = sinon.stub();
@@ -149,7 +151,7 @@ describe("IModelHost", () => {
   });
 
   it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -173,7 +175,7 @@ describe("IModelHost", () => {
   });
 
   it("should cleanup tileCacheService and tileUploader on shutdown", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     await IModelHost.startup(config);
@@ -194,7 +196,21 @@ describe("IModelHost", () => {
 
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup();
-    expect(() => IModelHost.hubAccess).throws("IModelHost.hubAccess is undefined. Specify an implementation in your IModelHostConfiguration");
+    expect(IModelHost.getHubAccess()).undefined;
+    expect(() => IModelHost.hubAccess).throws();
   });
 
+  it("computeSchemaChecksum", () => {
+    const assetsDir = path.join(KnownTestLocations.assetsDir, "ECSchemaOps");
+    const schemaXmlPath = path.join(assetsDir, "SchemaA.ecschema.xml");
+    let referencePaths = [assetsDir];
+    let sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths });
+    expect(sha1).equal("3ac6578060902aa0b8426b61d62045fdf7fa0b2b");
+
+    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws("Failed to read schema SchemaA.ecschema");
+
+    referencePaths = [path.join(assetsDir, "exact-match")];
+    sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });
+    expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
+  });
 });

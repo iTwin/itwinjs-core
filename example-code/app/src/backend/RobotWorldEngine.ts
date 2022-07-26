@@ -5,7 +5,7 @@
 import * as path from "path";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import {
   Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@itwin/core-common";
@@ -117,9 +117,7 @@ export class RobotWorldEngine {
   }
 
   public static async initialize(): Promise<void> {
-    const config = new IModelHostConfiguration();
-    config.appAssetsDir = path.join(__dirname, "assets");
-    await IModelHost.startup(config);
+    await IModelHost.startup({ appAssetsDir: path.join(__dirname, "assets") });
 
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
