@@ -725,9 +725,9 @@ export class IModelExporter {
     this.visitElements = state.visitElements;
     this.visitRelationships = state.visitRelationships;
     this._excludedCodeSpecNames = new Set(state.excludedCodeSpecNames);
-    this._excludedElementIds = CompressedId64Set.decompressSet(state.excludedElementIds),
-      this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds),
-      this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
+    this._excludedElementIds = CompressedId64Set.decompressSet(state.excludedElementIds);
+    this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds);
+    this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
     this._excludedElementAspectClassFullNames = new Set(state.excludedElementAspectClassFullNames);
     this._excludedElementAspectClasses = new Set(state.excludedElementAspectClassFullNames.map((c) => this.sourceDb.getJsClass(c)));
     this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "remove peer dependency on ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
