@@ -52,7 +52,7 @@ function createConfig(shouldInstrument) {
           enforce: "pre"
         },
         {
-          test: /@azure\/storage-blob|azure-storage|AzureFileHandler|UrlFileHandler|AzureSdkFileHandler/,
+          test: /azure-storage|AzureFileHandler|UrlFileHandler|AzureSdkFileHandler/,
           use: "null-loader"
         },
         {
