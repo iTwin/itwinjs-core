@@ -213,7 +213,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async getTileCacheConfig(tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
-    if(IModelHost.tileStorage === undefined)
+    if (IModelHost.tileStorage === undefined)
       return undefined;
     const iModelId = tokenProps.iModelId ?? (await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps)).iModelId;
     return IModelHost.tileStorage.getDownloadConfig(iModelId);
@@ -232,11 +232,11 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
   }
-  /* eslint-enable deprecation/deprecation */
 
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IModelHost.usingExternalTileCache;
+    return IModelHost.tileCacheService !== undefined;
   }
+  /* eslint-enable deprecation/deprecation */
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();
