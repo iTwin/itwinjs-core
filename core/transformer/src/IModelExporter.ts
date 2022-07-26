@@ -6,15 +6,14 @@
  * @module iModels
  */
 
-import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
-import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
-import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
-  ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements,
+  ElementUniqueAspect, GeometricElement, IModelDb, IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
+import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
+import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
+import { ECVersion, IModelSchemaLoader, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
 
@@ -72,7 +71,7 @@ export abstract class IModelExportHandler {
    *       This will become a part of onExportElement once that becomes async
    * @internal
    */
-  public async preExportElement(_element: Element): Promise<void> {}
+  public async preExportElement(_element: Element): Promise<void> { }
 
   /** Called when an element should be deleted. */
   public onDeleteElement(_elementId: Id64String): void { }
@@ -709,7 +708,7 @@ export class IModelExporter {
    * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
    * @see [[IModelTransformer.loadStateFromFile]]
    */
-  protected loadAdditionalStateJson(_additionalState: any): void {}
+  protected loadAdditionalStateJson(_additionalState: any): void { }
 
   /**
    * Reload our state from a JSON object
@@ -727,8 +726,8 @@ export class IModelExporter {
     this.visitRelationships = state.visitRelationships;
     this._excludedCodeSpecNames = new Set(state.excludedCodeSpecNames);
     this._excludedElementIds = CompressedId64Set.decompressSet(state.excludedElementIds),
-    this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds),
-    this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
+      this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds),
+      this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
     this._excludedElementAspectClassFullNames = new Set(state.excludedElementAspectClassFullNames);
     this._excludedElementAspectClasses = new Set(state.excludedElementAspectClassFullNames.map((c) => this.sourceDb.getJsClass(c)));
     this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));

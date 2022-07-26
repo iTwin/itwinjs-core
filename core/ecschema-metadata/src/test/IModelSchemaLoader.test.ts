@@ -2,18 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as path from "path";
 import { IModelError } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
-import { IModelSchemaLoader } from "../../IModelSchemaLoader";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelHost, SnapshotDb } from "@itwin/core-backend";
+import { IModelSchemaLoader } from "../IModelSchemaLoader";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 
 describe("IModelSchemaLoader", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     IModelTestUtils.registerTestBimSchema();
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
 

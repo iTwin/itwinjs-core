@@ -14,6 +14,7 @@ export * from "./ECName";
 export * from "./ECObjects";
 export * from "./Exception";
 export * from "./Interfaces";
+export * from "./IModelSchemaLoader";
 export { ECClass, StructClass } from "./Metadata/Class";
 export { Constant } from "./Metadata/Constant";
 export { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
@@ -43,7 +44,7 @@ export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
-export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
+export { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 
 /** @docs-package-description
