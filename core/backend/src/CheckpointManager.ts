@@ -9,15 +9,18 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+} from "@itwin/core-common";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
+import { SQLiteDb } from "./SQLiteDb";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -123,8 +126,8 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   public static readonly cloudCacheName = "v2Checkpoints";
-  private static _cloudCache?: IModelJsNative.CloudCache;
-  private static containers = new Map<string, IModelJsNative.CloudContainer>();
+  private static _cloudCache?: SQLiteDb.CloudCache;
+  private static containers = new Map<string, SQLiteDb.CloudContainer>();
 
   public static getFolder(): LocalDirName {
     const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
@@ -150,7 +153,7 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  private static get cloudCache(): IModelJsNative.CloudCache {
+  private static get cloudCache(): SQLiteDb.CloudCache {
     if (!this._cloudCache) {
       let rootDir = process.env.CHECKPOINT_CACHE_DIR;
       if (!rootDir) {
@@ -164,7 +167,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
+      this._cloudCache = SQLiteDb.createCloudCache({ name: this.cloudCacheName, rootDir });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
@@ -181,13 +184,13 @@ export class V2CheckpointManager {
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2Props));
+      container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2Props));
       this.containers.set(v2Props.containerId, container);
     }
     return container;
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: SQLiteDb.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
@@ -202,15 +205,15 @@ export class V2CheckpointManager {
       const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-        const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
+        const logPrefetch = async (prefetch: SQLiteDb.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(new IModelHost.platform.CloudPrefetch(container, dbName));
+        logPrefetch(SQLiteDb.startCloudPrefetch(container, dbName));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -229,7 +232,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
+    const container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2props));
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }

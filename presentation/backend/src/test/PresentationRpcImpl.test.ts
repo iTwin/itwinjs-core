@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { Guid, using } from "@itwin/core-bentley";
+import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions,
@@ -18,7 +18,7 @@ import {
   FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
   Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
   RequestOptions, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
-  SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
+  SingleElementPropertiesRpcRequestOptions, VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
@@ -205,10 +205,11 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result = new ResolvablePromise<number>();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -228,10 +229,11 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result = new ResolvablePromise<number>();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -254,10 +256,11 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
         };
 
-        const managerOptions1: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions1: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result1 = new ResolvablePromise<number>();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions1))
@@ -267,10 +270,11 @@ describe("PresentationRpcImpl", () => {
         const iModelRpcProps2 = createIModelRpcProps();
         const iModelMock2 = moq.Mock.ofType<IModelDb>();
         stub_IModelDb_findByKey.withArgs(iModelRpcProps2.key).returns(iModelMock2.object);
-        const managerOptions2: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions2: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: iModelMock2.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result2 = new ResolvablePromise<number>();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions2))
@@ -294,11 +298,12 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
           rulesetVariables: rpcOptions.rulesetVariables as RulesetVariable[],
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => 999)
@@ -316,13 +321,14 @@ describe("PresentationRpcImpl", () => {
           },
         };
 
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & { diagnostics?: DiagnosticsOptions } = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & { diagnostics?: DiagnosticsOptions } = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
           diagnostics: {
             perf: true,
           },
+          cancelEvent: new BeEvent<() => void>(),
         };
         const diagnosticsResult: Diagnostics = {
           logs: [{ scope: "test" }],
@@ -345,10 +351,11 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => {
@@ -368,10 +375,11 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => {
@@ -394,10 +402,11 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
@@ -415,10 +424,11 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           parentKey: NodeKey.toJSON(parentNodeKey),
         };
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey> = {
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: parentNodeKey,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
@@ -439,11 +449,12 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
-        const managerOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
 
         presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
@@ -469,11 +480,12 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
           parentKey: NodeKey.toJSON(parentNodeKey),
         };
-        const managerOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           parentKey: parentNodeKey,
+          cancelEvent: new BeEvent<() => void>(),
         };
 
         presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
@@ -497,11 +509,12 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: 9999 },
         };
-        const managerOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
@@ -521,11 +534,12 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0 },
         };
-        const managerOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
@@ -544,11 +558,12 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
         };
-        const managerOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+        const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { size: MAX_ALLOWED_PAGE_SIZE },
           parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
@@ -571,10 +586,11 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           filterText: "filter",
         };
-        const managerOptions: FilterByTextHierarchyRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<FilterByTextHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           filterText: "filter",
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getFilteredNodePaths(managerOptions))
           .returns(async () => result)
@@ -597,11 +613,12 @@ describe("PresentationRpcImpl", () => {
           instancePaths: keyArray,
           markedIndex: 1,
         };
-        const managerOptions: FilterByInstancePathsHierarchyRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<FilterByInstancePathsHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           instancePaths: keyArray,
           markedIndex: 1,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getNodePaths(managerOptions))
           .returns(async () => result)
@@ -621,9 +638,10 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           classes,
         };
-        const managerOptions: ContentSourcesRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<ContentSourcesRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           classes,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const managerResponse = [createTestSelectClassInfo()];
         const classesMap = {};
@@ -680,7 +698,7 @@ describe("PresentationRpcImpl", () => {
             keys: keys.toJSON(),
             transport: "unparsed-json",
           };
-          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+          const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
@@ -710,7 +728,7 @@ describe("PresentationRpcImpl", () => {
             displayType: testData.displayType,
             keys: keys.toJSON(),
           };
-          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+          const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
@@ -760,11 +778,12 @@ describe("PresentationRpcImpl", () => {
           descriptor: descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const managerOptions: WithCancelEvent<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           descriptor: descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock
           .setup(async (x) => x.getContentSetSize(managerOptions))
@@ -790,12 +809,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -827,12 +847,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: descriptorOverrides,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           descriptor: descriptorOverrides,
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => undefined)
@@ -856,12 +877,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -891,12 +913,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 5, size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -926,12 +949,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -965,12 +989,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -999,12 +1024,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: descriptorOverrides,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           descriptor: descriptorOverrides,
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => undefined)
@@ -1028,12 +1054,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1060,12 +1087,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 5, size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1092,12 +1120,13 @@ describe("PresentationRpcImpl", () => {
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { size: MAX_ALLOWED_PAGE_SIZE },
           descriptor: content.descriptor.createDescriptorOverrides(),
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1131,13 +1160,14 @@ describe("PresentationRpcImpl", () => {
           type: FieldDescriptorType.Name,
           fieldName: "test",
         };
-        const managerOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const managerOptions: WithCancelEvent<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           rulesetOrId: testData.rulesetOrId,
           imodel: testData.imodelMock.object,
           descriptor: descriptor.createDescriptorOverrides(),
           fieldDescriptor,
           keys,
           paging: testData.pageOptions,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const rpcOptions: DistinctValuesRpcRequestOptions = {
           ...defaultRpcParams,
@@ -1169,13 +1199,14 @@ describe("PresentationRpcImpl", () => {
           type: FieldDescriptorType.Name,
           fieldName: "test",
         };
-        const managerOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const managerOptions: WithCancelEvent<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           rulesetOrId: testData.rulesetOrId,
           imodel: testData.imodelMock.object,
           descriptor: descriptor.createDescriptorOverrides(),
           fieldDescriptor,
           keys,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
+          cancelEvent: new BeEvent<() => void>(),
         };
         const rpcOptions: DistinctValuesRpcRequestOptions = {
           ...defaultRpcParams,
@@ -1207,21 +1238,23 @@ describe("PresentationRpcImpl", () => {
           type: FieldDescriptorType.Name,
           fieldName: "test",
         };
-        const managerOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const managerOptions: WithCancelEvent<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           rulesetOrId: testData.rulesetOrId,
           imodel: testData.imodelMock.object,
           descriptor: descriptor.createDescriptorOverrides(),
           fieldDescriptor,
           keys,
           paging: { start: 5, size: MAX_ALLOWED_PAGE_SIZE },
+          cancelEvent: new BeEvent<() => void>(),
         };
-        const rpcOptions: DistinctValuesRpcRequestOptions = {
+        const rpcOptions: WithCancelEvent<DistinctValuesRpcRequestOptions> = {
           ...defaultRpcParams,
           rulesetOrId: managerOptions.rulesetOrId,
           descriptor: descriptor.createDescriptorOverrides(),
           keys: keys.toJSON(),
           fieldDescriptor: managerOptions.fieldDescriptor,
           paging: { start: 5 },
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getPagedDistinctValues(managerOptions))
           .returns(async () => distinctValues)
@@ -1245,13 +1278,14 @@ describe("PresentationRpcImpl", () => {
           type: FieldDescriptorType.Name,
           fieldName: "test",
         };
-        const managerOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const managerOptions: WithCancelEvent<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           rulesetOrId: testData.rulesetOrId,
           imodel: testData.imodelMock.object,
           descriptor: descriptor.createDescriptorOverrides(),
           fieldDescriptor,
           keys,
           paging: { size: MAX_ALLOWED_PAGE_SIZE },
+          cancelEvent: new BeEvent<() => void>(),
         };
         const rpcOptions: DistinctValuesRpcRequestOptions = {
           ...defaultRpcParams,
@@ -1290,9 +1324,10 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
-        const managerOptions: SingleElementPropertiesRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<SingleElementPropertiesRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           elementId: "0x123",
+          cancelEvent: new BeEvent<() => void>(),
         };
         const managerResponse = testElementProperties;
         const rpcOptions: PresentationRpcRequestOptions<SingleElementPropertiesRpcRequestOptions> = {
@@ -1325,7 +1360,7 @@ describe("PresentationRpcImpl", () => {
           displayType: content.descriptor.displayType,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1334,6 +1369,7 @@ describe("PresentationRpcImpl", () => {
             contentFlags: ContentFlags.KeysOnly,
           },
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1357,7 +1393,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1366,6 +1402,7 @@ describe("PresentationRpcImpl", () => {
             contentFlags: ContentFlags.KeysOnly,
           },
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => undefined)
@@ -1393,7 +1430,7 @@ describe("PresentationRpcImpl", () => {
           displayType: content.descriptor.displayType,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_KEYS_PAGE_SIZE },
@@ -1402,6 +1439,7 @@ describe("PresentationRpcImpl", () => {
             contentFlags: ContentFlags.KeysOnly,
           },
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1429,7 +1467,7 @@ describe("PresentationRpcImpl", () => {
           displayType: content.descriptor.displayType,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 123, size: MAX_ALLOWED_KEYS_PAGE_SIZE },
@@ -1438,6 +1476,7 @@ describe("PresentationRpcImpl", () => {
             contentFlags: ContentFlags.KeysOnly,
           },
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1464,7 +1503,7 @@ describe("PresentationRpcImpl", () => {
           displayType: content.descriptor.displayType,
           keys: keys.toJSON(),
         };
-        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+        const managerOptions: WithCancelEvent<Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { size: MAX_ALLOWED_KEYS_PAGE_SIZE },
@@ -1473,6 +1512,7 @@ describe("PresentationRpcImpl", () => {
             contentFlags: ContentFlags.KeysOnly,
           },
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
           .returns(async () => content)
@@ -1500,10 +1540,11 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
           key: InstanceKey.toJSON(key),
         };
-        const managerOptions: Paged<DisplayLabelRequestOptions<IModelDb, InstanceKey>> = {
+        const managerOptions: WithCancelEvent<Paged<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> = {
           imodel: testData.imodelMock.object,
           paging: testData.pageOptions,
           key,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinition(managerOptions))
           .returns(async () => result)
@@ -1524,9 +1565,10 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           keys: keys.map(InstanceKey.toJSON),
         };
-        const managerOptions: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
+        const managerOptions: WithCancelEvent<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
           imodel: testData.imodelMock.object,
           keys,
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
@@ -1543,9 +1585,10 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           keys: keys.map(InstanceKey.toJSON),
         };
-        const managerOptions: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
+        const managerOptions: WithCancelEvent<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
           imodel: testData.imodelMock.object,
           keys: keys.slice(0, MAX_ALLOWED_PAGE_SIZE),
+          cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
@@ -1563,8 +1606,9 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: SelectionScopeRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<SelectionScopeRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result = [createRandomSelectionScope()];
         presentationManagerMock.setup(async (x) => x.getSelectionScopes(managerOptions))
@@ -1585,10 +1629,11 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
           ...defaultRpcParams,
         };
-        const managerOptions: ComputeSelectionRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<ComputeSelectionRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           elementIds: ids,
           scope: { id: scope.id },
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
@@ -1611,13 +1656,14 @@ describe("PresentationRpcImpl", () => {
             ancestorLevel,
           },
         };
-        const managerOptions: ComputeSelectionRequestOptions<IModelDb> = {
+        const managerOptions: WithCancelEvent<ComputeSelectionRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           elementIds,
           scope: {
             id: scopeId,
             ancestorLevel,
           },
+          cancelEvent: new BeEvent<() => void>(),
         };
         const result = new KeySet();
         presentationManagerMock.setup(async (x) => x.computeSelection(managerOptions))
