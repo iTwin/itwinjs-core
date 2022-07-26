@@ -26,7 +26,7 @@ interface TileContentRequestProps {
 const tileCacheAzureCredentials: AzureBlobStorageCredentials = {
   account: "devstoreaccount1",
   accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-  baseUrl: "https://127.0.0.1:10000/devstoreaccount1",
+  baseUrl: "http://127.0.0.1:10000/devstoreaccount1",
 };
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
