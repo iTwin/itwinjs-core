@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "3.3.0-dev.70",
+  "version": "3.3.0-dev.76",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -36,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.70",
-    "@itwin/core-common": "workspace:^3.3.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.76",
+    "@itwin/core-common": "workspace:^3.3.0-dev.76"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
