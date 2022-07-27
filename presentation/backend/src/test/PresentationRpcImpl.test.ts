@@ -705,6 +705,7 @@ describe("PresentationRpcImpl", () => {
             displayType: testData.displayType,
             keys,
             transport: "unparsed-json",
+            cancelEvent: new BeEvent<() => void>(),
           };
           const presentationManagerDetailStub = {
             getContentDescriptor: sinon.spy(async () => undefined),
