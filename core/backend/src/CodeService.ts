@@ -143,7 +143,7 @@ export namespace CodeService {
   export interface ValueFilter {
     readonly value?: string;
     readonly type?: string;
-    readonly valueCompare?: "GLOB" | "LIKE" | "=";
+    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     readonly orderBy?: "ASC" | "DESC";
     readonly sqlExpression?: string;
   }
