@@ -51,7 +51,10 @@ vec4 sampleSurfaceTexture() {
 const applyMaterialColor = `
   float useMatColor = float(use_material);
   vec3 rgb = mix(baseColor.rgb, mat_rgb.rgb, useMatColor * mat_rgb.a);
-  float a = mix(baseColor.a, mat_alpha.x, useMatColor * mat_alpha.y);
+  float a = baseColor.a;
+  if (use_material && mat_alpha.y > 0.0)
+    a = a * mat_alpha.x;
+
   return vec4(rgb, a);
 `;
 
