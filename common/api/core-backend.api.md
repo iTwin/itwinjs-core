@@ -1339,7 +1339,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void;
     updateFile(rscName: WorkspaceResource.Name, localFileName: LocalFileName): void;
     updateString(rscName: WorkspaceResource.Name, val: string): void;
-    }
+}
 
 // @public
 class Element_2 extends Entity {
@@ -2427,7 +2427,7 @@ export abstract class IModelDb extends IModel {
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     // @beta
     get workspace(): Workspace;
-    }
+}
 
 // @public (undocumented)
 export namespace IModelDb {
@@ -2936,7 +2936,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     // (undocumented)
     queryFileResource(rscName: WorkspaceResource.Name): {
         localFileName: string;
-        info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
+        info: IModelJsNative;
     } | undefined;
     readonly sqliteDb: SQLiteDb;
 }
@@ -4025,7 +4025,7 @@ export class SettingsSchemas {
     static reset(): void;
     // @internal (undocumented)
     static validateArrayObject<T>(val: T, schemaName: string, msg: string): T;
-    }
+}
 
 // @beta
 export type SettingType = JSONSchemaType;
@@ -4272,6 +4272,7 @@ export namespace SQLiteDb {
     }
     export interface OpenOrCreateParams {
         defaultTxn?: 0 | 1 | 2 | 3;
+        // (undocumented)
         immutable?: boolean;
         queryParam?: string;
         rawSQLite?: boolean;
@@ -4698,7 +4699,7 @@ export class V2CheckpointManager {
     static getFileName(checkpoint: CheckpointProps): LocalFileName;
     // (undocumented)
     static getFolder(): LocalDirName;
-    }
+}
 
 // @public
 export interface ValidationError {
@@ -4804,7 +4805,7 @@ export class WebMercatorModel extends SpatialModel {
 
 // @beta
 export interface Workspace {
-    close(): Promise<void>;
+    close(): void;
     readonly cloudCache?: SQLiteDb.CloudCache;
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
@@ -4851,7 +4852,7 @@ export namespace WorkspaceContainer {
 export interface WorkspaceContainer {
     // @internal (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
-    close(): Promise<void>;
+    close(): void;
     // @internal
     readonly cloudContainer?: SQLiteDb.CloudContainer;
     dropWorkspaceDb(container: WorkspaceDb): void;
