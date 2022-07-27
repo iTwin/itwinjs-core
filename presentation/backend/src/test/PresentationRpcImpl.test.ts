@@ -671,12 +671,13 @@ describe("PresentationRpcImpl", () => {
             keys: keys.toJSON(),
             transport: "unparsed-json",
           };
-          const managerOptions: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
+          const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
             keys,
             transport: "unparsed-json",
+            cancelEvent: new BeEvent<() => void>(),
           };
           const presentationManagerDetailStub = {
             getContentDescriptor: sinon.spy(async () => JSON.stringify(descriptor.toJSON())),
@@ -733,6 +734,7 @@ describe("PresentationRpcImpl", () => {
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
             keys,
+            cancelEvent: new BeEvent<() => void>(),
           };
           presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
             .returns(async () => descriptor)
@@ -755,6 +757,7 @@ describe("PresentationRpcImpl", () => {
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
             keys,
+            cancelEvent: new BeEvent<() => void>(),
           };
           presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
             .returns(async () => undefined)
