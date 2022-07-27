@@ -5,11 +5,11 @@
 @import "_helpers";
 
 // Order matters, last is top-most on screen.
-$uicore-internal-z-index-layers:
-  view-overlay,
+$uicore-internal-z-index-layers: view-overlay,
   view-content-dialog,
   content-card-popup,
   widget-grip,
+  drop-target,
   dragged-widget,
   zone-target,
   zone-outline,
@@ -35,7 +35,7 @@ $uicore-internal-z-index-layers:
 $uicore-z-index-step: 1000;
 
 @function uicore-internal-get-next-z-index-step($counter) {
-  @return $counter + $uicore-z-index-step;
+  @return $counter +$uicore-z-index-step;
 }
 
 $uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicore-internal-z-index-layers, get-function(uicore-internal-get-next-z-index-step), 0);
@@ -45,6 +45,7 @@ $uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicor
   @if map_has_key($uicore-internal-z-index-layer-map, $layer) {
     @return map-get($uicore-internal-z-index-layer-map, $layer);
   }
+
   @else {
     @error "Failed to get z-index for $layer: #{$layer}";
   }
