@@ -18,7 +18,9 @@ export type StatusBarFieldId = string | null;
  * @public
  */
 export interface StatusBarWidgetControlArgs {
-  /** Describes whether the footer is in widget or footer mode. */
+  /** Describes whether the footer is in widget or footer mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode: boolean;
   /** Currently open widget or null if no widget is open.
    * @deprecated In upcoming versions, this will be removed. Field will be have the freedom of handling their dialog behavior however they like.

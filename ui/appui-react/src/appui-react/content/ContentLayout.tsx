@@ -476,7 +476,10 @@ interface ContentLayoutState {
 export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
-  isInFooterMode: boolean;
+  /**
+  * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+  */
+  isInFooterMode?: boolean;
 }
 
 /** Content Layout React component.
