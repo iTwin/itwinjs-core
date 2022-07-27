@@ -325,6 +325,8 @@ describe("EmphasizeElements tests", () => {
     expectAppearance("0x2", 0, deemphasized);
     expectAppearance("0x2", 2, deemphasized);
     expectAppearance("0x2", 1, deemphasized);
+
+    EmphasizeElements.clear(vp);
   });
 
   it("Override to/from key", async () => {

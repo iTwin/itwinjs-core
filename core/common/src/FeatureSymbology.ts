@@ -498,11 +498,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   private getElementAnimationOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
-    if (0 === animationNodeId || this.animationNodeOverrides.size === 0)
+    if (this.animationNodeOverrides.size === 0)
       return undefined;
 
+    // NB: An animation node Id of zero means "not animated". Some providers like EmphasizeElements may provide an appearance override for unanimated nodes.
+    // That should be preserved.
     const app = this.animationNodeOverrides.get(animationNodeId);
-    if (!app || this._ignoreAnimationOverrides.length === 0)
+    if (!app || 0 === animationNodeId || this._ignoreAnimationOverrides.length === 0)
       return app;
 
     const args = scratchIgnoreAnimationOverridesArgs;
