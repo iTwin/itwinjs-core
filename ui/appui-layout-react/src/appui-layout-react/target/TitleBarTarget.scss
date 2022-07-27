@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.nz-target-titleBarTarget {
+  flex: 1 1 0;
+  position: relative;
+  overflow: hidden;
+
+  @include uicore-z-index(drop-target);
+
+  &.nz-hidden {
+    display: none;
+  }
+}
