@@ -745,28 +745,28 @@ describe("PresentationRpcImpl", () => {
           expect(actualResult.result).to.deep.eq(descriptor.toJSON());
         });
 
-      it("handles undefined descriptor response", async () => {
-        const keys = new KeySet();
-        const rpcOptions: ContentDescriptorRpcRequestOptions = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys: keys.toJSON(),
-        };
-        const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          displayType: testData.displayType,
-          keys,
-          cancelEvent: new BeEvent<() => void>(),
-        };
-        presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
-          .returns(async () => undefined)
-          .verifiable();
-        const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
-      });
+        it("handles undefined descriptor response", async () => {
+          const keys = new KeySet();
+          const rpcOptions: ContentDescriptorRpcRequestOptions = {
+            ...defaultRpcParams,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys: keys.toJSON(),
+          };
+          const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
+            imodel: testData.imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            displayType: testData.displayType,
+            keys,
+            cancelEvent: new BeEvent<() => void>(),
+          };
+          presentationManagerMock.setup(async (x) => x.getContentDescriptor(managerOptions))
+            .returns(async () => undefined)
+            .verifiable();
+          const actualResult = await impl.getContentDescriptor(testData.imodelToken, rpcOptions);
+          presentationManagerMock.verifyAll();
+          expect(actualResult.result).to.be.undefined;
+        });
       });
     });
 

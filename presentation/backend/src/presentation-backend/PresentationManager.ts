@@ -6,10 +6,8 @@
  * @module Core
  */
 
-import * as hash from "object-hash";
-import * as path from "path";
-import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
