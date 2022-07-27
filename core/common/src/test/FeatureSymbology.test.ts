@@ -12,7 +12,7 @@ import { LinePixels } from "../LinePixels";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
 import {
-  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides, IgnoreAnimationOverridesArgs,
+  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides,
 } from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
@@ -372,20 +372,20 @@ describe("FeatureOverrides", () => {
     expectAppearance("0xa", 2, halfTransp);
     expectAppearance("0xa", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xc", FeatureAppearance.defaults);
+    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line deprecation/deprecation
     expectAppearance("0xc", 1, red);
     expectAppearance("0xc", 2, halfTransp);
     expectAppearance("0xc", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xa", blue);
+    ovrs.overrideElement("0xa", blue); // eslint-disable-line deprecation/deprecation
     expectAppearance("0xa", 1, blue);
     expectAppearance("0xa", 2, merge(blue, { transparency: 0.5 }));
     expectAppearance("0xa", 3, merge(blue, { transparency: 0.5, weight: 5 }));
 
     const greenWeight3 = FeatureAppearance.fromJSON({ rgb: { r: 0, g: 255, b: 0 }, weight: 3 });
-    ovrs.overrideElement("0xb", greenWeight3);
+    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line deprecation/deprecation
     expectAppearance("0xb", 1, greenWeight3);
-    expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 })); 
+    expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 }));
     expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));
   });
 
