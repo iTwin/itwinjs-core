@@ -361,11 +361,24 @@ export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureApp
  */
 export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
 
+/** Arguments provided to a function of type [[IgnoreAnimationOverrides]].
+ * @see [[FeatureOverrides.ignoreAnimationOverrides]] to register such a function.
+ * @public
+ */
 export interface IgnoreAnimationOverridesArgs {
+  /** The Id of the element under consideration.
+   * @see [Id64.fromUint32Pair]($bentley) to convert a Uint32Pair into an [Id64String]($bentley), if needed.
+   */
   readonly elementId: Readonly<Id64.Uint32Pair>;
+  /** The [[RenderSchedule.ElementTimeline.batchId]] identifying the [[RenderSchedule.ElementTimeline]] to which the element under consideration belongs. */
   readonly animationNodeId: number;
 }
 
+/** A function that can be supplied to [[FeatureOverrides.ignoreAnimationOverrides]] to indicate whether the color or transparency overrides defined
+ * by the view's [[RenderSchedule.Script]] should be ignored. The arguments describe the element under consideration. The function should return true if that
+ * element should not have its color or transparency modified by the schedule script.
+ * @public
+ */
 export type IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean;
 
 const scratchIgnoreAnimationOverridesArgs = {
@@ -384,7 +397,8 @@ const scratchIgnoreAnimationOverridesArgs = {
  *
  * In the case of conflicts, there is an order of precedence:
  *  - Model overrides take highest precedence.
- *  - Element overrides are of higher precedence than subcategory overrides.
+ *  - Element overrides are of higher precedence than subcategory and animation overrides.
+ *  - Overrides applied by a [[RenderSchedule.Script]]'s [[RenderSchedule.ElementTimeline]] are of higher precedence than subcategory overrides, but can be suppressed on a per-element basis via [[ignoreAnimationOverrides]].
  *  - Subcategory overrides have lowest precedence.
  *
  * For example, you might specify that all features belonging to subcategory "A" should be drawn in red, and all those belonging to model "B" should be drawn in green.
@@ -454,6 +468,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public readonly animationNodeOverrides = new Map<number, FeatureAppearance>();
 
+  /* Accepts a criterion that determines whether color and transparency overrides originating from the view's [[RenderSchedule.Script]] should be ignored for a given element.
+   * The function receives a description of the element in question and returns `true` if the script's overrides should be ignored.
+   * Any number of such functions can be registered; if any one of them returns `true`, the script's overrides are not applied to the specified element.
+   *
+   * For example, applications commonly emphasize a set of elements by applying a [[FeatureAppearance.emphasized]] override to them, and specifying a highly-transparent
+   * default appearance to de-emphasize the rest of the elements in the view. If some of the de-emphasized elements' appearances are also being overridden by the schedule script, then
+   * they won't appear de-emphasized, making it difficult for the emphasized elements to stand out. In situations like this, [FeatureOverrideProvider]($frontend)s like [EmphasizeElements]($frontend) can register an [[IgnoreAnimationOverrides]] function that returns true if the element in question is not in the set of emphasized elements.
+   */
   public ignoreAnimationOverrides(ignore: IgnoreAnimationOverrides): void {
     this._ignoreAnimationOverrides.push(ignore);
   }
