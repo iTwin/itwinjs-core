@@ -389,15 +389,6 @@ describe("FeatureOverrides", () => {
     expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));
   });
 
-  it("animation overrides subsume model and subcategory overrides", () => {
-  });
-
-  it("ignores default appearance if animation overrides are applied", () => {
-  });
-
-  it("ignores other overrides if animation node is invisible", () => {
-  });
-
   it("ignores animation color/transparency overrides if specified", () => {
     const ovrs = new Overrides();
 
@@ -429,9 +420,6 @@ describe("FeatureOverrides", () => {
     expectAppearance("0x10", 10, black);
     expectAppearance("0x1", 1, black);
     expectAppearance("0x6", 5, black);
-  });
-
-  it("does not ignore animation visibility overrides", () => {
   });
 
   it("applies conflict strategy", () => {
