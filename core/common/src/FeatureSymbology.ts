@@ -468,7 +468,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public readonly animationNodeOverrides = new Map<number, FeatureAppearance>();
 
-  /* Accepts a criterion that determines whether color and transparency overrides originating from the view's [[RenderSchedule.Script]] should be ignored for a given element.
+  /** Accepts a criterion that determines whether color and transparency overrides originating from the view's [[RenderSchedule.Script]] should be ignored for a given element.
    * The function receives a description of the element in question and returns `true` if the script's overrides should be ignored.
    * Any number of such functions can be registered; if any one of them returns `true`, the script's overrides are not applied to the specified element.
    *
