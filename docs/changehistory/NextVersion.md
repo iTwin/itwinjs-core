@@ -8,6 +8,7 @@ Table of contents:
 - [Display system](#display-system)
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
+  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
 - [Frontend category APIs](#frontend-category-apis)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
@@ -59,6 +60,18 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
+
+### Improved symbology overrides for animated views
+
+The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
+
+- If any aspect of the element's appearance was overridden by a [FeatureOverrideProvider]($frontend), then **none** of the schedule script's appearance overrides would be applied to that element.
+- If some elements were being emphasized in the view (e.g., via [EmphasizeElements.emphasizeElements]($frontend)), any non-emphasized elements whose appearance was modified by the schedule script would not be drawn using the de-emphasized (typically, light transparent grey) appearance, making it difficult for the emphasized elements to stand out.
+
+Both of these problems are addressed in iTwin.js 3.3.0.
+
+- The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
+- [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
 
 ## AppUi
 
