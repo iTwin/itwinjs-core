@@ -5,7 +5,7 @@
 import "./index.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { connect, Provider } from "react-redux";
+import { connect, Provider, useSelector } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
@@ -13,12 +13,13 @@ import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } fr
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
+import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
+  ToolbarDragInteractionContext, UiFramework, UiStateStorageContext, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { assert, Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
@@ -86,6 +87,7 @@ export enum SampleAppUiActionId {
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
   setInitialViewIds = "sampleapp:setInitialViewIds",
+  setTargetVersion = "sampleapp:setTargetVersion",
 }
 
 /* ----------------------------------------------------------------------------
@@ -100,6 +102,7 @@ export interface SampleAppState {
   animationViewId: string;
   isIModelLocal: boolean;
   initialViewIds: string[];
+  targetVersion: TargetOptions["version"];
 }
 
 const initialState: SampleAppState = {
@@ -107,6 +110,7 @@ const initialState: SampleAppState = {
   animationViewId: "",
   isIModelLocal: true,  // initialize to true to hide iModelIndex from enabling which should only occur if External iModel is open.
   initialViewIds: [],
+  targetVersion: "1",
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
@@ -115,6 +119,7 @@ export const SampleAppActions = {
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
   setInitialViewIds: (viewIds: string[]) => createAction(SampleAppUiActionId.setInitialViewIds, viewIds),
+  setTargetVersion: (version: TargetOptions["version"]) => createAction(SampleAppUiActionId.setTargetVersion, version),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -151,6 +156,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setInitialViewIds: {
       return { ...state, initialViewIds: action.payload };
+    }
+    case SampleAppUiActionId.setTargetVersion: {
+      return { ...state, targetVersion: action.payload };
     }
   }
   return state;
@@ -658,6 +666,10 @@ export class SampleAppIModelApp {
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   }
+
+  public static setTargetVersion(version: TargetOptions["version"]) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setTargetVersion, version);
+  }
 }
 
 function AppDragInteractionComponent(props: { dragInteraction: boolean, children: React.ReactNode }) {
@@ -739,9 +751,11 @@ const SampleAppViewer2 = () => {
             <AppDragInteraction>
               <AppFrameworkVersion>
                 <UiStateStorageHandler>
-                  <ConfigurableUiContent
-                    appBackstage={<AppBackstageComposer />}
-                  />
+                  <TargetOptionsProvider>
+                    <ConfigurableUiContent
+                      appBackstage={<AppBackstageComposer />}
+                    />
+                  </TargetOptionsProvider>
                 </UiStateStorageHandler>
               </AppFrameworkVersion>
             </AppDragInteraction>
@@ -751,6 +765,39 @@ const SampleAppViewer2 = () => {
     </Provider >
   );
 };
+
+function TargetOptionsProvider({ children }: React.PropsWithChildren<{}>) {
+  const namespace = "ui-test-app[TargetOptions]";
+  const versionName = "version";
+  const version = useSelector((state: RootState) => state.sampleAppState.targetVersion);
+  const stateStorage = React.useContext(UiStateStorageContext);
+  const value = React.useMemo<TargetOptions>(() => ({
+    version,
+  }), [version]);
+  React.useEffect(() => {
+    let didCancel = false;
+    void (async function () {
+      const storedVersion = await stateStorage.getSetting(namespace, versionName);
+      if (didCancel)
+        return;
+
+      if (storedVersion.setting) {
+        SampleAppIModelApp.setTargetVersion(storedVersion.setting);
+      }
+    })();
+    return () => { didCancel = true; };
+  }, [stateStorage]);
+  React.useEffect(() => {
+    void (async function () {
+      await stateStorage.saveSetting(namespace, versionName, version);
+    })();
+  }, [stateStorage, version]);
+  return (
+    <TargetOptionsContext.Provider value={value}>
+      {children}
+    </TargetOptionsContext.Provider>
+  );
+}
 
 // If we are using a browser, close the current iModel before leaving
 window.addEventListener("unload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises

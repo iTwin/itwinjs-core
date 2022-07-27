@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -9,6 +10,7 @@ Table of contents:
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
 - [Frontend category APIs](#frontend-category-apis)
+  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
   - [Tool Settings title](#tool-settings-title)
@@ -18,6 +20,7 @@ Table of contents:
 - [Tooling](#tooling)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-mobile](#itwincore-mobile)
 
 ## Display system
@@ -29,19 +32,22 @@ Table of contents:
 That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
 
 ```ts
-   await IModelApp.startup({
-     tileAdmin: {
-      enableFrontendScheduleScripts: true,
-    },
-  });
+await IModelApp.startup({
+  tileAdmin: {
+    enableFrontendScheduleScripts: true,
+  },
+});
 ```
 
 Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
 
 ```ts
-  function updateScheduleScript(viewport: Viewport, props: RenderSchedule.ScriptProps): void {
-    viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-  }
+function updateScheduleScript(
+  viewport: Viewport,
+  props: RenderSchedule.ScriptProps
+): void {
+  viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+}
 ```
 
 ### Hiliting models and subcategories
@@ -62,6 +68,18 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
+### Improved symbology overrides for animated views
+
+The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
+
+- If any aspect of the element's appearance was overridden by a [FeatureOverrideProvider]($frontend), then **none** of the schedule script's appearance overrides would be applied to that element.
+- If some elements were being emphasized in the view (e.g., via [EmphasizeElements.emphasizeElements]($frontend)), any non-emphasized elements whose appearance was modified by the schedule script would not be drawn using the de-emphasized (typically, light transparent grey) appearance, making it difficult for the emphasized elements to stand out.
+
+Both of these problems are addressed in iTwin.js 3.3.0.
+
+- The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
+- [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
+
 ## AppUi
 
 ### Auto-hiding floating widgets
@@ -73,7 +91,7 @@ When a widget is in floating state, it will not automatically hide when the rest
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
 
 ```ts
-  UiFramework.setUseToolAsToolSettingsLabel(true);
+UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
 
 ## ElectronApp changes
@@ -99,6 +117,12 @@ The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have
 The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
 
 The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.getPredecessorIds]($core-backend) have been deprecated and replaced with [Element.collectReferenceIds]($core-backend) and [Element.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
+
+### @itwin/core-geometry
+
+Growable array constructors now take an optional growth factor to control additional capacity during memory reallocations (default 1.5). This can make repeated additions to these arrays more efficient. Affected classes are [GrowableBlockedArray]($core-geometry), [GrowableFloat64Array]($core-geometry), [GrowableXYArray]($core-geometry), and [GrowableXYZArray]($core-geometry). In addition, loops in `ensureCapacity`, `pushBlockCopy`, `resize`, `clone`, etc. have been replaced with more efficient calls to typed array `set`, `copyWithin`, `fill`.
+
+The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is deprecated in favor of the more appropriately named new method `setXYAtCheckedPointIndex`.
 
 ### @itwin/core-mobile
 

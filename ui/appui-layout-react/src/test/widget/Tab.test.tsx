@@ -309,34 +309,6 @@ describe("WidgetTab", () => {
     sinon.assert.notCalled(dispatch);
   });
 
-  it("should not dispatch WIDGET_TAB_DRAG_START w/o initial pointer position", () => {
-    const fakeTimers = sinon.useFakeTimers();
-    const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    render(
-      <TestNineZoneProvider
-        state={nineZone}
-        dispatch={dispatch}
-      >
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
-          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-            <WidgetTabProvider tab={nineZone.tabs.t1} />
-          </WidgetStateContext.Provider>
-        </WidgetContext.Provider>
-      </TestNineZoneProvider>,
-    );
-    const tab = document.getElementsByClassName("nz-widget-tab")[0];
-    act(() => {
-      fireEvent.mouseDown(tab);
-      fakeTimers.tick(300);
-      dispatch.resetHistory();
-      fireEvent.mouseMove(document, { clientX: 20 });
-    });
-    sinon.assert.notCalled(dispatch);
-  });
-
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
