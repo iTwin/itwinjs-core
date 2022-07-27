@@ -33,7 +33,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 
 // @beta (undocumented)
-export type AnyEnumerator = Enumerator<string | number>;
+export type AnyEnumerator = Enumerator_2<string | number>;
 
 // @beta (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
@@ -474,7 +474,7 @@ export class ECVersion {
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
-    }
+}
 
 // @beta
 export class EntityClass extends ECClass {
@@ -527,9 +527,9 @@ export class Enumeration extends SchemaItem {
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
     fromJSONSync(enumerationProps: EnumerationProps): void;
-    getEnumerator(value: string): Enumerator<string> | undefined;
+    getEnumerator(value: string): Enumerator_2<string> | undefined;
     // (undocumented)
-    getEnumerator(value: number): Enumerator<number> | undefined;
+    getEnumerator(value: number): Enumerator_2<number> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     get isInt(): boolean;
@@ -590,7 +590,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 // @beta (undocumented)
-export interface Enumerator<T> {
+interface Enumerator_2<T> {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -600,6 +600,7 @@ export interface Enumerator<T> {
     // (undocumented)
     readonly value: T;
 }
+export { Enumerator_2 as Enumerator }
 
 // @beta (undocumented)
 export interface EnumeratorProps {
@@ -1669,7 +1670,7 @@ export class SchemaCache implements ISchemaLocater {
     getSchemaItems(): IterableIterator<SchemaItem>;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
@@ -1694,18 +1695,18 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaGraph {
     constructor(schema: Schema);
     detectCycles(): ReferenceCycle[] | undefined;
-    }
+}
 
 // @internal
 export class SchemaGraphUtil {
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
-    }
+}
 
 // @beta
 export abstract class SchemaItem {
@@ -1917,7 +1918,7 @@ export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
-    }
+}
 
 // @beta (undocumented)
 export interface SchemaReferenceProps {
@@ -1935,13 +1936,13 @@ export class SchemaUnitProvider implements UnitsProvider {
     getAlternateDisplayLabels(unitName: string): Array<string>;
     getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<UnitConversion_2>;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps_2>>;
-    }
+}
 
 // @internal
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
-    }
+}
 
 // @beta (undocumented)
 export enum StrengthDirection {
@@ -2079,7 +2080,7 @@ export class UnitConversion {
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
-    }
+}
 
 // @beta (undocumented)
 export interface UnitProps extends SchemaItemProps {
@@ -2117,7 +2118,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
-    getProperties(xmlElement: Element): Iterable<[string, string, Element]>;
+    getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
     // (undocumented)
     getPropertyCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
@@ -2166,8 +2167,7 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): UnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 

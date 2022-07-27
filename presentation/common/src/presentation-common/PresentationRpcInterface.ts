@@ -186,7 +186,15 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
-  public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> { return this.forward(arguments); }
+  public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
+    arguments[1] = { ...arguments[1], transport: "unparsed-json" };
+    const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
+    if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
+      response.result = JSON.parse(response.result);
+    }
+
+    return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
+  }
 
   public async getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
 

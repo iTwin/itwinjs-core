@@ -283,6 +283,14 @@ export abstract class CurveChain extends CurveCollection {
       curve.reverseInPlace();
     this._curves.reverse();
   }
+  /** Return the index where target is found in the array of children */
+  public childIndex(target: CurvePrimitive | undefined): number | undefined {
+    for (let i = 0; i < this._curves.length; i++){
+      if (this._curves[i] === target)
+      return i;
+    }
+    return undefined;
+  }
   /** Evaluate an indexed curve at a fraction.  Return as a CurveLocationDetail that indicates the primitive.
    */
   public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail): CurveLocationDetail | undefined {

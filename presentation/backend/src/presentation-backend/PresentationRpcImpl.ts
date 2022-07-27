@@ -262,10 +262,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         keys: KeySet.fromJSON(options.keys),
       };
-      const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(options);
-      if (descriptor)
-        return descriptor.toJSON();
-      return undefined;
+      if (options.transport === "unparsed-json") {
+        // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
+        // bypassing unnecessary deserialization and serialization.
+        return Presentation.getManager().getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
+      } else {
+        // Support for older frontends that still expect a parsed descriptor
+        const descriptor = await Presentation.getManager().getContentDescriptor(options);
+        return descriptor?.toJSON();
+      }
     });
   }
 

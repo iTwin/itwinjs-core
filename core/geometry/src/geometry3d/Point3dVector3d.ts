@@ -140,11 +140,10 @@ export class XYZ implements XYAndZ {
    * @param other The other XYAndZ to compare
    * @param tol The tolerance for the comparison. If undefined, use [[Geometry.smallMetricDistance]]
    */
-  public isAlmostEqual(other: XYAndZ, tol?: number): boolean {
-    return Geometry.isSameCoordinate(this.x, other.x, tol)
-      && Geometry.isSameCoordinate(this.y, other.y, tol)
-      && Geometry.isSameCoordinate(this.z, other.z, tol);
+  public isAlmostEqual(other: Readonly<XYAndZ>, tol?: number): boolean {
+    return XYAndZ.almostEqual(this, other, tol);
   }
+
   /** Return true if this and other have equal x,y,z parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, x, tol)

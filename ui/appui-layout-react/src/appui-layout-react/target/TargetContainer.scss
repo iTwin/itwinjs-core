@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.nz-target-targetContainer {
+  display: flex;
+  gap: 1em;
+  pointer-events: none;
+
+  &.nz-horizontal {
+    flex-direction: row;
+  }
+
+  &.nz-vertical {
+    flex-direction: column;
+  }
+}
