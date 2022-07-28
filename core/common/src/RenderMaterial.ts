@@ -13,7 +13,7 @@ import { TextureMapping } from "./TextureMapping";
  * @public
  */
 export abstract class RenderMaterial {
-  /** If the material originated from a [RenderMaterialElement]($backend) in the [[IModelDb]], the Id of that element. */
+  /** If the material originated from a Material element in the [[IModelDb]], the Id of that element. */
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
@@ -70,10 +70,8 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     // eslint-disable-next-line deprecation/deprecation
     public static readonly defaults = new Params();
 
-    /** A value from 0.0 (fully transparent) to 1.0 (fully opaque) controlling the transparency of surfaces to which this material is applied.
-     * If undefined, it defaults to 1.0.
-     * The opacity of the material is multiplied by the opacity of the surface to which it is applied.
-     * So, for example, if both the surface and its material are 50% opaque (alpha = 0.5), the surface will draw with an opacity of 25% (alpha = 0.5*0.5 = 0.25).
+    /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
+     * or undefined if this material does not override surface transparency.
      */
     public get alpha(): number | undefined { return this._alpha; }
     public set alpha(alpha: number | undefined) {

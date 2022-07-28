@@ -8,8 +8,7 @@ Table of contents:
 - [Display system](#display-system)
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
-  - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
-  - [Corrected material opacity](#corrected-material-opacity)
+  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
 - [Frontend category APIs](#frontend-category-apis)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
@@ -62,7 +61,7 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
-### Improved appearance overrides for animated views
+### Improved symbology overrides for animated views
 
 The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
 
@@ -73,24 +72,6 @@ Both of these problems are addressed in iTwin.js 3.3.0.
 
 - The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
 - [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
-
-### Corrected material opacity
-
-Opacity, also known as "alpha", is the inverse of transparency. It is used when [blending](https://en.wikipedia.org/wiki/Alpha_compositing) overlapping semi-transparent graphics in a [Viewport]($frontend). The opacity of a surface is governed by three factors:
-
-- The surface's [GeometryParams]($common) - see [GeometryParams.elmTransparency]($common) and [GeometryParams.fillTransparency]($common);
-- The opacity defined by the [RenderMaterial]($common) applied to the surface, if any - see [CreateRenderMaterialArgs.alpha]($frontend); and
-- The alpha channel of the [RenderTexture]($common) applied to the surface, if any.
-
-These three factors are meant to be multiplied together to produce the final opactiy value when rendering the surface, as follows:
-
-1. Compute the base opacity from the surface and material.
-2. Sample the texture image.
-3. Multiply the texture sample's opacity by the base opacity.
-
-Previously, step 1 was performed by choosing *either* the surface's opacity *or* the material's opacity, such that if a material was applied to the surface the surface's opacity would be entirely ignored. Now, step 1 is correctly computed by *multiplying* the surface's opacity by the material's opacity.
-
-For example, if both the surface and its material are 50% opaque (`alpha = 0.5`), the base opacity is 25% (`alpha = 0.5*0.5 = 0.25`).
 
 ## AppUi
 
