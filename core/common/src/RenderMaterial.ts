@@ -13,7 +13,7 @@ import { TextureMapping } from "./TextureMapping";
  * @public
  */
 export abstract class RenderMaterial {
-  /** If the material originated from a Material  in the [[IModelDb]], the Id of that element. */
+  /** If the material originated from a [RenderMaterialElement]($backend) in the [[IModelDb]], the Id of that element. */
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
