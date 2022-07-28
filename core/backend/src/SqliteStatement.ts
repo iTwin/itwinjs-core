@@ -183,6 +183,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
     this.checkBind(this._stmt!.bindBlob(parameter, blob));
   }
+  /** Bind null to a parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   */
+  public bindNull(parameter: BindParameter) {
+    this.checkBind(this._stmt!.bindNull(parameter));
+  }
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
