@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
+import { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, Unit,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
