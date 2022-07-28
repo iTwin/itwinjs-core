@@ -1,7 +1,6 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
@@ -10,13 +9,17 @@ Table of contents:
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
 - [Frontend category APIs](#frontend-category-apis)
-  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
+  - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
+  - [Corrected material opacity](#corrected-material-opacity)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
   - [Tool Settings title](#tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
 - [IModelHostOptions](#imodelhostoptions)
 - [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
+- [RPC over IPC](#rpc-over-ipc)
+- [Presentation](#presentation)
+  - [Relationship properties](#relationship-properties)
 - [Tooling](#tooling)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
@@ -32,22 +35,19 @@ Table of contents:
 That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
 
 ```ts
-await IModelApp.startup({
-  tileAdmin: {
-    enableFrontendScheduleScripts: true,
-  },
-});
+   await IModelApp.startup({
+     tileAdmin: {
+      enableFrontendScheduleScripts: true,
+    },
+  });
 ```
 
 Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
 
 ```ts
-function updateScheduleScript(
-  viewport: Viewport,
-  props: RenderSchedule.ScriptProps
-): void {
-  viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-}
+  function updateScheduleScript(viewport: Viewport, props: RenderSchedule.ScriptProps): void {
+    viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+  }
 ```
 
 ### Hiliting models and subcategories
@@ -68,7 +68,7 @@ A [Category]($backend) provides a way to organize groups of [GeometricElement]($
 - [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
 - [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
-### Improved symbology overrides for animated views
+### Improved appearance overrides for animated views
 
 The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
 
@@ -79,6 +79,24 @@ Both of these problems are addressed in iTwin.js 3.3.0.
 
 - The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
 - [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
+
+### Corrected material opacity
+
+Opacity, also known as "alpha", is the inverse of transparency. It is used when [blending](https://en.wikipedia.org/wiki/Alpha_compositing) overlapping semi-transparent graphics in a [Viewport]($frontend). The opacity of a surface is governed by three factors:
+
+- The surface's [GeometryParams]($common) - see [GeometryParams.elmTransparency]($common) and [GeometryParams.fillTransparency]($common);
+- The opacity defined by the [RenderMaterial]($common) applied to the surface, if any - see [CreateRenderMaterialArgs.alpha]($frontend); and
+- The alpha channel of the [RenderTexture]($common) applied to the surface, if any.
+
+These three factors are meant to be multiplied together to produce the final opactiy value when rendering the surface, as follows:
+
+1. Compute the base opacity from the surface and material.
+2. Sample the texture image.
+3. Multiply the texture sample's opacity by the base opacity.
+
+Previously, step 1 was performed by choosing *either* the surface's opacity *or* the material's opacity, such that if a material was applied to the surface the surface's opacity would be entirely ignored. Now, step 1 is correctly computed by *multiplying* the surface's opacity by the material's opacity.
+
+For example, if both the surface and its material are 50% opaque (`alpha = 0.5`), the base opacity is 25% (`alpha = 0.5*0.5 = 0.25`).
 
 ## AppUi
 
@@ -91,7 +109,7 @@ When a widget is in floating state, it will not automatically hide when the rest
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
 
 ```ts
-UiFramework.setUseToolAsToolSettingsLabel(true);
+  UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
 
 ## ElectronApp changes
@@ -106,9 +124,23 @@ The argument for [IModelHost.startup]($backend) has been changed from [IModelHos
 
 [BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
 
+## RPC over IPC
+
+When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
+After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
+This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
+
+## Presentation
+
+### Relationship properties
+
+Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
+
+When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
+
 ## Tooling
 
-The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
+The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of *webpack@^5*. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
 
 ## Deprecations
 
