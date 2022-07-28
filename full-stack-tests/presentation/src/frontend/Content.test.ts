@@ -423,6 +423,7 @@ describe("Content", () => {
       expect(field.properties[0].property.navigationPropertyInfo).is.not.null;
       expect(field.properties[0].property.navigationPropertyInfo?.isForwardRelationship).to.eq(false);
       expect(field.properties[0].property.navigationPropertyInfo?.classInfo.id).to.eq("0x40");
+      expect(field.properties[0].property.navigationPropertyInfo?.targetClassInfo.id).to.eq("0x41");
 
     });
 

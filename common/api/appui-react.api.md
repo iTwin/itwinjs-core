@@ -1132,7 +1132,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
     commandId: string;
 }
 
-// @public
+// @public @deprecated
 export class ConditionalField extends React_2.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
     constructor(props: ConditionalFieldProps);
     // (undocumented)
@@ -1147,7 +1147,9 @@ export class ConditionalField extends React_2.PureComponent<ConditionalFieldProp
 
 // @public
 export interface ConditionalFieldProps extends StatusFieldProps {
-    boolFunc: (props: StatusFieldProps) => boolean;
+    boolFunc: (props: StatusFieldProps & {
+        isInFooterMode: boolean;
+    }) => boolean;
     defaultValue?: boolean;
 }
 
@@ -1486,8 +1488,8 @@ export interface ContentLayoutComponentProps extends CommonProps {
     contentGroup: ContentGroup;
     // (undocumented)
     contentLayout: ContentLayoutDef;
-    // (undocumented)
-    isInFooterMode: boolean;
+    // @deprecated (undocumented)
+    isInFooterMode?: boolean;
 }
 
 // @public
@@ -2350,11 +2352,8 @@ export class FocusToolSettings extends Tool {
     static toolId: string;
 }
 
-// @public
-export class FooterModeField extends React_2.PureComponent<FooterModeFieldProps> {
-    // (undocumented)
-    render(): React_2.ReactNode;
-}
+// @public @deprecated
+export function FooterModeField(props: FooterModeFieldProps): JSX.Element;
 
 // @public
 export interface FooterModeFieldProps extends StatusFieldProps {
@@ -2969,6 +2968,7 @@ export interface FrontstageProps extends CommonProps {
     defaultTool: ToolItemDef;
     id: string;
     isIModelIndependent?: boolean;
+    // @deprecated
     isInFooterMode?: boolean;
     leftPanel?: React_2.ReactElement<StagePanelProps>;
     rightPanel?: React_2.ReactElement<StagePanelProps>;
@@ -3903,6 +3903,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
+    // @deprecated
     targetRef?: React_2.Ref<HTMLElement>;
 }
 
@@ -6117,8 +6118,8 @@ export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
 // @public
 export interface StatusBarProps extends CommonProps {
-    // (undocumented)
-    isInFooterMode: boolean;
+    // @deprecated
+    isInFooterMode?: boolean;
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
 }
@@ -6148,6 +6149,7 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
 
 // @public
 export interface StatusBarWidgetControlArgs {
+    // @deprecated
     isInFooterMode: boolean;
     // @deprecated
     onOpenWidget: (widget: StatusBarFieldId) => void;
@@ -6184,7 +6186,8 @@ export interface StatusBarZoneProps extends CommonProps {
 
 // @public
 export interface StatusFieldProps extends CommonProps {
-    isInFooterMode: boolean;
+    // @deprecated
+    isInFooterMode?: boolean;
     // @deprecated
     onOpenWidget?: (widget: StatusBarFieldId) => void;
     // @deprecated
@@ -7884,7 +7887,7 @@ export enum WidgetType {
     ToolSettings = 4
 }
 
-// @public
+// @public @deprecated
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public
@@ -7942,7 +7945,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
     contextType?: React_2.Context<any> | undefined;
 };
 
-// @public
+// @public @deprecated
 export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated

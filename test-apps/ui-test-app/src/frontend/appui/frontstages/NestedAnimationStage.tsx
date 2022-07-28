@@ -34,7 +34,6 @@ export class NestedAnimationStage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={false}
         contentManipulationTools={
           <Zone
             widgets={[

@@ -122,7 +122,8 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
             }>
             {this.getViewFlags()}
           </Dialog>}
-          isInFooterMode={this.props.isInFooterMode}
+          // eslint-disable-next-line deprecation/deprecation
+          isInFooterMode={this.props.isInFooterMode ?? true}
         />
       </>
     );

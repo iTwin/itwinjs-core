@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "EmphasizeElements ignores script overrides for de-emphasized elements if other elements are being emphasized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
