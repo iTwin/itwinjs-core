@@ -20,7 +20,7 @@ Table of contents:
 - [RPC over IPC](#rpc-over-ipc)
 - [Presentation](#presentation)
   - [Relationship properties](#relationship-properties)
-- [Tooling](#tooling)
+- [Webpack 5](#webpack-5)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -138,7 +138,7 @@ Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-c
 
 When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
 
-## Tooling
+## Webpack 5
 
 The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of *webpack@^5*. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
 
