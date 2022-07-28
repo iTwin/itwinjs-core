@@ -2,6 +2,12 @@
   "name": "@bentley/projectshare-client",
   "entries": [
     {
+      "version": "2.19.43",
+      "tag": "@bentley/projectshare-client_v2.19.43",
+      "date": "Thu, 28 Jul 2022 15:11:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.42",
       "tag": "@bentley/projectshare-client_v2.19.42",
       "date": "Fri, 15 Jul 2022 13:10:31 GMT",

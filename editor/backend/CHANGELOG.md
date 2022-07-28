@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-editor-backend
 
-This log was last generated on Fri, 15 Jul 2022 13:10:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jul 2022 15:11:40 GMT and should not be manually modified.
+
+## 2.19.43
+Thu, 28 Jul 2022 15:11:40 GMT
+
+_Version update only_
 
 ## 2.19.42
 Fri, 15 Jul 2022 13:10:31 GMT
