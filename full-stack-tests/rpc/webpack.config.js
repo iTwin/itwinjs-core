@@ -44,9 +44,6 @@ module.exports = {
   optimization: {
     nodeEnv: "production",
   },
-  resolve: {
-    mainFields: ["module", "main"],
-  },
   externals: {
     electron: "commonjs electron",
     fs: "fs",

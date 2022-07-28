@@ -35,7 +35,17 @@ function createConfig(shouldInstrument) {
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
     },
     devtool: "nosources-source-map",
-    resolve: { mainFields: ["main", "module"] },
+    resolve: {
+      mainFields: ["main", "module"],
+      fallback: {
+        assert: require.resolve("assert"),
+        http: require.resolve("stream-http"),
+        https: require.resolve("https-browserify"),
+        path: require.resolve("path-browserify"),
+        stream: require.resolve("stream-browserify"),
+        zlib: require.resolve("browserify-zlib"),
+      },
+    },
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
@@ -89,16 +99,6 @@ function createConfig(shouldInstrument) {
         ),
       }),
     ],
-    resolve: {
-      fallback: {
-        assert: require.resolve("assert"),
-        http: require.resolve("stream-http"),
-        https: require.resolve("https-browserify"),
-        path: require.resolve("path-browserify"),
-        stream: require.resolve("stream-browserify"),
-        zlib: require.resolve("browserify-zlib"),
-      },
-    },
   };
 
   if (shouldInstrument) {
