@@ -8,13 +8,13 @@ Table of contents:
 - [Display system](#display-system)
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
-- [Frontend category APIs](#frontend-category-apis)
   - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
   - [Corrected material opacity](#corrected-material-opacity)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
   - [Tool Settings title](#tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
+- [Frontend category APIs](#frontend-category-apis)
 - [IModelHostOptions](#imodelhostoptions)
 - [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
 - [RPC over IPC](#rpc-over-ipc)
@@ -58,15 +58,6 @@ Support for hiliting models and subcategories using [HiliteSet]($frontend) has b
 - Intersection - an element will be hilited if both its model and its subcategory are hilited.
 
 Applications often work with [Category]($backend)'s instead of subcategories. You can use the new [Categories API](#frontend-category-apis) to obtain the Ids of the subcategories belonging to one or more categories.
-
-## Frontend category APIs
-
-A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
-
-[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
-
-- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
-- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
 ### Improved appearance overrides for animated views
 
@@ -115,6 +106,15 @@ By default, when the Tool Settings widget is floating, the title will read "Tool
 ## ElectronApp changes
 
 Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
+
+## Frontend category APIs
+
+A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
+
+[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
+
+- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
+- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
 ## IModelHostOptions
 
