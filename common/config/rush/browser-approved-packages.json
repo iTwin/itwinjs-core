@@ -423,10 +423,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "appui-test-providers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
     },

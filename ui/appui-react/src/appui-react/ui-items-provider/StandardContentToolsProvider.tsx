@@ -151,6 +151,7 @@ export class StandardContentToolsProvider extends BaseUiItemsProvider {
 
     // if the sectionGroup tools are to be shown then we want the status field added to allow clearing or manipulation the section
     if (this.defaultContentTools?.vertical?.sectionGroup) {
+      // eslint-disable-next-line deprecation/deprecation
       const Sections = withStatusFieldProps(SectionsStatusField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.Sections", StatusBarSection.Center, 20, <Sections hideWhenUnused />));
     }

@@ -11,6 +11,7 @@ import reactAxe from "@axe-core/react";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
+import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageManager,
@@ -383,6 +384,15 @@ function AppFrameworkVersionComponent(props: { frameworkVersion: string, childre
   );
 }
 
+function TargetOptionsProvider({ children }: React.PropsWithChildren<{}>) {
+  const value = React.useMemo<TargetOptions>(() => ({ version: "2" }), []);
+  return (
+    <TargetOptionsContext.Provider value={value}>
+      {children}
+    </TargetOptionsContext.Provider>
+  );
+}
+
 function mapDragInteractionStateToProps(state: RootState) {
   return { dragInteraction: state.frameworkState.configurableUiState.useDragInteraction };
 }
@@ -426,11 +436,13 @@ const SampleAppViewer = () => {
         <SafeAreaContext.Provider value={SafeAreaInsets.All}>
           <AppDragInteraction>
             <AppFrameworkVersion>
-              <UiStateStorageHandler>
-                <ConfigurableUiContent
-                  appBackstage={<BackstageComposer />}
-                />
-              </UiStateStorageHandler>
+              <TargetOptionsProvider>
+                <UiStateStorageHandler>
+                  <ConfigurableUiContent
+                    appBackstage={<BackstageComposer />}
+                  />
+                </UiStateStorageHandler>
+              </TargetOptionsProvider>
             </AppFrameworkVersion>
           </AppDragInteraction>
         </SafeAreaContext.Provider>

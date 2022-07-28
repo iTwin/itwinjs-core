@@ -17,6 +17,7 @@ describe("StatusBarWidgetControl", () => {
       super(info, options);
     }
 
+    // eslint-disable-next-line deprecation/deprecation
     public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
