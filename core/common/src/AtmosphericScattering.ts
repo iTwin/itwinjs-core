@@ -5,102 +5,149 @@
 /** @packageDocumentation
  * @module DisplayStyles
  */
+import { JsonUtils } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-
-export const defaultAtmosphericScatteringProps: Required<AtmosphericScatteringProps> =
-  {
-    atmosphereHeightAboveEarth: 100000.0,
-    minDensityHeightBelowEarth: 0.0,
-    densityFalloff: 1.0,
-    scatteringStrength: 5,
-    wavelengths: [700.0, 530.0, 440.0],
-    numInScatteringPoints: 10,
-    numOpticalDepthPoints: 10,
-    isPlanar: false,
-    inScatteringIntensity: 6.0,
-    outScatteringIntensity: 1.0,
-  };
+import { RgbColorProps } from "./RgbColor";
 
 /**
  * @public
  */
-export interface AtmosphericScatteringProps {
-  atmosphereHeightAboveEarth?: number;
-  minDensityHeightBelowEarth?: number;
-  densityFalloff?: number;
-  scatteringStrength?: number;
-  wavelengths?: number[];
-  numInScatteringPoints?: number;
-  numOpticalDepthPoints?: number;
-  isPlanar?: boolean;
-  inScatteringIntensity?: number;
-  outScatteringIntensity?: number;
-}
+export namespace AtmosphericScattering {
 
-/**
- * @public
- */
-export class AtmosphericScattering implements AtmosphericScatteringProps {
-  public readonly atmosphereHeightAboveEarth: number; // At the poles
-  public readonly minDensityHeightBelowEarth: number; // At the poles
-  public readonly densityFalloff: number;
-  public readonly scatteringStrength: number;
-  public readonly wavelengths: number[];
-  public readonly numInScatteringPoints: number;
-  public readonly numOpticalDepthPoints: number;
-  public readonly isPlanar: boolean;
-  public readonly inScatteringIntensity: number;
-  public readonly outScatteringIntensity: number;
+  export class Wavelengths implements RgbColorProps {
+    constructor(public readonly r: number, public readonly g: number, public readonly b: number) {}
 
-  public equals(other: AtmosphericScattering): boolean {
-    if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
-    if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth) return false;
-    if (this.densityFalloff !== other.densityFalloff) return false;
-    if (this.scatteringStrength !== other.scatteringStrength) return false;
-    if (this.wavelengths[0] !== other.wavelengths[0]) return false;
-    if (this.wavelengths[1] !== other.wavelengths[1]) return false;
-    if (this.wavelengths[2] !== other.wavelengths[2]) return false;
-    if (this.numInScatteringPoints !== other.numInScatteringPoints) return false;
-    if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
-    if (this.isPlanar !== other.isPlanar) return false;
-    if (this.inScatteringIntensity !== other.inScatteringIntensity) return false;
-    if (this.outScatteringIntensity !== other.outScatteringIntensity) return false;
-    return true;
+    public equals(other: Wavelengths): boolean {
+      return  this.r === other.r && this.g === other.g && this.b === other.b;
+    }
+
+    public toJSON(): RgbColorProps {
+      return { r: this.r, g: this.g, b: this.b };
+    }
+
+    public static fromJSON(json: RgbColorProps | undefined): Wavelengths {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      if (undefined !== json) {
+        if (typeof json.r === "number")
+          r = json.r;
+        if (typeof json.g === "number")
+          g = json.g;
+        if (typeof json.b === "number")
+          b = json.b;
+      }
+      return new Wavelengths(r, g, b);
+    }
   }
 
-  private constructor(json?: AtmosphericScatteringProps) {
-    this.atmosphereHeightAboveEarth = json?.atmosphereHeightAboveEarth ?? defaultAtmosphericScatteringProps.atmosphereHeightAboveEarth;
-    this.minDensityHeightBelowEarth = json?.minDensityHeightBelowEarth ?? defaultAtmosphericScatteringProps.minDensityHeightBelowEarth;
-    this.densityFalloff = json?.densityFalloff ?? defaultAtmosphericScatteringProps.densityFalloff;
-    this.scatteringStrength = json?.scatteringStrength ?? defaultAtmosphericScatteringProps.scatteringStrength;
-    this.wavelengths = json?.wavelengths ?? defaultAtmosphericScatteringProps.wavelengths;
-    this.numInScatteringPoints = json?.numInScatteringPoints ?? defaultAtmosphericScatteringProps.numInScatteringPoints;
-    this.numOpticalDepthPoints = json?.numOpticalDepthPoints ?? defaultAtmosphericScatteringProps.numOpticalDepthPoints;
-    this.isPlanar = json?.isPlanar ?? defaultAtmosphericScatteringProps.isPlanar;
-    this.inScatteringIntensity = json?.inScatteringIntensity ?? defaultAtmosphericScatteringProps.inScatteringIntensity;
-    this.outScatteringIntensity = json?.outScatteringIntensity ?? defaultAtmosphericScatteringProps.outScatteringIntensity;
+  export interface Props {
+    /** If defined,  */
+    atmosphereHeightAboveEarth?: number;
+    /** If defined,  */
+    brightnessAdaptationStrength?: number;
+    /** If defined,  */
+    densityFalloff?: number;
+    /** If defined,  */
+    inScatteringIntensity?: number;
+    /** If defined,  */
+    minDensityHeightBelowEarth?: number;
+    /** If defined,  */
+    numInScatteringPoints?: number;
+    /** If defined,  */
+    numOpticalDepthPoints?: number;
+    /** If defined,  */
+    outScatteringIntensity?: number;
+    /** If defined,  */
+    scatteringStrength?: number;
+    /** If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red component scatter as if it were a cyan light ray. Default value is [., ., .]. */
+    wavelengths?: RgbColorProps;
   }
 
-  public static fromJSON(json?: AtmosphericScatteringProps) {
-    return new AtmosphericScattering(json);
-  }
-
-  public toJSON(): AtmosphericScatteringProps {
-    const json: AtmosphericScatteringProps = {
-      atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
-      minDensityHeightBelowEarth: this.minDensityHeightBelowEarth,
-      densityFalloff: this.densityFalloff,
-      scatteringStrength: this.scatteringStrength,
-      wavelengths: this.wavelengths,
-      numInScatteringPoints: this.numInScatteringPoints,
-      numOpticalDepthPoints: this.numOpticalDepthPoints,
-      isPlanar: this.isPlanar,
-      inScatteringIntensity: this.inScatteringIntensity,
-      outScatteringIntensity: this.outScatteringIntensity,
+  export class Settings implements Props {
+    public static readonly defaults: Required<Props> = {
+      atmosphereHeightAboveEarth: 100000.0,
+      brightnessAdaptationStrength: 0.1,
+      densityFalloff: 1.0,
+      inScatteringIntensity: 6.0,
+      minDensityHeightBelowEarth: 0.0,
+      numInScatteringPoints: 10,
+      numOpticalDepthPoints: 10,
+      outScatteringIntensity: 1.0,
+      scatteringStrength: 5,
+      wavelengths: {r:700.0, g:530.0, b:440.0},
     };
-    return json;
+
+    public readonly atmosphereHeightAboveEarth: number; // At the poles
+    public readonly brightnessAdaptationStrength: number;
+    public readonly densityFalloff: number;
+    public readonly inScatteringIntensity: number;
+    public readonly minDensityHeightBelowEarth: number; // At the poles
+    public readonly numInScatteringPoints: number;
+    public readonly numOpticalDepthPoints: number;
+    public readonly outScatteringIntensity: number;
+    public readonly scatteringStrength: number;
+    public readonly wavelengths: Wavelengths;
+
+    public equals(other: Settings): boolean {
+      if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
+      if (this.brightnessAdaptationStrength !== other.brightnessAdaptationStrength) return false;
+      if (this.densityFalloff !== other.densityFalloff) return false;
+      if (this.inScatteringIntensity !== other.inScatteringIntensity) return false;
+      if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth) return false;
+      if (this.numInScatteringPoints !== other.numInScatteringPoints) return false;
+      if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
+      if (this.outScatteringIntensity !== other.outScatteringIntensity) return false;
+      if (this.scatteringStrength !== other.scatteringStrength) return false;
+      // eslint-disable-next-line no-console
+      console.log(`${this.wavelengths}`);
+      if (!this.wavelengths.equals(other.wavelengths)) return false;
+      return true;
+    }
+
+    private constructor(json?: Props) {
+      if (json === undefined)
+        json = {};
+
+      this.atmosphereHeightAboveEarth = JsonUtils.asDouble(json.atmosphereHeightAboveEarth, Settings.defaults.atmosphereHeightAboveEarth);
+      this.brightnessAdaptationStrength = JsonUtils.asDouble(json.brightnessAdaptationStrength, Settings.defaults.brightnessAdaptationStrength);
+      this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings.defaults.densityFalloff);
+      this.inScatteringIntensity = JsonUtils.asDouble(json.inScatteringIntensity, Settings.defaults.inScatteringIntensity);
+      this.minDensityHeightBelowEarth = JsonUtils.asDouble(json.minDensityHeightBelowEarth, Settings.defaults.minDensityHeightBelowEarth);
+      this.numInScatteringPoints = JsonUtils.asDouble(json.numInScatteringPoints, Settings.defaults.numInScatteringPoints);
+      this.numOpticalDepthPoints = JsonUtils.asDouble(json.numOpticalDepthPoints, Settings.defaults.numOpticalDepthPoints);
+      this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings.defaults.outScatteringIntensity);
+      this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings.defaults.scatteringStrength);
+      this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings.defaults.wavelengths);
+    }
+
+    public static fromJSON(json?: Props) {
+      return new Settings(json);
+    }
+
+    public toJSON(): Props {
+      const json: Props = {
+        atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
+        brightnessAdaptationStrength: this.brightnessAdaptationStrength,
+        densityFalloff: this.densityFalloff,
+        inScatteringIntensity: this.inScatteringIntensity,
+        minDensityHeightBelowEarth: this.minDensityHeightBelowEarth,
+        numInScatteringPoints: this.numInScatteringPoints,
+        numOpticalDepthPoints: this.numOpticalDepthPoints,
+        outScatteringIntensity: this.outScatteringIntensity,
+        scatteringStrength: this.scatteringStrength,
+        wavelengths: this.wavelengths.toJSON(),
+      };
+      return json;
+    }
   }
 }
+
+/**
+ * @public
+ * Describes the properties with which ambient occlusion should be drawn.
+ * These properties correspond to a horizon-based ambient occlusion approach.
+ */
 
 export interface AtmosphericSkyProps {
   display?: boolean;

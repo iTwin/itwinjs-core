@@ -36,7 +36,7 @@ export interface RenderPlan {
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
   readonly thematic?: ThematicDisplay;
-  readonly atmosphericScattering?: AtmosphericScattering;
+  readonly atmosphericScattering?: AtmosphericScattering.Settings;
   readonly isFadeOutActive: boolean;
   readonly analysisTexture?: RenderTexture;
   readonly frustum: Frustum;
