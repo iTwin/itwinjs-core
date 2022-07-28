@@ -115,7 +115,7 @@ export namespace CodeService {
 
   export interface SpecNameAndId { readonly idxId: EntryId, readonly name: string }
 
-  export type SpecNameOrId = SpecNameAndId |
+  export type SpecNameOrId = string | SpecNameAndId |
   { readonly name: CodeSpecName, idxId?: never, type?: string } |
   { readonly idxId: EntryId, name?: never, type?: string };
 
