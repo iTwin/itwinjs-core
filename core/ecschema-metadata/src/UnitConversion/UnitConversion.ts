@@ -12,7 +12,7 @@ import { SchemaItemType } from "../ECObjects";
  * @internal
  */
 export class UnitConversion {
-  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) { }
+  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
 
   /**
    * Converts x using UnitConversion
