@@ -25,8 +25,7 @@ describe("PrimitiveBuilder", () => {
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const spatialView = (await imodel.views.load("0x34")) as SpatialViewState;
+    const spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
     viewport = ScreenViewport.create(viewDiv, spatialView);
@@ -367,7 +366,6 @@ describe("PrimitiveBuilder", () => {
     const graphic = primBuilder.finishGraphic(accum);
     expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
     expect(graphic instanceof Branch).to.be.true;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     expect((graphic as Branch).branch.entries.length).to.equal(2);
   });
 });

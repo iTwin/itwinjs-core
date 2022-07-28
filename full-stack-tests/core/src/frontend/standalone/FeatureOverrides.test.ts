@@ -17,7 +17,7 @@ function waitUntilTimeHasPassed() {
   }
 }
 
-describe.skip("FeatureOverrides", () => {
+describe("FeatureOverrides", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
@@ -30,7 +30,6 @@ describe.skip("FeatureOverrides", () => {
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -49,7 +48,6 @@ describe.skip("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
@@ -58,7 +56,7 @@ describe.skip("FeatureOverrides", () => {
     ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
-    console.log(ovr.anyHilited);
+
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new HiliteSet(imodel); hls.setHilite("0x1", true);
@@ -75,7 +73,6 @@ describe.skip("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
