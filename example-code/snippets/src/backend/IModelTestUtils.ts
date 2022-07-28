@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
-import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -91,11 +91,8 @@ export class IModelTestUtils {
       cacheDir = path.join(tempDir, "iModelJs_cache");
     }
 
-    const imHostConfig = new IModelHostConfiguration();
-    imHostConfig.cacheDir = cacheDir;
-
     // Start up IModelHost, supplying the configuration.
-    await IModelHost.startup(imHostConfig);
+    await IModelHost.startup({ cacheDir });
   }
   // __PUBLISH_EXTRACT_END__
 

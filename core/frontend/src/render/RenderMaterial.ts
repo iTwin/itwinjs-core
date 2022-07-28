@@ -28,9 +28,10 @@ export interface CreateRenderMaterialArgs {
    */
   source?: RenderMaterialSource;
 
-  /** Specifies the transparency of the material from 0.0 (fully transparent) to 1.0 (fully opaque).
-   * If defined, this overrides the transparency of any surface to which the material is applied, and is multiplied with the
-   * transparency of the material's [[textureMapping]] when sampling the texture.
+  /** Specifies the opacity of the material from 0.0 (fully transparent) to 1.0 (fully opaque).
+   * The opacity of the material is multiplied by the opacity of the surface to which it is applied.
+   * So, for example, if both the surface and its material are 50% opaque (alpha = 0.5), the surface will draw with an opacity of 25% (alpha = 0.5*0.5 = 0.25).
+   * Default: 1.0 (fully opaque).
    */
   alpha?: number;
 

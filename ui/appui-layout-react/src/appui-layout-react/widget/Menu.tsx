@@ -37,7 +37,9 @@ export function WidgetMenu(props: WidgetMenuProps) {
       showShadow={false}
       target={props.target}
     >
-      {props.children}
+      <div className="nz-widget-menu_tabs">
+        {props.children}
+      </div>
     </Popup>
   );
 }

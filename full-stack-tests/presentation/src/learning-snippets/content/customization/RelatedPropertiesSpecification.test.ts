@@ -367,6 +367,91 @@ describe("Learning Snippets", () => {
         }]);
       });
 
+      it("uses `relationshipProperties` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipProperties.Ruleset
+        // There's a content rule for returning content of given `meta.ECClassDef` instance. The produced content is customized to
+        // additionally include a specific relationship property of the `meta.ClassHasBaseClasses` relationship.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              relatedProperties: [{
+                propertiesSource: [{
+                  relationship: { schemaName: "ECDbMeta", className: "ClassHasBaseClasses" },
+                  direction: RelationshipDirection.Forward,
+                }],
+                properties: ["Name"],
+                relationshipProperties: ["Ordinal"],
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that the relationship property is picked up
+        const content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "ECDbMeta:ECClassDef", id: "0x3b" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.containSubset([{
+          label: "ClassHasBaseClasses",
+          nestedFields: [{
+            label: "Ordinal",
+            category: {
+              name: "ClassHasBaseClasses",
+            },
+          }],
+        }]);
+      });
+
+      it("uses `forceCreateRelationshipCategory` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.ForceCreateRelationshipCategory.Ruleset
+        // There's a content rule for returning content of given `bis.PhysicalModel` instance. The produced content is customized to
+        // additionally create a category for the `bis.ModelModelsElement` relationship.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              relatedProperties: [{
+                propertiesSource: [{
+                  relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                  direction: RelationshipDirection.Forward,
+                  targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
+                }],
+                properties: ["UserLabel"],
+                forceCreateRelationshipCategory: true,
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that the related property is categorized under relationship category.
+        const content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.containSubset([{
+          label: "Physical Partition",
+          nestedFields: [{
+            label: "User Label",
+            category: {
+              name: "ModelModelsElement-PhysicalPartition",
+            },
+          }],
+        }]);
+      });
+
     });
 
   });

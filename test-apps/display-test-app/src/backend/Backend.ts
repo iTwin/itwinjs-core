@@ -11,7 +11,7 @@ import { IModelBankClient } from "@bentley/imodelbank-client";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelbank-client/lib/cjs/imodelhub-node";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -199,7 +199,7 @@ export const loadBackendConfig = (): DtaConfiguration => {
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = loadBackendConfig();
 
-  const iModelHost = new IModelHostConfiguration();
+  const iModelHost: IModelHostOptions = {};
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 

@@ -100,9 +100,8 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/transformer/lib/**/*.js"
-      ],
-      "console": "integratedTerminal"
+        "${workspaceFolder}/core/{backend,transformer}/lib/**/*.js"
+      ]
     },
     {
       "name": "Bentley Tests",
