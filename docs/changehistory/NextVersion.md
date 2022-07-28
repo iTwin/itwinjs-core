@@ -79,7 +79,7 @@ Both of these problems are addressed in iTwin.js 3.3.0.
 Opacity, also known as "alpha", is the inverse of transparency. It is used when [blending](https://en.wikipedia.org/wiki/Alpha_compositing) overlapping semi-transparent graphics in a [Viewport]($frontend). The opacity of a surface is governed by three factors:
 
 - The surface's [GeometryParams]($common) - see [GeometryParams.elmTransparency]($common) and [GeometryParams.fillTransparency]($common);
-- The opacity defined by the [RenderMaterial]($common) applied to the surface, if any - see [CreateRenderMaterialArgs.alpha]($common); and
+- The opacity defined by the [RenderMaterial]($common) applied to the surface, if any - see [CreateRenderMaterialArgs.alpha]($frontend); and
 - The alpha channel of the [RenderTexture]($common) applied to the surface, if any.
 
 These three factors are meant to be multiplied together to produce the final opactiy value when rendering the surface, as follows:
