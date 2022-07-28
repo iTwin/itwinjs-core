@@ -49,10 +49,10 @@ export function DragManagerProvider(props: { children?: React.ReactNode }) {
   );
 }
 
-type DragItemInfo = Parameters<DragManager["handleDragStart"]>[0]["info"];
+type DragInfo = Parameters<DragManager["handleDragStart"]>[0]["info"];
 
 /** @internal */
-export function createDragItemInfo(args?: Partial<DragItemInfo>): DragItemInfo {
+export function createDragInfo(args?: Partial<DragInfo>): DragInfo {
   return {
     initialPointerPosition: new Point(),
     lastPointerPosition: new Point(),
@@ -65,7 +65,7 @@ export function createDragItemInfo(args?: Partial<DragItemInfo>): DragItemInfo {
 /** @internal */
 export function createDragStartArgs(): Parameters<DragManager["handleDragStart"]>[0] {
   return {
-    info: createDragItemInfo(),
+    info: createDragInfo(),
     item: {
       id: "",
       type: "tab",

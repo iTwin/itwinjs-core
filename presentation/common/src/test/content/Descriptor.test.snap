@@ -28,6 +28,10 @@ Object {
       "label": "label4",
       "name": "name4",
     },
+    "0x5": Object {
+      "label": "label5",
+      "name": "name5",
+    },
   },
   "connectionId": "",
   "contentFlags": 0,
@@ -145,6 +149,8 @@ Object {
             "navigationPropertyInfo": Object {
               "classInfo": "0x4",
               "isForwardRelationship": true,
+              "isTargetPolymorphic": true,
+              "targetClassInfo": "0x5",
             },
             "type": "TestPropertyType",
           },

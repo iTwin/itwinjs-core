@@ -85,22 +85,14 @@ TabIdContext.displayName = "nz:TabIdContext";
 export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void) {
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   React.useEffect(() => {
-    const handleSaveTransientState = (id: TabState["id"]) => {
+    return widgetContentManager.onSaveTransientState.add((id) => {
       tabId === id && onSave && onSave();
-    };
-    widgetContentManager.onSaveTransientState.add(handleSaveTransientState);
-    return () => {
-      widgetContentManager.onSaveTransientState.remove(handleSaveTransientState);
-    };
+    });
   }, [widgetContentManager, onSave, tabId]);
   React.useEffect(() => {
-    const handleRestoreTransientState = (id: TabState["id"]) => {
+    return widgetContentManager.onRestoreTransientState.add((id) => {
       tabId === id && onRestore && onRestore();
-    };
-    widgetContentManager.onRestoreTransientState.add(handleRestoreTransientState);
-    return () => {
-      widgetContentManager.onRestoreTransientState.remove(handleRestoreTransientState);
-    };
+    });
   }, [widgetContentManager, onRestore, tabId]);
 }
 

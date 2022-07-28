@@ -133,7 +133,16 @@ describe("PropertiesField", () => {
       const category = createTestCategoryDescription();
       const json = createTestPropertiesContentField({
         category,
-        properties: [{ property: createTestPropertyInfo({ navigationPropertyInfo: { classInfo: createTestECClassInfo(), isForwardRelationship: false } }) }],
+        properties: [{
+          property: createTestPropertyInfo({
+            navigationPropertyInfo: {
+              classInfo: createTestECClassInfo(),
+              isForwardRelationship: false,
+              targetClassInfo: createTestECClassInfo(),
+              isTargetPolymorphic: true,
+            },
+          }),
+        }],
       }).toJSON();
       const field = PropertiesField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
