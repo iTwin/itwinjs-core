@@ -210,7 +210,7 @@ float densityAtPoint(vec3 point) {
   float atmosphereDistanceFromUnitSphere = u_minDensityToAtmosphereScaleFactor - 1.0;
   float distanceNotZero = atmosphereDistanceFromUnitSphere == 0.0 ? 0.0 : 1.0;
   float minToMaxRatio = distanceNotZero * (max(length(pointToMinDensityUnitSphere) - 1.0, 0.0) / atmosphereDistanceFromUnitSphere);
-  return exp(-minToMaxRatio * u_densityFalloff / length(u_earthCenter)) * (1.0 - minToMaxRatio);
+  return exp(-minToMaxRatio * u_densityFalloff) * (1.0 - minToMaxRatio);
 }
 `;
 
@@ -242,8 +242,20 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 base
     inScatterPoint += step;
   }
   inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize / u_earthScaleMatrix[2][2];
-  float originalColorTransmittance = exp(-viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity);
-  return baseColor * originalColorTransmittance + inScatteredLight;
+  // float originalColorTransmittance = exp(-viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity);
+
+  // float brightnessAdaptionStrength = 0.15;
+  float reflectedLightOutScatterStrength = 3.0;
+  float brightnessAdaption = (inScatteredLight.r + inScatteredLight.g + inScatteredLight.b) * u_brightnessAdaptionStrength;
+  float brightnessSum = viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity * reflectedLightOutScatterStrength + brightnessAdaption;
+  float reflectedLightStrength = exp(-brightnessSum);
+  float hdrStrength = clamp((baseColor.r + baseColor.g + baseColor.b) / 3.0 - 1.0, 0.0, 1.0);
+  reflectedLightStrength = mix(reflectedLightStrength, 1.0, hdrStrength);
+  vec3 reflectedLight = baseColor * reflectedLightStrength;
+
+
+  // return vec3(reflectedLightStrength);
+  return reflectedLight + inScatteredLight;
 }
 `;
 
@@ -251,23 +263,19 @@ const applyAtmosphericScatteringSphere = `
 vec4 applyAtmosphericScatteringSphere(vec3 rayDir, float sceneDepth, vec4 baseColor) {
   // We get the distance the ray traveled from the eye to the atmosphere and
   // the distance it traveled in the atmosphere to reach the fragment.
-
   vec2 atmosphereHitInfo = eyeAtmosphereIntersection(rayDir);
   vec2 earthHitInfo = eyeEarthIntersection(rayDir);
-  float distanceToEarth = min(sceneDepth, earthHitInfo[0]);
-  float distanceToAtmosphere = atmosphereHitInfo[0];
 
   // We remove distance through atmosphere beyond the fragment's position
-  float distanceThroughAtmosphere = min(atmosphereHitInfo[1], distanceToEarth - distanceToAtmosphere);
+  float distanceThroughAtmosphere = min(atmosphereHitInfo[1], min(sceneDepth, earthHitInfo[0]) - atmosphereHitInfo[0]); // PREVENTS GRID EFFECT
+  float distanceThroughEarth = min(earthHitInfo[1], sceneDepth - earthHitInfo[0]);
 
-  if (distanceThroughAtmosphere > 0.0) {
+  if (distanceThroughAtmosphere - distanceThroughEarth > 0.0) {
     // point on ray where atmosphere starts
-    vec3 pointInAtmosphere = rayDir * (distanceToAtmosphere + EPSILON);
+    vec3 pointInAtmosphere = rayDir * (atmosphereHitInfo[0] + EPSILON);
     vec3 light = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere - EPSILONx2, baseColor.rgb);
-    // return vec4(debugColor, baseColor.a);
     return vec4(light, baseColor.a);
   }
-  // return vec4(debugColor, baseColor.a);
   return baseColor;
 }
 `;
@@ -734,6 +742,16 @@ export function addAtmosphericScattering(
     },
     VariablePrecision.High
   );
+  frag.addUniform(
+    "u_brightnessAdaptionStrength",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindBrightnessAdaptationStrength(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addFunction(raySphere);
   frag.addFunction(_eyeEllipsoidIntersection);
@@ -743,21 +761,11 @@ export function addAtmosphericScattering(
   frag.addFunction(eyeAtmosphereIntersection);
   frag.addFunction(eyeEarthIntersection);
 
-  // frag.addFunction(linePlaneIntersection);
-  // frag.addFunction(isLineIntersectingPlane);
-  // frag.addFunction(getAngle);
-  // frag.addFunction(getProjectedDistance);
-
-  // frag.addFunction(densityAtPointPlanar);
-
   frag.addFunction(opticalDepth);
-  // frag.addFunction(opticalDepthPlanar);
 
   frag.addFunction(calculateScattering);
-  // frag.addFunction(calculateScatteringPlanar);
 
   frag.addFunction(applyAtmosphericScatteringSphere);
-  // frag.addFunction(applyAtmosphericScatteringPlanar);
 
   frag.addFunction(computeRayDirDefault);
   if (isSky) {
@@ -765,15 +773,6 @@ export function addAtmosphericScattering(
   } else {
     frag.addFunction(computeSceneDepthDefault);
   }
-  // else if (isRealityMesh) {
-  //   frag.addUniform("u_isMapTile", VariableType.Boolean, (program) => {
-  //     program.addGraphicUniform("u_isMapTile", (uniform, params) => {
-  //       uniform.setUniform1i(params.geometry.asRealityMesh!.isMapTile ? 1 : 0);
-  //     });
-  //   });
-  //   frag.addFunction(projectedOntoEarthEllipsoidSceneDepth);
-  //   frag.addFunction(computeSceneDepthRealityMesh);
-  // }
 
   frag.set(
     FragmentShaderComponent.ApplyAtmosphericScattering,
