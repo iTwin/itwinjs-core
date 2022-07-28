@@ -17,7 +17,7 @@ import { System } from "../System";
 import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
-import { addAtmosphericScattering } from "./AthmosphericScattering";
+import { addAtmosphericScatteringEffect } from "./AthmosphericScattering";
 import { addVaryingColor } from "./Color";
 import { addEyeSpace, addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
@@ -240,7 +240,7 @@ function addColorOverrideMix(frag: FragmentShaderBuilder) {
 }
 
 function addAtmosphericScatteringToRealityMesh(builder: ProgramBuilder) {
-  addAtmosphericScattering(builder, false, true);
+  addAtmosphericScatteringEffect(builder, false);
 }
 
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
@@ -346,4 +346,3 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   return builder;
 }
-

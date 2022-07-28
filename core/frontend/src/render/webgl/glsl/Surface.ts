@@ -40,7 +40,6 @@ import { addTranslucency } from "./Translucency";
 import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
-import { addAtmosphericScattering } from "./AthmosphericScattering";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -631,11 +630,6 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   if (flags.isWiremesh)
     addWiremesh(builder);
-
-  // builder.frag.addGlobal("use_atmosphericScattering", VariableType.Boolean);
-  // if (System.instance.capabilities.isWebGL2)
-  //   builder.frag.addInitializer("use_atmosphericScattering = ;");
-  addAtmosphericScattering(builder);
 
   return builder;
 }
