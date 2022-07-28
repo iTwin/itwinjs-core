@@ -56,7 +56,6 @@ interface MaterialParams {
 
 interface DecodedMaterialParams extends MaterialParams {
   rgbOverridden: boolean;
-  alphaOverridden: boolean;
   textureWeight: number;
 }
 
@@ -70,8 +69,7 @@ function decodeMaterialParams(params: PackedMaterialParams, rgba: Float32Array):
 
   const rgbOverridden = -1 !== rgba[0];
   const diffuseColor = rgbOverridden ? ColorDef.from(rgba[0] * 255 + 0.5, rgba[1] * 255 + 0.5, rgba[2] * 255 + 0.5) : undefined;
-  const alphaOverridden = -1 !== rgba[3];
-  const transparency = alphaOverridden ? 1 - rgba[3] : 0;
+  const transparency = 1 - rgba[3];
 
   return {
     diffuseColor,
@@ -82,7 +80,6 @@ function decodeMaterialParams(params: PackedMaterialParams, rgba: Float32Array):
     specularExponent: matSpecular.w,
     transparency,
     rgbOverridden,
-    alphaOverridden,
   };
 }
 
@@ -120,12 +117,12 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
 
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
-  expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
+
+  const expectedTransparency = undefined !== expected.alpha ? 1 - expected.alpha : 0;
+  expectEqualFloats(actual.transparency, expectedTransparency);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
-  if (undefined !== expected.alpha)
-    expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
 // eslint-disable-next-line deprecation/deprecation

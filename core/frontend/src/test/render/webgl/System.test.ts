@@ -451,6 +451,7 @@ describe("System", () => {
       const defaults: CreateRenderMaterialArgs = {
         diffuse: { weight: 0.6 },
         specular: { weight: 0.4, exponent: 13.5, color: { r: 255, g: 255, b: 255 } },
+        alpha: 1,
       };
 
       const test = (args: CreateRenderMaterialArgs, expected?: CreateRenderMaterialArgs) => {
