@@ -70,7 +70,7 @@ import { Localization } from "@itwin/core-common";
 // *This can be replaced with your own implementation if you want!
 import { ITwinLocalization } from "@itwin/core-i18n";
 
-var myCustomLocalization: Localization = new ITwinLocalization();
+const myCustomLocalization: Localization = new ITwinLocalization();
 
 await IModelApp.startup({ localization: myCustomLocalization });
 
@@ -101,7 +101,7 @@ IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedI
 
 Notice how in the second statement, "{{username}}" from SafetyBaseMessages:info.login.loggedIn's value was replaced with "John_Smith_123". The [Localization.getLocalizedString]($common) method accepts an optional key-value dictionary argument. The method will then substitute the values in this dictionary with corresponding keys in the localized string as long as they are surrounded by {{ }}. This substitution is called "interpolation" in internationalization terminology.
 
-Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect the language if none is set. However, if that fails, the langauge will be set to English. Additionally, the selected language can be manually changed by calling the [Localization.changeLanguage]($common) interface method. Changing the language requires reacquiring the relevant namespace JSON files, so use `await` to wait for the returned Promise to resolve.
+Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect the language if none is set. However, if that fails, the language will be set to English. Additionally, the selected language can be manually changed by calling the [Localization.changeLanguage]($common) interface method. Changing the language requires reacquiring the relevant namespace JSON files, so use `await` to wait for the returned Promise to resolve.
 
 ```ts
 await IModelApp.localization.changeLanguage("de");
