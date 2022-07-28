@@ -123,7 +123,7 @@ describe("PresentationManager", () => {
 
   describe("Cancel request", () => {
 
-    it.skip("cancels 'getNodes' request", async () => {
+    it("cancels 'getNodes' request", async () => {
       await using(new PresentationManager(), async (manager) => {
         const cancelEvent = new BeEvent<() => void>();
         const promise = manager.getNodes({ imodel, rulesetOrId: {
