@@ -51,10 +51,7 @@ vec4 sampleSurfaceTexture() {
 const applyMaterialColor = `
   float useMatColor = float(use_material);
   vec3 rgb = mix(baseColor.rgb, mat_rgb.rgb, useMatColor * mat_rgb.a);
-  float a = baseColor.a;
-  if (use_material)
-    a = a * mat_alpha;
-
+  float a = mix(baseColor.a, mat_alpha.x, useMatColor * mat_alpha.y);
   return vec4(rgb, a);
 `;
 
@@ -89,7 +86,7 @@ void decodeMaterialParams(vec4 params) {
 const decodeMaterialColor = `
 void decodeMaterialColor(vec4 rgba) {
   mat_rgb = vec4(rgba.rgb, float(rgba.r >= 0.0));
-  mat_alpha = rgba.a >= 0.0 ? rgba.a : 1.0;
+  mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
 }
 `;
 
@@ -119,7 +116,7 @@ void readMaterialAtlas() {
 
   float flags = weightsAndFlags.w;
   mat_rgb = vec4(rgba.rgb, float(flags == 1.0 || flags == 3.0));
-  mat_alpha = (flags == 2.0 || flags == 3.0) ? rgba.a : 1.0;
+  mat_alpha = vec2(rgba.a, float(flags == 2.0 || flags == 3.0));
 
   float specularExponent = unpackFloat(packedSpecularExponent);
   g_materialParams.x = weightsAndFlags.y + weightsAndFlags.z * 256.0;
@@ -160,7 +157,7 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
 
   const vert = builder.vert;
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
-  vert.addGlobal("mat_alpha", VariableType.Float);
+  vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
   if (System.instance.capabilities.isWebGL2)
     vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");

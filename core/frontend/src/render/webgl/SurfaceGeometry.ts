@@ -156,16 +156,15 @@ export class SurfaceGeometry extends MeshGeometry {
       return opaquePass;
 
     // We have 3 sources of alpha: the material, the texture, and the color.
-    // The base alpha is the product of the material alpha and the color's alpha.
+    // Base alpha comes from the material if it overrides it; otherwise from the color.
     // The texture's alpha is multiplied by the base alpha.
-    // If the material is disabled, the material alpha is 1.
     // So we must draw in the translucent pass if the texture has transparency OR the base alpha is less than 1.
-    let hasAlpha = this.getColor(target).hasTranslucency;
-    if (!hasAlpha) {
-      const mat = wantMaterials(vf) ? this.mesh.materialInfo : undefined;
-      if (mat)
-        hasAlpha = mat.hasTranslucency;
-    }
+    let hasAlpha = false;
+    const mat = wantMaterials(vf) ? this.mesh.materialInfo : undefined;
+    if (undefined !== mat && mat.overridesAlpha)
+      hasAlpha = mat.hasTranslucency;
+    else
+      hasAlpha = this.getColor(target).hasTranslucency;
 
     if (!hasAlpha) {
       // ###TODO handle TextureTransparency.Mixed; remove Texture.hasTranslucency.

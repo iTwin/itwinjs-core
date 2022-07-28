@@ -12,15 +12,16 @@ import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
- *  - alpha (float in [0..1]). This is multiplied with the element's transparency. If unspecified, it is 1 (fully opaque).
+ *  - alpha (float in [0..1])
  *  - is rgb overridden (bool)
+ *  - is alpha overridden (bool)
  *  - specular exponent (float).
  *  - specular color (vec3).
  *  - specular weight (float in [0..1])
  *  - diffuse weight (float in [0..1])
  *  - texture weight (float in [0..1])
  *
- * The rgb and alpha are applied in the vertex shader. The rgb components can be negative, indicating the material does not override it.
+ * The rgb and alpha are applied in the vertex shader. Either can be negative, indicating the material does not override it.
  *
  * The rest are passed as a varying vec4 to be applied in the fragment shader.
  * All but the specular exponent are compressed such that floats in [0..1] become integers in [0..255] and concatenated bitwise in pairs into 16-bit integer values.
@@ -47,8 +48,8 @@ export class Material extends RenderMaterial {
   public readonly rgba = new Float32Array(4);
 
   public get overridesRgb() { return this.rgba[0] >= 0; }
-  public get alpha() { return this.rgba[3]; }
-  public get hasTranslucency() { return this.alpha < 1; }
+  public get overridesAlpha() { return this.rgba[3] >= 0; }
+  public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
@@ -63,7 +64,8 @@ export class Material extends RenderMaterial {
       this.rgba[0] = this.rgba[1] = this.rgba[2] = -1;
     }
 
-    this.rgba[3] = params.alpha ?? 1;
+    const alpha = undefined !== params.alpha ? params.alpha : -1;
+    this.rgba[3] = alpha;
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
     this.setInteger(scale(params.diffuse), scale(params.specular), 0);
