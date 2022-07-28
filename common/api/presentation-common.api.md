@@ -4,6 +4,7 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
@@ -1557,10 +1558,15 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 export interface NavigationPropertyInfo {
     classInfo: ClassInfo;
     isForwardRelationship: boolean;
+    isTargetPolymorphic: boolean;
+    targetClassInfo: ClassInfo;
 }
 
 // @beta (undocumented)
 export namespace NavigationPropertyInfo {
+    export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfo;
     export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
     export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -1574,6 +1580,10 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     classInfo: TClassInfoJSON;
     // (undocumented)
     isForwardRelationship: boolean;
+    // (undocumented)
+    isTargetPolymorphic: boolean;
+    // (undocumented)
+    targetClassInfo: TClassInfoJSON;
 }
 
 // @public
@@ -2412,12 +2422,14 @@ export enum RelatedPropertiesSpecialValues {
 // @public
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
+    forceCreateRelationshipCategory?: boolean;
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
+    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     // @beta
     skipIfDuplicate?: boolean;
 }
@@ -3068,6 +3080,12 @@ export enum VariableValueTypes {
     IntArray = "int[]",
     String = "string"
 }
+
+// @public
+export type WithCancelEvent<TOptions extends {}> = TOptions & {
+    cancelEvent?: BeEvent<() => void>;
+};
+
 
 // (No @packageDocumentation comment for this package)
 
