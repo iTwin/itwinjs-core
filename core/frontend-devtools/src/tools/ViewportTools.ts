@@ -194,6 +194,30 @@ export class SetAspectRatioSkewTool extends Tool {
   }
 }
 
+/** Changes the [ModelSubCategoryHiliteMode]($frontend) for the [HiliteSet]($frontend) associated with the selected Viewport.
+ * @beta
+ */
+export class ChangeHiliteModeTool extends Tool {
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "ChangeHiliteMode";
+
+  public override async run(mode?: string) {
+    const hilites = IModelApp.viewManager.selectedView?.iModel.hilited;
+    if (!hilites)
+      return false;
+
+    if (mode === "union" || mode === "intersection")
+      hilites.modelSubCategoryMode = mode;
+
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]) {
+    return this.run(args[0]);
+  }
+}
+
 /** Changes the selected viewport's hilite or emphasis settings.
  * @beta
  */

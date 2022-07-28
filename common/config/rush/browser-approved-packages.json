@@ -115,6 +115,10 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@itwin/appui-test-providers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
     },
@@ -244,6 +248,10 @@
     },
     {
       "name": "@itwin/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-browser-react",
       "allowedCategories": [ "internal" ]
     },
     {

@@ -146,7 +146,9 @@ export class WidgetHost {
             }
             break;
         }
-      } else if ((location in StagePanelLocation) && undefined !== section) {
+      } else
+      // istanbul ignore else
+      if ((location in StagePanelLocation) && undefined !== section) {
         switch (section) {
           case StagePanelSection.Start: {
             dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, frontstageApplicationData) ?? [];

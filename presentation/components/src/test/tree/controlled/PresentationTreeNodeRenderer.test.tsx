@@ -12,21 +12,19 @@ import {
 } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { Presentation } from "@itwin/presentation-frontend";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { translate } from "../../../presentation-components/common/Utils";
 import {
   PresentationTreeNodeRenderer, PresentationTreeRenderer,
 } from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 
-const createTreeModelNode = (NodeId?: string, label?: string, NodeItem?: TreeNodeItem): TreeModelNode => {
-  const nodeId = NodeId ?? "0";
-  const labelRecord = PropertyRecord.fromString(label ?? "label", "label");
-  const itemRecord = PropertyRecord.fromString(label ?? "label", "itemLabel");
+const createTreeModelNode = (nodeId: string = "0", label: string = "label", nodeItem?: TreeNodeItem, childCount: number | undefined = 0): TreeModelNode => {
+  const labelRecord = PropertyRecord.fromString(label, "label");
+  const itemRecord = PropertyRecord.fromString(label, "itemLabel");
   return {
     id: nodeId,
-    numChildren: 0,
+    numChildren: childCount,
     parentId: "parentId",
     checkbox: {
       isDisabled: false,
@@ -38,7 +36,7 @@ const createTreeModelNode = (NodeId?: string, label?: string, NodeItem?: TreeNod
     isSelected: false,
     description: "desc",
     label: labelRecord,
-    item: NodeItem ?? {
+    item: nodeItem ?? {
       id: "0",
       label: itemRecord,
     },
@@ -59,10 +57,10 @@ describe("PresentationTreeRenderer", () => {
   };
 
   before(async () => {
-    await UiComponents.initialize(new ITwinLocalization());
     await NoRenderApp.startup({
       localization: new EmptyLocalization(),
     });
+    await UiComponents.initialize(IModelApp.localization);
     await Presentation.initialize();
     HTMLElement.prototype.scrollIntoView = () => { };
   });
@@ -117,10 +115,10 @@ describe("TreeNodeRenderer", () => {
   const treeActionsMock = moq.Mock.ofType<TreeActions>();
 
   before(async () => {
-    await UiComponents.initialize(new ITwinLocalization());
     await NoRenderApp.startup({
       localization: new EmptyLocalization(),
     });
+    await UiComponents.initialize(IModelApp.localization);
     await Presentation.initialize();
     HTMLElement.prototype.scrollIntoView = () => { };
   });
@@ -170,18 +168,35 @@ describe("TreeNodeRenderer", () => {
     getByText(translate("tree.presentation-components-muted-node-label"));
   });
 
-  it("renders using provided node renderer", () => {
+  it("renders node with filter button", () => {
     const testLabel = "testLabel";
-    const nodeRendererSpy = sinon.spy();
-    const node = createTreeModelNode(undefined, testLabel);
+    const node = createTreeModelNode(undefined, testLabel, undefined, 10);
 
-    render(
+    const { container } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
-        nodeRenderer={nodeRendererSpy}
       />);
 
-    expect(nodeRendererSpy).to.be.called;
+    const button = container.querySelector("presentation-components-filter-action-button");
+    expect(button).to.not.be.undefined;
+  });
+
+  it("invokes 'onFilter' callback when filter button is clicked", () => {
+    const testLabel = "testLabel";
+    const node = createTreeModelNode(undefined, testLabel, undefined, 10);
+    const buttonSpy = sinon.spy();
+
+    const { container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilter={buttonSpy}
+      />);
+
+    const buttonContainer = container.getElementsByClassName("presentation-components-filter-action-button")[0];
+    const button = buttonContainer.getElementsByClassName("iui-button")[0];
+    fireEvent.click(button);
+    expect(buttonSpy).to.be.called;
   });
 });

@@ -895,6 +895,7 @@ export class ComponentExamplesProvider {
   };
 
   private static get messageSamples(): ComponentExampleCategory {
+    MessageManager.registerAnimateOutToElement(null);
     return {
       title: "Messages",
       examples: [
@@ -904,7 +905,7 @@ export class ComponentExamplesProvider {
           }>Toast message</UnderlinedButton>),
         createComponentExample("Toast with link", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            () => MessageManager.displayMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage), undefined, {placement: "top"}
             )}>Toast with link</UnderlinedButton>),
         createComponentExample("Sticky", undefined,
           <UnderlinedButton onActivate={

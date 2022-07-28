@@ -91,7 +91,7 @@ class SectionAttachmentInfo {
     options.spatialViewId = this._spatialView;
     options.viewStateLoadProps = {
       displayStyle: {
-        omitScheduleScriptElementIds: true,
+        omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
         compressExcludedElementIds: true,
       },
     };
