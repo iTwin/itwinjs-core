@@ -11,7 +11,7 @@ import { CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 
-/** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
+/** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public
  */
 export class CodeSpecs {

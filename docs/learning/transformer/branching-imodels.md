@@ -88,7 +88,7 @@ forward synchronizations.
 ### Synchronization conflicts
 
 Conflicts during a transformation are resolved in favor of the element which was modified most recently, as stored in the `LastMod` property
-of an element.  Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same.
+of an element.  Elements in transformations are considered in conflict when their [code](/bis/fundamentals/foundation/codes) is the same.
 
 You can override the method [`IModelTransformer.hasElementChanged`](/reference/core-transformer/imodels/imodeltransformer/haselementchanged/)
 in your transformer implementation to use more specific logic for determining if an element should be considered changed.
@@ -96,7 +96,7 @@ in your transformer implementation to use more specific logic for determining if
 Some other data in the iModel follows more specific rules for conflicts:
 
 - [ECSchemas](/bis/ec/ec-schema/) will not be inserted into the target if the same version already exists in it
-<!-- (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
+<!-- (see [dynamic schemas](/docs/bis/fundamentals/schema-evolution/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
 - File properties<!--missing documentation--> are not carried over through transformations
 
 Synchronization conflicts are not to be confused with concurrent edit conflicts which are handled by the

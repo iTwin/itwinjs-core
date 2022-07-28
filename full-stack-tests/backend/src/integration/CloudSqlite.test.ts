@@ -12,6 +12,8 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 export namespace CloudSqliteTest {
   export type TestContainer = SQLiteDb.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";

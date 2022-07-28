@@ -18,11 +18,17 @@ export type StatusBarFieldId = string | null;
  * @public
  */
 export interface StatusBarWidgetControlArgs {
-  /** Describes whether the footer is in widget or footer mode. */
+  /** Describes whether the footer is in widget or footer mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode: boolean;
-  /** Currently open widget or null if no widget is open. */
+  /** Currently open widget or null if no widget is open.
+   * @deprecated In upcoming versions, this will be removed. Field will be have the freedom of handling their dialog behavior however they like.
+  */
   openWidget: StatusBarFieldId;
-  /** Function called when the widget is being opened or closed. */
+  /** Function called when the widget is being opened or closed.
+   * @deprecated In upcoming versions, this will be removed. Field will be have the freedom of handling their dialog behavior however they like.
+  */
   onOpenWidget: (widget: StatusBarFieldId) => void;
   /** Element reference to which the toast will animate out to. */
   toastTargetRef: React.Ref<HTMLElement>;

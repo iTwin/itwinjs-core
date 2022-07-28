@@ -8,9 +8,11 @@ import * as os from "os";
 import * as readline from "readline";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
+
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 // Configuration needed:
 //    IMJS_TEST_REGULAR_USER_NAME
@@ -37,6 +39,10 @@ describe("BriefcaseManager", () => {
     accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
     readOnlyTestIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
+  });
+
+  after(async () => {
+    V2CheckpointManager.cleanup();
   });
 
   it("should open and close an iModel from the Hub", async () => {

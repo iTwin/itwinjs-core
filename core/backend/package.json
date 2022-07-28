@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.3.0-dev.40",
+  "version": "3.3.0-dev.77",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -41,13 +41,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.20",
-    "@itwin/core-common": "workspace:^3.3.0-dev.20",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.20",
-    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.20"
+    "@itwin/core-bentley": "workspace:^3.3.0-dev.77",
+    "@itwin/core-common": "workspace:^3.3.0-dev.77",
+    "@itwin/core-geometry": "workspace:^3.3.0-dev.77",
+    "@itwin/ecschema-metadata": "workspace:^3.3.0-dev.77",
+    "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {
+      "optional": true
+    },
+    "@opentelemetry/api": {
       "optional": true
     }
   },
@@ -92,7 +96,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.3.3",
+    "@bentley/imodeljs-native": "3.3.6",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
@@ -101,14 +105,6 @@
     "multiparty": "^4.2.1",
     "semver": "^7.3.5",
     "ws": "^7.5.3"
-  },
-  "peerDependencies": {
-    "@opentelemetry/api": "^1.0.4"
-  },
-  "peerDependenciesMeta": {
-    "@opentelemetry/api": {
-      "optional": true
-    }
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

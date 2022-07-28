@@ -121,7 +121,7 @@ However, issues stored externally are often linked to Elements in the iModel usi
 - iModel Guid + Code
 - FederationGuid
 
-Please see [Element Fundamentals](../../bis/intro/element-fundamentals.md) for more details.
+Please see [Element Fundamentals](../../bis/guide/fundamentals/element-fundamentals.md) for more details.
 
 > Note: It is important to also persist the iModel changeset GUID to record the version of the iModel that the issue was first logged against.
 

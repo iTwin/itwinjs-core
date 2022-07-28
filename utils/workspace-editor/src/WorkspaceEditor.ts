@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb,
   SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
@@ -147,7 +147,7 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args, args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-  await wsFile.close();
+  wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -157,7 +157,7 @@ async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceD
   try {
     await fn(ws, args);
   } finally {
-    await ws.close();
+    ws.close();
   }
 }
 
@@ -544,15 +544,14 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       return cmd(args);
 
     try {
-      const config = new IModelHostConfiguration();
-      config.workspace = {
+      const workspace = {
         containerDir: args.directory,
         cloudCacheProps: {
           nRequests: args.nRequests,
           curlDiagnostics: args.curlDiagnostics,
         },
       };
-      await IModelHost.startup(config);
+      await IModelHost.startup({ workspace });
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
@@ -723,7 +722,7 @@ Yargs.command<InitializeOpts>({
 async function runScript(arg: EditorProps & { scriptName: string }) {
   inScript = true;
   const val = fs.readFileSync(arg.scriptName, "utf-8");
-  const lines = val.split("\r");
+  const lines = val.split(/\r?\n/);
   let i = 0;
 
   for (let line of lines) {

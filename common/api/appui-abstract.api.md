@@ -85,6 +85,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly fillZone?: boolean;
     readonly floatingContainerId?: string;
     readonly getWidgetContent: () => any;
+    hideWithUiWhenFloating?: boolean;
     readonly icon?: string | ConditionalStringValue;
     readonly id?: string;
     readonly internalData?: Map<string, any>;
@@ -99,6 +100,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly priority?: number;
     readonly restoreTransientState?: () => boolean;
     readonly saveTransientState?: () => void;
+    // @deprecated
     readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
     readonly syncEventIds?: string[];
     readonly tooltip?: string | ConditionalStringValue;

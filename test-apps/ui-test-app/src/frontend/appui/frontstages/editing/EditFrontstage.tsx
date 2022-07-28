@@ -62,7 +62,7 @@ export class EditFrontstage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={this._contentGroupProvider}
-        isInFooterMode={true} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={
           <Zone

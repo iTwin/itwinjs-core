@@ -19,6 +19,7 @@ export class EventEmitter<T extends EventHandler> implements Event<T> {
 
   public add(handler: T) {
     this._handlers.push(handler);
+    return () => this.remove(handler);
   }
 
   public remove(handler: T) {
@@ -49,6 +50,6 @@ export class EventEmitter<T extends EventHandler> implements Event<T> {
 
 /** @internal */
 export interface Event<T extends EventHandler> {
-  add(handler: T): void;
+  add(handler: T): () => void;
   remove(handler: T): void;
 }

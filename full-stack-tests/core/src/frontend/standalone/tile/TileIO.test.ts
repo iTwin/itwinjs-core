@@ -62,7 +62,6 @@ export class FakeREProps implements RelatedElementProps {
 }
 
 export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  const scheduleState = options?.animationId ? { getModelAnimationId: () => options.animationId } : undefined;
   return {
     iModel,
     is3d: () => true !== options?.is2d,
@@ -70,9 +69,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: {
-      scheduleState,
-    },
+    displayStyle: { },
   } as unknown as ViewState;
 }
 
@@ -561,7 +558,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
   const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
   const ref = model.createTileTreeReference(view);
@@ -627,7 +624,7 @@ describe("mirukuru TileTree", () => {
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
     const edges = { indexed: false, smooth: false };
-    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true };
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
@@ -686,7 +683,7 @@ describe("mirukuru TileTree", () => {
     expect(v3Props).not.to.be.undefined;
 
     const edges = false as const;
-    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false };
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
     const v3Tree = new IModelTileTree(params, { edges: false, type: BatchType.Primary });
@@ -904,7 +901,7 @@ describe.skip("TileAdmin", () => {
           expect(qualifier.length > 0).to.be.true;
 
         const edges = { indexed: false, smooth: false };
-        const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true };
+        const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
         const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 

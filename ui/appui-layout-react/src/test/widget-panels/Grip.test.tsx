@@ -12,7 +12,7 @@ import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../appui-layout-react";
-import { createDragItemInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
+import { createDragInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider
@@ -271,7 +271,7 @@ describe("useResizeGrip", () => {
       wrapper,
     });
     dragManagerRef.current?.handleDragStart({
-      info: createDragItemInfo(),
+      info: createDragInfo(),
       item: {
         type: "panelGrip",
         id: "bottom",

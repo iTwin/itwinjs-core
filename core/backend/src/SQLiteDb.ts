@@ -268,7 +268,7 @@ export namespace SQLiteDb {
     /** Do not attempt to verify that the file is a valid sQLite file before opening. */
     skipFileCheck?: boolean;
     /** the default transaction mode
-     * @see [[DefaultTxnMode]]
+     * @see [[SQLiteDb.DefaultTxnMode]]
     */
     defaultTxn?: 0 | 1 | 2 | 3;
     /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */

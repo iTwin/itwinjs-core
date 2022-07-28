@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Fixed FeatureInfo provider registration when Map Layers Widget is initialized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

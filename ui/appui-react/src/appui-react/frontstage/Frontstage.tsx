@@ -43,7 +43,9 @@ export interface FrontstageProps extends CommonProps {
   contentGroup: ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
-  /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true. */
+  /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true.
+   * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+  */
   isInFooterMode?: boolean;                     // Default - true
   /** Any application data to attach to this Frontstage. */
   applicationData?: any;
@@ -320,7 +322,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
           <ContentLayout
             contentLayout={frontstageDef.contentLayoutDef}
             contentGroup={frontstageDef.contentGroup}
-            isInFooterMode={frontstageDef.isInFooterMode}
           />
         );
       else

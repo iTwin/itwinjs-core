@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Do not filter calls to provideBackstageItems by stage criteria set when provider is registered.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

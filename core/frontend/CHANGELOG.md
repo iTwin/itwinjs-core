@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 10 Jun 2022 16:11:36 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+### Updates
+
+- Avoid attempting to load ViewState data from the backend for a BlankConnection.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+### Updates
+
+- Fix tile display issues for layer tiles not covering the entire tile tree and TileMap service is not available.  Derive minimum LOD from the minimum scale.  Use 'fullExtent' metadata to get cartoRange of layer when getFootPrints request doesnt include data extent.
+- Made several map-layers functions public
 
 ## 3.2.2
 Fri, 10 Jun 2022 16:11:36 GMT

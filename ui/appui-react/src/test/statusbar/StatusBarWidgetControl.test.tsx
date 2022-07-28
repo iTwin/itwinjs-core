@@ -17,10 +17,11 @@ describe("StatusBarWidgetControl", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    // eslint-disable-next-line deprecation/deprecation
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          <MessageCenterField isInFooterMode={isInFooterMode} />
         </>
       );
     }

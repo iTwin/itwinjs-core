@@ -54,15 +54,15 @@ export enum PlanarClipMaskPriority {
 export interface PlanarClipMaskProps {
   /** Controls how the mask geometry is collected */
   mode: PlanarClipMaskMode;
-  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: CompressedId64Set;
-  /** @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
+  /** See [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   subCategoryOrElementIds?: CompressedId64Set;
-  /** @see [[PlanarClipMaskSettings.priority]]. */
+  /** See [[PlanarClipMaskSettings.priority]]. */
   priority?: number;
-  /** @see [[PlanarClipMaskSettings.transparency]]. */
+  /** See [[PlanarClipMaskSettings.transparency]]. */
   transparency?: number;
-  /** @see PlanarClipMaskSettings.invert */
+  /** See PlanarClipMaskSettings.invert */
   invert?: boolean;
 }
 
@@ -70,9 +70,9 @@ export interface PlanarClipMaskProps {
  * @public
  */
 export interface BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.transparency]]. */
+  /** See [[PlanarClipMaskSettings.transparency]]. */
   transparency?: number;
-  /** @see [[PlanarClipMaskSettings.invert]]. */
+  /** See [[PlanarClipMaskSettings.invert]]. */
   invert?: boolean;
 }
 
@@ -80,7 +80,7 @@ export interface BasicPlanarClipMaskArgs {
  * @public
  */
 export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: Iterable<Id64String>;
   /** @internal */
   exclude?: never;
@@ -96,7 +96,7 @@ export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
  * @public
  */
 export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: Iterable<Id64String>;
   /** The elements used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   elementIds: Iterable<Id64String>;
@@ -112,7 +112,7 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
  * @public
  */
 export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: Iterable<Id64String>;
   /** The subcategories used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   subCategoryIds: Iterable<Id64String>;
@@ -128,7 +128,7 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
  * @public
  */
 export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-  /** @see [[PlanarClipMaskSettings.priority]]. */
+  /** See [[PlanarClipMaskSettings.priority]]. */
   priority: number;
   /** @internal */
   exclude?: never;
