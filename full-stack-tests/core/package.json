@@ -18,7 +18,7 @@
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "webpack:test": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.js 1>&2 --profile --json=compilation-stats.json"
   },
   "repository": {},
   "dependencies": {

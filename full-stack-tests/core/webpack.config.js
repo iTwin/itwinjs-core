@@ -35,7 +35,22 @@ function createConfig(shouldInstrument) {
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
     },
     devtool: "nosources-source-map",
-    resolve: { mainFields: ["main", "module"] },
+    resolve: {
+      mainFields: ["main", "module"],
+      // importsFields: ["main"],
+      // byDependency: {
+      //   esm: {
+      //     mainFields: ["main"],
+      //   },
+      //   commonjs: {
+      //     mainFields: ["main"],
+      //   },
+      // },
+
+      // alias: {
+      //   "@itwin/core-frontend": require.resolve("../../core/frontend/lib/cjs/core-frontend.js"),
+      // },
+    },
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
@@ -65,7 +80,7 @@ function createConfig(shouldInstrument) {
         },
       ],
     },
-    stats: "errors-only",
+    stats: "detailed",
     optimization: {
       nodeEnv: "production",
     },

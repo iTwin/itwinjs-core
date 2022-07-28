@@ -258,7 +258,7 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 }
 
 // These tests require the real (webgl-based) RenderSystem.
-describe("TileIO (WebGL)", () => {
+describe.skip("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
