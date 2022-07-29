@@ -9,9 +9,8 @@
 import {
   assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
-import { SubCategoryResultRow } from "@itwin/core-common";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  AxisAlignedBox3d, Cartographic, Categories, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
@@ -271,7 +270,7 @@ export abstract class IModelConnection extends IModel {
    * @returns array of SubCategoryResultRow
    * @internal
    */
-  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<Categories.SubCategoryInfo[]> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
@@ -1101,29 +1100,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
-    }
-  }
-
-  /** @public */
-  export namespace Categories {
-    /** A subset of the information describing a [SubCategory]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]
-     * or [[IModelConnection.Categories.getSubCategoryInfo]].
-     */
-    export interface SubCategoryInfo {
-      /** The [SubCategory]($backend)'s element Id. */
-      readonly id: Id64String;
-      /** The Id of the [Category]($backend) to which this [SubCategory]($backend) belongs. */
-      readonly categoryId: Id64String;
-      /** Visual parameters applied to geometry belonging to this [SubCategory]($backend). */
-      readonly appearance: Readonly<SubCategoryAppearance>;
-    }
-
-    /** A subset of the information describing a [Category]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]. */
-    export interface CategoryInfo {
-      /** The category's element Id. */
-      readonly id: Id64String;
-      /** For each [SubCategory]($backend) belonging to this [Category]($backend), a mapping from the SubCategory's element Id to its properties. */
-      readonly subCategories: Map<Id64String, SubCategoryInfo>;
     }
   }
 

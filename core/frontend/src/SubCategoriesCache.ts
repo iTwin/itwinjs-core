@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
+import { Categories, SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -100,7 +100,7 @@ export class SubCategoriesCache {
 
   private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
     for (const row of result)
-      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
+      this.add(row.categoryId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
@@ -117,14 +117,14 @@ export class SubCategoriesCache {
     this._appearances.set(subCategoryId, appearance);
   }
 
-  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
+  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
     // Eliminate duplicates...
     const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
     const req = this.load(categoryIds);
     if (req)
       await req.promise;
 
-    const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
+    const map = new Map<Id64String, Categories.CategoryInfo>();
     for (const categoryId of categoryIds) {
       const subCategoryIds = this._byCategoryId.get(categoryId);
       if (!subCategoryIds)
@@ -137,7 +137,7 @@ export class SubCategoriesCache {
     return map;
   }
 
-  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
+  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, Categories.SubCategoryInfo>> {
     // Eliminate duplicates...
     const subCategoryIds = new Set<string>(typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds);
     const req = this.load(categoryId);
@@ -147,13 +147,13 @@ export class SubCategoriesCache {
     return this.mapSubCategoryInfos(categoryId, subCategoryIds);
   }
 
-  private mapSubCategoryInfos(categoryId: Id64String, subCategoryIds: Set<Id64String>): Map<Id64String, IModelConnection.Categories.SubCategoryInfo> {
-    const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+  private mapSubCategoryInfos(categoryId: Id64String, subCategoryIds: Set<Id64String>): Map<Id64String, Categories.SubCategoryInfo> {
+    const map = new Map<Id64String, Categories.SubCategoryInfo>();
     for (const id of subCategoryIds) {
       const appearance = this._appearances.get(id);
       assert(undefined !== appearance);
       if (appearance)
-        map.set(id, { id, categoryId, appearance });
+        map.set(id, { id, categoryId, appearance: appearance.toJSON() });
     }
 
     return map;
@@ -164,7 +164,7 @@ export class SubCategoriesCache {
  * @internal
  */
 export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
-  export type Result = SubCategoryResultRow[];
+  export type Result = Categories.SubCategoryInfo[];
 
   export class Request {
     private readonly _imodel: IModelConnection;

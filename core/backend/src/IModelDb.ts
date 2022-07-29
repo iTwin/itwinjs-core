@@ -21,7 +21,7 @@ import {
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
   QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  SpatialViewDefinitionProps, Categories, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -610,23 +610,19 @@ export abstract class IModelDb extends IModel {
   /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param categoryIds categoryIds to query
-   * @returns array of SubCategoryResultRow
+   * @returns array of Categories.SubCategoryInfo
    */
-  public async querySubCategories(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]> {
-    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
-    const maxCategoriesPerQuery = 200;
-    const result = [];
-    while (categoryIds.length !== 0) {
-      const end = (categoryIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : categoryIds.length;
-      const where = categoryIds.splice(0, end).join(",");
-      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
-      try {
-        for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-          result.push(row);
-        }
-      } catch {
-        // We can ignore the error here, and just return whatever we were able to query.
+  public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<Categories.SubCategoryInfo[]> {
+    const result: Categories.SubCategoryInfo[] = [];
+
+    const where = [...categoryIds].join(",");
+    const query = `SELECT ECInstanceId as id, Parent.Id as categoryId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+    try {
+      for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row);
       }
+    } catch {
+      // We can ignore the error here, and just return whatever we were able to query.
     }
     return result;
   }

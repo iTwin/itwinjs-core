@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { Categories, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryAppearance, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
@@ -36,24 +36,15 @@ export class ViewStateHydrator {
   }
 
   private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
-    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
-    const maxCategoriesPerQuery = 200;
     const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
-    const result = [];
-    while (decompressedIds.length !== 0) {
-      const end = (decompressedIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : decompressedIds.length;
-      const where = decompressedIds.splice(0, end).join(",");
-      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
-      try {
-        for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-          result.push(row as SubCategoryResultRow);
-        }
-      } catch {
-        // We can ignore the error here, and just return whatever we were able to query.
-      }
+    const results: Categories.SubCategoryInfo[] = await this._imodel.querySubCategories(decompressedIds);
+    // Convert to SubCategoryResultRow to support older frontends.
+    const convertedResults: SubCategoryResultRow[] = [];
+    for (const result of results) {
+      convertedResults.push({parentId: result.categoryId, id: result.id, appearance: result.appearance})
     }
     // eslint-disable-next-line deprecation/deprecation
-    response.categoryIdsResult = result;
+    response.categoryIdsResult = convertedResults;
   }
 
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
