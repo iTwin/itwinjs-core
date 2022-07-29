@@ -59,7 +59,10 @@ export namespace PerModelCategoryVisibility {
     addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
   }
 
-  /** Props to describe per model category visibility. */
+  /** Props to describe per model category visibility.
+   * These props consist of a model Id, 1 or more categoryIds, and the visibility override. @see [[PerModelCategoryVisibility.Override]]
+   * @beta
+  */
   export interface Props {
     modelId: string;
     categoryIds: Iterable<Id64String>;
