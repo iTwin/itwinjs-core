@@ -14,8 +14,20 @@ import { RgbColorProps } from "./RgbColor";
  */
 export namespace AtmosphericScattering {
 
+  /** An immutable container of wavelengths values for the red, green and blue pixel components.
+  * @public
+  */
   export class Wavelengths implements RgbColorProps {
-    constructor(public readonly r: number, public readonly g: number, public readonly b: number) {}
+    /** Constructs from red, green, and blue wavelength values.
+     * @param r Wavelength value for red
+     * @param g Wavelength value for green
+     * @param b Wavelength value for blue
+     */
+    constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
+      this.r = Math.min(0, r);
+      this.g = Math.min(0, g);
+      this.b = Math.min(0, b);
+    }
 
     public equals(other: Wavelengths): boolean {
       return  this.r === other.r && this.g === other.g && this.b === other.b;
