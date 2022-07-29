@@ -5,6 +5,7 @@
 import {
   FragmentShaderComponent,
   ProgramBuilder,
+  ShaderType,
   VariablePrecision,
   VariableType,
   VertexShaderComponent,
@@ -18,19 +19,19 @@ import { MAX_SAMPLE_POINTS, MESH_PROJECTION_CUTOFF_HEIGHT } from "../Atmospheric
 // #region GENERAL
 
 const computeRayDirDefault = `
-vec3 computeRayDir() {
-  return normalize(v_eyeSpace);
+vec3 computeRayDir(vec3 eyeSpace) {
+  return normalize(eyeSpace);
 }
 `;
 
 const computeSceneDepthDefault = `
-  float computeSceneDepth(vec3 rayDirection) {
-    return length(v_eyeSpace);
-  }
+float computeSceneDepth(vec3 eyeSpace) {
+  return length(eyeSpace);
+}
 `;
 
 const computeSceneDepthSky = `
-float computeSceneDepth(vec3 rayDirection) {
+float computeSceneDepth(vec3 eyeSpace) {
   return MAX_FLOAT;
 }
 `;
@@ -205,48 +206,64 @@ float densityAtPoint(vec3 point) {
 }
 `;
 
-const calculateScattering = `
-vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 baseColor) {
-  float stepSize = rayLength / (float(u_numInScatteringPoints) - 1.0);
-  vec3 step = rayDir * stepSize;
-  vec3 inScatteredLight;
-  float viewRayOpticalDepth;
-  vec3 inScatterPoint = rayOrigin;
+const computeInScatteredLightAndViewRayOpticalDepth = `
+vec4 computeInScatteredLightAndViewRayOpticalDepth() {
+  vec3 rayDir = computeRayDir(v_eyeSpace);
+  float sceneDepth = computeSceneDepth(v_eyeSpace);
 
-  float viewRayOpticalDepthValues[MAX_SAMPLE_POINTS];
-  vec3 viewRaySamplePoint = rayOrigin + step;
-  for (int i = 1; i < u_numInScatteringPoints; i++) {
-    viewRayOpticalDepthValues[i-1] = densityAtPoint(viewRaySamplePoint) * stepSize;
-    viewRaySamplePoint += step;
-  }
+  vec2 atmosphereHitInfo = eyeAtmosphereIntersection(rayDir);
+  vec2 earthHitInfo = eyeEarthIntersection(rayDir);
 
-  for (int i = 0; i < u_numInScatteringPoints; i++) {
-    float sunRayLength = rayEllipsoidIntersection(u_earthCenter, u_inverseEllipsoidRotationMatrix, u_atmosphereScaleMatrix, u_inverseAtmosphereScaleMatrix, inScatterPoint, u_sunDir)[1];
-    float sunRayOpticalDepth = opticalDepth(inScatterPoint, u_sunDir, sunRayLength);
-    viewRayOpticalDepth = 0.0;
-    for (int j = 0; j < i; j++) {
-      viewRayOpticalDepth += viewRayOpticalDepthValues[j];
+  float distanceThroughAtmosphere = min(
+    atmosphereHitInfo[1],
+    min(sceneDepth, earthHitInfo[0]) - atmosphereHitInfo[0] // PREVENTS GRID EFFECT
+  );
+  float distanceThroughEarth = min(earthHitInfo[1], sceneDepth - earthHitInfo[0]);
+
+  vec3 inScatteredLight = vec3(0.0);
+  float viewRayOpticalDepth = 0.0;
+  if (distanceThroughAtmosphere - distanceThroughEarth > 0.0) {
+    vec3 pointInAtmosphere = rayDir * (atmosphereHitInfo[0] + EPSILON);
+    float rayLength = distanceThroughAtmosphere - EPSILONx2;
+
+    float stepSize = rayLength / (float(u_numInScatteringPoints) - 1.0);
+    vec3 step = rayDir * stepSize;
+    vec3 inScatterPoint = pointInAtmosphere;
+
+    float viewRayOpticalDepthValues[MAX_SAMPLE_POINTS];
+    vec3 viewRaySamplePoint = pointInAtmosphere + step;
+    for (int i = 1; i < u_numInScatteringPoints; i++) {
+      viewRayOpticalDepthValues[i-1] = densityAtPoint(viewRaySamplePoint) * stepSize;
+      viewRaySamplePoint += step;
     }
-    vec3 transmittance = exp(-((sunRayOpticalDepth + viewRayOpticalDepth) / u_earthScaleMatrix[2][2]) * u_scatteringCoefficients);
 
-    inScatteredLight += densityAtPoint(inScatterPoint) * transmittance;
-    inScatterPoint += step;
+    for (int i = 0; i < u_numInScatteringPoints; i++) {
+      float sunRayLength = rayEllipsoidIntersection(u_earthCenter, u_inverseEllipsoidRotationMatrix, u_atmosphereScaleMatrix, u_inverseAtmosphereScaleMatrix, inScatterPoint, u_sunDir)[1];
+      float sunRayOpticalDepth = opticalDepth(inScatterPoint, u_sunDir, sunRayLength);
+      viewRayOpticalDepth = 0.0;
+      for (int j = 0; j < i; j++) {
+        viewRayOpticalDepth += viewRayOpticalDepthValues[j];
+      }
+      vec3 transmittance = exp(-((sunRayOpticalDepth + viewRayOpticalDepth) / u_earthScaleMatrix[2][2]) * u_scatteringCoefficients);
+
+      inScatteredLight += densityAtPoint(inScatterPoint) * transmittance;
+      inScatterPoint += step;
+    }
+    inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize / u_earthScaleMatrix[2][2];
   }
-  inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize / u_earthScaleMatrix[2][2];
-  // float originalColorTransmittance = exp(-viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity);
+  return vec4(inScatteredLight, viewRayOpticalDepth);
+}
+`;
 
-  // float brightnessAdaptionStrength = 0.15;
+const computeReflectedLight = `
+vec3 computeReflectedLight(vec3 inScatteredLight, float viewRayOpticalDepth, vec3 baseColor) {
   float reflectedLightOutScatterStrength = 3.0;
   float brightnessAdaption = (inScatteredLight.r + inScatteredLight.g + inScatteredLight.b) * u_brightnessAdaptionStrength;
   float brightnessSum = viewRayOpticalDepth / u_earthScaleMatrix[2][2] * u_outScatteringIntensity * reflectedLightOutScatterStrength + brightnessAdaption;
   float reflectedLightStrength = exp(-brightnessSum);
   float hdrStrength = clamp((baseColor.r + baseColor.g + baseColor.b) / 3.0 - 1.0, 0.0, 1.0);
   reflectedLightStrength = mix(reflectedLightStrength, 1.0, hdrStrength);
-  vec3 reflectedLight = baseColor * reflectedLightStrength;
-
-
-  // return vec3(reflectedLightStrength);
-  return reflectedLight + inScatteredLight;
+  return baseColor * reflectedLightStrength;
 }
 `;
 
@@ -255,24 +272,31 @@ vec3 calculateScattering(vec3 rayOrigin, vec3 rayDir, float rayLength, vec3 base
   // the distance it traveled in the atmosphere to reach the fragment.
  *
  */
-const applyAtmosphericScatteringEllipsoid = `
-vec4 applyAtmosphericScatteringEllipsoid(vec3 rayDir, float sceneDepth, vec4 baseColor) {
-  vec2 atmosphereHitInfo = eyeAtmosphereIntersection(rayDir);
-  vec2 earthHitInfo = eyeEarthIntersection(rayDir);
-  float distanceThroughAtmosphere = min(
-    atmosphereHitInfo[1],
-    min(sceneDepth, earthHitInfo[0]) - atmosphereHitInfo[0] // PREVENTS GRID EFFECT
-  );
-  float distanceThroughEarth = min(earthHitInfo[1], sceneDepth - earthHitInfo[0]);
-
-  if (distanceThroughAtmosphere - distanceThroughEarth > 0.0) {
-    vec3 pointInAtmosphere = rayDir * (atmosphereHitInfo[0] + EPSILON);
-    vec3 scatteredColor = calculateScattering(pointInAtmosphere, rayDir, distanceThroughAtmosphere - EPSILONx2, baseColor.rgb);
-    return vec4(scatteredColor, baseColor.a);
-  }
-  return baseColor;
+const computeAtmosphericScatteringFromVaryings = `
+vec4 computeAtmosphericScattering(vec4 baseColor) {
+  vec3 reflectedLight = computeReflectedLight(v_inScatteredLight, v_viewRayOpticalDepth, baseColor.rgb);
+  return vec4(reflectedLight + v_inScatteredLight, baseColor.a);
 }
 `;
+
+const computeAtmosphericScatteringFromScratch = `
+vec4 computeAtmosphericScattering(vec4 baseColor) {
+  vec4 values = computeInScatteredLightAndViewRayOpticalDepth()
+  vec3 inScatteredLight = values.xyz;
+  float viewRayOpticalDepth = values.w;
+  vec3 reflectedLight = computeReflectedLight(inScatteredLight, viewRayOpticalDepth, baseColor.rgb);
+  return vec4(reflectedLight + inScatteredLight, baseColor.a);
+}
+`;
+
+const inlineComputeAtmosphericScatteringVaryings = "computeAtmosphericScatteringVaryings();";
+
+const computeAtmosphericScatteringVaryings = `
+void computeAtmosphericScatteringVaryings() {
+  vec4 values = computeInScatteredLightAndViewRayOpticalDepth();
+  v_inScatteredLight = values.xyz;
+  v_viewRayOpticalDepth = values.w;
+}`;
 // #endregion ELLIPSOID
 
 // #region MAIN
@@ -280,11 +304,7 @@ const applyAtmosphericScattering = `
   // return baseColor if atmospheric scattering is disabled
   if (!bool(u_isEnabled))
     return baseColor;
-
-  vec3 rayDir = computeRayDir();
-  float sceneDepth = computeSceneDepth(rayDir);
-
-  return applyAtmosphericScatteringEllipsoid(rayDir, sceneDepth, baseColor);
+  return computeAtmosphericScattering(baseColor);
 `;
 
 /** @internal */
@@ -292,7 +312,15 @@ export function addAtmosphericScatteringEffect(
   builder: ProgramBuilder,
   isSky = false,
 ) {
+  if (isSky)
+    addAtmosphericScatteringEffectPerFragment(builder, isSky);
+  else
+    addAtmosphericScatteringEffectPerVertex(builder, isSky);
+}
+
+function addAtmosphericScatteringEffectPerFragment(builder: ProgramBuilder, isSky: boolean) {
   const frag = builder.frag;
+
   frag.addConstant("PI", VariableType.Float, "3.14159265359");
   frag.addConstant("EPSILON", VariableType.Float, "0.000001");
   frag.addConstant("EPSILONx2", VariableType.Float, "EPSILON * 2.0");
@@ -300,16 +328,6 @@ export function addAtmosphericScatteringEffect(
   frag.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
   frag.addConstant("MESH_PROJECTION_CUTOFF_HEIGHT", VariableType.Float, `${MESH_PROJECTION_CUTOFF_HEIGHT}.0`);
 
-  frag.addUniform(
-    "u_earthScaleMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
   frag.addUniform(
     "u_densityFalloff",
     VariableType.Float,
@@ -374,18 +392,6 @@ export function addAtmosphericScatteringEffect(
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
         params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  frag.addUniform(
-    "u_isEnabled",
-    VariableType.Int,
-    (prog) => {
-      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-        uniform.setUniform1i(
-          params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
-        );
       });
     },
     VariablePrecision.High
@@ -461,31 +467,11 @@ export function addAtmosphericScatteringEffect(
     VariablePrecision.High
   );
   frag.addUniform(
-    "u_outScatteringIntensity",
-    VariableType.Float,
-    (prog) => {
-      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindOutScatteringIntensity(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  frag.addUniform(
     "u_earthToEyeInverseScaled",
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_earthToEyeInverseScaled", (uniform, params) => {
         params.target.uniforms.atmosphericScattering.bindEarthToEyeInverseScaled(uniform);
-      });
-    },
-    VariablePrecision.High
-  );
-  frag.addUniform(
-    "u_earthScaleMatrix",
-    VariableType.Mat3,
-    (prog) => {
-      prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -521,6 +507,284 @@ export function addAtmosphericScatteringEffect(
     VariablePrecision.High
   );
   frag.addUniform(
+    "u_earthScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  frag.addUniform(
+    "u_isEnabled",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
+        uniform.setUniform1i(
+          params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
+        );
+      });
+    },
+    VariablePrecision.Low
+  );
+
+  frag.addFunction(computeRayDirDefault);
+  if (isSky) {
+    frag.addFunction(computeSceneDepthSky);
+  } else {
+    frag.addFunction(computeSceneDepthDefault);
+  }
+  frag.addFunction(raySphere);
+  frag.addFunction(_eyeEllipsoidIntersection);
+  frag.addFunction(densityAtPoint);
+  frag.addFunction(rayEllipsoidIntersectionGeneric);
+  frag.addFunction(eyeAtmosphereIntersection);
+  frag.addFunction(eyeEarthIntersection);
+  frag.addFunction(opticalDepth);
+  frag.addFunction(computeInScatteredLightAndViewRayOpticalDepth);
+  frag.addFunction(computeAtmosphericScatteringFromScratch);
+  frag.addFunction(computeReflectedLight);
+
+  frag.set(
+    FragmentShaderComponent.ApplyAtmosphericScattering,
+    applyAtmosphericScattering
+  );
+
+}
+function addAtmosphericScatteringEffectPerVertex(builder: ProgramBuilder, isSky: boolean) {
+  const vert = builder.vert;
+  const frag = builder.frag;
+
+  builder.addUniform(
+    "u_earthScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
+      });
+    },
+    ShaderType.Both
+  );
+  builder.addUniform(
+    "u_isEnabled",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_isEnabled", (uniform, params) => {
+        uniform.setUniform1i(
+          params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
+        );
+      });
+    },
+    ShaderType.Both
+  );
+
+  vert.addConstant("PI", VariableType.Float, "3.14159265359");
+  vert.addConstant("EPSILON", VariableType.Float, "0.000001");
+  vert.addConstant("EPSILONx2", VariableType.Float, "EPSILON * 2.0");
+  vert.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
+  vert.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
+  vert.addConstant("MESH_PROJECTION_CUTOFF_HEIGHT", VariableType.Float, `${MESH_PROJECTION_CUTOFF_HEIGHT}.0`);
+
+  vert.addUniform(
+    "u_densityFalloff",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindDensityFalloff(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_scatteringCoefficients",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindScatteringCoefficients(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_numInScatteringPoints",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_numInScatteringPoints", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindNumInScatteringPoints(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_numOpticalDepthPoints",
+    VariableType.Int,
+    (prog) => {
+      prog.addProgramUniform("u_numOpticalDepthPoints", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindNumOpticalDepthPoints(
+          uniform
+        );
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_sunDir",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_sunDir", (uniform, params) => {
+        params.target.uniforms.bindSunDirection(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_earthCenter",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_earthCenter", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inverseEllipsoidRotationMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseEllipsoidRotationMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseEllipsoidRotationMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_ellipsoidToEye",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_ellipsoidToEye", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEllipsoidToEye(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_atmosphereScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_atmosphereScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindAtmosphereScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inverseAtmosphereScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseAtmosphereScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseAtmosphereScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_atmosphereToEyeInverseScaled",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_atmosphereToEyeInverseScaled", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindAtmosphereToEyeInverseScaled(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_minDensityToAtmosphereScaleFactor",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_minDensityToAtmosphereScaleFactor", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindMinDensityToAtmosphereScaleFactor(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_earthToEyeInverseScaled",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_earthToEyeInverseScaled", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindEarthToEyeInverseScaled(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inverseRotationInverseAtmosphereScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseAtmosphereScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inverseRotationInverseEarthScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseEarthScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseEarthScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  vert.addUniform(
+    "u_inverseRotationInverseMinDensityScaleMatrix",
+    VariableType.Mat3,
+    (prog) => {
+      prog.addProgramUniform("u_inverseRotationInverseMinDensityScaleMatrix", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseMinDensityScaleMatrix(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+
+  vert.addFunction(computeRayDirDefault);
+  if (isSky) {
+    vert.addFunction(computeSceneDepthSky);
+  } else {
+    vert.addFunction(computeSceneDepthDefault);
+  }
+  vert.addFunction(raySphere);
+  vert.addFunction(_eyeEllipsoidIntersection);
+  vert.addFunction(densityAtPoint);
+  vert.addFunction(rayEllipsoidIntersectionGeneric);
+  vert.addFunction(eyeAtmosphereIntersection);
+  vert.addFunction(eyeEarthIntersection);
+  vert.addFunction(opticalDepth);
+  vert.addFunction(computeInScatteredLightAndViewRayOpticalDepth);
+  vert.addFunction(computeAtmosphericScatteringVaryings);
+
+  builder.addVarying("v_viewRayOpticalDepth", VariableType.Float);
+  builder.addInlineComputedVarying("v_inScatteredLight", VariableType.Vec3, inlineComputeAtmosphericScatteringVaryings);
+
+  frag.addUniform(
     "u_brightnessAdaptionStrength",
     VariableType.Float,
     (prog) => {
@@ -530,59 +794,48 @@ export function addAtmosphericScatteringEffect(
     },
     VariablePrecision.High
   );
-
-  frag.addFunction(raySphere);
-  frag.addFunction(_eyeEllipsoidIntersection);
-  frag.addFunction(densityAtPoint);
-
-  frag.addFunction(rayEllipsoidIntersectionGeneric);
-  frag.addFunction(eyeAtmosphereIntersection);
-  frag.addFunction(eyeEarthIntersection);
-
-  frag.addFunction(opticalDepth);
-
-  frag.addFunction(calculateScattering);
-
-  frag.addFunction(applyAtmosphericScatteringEllipsoid);
-
-  frag.addFunction(computeRayDirDefault);
-  if (isSky) {
-    frag.addFunction(computeSceneDepthSky);
-  } else {
-    frag.addFunction(computeSceneDepthDefault);
-  }
+  frag.addUniform(
+    "u_outScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindOutScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  frag.addFunction(applyAtmosphericScattering);
+  frag.addFunction(computeAtmosphericScatteringFromVaryings);
+  frag.addFunction(computeReflectedLight);
 
   frag.set(
     FragmentShaderComponent.ApplyAtmosphericScattering,
     applyAtmosphericScattering
   );
 }
+
 // #endregion MAIN
 
 // #region QUAD
 const computeBaseColorVS = `return vec4(u_skyColor.xyz, 1.0);`;
 const computeBaseColorFS = `return v_color;`;
 const assignFragData = `FragColor = baseColor;`;
-const computePosition = `
-vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
+const computePosition = `return rawPos;`;
+const computeEyeSpace = `
+vec3 computeEyeSpace(vec4 rawPos) {
+  vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
 
-float top = u_frustumPlanes.x;
-float bottom = u_frustumPlanes.y;
-float left = u_frustumPlanes.z;
-float right = u_frustumPlanes.w;
+  float top = u_frustumPlanes.x;
+  float bottom = u_frustumPlanes.y;
+  float left = u_frustumPlanes.z;
+  float right = u_frustumPlanes.w;
 
-v_eyeSpace = vec3(
-  mix(left, right, pos01.x),
-  mix(bottom, top, pos01.y),
-  -u_frustum.x
-);
-// v_eyeSpace.x = rawPos.x == -1.0 ? 0.0 : 1.0;
-// v_eyeSpace.y = rawPos.y == -1.0 ? 0.0 : 1.0;
-// v_eyeSpace = pos01;
-
-// return vec4(pos01.x, pos01.y, rawPos.z, rawPos.z);
-return rawPos;
-`;
+  return vec3(
+    mix(left, right, pos01.x),
+    mix(bottom, top, pos01.y),
+    -u_frustum.x
+  );
+}`;
 
 /** @internal */
 export function createAtmosphericSkyProgram(
@@ -592,10 +845,6 @@ export function createAtmosphericSkyProgram(
     AttributeMap.findAttributeMap(undefined, false)
   );
 
-  prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-  prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
-  prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
   prog.vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
     prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
       uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
@@ -606,27 +855,22 @@ export function createAtmosphericSkyProgram(
       uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
     });
   });
-  prog.addVarying("v_eyeSpace", VariableType.Vec3);
   prog.vert.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_skyColor", (uniform, params) => {
       const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
       uniform.setUniform3fv(geom.atmosphericSkyColor);
     });
   });
-  prog.addVarying("v_color", VariableType.Vec4);
-  // prog.vert.addUniform("u_vpSize", VariableType.Vec2, (prg) => {
-  //   prg.addProgramUniform("u_vpSize", (uniform, params) => {
-  //     params.target.uniforms.viewRect.bindDimensions(uniform);
-  //   });
-  // }, VariablePrecision.High);
+  prog.vert.addFunction(computeEyeSpace);
 
-  // prog.frag.addUniform("s_cube", VariableType.SamplerCube, (prg) => {
-  //   prg.addGraphicUniform("s_cube", (uniform, params) => {
-  //     const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
-  //     (geom.cube as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
-  //   });
-  // });
-  // prog.addInlineComputedVarying("v_texDir", VariableType.Vec3, computeTexDir);
+  prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
+  prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
+
+  prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+  prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
+
+  prog.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
+  prog.addVarying("v_color", VariableType.Vec4);
 
   addAtmosphericScatteringEffect(prog, true);
 
