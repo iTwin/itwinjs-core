@@ -20,8 +20,8 @@ import {
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -36,7 +36,6 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
-import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
@@ -48,8 +47,8 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { SubCategoryResultRow } from "@itwin/core-common";
-import { QueryRowFormat } from "@itwin/core-common";
+import { GeoCoordConfig } from "./GeoCoordConfig";
+import { SQLiteDb } from "./SQLiteDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2116,13 +2115,13 @@ export interface TokenArg {
   readonly accessToken?: AccessToken;
 }
 
-/** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] to open files from a cloud container.
- * Currently the properties are this interface are reserved for internal use only.
+/** Augments a [[SnapshotDbOpenArgs]] or [[OpenBriefcaseArgs]] with a [CloudContainer]($docs/learning/backend/Workspace.md).
+ * The properties are this interface are reserved for internal use only.
  * @public
  */
 export interface CloudContainerArgs {
   /** @internal */
-  container?: IModelJsNative.CloudContainer;
+  container?: SQLiteDb.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).
@@ -2413,10 +2412,10 @@ export class SnapshotDb extends IModelDb {
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
-    IModelHost.platform.DgnDb.vacuum(snapshotFile);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
+    nativeDb.vacuum();
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))

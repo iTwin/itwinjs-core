@@ -176,7 +176,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withStatusBarField components ", () => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+      // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
       const ActivityCenter = withStatusFieldProps(ActivityCenterField);
 
       const items: StatusBarItem[] = [
@@ -192,7 +192,7 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withMessageCenter components ", () => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+      // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
       const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 
       const items: StatusBarItem[] = [

@@ -2973,6 +2973,9 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined;
     // @internal
     getSubCategoryPriority(idLo: number, idHi: number): number;
+    ignoreAnimationOverrides(ignore: IgnoreAnimationOverrides): void;
+    // @internal (undocumented)
+    protected readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[];
     // @internal
     ignoreSubCategory: boolean;
     // @internal (undocumented)
@@ -4245,6 +4248,15 @@ export class I3dmHeader extends TileHeader {
     get isValid(): boolean;
     // (undocumented)
     readonly length: number;
+}
+
+// @public
+export type IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean;
+
+// @public
+export interface IgnoreAnimationOverridesArgs {
+    readonly animationNodeId: number;
+    readonly elementId: Readonly<Id64.Uint32Pair>;
 }
 
 // @public

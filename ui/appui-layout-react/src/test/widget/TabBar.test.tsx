@@ -42,13 +42,13 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
-        type: "floatingWidget",
+        type: "window",
       },
-    })).should.true;
+    }));
   });
 
   it("should dispatch FLOATING_WIDGET_CLEAR_USER_SIZED", () => {
@@ -223,19 +223,6 @@ describe("WidgetTitleBar", () => {
 });
 
 describe("useDrag", () => {
-  it("should start drag action after timeout", () => {
-    const fakeTimers = sinon.useFakeTimers();
-    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
-    const { result } = renderHook(() => useDrag(spy));
-    act(() => {
-      const instance = document.createElement("div");
-      result.current(instance);
-      fireEvent.mouseDown(instance);
-      fakeTimers.tick(300);
-    });
-    spy.calledOnce.should.true;
-  });
-
   it("should start drag on pointer move", () => {
     const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
     const { result } = renderHook(() => useDrag(spy));
