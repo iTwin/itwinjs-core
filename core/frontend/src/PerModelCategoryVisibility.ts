@@ -62,7 +62,7 @@ export namespace PerModelCategoryVisibility {
   /** Props to describe per model category visibility. */
   export interface Props {
     modelId: string;
-    categoryIds: Id64Arg;
+    categoryIds: Iterable<Id64String>;
     visOverride: PerModelCategoryVisibility.Override;
   }
 
@@ -128,7 +128,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       const modelId = override.modelId;
       const categoryIds = override.categoryIds;
       const visOverride = override.visOverride;
-      for (const categoryId of Id64.iterable(categoryIds)) {
+      for (const categoryId of categoryIds) {
         if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
           anyChanged = true;
           if (PerModelCategoryVisibility.Override.None !== visOverride) {
