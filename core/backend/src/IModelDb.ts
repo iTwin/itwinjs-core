@@ -2160,6 +2160,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  public static readonly onCodeServiceCreated = new BeEvent<(service: CodeService) => void>();
+
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
   }
@@ -2243,10 +2245,11 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
+    if (openMode === OpenMode.ReadWrite && CodeService.createForBriefcase) {
       try {
-        const codeService = CodeService.createForIModel(briefcaseDb);
+        const codeService = CodeService.createForBriefcase(briefcaseDb);
         briefcaseDb._codeService = codeService;
+        this.onCodeServiceCreated.raiseEvent(codeService);
       } catch (e: any) {
         if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
           throw e;
