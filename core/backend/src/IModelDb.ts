@@ -626,9 +626,7 @@ export abstract class IModelDb extends IModel {
           result.push(row);
         }
       } catch {
-        // ###TODO: detect cases in which retry is warranted
-        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
-        // incomplete results. Since we're not retrying, that's the best we can do.
+        // We can ignore the error here, and just return whatever we were able to query.
       }
     }
     return result;

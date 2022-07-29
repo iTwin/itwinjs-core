@@ -49,9 +49,7 @@ export class ViewStateHydrator {
           result.push(row as SubCategoryResultRow);
         }
       } catch {
-        // ###TODO: detect cases in which retry is warranted
-        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
-        // incomplete results. Since we're not retrying, that's the best we can do.
+        // We can ignore the error here, and just return whatever we were able to query.
       }
     }
     // eslint-disable-next-line deprecation/deprecation
