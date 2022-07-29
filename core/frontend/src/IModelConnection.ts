@@ -267,7 +267,7 @@ export abstract class IModelConnection extends IModel {
   /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param compressedCategoryIds compressed category Ids
-   * @returns array of SubCategoryResultRow
+   * @returns array of Categories.SubCategoryInfo
    * @internal
    */
   public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<Categories.SubCategoryInfo[]> {
