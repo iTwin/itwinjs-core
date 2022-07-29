@@ -1,0 +1,44 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $iui-sans;
+  font-size: $iui-font-size;
+  color: $buic-foreground-body;
+}
+
+.red-text {
+  color: red;
+}
+
+/* below is used to test ContentControl with transparent background - test with frontstage 4 */
+/*
+main{
+  background-color: red !important;
+}
+
+.nz-widgetPanels-panels.uifw-widgetPanels {
+  background-color: transparent !important;
+}
+*/
+
+/* --- Gino's suggestions for Design Review usability lab ---
+.components-toolbar-items-container.components-items {
+  background-color: var(--buic-background-1) !important;
+}
+
+.nz-toolbar-button-button.nz-toolbar-button-icon.nz-toolbar-button-icon-small.nz-toolbar-button-app-small {
+  background-color: var(--buic-background-1) !important;
+}
+
+.nz-toolSettings-setting {
+  flex: 1;
+  justify-content: center;
+}
+------------------------------------------------------- */

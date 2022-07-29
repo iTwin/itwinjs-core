@@ -9,7 +9,7 @@
 
 import { Vector3d } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
-import { IModelApp, RenderScheduleState, Tool } from "@itwin/core-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 enum FadeMode { X, Y, Z, Transparent }
 
@@ -84,7 +84,7 @@ export class RealityTransitionTool extends Tool {
 
     const script = RenderSchedule.Script.fromJSON(scriptProps);
     if (script) {
-      displayStyle.setScheduleState(new RenderScheduleState(displayStyle.id, script));
+      displayStyle.scheduleScript = script;
       vp.timePoint = script.duration.low;
     }
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "fix IModelExporter not exporting brep data when exporting geometry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

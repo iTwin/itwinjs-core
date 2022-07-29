@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Progress API for downloading changesets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, Element, HubMock, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ChangesetId, ElementProps } from "@itwin/core-common";
@@ -13,7 +13,9 @@ import { IModelImporter } from "../../IModelImporter";
 import { IModelExporter } from "../../IModelExporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation, HubWrappers, IModelTransformerTestUtils } from "../IModelTransformerUtils";
-import { HubMock } from "../HubMock";
+import { KnownTestLocations } from "../KnownTestLocations";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -226,17 +228,17 @@ describe("test resuming transformations", () => {
   let seedDb: BriefcaseDb;
 
   before(async () => {
-    HubMock.startup("IModelTransformerResumption");
+    HubMock.startup("IModelTransformerResumption", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
     const seedPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
-    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" }});
+    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" } });
     seedDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "ResumeTestsSeed", description: "seed for resumption tests", version0: seedPath, noLocks: true });
     seedDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: seedDbId });
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(seedDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(seedDb);
     seedDb.saveChanges();
-    await seedDb.pushChanges({accessToken, description: "populated seed db"});
+    await seedDb.pushChanges({ accessToken, description: "populated seed db" });
   });
 
   after(async () => {
@@ -251,7 +253,7 @@ describe("test resuming transformations", () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({ sourceDb, targetDb, transformer });
       targetDb.saveChanges();
       return [transformer, targetDb] as const;
     })();
@@ -266,7 +268,7 @@ describe("test resuming transformations", () => {
       transformer.elementExportsUntilCall = 10;
       transformer.callback = async () => {
         targetDb.saveChanges();
-        await targetDb.pushChanges({accessToken, description: "early state save"});
+        await targetDb.pushChanges({ accessToken, description: "early state save" });
         transformer.saveStateToFile(dumpPath);
         changesetId = targetDb.changeset.id;
         // now after another 10 exported elements, interrupt for resumption
@@ -330,9 +332,11 @@ describe("test resuming transformations", () => {
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = 10;
-      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
-        t.elementExportsUntilCall = undefined;
-      }});
+      await transformWithCrashAndRecover({
+        sourceDb, targetDb, transformer, disableCrashing(t) {
+          t.elementExportsUntilCall = undefined;
+        },
+      });
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -342,7 +346,7 @@ describe("test resuming transformations", () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({ sourceDb, targetDb, transformer });
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -457,9 +461,9 @@ describe("test resuming transformations", () => {
       }
     }
 
-    class DifferentTransformerClass extends CrashOn2Transformer {}
-    class DifferentImporterClass extends IModelImporter {}
-    class DifferentExporterClass extends IModelExporter {}
+    class DifferentTransformerClass extends CrashOn2Transformer { }
+    class DifferentImporterClass extends IModelImporter { }
+    class DifferentExporterClass extends IModelExporter { }
 
     await testResumeCrashTransformerWithClasses({ StartTransformerClass: CrashOn2Transformer, ResumeTransformerClass: DifferentTransformerClass });
     await testResumeCrashTransformerWithClasses({ StartTransformerClass: CrashOn2Transformer, ResumeImporterClass: DifferentImporterClass });
@@ -474,7 +478,7 @@ describe("test resuming transformations", () => {
       protected override loadAdditionalStateJson(additionalState: any) { this.state1 = additionalState.state1; }
     }
     class AdditionalStateExporter extends IModelExporter {
-      public state1  = "exporter";
+      public state1 = "exporter";
       protected override getAdditionalStateJson() { return { state1: this.state1 }; }
       protected override loadAdditionalStateJson(additionalState: any) { this.state1 = additionalState.state1; }
     }
@@ -607,7 +611,7 @@ describe("test resuming transformations", () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({ sourceDb, targetDb, transformer });
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -629,7 +633,7 @@ describe("test resuming transformations", () => {
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
-    await sourceDb.pushChanges({accessToken, description: "populated source db"});
+    await sourceDb.pushChanges({ accessToken, description: "populated source db" });
 
     const targetDbRev0Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
     const targetDbRev0 = SnapshotDb.createFrom(sourceDb, targetDbRev0Path);
@@ -640,7 +644,7 @@ describe("test resuming transformations", () => {
 
     BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
     sourceDb.saveChanges();
-    await sourceDb.pushChanges({accessToken, description: "updated source db"});
+    await sourceDb.pushChanges({ accessToken, description: "updated source db" });
 
     const regularTarget = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({
@@ -674,18 +678,21 @@ describe("test resuming transformations", () => {
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = 10;
-      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
-        t.elementExportsUntilCall = undefined;
-      }, async transformerProcessing(t) {
-        await t.processChanges(accessToken);
-      }});
+      await transformWithCrashAndRecover({
+        sourceDb, targetDb, transformer, disableCrashing(t) {
+          t.elementExportsUntilCall = undefined;
+        }, async transformerProcessing(t) {
+          await t.processChanges(accessToken);
+        },
+      });
       targetDb.saveChanges();
-      await targetDb.pushChanges({accessToken, description: "completed transformation that crashed"});
+      await targetDb.pushChanges({ accessToken, description: "completed transformation that crashed" });
       transformer.dispose();
       return targetDb;
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
@@ -702,9 +709,11 @@ describe("test resuming transformations", () => {
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
-      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
-        t.elementExportsUntilCall = undefined;
-      }});
+      await transformWithCrashAndRecover({
+        sourceDb, targetDb, transformer, disableCrashing(t) {
+          t.elementExportsUntilCall = undefined;
+        },
+      });
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -714,7 +723,7 @@ describe("test resuming transformations", () => {
       const targetDbPath = "/tmp/huge-model-out.bim";
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({ sourceDb, targetDb, transformer });
       targetDb.saveChanges();
       transformer.dispose();
       return targetDb;
@@ -790,7 +799,7 @@ describe("test resuming transformations", () => {
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         const transformer = new IModelTransformer(sourceDb, targetDb);
         enableCrashes(false);
-        return transformNoCrash({sourceDb, targetDb, transformer});
+        return transformNoCrash({ sourceDb, targetDb, transformer });
       })();
 
       await assertIdentityTransformation(regularTarget, crashingTarget);
@@ -818,11 +827,7 @@ describe("test resuming transformations", () => {
     const avgExportedEntityCount = totalExportedEntities / totalNonCrashingTransformations;
 
     // eslint-disable-next-line no-console
-    console.log(`the average non crashing transformation took ${
-      formatter.format(avgNonCrashingTransformationsTime)
-    } and made ${
-      formatter.format(avgCrashableCallsMade)
-    } native calls.`);
+    console.log(`the average non crashing transformation took ${formatter.format(avgNonCrashingTransformationsTime)} and made ${formatter.format(avgCrashableCallsMade)} native calls.`);
 
     let totalCrashingTransformationsTime = 0.0;
     const targetTotalCrashingTransformations = Number(process.env.TRANSFORMER_RESUMPTION_TEST_TARGET_TOTAL_CRASHING_TRANSFORMATIONS) || 50;
@@ -836,17 +841,11 @@ describe("test resuming transformations", () => {
       const proportionOfNonCrashingTransformTime = result.finalTransformationTime / avgNonCrashingTransformationsTime;
       const proportionOfNonCrashingTransformCalls = result.finalTransformationCallsMade / avgCrashableCallsMade;
       const proportionOfNonCrashingEntityImports = result.importedEntityCount / avgImportedEntityCount;
-      expect(result.exportedEntityCount ).to.equal(avgExportedEntityCount);
+      expect(result.exportedEntityCount).to.equal(avgExportedEntityCount);
       const _ratioOfCallsToTime = proportionOfNonCrashingTransformCalls / proportionOfNonCrashingTransformTime;
       const _ratioOfImportsToTime = proportionOfNonCrashingEntityImports / proportionOfNonCrashingTransformTime;
       /* eslint-disable no-console */
-      console.log(`final resuming transformation took | ${
-        percent(proportionOfNonCrashingTransformTime)
-      } time | ${
-        percent(proportionOfNonCrashingTransformCalls)
-      } calls | ${
-        percent(proportionOfNonCrashingEntityImports)
-      } element imports |`);
+      console.log(`final resuming transformation took | ${percent(proportionOfNonCrashingTransformTime)} time | ${percent(proportionOfNonCrashingTransformCalls)} calls | ${percent(proportionOfNonCrashingEntityImports)} element imports |`);
       /* eslint-enable no-console */
       totalCrashingTransformationsTime += result.finalTransformationTime;
     }

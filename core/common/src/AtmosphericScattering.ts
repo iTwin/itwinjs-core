@@ -7,37 +7,45 @@
  */
 import { JsonUtils } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { RgbColorProps } from "./RgbColor";
 
 /**
  * @public
  */
 export namespace AtmosphericScattering {
 
-  /** An immutable container of wavelengths values for the red, green and blue pixel components.
+  /** JSON representation of a [[Wavelengths]] object, with each wavelength value a positive number.
   * @public
   */
-  export class Wavelengths implements RgbColorProps {
+  export interface WavelengthsProps {
+    r: number;
+    g: number;
+    b: number;
+  }
+
+  /** An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers.
+  * @public
+  */
+  export class Wavelengths implements WavelengthsProps {
     /** Constructs from red, green, and blue wavelength values.
      * @param r Wavelength value for red
      * @param g Wavelength value for green
      * @param b Wavelength value for blue
      */
     constructor(public readonly r: number, public readonly g: number, public readonly b: number) {
-      this.r = Math.min(0, r);
-      this.g = Math.min(0, g);
-      this.b = Math.min(0, b);
+      this.r = Math.max(0, r);
+      this.g = Math.max(0, g);
+      this.b = Math.max(0, b);
     }
 
     public equals(other: Wavelengths): boolean {
       return  this.r === other.r && this.g === other.g && this.b === other.b;
     }
 
-    public toJSON(): RgbColorProps {
+    public toJSON(): WavelengthsProps {
       return { r: this.r, g: this.g, b: this.b };
     }
 
-    public static fromJSON(json: RgbColorProps | undefined): Wavelengths {
+    public static fromJSON(json: WavelengthsProps | undefined): Wavelengths {
       let r = 0;
       let g = 0;
       let b = 0;
@@ -73,7 +81,7 @@ export namespace AtmosphericScattering {
     /** If defined,  */
     scatteringStrength?: number;
     /** If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red component scatter as if it were a cyan light ray. Default value is [., ., .]. */
-    wavelengths?: RgbColorProps;
+    wavelengths?: WavelengthsProps;
   }
 
   export class Settings implements Props {
@@ -111,8 +119,6 @@ export namespace AtmosphericScattering {
       if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
       if (this.outScatteringIntensity !== other.outScatteringIntensity) return false;
       if (this.scatteringStrength !== other.scatteringStrength) return false;
-      // eslint-disable-next-line no-console
-      console.log(`${this.wavelengths}`);
       if (!this.wavelengths.equals(other.wavelengths)) return false;
       return true;
     }

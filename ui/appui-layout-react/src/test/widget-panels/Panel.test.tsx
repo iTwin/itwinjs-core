@@ -13,7 +13,7 @@ import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
 } from "../../appui-layout-react";
-import { createDragItemInfo, setRefValue, TestNineZoneProvider } from "../Providers";
+import { createDragInfo, setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {
@@ -393,7 +393,7 @@ describe("WidgetPanelProvider", () => {
       draft.panels.left.size = 300;
     });
     dragManager.current!.handleDragStart({
-      info: createDragItemInfo(),
+      info: createDragInfo(),
       item: {
         type: "panelGrip",
         id: "left",

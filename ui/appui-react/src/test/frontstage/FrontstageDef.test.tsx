@@ -145,6 +145,13 @@ describe("FrontstageDef", () => {
             label: "WidgetsProvider RM1",
             getWidgetContent: () => "",
           });
+        if (location === StagePanelLocation.Right)
+          widgets.push({ // This should be added to Right stage panel, Start location.
+            id: "WidgetsProviderR1",
+            label: "WidgetsProvider R1",
+            getWidgetContent: () => "",
+          });
+
         return widgets;
       }
     }

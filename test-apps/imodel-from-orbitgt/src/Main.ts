@@ -8,7 +8,7 @@ import { IModelHost } from "@itwin/core-backend";
 import { OrbitGtContextIModelCreator } from "./OrbitGtContextModelCreator";
 
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */
-const argv: yargs.Arguments<{}> = yargs
+const argv = yargs
   .usage("Usage: $0 --input [RealityModelURL] --output [iModelFileName]")
   .describe("rdsUrl", "RDS URL")
   .string("rdsUrl")
@@ -27,7 +27,7 @@ const argv: yargs.Arguments<{}> = yargs
   .string("name")
   .describe("name", "Name (displayed in GUI and tool tip)")
   .demandOption(["accountName", "sasToken", "blobFileName", "output"])
-  .argv;
+  .parseSync();
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
@@ -35,13 +35,13 @@ const argv: yargs.Arguments<{}> = yargs
 
   const pcProps = {
     rdsUrl: argv.rdsUrl as string,
-    accountName: argv.accountName as string,
-    sasToken: argv.sasToken as string,
-    containerName: argv.containerName as string,
-    blobFileName: argv.blobFileName as string,
+    accountName: argv.accountName,
+    sasToken: argv.sasToken,
+    containerName: argv.containerName,
+    blobFileName: argv.blobFileName,
   };
 
-  const creator = new OrbitGtContextIModelCreator(pcProps, argv.output as string, argv.name as string);
+  const creator = new OrbitGtContextIModelCreator(pcProps, argv.output, argv.name as string);
   try {
     await creator.create();
     process.stdout.write(`IModel: ${argv.output} Created for Point Cloud: ${argv.blobFileName}`);

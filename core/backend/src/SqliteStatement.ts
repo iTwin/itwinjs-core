@@ -183,6 +183,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
     this.checkBind(this._stmt!.bindBlob(parameter, blob));
   }
+  /** Bind null to a parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   */
+  public bindNull(parameter: BindParameter) {
+    this.checkBind(this._stmt!.bindNull(parameter));
+  }
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
@@ -243,6 +249,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param columnIx Index of SQL column in query result (0-based)
    */
   public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
+
+  /** Get a size in bytes of a blob or text column
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getColumnBytes(colIndex: number): number { return this._stmt!.getColumnBytes(colIndex); }
 
   /** Get a value as a blob
    * @param colIndex Index of SQL column in query result (0-based)

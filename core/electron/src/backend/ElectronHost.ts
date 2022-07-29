@@ -16,6 +16,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
+import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -278,11 +279,20 @@ export class ElectronHost {
 class ElectronAppHandler extends IpcHandler {
   public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
-    const electronMember = (ElectronHost.electron as any)[member];
-    const func = electronMember[method];
-    if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
+    let allowedMethods: readonly string[] = [];
+    if (member === "dialog") {
+      const methods: DialogModuleMethod[] = ["showMessageBox", "showOpenDialog", "showSaveDialog"];
+      allowedMethods = methods;
+    }
 
-    return func.call(electronMember, ...args);
+    if (allowedMethods.indexOf(method) >= 0) {
+      const electronMember = (ElectronHost.electron as any)[member];
+      const func = electronMember[method];
+      if (typeof func === "function") {
+        return func.call(electronMember, ...args);
+      }
+    }
+
+    throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
   }
 }

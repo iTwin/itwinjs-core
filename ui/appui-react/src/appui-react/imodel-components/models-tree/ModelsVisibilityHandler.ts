@@ -15,6 +15,7 @@ import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } 
 import { Presentation } from "@itwin/presentation-frontend";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { CachingElementIdsContainer } from "./Utils";
 
 /**
  * Visibility tree node types.
@@ -226,6 +227,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
       return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
 
+    // istanbul ignore else
     if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.size > 0) {
       let allElementsForceHidden = true;
       for await (const elementId of elementIds.getElementIds()) {
@@ -404,15 +406,10 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 }
 
-interface ModelInfo {
-  id: Id64String;
-  isHidden: boolean;
-}
-
 class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
-  private _subjectModels: Map<Id64String, ModelInfo[]> | undefined;
+  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
   private _init: Promise<void> | undefined;
 
   constructor(imodel: IModelConnection) {
@@ -427,9 +424,9 @@ class SubjectModelIdsCache {
       `;
       return this._imodel.query(subjectsQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     };
-    const queryModels = (): AsyncIterableIterator<{ id: Id64String, parentId: Id64String, content?: string }> => {
+    const queryModels = (): AsyncIterableIterator<{ id: Id64String, parentId: Id64String }> => {
       const modelsQuery = `
-        SELECT p.ECInstanceId id, p.Parent.Id parentId, json_extract(p.JsonProperties, '$.PhysicalPartition.Model.Content') content
+        SELECT p.ECInstanceId id, p.Parent.Id parentId
         FROM bis.InformationPartitionElement p
         INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
         WHERE NOT m.IsPrivate
@@ -449,21 +446,24 @@ class SubjectModelIdsCache {
     this._subjectsHierarchy = new Map();
     const targetPartitionSubjects = new Map<Id64String, Id64String[]>();
     for await (const subject of querySubjects()) {
+      // istanbul ignore else
       if (subject.parentId)
         pushToMap(this._subjectsHierarchy, subject.parentId, subject.id);
+      // istanbul ignore if
       if (subject.targetPartitionId)
         pushToMap(targetPartitionSubjects, subject.targetPartitionId, subject.id);
     }
 
     this._subjectModels = new Map();
     for await (const model of queryModels()) {
+      // istanbul ignore next
       const subjectIds = targetPartitionSubjects.get(model.id) ?? [];
+      // istanbul ignore else
       if (!subjectIds.includes(model.parentId))
         subjectIds.push(model.parentId);
 
-      const v = { id: model.id, isHidden: (model.content !== undefined) };
       subjectIds.forEach((subjectId) => {
-        pushToMap(this._subjectModels!, subjectId, v);
+        pushToMap(this._subjectModels!, subjectId, model.id);
       });
     }
   }
@@ -478,7 +478,7 @@ class SubjectModelIdsCache {
   private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
     const subjectModelIds = this._subjectModels!.get(subjectId);
     if (subjectModelIds)
-      modelIds.push(...subjectModelIds.map((info) => info.id));
+      modelIds.push(...subjectModelIds);
 
     const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
     if (childSubjectIds)
@@ -533,6 +533,7 @@ class ElementIdsCache {
   }
 }
 
+// istanbul ignore next
 async function* createInstanceIdsGenerator(imodel: IModelConnection, rulesetId: string, displayType: string, inputKeys: Keys) {
   const res = await Presentation.presentation.getContentInstanceKeys({
     imodel,
@@ -546,28 +547,11 @@ async function* createInstanceIdsGenerator(imodel: IModelConnection, rulesetId: 
 }
 
 // istanbul ignore next
-class CachingElementIdsContainer {
-  private _generator;
-  private _ids;
-  constructor(generator: AsyncGenerator<Id64String>) {
-    this._generator = generator;
-    this._ids = new Array<Id64String>();
-  }
-  public async* getElementIds() {
-    for (const id of this._ids) {
-      yield id;
-    }
-    for await (const id of this._generator) {
-      this._ids.push(id);
-      yield id;
-    }
-  }
-}
-
 function createAssemblyElementIdsContainer(imodel: IModelConnection, rulesetId: string, assemblyId: Id64String) {
   return new CachingElementIdsContainer(createInstanceIdsGenerator(imodel, rulesetId, "AssemblyElementsRequest", [{ className: "BisCore:Element", id: assemblyId }]));
 }
 
+// istanbul ignore next
 async function createGroupedElementsInfo(imodel: IModelConnection, rulesetId: string, groupingNodeKey: GroupingNodeKey) {
   const groupedElementIdsContainer = new CachingElementIdsContainer(createInstanceIdsGenerator(imodel, rulesetId, "AssemblyElementsRequest", [groupingNodeKey]));
   const elementId = await groupedElementIdsContainer.getElementIds().next();
