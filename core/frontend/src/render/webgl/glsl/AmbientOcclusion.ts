@@ -117,7 +117,7 @@ const computeAmbientOcclusion = `
     tOcclusion += curOcclusion;
   }
 
-  float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0) : 1.0;
+  float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
   tOcclusion *= distanceFadeFactor;
 
   tOcclusion /= 4.0;
