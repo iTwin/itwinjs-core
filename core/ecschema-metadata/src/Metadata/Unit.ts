@@ -44,9 +44,9 @@ export class Unit extends SchemaItem {
   public get numerator(): number { return this._numerator ?? 1.0; }
   public get offset(): number { return this._offset ?? 0.0; }
   public get denominator(): number { return this._denominator ?? 1.0; }
-  public get hasNumerator(): boolean { return (typeof this._numerator !== "undefined"); }
-  public get hasOffset(): boolean { return (typeof this._offset !== "undefined"); }
-  public get hasDenominator(): boolean { return (typeof this._denominator !== "undefined"); }
+  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
+  public get hasOffset(): boolean { return (this._offset !== undefined); }
+  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
 
   /**
    * Returns true if a conversion can be calculated between the input units

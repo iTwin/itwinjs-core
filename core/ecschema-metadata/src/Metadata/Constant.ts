@@ -38,8 +38,8 @@ export class Constant extends SchemaItem {
   public get definition(): string { return this._definition; }
   public get numerator(): number { return this._numerator ?? 1.0; }
   public get denominator(): number { return this._denominator ?? 1.0; }
-  public get hasNumerator(): boolean { return (typeof this._numerator !== "undefined"); }
-  public get hasDenominator(): boolean { return (typeof this._denominator !== "undefined"); }
+  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
+  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
