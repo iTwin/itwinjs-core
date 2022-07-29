@@ -117,6 +117,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   }
 
   /**
+   * set the overrides for multiple perModelCategoryVisibility props, loading categoryIds from the iModel if necessary.
+   * @see [[PerModelCategoryVisibility]]
    * @param perModelCategoryVisibility array of model category visibility overrides @see [[PerModelCategoryVisibility.Props]]
    * @param iModel Optional param iModel. If no iModel is provided, then the iModel associated with the viewport (used to construct this class) is used.
    * This optional iModel param is useful for apps which may show multiple iModels at once. Passing in an iModel ensures that the subcategories cache for the provided iModel
