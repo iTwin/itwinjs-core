@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "When rendering surfaces, compute the base alpha by multiplying surface alpha by material alpha.",
+      "comment": "",
       "type": "none"
     }
   ],
