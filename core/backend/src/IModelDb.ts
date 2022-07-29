@@ -611,6 +611,7 @@ export abstract class IModelDb extends IModel {
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param categoryIds categoryIds to query
    * @returns array of Categories.SubCategoryInfo
+   * @internal
    */
   public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<Categories.SubCategoryInfo[]> {
     const result: Categories.SubCategoryInfo[] = [];
