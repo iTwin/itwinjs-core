@@ -44,16 +44,16 @@ export interface CodeIndex {
    */
   findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
 
-  /** Look up a code spec by its name or Id (in this index)
+  /** Look up a code spec by its name
    * @throws if the spec is not present.
    */
-  getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.SpecEntry;
+  getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
 
   /** Call a `CodeIterator` function for all codes in this index, optionally filtered by a `CodeFilter ` */
   forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
 
-  /** Call a `EntryIdIterator` function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-  forAllCodeSpecs: (iter: CodeService.EntryIdIterator, filter?: CodeService.ValueFilter) => void;
+  /** Call an iterator function for all code specs in this index, optionally filtered by a `ValueFilter ` */
+  forAllCodeSpecs: (iter: CodeService.NameAndJsonIterator, filter?: CodeService.ValueFilter) => void;
 }
 
 /**
@@ -174,7 +174,7 @@ export interface CodeService {
    * Turn a `CodePops` for the briefcase of this CodeService into a `ScopeAndSpec` object for use in the code index.
    * This is necessary because the `spec` member of `CodeProps` refers to the id of a code spec in the iModel, and
    * the `scope` member refers to the `ElementId` of the scope element in the iModel. This helper function
-   * converts the specId to the spec name and looks up the `FederationGuid` of the scope element.
+   * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
   makeScopeAndSpec: (props: CodeProps) => CodeService.ScopeAndSpec;
 
@@ -227,25 +227,16 @@ export namespace CodeService {
   /** An optional number associated with a code that may be used for "status" information. Values must be defined by applications. */
   export type CodeState = number;
 
-  /** An integer id  */
-  export type EntryId = number;
-
   /** The return status of an iterator function. The value "stop" causes the iteration to terminate. */
   export type IteratorReturn = void | "stop";
 
   export type TableIterator<T> = (id: T) => IteratorReturn;
-  export type EntryIdIterator = TableIterator<EntryId>;
 
   /** An iterator function over codes in a code index. It is called with the Guid of a each code. */
   export type CodeIterator = TableIterator<CodeGuid>;
 
-  export type TableData = CodeService.NameAndJson
-    ;
-  export interface TableEntry extends TableData {
-    readonly id: CodeService.EntryId;
-  }
-  /** The data stored in the code index for code specs. */
-  export type SpecEntry = TableEntry;
+  /** An iterator function over code specs in a code index. It is called with the name and json of a each code spec. */
+  export type NameAndJsonIterator = TableIterator<NameAndJson>;
 
   /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
@@ -320,8 +311,6 @@ export namespace CodeService {
      */
     federationGuid?: GuidString;
   }
-
-  export type SpecNameOrId = CodeSpecName | EntryId;
 
   export interface ScopeAndSpec {
     readonly spec: CodeSpecName;
