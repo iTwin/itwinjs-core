@@ -37,7 +37,7 @@ export interface CodeIndex {
   /** Get the data for a code in this CodeIndex by its Guid.
    * @returns the data for the code or undefined if no code is present for the supplied Guid.
    */
-  getCode: (guid: CodeService.CodeGuid) => CodeService.CodeFullEntry | undefined;
+  getCode: (guid: CodeService.CodeGuid) => CodeService.CodeEntry | undefined;
 
   /** Look up a code by its Scope, Spec, and Value.
    * @returns the Guid of the code, or undefined if not present.
@@ -47,7 +47,7 @@ export interface CodeIndex {
   /** Look up a code spec by its name or Id (in this index)
    * @throws if the spec is not present.
    */
-  getCodeSpec: (props: CodeService.SpecNameOrId) => CodeService.SpecEntry;
+  getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.SpecEntry;
 
   /** Call a `CodeIterator` function for all codes in this index, optionally filtered by a `CodeFilter ` */
   forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
@@ -239,9 +239,8 @@ export namespace CodeService {
   /** An iterator function over codes in a code index. It is called with the Guid of a each code. */
   export type CodeIterator = TableIterator<CodeGuid>;
 
-  export interface TableData extends CodeService.NameAndJson {
-    readonly type: string;
-  }
+  export type TableData = CodeService.NameAndJson
+    ;
   export interface TableEntry extends TableData {
     readonly id: CodeService.EntryId;
   }
@@ -322,14 +321,10 @@ export namespace CodeService {
     federationGuid?: GuidString;
   }
 
-  export interface SpecNameAndId { readonly idxId: EntryId, readonly name: string }
-
-  export type SpecNameOrId = string | SpecNameAndId |
-  { readonly name: CodeSpecName, idxId?: never, type?: string } |
-  { readonly idxId: EntryId, name?: never, type?: string };
+  export type SpecNameOrId = CodeSpecName | EntryId;
 
   export interface ScopeAndSpec {
-    readonly spec: SpecNameOrId;
+    readonly spec: CodeSpecName;
     readonly scope: ScopeGuid;
   }
 
@@ -338,7 +333,7 @@ export namespace CodeService {
   }
 
   export interface CodeEntry {
-    readonly spec: SpecNameOrId;
+    readonly spec: CodeSpecName;
     readonly scope: ScopeGuid;
     readonly value: CodeValue;
     readonly guid: CodeGuid;
@@ -347,18 +342,16 @@ export namespace CodeService {
     readonly author?: AuthorName;
     readonly json?: SettingObject;
   }
-  export type CodeFullEntry = CodeEntry & { readonly spec: SpecNameAndId };
 
   export interface ValueFilter {
     readonly value?: string;
     readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     readonly orderBy?: "ASC" | "DESC";
     readonly sqlExpression?: string;
-    readonly type?: string;
   }
 
   export interface CodeFilter extends ValueFilter {
-    readonly spec?: SpecNameOrId;
+    readonly spec?: CodeSpecName;
     readonly scope?: ScopeGuid;
   }
 
@@ -394,12 +387,11 @@ export namespace CodeService {
   }
   export interface NameAndJson {
     readonly name: string;
-    readonly type?: string;
     readonly json?: SettingObject;
   }
 
   export interface ScopeAndSpec {
-    readonly spec: SpecNameOrId;
+    readonly spec: CodeSpecName;
     readonly scope: ScopeGuid;
   }
 
