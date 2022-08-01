@@ -8,7 +8,7 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  ContentDescriptorRequestOptions, ContentFlags, DiagnosticsCallback, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, filterDiagnostics, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -26,6 +26,7 @@ export class PresentationManagerDetail implements IDisposable {
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _updatesTracker: UpdatesTracker | undefined;
   private _onManagerUsed: (() => void) | undefined;
+  private _diagnosticsCallback: DiagnosticsCallback | undefined;
 
   public rulesets: RulesetManager;
   public activeLocale: string | undefined;
@@ -73,6 +74,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     this._onManagerUsed = undefined;
     this.rulesets = new RulesetManagerImpl(getNativePlatform);
+    this._diagnosticsCallback = params.diagnosticsCallback;
   }
 
   public dispose(): void {
@@ -147,13 +149,18 @@ export class PresentationManagerDetail implements IDisposable {
 
     let diagnosticsListener: BackendDiagnosticsHandler | undefined;
     if (diagnostics) {
-      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
+      const { handler: tempDiagnosticsListener, perf, ...diagnosticsOptions } = diagnostics;
       diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = diagnosticsOptions;
+      nativeRequestParams.params.diagnostics = { perf: !!perf, ...diagnosticsOptions };
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    diagnosticsListener && response.diagnostics && diagnosticsListener({ logs: [response.diagnostics] });
+    if (response.diagnostics) {
+      const duration = typeof diagnostics?.perf === "object" ? diagnostics.perf.duration : undefined;
+      const filteredDiagnostics = filterDiagnostics({ logs: [response.diagnostics] }, duration);
+      diagnosticsListener && filteredDiagnostics && diagnosticsListener(filteredDiagnostics);
+      this._diagnosticsCallback && filteredDiagnostics && this._diagnosticsCallback(convertToReadableSpans(filteredDiagnostics));
+    }
     return response.result;
   }
 }

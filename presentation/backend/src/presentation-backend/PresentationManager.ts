@@ -11,7 +11,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DiagnosticsCallback, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
@@ -296,6 +296,12 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
+
+  /*
+   * A function that will be called after receiving diagnostics.
+   * @alpha
+   */
+  diagnosticsCallback?: DiagnosticsCallback;
 }
 
 /**

@@ -346,54 +346,6 @@ describe("PresentationRpcImpl", () => {
         });
       });
 
-      it("should set duration to default when diagnostics requested", async () => {
-        const rpcOptions: HierarchyRpcRequestOptions = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          diagnostics: {
-            perf: true,
-          },
-        };
-
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & { diagnostics?: DiagnosticsOptions } = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
-          diagnostics: {
-            perf: { duration: 100 },
-          },
-        };
-
-        presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
-          .verifiable();
-        await impl.getNodesCount(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-      });
-
-      it("should override duration when duration is less than default", async () => {
-        const rpcOptions: HierarchyRpcRequestOptions = {
-          ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
-          diagnostics: {
-            perf: { duration: 50 },
-          },
-        };
-
-        const managerOptions: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & { diagnostics?: DiagnosticsOptions } = {
-          imodel: testData.imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
-          diagnostics: {
-            perf: { duration: 100 },
-          },
-        };
-
-        presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.is((actualManagerOptions) => sinon.match(managerOptions).test(actualManagerOptions))))
-          .verifiable();
-        await impl.getNodesCount(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
-      });
-
       it("should return error result if manager throws", async () => {
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,

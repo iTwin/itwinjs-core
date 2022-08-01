@@ -151,11 +151,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         if (diagnosticsOptions.backendVersion) {
           getDiagnostics().backendVersion = packageJsonVersion;
         }
-        if (diagnosticsOptions.perf) {
-          const defaultDuration: number = 100;
-          if (typeof diagnosticsOptions.perf === "boolean" || (typeof diagnosticsOptions.perf === "object" && diagnosticsOptions.perf.duration < defaultDuration))
-            diagnosticsOptions.perf = { duration: defaultDuration };
-        }
         managerRequestOptions.diagnostics = {
           ...diagnosticsOptions,
           handler: (d: Diagnostics) => {
