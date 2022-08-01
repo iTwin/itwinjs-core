@@ -8,12 +8,12 @@
 
 import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
+import {
+  computeVisibleNodes, DelayLoadedTreeNodeItem, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode,
+  PagedTreeNodeLoader, RenderedItemsRange, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
+} from "@itwin/components-react";
 import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
-import {
-  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
-  TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
-} from "@itwin/components-react";
 import { RulesetRegistrationHelper } from "../../common/RulesetRegistrationHelper";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -76,6 +76,7 @@ export function usePresentationTreeNodeLoader(
       dataSourceOverrides: props.dataSourceOverrides,
       ruleDiagnostics: props.ruleDiagnostics,
       devDiagnostics: props.devDiagnostics,
+      customizeTreeNodeItem: props.customizeTreeNodeItem,
     }),
     [
       props.appendChildrenCountForGroupingNodes,
@@ -85,6 +86,7 @@ export function usePresentationTreeNodeLoader(
       props.pagingSize,
       props.ruleDiagnostics,
       props.ruleset,
+      props.customizeTreeNodeItem,
     ],
   );
 
@@ -330,7 +332,7 @@ async function updateModelSourceAfterIModelChange(
 /** @internal */
 export interface ReloadedHierarchyPart {
   parentId: string | undefined;
-  nodeItems: TreeNodeItem[];
+  nodeItems: DelayLoadedTreeNodeItem[];
   offset: number;
 }
 
@@ -398,7 +400,7 @@ function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, 
   }
 }
 
-function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode: TreeNodeItem): TreeModelNodeInput {
+function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode: DelayLoadedTreeNodeItem): TreeModelNodeInput {
   const newInput = {
     description: newNode.description,
     isExpanded: !!newNode.autoExpand,
@@ -406,7 +408,7 @@ function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode
     item: newNode,
     label: newNode.label,
     isLoading: false,
-    numChildren: 0,
+    numChildren: !newNode.hasChildren ? 0 : undefined,
     isSelected: false,
   };
   if (!oldNode) {

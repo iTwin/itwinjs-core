@@ -3,100 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Assertion, expect, util } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
-import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
-  GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
+  GeometricElement3d, GeometryPart, HubMock, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, EntityMetaData, FontProps,
   GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, ViewDetails3dProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
+import { KnownTestLocations } from "./KnownTestLocations";
 
-interface DeepEqualWithFpToleranceOpts {
-  tolerance?: number;
-  /** e.g. consider {x: undefined} and {} as deeply equal */
-  considerNonExistingAndUndefinedEqual?: boolean;
+export class HubWrappers extends BackendTestUtils.HubWrappers {
+  protected static override get hubMock() { return HubMock; }
 }
 
-declare global {
-  namespace Chai {
-    interface Deep {
-      // might be better to implement .approximately.deep.equal, but this is simpler
-      equalWithFpTolerance(actual: any, options?: DeepEqualWithFpToleranceOpts): Assertion;
-    }
-  }
-}
+export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils {
+  protected static override get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
-
-export function deepEqualWithFpTolerance(
-  a: any,
-  b: any,
-  options: DeepEqualWithFpToleranceOpts = {},
-): boolean {
-  if (options.tolerance === undefined) options.tolerance = 1e-10;
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  switch (typeof a) {
-    case "number":
-      return isAlmostEqualNumber(a, b, options.tolerance);
-    case "string":
-    case "boolean":
-    case "function":
-    case "symbol":
-    case "undefined":
-      return false; // these objects can only be strict equal which was already tested
-    case "object":
-      if ((a === null) !== (b === null)) return false;
-      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
-      const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
-      return aSize === bSize && Object.keys(a).every(
-        (key) =>
-          (key in b || options.considerNonExistingAndUndefinedEqual) &&
-          deepEqualWithFpTolerance(a[key], b[key], options)
-      );
-    default: // bigint unhandled
-      throw Error("unhandled deep compare type");
-  }
-}
-
-Assertion.addMethod(
-  "equalWithFpTolerance",
-  function equalWithFpTolerance(
-    expected: any,
-    options: DeepEqualWithFpToleranceOpts = {}
-  ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
-    const actual = this._obj;
-    const isDeep = util.flag(this, "deep");
-    this.assert(
-      isDeep
-        ? deepEqualWithFpTolerance(expected, actual, options)
-        : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${
-        isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${
-        isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      expected,
-      actual
-    );
-  }
-);
-
-export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
     const teamFile: string = path.join(outputDir, `Team${teamName}.bim`);
     if (IModelJsFs.existsSync(teamFile)) {
@@ -114,9 +48,9 @@ export class IModelTransformerTestUtils {
     assert.isTrue(Id64.isValidId64(contextSubjectId));
     const definitionModelId = DefinitionModel.insert(teamDb, IModel.rootSubjectId, `Definition${teamName}`);
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const teamSpatialCategoryId = IModelTestUtils.insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+    const teamSpatialCategoryId = this.insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
     assert.isTrue(Id64.isValidId64(teamSpatialCategoryId));
-    const sharedSpatialCategoryId = IModelTestUtils.insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
+    const sharedSpatialCategoryId = this.insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const sharedDrawingCategoryId = DrawingCategory.insert(teamDb, IModel.dictionaryId, "DrawingCategoryShared", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(sharedDrawingCategoryId));
@@ -129,7 +63,7 @@ export class IModelTransformerTestUtils {
       category: teamSpatialCategoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject${teamName}1`,
-      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      geom: this.createBox(Point3d.create(1, 1, 1)),
       placement: {
         origin: teamOrigin,
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -144,7 +78,7 @@ export class IModelTransformerTestUtils {
       category: sharedSpatialCategoryId,
       code: Code.createEmpty(),
       userLabel: `PhysicalObject${teamName}2`,
-      geom: IModelTestUtils.createBox(Point3d.create(2, 2, 2)),
+      geom: this.createBox(Point3d.create(2, 2, 2)),
       placement: {
         origin: teamOrigin,
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -170,32 +104,32 @@ export class IModelTransformerTestUtils {
   }
 
   public static assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
-    const definitionPartitionId: Id64String = IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const teamSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
-    const sharedSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
-    const physicalPartitionId: Id64String = IModelTestUtils.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
-    const physicalObjectId1: Id64String = IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+    const definitionPartitionId: Id64String = this.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const teamSpatialCategoryId = this.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const sharedSpatialCategoryId = this.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
+    const physicalPartitionId: Id64String = this.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const physicalObjectId1: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
     const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
     assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
     assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
     assert.isTrue(physicalObject1.code.value === "");
     assert.equal(physicalObject1.category, teamSpatialCategoryId);
-    const physicalObjectId2: Id64String = IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+    const physicalObjectId2: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
     const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
     assert.equal(physicalObject2.category, sharedSpatialCategoryId);
   }
 
   public static assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
-    const sharedSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
+    const sharedSpatialCategoryId = this.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const aspects: ExternalSourceAspect[] = iModelDb.elements.getAspects(sharedSpatialCategoryId, ExternalSourceAspect.classFullName) as ExternalSourceAspect[];
     assert.isAtLeast(teamNames.length, aspects.length, "Should have an ExternalSourceAspect from each source");
     teamNames.forEach((teamName: string) => {
-      const subjectId: Id64String = IModelTestUtils.querySubjectId(iModelDb, teamName);
-      const definitionPartitionId: Id64String = IModelTestUtils.queryDefinitionPartitionId(iModelDb, subjectId, teamName);
-      const teamSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
-      const physicalPartitionId: Id64String = IModelTestUtils.queryPhysicalPartitionId(iModelDb, subjectId, teamName);
-      const physicalObjectId1: Id64String = IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
+      const subjectId: Id64String = this.querySubjectId(iModelDb, teamName);
+      const definitionPartitionId: Id64String = this.queryDefinitionPartitionId(iModelDb, subjectId, teamName);
+      const teamSpatialCategoryId = this.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+      const physicalPartitionId: Id64String = this.queryPhysicalPartitionId(iModelDb, subjectId, teamName);
+      const physicalObjectId1: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, teamSpatialCategoryId, `${teamName}1`);
       const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
       assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
       assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
@@ -203,7 +137,7 @@ export class IModelTransformerTestUtils {
       assert.equal(physicalObject1.category, teamSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
       assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
-      const physicalObjectId2: Id64String = IModelTestUtils.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
+      const physicalObjectId2: Id64String = this.queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
       const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
       assert.equal(physicalObject2.category, sharedSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId2, ExternalSourceAspect.classFullName).length);
@@ -227,19 +161,19 @@ export class IModelTransformerTestUtils {
 
   public static assertConsolidatedIModelContents(iModelDb: IModelDb, consolidatedName: string): void {
     // assert what should exist
-    const definitionModelId: Id64String = IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
+    const definitionModelId: Id64String = this.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const categoryA: Id64String = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "A");
-    const categoryB: Id64String = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "B");
+    const categoryA: Id64String = this.querySpatialCategoryId(iModelDb, definitionModelId, "A");
+    const categoryB: Id64String = this.querySpatialCategoryId(iModelDb, definitionModelId, "B");
     assert.isTrue(Id64.isValidId64(categoryA));
     assert.isTrue(Id64.isValidId64(categoryB));
-    const physicalModelId: Id64String = IModelTestUtils.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
+    const physicalModelId: Id64String = this.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
     assert.isTrue(Id64.isValidId64(physicalModelId));
-    IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryA, "A1");
-    IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryB, "B1");
+    this.queryPhysicalElementId(iModelDb, physicalModelId, categoryA, "A1");
+    this.queryPhysicalElementId(iModelDb, physicalModelId, categoryB, "B1");
     // assert what should not exist
-    assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "A"), Error);
-    assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "B"), Error);
+    assert.throws(() => this.querySubjectId(iModelDb, "A"), Error);
+    assert.throws(() => this.querySubjectId(iModelDb, "B"), Error);
   }
 }
 
@@ -274,17 +208,14 @@ function getAllElemMetaDataProperties(elem: Element) {
 
 /**
  * Assert that an identity (no changes) transformation has occurred between two IModelDbs
- * @note If you do not pass a transformer or custom implemention of an id remapping context, it defaults to assuming
+ * @note If you do not pass a transformer or custom implementation of an id remapping context, it defaults to assuming
  *       no remapping occurred and therefore can be used as a general db-content-equivalence check
  */
 export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
-  remapper:
-  | IModelTransformer
-  | ((id: Id64String) => Id64String)
-  | {
+  remapper: IModelTransformer | ((id: Id64String) => Id64String) | {
     findTargetCodeSpecId: (id: Id64String) => Id64String;
     findTargetElementId: (id: Id64String) => Id64String;
   } = (id: Id64String) => id,
@@ -354,7 +285,7 @@ export async function assertIdentityTransformation(
           );
         } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
-          const _propEq = deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          const _propEq = BackendTestUtils.deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
           expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
             sourceElem.asAny[propName]
           );
@@ -404,7 +335,7 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
@@ -473,7 +404,7 @@ export async function assertIdentityTransformation(
       targetModelIds.add(targetModelId);
       targetToSourceModelsMap.set(targetModel, sourceModel);
       const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
       );
@@ -543,7 +474,7 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1,relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
@@ -567,7 +498,7 @@ export async function assertIdentityTransformation(
 export class TransformerExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
-    const targetSchemaFileName: string = path.join(__dirname, "assets", "ExtensiveTestScenarioTarget.ecschema.xml");
+    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
     await targetDb.importSchemas([targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
@@ -578,7 +509,7 @@ export class TransformerExtensiveTestScenario {
     Subject.insert(targetDb, subjectId, "S2");
     Subject.insert(targetDb, subjectId, "S3");
     Subject.insert(targetDb, subjectId, "S4");
-    const targetPhysicalCategoryId = IModelTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
+    const targetPhysicalCategoryId = IModelTransformerTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
     assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
   }
 
@@ -664,13 +595,13 @@ export class TransformerExtensiveTestScenario {
     const geometryPartId = targetDb.elements.queryElementIdByCode(GeometryPart.createCode(targetDb, definitionModelId, "GeometryPart"))!;
     assert.isTrue(Id64.isValidId64(geometryPartId));
     // PhysicalElement
-    const physicalObjectId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
-    const physicalObjectId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
-    const physicalObjectId3: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
-    const physicalObjectId4: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
-    const physicalElementId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
-    const childObjectId1A: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
-    const childObjectId1B: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
+    const physicalObjectId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    const physicalObjectId2: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
+    const physicalObjectId3: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
+    const physicalObjectId4: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
+    const physicalElementId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
+    const childObjectId1A: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
+    const childObjectId1B: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId1);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId2);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId3);
@@ -705,7 +636,7 @@ export class TransformerExtensiveTestScenario {
       index1++;
     }
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
-    assert.equal(physicalObject3.federationGuid, ExtensiveTestScenario.federationGuid3, "Source FederationGuid should have been transferred to target element");
+    assert.equal(physicalObject3.federationGuid, BackendTestUtils.ExtensiveTestScenario.federationGuid3, "Source FederationGuid should have been transferred to target element");
     assert.equal(physicalObject4.category, spatialCategoryId);
     let index4 = 0;
     for (const entry of new GeometryStreamIterator(physicalObject4.geom!)) {
@@ -742,7 +673,7 @@ export class TransformerExtensiveTestScenario {
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
     assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
-    assert.equal(ExtensiveTestScenario.uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
+    assert.equal(BackendTestUtils.ExtensiveTestScenario.uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
     // ElementMultiAspects
     const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenarioTarget:TargetMultiAspect");
     assert.equal(targetMultiAspects.length, 2);
@@ -793,8 +724,8 @@ export class TransformerExtensiveTestScenario {
     // AuxCoordSystem2d
     assert.equal(undefined, targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
     // DrawingGraphic
-    const drawingGraphicId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
-    const drawingGraphicId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
+    const drawingGraphicId1: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = IModelTransformerTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId1);
     TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId2);
     // DrawingGraphicRepresentsElement

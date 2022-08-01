@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import {
-  IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
-  RpcPushChannel, RpcRoutingToken, WipRpcInterface,
+  IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperation, RpcOperationsProfile,
+  RpcPushChannel, RpcResponseCacheControl, RpcRoutingToken, WipRpcInterface,
 } from "@itwin/core-common";
 
 export const testChannel = RpcPushChannel.create<number>("test");
@@ -70,6 +70,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async op2(_id: Id64String): Promise<Id64String> {
     return this.forward(arguments);
   }
@@ -139,6 +140,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async noContent() {
+    return this.forward(arguments);
+  }
+
+  public async getRequestedProtocolVersion() {
     return this.forward(arguments);
   }
 }

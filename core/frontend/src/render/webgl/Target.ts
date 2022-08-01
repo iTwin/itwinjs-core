@@ -12,7 +12,7 @@ import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
-import { HiliteSet } from "../../SelectionSet";
+import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
@@ -74,6 +74,7 @@ export interface Hilites {
   readonly subcategories: Id64.Uint32Set;
   readonly models: Id64.Uint32Set;
   readonly isEmpty: boolean;
+  readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
 }
 
 class EmptyHiliteSet {
@@ -81,6 +82,7 @@ class EmptyHiliteSet {
   public readonly subcategories: Id64.Uint32Set;
   public readonly models: Id64.Uint32Set;
   public readonly isEmpty = true;
+  public readonly modelSubCategoryMode = "union";
 
   public constructor() {
     this.elements = this.subcategories = this.models = new Id64.Uint32Set();
@@ -978,7 +980,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   * If wantRect is null, that means "read the entire image".
    */
   public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
@@ -986,7 +988,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;

@@ -10,6 +10,16 @@
 export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
 /** @alpha */
+export interface Diagnostics {
+  logs?: DiagnosticsScopeLogs[];
+}
+
+/** @alpha */
+export interface ClientDiagnostics extends Diagnostics {
+  backendVersion?: string;
+}
+
+/** @alpha */
 export interface DiagnosticsOptions {
   /** Measure performance */
   perf?: boolean;
@@ -20,11 +30,18 @@ export interface DiagnosticsOptions {
 }
 
 /** @alpha */
-export type DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void;
+export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
 
 /** @alpha */
-export interface DiagnosticsOptionsWithHandler extends DiagnosticsOptions {
-  handler: DiagnosticsHandler;
+export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
+  backendVersion?: boolean;
+  handler: ClientDiagnosticsHandler;
+}
+
+/** @public */
+export interface ClientDiagnosticsAttribute {
+  /** @alpha */
+  diagnostics?: ClientDiagnosticsOptions;
 }
 
 /** @alpha */

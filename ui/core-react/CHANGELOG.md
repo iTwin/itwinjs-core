@@ -1,6 +1,46 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+### Updates
+
+- Added a 'repositionOnResize' property on the 'Popup' component, to avoid closing the popup everythime the browser window is resized.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Backport change to update panel background to use same as buic-background-dialog so dispabled itwin ui components display properly.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added 'useCrossOriginPopup' and 'useInterval' hooks
+- ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`
+- Fix for losing viewport content after clicking PW link 
+- Implement svg icons loading as a web component.
+- Allow React icons to be used on Wedget tabs, backstage, and status bar items
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT

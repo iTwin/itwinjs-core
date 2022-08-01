@@ -78,7 +78,7 @@ describe("ScreenViewport", () => {
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
-  });
+  }).timeout(20000);
 
   it("should delete markers that aren't readded by registered decorators", () => {
     const vp = openBlankViewport();

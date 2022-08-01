@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, Tracing } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -156,15 +156,22 @@ export class RpcInvocation {
     try {
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-      const parameters = RpcMarshaling.deserialize(this.protocol, request.parameters);
+      const parameters = request.parametersOverride || RpcMarshaling.deserialize(this.protocol, request.parameters);
       this.applyPolicies(parameters);
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
+      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters)
+        .catch(async (error) => {
+          // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
+          if (!(error instanceof RpcPendingResponse)) {
+            Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
+            Tracing.setAttributes({ error: true });
+          }
+          throw error;
+        }));
     } catch (error: unknown) {
-      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error), ...RpcInvocation.sanitizeForLog(activity) });
       return this.reject(error);
     }
   }
@@ -265,7 +272,7 @@ export class RpcInvocation {
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
-      allowCompression: this.operation.policy.allowResponseCompression,
+      allowCompression: this.operation?.policy.allowResponseCompression || false,
     };
 
     this.transformResponseStatus(fulfillment, rawResult);
@@ -293,17 +300,21 @@ export class RpcInvocation {
       return;
     }
 
-    let managedStatus: "notFound" | "pending" | undefined;
+    let managedStatus: "notFound" | "pending" | "noContent" | undefined;
     if (this._pending) {
       managedStatus = "pending";
     } else if (this._notFound) {
       managedStatus = "notFound";
+    } else if (this._noContent) {
+      managedStatus = "noContent";
     }
 
     if (managedStatus) {
       const responseValue = fulfillment.result.objects;
       const status: RpcManagedStatus = { iTwinRpcCoreResponse: true, managedStatus, responseValue };
       fulfillment.result.objects = JSON.stringify(status);
+      status.responseValue = rawResult; // for ipc case
+      fulfillment.rawResult = status;
     }
 
     if (rawResult instanceof BentleyError) {

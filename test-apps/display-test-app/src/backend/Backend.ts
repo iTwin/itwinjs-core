@@ -11,12 +11,12 @@ import { IModelBankClient } from "@bentley/imodelbank-client";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelbank-client/lib/cjs/imodelhub-node";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -158,6 +158,10 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return fileName;
   }
 
+  public override async getEnvConfig(): Promise<DtaConfiguration> {
+    return getConfig();
+  }
+
   public override async terminate() {
     await IModelHost.shutdown();
 
@@ -195,7 +199,7 @@ export const loadBackendConfig = (): DtaConfiguration => {
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = loadBackendConfig();
 
-  const iModelHost = new IModelHostConfiguration();
+  const iModelHost: IModelHostOptions = {};
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
@@ -242,10 +246,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     if (authClient)
       await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
-  } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup(opts);
-  } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup(opts);
+  } else if (ProcessDetector.isIOSAppBackend || ProcessDetector.isAndroidAppBackend) {
+    await MobileHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);

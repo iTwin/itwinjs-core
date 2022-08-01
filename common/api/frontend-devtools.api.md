@@ -291,6 +291,20 @@ export class ChangeFlashSettingsTool extends Tool {
 }
 
 // @beta
+export class ChangeHiliteModeTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(mode?: string): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
     // (undocumented)
     protected apply(vp: Viewport, settings?: Hilite.Settings): void;
@@ -729,6 +743,20 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     protected parse(args: string[]): Promise<boolean>;
     // (undocumented)
     protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class DumpSelectionSetTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): Promise<boolean>;
+    // (undocumented)
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1441,6 +1469,8 @@ export class ProjectExtentsDecoration {
     // (undocumented)
     protected _extents: AxisAlignedBox3d;
     // (undocumented)
+    static get isActive(): boolean;
+    // (undocumented)
     protected _removeDecorationListener?: () => void;
     // (undocumented)
     protected stop(): void;
@@ -1580,6 +1610,16 @@ export class ReorderMapLayers extends Tool {
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     run(_args: any[]): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ReverseScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    parse(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1909,6 +1949,20 @@ export class SetRealityModelTransparencyTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(transparency: number, index: number): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

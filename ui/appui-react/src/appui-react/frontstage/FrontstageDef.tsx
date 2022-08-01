@@ -709,8 +709,13 @@ export class FrontstageDef {
       if (!location)
         return WidgetState.Hidden;
 
-      if (isFloatingLocation(location))
-        return WidgetState.Floating;
+      if (isFloatingLocation(location)) {
+        const floatingWidget = this.nineZoneState.floatingWidgets.byId[location.floatingWidgetId];
+        if (floatingWidget && floatingWidget.hidden)
+          return WidgetState.Hidden;
+        else
+          return WidgetState.Floating;
+      }
 
       let collapsedPanel = false;
       // istanbul ignore else
@@ -805,7 +810,12 @@ export class FrontstageDef {
       const tabLocation = findTab(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (tabLocation) {
-        if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
+        if (isFloatingLocation(tabLocation)) {
+          const floatingWidget = this.nineZoneState.floatingWidgets.byId[tabLocation.floatingWidgetId];
+          // istanbul ignore else
+          if (!!!floatingWidget.hidden)
+            widgetIsVisible = true;
+        } else if (isPopoutLocation(tabLocation)) {
           widgetIsVisible = true;
         } else {
           // istanbul ignore else

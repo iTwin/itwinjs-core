@@ -1,6 +1,53 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Ensure selection scope override labels are honored.
+- Models Tree: Fix performance of determining Subject nodes' display state.
+- Models Tree: Optimize creating subjects hierarchy
+- Remove cached frontstageDef if associated FrontstageProvider is re-registered.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- mock hydrateviewstate rpc method in SavedviewLayout tests
+- Documentation updates
+- Fix bug where widgets from UiItemProviders were not honoring Center Zonelocation in UI 1.0 mode.
+- Fix for losing viewport content after clicking PW link.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Add option to auto-collapse unpinned widget panels.
+- Allow React icons to be used on Wedget tabs, backstage, and status bar items
+- Add default tool prop to StandardFrontstageProps to give apps a simple, typesafe way to specify a default tool for their frontstages.
+- Add an empty state message when there are no settings to display in the tool settings bar.
+- Add a mousemove listener to an ElementTooltip's owner document so that it can be closed when the mouse travels over a React element.
+- Fix checkbox alignment in visibility trees.
 
 ## 3.1.3
 Fri, 15 Apr 2022 13:49:25 GMT

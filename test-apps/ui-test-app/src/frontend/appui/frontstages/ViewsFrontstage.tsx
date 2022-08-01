@@ -360,7 +360,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={this._contentGroupProvider}
-        isInFooterMode={true} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
@@ -802,7 +802,7 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        if (widgetDef.activeState === WidgetState.Open) {
+        if (widgetDef.activeState === WidgetState.Open || widgetDef.activeState ===  WidgetState.Floating) {
           widgetDef.setWidgetState(WidgetState.Hidden);
         } else {
           widgetDef.setWidgetState(WidgetState.Open);

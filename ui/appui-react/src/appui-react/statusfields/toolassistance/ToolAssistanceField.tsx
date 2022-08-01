@@ -87,6 +87,7 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
+  openWidget: string | null;
 }
 
 /** Tool Assistance Field React component.
@@ -138,6 +139,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
+      openWidget: null,
     };
 
     this._uiSettingsStorage = new LocalStateStorage();
@@ -389,15 +391,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             indicatorRef={this._indicator}
             className={classnames("uifw-statusFields-toolassistance", this.props.className)}
             style={this.props.style}
-            isInFooterMode={this.props.isInFooterMode}
+            isInFooterMode={this.props.isInFooterMode ?? true}
             onClick={this._handleToolAssistanceIndicatorClick}
             title={tooltip}
           >
-            {this.props.isInFooterMode ? prompt : undefined}
+            {(this.props.isInFooterMode ?? true) ? prompt : undefined}
           </ToolAssistance>
         </div>
         <FooterPopup
-          isOpen={this.props.openWidget === this._className}
+          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this._target}
@@ -459,7 +461,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private _handleToolAssistanceIndicatorClick = () => {
-    const isOpen = this.props.openWidget === this._className;
+    const isOpen = (this.props.openWidget ?? this.state.openWidget) === this._className;
     if (isOpen) {
       this.setOpenWidget(null);
     } else
@@ -477,15 +479,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-
-    if (!openWidget && this.state.isPinned) {
-      // istanbul ignore else
-      if (this._isMounted)
-        this.setState({ isPinned: false });
+    this.props.onOpenWidget?.(openWidget);
+    let newState = {
+      openWidget,
+    };
+    if (!openWidget && this.state.isPinned && this._isMounted) {
+      newState = {...newState, ...{isPinned: false}};
     }
+    this.setState(newState);
   }
 
   /** @internal */

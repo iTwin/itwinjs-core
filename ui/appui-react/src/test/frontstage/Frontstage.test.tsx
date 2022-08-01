@@ -63,6 +63,16 @@ describe("Frontstage", () => {
     }
   });
 
+  it("Expect cached frontstageDef to be replaced", async () => {
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const newFrontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(newFrontstageProvider);
+    const newFrontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    expect(newFrontstageDef).to.not.eql(frontstageDef);
+  });
+
   it("FrontstageProvider supplies Frontstage to FrontstageComposer", async () => {
     const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();

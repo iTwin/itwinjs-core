@@ -19,6 +19,7 @@ describe("MessageManager", () => {
 
   after(() => {
     TestUtils.terminateUiFramework();
+    MessageManager.clearMessages();
   });
 
   it("maxCachedMessages handled correctly", () => {

@@ -16,6 +16,7 @@ import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, C
 import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
+import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
@@ -65,6 +66,9 @@ export class EditTools {
     //       As tool run/install isn't currently async ToolAdmin.activeToolChanged can't be used at this time.
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
+
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
@@ -127,6 +131,11 @@ export class EditTools {
 
     if (registerAllTools || options?.registerSolidModelingTools) {
       const tools = [
+        CreateSphereTool,
+        CreateCylinderTool,
+        CreateConeTool,
+        CreateBoxTool,
+        CreateTorusTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,
@@ -151,5 +160,9 @@ export class EditTools {
     }
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

@@ -745,7 +745,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
    * @see [[changeToolSettingPropertyValue]]
-   * @beta
+   * @public
    */
   protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined {
     return undefined;
@@ -754,7 +754,7 @@ export abstract class InteractiveTool extends Tool {
   /** Helper method for responding to a tool setting property value change by updating saved settings.
    * @see [[applyToolSettingPropertyChange]]
    * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
-   * @beta
+   * @public
    */
   protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
     const property = this.getToolSettingPropertyByName(syncItem.propertyName);
@@ -771,7 +771,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Helper method to establish initial values for tool setting properties from saved settings.
    * @see [[supplyToolSettingsProperties]]
-   * @beta
+   * @public
    */
   protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
     if (undefined !== this.toolSettingProperties)
@@ -787,7 +787,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.
    * @see [[initializeToolSettingPropertyValues]]
-   * @beta
+   * @public
    */
   public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
 
@@ -799,7 +799,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
-   * @beta
+   * @public
    */
   public syncToolSettingsProperties(syncData: DialogPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
@@ -807,7 +807,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called by tool to inform UI to reload ToolSettings with new set of properties. This allows properties to be added or removed from ToolSetting
    * component as tool processing progresses.
-   * @beta
+   * @public
    */
   public reloadToolSettingsProperties() {
     IModelApp.toolAdmin.reloadToolSettingsProperties();
@@ -816,7 +816,7 @@ export abstract class InteractiveTool extends Tool {
   /** Used to "bump" the value of a tool setting. To "bump" a setting means to toggle a boolean value or cycle through enum values.
    * If no `settingIndex` param is specified, the first setting is bumped.
    * Return true if the setting was successfully bumped.
-   * @beta
+   * @public
    */
   public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }
 }
