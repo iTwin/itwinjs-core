@@ -221,7 +221,7 @@ export namespace CodeService {
   /** The guid for a code. This identifies the real-world entity associated with the code. */
   export type CodeGuid = GuidString;
 
-  /** The guid of the scope for a code. This identifies the real-world entity provides the uniqueness scope for code values. */
+  /** The guid of the scope for a code. This identifies the real-world entity that provides the uniqueness scope for code values. */
   export type ScopeGuid = GuidString;
 
   /** An optional number associated with a code that may be used for "status" information. Values must be defined by applications. */
@@ -230,13 +230,11 @@ export namespace CodeService {
   /** The return status of an iterator function. The value "stop" causes the iteration to terminate. */
   export type IteratorReturn = void | "stop";
 
-  export type TableIterator<T> = (id: T) => IteratorReturn;
-
   /** An iterator function over codes in a code index. It is called with the Guid of a each code. */
-  export type CodeIterator = TableIterator<CodeGuid>;
+  export type CodeIterator = (guid: GuidString) => IteratorReturn;;
 
   /** An iterator function over code specs in a code index. It is called with the name and json of a each code spec. */
-  export type NameAndJsonIterator = TableIterator<NameAndJson>;
+  export type NameAndJsonIterator = (nameAndJson: NameAndJson) => IteratorReturn;;
 
   /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
@@ -312,87 +310,72 @@ export namespace CodeService {
     federationGuid?: GuidString;
   }
 
-  export interface ScopeAndSpec {
-    readonly spec: CodeSpecName;
-    readonly scope: ScopeGuid;
-  }
-
-  export interface ScopeSpecAndValue extends ScopeAndSpec {
-    readonly value: CodeValue;
-  }
-
-  export interface CodeEntry {
-    readonly spec: CodeSpecName;
-    readonly scope: ScopeGuid;
-    readonly value: CodeValue;
-    readonly guid: CodeGuid;
-    readonly origin: CodeOriginName;
-    readonly state?: CodeState;
-    readonly author?: AuthorName;
-    readonly json?: SettingObject;
-  }
-
-  export interface ValueFilter {
-    readonly value?: string;
-    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    readonly orderBy?: "ASC" | "DESC";
-    readonly sqlExpression?: string;
-  }
-
-  export interface CodeFilter extends ValueFilter {
-    readonly spec?: CodeSpecName;
-    readonly scope?: ScopeGuid;
-  }
-
-  export type ErrorId =
-    "BadIndexProps" |
-    "CorruptIModel" |
-    "CorruptIndex" |
-    "DuplicateValue" |
-    "GuidIsInUse" |
-    "GuidMismatch" |
-    "IllegalValue" |
-    "IndexReadonly" |
-    "InvalidCodeScope" |
-    "InvalidGuid" |
-    "InvalidSequence" |
-    "MissingCode" |
-    "MissingGuid" |
-    "MissingInput" |
-    "MissingSpec" |
-    "NoCodeIndex" |
-    "SequenceFull" |
-    "ReserveErrors" |
-    "SequenceNotFound" |
-    "SqlLogicError" |
-    "UpdateErrors" |
-    "ValueIsInUse" |
-    "WrongVersion";
-
-  export class Error extends BentleyError {
-    constructor(public errorId: ErrorId, errNum: number, message: string, public problems?: ReserveProblem[] | UpdateProblem[]) {
-      super(errNum, message);
-    }
-  }
+  /** a name and a json object. Used for code specs, authors and origins. */
   export interface NameAndJson {
     readonly name: string;
     readonly json?: SettingObject;
   }
 
+  /** A code Scope guid, and code spec name. */
   export interface ScopeAndSpec {
     readonly spec: CodeSpecName;
     readonly scope: ScopeGuid;
   }
 
+  /** A code Scope guid, code spec, and code value. */
   export interface ScopeSpecAndValue extends ScopeAndSpec {
     readonly value: CodeValue;
   }
 
-  export interface AuthorAndOrigin {
-    readonly origin: Mutable<NameAndJson>;
-    readonly author: Mutable<NameAndJson>;
+  /** The data held in a code index for a single code. */
+  export interface CodeEntry {
+    /** The name of the code spec for this code. */
+    readonly spec: CodeSpecName;
+    /** The guid of the entity that provides the scope for this code. */
+    readonly scope: ScopeGuid;
+    /** The value of this code. */
+    readonly value: CodeValue;
+    /** The guid of the entity this code identifies. */
+    readonly guid: CodeGuid;
+    /** the state of the code. May be undefined. */
+    readonly state?: CodeState;
+    /** The name of the originating source of this code (usually an iModel Guid). May be undefined. */
+    readonly origin: CodeOriginName;
+    /** The name of the author of this code. May be undefined. */
+    readonly author?: AuthorName;
+    /** Option json properties associated with this code. May be undefined. */
+    readonly json?: SettingObject;
   }
 
+  /** A filter used to limit and/or sort the values returned by an iterator. */
+  export interface ValueFilter {
+    /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
+    readonly value?: string;
+    /** The comparison operator for `value`. Default is `=` */
+    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    /** Order results ascending or descending. If not supplied, the results are unordered (random). */
+    readonly orderBy?: "ASC" | "DESC";
+    /** An SQL expression to further filter results. This string is appended to the `WHERE` clause with an `AND` (that should not be part of the sqlExpression) */
+    readonly sqlExpression?: string;
+  }
+
+  /** A filter to limit and/or sort the values for the [[CodeIndex.forAllCodes]] iterator. */
+  export interface CodeFilter extends ValueFilter {
+    /** If supplied, limit results to only those with this spec */
+    readonly spec?: CodeSpecName;
+    /** If supplied, limit results to only those with this scope Guid */
+    readonly scope?: ScopeGuid;
+  }
+
+  /** Author and origin information supplied when codes are reserved. */
+  export interface AuthorAndOrigin {
+    /** The name of the individual or group for whom the code was reserved. */
+    readonly author: Mutable<NameAndJson>;
+    /** The identity of the "originator" of the code. This is usually a guid of an iModel, but can be any unique string. */
+    readonly origin: Mutable<NameAndJson>;
+  }
+
+  /** The Guid, state, and json properties of a code. */
   export interface CodeGuidStateJson {
     /** The Guid of the new code. This must be always be supplied by the application. */
     readonly guid: CodeGuid;
@@ -410,25 +393,35 @@ export namespace CodeService {
     value?: CodeValue;
   }
 
-  /** Properties that describe a code sequence and a scope and spec for a proposed code or array of codes. */
+  /** Properties that describe a code sequence and a scope and spec for a proposed code or array of codes from a sequence. */
   export interface SequenceScope extends ScopeAndSpec {
+    /** The code sequence. */
     readonly seq: CodeSequence;
-    /** @internal */
+    /** A valid current value. The returned value will always be later in the sequence than this.
+     * @internal */
     readonly start?: CodeValue;
   }
 
   export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
   export type UpdatedCode = MarkRequired<Partial<ProposedCode>, "guid">;
 
+  /** A proposed code that could not be reserved due to some error. */
   export interface ReserveProblem {
+    /** the proposed code that failed. */
     readonly code: ProposedCode;
+    /** the reason for the failure */
     readonly errorId: ErrorId;
+    /** the error message from the exception for this proposed code. */
     readonly message: string;
   }
 
+  /** A update to a code that failed for some error. */
   export interface UpdateProblem {
+    /** The properties of the code that was to be updated */
     readonly prop: UpdatedCode;
+    /** the reason for the failure */
     readonly errorId: ErrorId;
+    /** the error message from the exception for the update request. */
     readonly message: string;
   }
 
@@ -454,4 +447,48 @@ export namespace CodeService {
     /** Determine whether this supplied value is valid for this sequence. */
     isValidCode(code: CodeValue): boolean;
   }
+
+  /** Exception class thrown by `CodeService` methods. */
+  export class Error extends BentleyError {
+    /** A string that indicates the type of problem that caused the exception. */
+    public readonly errorId: ErrorId;
+    /** For [[CodeService.reserveCodes]] and [[CodeService.updateCodes]], a list of the problems. */
+    public readonly problems?: ReserveProblem[] | UpdateProblem[];
+
+    /** @internal */
+    constructor(errorId: ErrorId, errNum: number, message: string, problems?: ReserveProblem[] | UpdateProblem[]) {
+      super(errNum, message);
+      this.errorId = errorId;
+      this.problems = problems;
+    }
+  }
+
+  /** Identifiers for exceptions thrown by `CodeService` methods.
+   * @see [[CodeService.Error.errorId]]
+   */
+  export type ErrorId =
+    "BadIndexProps" |
+    "CorruptIModel" |
+    "CorruptIndex" |
+    "DuplicateValue" |
+    "GuidIsInUse" |
+    "GuidMismatch" |
+    "IllegalValue" |
+    "IndexReadonly" |
+    "InvalidCodeScope" |
+    "InvalidGuid" |
+    "InvalidSequence" |
+    "MissingCode" |
+    "MissingGuid" |
+    "MissingInput" |
+    "MissingSpec" |
+    "NoCodeIndex" |
+    "SequenceFull" |
+    "ReserveErrors" |
+    "SequenceNotFound" |
+    "SqlLogicError" |
+    "UpdateErrors" |
+    "ValueIsInUse" |
+    "WrongVersion";
+
 }
