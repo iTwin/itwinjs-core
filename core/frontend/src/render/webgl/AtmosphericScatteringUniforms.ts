@@ -9,6 +9,7 @@ import { desync, sync, SyncTarget } from "./Sync";
 import { Target } from "./Target";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
+import { FrustumUniformType } from "./FrustumUniforms";
 
 export const MAX_SAMPLE_POINTS = 20;
 export const MESH_PROJECTION_CUTOFF_HEIGHT = 500_000;
@@ -26,6 +27,7 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
   private _ellipsoidToEye = new Vector3d();
   private _inScatteringIntensity = 1.0;
   private _inverseEllipsoidRotationMatrix = new Matrix3d();
+  private _isCameraEnabled = true;
   private _minDensityScaleMatrix = new Matrix3d(new Float64Array([1,0,0,0,1,0,0,0,1]));
   private _minDensityToAtmosphereScaleFactor: any;
   private _numInScatteringPoints = 0.0;
@@ -55,22 +57,27 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
       return;
     }
 
-    this._updateEarthCenter(plan.ellipsoidCenter!, target.uniforms.frustum.viewMatrix);
-    this._updateEllipsoidRotationMatrix(plan.ellipsoidRotation!);
-    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoidRotation!, target.uniforms.frustum.viewMatrix.matrix);
-    this._updateEllipsoidToEye();
-    this._updateInScatteringIntensity(this.atmosphericScattering.inScatteringIntensity);
-    this._updateOutScatteringIntensity(this.atmosphericScattering.outScatteringIntensity);
-    this._updateEarthScaleMatrix(plan.ellipsoidRadii!);
     this._updateAtmosphereHeightAboveEarth(this.atmosphericScattering.atmosphereHeightAboveEarth);
     this._updateAtmosphereScaleMatrix(this.atmosphericScattering.atmosphereHeightAboveEarth);
+    this._updateBrightnessAdaptationStrength(this.atmosphericScattering.brightnessAdaptationStrength);
+    this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
+    this._updateEarthCenter(plan.ellipsoidCenter!, target.uniforms.frustum.viewMatrix);
+    this._updateEarthScaleMatrix(plan.ellipsoidRadii!);
+    this._updateEllipsoidRotationMatrix(plan.ellipsoidRotation!);
+    this._updateEllipsoidToEye();
+    this._updateInScatteringIntensity(this.atmosphericScattering.inScatteringIntensity);
+    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoidRotation!, target.uniforms.frustum.viewMatrix.matrix);
+    this._updateIsCameraEnabled(target.uniforms.frustum.type);
     this._updateMinDensityScaleMatrix(this.atmosphericScattering.minDensityHeightBelowEarth);
     this._updateMinDensityToAtmosphereScaleFactor(this.atmosphericScattering.atmosphereHeightAboveEarth, this.atmosphericScattering.minDensityHeightBelowEarth);
-    this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
-    this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelengths);
     this._updateNumInScatteringPoints(this.atmosphericScattering.numInScatteringPoints);
     this._updateNumOpticalDepthPoints(this.atmosphericScattering.numOpticalDepthPoints);
-    this._updateBrightnessAdaptationStrength(this.atmosphericScattering.brightnessAdaptationStrength);
+    this._updateOutScatteringIntensity(this.atmosphericScattering.outScatteringIntensity);
+    this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelengths);
+  }
+
+  private _updateIsCameraEnabled(frustumType: FrustumUniformType) {
+    this._isCameraEnabled = frustumType === FrustumUniformType.Perspective;
   }
 
   private _updateEarthCenter(earthCenter: Point3d, viewMatrix: Transform) {
@@ -148,6 +155,12 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
 
   private _updateBrightnessAdaptationStrength(brightnessAdaptationStrength: number) {
     this._brightnessAdaptationStrength = brightnessAdaptationStrength;
+  }
+
+  public bindIsCameraEnabled(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      uniform.setUniform1i(this._isCameraEnabled ? 1 : 0);
+    }
   }
 
   public bindBrightnessAdaptationStrength(uniform: UniformHandle): void {
