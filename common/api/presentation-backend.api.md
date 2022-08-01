@@ -74,6 +74,9 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
+// @internal (undocumented)
+export const createContentDescriptorOverrides: (descriptorOrOverrides: Descriptor | DescriptorOverrides) => DescriptorOverrides;
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
@@ -83,9 +86,6 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -189,6 +189,7 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
+    // @deprecated
     get activeLocale(): string | undefined;
     set activeLocale(value: string | undefined);
     get activeUnitSystem(): UnitSystemKey | undefined;
@@ -205,11 +206,11 @@ export class PresentationManager {
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
+    getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     // @internal (undocumented)
     getDetail(): PresentationManagerDetail;
-    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     // @beta
     getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // @alpha

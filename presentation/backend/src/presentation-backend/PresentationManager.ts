@@ -646,6 +646,7 @@ export class PresentationManager {
   }
 }
 
+/** @internal */
 export const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();

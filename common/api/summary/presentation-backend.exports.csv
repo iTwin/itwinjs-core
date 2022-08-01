@@ -2,18 +2,18 @@ sep=;
 Release Tag;API Item
 public;BackendDiagnosticsAttribute
 alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
-alpha;BackendDiagnosticsOptions
+alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
-beta;DiskHierarchyCacheConfig
+internal;createContentDescriptorOverrides: (descriptorOrOverrides: Descriptor | DescriptorOverrides) => DescriptorOverrides
+beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
-internal;getKeysForContentRequest(keys: Readonly
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
-beta;HybridCacheConfig
-beta;MemoryHierarchyCacheConfig
+beta;HybridCacheConfig 
+beta;MemoryHierarchyCacheConfig 
 alpha;MultiElementPropertiesResponse
-public;MultiManagerPresentationProps
+public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation
 public;PresentationBackendLoggerCategory
@@ -22,13 +22,13 @@ public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
-public;PresentationPropsBase
+public;PresentationPropsBase 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions
 public;RulesetManager
-internal;RulesetManagerImpl
+internal;RulesetManagerImpl 
 public;RulesetVariablesManager
-internal;RulesetVariablesManagerImpl
-public;SingleManagerPresentationProps
+internal;RulesetVariablesManagerImpl 
+public;SingleManagerPresentationProps 
 public;UnitSystemFormat

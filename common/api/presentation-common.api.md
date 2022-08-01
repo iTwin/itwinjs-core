@@ -1549,10 +1549,10 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
     // (undocumented)
-    getLocalizedNodes(nodes: Node[]): Node[];
+    getLocalizedNodes(nodes: Node_2[]): Node_2[];
     // (undocumented)
     getLocalizedString(text: string): string;
-    }
+}
 
 // @internal (undocumented)
 export interface LocalizationHelperProps {
@@ -3111,7 +3111,6 @@ export enum VariableValueTypes {
 export type WithCancelEvent<TOptions extends {}> = TOptions & {
     cancelEvent?: BeEvent<() => void>;
 };
-
 
 // (No @packageDocumentation comment for this package)
 
