@@ -90,7 +90,7 @@ export interface CodeService {
   /**
    * Synchronize the local index with any changes by made by others.
    * @note This is called automatically whenever any write operation is performed on the code index. It is only necessary to
-   * call this if you have not changed the code index recently, but wish to perform a readonly operation and want to
+   * call this directly if you have not changed the code index recently, but wish to perform a readonly operation and want to
    * ensure it is up-to-date as of now.
    * @note There is no guarantee that a readonly index is up-to-date even immediately after calling this method, since others
    * may be modifying it at any time.
@@ -109,17 +109,17 @@ export interface CodeService {
   verifyCode: (props: CodeService.ElementCodeProps) => void;
 
   /** Add a new code spec to this code service.
-   * @note This will automatically obtain and release the write lock.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
   addCodeSpec: (val: CodeService.NameAndJson) => Promise<void>;
 
   /**
    * Add all of the codes and code specs from this CodeService's BriefcaseDb into the code index.
+   * @returns the number of codes actually added.
    * @note It is not necessary to call this method unless the BriefcaseDb somehow becomes out of sync with its CodeService,
    * for example when migrating iModels to a new code service. It is safe (but relatively expensive) to call this method multiple times, since
    * any codes or code specs that are already in the index are ignored.
-   * @note This will automatically obtain and release the write lock.
-   * @returns the number of codes actually added.
+   * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
   addAllCodes: () => Promise<number>;
 
@@ -131,11 +131,12 @@ export interface CodeService {
 
   /**
    * Attempt to reserve an array of proposed codes.
+   * @returns number of codes actually reserved.
    * @see the `problems` member of the `CodeService.Error` exception
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    * @note If you have a set of codes to reserve, it is considerably more efficient to do them as an array rather than one at a time.
    */
-  reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<void>;
+  reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<number>;
 
   /**
    * Attempt to reserve the next available code for a code sequence and scope.
@@ -162,8 +163,9 @@ export interface CodeService {
    * Update the properties of an array codes.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    * @note If you have a set of codes to update, it is considerably more efficient to do them as an array rather than one at a time.
+   * @returns number of codes actually updated.
    */
-  updateCodes: (arg: CodeService.UpdateCodesArgs) => Promise<void>;
+  updateCodes: (arg: CodeService.UpdateCodesArgs) => Promise<number>;
 
   /** Delete an array of codes by their guids.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
@@ -385,13 +387,19 @@ export namespace CodeService {
     readonly json?: SettingObject;
   }
 
-  /** Properties of a proposed new code. */
+  /** Properties of a "proposed" new code to be reserved.
+   * @note the Guid of the entity identified by this code *must* be supplied, but `value` is optional, since
+   * this may be used to reserve codes from a sequence where the value is generated.
+   */
   export interface ProposedCodeProps extends CodeGuidStateJson {
     /** The value for the proposed code.
      * @note For code sequence operations, this value is ignored on input and is set with a new value from the sequence on successful return.
      */
     value?: CodeValue;
   }
+
+  /** Properties of a proposed new code that is not from a code sequence (its `value` is required). */
+  export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
 
   /** Properties that describe a code sequence and a scope and spec for a proposed code or array of codes from a sequence. */
   export interface SequenceScope extends ScopeAndSpec {
@@ -402,7 +410,10 @@ export namespace CodeService {
     readonly start?: CodeValue;
   }
 
-  export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
+  /** Properties of a code to be updated.
+   * @note The `guid` member identifies the code to be updated and is required.
+   * All other properties are optional - if `undefined`, its value is not changed.
+   */
   export type UpdatedCode = MarkRequired<Partial<ProposedCode>, "guid">;
 
   /** A proposed code that could not be reserved due to some error. */
@@ -452,7 +463,7 @@ export namespace CodeService {
   export class Error extends BentleyError {
     /** A string that indicates the type of problem that caused the exception. */
     public readonly errorId: ErrorId;
-    /** For [[CodeService.reserveCodes]] and [[CodeService.updateCodes]], a list of the problems. */
+    /** For [[CodeService.reserveCodes]] and [[CodeService.updateCodes]], a list of the problem details. */
     public readonly problems?: ReserveProblem[] | UpdateProblem[];
 
     /** @internal */
