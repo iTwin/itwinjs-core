@@ -7,9 +7,11 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import * as semver from "semver";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
-  IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, HubMock, IModelDb,
+  IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb,
+  SpatialCategory,
 } from "@itwin/core-backend";
+
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
@@ -20,7 +22,8 @@ import {
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../HubMock";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -28,7 +31,7 @@ describe("IModelTransformerHub", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    HubMock.startup("IModelTransformerHub");
+    HubMock.startup("IModelTransformerHub", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 
@@ -640,7 +643,7 @@ describe("IModelTransformerHub", () => {
           return super.onExportElement(sourceElement);
         }
       }
-      const synchronizer = new IModelTransformerInjected (sourceDb, new IModelImporterInjected(targetDb));
+      const synchronizer = new IModelTransformerInjected(sourceDb, new IModelImporterInjected(targetDb));
       await synchronizer.processChanges(accessToken);
       expect(didExportModelSelector).to.be.true;
       expect(didImportModelSelector).to.be.true;

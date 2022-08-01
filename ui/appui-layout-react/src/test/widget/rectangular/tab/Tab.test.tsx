@@ -95,22 +95,6 @@ describe("<Tab />", () => {
     result.bottom.should.eq(0);
   });
 
-  it("should prevent default on pointer down", () => {
-    const sut = mount(<Tab
-      horizontalAnchor={HorizontalAnchor.Left}
-      mode={TabMode.Open}
-      verticalAnchor={VerticalAnchor.Middle}
-    />);
-    const pointerCaptor = sut.find(PointerCaptor);
-
-    const pointerDown = new PointerEvent("pointerdown");
-    const spy = sinon.spy(pointerDown, "preventDefault");
-
-    pointerCaptor.prop("onPointerDown")!(pointerDown);
-
-    spy.calledOnceWithExactly().should.true;
-  });
-
   it("should invoke onClick handler", () => {
     const spy = sinon.spy();
     const sut = mount(<Tab

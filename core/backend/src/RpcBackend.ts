@@ -8,11 +8,13 @@
 
 // cspell:ignore calltrace
 
+import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
-import { assert, Logger } from "@itwin/core-bentley";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
@@ -43,17 +45,39 @@ export class RpcTrace {
   public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
     return RpcTrace._storage.run(activity, fn);
   }
+
+  /** Start the processing of an RpcActivity inside an OpenTelemetry span */
+  public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
+    return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
+      attributes: { ...RpcInvocation.sanitizeForLog(activity) },
+      kind: SpanKind.SERVER,
+    });
+  }
 }
 
 let initialized = false;
 /** @internal */
-export function initializeRpcBackend() {
+export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;
 
   initialized = true;
 
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
+
+  if (enableOpenTelemetry) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const api = require("@opentelemetry/api");
+      const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
+      Tracing.enableOpenTelemetry(tracer, api);
+      RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
+      Logger.logException(BackendLoggerCategory.IModelHost, e);
+    }
+  }
 
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
   Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));

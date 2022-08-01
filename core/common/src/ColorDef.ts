@@ -117,6 +117,11 @@ export class ColorDef {
     }
   }
 
+  /** Create a ColorDef from its 0xAABBGGRR representation. */
+  public static fromAbgr(abgr: number): ColorDef {
+    return this.fromTbgr(this.getAbgr(abgr));
+  }
+
   /** Create a ColorDef from a string representation. The following representations are supported:
    * *"rgb(255,0,0)"*
    * *"rgba(255,0,0,.2)"*

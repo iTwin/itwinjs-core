@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "usePresentationTreeNodeLoader: pass 'customizeTreeNodeItem' callback to 'PresentationTreeDataProvider'",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

@@ -4,6 +4,13 @@
 
 ```ts
 
+/// <reference types="node" />
+
+import type { Attributes } from '@opentelemetry/api';
+import type { SpanContext } from '@opentelemetry/api';
+import type { SpanOptions } from '@opentelemetry/api';
+import type { Tracer } from '@opentelemetry/api';
+
 // @beta (undocumented)
 export class AbandonedError extends Error {
 }
@@ -31,20 +38,10 @@ export type AsyncMethodsOf<T> = {
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
-    }
+}
 
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
-
-// @beta
-export enum AuthStatus {
-    // (undocumented)
-    AUTHSTATUS_BASE = 139264,
-    // (undocumented)
-    Error = 139264,
-    // (undocumented)
-    Success = 0
-}
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -97,7 +94,7 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
-    }
+}
 
 // @public
 export enum BentleyLoggerCategory {
@@ -187,7 +184,7 @@ export class ByteStream {
     readBytes(readPos: number, numBytes: number): Uint8Array;
     reset(): void;
     rewind(numBytes: number): boolean;
-    }
+}
 
 // @beta
 export enum ChangeSetStatus {
@@ -523,6 +520,9 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
+// @beta
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -623,6 +623,7 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
+        hasPair(pair: Uint32Pair): boolean;
         get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Set<number>>;
@@ -1252,7 +1253,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     get ids(): CompressedId64Set;
     get isEmpty(): boolean;
     reset(ids?: CompressedId64Set): void;
-    }
+}
 
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
@@ -1280,7 +1281,7 @@ export class OneAtATimeAction<T> {
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
-    }
+}
 
 // @public
 export type OnUnexpectedError = (error: any) => void;
@@ -1341,7 +1342,7 @@ export class PerfLogger implements IDisposable {
     constructor(operation: string, metaData?: LoggingMetaData);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1487,6 +1488,20 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
 }
 
 // @alpha
+export enum SpanKind {
+    // (undocumented)
+    CLIENT = 2,
+    // (undocumented)
+    CONSUMER = 4,
+    // (undocumented)
+    INTERNAL = 0,
+    // (undocumented)
+    PRODUCER = 3,
+    // (undocumented)
+    SERVER = 1
+}
+
+// @alpha
 export abstract class StatusCategory {
     // (undocumented)
     abstract code: number;
@@ -1523,12 +1538,19 @@ export class StopWatch {
     reset(): void;
     start(): void;
     stop(): BeDuration;
-    }
+}
 
 // @alpha
 export abstract class SuccessCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
+}
+
+// @alpha
+export class Tracing {
+    static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
+    static setAttributes(attributes: Attributes): void;
+    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
@@ -1545,7 +1567,7 @@ export class UnexpectedErrors {
     static readonly reThrowDeferred: (e: any) => NodeJS.Timeout;
     static readonly reThrowImmediate: (e: any) => never;
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
-    }
+}
 
 // @public
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
@@ -1572,7 +1594,6 @@ export interface YieldManagerOptions {
     // (undocumented)
     iterationsBeforeYield?: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

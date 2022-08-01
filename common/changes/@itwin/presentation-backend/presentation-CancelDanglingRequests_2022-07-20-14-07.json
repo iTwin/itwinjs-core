@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "cancel presentation request when it is removed from pending list",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

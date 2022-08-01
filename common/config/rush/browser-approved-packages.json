@@ -115,6 +115,10 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@itwin/appui-test-providers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
     },
@@ -247,6 +251,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/imodel-browser-react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/imodel-components-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -357,6 +365,10 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@opentelemetry/api",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@reduxjs/toolkit",
