@@ -336,7 +336,7 @@ export class PresentationManager {
    * @deprecated
    */
   public get activeLocale(): string | undefined { return this._detail.activeLocale; }
-  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; } // istanbul ignore line
+  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; }
 
   /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined { return this._detail.activeUnitSystem; }
