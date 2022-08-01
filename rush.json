@@ -539,6 +539,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imodelconnection-without-certa",
+      "projectFolder": "full-stack-tests/imodelconnection-without-certa",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
