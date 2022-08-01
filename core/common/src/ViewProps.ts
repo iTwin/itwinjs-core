@@ -57,29 +57,6 @@ export interface SubCategoryResultRow {
   appearance: SubCategoryAppearance.Props;
 }
 
-/** @public */
-export namespace Categories {
-  /** A subset of the information describing a [SubCategory]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]
-   * or [[IModelConnection.Categories.getSubCategoryInfo]].
-   */
-  export interface SubCategoryInfo {
-    /** The [SubCategory]($backend)'s element Id. */
-    readonly id: Id64String;
-    /** The Id of the [Category]($backend) to which this [SubCategory]($backend) belongs. */
-    readonly categoryId: Id64String;
-    /** Visual parameters applied to geometry belonging to this [SubCategory]($backend). */
-    readonly appearance: Readonly<SubCategoryAppearance.Props>;
-  }
-
-  /** A subset of the information describing a [Category]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]. */
-  export interface CategoryInfo {
-    /** The category's element Id. */
-    readonly id: Id64String;
-    /** For each [SubCategory]($backend) belonging to this [Category]($backend), a mapping from the SubCategory's element Id to its properties. */
-    readonly subCategories: Map<Id64String, SubCategoryInfo>;
-  }
-}
-
 /**
  * Request props for the hydrateViewState RPC endpoint.
  * @internal

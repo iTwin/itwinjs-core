@@ -6,7 +6,6 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { Categories } from "@itwin/core-common";
 
 describe("IModelConnection.Categories", () => {
   const c1 = "0x17";
@@ -41,12 +40,12 @@ describe("IModelConnection.Categories", () => {
 
   afterEach(() => reset());
 
-  function expectSubCategory(subcat: Categories.SubCategoryInfo, id: string, categoryId: string): void {
+  function expectSubCategory(subcat: IModelConnection.Categories.SubCategoryInfo, id: string, categoryId: string): void {
     expect(subcat.id).to.equal(id);
     expect(subcat.categoryId).to.equal(categoryId);
   }
 
-  function expectCategory(cat: Categories.CategoryInfo, id: string, expectedSubCategoryIds: string | string[]): void {
+  function expectCategory(cat: IModelConnection.Categories.CategoryInfo, id: string, expectedSubCategoryIds: string | string[]): void {
     expect(cat.id).to.equal(id);
     if ("string" === typeof expectedSubCategoryIds)
       expectedSubCategoryIds = [expectedSubCategoryIds];

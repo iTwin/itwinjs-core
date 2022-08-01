@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { Categories, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
@@ -37,14 +37,10 @@ export class ViewStateHydrator {
 
   private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
     const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
-    const results: Categories.SubCategoryInfo[] = await this._imodel.querySubCategories(decompressedIds);
-    // Convert to SubCategoryResultRow to support older frontends.
-    const convertedResults: SubCategoryResultRow[] = [];
-    for (const result of results) {
-      convertedResults.push({parentId: result.categoryId, id: result.id, appearance: result.appearance});
-    }
+    const results: SubCategoryResultRow[] = await this._imodel.querySubCategories(decompressedIds);
+
     // eslint-disable-next-line deprecation/deprecation
-    response.categoryIdsResult = convertedResults;
+    response.categoryIdsResult = results;
   }
 
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
