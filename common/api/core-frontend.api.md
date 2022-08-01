@@ -7625,14 +7625,13 @@ export namespace PerModelCategoryVisibility {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+        // @beta
         setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
     }
+    // @beta
     export interface Props {
-        // (undocumented)
-        categoryIds: Id64Arg;
-        // (undocumented)
+        categoryIds: Iterable<Id64String>;
         modelId: string;
-        // (undocumented)
         visOverride: PerModelCategoryVisibility.Override;
     }
 }
@@ -10103,7 +10102,7 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
-    }
+}
 
 // @internal
 export namespace SubCategoriesCache {

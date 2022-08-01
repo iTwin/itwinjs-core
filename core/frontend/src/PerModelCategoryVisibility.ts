@@ -49,7 +49,9 @@ export namespace PerModelCategoryVisibility {
     getOverride(modelId: Id64String, categoryId: Id64String): Override;
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
-    /** Changes multiple overrides, given an array of overrides */
+    /** Changes multiple overrides, given an array of overrides *
+     * @beta
+     */
     setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
@@ -64,8 +66,11 @@ export namespace PerModelCategoryVisibility {
    * @beta
   */
   export interface Props {
+    /** The id of the model.  */
     modelId: string;
+    /** The ids of the categories.   */
     categoryIds: Iterable<Id64String>;
+    /** The per model category visibility override. @see [[PerModelCategoryVisibility.Override]] */
     visOverride: PerModelCategoryVisibility.Override;
   }
 

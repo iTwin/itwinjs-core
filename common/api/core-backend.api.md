@@ -2394,7 +2394,8 @@ export abstract class IModelDb extends IModel {
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
-    querySubCategories(categoryIds: Id64String[]): Promise<SubCategoryResultRow[]>;
+    // @internal
+    querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
