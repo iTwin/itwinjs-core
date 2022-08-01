@@ -13,7 +13,7 @@ import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, LocalizationHelper, Node, NodeKey,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
   NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
   SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
@@ -96,7 +96,7 @@ export interface PresentationManagerProps {
 export class PresentationManager implements IDisposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
-  private _localizationHelper: LocalizationHelper;
+  private _localizationHelper: FrontendLocalizationHelper;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
@@ -115,22 +115,18 @@ export class PresentationManager implements IDisposable {
    */
   public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
-  /** Get / set active locale used for localizing presentation data */
-  public activeLocale: string | undefined;
-
   /** Get / set active unit system used to format property values with units */
   public activeUnitSystem: UnitSystemKey | undefined;
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
-      this.activeLocale = props.activeLocale;
       this.activeUnitSystem = props.activeUnitSystem;
     }
 
     this._requestsHandler = props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
-    this._localizationHelper = new FrontendLocalizationHelper();
+    this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     this._connections = new Map<IModelConnection, Promise<void>>();
 
     if (IpcApp.isValid) {
@@ -140,6 +136,10 @@ export class PresentationManager implements IDisposable {
       this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
+
+  /** Get / set active locale used for localizing presentation data */
+  public get activeLocale(): string | undefined { return this._localizationHelper.locale; }
+  public set activeLocale(locale: string | undefined) { this._localizationHelper.locale = locale; }
 
   public dispose() {
     this._requestsHandler.dispose();

@@ -11,22 +11,22 @@ import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DefaultContentDisplayTypes,
+  Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
+  FilterByTextHierarchyRequestOptions,  getLocalizedStringEN,  HierarchyCompareInfo,  HierarchyCompareOptions,  HierarchyRequestOptions,  InstanceKey,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,MultiElementPropertiesRequestOptions,
+  Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
   SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import {
-  bisElementInstanceKeysProcessor, getKeysForContentRequest, getRulesetIdObject, PresentationManagerDetail,
-} from "./PresentationManagerDetail";
+import { bisElementInstanceKeysProcessor, getKeysForContentRequest, getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, getElementKey } from "./Utils";
+import { BackendDiagnosticsAttribute } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -314,6 +314,7 @@ export interface PresentationManagerProps {
 export class PresentationManager {
   private _props: PresentationManagerProps;
   private _detail: PresentationManagerDetail;
+  private _localizationHelper: LocalizationHelper;
 
   /**
    * Creates an instance of PresentationManager.
@@ -322,11 +323,20 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
+    this.activeLocale = this._props.defaultLocale; // eslint-disable-line deprecation/deprecation
+
+    if(props?.getLocalizedString)
+      this._localizationHelper = new LocalizationHelper({getLocalizedString: props.getLocalizedString});
+    else
+      this._localizationHelper = new LocalizationHelper({getLocalizedString: getLocalizedStringEN});
   }
 
-  /** Get / set active locale used for localizing presentation data */
+  /**
+   *Get / set active locale used for localizing presentation data
+   * @deprecated
+   */
   public get activeLocale(): string | undefined { return this._detail.activeLocale; }
-  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; }
+  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; } // istanbul ignore line
 
   /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined { return this._detail.activeUnitSystem; }
@@ -378,14 +388,8 @@ export class PresentationManager {
    * @public
    */
   public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
-    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      nodeKey: parentKey,
-    };
-    return JSON.parse(await this._detail.request(params), Node.listReviver);
+    const nodes = await this._detail.getNodes(requestOptions);
+    return this._localizationHelper.getLocalizedNodes(nodes);
   }
 
   /**
@@ -478,15 +482,10 @@ export class PresentationManager {
    * @public
    */
   public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
-    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContent,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    return JSON.parse(await this._detail.request(params), Content.reviver);
+    const content = await this._detail.getContent(requestOptions);
+    if(!content)
+      return undefined;
+    return this._localizationHelper.getLocalizedContent(content);
   }
 
   /**
@@ -527,18 +526,11 @@ export class PresentationManager {
   public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
   public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<ElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      const { elementId, ...optionsNoElementId } = requestOptions;
-      const content = await this.getContent({
-        ...optionsNoElementId,
-        descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
-          contentFlags: ContentFlags.ShowLabels,
-        },
-        rulesetOrId: "ElementProperties",
-        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-      });
-      const properties = buildElementsProperties(content);
-      return properties[0];
+      const elementProperties = await this._detail.getElementProperties(requestOptions);
+      // istanbul ignore if
+      if(elementProperties === undefined)
+        return undefined;
+      return this._localizationHelper.getLocalizedElementProperties(elementProperties);
     }
 
     return this.getMultipleElementProperties(requestOptions);
@@ -581,12 +573,8 @@ export class PresentationManager {
    * @public
    */
   public async getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
-    const params = {
-      requestId: NativePlatformRequestTypes.GetDisplayLabel,
-      ...requestOptions,
-      key: InstanceKey.toJSON(requestOptions.key),
-    };
-    return JSON.parse(await this._detail.request(params), LabelDefinition.reviver);
+    const labelDefinition = await this._detail.getDisplayLabelDefinition(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinition(labelDefinition);
   }
 
   /**
@@ -594,27 +582,8 @@ export class PresentationManager {
    * @public
    */
   public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
-    const concreteKeys = requestOptions.keys.map((k) => {
-      if (k.className === "BisCore:Element")
-        return getElementKey(requestOptions.imodel, k.id);
-      return k;
-    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
-    const contentRequestOptions: WithCancelEvent<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
-      ...requestOptions,
-      rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.List,
-        contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-      },
-      keys: new KeySet(concreteKeys),
-    };
-    const content = await this.getContent(contentRequestOptions);
-    return concreteKeys.map((key) => {
-      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
-      if (!item)
-        return { displayValue: "", rawValue: "", typeName: "" };
-      return item.label;
-    });
+    const labelDefinitions = await this._detail.getDisplayLabelDefinitions(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
   }
 
   /**
@@ -677,7 +646,7 @@ export class PresentationManager {
   }
 }
 
-const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
+export const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides;

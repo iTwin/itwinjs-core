@@ -9,8 +9,17 @@ const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];
 
 /** @internal */
 export class FrontendLocalizationHelper extends LocalizationHelper {
-  constructor() {
-    super({ getLocalizedString: (key) => Presentation.localization.getLocalizedString(key, { defaultValue: key }) });
+  private _lang: string | undefined;
+  constructor(lang?: string) {
+    super({ getLocalizedString: (key) => Presentation.localization.getLocalizedString(key, { defaultValue: key , lng: this._lang}) });
+    this._lang = lang;
+  }
+
+  public get locale() {
+    return this._lang;
+  }
+  public set locale(locale: string | undefined) {
+    this._lang = locale;
   }
 
   public static async registerNamespaces() {

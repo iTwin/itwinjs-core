@@ -132,6 +132,9 @@ export class LocalizationHelper {
 
   private translateNode(node: Node) {
     this.translateLabelDefinition(node.label);
+    // istanbul ignore else
+    if(node.description)
+      node.description = this.getLocalizedString(node.description);
   }
 
   private translateLabelDefinition(labelDefinition: LabelDefinition) {

@@ -46,9 +46,13 @@ describe("LocalizationHelper", () => {
 
     it("translates labelDefinition", () => {
       const node = createRandomECInstancesNode();
-      node.label.rawValue = "@namespace:LocalizedValue@";
+      node.label.rawValue = "@namespace:LocalizedRawValue@";
+      node.label.displayValue = "@namespace:LocalizedDisplayValue@";
+      node.description = "@namespace:LocalizedDescription@";
       localizationHelper.getLocalizedNodes([node]);
-      expect(node.label.rawValue).to.be.eq("LocalizedValue");
+      expect(node.label.rawValue).to.be.eq("LocalizedRawValue");
+      expect(node.label.displayValue).to.be.eq("LocalizedDisplayValue");
+      expect(node.description).to.be.eq("LocalizedDescription");
     });
 
   });
@@ -144,7 +148,7 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates element properties label", () => {
-      const elementProperties = localizationHelper.getLocalizedElementProperties({ class: "class", label: "@namespace:LocalizedDescription@", id: "id", items: {} });
+      const elementProperties = localizationHelper.getLocalizedElementProperties({ class: "class", label: "@namespace:LocalizedLabel@", id: "id", items: {} });
       expect(elementProperties.label).to.be.eq("LocalizedLabel");
     });
 

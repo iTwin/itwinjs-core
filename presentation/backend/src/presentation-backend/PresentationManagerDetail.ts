@@ -8,17 +8,20 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  Content,
+  ContentDescriptorRequestOptions, ContentFlags,
+  ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, ElementProperties, HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, Node, NodeKey, Paged, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { createContentDescriptorOverrides, HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey } from "./Utils";
+import { buildElementsProperties } from "./ElementPropertiesHelper";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -42,8 +45,6 @@ export class PresentationManagerDetail implements IDisposable {
     const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
-      typeof presentationAssetsRoot === "string" ? presentationAssetsRoot : presentationAssetsRoot.common,
-      params.localeDirectories ?? [],
       params.workerThreadsCount ?? 2,
       mode,
       changeTrackingEnabled,
@@ -68,7 +69,6 @@ export class PresentationManagerDetail implements IDisposable {
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );
-    this.activeLocale = params.defaultLocale;
     this.activeUnitSystem = params.defaultUnitSystem;
 
     this._onManagerUsed = undefined;
@@ -132,14 +132,13 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+    const { requestId, imodel, unitSystem, diagnostics, ...strippedParams } = params;
     this._onManagerUsed?.();
 
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
       params: {
-        locale: (locale ?? this.activeLocale)?.toLocaleLowerCase(),
         unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
         ...strippedParams,
       },
@@ -156,13 +155,84 @@ export class PresentationManagerDetail implements IDisposable {
     diagnosticsListener && response.diagnostics && diagnosticsListener({ logs: [response.diagnostics] });
     return response.result;
   }
+
+  public async getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
+    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return JSON.parse(await this.request(params), Node.listReviver);
+  }
+
+  public async getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
+    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContent,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
+    };
+    return JSON.parse(await this.request(params), Content.reviver);
+  }
+
+  public async getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
+    const params = {
+      requestId: NativePlatformRequestTypes.GetDisplayLabel,
+      ...requestOptions,
+      key: InstanceKey.toJSON(requestOptions.key),
+    };
+    return JSON.parse(await this.request(params), LabelDefinition.reviver);
+  }
+
+  public async getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
+    const concreteKeys = requestOptions.keys.map((k) => {
+      if (k.className === "BisCore:Element")
+        return getElementKey(requestOptions.imodel, k.id);
+      return k;
+    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
+    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+      ...requestOptions,
+      rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.List,
+        contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+      },
+      keys: new KeySet(concreteKeys),
+    };
+    const content = await this.getContent(contentRequestOptions);
+    return concreteKeys.map((key) => {
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
+      if (!item)
+        return { displayValue: "", rawValue: "", typeName: "" };
+      return item.label;
+    });
+  }
+
+  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined> {
+    const { elementId, ...optionsNoElementId } = requestOptions;
+    const content = await this.getContent({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    const properties = buildElementsProperties(content);
+    return properties[0];
+  }
+
 }
 
 interface RequestParams {
   diagnostics?: BackendDiagnosticsOptions;
   requestId: string;
   imodel: IModelDb;
-  locale?: string;
   unitSystem?: UnitSystemKey;
 }
 
@@ -286,8 +356,6 @@ interface UnitFormatMap {
 
 function createNativePlatform(
   id: string,
-  presentationAssetsRoot: string,
-  localeDirectories: string[],
   workerThreadsCount: number,
   mode: PresentationManagerMode,
   changeTrackingEnabled: boolean,
@@ -295,13 +363,8 @@ function createNativePlatform(
   defaultFormats: UnitFormatMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
-  const collatedLocaleDirectories = collateAssetDirectories(
-    getLocalesDirectory(presentationAssetsRoot),
-    localeDirectories,
-  );
   return new (createDefaultNativePlatform({
     id,
-    localeDirectories: collatedLocaleDirectories,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
     mode,
     isChangeTrackingEnabled: changeTrackingEnabled,

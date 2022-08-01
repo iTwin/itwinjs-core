@@ -107,7 +107,12 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: new ITwinLocalization({ urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}` }),
+    localization: new ITwinLocalization({
+      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+      initOptions: {
+        preload: ["test"],
+      },
+    }),
   };
 
   if (props.useClientServices)

@@ -16,6 +16,7 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalizedStringEN, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
+  LabelDefinitionJSON,
   MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
   PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
   SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
@@ -298,6 +299,13 @@ describe("PresentationManager", () => {
           .verifiable();
         using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
         addon.verifyAll();
+      });
+
+      it("sets up active locale if supplied [deprecated]", () => {
+        const locale = faker.random.locale();
+        using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
+          expect(manager.activeLocale).to.eq(locale); // eslint-disable-line deprecation/deprecation
+        });
       });
 
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
@@ -723,6 +731,48 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
+        };
+        const result = await manager.getNodes(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns localized nodes", async () => {
+        // what the addon receives
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetRootNodes,
+          params: {
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse: NodeJSON[] = [{
+          key: {
+            type: "type1",
+            pathFromRoot: ["p1", "p2", "p3"],
+          },
+          labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+          description: "description1",
+          imageId: "img_1",
+          foreColor: "foreColor1",
+          backColor: "backColor1",
+          fontStyle: "fontStyle1",
+          hasChildren: true,
+          isSelectionDisabled: true,
+          isEditable: true,
+          isChecked: true,
+          isCheckboxVisible: true,
+          isCheckboxEnabled: true,
+          isExpanded: true,
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
         };
         const result = await manager.getNodes(options);
         verifyWithSnapshot(result, expectedParams);
@@ -1318,6 +1368,64 @@ describe("PresentationManager", () => {
         verifyWithSnapshot(result, expectedParams);
       });
 
+      it("returns localized content", async () => {
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const fieldName = faker.random.word();
+        const category = createTestCategoryDescription({label: "@RulesEngine:LABEL_General_NotSpecified@", description: "@ECPresentation:LABEL_Category_General@"});
+        const descriptor = createTestContentDescriptor({
+          categories: [category],
+          fields: [createTestSimpleContentField({
+            label: "@RulesEngine:LABEL_General_NotSpecified@",
+            category,
+            name: fieldName,
+          })],
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = {
+          descriptor: descriptor.toJSON(),
+          contentSet: [{
+            primaryKeys: [createRandomECInstanceKeyJSON()],
+            classInfo: createRandomECClassInfoJSON(),
+            labelDefinition: {
+              typeName: "string",
+              rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
+              displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            },
+            imageId: faker.random.uuid(),
+            values: {
+              [fieldName]: "@RulesEngine:LABEL_General_NotSpecified@",
+            },
+            displayValues: {
+              [fieldName]: "@RulesEngine:LABEL_General_NotSpecified@",
+            },
+            mergedFieldNames: [],
+          } as ItemJSON],
+        } as ContentJSON;
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor,
+          keys,
+        };
+        const result = await manager.getContent(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
       it("returns content for BisCore:Element instances when concrete key is found", async () => {
         // what the addon receives
         const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
@@ -1597,6 +1705,76 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(expectedResponse);
       });
 
+      it("returns localized single element properties", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value",
+              },
+              displayValues: {
+                test: "test display value",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementId: elementKey.id,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "Not specified",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
       function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: undefined }));
@@ -1706,6 +1884,110 @@ describe("PresentationManager", () => {
         }
       });
 
+      it("returns localized multiple elements properties", async () => {
+        // what the addon receives
+        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
+        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value 1",
+              },
+              displayValues: {
+                test: "test display value 1",
+              },
+            }),
+            createTestContentItem({
+              label: "@RulesEngine:LABEL_General_NotSpecified@",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+              values: {
+                test: "test value 2",
+              },
+              displayValues: {
+                test: "test display value 2",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+        };
+        const expectedResponse = [
+          {
+            class: "Test Class",
+            id: "0x123",
+            label: "Not specified",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 1",
+                  },
+                },
+              },
+            },
+          },
+          {
+            class: "Test Class",
+            id: "0x124",
+            label: "Not specified",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 2",
+                  },
+                },
+              },
+            },
+          },
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
+      });
+
     });
 
     describe("getDisplayLabelDefinition", () => {
@@ -1733,9 +2015,116 @@ describe("PresentationManager", () => {
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 
+      it("returns label from native addon and localizes it", async () => {
+        // what the addon receives
+        const key = createRandomECInstanceKey();
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetDisplayLabel,
+          params: {
+            key,
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = (): LabelDefinitionJSON => {
+          return {
+            displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            typeName: "string",
+          };
+        };
+        setup(addonResponse());
+
+        // what the presentation manager returns
+        const localizedAddonResponse = (): LabelDefinitionJSON => {
+          return {
+            displayValue: "Not specified",
+            rawValue: "Not specified",
+            typeName: "string",
+          };
+        };
+        // test
+        const options: DisplayLabelRequestOptions<IModelDb, InstanceKey> = {
+          imodel: imodelMock.object,
+          key,
+        };
+        const result = await manager.getDisplayLabelDefinition(options);
+        verifyWithExpectedResult(result, localizedAddonResponse(), expectedParams);
+      });
+
     });
 
     describe("getDisplayLabelDefinitions", () => {
+
+      it("returns labels from list content and localizes them", async () => {
+        // what the addon returns
+        const addonResponse = (): LabelDefinitionJSON => {
+          return {
+            displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
+            typeName: "string",
+          };
+        };
+
+        // what the presentation manager returns
+        const localizedAddonResponse = (): LabelDefinition => {
+          return {
+            displayValue: "Not specified",
+            rawValue: "Not specified",
+            typeName: "string",
+          };
+        };
+        // what the addon receives
+        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const labels = [addonResponse(), addonResponse()];
+        const labelsLocalized = [localizedAddonResponse(), localizedAddonResponse()];
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet(keys)),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.List,
+              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+            },
+            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = {
+          descriptor: {
+            connectionId: faker.random.uuid(),
+            inputKeysHash: faker.random.uuid(),
+            contentOptions: {},
+            displayType: DefaultContentDisplayTypes.List,
+            selectClasses: [],
+            categories: [],
+            fields: [],
+            contentFlags: 0,
+            classesMap: {},
+          } as DescriptorJSON,
+          // note: return in wrong order to verify the resulting labels are still in the right order
+          contentSet: [1, 0].map((index): ItemJSON => ({
+            primaryKeys: [keys[index]],
+            classInfo: createRandomECClassInfoJSON(),
+            labelDefinition: labels[index],
+            imageId: faker.random.uuid(),
+            values: {},
+            displayValues: {},
+            mergedFieldNames: [],
+          })),
+        } as ContentJSON;
+        setup(addonContentResponse);
+
+        // test
+        const options: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
+          imodel: imodelMock.object,
+          keys,
+        };
+        const result = await manager.getDisplayLabelDefinitions(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(labelsLocalized);
+      });
 
       it("returns labels from list content", async () => {
         // what the addon receives
