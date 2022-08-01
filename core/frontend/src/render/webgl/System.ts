@@ -739,8 +739,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     let handle;
     if (source instanceof ImageBuffer)
       handle = TextureHandle.createForImageBuffer(source, type);
-    else
+    else if (source instanceof ImageBitmap)
+      handle = TextureHandle.createForImageBitmap(source, type);
+    else if (source instanceof HTMLImageElement)
       handle = TextureHandle.createForImage(source, type);
+    else
+      assert(false);
 
     if (!handle)
       return undefined;
