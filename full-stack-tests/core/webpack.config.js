@@ -35,6 +35,13 @@ function createConfig(shouldInstrument) {
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
     devtool: "nosources-source-map",
+    resolve: {
+      mainFields: ["main", "module"],
+      alias: {
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js"
+      }
+    },
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
