@@ -251,7 +251,7 @@ vec4 computeInScatteredLightAndViewRayOpticalDepth() {
     }
     inScatteredLight *= u_scatteringCoefficients * u_inScatteringIntensity * stepSize / u_earthScaleMatrix[2][2];
   }
-  return vec4(inScatteredLight, viewRayOpticalDepth);
+  return vec4(inScatteredLight.rgb, viewRayOpticalDepth);
 }
 `;
 
@@ -281,7 +281,7 @@ vec4 computeAtmosphericScattering(vec4 baseColor) {
 
 const computeAtmosphericScatteringFromScratch = `
 vec4 computeAtmosphericScattering(vec4 baseColor) {
-  vec4 values = computeInScatteredLightAndViewRayOpticalDepth()
+  vec4 values = computeInScatteredLightAndViewRayOpticalDepth();
   vec3 inScatteredLight = values.xyz;
   float viewRayOpticalDepth = values.w;
   vec3 reflectedLight = computeReflectedLight(inScatteredLight, viewRayOpticalDepth, baseColor.rgb);
@@ -528,6 +528,26 @@ function addAtmosphericScatteringEffectPerFragment(builder: ProgramBuilder, isSk
     },
     VariablePrecision.Low
   );
+  frag.addUniform(
+    "u_brightnessAdaptionStrength",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindBrightnessAdaptationStrength(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
+  frag.addUniform(
+    "u_outScatteringIntensity",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
+        params.target.uniforms.atmosphericScattering.bindOutScatteringIntensity(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addFunction(computeRayDirDefault);
   if (isSky) {
@@ -543,8 +563,8 @@ function addAtmosphericScatteringEffectPerFragment(builder: ProgramBuilder, isSk
   frag.addFunction(eyeEarthIntersection);
   frag.addFunction(opticalDepth);
   frag.addFunction(computeInScatteredLightAndViewRayOpticalDepth);
-  frag.addFunction(computeAtmosphericScatteringFromScratch);
   frag.addFunction(computeReflectedLight);
+  frag.addFunction(computeAtmosphericScatteringFromScratch);
 
   frag.set(
     FragmentShaderComponent.ApplyAtmosphericScattering,
@@ -552,6 +572,7 @@ function addAtmosphericScatteringEffectPerFragment(builder: ProgramBuilder, isSk
   );
 
 }
+
 function addAtmosphericScatteringEffectPerVertex(builder: ProgramBuilder, isSky: boolean) {
   const vert = builder.vert;
   const frag = builder.frag;
@@ -804,9 +825,8 @@ function addAtmosphericScatteringEffectPerVertex(builder: ProgramBuilder, isSky:
     },
     VariablePrecision.High
   );
-  frag.addFunction(applyAtmosphericScattering);
-  frag.addFunction(computeAtmosphericScatteringFromVaryings);
   frag.addFunction(computeReflectedLight);
+  frag.addFunction(computeAtmosphericScatteringFromVaryings);
 
   frag.set(
     FragmentShaderComponent.ApplyAtmosphericScattering,
