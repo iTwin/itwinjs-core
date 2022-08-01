@@ -567,7 +567,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
 
 // @beta
 export const ECRuleSet: IRuleSet;
