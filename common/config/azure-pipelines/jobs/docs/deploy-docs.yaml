@@ -1,0 +1,28 @@
+parameters:
+- name: env
+  type: string
+  values:
+  - DEV
+  - QA
+  - PROD
+
+jobs:
+- job: Deploy-${{ parameters.env }}
+  pool:
+    vmImage: SecurityScans
+    demands: Agent.OS -equals Windows_NT
+  steps:
+
+# Check octopus project
+# Deploy resources (ARM templates)
+#   Deploy Azure CDN
+#   App insights
+# DNS Setup and validation
+# LetsEncrypt cert
+# Deploy stotage accounts
+# Check/rotate cert
+# Copy files to web container
+# CORS storage config
+
+# Maybe split this up between two jobs?
+# e.g. imsejs-app, deploy resorces/deploy site

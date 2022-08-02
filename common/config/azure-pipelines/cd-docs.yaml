@@ -1,0 +1,89 @@
+# trigger:
+#   branches:
+#     include:
+#       - master
+#       - release/*
+#     exclude:
+#       - release/2*
+#       - release/1*
+
+# Pull in artifacts
+
+stages:
+  - stage: Build
+    displayName: Build Docs
+    jobs:
+      - job:
+        workspace:
+          clean: all
+        pool:
+          name: iModelTechCI
+          demands: Agent.OS -equals Windows_NT
+        steps:
+          - template: ./templates/docs-build.yaml
+            parameters:
+              workingDir: $(Pipeline.Workspace)/itwinjs-core
+              outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
+
+  - stage: CreateOctopusRelease
+    displayName: Create Octopus release
+    dependsOn: Build
+    jobs:
+
+  - stage: DEV
+    displayName: Deployment (DEV)
+    dependsOn: CreateOctopusRelease
+    jobs:
+    - template: ./templates/docs/deploy-docs.yaml
+      parameters:
+        env: DEV
+
+  - stage: ProductTestsDEV
+    displayName: Product Tests (DEV)
+    dependsOn: DEV
+    jobs:
+    - template: ./templates/docs/deploy-docs.yaml
+      parameters:
+        env: DEV
+
+  # - stage: QA
+  #   displayName: Deployment (QA)
+  #   dependsOn: ProductTestsDEV
+  #   jobs:
+
+  # - stage: ProductTestsQA
+  #   displayName: Product Tests (QA)
+  #   dependsOn: QA
+  #   jobs:
+
+  # - stage: LinkValidatorQA
+  #   displayName: Link Validator (QA)
+  #   dependsOn: QA
+  #   jobs:
+
+  # - stage: UpdateDocumentationIndexQA
+  #   displayName: Update Documentation Index (QA)
+  #   dependsOn: QA
+  #   jobs:
+
+  # - stage: ActiveScanQA
+  #   displayName: Active Scan (QA)
+  #   dependsOn: ProductTestsQA
+  #   jobs:
+
+  # - stage: Scorecard
+  #   displayName: Scorecard
+  #   dependsOn:
+  #     - LinkValidatorQA
+  #     - ProductTestsQA
+  #   jobs:
+
+  # - stage: PROD
+  #   displayName: Deployment (PROD)
+  #   dependsOn: Scorecard
+  #   jobs:
+
+  # - stage: UpdateDocumentationIndexPROD
+  #   displayName: Update Documentation Index (PROD)
+  #   dependsOn: PROD
+  #   jobs:

@@ -1,0 +1,14 @@
+parameters:
+- name: env
+  type: string
+  values:
+  - DEV
+  - QA
+  - PROD
+
+jobs:
+- job: ProductTests-${{ parameters.env }}
+  pool:
+    vmImage: SecurityScans
+    demands: Agent.OS -equals Windows_NT
+  steps:
