@@ -86,15 +86,9 @@ function createConfig(shouldInstrument) {
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin({
-<<<<<<< HEAD
-        "process.env": Object.keys(process.env)
-          .reduce((env, key) => {
-            env[key] = JSON.stringify({ DEBUG: process.env[key].DEBUG });
-=======
         "process.env": Object.keys(process.env).reduce(
           (env, key) => {
             env[key] = JSON.stringify(process.env[key]);
->>>>>>> a11d616491f35f7098c37b5dc02aa93808c3ed20
             return env;
           },
           {
