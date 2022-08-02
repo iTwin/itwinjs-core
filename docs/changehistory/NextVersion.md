@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -8,16 +9,22 @@ Table of contents:
 - [Display system](#display-system)
   - [Dynamic schedule scripts](#dynamic-schedule-scripts)
   - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
-  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
-- [Frontend category APIs](#frontend-category-apis)
+  - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
 - [AppUi](#appui)
   - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
-  - [Tool Settings title](tool-settings-title)
+  - [Tool Settings title](#tool-settings-title)
 - [ElectronApp changes](#electronapp-changes)
+- [Frontend category APIs](#frontend-category-apis)
 - [IModelHostOptions](#imodelhostoptions)
 - [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
-- [Deprecations](#deprecations)
+- [RPC over IPC](#rpc-over-ipc)
 - [Presentation](#presentation)
+  - [Relationship properties](#relationship-properties)
+- [Webpack 5](#webpack-5)
+- [Deprecations](#deprecations)
+  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-geometry](#itwincore-geometry)
+  - [@itwin/core-mobile](#itwincore-mobile)
 
 ## Display system
 
@@ -28,19 +35,22 @@ Table of contents:
 That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
 
 ```ts
-   await IModelApp.startup({
-     tileAdmin: {
-      enableFrontendScheduleScripts: true,
-    },
-  });
+await IModelApp.startup({
+  tileAdmin: {
+    enableFrontendScheduleScripts: true,
+  },
+});
 ```
 
 Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
 
 ```ts
-  function updateScheduleScript(viewport: Viewport, props: RenderSchedule.ScriptProps): void {
-    viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-  }
+function updateScheduleScript(
+  viewport: Viewport,
+  props: RenderSchedule.ScriptProps
+): void {
+  viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+}
 ```
 
 ### Hiliting models and subcategories
@@ -52,16 +62,7 @@ Support for hiliting models and subcategories using [HiliteSet]($frontend) has b
 
 Applications often work with [Category]($backend)'s instead of subcategories. You can use the new [Categories API](#frontend-category-apis) to obtain the Ids of the subcategories belonging to one or more categories.
 
-## Frontend category APIs
-
-A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
-
-[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
-
-- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
-- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
-
-### Improved symbology overrides for animated views
+### Improved appearance overrides for animated views
 
 The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
 
@@ -79,17 +80,28 @@ Both of these problems are addressed in iTwin.js 3.3.0.
 
 When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop [AbstractWidgetProps.hideWithUiWhenFloating]($appui-abstract) to `true` in your UiProvider.
 
+Auto-hide UI feature will ignore dragged floating widgets and keep them visible until drag interaction is complete. Floating widgets are also animated correctly when hiding.
+
 ### Tool Settings title
 
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
 
 ```ts
-  UiFramework.setUseToolAsToolSettingsLabel(true);
+UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
 
 ## ElectronApp changes
 
 Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
+
+## Frontend category APIs
+
+A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
+
+[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
+
+- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
+- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
 ## IModelHostOptions
 
@@ -104,6 +116,18 @@ The argument for [IModelHost.startup]($backend) has been changed from [IModelHos
 When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
 After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
 This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
+
+## Presentation
+
+### Relationship properties
+
+Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
+
+When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
+
+## Webpack 5
+
+The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
 
 ## Deprecations
 
@@ -124,11 +148,3 @@ The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is depr
 IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
 
 IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
-
-## Presentation
-
-### Relationship properties
-
-Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
-
-When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
