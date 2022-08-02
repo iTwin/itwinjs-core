@@ -195,9 +195,9 @@ export namespace CodeService {
   }
 
   /**
-   * Turn a `CodePops` for the briefcase of this CodeService into a `ScopeAndSpec` object for use in the code index.
+   * Turn a `CodePops` for the briefcase of this CodeService into a `ScopeAndSpec` object for use with a CodeService.
    * This is necessary because the `spec` member of `CodeProps` refers to the id of a code spec in the iModel, and
-   * the `scope` member refers to the `ElementId` of the scope element in the iModel. This helper function
+   * the `scope` member refers to the element Id of the scope element in the iModel. This helper function
    * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
   export function makeScopeAndSpec(briefcase: BriefcaseDb, props: CodeProps): CodeService.ScopeAndSpec {
@@ -208,7 +208,7 @@ export namespace CodeService {
     return { scope, spec: briefcase.codeSpecs.getById(props.spec).name };
   }
 
-  /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use in the code index.
+  /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use with a CodeService.
    * @see [[makeScopeAndSpec]] for explanation of why this is necessary.
    */
   export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode {
@@ -226,7 +226,7 @@ export namespace CodeService {
    * but can also be used to identify a system or type from an external code service. */
   export type CodeOriginName = string;
 
-  /** The name that identifies the "author" of a code. Generally, this is intended to be the name of a person or group. */
+  /** The name that identifies the "author" of a code. Generally, this is intended to be the name of a person or group that helps identify the purpose of the code. */
   export type AuthorName = string;
 
   /** The value for a code. */
@@ -245,10 +245,10 @@ export namespace CodeService {
   export type IteratorReturn = void | "stop";
 
   /** An iterator function over codes in a code index. It is called with the Guid of a each code. */
-  export type CodeIterator = (guid: GuidString) => IteratorReturn;;
+  export type CodeIterator = (guid: GuidString) => IteratorReturn;
 
   /** An iterator function over code specs in a code index. It is called with the name and json of a each code spec. */
-  export type NameAndJsonIterator = (nameAndJson: NameAndJson) => IteratorReturn;;
+  export type NameAndJsonIterator = (nameAndJson: NameAndJson) => IteratorReturn;
 
   /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
@@ -260,7 +260,7 @@ export namespace CodeService {
     nRetries: number;
     /** Delay between retries, in milliseconds. Default is 100. */
     retryDelayMs: number;
-    /** function called if lock cannot be obtained after retries. It is called with the name of the user currently holding the lock and
+    /** function called if lock cannot be obtained after all retries. It is called with the name of the user currently holding the lock and
      * generally is expected that the user will be consulted whether to wait further.
      * If this function returns "stop", an exception will be thrown. Otherwise the retry cycle is restarted. */
     onFailure?: CloudSqlite.WriteLockBusyHandler;
@@ -268,7 +268,9 @@ export namespace CodeService {
 
   /** Argument for reserving an array of new codes. */
   export interface ReserveCodesArgs {
-    /** an array of proposed codes to reserve */
+    /** an array of proposed codes to reserve.
+     * @note the guid of each proposed code must be supplied by the caller.
+     */
     readonly codes: CodeService.ProposedCode[];
     /** If true, unless all codes are available, don't reserve any codes. Otherwise reserve all available codes. */
     readonly allOrNothing?: true;
@@ -289,9 +291,9 @@ export namespace CodeService {
     /** The code sequence and scope for the new codes. */
     readonly from: CodeService.SequenceScope;
     /** If true, and in the event that the code sequence does not have enough available codes to fulfill all the entries in `codes`,
-     * return as many as possible. Otherwise no codes are reserved.
+     * return as many as possible. Otherwise no codes are reserved. The `problems` member of the exception can be used to determine how many codes were available.
      * @note if `asManyAsPossible` is true, no error is thrown if the sequence becomes full. You must check the return value to see how many
-     * were actually available.
+     * were actually available. The `value` member will be undefined for any proposed codes that were not reserved.
      */
     readonly asManyAsPossible?: true;
   }
@@ -306,7 +308,7 @@ export namespace CodeService {
 
   /** Arguments for CodeService.makeProposedCode  */
   export interface MakeProposedCodeArgs {
-    readonly briefcase: BriefcaseDb,
+    readonly briefcase: BriefcaseDb;
     readonly code: Required<CodeProps>;
     readonly props: CodeService.CodeGuidStateJson;
   }
