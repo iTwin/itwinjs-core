@@ -25,6 +25,11 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "mocha": "^10.0.0"
+    "@itwin/core-webpack-tools": "workspace:*",
+    "mocha": "^10.0.0",
+    "webpack": "^5.64.4"
+  },
+  "peerDependencies": {
+    "webpack": "^5.64.4"
   }
 }

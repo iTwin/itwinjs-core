@@ -4068,13 +4068,17 @@ importers:
   ../../tools/internal:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
       mocha: ^10.0.0
+      webpack: ^5.64.4
       yargs: ^17.4.0
     dependencies:
       yargs: 17.5.1
     devDependencies:
       '@itwin/build-tools': link:../build
+      '@itwin/core-webpack-tools': link:../webpack-core
       mocha: 10.0.0
+      webpack: 5.73.0
 
   ../../tools/perf-tools:
     specifiers:
@@ -8437,7 +8441,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8684,6 +8688,10 @@ packages:
 
   /@types/node/12.20.24:
     resolution: {integrity: sha512-yxDeaQIAJlMav7fH5AQqPH1u8YIuhYJXYBzxaQ4PifsU0GDO38MSdmEDeRlIxrKbC6NbEaaEHDanWb+y30U8SQ==}
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.22:
