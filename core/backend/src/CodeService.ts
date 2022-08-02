@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CloudSqlite } from "@bentley/imodeljs-native";
-import { AccessToken, BentleyError, GuidString, MarkRequired, Mutable } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
 import { BriefcaseDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
@@ -171,19 +171,6 @@ export interface CodeService {
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
   deleteCodes: (guid: CodeService.CodeGuid[]) => Promise<void>;
-
-  /**
-   * Turn a `CodePops` for the briefcase of this CodeService into a `ScopeAndSpec` object for use in the code index.
-   * This is necessary because the `spec` member of `CodeProps` refers to the id of a code spec in the iModel, and
-   * the `scope` member refers to the `ElementId` of the scope element in the iModel. This helper function
-   * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
-   */
-  makeScopeAndSpec: (props: CodeProps) => CodeService.ScopeAndSpec;
-
-  /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use in the code index.
-   * @see [[makeScopeAndSpec]] for explanation of why this is necessary.
-   */
-  makeProposedCode: (arg: CodeService.MakeProposedCodeArgs) => CodeService.ProposedCode;
 }
 
 /** @alpha */
@@ -205,6 +192,31 @@ export namespace CodeService {
     if (!seq)
       throw new Error("SequenceNotFound", -1, `code sequence ${name} not found`);
     return seq;
+  }
+
+  /**
+   * Turn a `CodePops` for the briefcase of this CodeService into a `ScopeAndSpec` object for use in the code index.
+   * This is necessary because the `spec` member of `CodeProps` refers to the id of a code spec in the iModel, and
+   * the `scope` member refers to the `ElementId` of the scope element in the iModel. This helper function
+   * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
+   */
+  export function makeScopeAndSpec(briefcase: BriefcaseDb, props: CodeProps): CodeService.ScopeAndSpec {
+    const scope = briefcase.elements.getElementProps(props.scope).federationGuid;
+    if (undefined === scope)
+      throw new CodeService.Error("MissingGuid", IModelStatus.InvalidCode, "code scope element has no federationGuid");
+
+    return { scope, spec: briefcase.codeSpecs.getById(props.spec).name };
+  }
+
+  /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use in the code index.
+   * @see [[makeScopeAndSpec]] for explanation of why this is necessary.
+   */
+  export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode {
+    return {
+      ...arg.props,
+      value: arg.code.value,
+      ...makeScopeAndSpec(arg.briefcase, arg.code),
+    };
   }
 
   /** The name of a code spec */
@@ -294,6 +306,7 @@ export namespace CodeService {
 
   /** Arguments for CodeService.makeProposedCode  */
   export interface MakeProposedCodeArgs {
+    readonly briefcase: BriefcaseDb,
     readonly code: Required<CodeProps>;
     readonly props: CodeService.CodeGuidStateJson;
   }
