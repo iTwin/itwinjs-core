@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { Presentation } from "@itwin/presentation-backend";
@@ -28,18 +27,16 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
     initializeLogging();
 
-    const iModelHost = new IModelHostConfiguration();
-
     // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
     RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
-      await initializeElectron(iModelHost);
+      await initializeElectron();
     } else if (ProcessDetector.isMobileAppBackend) {
       await MobileHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
-      await initializeWeb(iModelHost);
+      await initializeWeb();
     }
 
     // initialize presentation-backend

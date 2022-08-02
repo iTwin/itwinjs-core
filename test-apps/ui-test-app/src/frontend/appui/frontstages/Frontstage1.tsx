@@ -143,7 +143,6 @@ export class Frontstage1 extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         defaultContentId="TestContent1"
-        isInFooterMode={true}
         topLeft={
           <Zone
             widgets={[

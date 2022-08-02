@@ -11,7 +11,7 @@
   border: 1px solid $buic-background-5;
   border-radius: 3px;
   min-width: 200px;
-  min-height: 80px;
+  min-height: 120px;
 
   &.nz-floating-toolsettings {
     min-height: 60px;
@@ -41,6 +41,7 @@
 
   &.nz-minimized {
     min-height: 30px;
+
     .nz-widget-floatingWidget_handle {
       visibility: hidden;
     }

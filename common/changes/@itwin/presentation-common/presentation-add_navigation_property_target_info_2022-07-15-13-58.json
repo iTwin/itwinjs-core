@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Add target info to NavigationPropertyInfo",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

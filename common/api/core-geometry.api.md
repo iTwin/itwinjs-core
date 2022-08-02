@@ -2191,21 +2191,28 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
 
 // @public
 export class GrowableBlockedArray {
-    constructor(blockSize: number, initialBlocks?: number);
+    constructor(blockSize: number, initialBlocks?: number, growthFactor?: number);
     addBlock(newData: number[]): void;
     blockCapacity(): number;
     protected blockIndexToDoubleIndex(blockIndex: number): number;
     protected _blockSize: number;
     checkedComponent(blockIndex: number, componentIndex: number): number | undefined;
     clear(): void;
+    clone(): GrowableBlockedArray;
     static compareLexicalBlock(data: Float64Array, blockSize: number, ia: number, ib: number): number;
     component(blockIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     protected _data: Float64Array;
     distanceBetweenBlocks(blockIndexA: number, blockIndexB: number): number;
     distanceBetweenSubBlocks(blockIndexA: number, blockIndexB: number, iBegin: number, iEnd: number): number;
-    ensureBlockCapacity(blockCapacity: number): void;
+    ensureBlockCapacity(blockCapacity: number, applyGrowthFactor?: boolean): void;
     getWithinBlock(blockIndex: number, indexWithinBlock: number): number;
+    protected _growthFactor: number;
     protected _inUse: number;
+    get length(): number;
     protected newBlockIndex(): number;
     get numBlocks(): number;
     get numPerBlock(): number;
@@ -2215,7 +2222,7 @@ export class GrowableBlockedArray {
 
 // @public
 export class GrowableFloat64Array {
-    constructor(initialCapacity?: number);
+    constructor(initialCapacity?: number, growthFactor?: number);
     atUncheckedIndex(index: number): number;
     back(): number;
     capacity(): number;
@@ -2223,8 +2230,12 @@ export class GrowableFloat64Array {
     clone(maintainExcessCapacity?: boolean): GrowableFloat64Array;
     static compare(a: any, b: any): number;
     compressAdjacentDuplicates(tolerance?: number): void;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(contents: Float64Array | number[]): GrowableFloat64Array;
-    ensureCapacity(newCapacity: number): void;
+    ensureCapacity(newCapacity: number, applyGrowthFactor?: boolean): void;
     front(): number;
     get length(): number;
     move(i: number, j: number): void;
@@ -2242,13 +2253,17 @@ export class GrowableFloat64Array {
 
 // @public
 export class GrowableXYArray extends IndexedXYCollection {
-    constructor(numPoints?: number);
+    constructor(numPoints?: number, growthFactor?: number);
     areaXY(): number;
     back(result?: Point2d): Point2d | undefined;
     clear(): void;
     clone(): GrowableXYArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(data: XAndY[] | GrowableXYZArray): GrowableXYArray;
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
@@ -2256,7 +2271,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined;
     distance(i: number, j: number): number | undefined;
     distanceIndexToPoint(i: number, spacePoint: Point2d): number | undefined;
-    ensureCapacity(pointCapacity: number): void;
+    ensureCapacity(pointCapacity: number, applyGrowthFactor?: boolean): void;
     extendRange(rangeToExtend: Range2d, transform?: Transform): void;
     float64Data(): Float64Array;
     get float64Length(): number;
@@ -2284,10 +2299,12 @@ export class GrowableXYArray extends IndexedXYCollection {
     pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
     pushXY(x: number, y: number): void;
-    resize(pointCount: number): void;
+    resize(pointCount: number, padWithZero?: boolean): void;
     reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
+    setXYAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
+    // @deprecated
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
     sortIndicesLexical(): Uint32Array;
     sumLengths(): number;
@@ -2299,7 +2316,7 @@ export class GrowableXYArray extends IndexedXYCollection {
 
 // @public
 export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
-    constructor(numPoints?: number);
+    constructor(numPoints?: number, growthFactor?: number);
     accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
     accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
@@ -2309,6 +2326,10 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     clone(result?: GrowableXYZArray): GrowableXYZArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
+    protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
+        count: number;
+        offset: number;
+    };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
@@ -2317,7 +2338,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined;
     static distanceRangeBetweenCorrespondingPoints(arrayA: GrowableXYZArray, arrayB: GrowableXYZArray): Range1d;
     distanceSquaredIndexIndex(i: number, j: number): number | undefined;
-    ensureCapacity(pointCapacity: number): void;
+    ensureCapacity(pointCapacity: number, applyGrowthFactor?: boolean): void;
     evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number;
     evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -2360,7 +2381,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     pushWrap(numWrap: number): void;
     pushXYZ(x: number, y: number, z: number): void;
     static removeClosure(points: IndexedReadWriteXYZCollection, tolerance?: number): void;
-    resize(pointCount: number): void;
+    resize(pointCount: number, padWithZero?: boolean): void;
     reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XYAndZ): boolean;
