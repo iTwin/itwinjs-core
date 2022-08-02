@@ -96,15 +96,19 @@ export class Constant extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(constantProps: ConstantProps): Promise<void>;
     // (undocumented)
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -2023,21 +2027,27 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(unitProps: UnitProps): Promise<void>;
     // (undocumented)
     fromJSONSync(unitProps: UnitProps): void;
+    // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
+    get hasOffset(): boolean;
     // @alpha (undocumented)
     static isUnit(object: any): object is Unit;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get offset(): number;
     // (undocumented)
-    protected _offset: number;
+    protected _offset?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
