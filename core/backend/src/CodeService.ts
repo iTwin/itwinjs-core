@@ -420,8 +420,7 @@ export namespace CodeService {
   export interface SequenceScope extends ScopeAndSpec {
     /** The code sequence. */
     readonly seq: CodeSequence;
-    /** A valid current value. The returned value will always be later in the sequence than this.
-     * @internal */
+    /** A valid current value. If supplied, the returned value will always be later in the sequence than this. */
     readonly start?: CodeValue;
   }
 
