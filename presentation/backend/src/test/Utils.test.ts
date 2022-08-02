@@ -7,7 +7,8 @@ import * as moq from "typemoq";
 import { DbResult, SpanKind } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { convertToReadableSpans, getElementKey, normalizeVersion } from "../presentation-backend/Utils";
+import { convertToReadableSpans, filterDiagnostics, getElementKey, normalizeVersion, Resource } from "../presentation-backend/Utils";
+import { Diagnostics } from "@itwin/presentation-common";
 
 describe("getElementKey", () => {
 
@@ -66,6 +67,109 @@ describe("getNormalizedVersion", () => {
 
 });
 
+describe("filterDiagnostics", () => {
+
+  it("returns undefined when diagnostics don't have logs", () => {
+    expect(filterDiagnostics({})).to.be.undefined;
+  });
+
+  it("returns undefined when all logs removed", () => {
+    const diagnostics: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 200 },
+    ]};
+    expect(filterDiagnostics(diagnostics, 500)).to.be.undefined;
+  });
+
+  it("uses default duration when duration not passed", () => {
+    const diagnostics: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
+        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40 },
+      ]},
+    ]};
+
+    const expectedResult: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
+    ]};
+
+    const actualResult = filterDiagnostics(diagnostics);
+    expect(actualResult).to.deep.eq(expectedResult);
+  });
+
+  it("uses default duration when passed duration is too small", () => {
+    const diagnostics: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
+        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40 },
+      ]},
+    ]};
+
+    const expectedResult: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
+    ]};
+
+    const actualResult = filterDiagnostics(diagnostics, 20);
+    expect(actualResult).to.deep.eq(expectedResult);
+  });
+
+  it("filters diagnostics by duration", () => {
+    const diagnostics: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
+        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 500 },
+        { scope: "test scope 3", scopeCreateTimestamp: 12400, duration: 700, logs: [
+          { scope: "test scope 4", scopeCreateTimestamp: 12400, duration: 200 },
+        ]},
+      ]},
+    ]};
+
+    const expectedResult: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
+        { scope: "test scope 3", scopeCreateTimestamp: 12400, duration: 700 },
+      ]},
+    ]};
+
+    const actualResult = filterDiagnostics(diagnostics, 600);
+    expect(actualResult).to.deep.eq(expectedResult);
+  });
+
+  it("includes messages", () => {
+    const diagnostics: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 10, logs: [
+        { severity: { dev: "error", editor: "info" }, message: "test message", category: "test category", timestamp: 12350 },
+      ]},
+    ]};
+
+    const expectedResult: Diagnostics = { logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 10, logs: [
+        { severity: { dev: "error", editor: "info" }, message: "test message", category: "test category", timestamp: 12350 },
+      ]},
+    ]};
+
+    const actualResult = filterDiagnostics(diagnostics, 2000);
+    expect(actualResult).to.deep.eq(expectedResult);
+  });
+
+});
+
+describe("Resource", () => {
+
+  it("creates resource with attributes", () => {
+    const attributes = { a: "value" };
+    const resource = new Resource(attributes);
+    expect(resource.attributes).to.eq(attributes);
+  });
+
+  it("merges with null resource", () => {
+    const resource = new Resource({ a: "value" });
+    expect(resource.merge(null).attributes).to.deep.eq({ a: "value" });
+  });
+
+  it("merges resources", () => {
+    const resource1 = new Resource({ a: "value1", b: "value2" });
+    const resource2 = new Resource({ b: "value3", c: "value4" });
+    expect(resource1.merge(resource2).attributes).to.deep.eq({  a: "value1", b: "value3", c: "value4" });
+  });
+
+});
+
 describe("convertToReadableSpans", () => {
 
   const defaultSpanAttributes = {
@@ -82,6 +186,22 @@ describe("convertToReadableSpans", () => {
   it("converts empty logs to empty readable spans", () => {
     expect(convertToReadableSpans({})).to.be.empty;
     expect(convertToReadableSpans({ logs: [] })).to.be.empty;
+  });
+
+  it("does not include logs when duration not set", () => {
+    const spans = convertToReadableSpans({ logs: [
+      { scope: "test scope 1", scopeCreateTimestamp: 12345 },
+    ]});
+
+    expect(spans).to.deep.eq([]);
+  });
+
+  it("does not include logs when scopeCreateTimestamp not set", () => {
+    const spans = convertToReadableSpans({ logs: [
+      { scope: "test scope 1", duration: 100 },
+    ]});
+
+    expect(spans).to.deep.eq([]);
   });
 
   it("converts logs to readable spans", () => {
@@ -109,10 +229,12 @@ describe("convertToReadableSpans", () => {
       },
     ];
 
-    expect(actualSpans.length).to.be.eq(2);
+    expect(actualSpans.length).to.eq(2);
     expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
     expect(actualSpans[1]).to.deep.include(expectedSpans[1]);
     expect(actualSpans[0].spanContext().traceId).to.not.eq(actualSpans[1].spanContext().traceId);
+    expect(actualSpans[0].spanContext().spanId.length).to.eq(16);
+    expect(actualSpans[0].spanContext().traceId.length).to.eq(32);
   });
 
   it("converts nested logs to readable spans", () => {
@@ -178,6 +300,38 @@ describe("convertToReadableSpans", () => {
 
     expect(actualSpans.length).to.be.eq(1);
     expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
+  });
+
+  it("does not include undefined severity attributes", () => {
+    const actualSpans = convertToReadableSpans({
+      logs: [
+        { scope: "test scope", scopeCreateTimestamp: 12345, duration: 1111, logs: [
+          { severity: {}, message: "test message", category: "test category", timestamp: 12350 },
+        ]},
+      ],
+    });
+
+    const expectedSpans = [
+      {
+        ...defaultSpanAttributes,
+        name: "test scope",
+        startTime: [12, 345000000],
+        endTime: [13, 456000000],
+        duration: [1, 111000000],
+        events: [{
+          time: [12, 350000000],
+          name: "test message",
+          attributes: {
+            category: "test category",
+          },
+        }],
+      },
+    ];
+
+    expect(actualSpans.length).to.be.eq(1);
+    expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
+    expect(actualSpans[0].events[0].attributes).to.not.have.property("devSeverity");
+    expect(actualSpans[0].events[0].attributes).to.not.have.property("editorSeverity");
   });
 
 });

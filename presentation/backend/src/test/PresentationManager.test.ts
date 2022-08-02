@@ -647,6 +647,77 @@ describe("PresentationManager", () => {
       expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
+    it("uses default duration for filtering", async () => {
+      const diagnosticsResult: Diagnostics = {
+        logs: [
+          { scope: "test1", duration: 1234, logs: [
+            { scope: "test2", duration: 12 },
+          ]},
+        ],
+      };
+      const filteredDiagnosticsResult: Diagnostics = {
+        logs: [{ scope: "test1", duration: 1234 }],
+      };
+      const diagnosticsListener = sinon.spy();
+      addonMock
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { handler: diagnosticsListener } });
+      addonMock.verifyAll();
+      expect(diagnosticsListener).to.be.calledOnceWith(filteredDiagnosticsResult);
+    });
+
+    it("filters diagnostics results by duration in DiagnosticsOptions", async () => {
+      const diagnosticOptions: DiagnosticsOptions = { perf: { duration: 500 } };
+      const diagnosticsResult: Diagnostics = {
+        logs: [
+          { scope: "test1", duration: 1234, logs: [
+            { scope: "test2", duration: 120 },
+          ]},
+        ],
+      };
+      const filteredDiagnosticsResult: Diagnostics = {
+        logs: [{ scope: "test1", duration: 1234 }],
+      };
+      const diagnosticsListener = sinon.spy();
+      addonMock
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match({ perf: true }).test(JSON.parse(reqStr).params.diagnostics)), undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
+      addonMock.verifyAll();
+      expect(diagnosticsListener).to.be.calledOnceWith(filteredDiagnosticsResult);
+    });
+
+    it("invokes diagnostics callback with diagnostic results", async () => {
+      const diagnosticsCallback = sinon.spy();
+      addonMock.reset();
+      manager = new PresentationManager({ addon: addonMock.object, diagnosticsCallback });
+
+      const diagnosticOptions: DiagnosticsOptions = { perf: true };
+      const diagnosticsResult: Diagnostics = {
+        logs: [{
+          scope: "test",
+          scopeCreateTimestamp: 1000,
+          duration: 123,
+        }],
+      };
+      const spansResult = {
+        name: "test",
+        startTime: [1, 0],
+        endTime: [1, 123000000],
+        duration: [0, 123000000],
+      };
+      addonMock
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
+      addonMock.verifyAll();
+      expect(diagnosticsCallback).to.be.calledOnceWith([sinon.match(spansResult)]);
+    });
+
   });
 
   describe("addon results conversion to Presentation objects", () => {

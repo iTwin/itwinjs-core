@@ -6,8 +6,6 @@
  * @module Core
  */
 
-import { SpanKind } from "@itwin/core-bentley";
-
 /** @alpha */
 export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
@@ -20,9 +18,6 @@ export interface Diagnostics {
 export interface ClientDiagnostics extends Diagnostics {
   backendVersion?: string;
 }
-
-/** @alpha */
-export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 
 /** @alpha */
 export interface DiagnosticsOptions {
@@ -82,49 +77,4 @@ export namespace DiagnosticsLogEntry { // eslint-disable-line @typescript-eslint
   export function isScope(entry: DiagnosticsLogEntry): entry is DiagnosticsScopeLogs {
     return !!(entry as any).scope;
   }
-}
-
-/** @alpha */
-export interface ReadableSpan {
-  name: string;
-  kind: SpanKind;
-  spanContext: () => { traceId: string, spanId: string, traceFlags: number };
-  parentSpanId?: string;
-  startTime: HrTime;
-  endTime: HrTime;
-  status: { code: number };
-  attributes: Attributes;
-  links: [];
-  events: TimedEvent[];
-  duration: HrTime;
-  ended: boolean;
-  resource: Resource;
-  instrumentationLibrary: { name: string };
-}
-
-/** @internal */
-export type HrTime = [number, number];
-
-/** @internal */
-export class Resource {
-  public attributes: Attributes;
-
-  constructor(attributes: Attributes) {
-    this.attributes = attributes;
-  }
-
-  public merge(other: Resource | null): Resource {
-    return new Resource({ ...this.attributes, ...other?.attributes });
-  }
-}
-
-/** @internal */
-export interface TimedEvent {
-  time: HrTime;
-  name: string;
-  attributes: { [attributeKey: string]: string };
-}
-
-interface Attributes  {
-  [attributeKey: string]: string;
 }

@@ -10,10 +10,7 @@ import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String, SpanKind } from "@itwin/core-bentley";
-import {
-  Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, HrTime,
-  InstanceKey, ReadableSpan, Resource, TimedEvent,
-} from "@itwin/presentation-common";
+import { Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
 import { randomBytes } from "crypto";
 
 /** @internal */
@@ -77,6 +74,7 @@ export function filterDiagnostics(diagnostics: Diagnostics, duration?: number): 
 
 /** @internal */
 function filterScopeLogs(logs: DiagnosticsScopeLogs, duration: number): DiagnosticsScopeLogs | undefined {
+  const { logs: _, ...leftOverLogs } = logs;
   const filteredNestedLogs: DiagnosticsLogEntry[] = [];
   for (const entry of logs.logs ?? []) {
     if (isLogMessage(entry))
@@ -92,7 +90,56 @@ function filterScopeLogs(logs: DiagnosticsScopeLogs, duration: number): Diagnost
   if (filteredNestedLogs.length === 0 && !isValidTime)
     return undefined;
 
-  return { ...logs, ...(filteredNestedLogs.length > 0 ? { logs: filteredNestedLogs } : undefined ) };
+  return { ...leftOverLogs, ...(filteredNestedLogs.length > 0 ? { logs: filteredNestedLogs } : undefined ) };
+}
+
+/** @alpha */
+export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
+
+/** @alpha */
+export interface ReadableSpan {
+  name: string;
+  kind: SpanKind;
+  spanContext: () => { traceId: string, spanId: string, traceFlags: number };
+  parentSpanId?: string;
+  startTime: HrTime;
+  endTime: HrTime;
+  status: { code: number };
+  attributes: Attributes;
+  links: [];
+  events: TimedEvent[];
+  duration: HrTime;
+  ended: boolean;
+  resource: Resource;
+  instrumentationLibrary: { name: string };
+}
+
+/** @internal */
+export type HrTime = [number, number];
+
+/** @internal */
+export class Resource {
+  public attributes: Attributes;
+
+  constructor(attributes: Attributes) {
+    this.attributes = attributes;
+  }
+
+  public merge(other: Resource | null): Resource {
+    return new Resource({ ...this.attributes, ...other?.attributes });
+  }
+}
+
+/** @internal */
+export interface TimedEvent {
+  time: HrTime;
+  name: string;
+  attributes: { [attributeKey: string]: string };
+}
+
+/** @internal */
+interface Attributes  {
+  [attributeKey: string]: string;
 }
 
 /** @internal */
@@ -115,9 +162,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
   const events: TimedEvent[] = [];
 
   for (const entry of logs.logs ?? []) {
-    if (isScopeLogs(entry))
-      spans = spans.concat(convertScopeToReadableSpans(entry, traceId, spanId));
-    else if (isLogMessage(entry)) {
+    if (isLogMessage(entry)) {
       const event: TimedEvent = {
         time: millisToHrTime(entry.timestamp),
         name: entry.message,
@@ -128,7 +173,8 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
         },
       };
       events.push(event);
-    }
+    } else
+      spans = spans.concat(convertScopeToReadableSpans(entry, traceId, spanId));
   }
 
   const span: ReadableSpan = {
@@ -163,11 +209,6 @@ function generateSpanId(): string {
 /** @internal */
 function generateTraceId(): string {
   return randomBytes(16).toString("hex");
-}
-
-/** @internal */
-function isScopeLogs(logEntry: DiagnosticsLogEntry): logEntry is DiagnosticsScopeLogs {
-  return (logEntry as DiagnosticsScopeLogs).scope !== undefined;
 }
 
 /** @internal */

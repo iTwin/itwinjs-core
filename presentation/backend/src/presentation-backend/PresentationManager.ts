@@ -11,7 +11,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DiagnosticsCallback, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
@@ -26,7 +26,7 @@ import {
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, getElementKey } from "./Utils";
+import { BackendDiagnosticsAttribute, DiagnosticsCallback, getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.

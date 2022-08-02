@@ -8,7 +8,7 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, ContentFlags, DiagnosticsCallback, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, filterDiagnostics, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, DiagnosticsCallback, filterDiagnostics, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -156,7 +156,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     if (response.diagnostics) {
-      const duration = typeof diagnostics?.perf === "object" ? diagnostics.perf.duration : undefined;
+      const duration = (diagnostics && typeof diagnostics.perf === "object") ? diagnostics.perf.duration : undefined;
       const filteredDiagnostics = filterDiagnostics({ logs: [response.diagnostics] }, duration);
       diagnosticsListener && filteredDiagnostics && diagnosticsListener(filteredDiagnostics);
       this._diagnosticsCallback && filteredDiagnostics && this._diagnosticsCallback(convertToReadableSpans(filteredDiagnostics));
