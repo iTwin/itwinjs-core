@@ -80,6 +80,8 @@ Both of these problems are addressed in iTwin.js 3.3.0.
 
 When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop [AbstractWidgetProps.hideWithUiWhenFloating]($appui-abstract) to `true` in your UiProvider.
 
+Auto-hide UI feature will ignore dragged floating widgets and keep them visible until drag interaction is complete. Floating widgets are also animated correctly when hiding.
+
 ### Tool Settings title
 
 By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
