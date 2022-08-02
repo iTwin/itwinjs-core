@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "./tools/button/variables";
 @import "../widgetopacity";
 
 .nz-widget-navigationArea {
-  transition: visibility 0.5s ease, opacity 0.5s ease;
+  transition: visibility $iui-speed ease, opacity $iui-speed ease;
 
   &.nz-hidden {
     opacity: 0;
@@ -23,30 +24,32 @@
   justify-items: end;
   grid-template-areas: "htools button"". vtools";
 
-    > .nz-navigation-aid-container {
-      margin-bottom: 6px;
-      pointer-events: auto;
-      @include nz-widget-opacity;
-      grid-area: button;
-    }
+  >.nz-navigation-aid-container {
+    margin-bottom: 6px;
+    pointer-events: auto;
+    @include nz-widget-opacity;
+    grid-area: button;
+  }
 
-    > .nz-vertical-toolbar-container {
-      grid-area: vtools;
-      height: calc(100% - 60px);
-      display: inline-flex;
-      flex-direction: column;
-      align-items: flex-end;
-      @include nz-widget-opacity;
-    }
+  >.nz-vertical-toolbar-container {
+    grid-area: vtools;
+    height: calc(100% - 60px);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    @include nz-widget-opacity;
+  }
 
-  > .nz-horizontal-toolbar-container {
+  >.nz-horizontal-toolbar-container {
     grid-area: htools;
 
     width: 100%;
-    > .components-toolbar-overflow-sizer{
+
+    >.components-toolbar-overflow-sizer {
       display: flex;
       justify-content: flex-end;
     }
+
     @include nz-widget-opacity;
   }
 }

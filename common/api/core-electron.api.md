@@ -4,9 +4,11 @@
 
 ```ts
 
+/// <reference types="electron" />
+
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { BrowserWindow } from 'electron';
-import { BrowserWindowConstructorOptions } from 'electron';
+import type { BrowserWindow } from 'electron';
+import type { BrowserWindowConstructorOptions } from 'electron';
 import { ExtractLiterals } from '@itwin/core-bentley';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
@@ -91,7 +93,6 @@ export interface WindowSizeAndPositionProps {
     // (undocumented)
     y: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

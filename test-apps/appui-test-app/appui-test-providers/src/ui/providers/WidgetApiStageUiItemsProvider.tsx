@@ -47,6 +47,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left WL-A</h2>,
           isFloatingStateSupported: true,
+          hideWithUiWhenFloating: true,
         });
       widgets.push(
         {
@@ -57,6 +58,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left WL-B</h2>,
           isFloatingStateSupported: true,
+          hideWithUiWhenFloating: true,
         }
       );
       // eslint-disable-next-line deprecation/deprecation
