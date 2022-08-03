@@ -9,7 +9,6 @@
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import { BackendOptions } from "i18next-http-backend";
-import XHR from "i18next-xhr-backend";
 import HTTP from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
