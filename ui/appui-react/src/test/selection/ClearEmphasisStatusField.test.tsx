@@ -63,4 +63,13 @@ describe("ClearEmphasisStatusField", () => {
     expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
   });
 
+  it("ClearEmphasisStatusField renders always with no isInFooterMode", async () => {
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
+    await IModelApp.viewManager.setSelectedView(viewportMock.object);
+
+    const component = render(<ClearEmphasisStatusField hideWhenUnused={false} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
+    expect(component).not.to.be.undefined;
+    expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
+  });
+
 });

@@ -37,7 +37,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6 webpack@4>watchpack>watchpack-chokidar2>chokidar>glob-parent
     "GHSA-rp65-9cf3-cjxr", // https://github.com/advisories/GHSA-rp65-9cf3-cjxr @bentley/react-scripts>@svgr/webpack>@svgr/plugin-svgo>svgo>css-select>nth-check
   ];
 

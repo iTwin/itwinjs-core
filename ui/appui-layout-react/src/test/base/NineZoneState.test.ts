@@ -15,6 +15,8 @@ import {
 import {
   addWidgetTabToPanelSection,
   convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
+  isTabDragDropTargetState,
+  isWidgetDragDropTargetState,
   NineZoneState,
 } from "../../appui-layout-react/base/NineZoneState";
 
@@ -25,6 +27,26 @@ describe("isHorizontalPanelState", () => {
 
   it("returns false based on side property", () => {
     isHorizontalPanelState(createVerticalPanelState("left")).should.false;
+  });
+});
+
+describe("isWidgetDragDropTargetState", () => {
+  it("returns `true`", () => {
+    isWidgetDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
+    isWidgetDragDropTargetState({ type: "floatingWidget", newFloatingWidgetId: "", size: { height: 0, width: 0 } }).should.false;
+  });
+});
+
+describe("isTabDragDropTargetState", () => {
+  it("returns `true`", () => {
+    isTabDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
+    isTabDragDropTargetState({ type: "window" }).should.false;
   });
 });
 
@@ -405,7 +427,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         (!!newState.floatingWidgets.byId.fw1).should.true;
@@ -432,7 +454,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "w1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         newState.floatingWidgets.byId.w1.bounds.should.eql({
@@ -494,8 +516,29 @@ describe("NineZoneStateReducer", () => {
       });
     });
 
+    describe("section target", () => {
+      it("should add a section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
+        state = addPanelWidget(state, "left", "w2", ["t2"]);
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_DRAG_END",
+          floatingWidgetId: "fw1",
+          target: {
+            type: "section",
+            newWidgetId: "newId",
+            side: "left",
+            sectionIndex: 1,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(3);
+        newState.panels.left.widgets[1].should.eq("newId");
+      });
+    });
+
     describe("widget target", () => {
-      it("should add widget", () => {
+      it("should add tabs to a section widget", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "w1", ["t1"]);
         state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -505,13 +548,26 @@ describe("NineZoneStateReducer", () => {
           floatingWidgetId: "fw1",
           target: {
             type: "widget",
-            newWidgetId: "newId",
-            side: "left",
-            widgetIndex: 1,
+            widgetId: "w2",
           },
         });
-        newState.panels.left.widgets.length.should.eq(3);
-        newState.panels.left.widgets[1].should.eq("newId");
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.widgets.w2.tabs.should.eql(["t2", "fwt1"]);
+      });
+
+      it("should add tabs to a floating widget", () => {
+        let state = createNineZoneState();
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
+        state = addFloatingWidget(state, "fw2", ["fwt2"]);
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_DRAG_END",
+          floatingWidgetId: "fw1",
+          target: {
+            type: "widget",
+            widgetId: "fw2",
+          },
+        });
+        newState.widgets.fw2.tabs.should.eql(["fwt2", "fwt1"]);
       });
     });
 
@@ -1020,7 +1076,7 @@ describe("NineZoneStateReducer", () => {
       });
     });
 
-    describe("widget target", () => {
+    describe("section target", () => {
       it("should add widget", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "leftStart", ["t1"]);
@@ -1033,10 +1089,10 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "widget",
+            type: "section",
             newWidgetId: "leftEnd",
             side: "left",
-            widgetIndex: 1,
+            sectionIndex: 1,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
@@ -1056,17 +1112,42 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "widget",
-            newWidgetId: "",
+            type: "section",
+            newWidgetId: "nw1",
             side: "left",
-            widgetIndex: 1,
+            sectionIndex: 1,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
         newState.panels.left.widgets[0].should.eq("leftStart");
-        newState.panels.left.widgets[1].should.eq("leftEnd");
+        newState.panels.left.widgets[1].should.eq("nw1");
       });
 
+      it("should add widget to new panel start section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "section",
+            newWidgetId: "nw1",
+            side: "left",
+            sectionIndex: 0,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.panels.left.widgets[0].should.eq("nw1");
+        newState.panels.left.widgets[1].should.eq("leftEnd");
+      });
+    });
+
+    describe("widget target", () => {
       it("should add widget to existing end panel section", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
@@ -1080,9 +1161,7 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 1,
+            widgetId: "leftEnd",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
@@ -1102,18 +1181,16 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 0,
+            widgetId: "leftStart",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
         newState.panels.left.widgets[0].should.eq("leftStart");
       });
 
-      it("should add widget to new panel start section", () => {
+      it("should add tabs to a floating widget", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
         state = produce(state, (draft) => {
           draft.draggedTab = createDraggedTabState("dt", {
             position: new Point(100, 200).toProps(),
@@ -1124,14 +1201,10 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 0,
+            widgetId: "fw1",
           },
         });
-        newState.panels.left.widgets.length.should.eq(2);
-        newState.panels.left.widgets[0].should.eq("leftStart");
-        newState.panels.left.widgets[1].should.eq("leftEnd");
+        newState.widgets.fw1.tabs.should.eql(["fwt1", "dt"]);
       });
     });
 

@@ -71,6 +71,7 @@ Rules for acquiring locks:
 - You may only obtain the Exclusive lock on an Element if your `BriefcaseDb.changeset.index` is equal or greater than the [ChangesetIndex]($common) specified the last time the lock was released. That is, you may only acquire the Exclusive lock on an Element if your briefcase holds its most recent state.
 - You cannot obtain a Shared lock on an Element while the Exclusive lock is held by another briefcase.
 - An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent, if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy, if they are not already held. If any required lock is unavailable, no locks are obtained.
+- Acquiring the exclusive lock on a model (via its modeled element) implicitly acquires the exclusive lock on all its elements. Likewise, acquiring the exclusive lock on an element implicitly acquires the exclusive lock on its children.
 
 The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can be *holding any* locks. Further, while the Schema Lock is held, no other briefcases may *obtain any* locks.
 

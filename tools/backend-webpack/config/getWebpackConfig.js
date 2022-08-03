@@ -13,11 +13,11 @@ function getWebpackConfig(srcFile, outDir, profile) {
     mode: process.env.NODE_ENV,
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
-    entry: [
-      srcFile
-    ],
+    entry: [srcFile],
     output: {
-      libraryTarget: "commonjs2",
+      library: {
+        type: "commonjs2",
+      },
       // The build folder.
       // Next line is not used in dev but WebpackDevServer crashes without it:
       path: outDir,
@@ -39,7 +39,11 @@ function getWebpackConfig(srcFile, outDir, profile) {
     node: {
       __dirname: false,
       __filename: false,
-    }
+    },
+    stats: process.env.NODE_ENV === "production" ? "errors-warnings" : "verbose",
+    externalsPresets: {
+      electron: true,
+    },
   };
 };
 

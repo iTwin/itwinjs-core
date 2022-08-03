@@ -56,8 +56,12 @@ exports[`FloatingWidgets should render 1`] = `
     </div>
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
   <div
     class="nz-widget-floatingWidget_handle nz-left"
   />

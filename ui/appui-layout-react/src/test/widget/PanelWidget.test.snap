@@ -65,8 +65,12 @@ exports[`PanelWidget should render 1`] = `
     </div>
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -119,8 +123,12 @@ exports[`PanelWidget should render horizontal with fit-content 1`] = `
     />
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -189,8 +197,12 @@ exports[`PanelWidget should render minimized 1`] = `
     </div>
   </div>
   <div
-    class="nz-widget-content-container nz-minimized"
-  />
+    class="nz-widget-contentContainer nz-minimized"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -260,7 +272,11 @@ exports[`PanelWidget should render with fit-content 1`] = `
     </div>
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
