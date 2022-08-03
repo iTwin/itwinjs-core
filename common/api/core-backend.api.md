@@ -189,6 +189,7 @@ import { StatusCodeWithMessage } from '@itwin/core-bentley';
 import { StorageValue } from '@itwin/core-common';
 import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryProps } from '@itwin/core-common';
+import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TelemetryManager } from '@itwin/core-telemetry';
@@ -383,7 +384,7 @@ export enum BackendLoggerCategory {
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas",
     // @internal
-    ViewStateHydrater = "core-backend.ViewStateHydrater"
+    ViewStateHydrator = "core-backend.ViewStateHydrator"
 }
 
 // @internal
@@ -2393,6 +2394,8 @@ export abstract class IModelDb extends IModel {
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
+    // @internal
+    querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
