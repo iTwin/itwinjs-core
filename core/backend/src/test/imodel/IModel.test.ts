@@ -2,29 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64Array, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
-  FontMap, FontType, GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
+  FontMap, FontType, GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElement2dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
-  Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
+  Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point2d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
-  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
   Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
@@ -53,7 +52,243 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-describe("iModel", () => {
+/*
+  DFS
+    subModels:                definitionModels:
+      [0] DrawingModel          [0] DefinitionModel
+      [1] DocumentListModel
+      [2] PhysicalModel
+
+    looseElements:            looseDefinitionElements:
+      [0] DocumentList
+      [1] PhysicalPartition
+
+    parentElement:
+      Job Subject
+
+    1. Delete sub-models in bottom-up order
+    Delete DrawingModel, DocumentListModel, PhysicalModel
+    2. Delete loose elements in bottom-up order
+    Delete DocumentList, PhysicalPartition (these will already be gone)
+    3. Delete definition models in bottom-up order
+    Delete DefinitionModel
+    4. Delete loose definition elements in order
+    (none)
+    5. Delete parent
+    Delete Job Subject
+*/
+
+/** Do a depth first search on the tree defined by an element and its submodels and children.
+ * Record the models and elements visited in order.
+ * Must be subclassed. The shouldExploreModel filter methods controls depth.
+ * shouldReportElement and shouldReportModel control reporting.
+ * Reports definition elements and separately from
+ */
+abstract class ElementTreeReporter {
+  constructor(protected _imodel: IModelDb) { }
+
+  /** Return true if the reporter should recurse into this model  */
+  public shouldExploreModel(_model: Model): boolean { return true; }
+  /** Return true if the reporter should report this element  */
+  public shouldReportElement(_elid: Id64String): boolean { return true; }
+  /** Return true if the reporter should report this model  */
+  public shouldReportModel(_model: Model): boolean { return true; }
+
+  public abstract reportModel(model: Model, inDefinitionModel: boolean): void;
+  public abstract reportElement(elid: Id64String, inDefinitionModel: boolean): void;
+
+  protected processElementTree(element: Id64String, inDefinitionModel: boolean) {
+    const subModel = this._imodel.models.tryGetModel<Model>(element);
+    if (subModel !== undefined)
+      this.visitSubModel(subModel, (subModel instanceof DefinitionModel)); // all elements in a DefinitionModel are DefinitionElements or InformationContentElements (https://www.itwinjs.org/bis/domains/biscore.ecschema/#definitionmodel)
+
+    for (const childElement of this._imodel.elements.queryChildren(element))
+      this.visitChildElement(childElement, inDefinitionModel);
+
+    this.visitElement(element, inDefinitionModel);
+  }
+
+  public visitSubModel(model: Model, isDefinitionModel: boolean) {
+    if (this.shouldExploreModel(model))
+      this.processElementsInModel(model, isDefinitionModel); // => explore elements in the model - invokes onElementInModel with each
+
+    if (this.shouldReportModel(model))
+      this.reportModel(model, isDefinitionModel);
+  }
+
+  public processElementsInModel(model: Model, inDefinitionModel: boolean): void {
+    model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=?`, (stmt) => {
+      stmt.bindId(1, model.id);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const elid = stmt.getValue(0).getId();
+        this.visitElementInModel(model, inDefinitionModel, elid);
+      }
+    });
+  }
+
+  public visitElementInModel(_model: Model, inDefinitionModel: boolean, elid: Id64String) {
+    this.processElementTree(elid, inDefinitionModel);
+  }
+
+  public visitChildElement(elid: Id64String, inDefinitionModel: boolean) {
+    this.processElementTree(elid, inDefinitionModel);
+  }
+
+  public visitElement(elid: Id64String, inDefinitionModel: boolean) {
+    if (this.shouldReportElement(elid))
+      this.reportElement(elid, inDefinitionModel);
+  }
+}
+
+class ElementTreeDumper extends ElementTreeReporter {
+  private _subModels: Id64Array = [];
+  private _definitionModels: Id64Array = [];
+  private _elements: Id64Array = [];
+  private _definitions: Id64Array = [];
+
+  public constructor(imodel: IModelDb) { super(imodel); }
+
+  // public override shouldReportElement(elid: Id64String): boolean {
+  //   return !this._subModels.includes(elid); // don't report partition elements
+  // }
+
+  public reportModel(model: Model, isDefinitionModel: boolean): void {
+    if (isDefinitionModel)
+      this._definitionModels.push(model.id);
+    else
+      this._subModels.push(model.id);
+  }
+
+  public reportElement(elid: Id64String, inDefinitionModel: boolean): void {
+    if (inDefinitionModel)
+      this._definitions.push(elid); // may be some other kind of InformationContentElement - that's OK.
+    else
+      this._elements.push(elid);
+  }
+
+  private dump() {
+    console.log("subModels");
+    for (const mid of this._subModels) {
+      const m = this._imodel.models.getModelProps(mid);
+      console.log(`${m.id} ${m.classFullName} ${m.name}`);
+    }
+
+    console.log("definitionModels");
+    for (const mid of this._definitionModels) {
+      const m = this._imodel.models.getModelProps(mid);
+      console.log(`${m.id} ${m.classFullName} ${m.name}`);
+    }
+
+    console.log("elements");
+    for (const eid of this._elements) {
+      const e = this._imodel.elements.getElementProps(eid);
+      console.log(`${e.id} ${e.classFullName} ^${e.parent?.id} ${e.code.value}`);
+    }
+
+    console.log("definitions");
+    for (const eid of this._definitions) {
+      const e = this._imodel.elements.getElementProps(eid);
+      console.log(`${e.id} ${e.classFullName} ^${e.parent?.id} ${e.code.value}`);
+    }
+  }
+
+  public report(topElement: Id64String): void {
+    this.processElementTree(topElement, false);
+    this.dump();
+  }
+}
+
+class ReportIndividualElements extends ElementTreeDumper {
+  public constructor(imodel: IModelDb, private _elementsToReport: Id64Array) { super(imodel); }
+  public override shouldExploreModel(_model: Model): boolean { return true; }
+  public override shouldReportModel(_model: Model): boolean { return false; }
+  public override shouldReportElement(elid: Id64String): boolean { return this._elementsToReport.includes(elid); }
+}
+
+class DeleteEntireTree extends ElementTreeReporter {
+  private _definitionModels: Id64Array = [];
+  private _definitions: Id64Array = [];
+  private _subjects: Id64Array = [];
+
+  public constructor(imodel: IModelDb, private _topElement: Id64String) { super(imodel); }
+
+  public override shouldExploreModel(_model: Model): boolean { return true; }
+  public override shouldReportElement(_elid: Id64String): boolean { return true; }
+
+  public override reportModel(model: Model, isDefinitionModel: boolean): void {
+    // model contents were already processed + deleted
+    if (isDefinitionModel)
+      this._definitionModels.push(model.id);
+    else
+      model.delete();
+  }
+
+  public override reportElement(elid: Id64String, inDefinitionModel: boolean): void {
+    if (inDefinitionModel) {
+      this._definitions.push(elid); // may be some other kind of InformationContentElement - that's OK.
+    } else if (this._imodel.elements.tryGetElement<Subject>(elid, Subject) !== undefined) {
+      this._subjects.push(elid);
+    } else if (this._definitionModels.includes(elid)) {
+      // this is a DefinitionPartition. We will delete it in deleteDefinitions
+    } else {
+      try {
+        this._imodel.elements.deleteElement(elid);
+      } catch (err) {
+        // we sometimes see child elements twice when traversing a model.
+        if (!(err instanceof IModelError) || err.errorNumber !== IModelStatus.NotFound)
+          throw err;
+      }
+    }
+  }
+
+  protected deleteNormalElementsAndSubModels(): void {
+    this.processElementTree(this._topElement, false);
+  }
+
+  protected deleteDefinitions(): void {
+    this._imodel.elements.deleteDefinitionElements(this._definitions);
+
+    for (const m of this._definitionModels) {
+      try {
+        this._imodel.models.deleteModel(m);
+        this._imodel.elements.deleteElement(m);
+      } catch (err) {
+        // will fail if some of the definitions in the model could not be deleted
+      }
+    }
+  }
+
+  protected deleteSubjects(): void {
+    for (const e of this._subjects) {
+      this._imodel.elements.deleteElement(e);
+    }
+  }
+
+  public deleteElementTree(): void {
+    this.deleteNormalElementsAndSubModels();
+    this.deleteDefinitions();
+    this.deleteSubjects();
+  }
+}
+
+function doesElementExist(imodel: IModelDb, elid: Id64String): boolean {
+  return imodel.elements.tryGetElementProps(elid) !== undefined;
+}
+
+function doesModelExist(imodel: IModelDb, mid: Id64String): boolean {
+  return imodel.models.tryGetModelProps(mid) !== undefined;
+}
+
+function doesGroupRelationshipExist(imodel: IModelDb, source: Id64String, target: Id64String): boolean {
+  return imodel.withPreparedStatement(`select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`, (stmt) => {
+    stmt.bindId(1, source);
+    stmt.bindId(2, target);
+    stmt.step();
+    return stmt.getValue(0).getInteger() !== 0;
+  });
+}
+
+describe.only("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -1328,6 +1563,112 @@ describe("iModel", () => {
         modeledElement: { id: "0x10000000bad" },
       });
     }, IModelError);
+  });
+
+  it.only("delete element tree with nested models", () => {
+
+    const testImodel = imodel1;
+
+    /*
+      [RepositoryModel]
+        Job Subject
+        +- Child Subject
+        |   |
+        |   + DefinitionParitition
+        |                  --   [DefinitionModel]
+        |                        DrawingCategory
+        |                        SpatialCategory
+        |
+        +- DocumentList    --   [DocumentListModel]
+        |                         Drawing             -- [DrawingModel]
+        |                                                  DrawingGraphic
+        |
+        +- PhysicalPartition -- [PhysicalModel]
+                                  PhysicalObject
+    */
+
+    // const repositoryLinkId = IModelTestUtils.insertRepositoryLink(testImodel, "test link", "foo", "bar");
+    const jobSubjectId = IModelTestUtils.createJobSubjectElement(testImodel, "Job").insert();
+
+    const childSubject = Subject.insert(testImodel, jobSubjectId, "Child Subject");
+
+    const definitionModelId = DefinitionModel.insert(testImodel, childSubject, "Definition");
+    const spatialCategoryId = SpatialCategory.insert(testImodel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+    const drawingCategoryId = DrawingCategory.insert(testImodel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+
+    const documentListModelId = DocumentListModel.insert(testImodel, jobSubjectId, "Document");
+    assert.isTrue(Id64.isValidId64(documentListModelId));
+    const drawingModelId = Drawing.insert(testImodel, documentListModelId, "Drawing");
+    const drawingGraphicProps1: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic1",
+      geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
+      placement: { origin: Point2d.create(2, 2), angle: 0 },
+    };
+    const drawingGraphicId1 = testImodel.elements.insertElement(drawingGraphicProps1);
+
+    const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, PhysicalPartition.createCode(testImodel, jobSubjectId, "Physical"), false, jobSubjectId);
+    const elementProps: GeometricElementProps = {
+      classFullName: "TestBim:TestPhysicalObject",
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
+
+    const physicalObjectId1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
+    const physicalObjectId2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
+    const physicalObjectId3 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
+    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId2).insert();
+    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId3).insert();
+
+    assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, childSubject);
+    assert.equal(testImodel.elements.getElement(spatialCategoryId).model, definitionModelId);
+    assert.equal(testImodel.elements.getElement(drawingCategoryId).model, definitionModelId);
+    assert.equal(testImodel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
+    assert.equal(testImodel.elements.getElement(drawingModelId).model, documentListModelId);
+    assert.equal(testImodel.elements.getElement(drawingGraphicId1).model, drawingModelId);
+    assert.equal(testImodel.elements.getElement(physicalModelId).parent?.id, jobSubjectId);
+    assert.equal(testImodel.elements.getElement(physicalObjectId1).model, physicalModelId);
+    assert.equal(testImodel.elements.getElement(physicalObjectId2).model, physicalModelId);
+    assert.equal(testImodel.elements.getElement(physicalObjectId3).model, physicalModelId);
+    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
+    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
+    assert.isTrue(doesModelExist(testImodel, definitionModelId));
+    assert.isTrue(doesModelExist(testImodel, drawingModelId));
+    assert.isTrue(doesModelExist(testImodel, physicalModelId));
+
+    console.log("The tree of elements and submodels");
+    const del1 = new ElementTreeDumper(testImodel);
+    del1.report(jobSubjectId);
+
+    console.log("Selected individual elements down in the models");
+    const del2 = new ReportIndividualElements(testImodel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
+    del2.report(jobSubjectId);
+
+    const del3 = new DeleteEntireTree(testImodel, jobSubjectId);
+    del3.deleteElementTree();
+
+    assert.isFalse(doesElementExist(testImodel, definitionModelId));
+    assert.isFalse(doesElementExist(testImodel, spatialCategoryId));
+    assert.isFalse(doesElementExist(testImodel, drawingCategoryId));
+    assert.isFalse(doesElementExist(testImodel, documentListModelId));
+    assert.isFalse(doesElementExist(testImodel, drawingModelId));
+    assert.isFalse(doesElementExist(testImodel, drawingGraphicId1));
+    assert.isFalse(doesElementExist(testImodel, physicalModelId));
+    assert.isFalse(doesElementExist(testImodel, physicalObjectId1));
+    assert.isFalse(doesElementExist(testImodel, physicalObjectId2));
+    assert.isFalse(doesElementExist(testImodel, physicalObjectId3));
+    assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
+    assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
+    assert.isFalse(doesElementExist(testImodel, jobSubjectId));
+    assert.isFalse(doesModelExist(testImodel, definitionModelId));
+    assert.isFalse(doesModelExist(testImodel, drawingModelId));
+    assert.isFalse(doesModelExist(testImodel, physicalModelId));
+    assert.isTrue(doesModelExist(testImodel, IModel.repositoryModelId));
+    assert.isTrue(doesModelExist(testImodel, IModel.dictionaryId));
   });
 
   it("should create model with custom relationship to modeled element", async () => {
