@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import { DbResult, SpanKind } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { convertToReadableSpans, filterDiagnostics, getElementKey, normalizeVersion, Resource } from "../presentation-backend/Utils";
+import { convertToReadableSpans, filterDiagnostics, getElementKey, normalizeVersion, Resource, SpanStatusCode } from "../presentation-backend/Utils";
 import { Diagnostics } from "@itwin/presentation-common";
 
 describe("getElementKey", () => {
@@ -180,7 +180,7 @@ describe("convertToReadableSpans", () => {
     kind: SpanKind.INTERNAL,
     links: [],
     resource: { attributes: { "service.name": "iTwin.js Presentation" } },
-    status: { code: 0 },
+    status: { code: SpanStatusCode.UNSET },
   };
 
   it("converts empty logs to empty readable spans", () => {

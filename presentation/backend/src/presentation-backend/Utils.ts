@@ -96,7 +96,10 @@ function filterScopeLogs(logs: DiagnosticsScopeLogs, duration: number): Diagnost
 /** @alpha */
 export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 
-/** @alpha */
+/**
+ * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js)
+ * @alpha
+ */
 export interface ReadableSpan {
   name: string;
   kind: SpanKind;
@@ -104,7 +107,7 @@ export interface ReadableSpan {
   parentSpanId?: string;
   startTime: HrTime;
   endTime: HrTime;
-  status: { code: number };
+  status: { code: SpanStatusCode };
   attributes: Attributes;
   links: [];
   events: TimedEvent[];
@@ -118,16 +121,15 @@ export interface ReadableSpan {
 export type HrTime = [number, number];
 
 /** @internal */
-export class Resource {
-  public attributes: Attributes;
+export enum SpanStatusCode {
+  UNSET = 0,
+  OK = 1,
+  ERROR = 2
+}
 
-  constructor(attributes: Attributes) {
-    this.attributes = attributes;
-  }
-
-  public merge(other: Resource | null): Resource {
-    return new Resource({ ...this.attributes, ...other?.attributes });
-  }
+/** @internal */
+interface Attributes  {
+  [attributeKey: string]: string;
 }
 
 /** @internal */
@@ -138,8 +140,16 @@ export interface TimedEvent {
 }
 
 /** @internal */
-interface Attributes  {
-  [attributeKey: string]: string;
+export class Resource {
+  public attributes: Attributes;
+
+  constructor(attributes: Attributes) {
+    this.attributes = attributes;
+  }
+
+  public merge(other: Resource | null): Resource {
+    return new Resource({ ...this.attributes, ...other?.attributes });
+  }
 }
 
 /** @internal */
@@ -186,7 +196,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     ...(parentSpanId ? { parentSpanId } : undefined),
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
     endTime: millisToHrTime(logs.scopeCreateTimestamp + logs.duration),
-    status: { code: 0 },
+    status: { code: SpanStatusCode.UNSET },
     attributes: {},
     links: [],
     events,
@@ -195,7 +205,6 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     resource: new Resource({ "service.name": "iTwin.js Presentation" }),
     instrumentationLibrary: { name: "" },
   };
-
   spans.push(span);
 
   return spans;
