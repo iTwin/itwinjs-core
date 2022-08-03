@@ -30,7 +30,6 @@ import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -285,7 +284,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  /** See [DisplayStyleSettings.analysisStyle]($common). */
   public get analysisStyle(): AnalysisStyle | undefined {
     return this.displayStyle.settings.analysisStyle;
   }
@@ -298,8 +297,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this.displayStyle.scheduleState;
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line deprecation/deprecation
+    return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
   }
 
   /** Get the globe projection mode.
@@ -350,6 +349,11 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    // If the iModel associated with the viewState is a blankConnection,
+    // then no data can be retrieved from the backend.
+    if (this.iModel.isBlank)
+      return;
+
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
     const promises = [

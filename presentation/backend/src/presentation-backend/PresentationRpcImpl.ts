@@ -7,7 +7,7 @@
  */
 
 import { IModelDb } from "@itwin/core-backend";
-import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   ClientDiagnostics, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
@@ -44,6 +44,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
+  private _cancelEvents: Map<string, BeEvent<() => void>>;
 
   public constructor(props?: { requestTimeout: number }) {
     super();
@@ -57,10 +58,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       cleanupInterval: 1000,
 
       cleanupHandler: (id, _, reason) => {
-        if (reason !== "request")
+        if (reason !== "request") {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+          // istanbul ignore next
+          this._cancelEvents.get(id)?.raiseEvent();
+        }
+        this._cancelEvents.delete(id);
       },
     });
+    this._cancelEvents = new Map<string, BeEvent<() => void>>();
   }
 
   public dispose() {
@@ -127,6 +133,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const managerRequestOptions: any = {
         ...options,
         imodel,
+        cancelEvent: new BeEvent<() => void>(),
       };
 
       // set up ruleset variables
@@ -165,6 +172,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
+      this._cancelEvents.set(requestKey, managerRequestOptions.cancelEvent);
     }
 
     if (this._requestTimeout === 0) {
@@ -254,10 +262,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         keys: KeySet.fromJSON(options.keys),
       };
-      const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(options);
-      if (descriptor)
-        return descriptor.toJSON();
-      return undefined;
+      if (options.transport === "unparsed-json") {
+        // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
+        // bypassing unnecessary deserialization and serialization.
+        return Presentation.getManager().getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
+      } else {
+        // Support for older frontends that still expect a parsed descriptor
+        const descriptor = await Presentation.getManager().getContentDescriptor(options);
+        return descriptor?.toJSON();
+      }
     });
   }
 

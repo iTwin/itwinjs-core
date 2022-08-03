@@ -2,6 +2,36 @@
   "name": "@bentley/imodelbank-client",
   "entries": [
     {
+      "version": "3.2.7",
+      "tag": "@bentley/imodelbank-client_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@bentley/imodelbank-client_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@bentley/imodelbank-client_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@bentley/imodelbank-client_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@bentley/imodelbank-client_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.2",
       "tag": "@bentley/imodelbank-client_v3.2.2",
       "date": "Fri, 10 Jun 2022 16:11:36 GMT",

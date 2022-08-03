@@ -21,7 +21,8 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
 
-const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
+/** @internal */
+export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
 export class ResponseLike implements Response {
@@ -111,8 +112,13 @@ export abstract class RpcRequest<TResponse = any> {
   private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
-  private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
-  private _extendedStatus: string = "";
+
+  /** @internal */
+  public _status: RpcRequestStatus = RpcRequestStatus.Unknown;
+
+  /** @internal */
+  public _extendedStatus: string = "";
+
   private _connecting: boolean = false;
   private _active: boolean = true;
   private _hasRawListener = false;
@@ -123,7 +129,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
-  protected responseProtocolVersion = 0;
+  public responseProtocolVersion = RpcProtocolVersion.None;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -267,11 +273,6 @@ export abstract class RpcRequest<TResponse = any> {
     this._lastUpdated = new Date().getTime();
   }
 
-  /** Override to describe available headers based on a protocol-specific criteria (such as a CORS whitelist). */
-  protected isHeaderAvailable(_name: string): boolean {
-    return true;
-  }
-
   protected computeRetryAfter(attempts: number) {
     return (((Math.pow(2, attempts) - 1) / 2) * 500) + 500;
   }
@@ -323,7 +324,6 @@ export abstract class RpcRequest<TResponse = any> {
       this._connecting = true;
       RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      await this.protocol.initialize(this.operation.policy.token(this));
       this._sending = new Cancellable(this.setHeaders().then(async () => this.send()));
       this.operation.policy.sentCallback(this);
 
@@ -416,7 +416,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
       const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
-      value.objects = managedStatus.responseValue;
+      value.objects = managedStatus.responseValue as string;
 
       if (managedStatus.managedStatus === "pending") {
         status = RpcRequestStatus.Pending;
@@ -564,9 +564,8 @@ export abstract class RpcRequest<TResponse = any> {
 
   protected async setHeaders(): Promise<void> {
     const versionHeader = this.protocol.protocolVersionHeaderName;
-    if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
+    if (versionHeader && RpcProtocol.protocolVersion)
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
-    }
 
     const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
     const headerValues = await RpcConfiguration.requestContext.serialize(this);

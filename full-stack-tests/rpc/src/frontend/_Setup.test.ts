@@ -5,16 +5,16 @@
 
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces, TestRpcInterface } from "../common/TestRpcInterface";
-import { assert } from "chai";
+import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
-RpcConfiguration.disableRoutingValidation = false;
+RpcConfiguration.disableRoutingValidation = true;
 
 function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
@@ -64,20 +64,18 @@ before(async () => {
       return initializeCloud("http");
     case "electron":
       return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
+    case "websocket":
+      let socketUrl = new URL(window.location.toString());
+      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+
+      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
+      return LocalhostIpcApp.startup({ localhostIpcApp: { socketUrl } });
   }
 });
 
-describe("BentleyCloudRpcManager", () => {
-  it("should initialize correctly when routing validation is enabled", async () => {
-    if (currentEnvironment === "http") {
-      const protocol = TestRpcInterface.getClient().configuration.protocol as WebAppRpcProtocol;
-      assert.equal(protocol.allowedHeaders.size, 0);
-      await TestRpcInterface.getClient().op16({ iModelId: "foo", key: "bar" }, { iModelId: "foo", key: "bar" });
-      assert.isAtLeast(protocol.allowedHeaders.size, 1);
-    }
-  });
-
-  after(() => {
-    RpcConfiguration.disableRoutingValidation = true;
-  });
+after(async () => {
+  if (currentEnvironment === "websocket") {
+    await IModelApp.shutdown();
+  }
 });

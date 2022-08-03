@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { CheckpointProps } from "./CheckpointManager";
@@ -102,7 +101,6 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot!);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     IModelJsFs.removeSync(this.mockRoot!);
-    sinon.restore();
     IModelHost.setHubAccess(this._saveHubAccess);
     this.mockRoot = undefined;
   }
@@ -181,11 +179,11 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps> {
+  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
     return this.findLocalHub(arg.iModelId).downloadChangeset({ index: this.changesetIndexFromArg(arg), targetDir: arg.targetDir });
   }
 
-  public static async downloadChangesets(arg: ChangesetRangeArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps[]> {
+  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
     return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: arg.targetDir });
   }
 
@@ -205,10 +203,7 @@ export class HubMock {
     return undefined;
   }
 
-  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
-  }
-
+  // eslint-disable-next-line deprecation/deprecation
   public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }

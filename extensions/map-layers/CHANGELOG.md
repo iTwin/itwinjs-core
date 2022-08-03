@@ -1,6 +1,36 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Fri, 10 Jun 2022 16:11:37 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Aug 2022 13:36:56 GMT and should not be manually modified.
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+### Updates
+
+- Use a different resize observer technique to ensure the controlled tree in map suplayer popup is properly sized.
+- Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+### Updates
+
+- Made public MapLayers related objects, methods.
 
 ## 3.2.2
 Fri, 10 Jun 2022 16:11:37 GMT

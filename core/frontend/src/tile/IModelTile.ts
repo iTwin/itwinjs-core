@@ -120,6 +120,7 @@ export class IModelTile extends Tile {
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
+      timeline: tree.timeline,
       iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
     });
 

@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -169,37 +169,63 @@ export class PresentationRpcInterface extends RpcInterface {
   ===========================================================================================*/
 
   public async getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
+
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> { return this.forward(arguments); }
 
   // TODO: add paged version of this (#387280)
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
+
   // TODO: add paged version of this (#387280)
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
 
   /** @beta */
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
-  public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> { return this.forward(arguments); }
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
+  public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
+    arguments[1] = { ...arguments[1], transport: "unparsed-json" };
+    const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
+    if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
+      response.result = JSON.parse(response.result);
+    }
+
+    return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
+  }
+
   public async getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
+
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> { return this.forward(arguments); }
+
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
   /** @beta */
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> { return this.forward(arguments); }
 
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
   /** @beta */
   public async getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{ total: number, items: KeySetJSON }> { return this.forward(arguments); }
 
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
+
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinitionJSON>> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
+
   // TODO: need to enforce paging on this
   public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
   /** @alpha */
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions, _ids?: Id64String[], _scopeId?: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 }
 

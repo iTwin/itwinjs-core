@@ -22,7 +22,7 @@ import * as viewMod from "./ViewDefinition";
 import * as displayStyleMod from "./DisplayStyle";
 
 /**
- * The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.
+ * The [BisCore]($docs/bis/guide/fundamentals/schemas-domains.md) schema is the lowest level Schema in an iModel.
  *
  * It is automatically registered when [[IModelHost.startup]] is called.
  *

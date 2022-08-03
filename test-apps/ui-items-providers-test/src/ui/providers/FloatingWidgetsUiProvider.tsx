@@ -37,6 +37,7 @@ export class FloatingWidgetsUiProvider implements UiItemsProvider {
         defaultState: WidgetState.Floating,
         isFloatingStateSupported: true,
         floatingContainerId: "ui-item-provider-test:ViewAttributesWidget",
+        hideWithUiWhenFloating: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
           return <ViewAttributesWidgetComponent />;

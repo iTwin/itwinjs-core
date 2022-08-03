@@ -191,7 +191,7 @@ describe("Class Registry - generated classes", () => {
   }
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
-  it("should only generate automatic collectPredecessorIds implementations for generated classes", async () => {
+  it("should only generate automatic collectReferenceIds implementations for generated classes", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -213,25 +213,25 @@ describe("Class Registry - generated classes", () => {
     } as TestElementWithNavPropProps, imodel);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(GeneratedTestElementWithNavProp.prototype.getPredecessorIds);
+    assert.isDefined(GeneratedTestElementWithNavProp.prototype.getReferenceIds);
     expect(
-      [...elemWithNavProp.getPredecessorIds()],
+      [...elemWithNavProp.getReferenceIds()],
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, testEntityId]
     );
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestNonElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestNonElementWithNavProp");
-    assert.isFalse(GeneratedTestNonElementWithNavProp.prototype.hasOwnProperty("collectPredecessorIds"));
+    assert.isFalse(GeneratedTestNonElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
   });
 
-  it("should not override collectPredecessorIds for BisCore schema classes", async () => {
-    // AnnotationFrameStyle is an example of an unregistered bis class without an implementation of collectPredecessorIds
+  it("should not override collectReferenceIds for BisCore schema classes", async () => {
+    // AnnotationFrameStyle is an example of an unregistered bis class without an implementation of collectReferenceIds
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    assert.isTrue(imodel.getJsClass("BisCore:AnnotationFrameStyle").prototype.hasOwnProperty("collectPredecessorIds"));
+    assert.isTrue(imodel.getJsClass("BisCore:AnnotationFrameStyle").prototype.hasOwnProperty("collectReferenceIds"));
   });
 
-  it("should get predecessors from its bis superclass", async () => {
+  it("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -263,20 +263,20 @@ describe("Class Registry - generated classes", () => {
       }),
     } as TestElementWithNavPropProps, imodel);
 
-    // super class here is Element so we should get the code.scope, model and parent as predecessors
+    // super class here is Element so we should get the code.scope, model and parent as references
     expect(
-      [...elemWithNavProp.getPredecessorIds()],
+      [...elemWithNavProp.getReferenceIds()],
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testEntityId].filter((x) => x !== undefined)
     );
   });
 
-  it("should not override custom registered schema class implementations of collectPredecessorIds", async () => {
-    const testImplPredecessorId = "TEST-INVALID-ID";
+  it("should not override custom registered schema class implementations of collectReferenceIds", async () => {
+    const testImplReferenceId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
-        predecessorIds.add(testImplPredecessorId);
+      public override collectReferenceIds(referenceIds: Id64Set) {
+        super.collectReferenceIds(referenceIds);
+        referenceIds.add(testImplReferenceId);
       }
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
@@ -289,7 +289,7 @@ describe("Class Registry - generated classes", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ActualTestElementWithNavProp = imodel.getJsClass<typeof MyTestElementWithNavProp>(TestElementWithNavProp.classFullName);
 
-    const testElementWithNavPropCollectPredecessorsSpy = sinon.spy(ActualTestElementWithNavProp.prototype, "collectPredecessorIds");
+    const testElementWithNavPropCollectReferencesSpy = sinon.spy(ActualTestElementWithNavProp.prototype, "collectReferenceIds");
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ActualDerivedWithNavProp = imodel.getJsClass<typeof Element>(DerivedWithNavProp.classFullName);
@@ -317,15 +317,15 @@ describe("Class Registry - generated classes", () => {
     } as TestElementWithNavPropProps, imodel);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(ActualTestElementWithNavProp.prototype.getPredecessorIds);
+    assert.isDefined(ActualTestElementWithNavProp.prototype.getReferenceIds);
     expect(
-      [...elemWithNavProp.getPredecessorIds()],
+      [...elemWithNavProp.getReferenceIds()],
     ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId].filter((x) => x !== undefined)
+      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
     );
 
-    expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
-    testElementWithNavPropCollectPredecessorsSpy.resetHistory();
+    expect(testElementWithNavPropCollectReferencesSpy.called).to.be.true;
+    testElementWithNavPropCollectReferencesSpy.resetHistory();
 
     const derivedElemWithNavProp = new ActualDerivedWithNavProp({
       classFullName: DerivedWithNavProp.classFullName,
@@ -340,16 +340,16 @@ describe("Class Registry - generated classes", () => {
     } as DerivedWithNavPropProps, imodel);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(ActualDerivedWithNavProp.prototype.getPredecessorIds);
+    assert.isDefined(ActualDerivedWithNavProp.prototype.getReferenceIds);
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
-      [...derivedElemWithNavProp.getPredecessorIds()]
+      [...derivedElemWithNavProp.getReferenceIds()]
     ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId].filter((x) => x !== undefined)
+      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
     );
     // explicitly check we called the super function
-    // (we already know its implementation was called, because testImplPredecessorId is in the derived call's result)
-    expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
+    // (we already know its implementation was called, because testImplReferenceId is in the derived call's result)
+    expect(testElementWithNavPropCollectReferencesSpy.called).to.be.true;
 
     sinon.restore();
     MyTestGeneratedClasses.unregisterSchema();
@@ -357,15 +357,15 @@ describe("Class Registry - generated classes", () => {
 
   it("should work along a complex chain of overrides", async () => {
     class MyDerived2 extends Derived2 {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
-        predecessorIds.add("derived-2");
+      public override collectReferenceIds(referenceIds: Id64Set) {
+        super.collectReferenceIds(referenceIds);
+        referenceIds.add("derived-2");
       }
     }
     class MyDerived4 extends Derived4 {
-      public override collectPredecessorIds(predecessorIds: Id64Set) {
-        super.collectPredecessorIds(predecessorIds);
-        predecessorIds.add("derived-4");
+      public override collectReferenceIds(referenceIds: Id64Set) {
+        super.collectReferenceIds(referenceIds);
+        referenceIds.add("derived-4");
       }
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
@@ -394,13 +394,13 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectPredecessorIds" )); // should have automatic impl
-    assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectPredecessorIds"));
-    assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectPredecessorIds")); // non-generated; manually implements so has method
-    assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectPredecessorIds")); // base is non-generated so it shouldn't get the automatic impl
-    assert.isTrue(ActualDerived4.prototype.hasOwnProperty("collectPredecessorIds")); // manually implements so it should have the method
-    assert.isFalse(ActualDerived5.prototype.hasOwnProperty("collectPredecessorIds")); // ancestor is non-generated so it shouldn't get the automatic impl
-    assert.isFalse(ActualDerived6.prototype.hasOwnProperty("collectPredecessorIds")); // ancestor is non-generated so it shouldn't get the automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
+    assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
+    assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
+    assert.isTrue(ActualDerived4.prototype.hasOwnProperty("collectReferenceIds")); // manually implements so it should have the method
+    assert.isFalse(ActualDerived5.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
+    assert.isFalse(ActualDerived6.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
 
     const testEntity1Id = imodel.elements.insertElement({
       classFullName: "TestGeneratedClasses:Derived6",
@@ -434,37 +434,37 @@ describe("Class Registry - generated classes", () => {
     /** it is not possible to make a spy of an already existing spy, so lazy try making one
      * this is necessary since due to prototypes, some "methods" we listen to are actually the same
      */
-    function spyCollectPredecessorIds(cls: typeof Element): sinon.SinonSpy {
-      if ((cls.prototype as any).collectPredecessorIds.isSinonProxy) {
-        return (cls.prototype as any).collectPredecessorIds;
+    function spyCollectReferenceIds(cls: typeof Element): sinon.SinonSpy {
+      if ((cls.prototype as any).collectReferenceIds.isSinonProxy) {
+        return (cls.prototype as any).collectReferenceIds;
       }
-      return sinon.spy(cls.prototype, "collectPredecessorIds" as any);
+      return sinon.spy(cls.prototype, "collectReferenceIds" as any);
     }
 
-    const elementMethodSpy = spyCollectPredecessorIds(Element);
-    const testElementWithNavPropSpy = spyCollectPredecessorIds(ActualTestElementWithNavProp);
-    const derivedWithNavPropSpy = spyCollectPredecessorIds(ActualDerivedWithNavProp);
-    const derived2Spy = spyCollectPredecessorIds(ActualDerived2);
-    const derived3Spy = spyCollectPredecessorIds(ActualDerived3);
-    const derived4Spy = spyCollectPredecessorIds(ActualDerived4);
-    const derived5Spy = spyCollectPredecessorIds(ActualDerived5);
-    const derived6Spy = spyCollectPredecessorIds(ActualDerived6);
+    const elementMethodSpy = spyCollectReferenceIds(Element);
+    const testElementWithNavPropSpy = spyCollectReferenceIds(ActualTestElementWithNavProp);
+    const derivedWithNavPropSpy = spyCollectReferenceIds(ActualDerivedWithNavProp);
+    const derived2Spy = spyCollectReferenceIds(ActualDerived2);
+    const derived3Spy = spyCollectReferenceIds(ActualDerived3);
+    const derived4Spy = spyCollectReferenceIds(ActualDerived4);
+    const derived5Spy = spyCollectReferenceIds(ActualDerived5);
+    const derived6Spy = spyCollectReferenceIds(ActualDerived6);
 
     // This demonstrates that if a generated class (Derived6) has a non-generated ancestor, it will not get a generated impl
     // instead it will just call the closest non-generated ancestor (Derived4)
-    expect([...derived6.getPredecessorIds()]).to.have.members(
+    expect([...derived6.getReferenceIds()]).to.have.members(
       [
         derived6.model,
         derived6.code.scope,
         derived6.parent?.id,
         // "TestGeneratedClasses:Derived4" is MyDerived4 above, which extends the Derived4 class, which extends up
-        // without any custom ancestor implementing collectPredecessorIds, so Element.collectPredecessorIds is called as the
+        // without any custom ancestor implementing collectReferenceIds, so Element.collectReferenceIds is called as the
         // super, and no navigation properties or other custom implementations are called so we only get "derived-4"
         "derived-4",
       ].filter((x) => x !== undefined)
     );
 
-    expect(elementMethodSpy.called).to.be.true; // this is the `super.collectPredecessorIds` call in MyDerived4
+    expect(elementMethodSpy.called).to.be.true; // this is the `super.collectReferenceIds` call in MyDerived4
     expect(testElementWithNavPropSpy.called).to.be.false;
     expect(derivedWithNavPropSpy.called).to.be.false;
 
@@ -488,7 +488,7 @@ describe("Class Registry - generated classes", () => {
           Derived4,
           Derived5, // save as above (so will be removed from set)
           Derived6, // save as above (so will be removed from set)
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     ).to.deep.equal(
       new Set(
@@ -499,7 +499,7 @@ describe("Class Registry - generated classes", () => {
           Derived2,
           Derived4,
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     );
 

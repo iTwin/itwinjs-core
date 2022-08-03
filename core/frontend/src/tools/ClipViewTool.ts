@@ -1328,8 +1328,33 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       this._clipShape = clipShape;
     } else {
       const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
-      if (undefined === clipPlanes || clipPlanes.planes.length > 12)
-        return false;
+      if (undefined === clipPlanes || clipPlanes.planes.length > 12) {
+        // Show visual representation for ClipVectors that are not supported for modification...
+        const viewRange = this._clipView.computeViewRange();
+
+        for (const primitive of clip.clips) {
+          const union = primitive.fetchClipPlanesRef();
+          if (undefined === union)
+            continue;
+
+          for (const convexSet of union.convexSets) {
+            const convexSetLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSet, viewRange, true, false, true);
+            if (undefined === convexSetLoops)
+              continue;
+
+            if (undefined === this._clipPlanesLoops)
+              this._clipPlanesLoops = convexSetLoops;
+            else
+              this._clipPlanesLoops.push(...convexSetLoops);
+          }
+        }
+
+        if (undefined === this._clipPlanesLoops)
+          return false;
+
+        this._clip = clip;
+        return true;
+      }
       const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._clipView.computeViewRange(), true, false, true);
       if (undefined !== clipPlanesLoops && clipPlanesLoops.length > clipPlanes.planes.length)
         return false;
@@ -1779,6 +1804,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
       if (undefined !== this._clipPlanesLoopsNoncontributing)
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoopsNoncontributing, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.red, vp), 1, true);
+    } else if (undefined !== this._clipPlanesLoops) {
+      ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
     }
 
     if (!this._isActive)

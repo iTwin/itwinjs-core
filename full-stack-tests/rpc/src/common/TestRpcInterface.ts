@@ -142,6 +142,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async noContent() {
     return this.forward(arguments);
   }
+
+  public async getRequestedProtocolVersion() {
+    return this.forward(arguments);
+  }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {

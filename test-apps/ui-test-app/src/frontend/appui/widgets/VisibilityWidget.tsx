@@ -12,7 +12,7 @@ import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode 
 import { Icon, WebFontIcon } from "@itwin/core-react";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
-  WidgetControl,
+  useTransientState, WidgetControl,
 } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../..";
@@ -71,6 +71,38 @@ export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   );
 }
 
+/* This hook saves and restores the scroll position of a ModelsTree. */
+function useModelsTreeTransientState() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const scrollTop = React.useRef(0);
+  const getListElement = () => {
+    if (!ref.current)
+      return undefined;
+    // Element that holds a virtualized list.
+    const element = ref.current.getElementsByClassName("ReactWindow__VariableSizeList")[0];
+    if (!element)
+      return;
+    return element as HTMLDivElement;
+  };
+  useTransientState(() => {
+    const element = getListElement();
+    if (!element)
+      return;
+    // Save scroll position.
+    scrollTop.current = element.scrollTop;
+  }, () => {
+    // Widget is rendered with height=0 when restoring, restore after resize.
+    setTimeout(() => {
+      const element = getListElement();
+      if (!element)
+        return;
+      // Restore scroll position.
+      element.scrollTop = scrollTop.current;
+    }, 0);
+  });
+  return ref;
+}
+
 interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
@@ -87,6 +119,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     onFilterApplied,
   } = useTreeFilteringState();
   const { width, height, ref } = useResizeDetector();
+  const rootElementRef = useModelsTreeTransientState();
   return (
     <>
       <Toolbar
@@ -105,7 +138,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={ref} className="ui-test-app-visibility-tree-content">
-        {width && height ? <ModelsTree
+        {width !== undefined && height !== undefined ? <ModelsTree
           {...props}
           enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
           filterInfo={{
@@ -115,6 +148,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           onFilterApplied={onFilterApplied}
           width={width}
           height={height}
+          rootElementRef={rootElementRef}
         /> : null}
       </div>
     </>
