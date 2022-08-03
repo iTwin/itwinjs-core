@@ -12,12 +12,12 @@ import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
+import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
+import { MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
+import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 import { WidgetTarget } from "../target/WidgetTarget";
@@ -44,18 +44,19 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const activeTab = tabsState[activeTabId];
   const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
   const uiIsVisible = React.useContext(UiIsVisibleContext);
+  const autoSized = isSingleTab && !userSized;
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
     const position = boundsRect.topLeft();
     return {
       ...CssProperties.transformFromPosition(position),
-      height: minimized || (isSingleTab && !userSized) ? undefined : height,
-      width: (isSingleTab && !userSized) ? undefined : width,
-      maxHeight: (isSingleTab && !userSized) ? "60%" : undefined,
-      maxWidth: (isSingleTab && !userSized) ? "60%" : undefined,
+      height: minimized || autoSized ? undefined : height,
+      width: autoSized ? undefined : width,
+      maxHeight: autoSized ? "60%" : undefined,
+      maxWidth: autoSized ? "60%" : undefined,
     };
-  }, [bounds, isSingleTab, minimized, userSized]);
+  }, [autoSized, bounds, minimized]);
   const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
@@ -88,6 +89,9 @@ FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  const dragManager = React.useContext(DragManagerContext);
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const measureNz = React.useContext(MeasureContext);
   assert(!!widget);
   assert(!!floatingWidgetId);
   const item = React.useMemo(() => ({
@@ -106,11 +110,46 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
   // never allow resizing of tool settings - always auto-fit them
   const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
 
+  const updatePosition = React.useRef(true);
+  React.useLayoutEffect(() => {
+    if (!updatePosition.current)
+      return;
+    if (!dragged)
+      return;
+    if (!dragManager.draggedItem)
+      return;
+
+    const rect = ref.current!.measure() as DOMRect;
+    let bounds = new Rectangle(rect.left, rect.top, rect.right, rect.bottom);
+    const nzBounds = measureNz();
+    const pointerPosition = dragManager.draggedItem.info.pointerPosition;
+
+    if (bounds.containsPoint(pointerPosition))
+      return;
+
+    // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
+    if (pointerPosition.x > bounds.right) {
+      const offset = pointerPosition.x - bounds.right + 20;
+      bounds = bounds.offsetX(offset);
+    }
+
+    // Adjust bounds to be relative to 9z origin
+    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+
+    dispatch({
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id: floatingWidgetId,
+      bounds: bounds.toProps(),
+    });
+    updatePosition.current = false;
+  }, [dragged, dragManager, dispatch, floatingWidgetId, measureNz]);
+  const ref = React.useRef<WidgetComponent>(null);
   return (
     <Widget
       className={className}
       widgetId={floatingWidgetId}
       style={props.style}
+      ref={ref}
     >
       <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer>

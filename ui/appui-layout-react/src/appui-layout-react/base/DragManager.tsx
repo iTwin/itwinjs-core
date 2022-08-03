@@ -564,6 +564,10 @@ export class DragManager {
   private _onDragEndEmitter = new EventEmitter<DragEventHandler>();
   private _onTargetChangedEmitter = new EventEmitter<DropTargetChangedEventHandler>();
 
+  public get draggedItem() {
+    return this._dragged;
+  }
+
   public isDragged(item: DragItem) {
     return !!this._dragged && this._dragged.item.id === item.id && this._dragged.item.type === item.type;
   }

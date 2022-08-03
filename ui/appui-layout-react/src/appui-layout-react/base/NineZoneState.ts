@@ -478,7 +478,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         },
       };
       state.widgets[action.newFloatingWidgetId] = state.widgets[action.id];
-      state.widgets[action.newFloatingWidgetId].id = action.newFloatingWidgetId;
+      const widget = state.widgets[action.newFloatingWidgetId];
+      widget.id = action.newFloatingWidgetId;
+      widget.minimized = false;
       delete state.widgets[action.id];
 
       panel.widgets.splice(widgetIndex, 1);
