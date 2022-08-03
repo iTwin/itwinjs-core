@@ -149,7 +149,7 @@ export class ElectronHost {
         nativeWindowOpen: true,
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
-      } as Electron.WebPreferences, // casting is required since nativeWindowOpen was removed in Electron 18.0
+      },
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);

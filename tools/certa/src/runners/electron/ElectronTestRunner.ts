@@ -35,7 +35,7 @@ export class ElectronTestRunner {
         contextIsolation: false,
         nativeWindowOpen: true,
         sandbox: false,
-      } as Electron.WebPreferences, // casting is required since nativeWindowOpen was removed in Electron 18.0
+      },
     });
 
     const exitElectronApp = (exitCode: number) => {
