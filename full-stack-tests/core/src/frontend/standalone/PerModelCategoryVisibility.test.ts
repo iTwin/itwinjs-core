@@ -311,7 +311,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     overrides.push({modelId: "0x1f", categoryIds: "0x17", visOverride: hide});
     await pmcv.setOverrides(overrides);
 
-    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show); // These are false. We get expected 0 to equal 1.
+    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show);
     expect(pmcv.getOverride("0x1f", "0x17")).to.equal(hide);
 
     const ovrs = new Overrides(vp);
