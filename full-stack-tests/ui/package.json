@@ -1,0 +1,17 @@
+{
+  "name": "ui-full-stack-tests",
+  "version": "0.0.0",
+  "description": "UI full stack tests",
+  "license": "MIT",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.24.1"
+  }
+}
