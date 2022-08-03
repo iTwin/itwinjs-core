@@ -343,7 +343,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const requestClass = this.supplyRequest();
     const fetchFunction = this.supplyFetch();
 
-    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
+    const path = new URL(this.path, typeof (location) !== "undefined" && location.origin !== "null" ? location.origin : undefined);
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);

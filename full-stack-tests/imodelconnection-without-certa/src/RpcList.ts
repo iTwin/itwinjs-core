@@ -6,16 +6,10 @@
 import { CheckpointConnection, IModelApp, IModelAppOptions, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, RpcInterfaceEndpoints, RpcOperation, RpcRegistry } from "@itwin/core-common";
 
-import fetch, { Request } from "node-fetch";
 import { getTestAccessToken,  TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
-
-(global as any).Request = Request;
-(global as any).fetch = fetch;
-(global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-(global as any).location = { origin: undefined }; // WebAppRpcRequest needs this
 
 export class RpcList {
   private username: string;
@@ -44,8 +38,7 @@ export class RpcList {
     if (this.additionalScopes !== undefined) {
       scope += ` ${  this.additionalScopes}`;
     }
-    console.log(scope);
-    const clientConfig: TestBrowserAuthorizationClientConfiguration = {
+      const clientConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: this.clientId,
       redirectUri: "http://localhost:5000",
       scope: scope,

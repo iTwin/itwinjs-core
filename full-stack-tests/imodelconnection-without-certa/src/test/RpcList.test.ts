@@ -8,17 +8,17 @@ import { RpcList } from "../RpcList";
 import { expect } from 'chai';
 import 'mocha';
 
-// client id = design_review_integration_tests-zk5nydb6j7w11393q2clq4x3p
 const username = process.env.RPCUsername!;
 const password = process.env.RPCPassword!;
-const contextId = "9bca3a1c-3953-43c3-93db-b7791b880b38";
-const imodelId = "40af6959-99a3-43ac-9343-c86f5d714800";
-const serviceUrl = "https://qa-api.bentley.com/imodeljs";
+const contextId = process.env.ContextId!;
+const imodelId = process.env.IModelId!;
+const serviceUrl = "https://dev-api.bentley.com/imodeljs";
 const drBackend = "navigator-backend";
 const gpBackend = "visualization";
+process.env.IMJS_URL_PREFIX = "dev-";
 
-describe("Navigator Backend", async () => {
-    it.skip("get RPC endpoint list", async () => {
+describe("Get RPC Endpoint List", async () => {
+    it.skip("Navigator Backend", async () => {
         let rpcClient: RpcList = new RpcList(serviceUrl, drBackend, "v4.0", username, password, "spa-EQsLgXswtKwwO10KEmXERA4Gg", drBackend);
 
         expect(rpcClient).not.null;

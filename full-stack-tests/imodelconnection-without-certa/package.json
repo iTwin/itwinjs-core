@@ -10,7 +10,7 @@
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "test": "mocha",
+    "test": "mocha -r jsdom-global/register -r ./src/test/setup.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "devDependencies": {
@@ -29,7 +29,7 @@
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "chai-as-promised": "^7",
-    "node-fetch": "^3.2.10",
+    "node-fetch": "^2.0.0",
     "dotenv": "^10.0.0",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
