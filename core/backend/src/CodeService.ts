@@ -10,7 +10,7 @@ import { BriefcaseDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
 
 /**
- * A readonly index of all used and reserved Codes for one or more iModels. The CodeIndex may be slightly out-of-date
+ * A readonly index of all used and reserved Codes for an iTwin. The CodeIndex may be slightly out-of-date
  * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
  * locally, this copy is always up-to-date as of those changes.
  * @alpha
