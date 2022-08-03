@@ -52,37 +52,12 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-/*
-  DFS
-    subModels:                definitionModels:
-      [0] DrawingModel          [0] DefinitionModel
-      [1] DocumentListModel
-      [2] PhysicalModel
-
-    looseElements:            looseDefinitionElements:
-      [0] DocumentList
-      [1] PhysicalPartition
-
-    parentElement:
-      Job Subject
-
-    1. Delete sub-models in bottom-up order
-    Delete DrawingModel, DocumentListModel, PhysicalModel
-    2. Delete loose elements in bottom-up order
-    Delete DocumentList, PhysicalPartition (these will already be gone)
-    3. Delete definition models in bottom-up order
-    Delete DefinitionModel
-    4. Delete loose definition elements in order
-    (none)
-    5. Delete parent
-    Delete Job Subject
-*/
-
 /** Do a depth first search on the tree defined by an element and its submodels and children.
- * Record the models and elements visited in order.
- * Must be subclassed. The shouldExploreModel filter methods controls depth.
- * shouldReportElement and shouldReportModel control reporting.
- * Reports definition elements and separately from
+ * Must be subclassed.
+ * The main callbacks that should be overridden are:
+ *  shouldExploreModel to control depth
+ *  shouldReportElement, shouldReportModel to control reporting
+ *  reportElement, reportModel to receive reports
  */
 abstract class ElementTreeReporter {
   constructor(protected _imodel: IModelDb) { }
@@ -94,9 +69,12 @@ abstract class ElementTreeReporter {
   /** Return true if the reporter should report this model  */
   public shouldReportModel(_model: Model): boolean { return true; }
 
+  /** Called to report a model */
   public abstract reportModel(model: Model, inDefinitionModel: boolean): void;
+  /** Called to report an element */
   public abstract reportElement(elid: Id64String, inDefinitionModel: boolean): void;
 
+  // This is the main tree-walking algorithm
   protected processElementTree(element: Id64String, inDefinitionModel: boolean) {
     const subModel = this._imodel.models.tryGetModel<Model>(element);
     if (subModel !== undefined)
@@ -108,7 +86,7 @@ abstract class ElementTreeReporter {
     this.visitElement(element, inDefinitionModel);
   }
 
-  public visitSubModel(model: Model, isDefinitionModel: boolean) {
+  protected visitSubModel(model: Model, isDefinitionModel: boolean) {
     if (this.shouldExploreModel(model))
       this.processElementsInModel(model, isDefinitionModel); // => explore elements in the model - invokes onElementInModel with each
 
@@ -116,7 +94,7 @@ abstract class ElementTreeReporter {
       this.reportModel(model, isDefinitionModel);
   }
 
-  public processElementsInModel(model: Model, inDefinitionModel: boolean): void {
+  protected processElementsInModel(model: Model, inDefinitionModel: boolean): void {
     model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=?`, (stmt) => {
       stmt.bindId(1, model.id);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -126,15 +104,15 @@ abstract class ElementTreeReporter {
     });
   }
 
-  public visitElementInModel(_model: Model, inDefinitionModel: boolean, elid: Id64String) {
+  protected visitElementInModel(_model: Model, inDefinitionModel: boolean, elid: Id64String) {
     this.processElementTree(elid, inDefinitionModel);
   }
 
-  public visitChildElement(elid: Id64String, inDefinitionModel: boolean) {
+  protected visitChildElement(elid: Id64String, inDefinitionModel: boolean) {
     this.processElementTree(elid, inDefinitionModel);
   }
 
-  public visitElement(elid: Id64String, inDefinitionModel: boolean) {
+  protected visitElement(elid: Id64String, inDefinitionModel: boolean) {
     if (this.shouldReportElement(elid))
       this.reportElement(elid, inDefinitionModel);
   }
@@ -147,10 +125,6 @@ class ElementTreeDumper extends ElementTreeReporter {
   private _definitions: Id64Array = [];
 
   public constructor(imodel: IModelDb) { super(imodel); }
-
-  // public override shouldReportElement(elid: Id64String): boolean {
-  //   return !this._subModels.includes(elid); // don't report partition elements
-  // }
 
   public reportModel(model: Model, isDefinitionModel: boolean): void {
     if (isDefinitionModel)
@@ -1571,28 +1545,27 @@ describe.only("iModel", () => {
 
     /*
       [RepositoryModel]
+        RepositoryLink
         Job Subject
-        +- Child Subject
-        |   |
-        |   + DefinitionParitition
-        |                  --   [DefinitionModel]
-        |                        DrawingCategory
-        |                        SpatialCategory
-        |
-        +- DocumentList    --   [DocumentListModel]
-        |                         Drawing             -- [DrawingModel]
-        |                                                  DrawingGraphic
-        |
-        +- PhysicalPartition -- [PhysicalModel]
-                                  PhysicalObject
+          +- DefinitionParitition  --   [DefinitionModel]
+          |                               DrawingCategory
+          |                               SpatialCategory
+          |
+          +- DocumentList         --    [DocumentListModel]
+          |                               Drawing             -- [DrawingModel]
+          |                                                       DrawingGraphic
+          +- Child Subject
+              |
+              +- PhysicalPartition --   [PhysicalModel]
+                                          PhysicalObject, PhysicalObject, PhysicalObject (grouped)
     */
 
-    // const repositoryLinkId = IModelTestUtils.insertRepositoryLink(testImodel, "test link", "foo", "bar");
+    const repositoryLinkId = IModelTestUtils.insertRepositoryLink(testImodel, "test link", "foo", "bar");
     const jobSubjectId = IModelTestUtils.createJobSubjectElement(testImodel, "Job").insert();
 
     const childSubject = Subject.insert(testImodel, jobSubjectId, "Child Subject");
 
-    const definitionModelId = DefinitionModel.insert(testImodel, childSubject, "Definition");
+    const definitionModelId = DefinitionModel.insert(testImodel, jobSubjectId, "Definition");
     const spatialCategoryId = SpatialCategory.insert(testImodel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
     const drawingCategoryId = DrawingCategory.insert(testImodel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
 
@@ -1610,7 +1583,7 @@ describe.only("iModel", () => {
     };
     const drawingGraphicId1 = testImodel.elements.insertElement(drawingGraphicProps1);
 
-    const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, PhysicalPartition.createCode(testImodel, jobSubjectId, "Physical"), false, jobSubjectId);
+    const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, PhysicalPartition.createCode(testImodel, childSubject, "Physical"), false, childSubject);
     const elementProps: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
       model: physicalModelId,
@@ -1624,13 +1597,15 @@ describe.only("iModel", () => {
     ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId2).insert();
     ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId3).insert();
 
-    assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, childSubject);
+    assert.equal(testImodel.elements.getElement(repositoryLinkId).parent?.id, IModel.rootSubjectId);
+    assert.equal(testImodel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
+    assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
     assert.equal(testImodel.elements.getElement(spatialCategoryId).model, definitionModelId);
     assert.equal(testImodel.elements.getElement(drawingCategoryId).model, definitionModelId);
     assert.equal(testImodel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
     assert.equal(testImodel.elements.getElement(drawingModelId).model, documentListModelId);
     assert.equal(testImodel.elements.getElement(drawingGraphicId1).model, drawingModelId);
-    assert.equal(testImodel.elements.getElement(physicalModelId).parent?.id, jobSubjectId);
+    assert.equal(testImodel.elements.getElement(physicalModelId).parent?.id, childSubject);
     assert.equal(testImodel.elements.getElement(physicalObjectId1).model, physicalModelId);
     assert.equal(testImodel.elements.getElement(physicalObjectId2).model, physicalModelId);
     assert.equal(testImodel.elements.getElement(physicalObjectId3).model, physicalModelId);
