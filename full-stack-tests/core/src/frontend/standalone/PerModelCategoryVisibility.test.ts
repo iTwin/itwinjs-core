@@ -311,7 +311,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     overrides.push({modelId: "0x1f", categoryIds: "0x17", visOverride: hide});
     await pmcv.setOverrides(overrides);
 
-    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show);
+    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show); // These are false. We get expected 0 to equal 1.
     expect(pmcv.getOverride("0x1f", "0x17")).to.equal(hide);
 
     const ovrs = new Overrides(vp);
@@ -346,8 +346,8 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // Model 1c turns category 31 off. Model 1f turns category 17 on and category 2d off.
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
-    overrides.push({modelId: "0x1c", categoryIds: "0x31", visOverride: hide});
-    overrides.push({modelId: "0x1f", categoryIds: "0x17", visOverride: show});
+    overrides.push({modelId: "0x1c", categoryIds: ["0x31"], visOverride: hide});
+    overrides.push({modelId: "0x1f", categoryIds: ["0x17"], visOverride: show});
     overrides.push({modelId: "0x1f", categoryIds: "0x2d", visOverride: hide});
     await pmcv.setOverrides(overrides);
     expect(pmcv.getOverride("0x1c", "0x31")).to.equal(hide);
@@ -403,7 +403,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // vp.perModelCategoryVisibility.setOverride("0x1c", "0x17", hide);
     const overrides: PerModelCategoryVisibility.Props[] = [];
     overrides.push({modelId: "0x1c", categoryIds: ["0x2f", "0x31", "0x2d"], visOverride: show});
-    overrides.push({modelId: "0x1c", categoryIds: "0x17", visOverride: hide});
+    overrides.push({modelId: "0x1c", categoryIds: ["0x17"], visOverride: hide});
     await vp.perModelCategoryVisibility.setOverrides(overrides);
 
     ovrs = new Overrides(vp);

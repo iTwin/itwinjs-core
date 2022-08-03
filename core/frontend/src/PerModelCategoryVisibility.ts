@@ -136,7 +136,9 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
     const iModelToUse = iModel ? iModel : this._vp.iModel;
     for (const override of perModelCategoryVisibility) {
       const modelId = override.modelId;
-      const categoryIds = override.categoryIds;
+      // The caller may pass a single categoryId as a string, if we don't convert this to an array we will iterate
+      // over each individual character of that string, which is not the desired behavior.
+      const categoryIds = typeof override.categoryIds === "string" ? [override.categoryIds] : override.categoryIds;
       const visOverride = override.visOverride;
       for (const categoryId of categoryIds) {
         if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
