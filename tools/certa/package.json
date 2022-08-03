@@ -53,7 +53,7 @@
     "@types/puppeteer": "2.0.1",
     "@types/uuid": "^7.0.2",
     "@types/yargs": "^17.0.10",
-    "electron": "^14.0.0",
+    "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
