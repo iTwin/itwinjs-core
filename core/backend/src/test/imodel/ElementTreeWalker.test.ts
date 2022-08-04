@@ -648,7 +648,7 @@ describe.only("ElementTreeWalker", () => {
     assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
     assert.isTrue(doesElementExist(testImodel, jobSubjectId));
     assert.isTrue(doesModelExist(testImodel, definitionModelId));
-    assert.isTrue(doesModelExist(testImodel, drawingModelId));
+    assert.isFalse(doesModelExist(testImodel, drawingModelId));
     assert.isTrue(doesModelExist(testImodel, physicalModelId));
     assert.isTrue(doesModelExist(testImodel, IModel.repositoryModelId));
     assert.isTrue(doesModelExist(testImodel, IModel.dictionaryId));
