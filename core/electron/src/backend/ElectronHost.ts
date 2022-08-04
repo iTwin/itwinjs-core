@@ -19,7 +19,7 @@ import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/Electron
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 
 // This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
-// See: https://github.com/basarat/typescript-book/blob/master/docs/project/external-modules.md#use-case-lazy-loading
+// See: https://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
 import * as ElectronModuleExports from "electron";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
