@@ -29,11 +29,6 @@ export function isDefinitionPartitionElement(imodel: IModelDb, elid: Id64String)
   return el instanceof DefinitionPartition;
 }
 
-// function isSubjectElement(imodel: IModelDb, elid: Id64String): boolean {
-//   const el = imodel.elements.getElement(elid);
-//   return el instanceof Subject;
-// }
-
 export enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, PRUNING_CLASS_DefinitionPartition = 3, }
 
 export function classifyElementForPruning(imodel: IModelDb, elid: Id64String): ElementPruningClassification {
@@ -174,7 +169,7 @@ class ElementTreeDeleter extends ElementTreeBottomUp {
   private _definitions: Id64Array = [];
   private _subjects: Id64Array = [];
 
-  public constructor(imodel: IModelDb) { super(imodel); }
+  public constructor(imodel: IModelDb, private _topElement: Id64String) { super(imodel); }
 
   public override shouldExploreModel(_model: Model): boolean { return true; }
   public override shouldVisitElement(_elid: Id64String): boolean { return true; }
@@ -226,9 +221,9 @@ class ElementTreeDeleter extends ElementTreeBottomUp {
 
   }
 
-  public deleteElementTree(topElement: Id64String, scope?: ElementTreeWalkerScope): void {
+  public deleteElementTree(scope?: ElementTreeWalkerScope): void {
     // Deletes the "normal" elements and records the definitions and Subjects for deferred processing
-    this.processElementTree(topElement, scope ?? ElementTreeWalkerScope.createTopScope(this._imodel, topElement));
+    this.processElementTree(this._topElement, scope ?? ElementTreeWalkerScope.createTopScope(this._imodel, this._topElement));
 
     // Now the (unused) definitions can be deleted
     Logger.logTrace(loggerCategory, `Delete definition elements ${JSON.stringify(this._definitions)}`);
@@ -313,7 +308,7 @@ abstract class ElementTreeTopDown {
 
 export type ElementSubTreePruneFilter = (_elid: Id64String, _scope: ElementTreeWalkerScope) => boolean;
 
-class SelectedElementSubTreeDeleter extends ElementTreeTopDown {
+export class SelectedElementSubTreeDeleter extends ElementTreeTopDown {
   private _definitions: Id64Array = [];
   private _subjects: Id64Array = [];
 
@@ -340,38 +335,37 @@ class SelectedElementSubTreeDeleter extends ElementTreeTopDown {
     }
 
     // This is a normal element.
-    const del = new ElementTreeDeleter(this._imodel);
-    del.deleteElementTree(elid, scope);
+    const del = new ElementTreeDeleter(this._imodel, elid);
+    del.deleteElementTree(scope);
   }
 
   public pruneElementTree() {
     this.processElementTree(this._topElement, ElementTreeWalkerScope.createTopScope(this._imodel, this._topElement)); // deletes normal elements and their sub-trees
 
-    const del = new ElementTreeDeleter(this._imodel);
-
     for (const elid of this._definitions) // unused definitions can now be deleted
-      del.deleteElementTree(elid);
+      deleteElementTree(this._imodel, elid);
 
     for (const elid of this._subjects) { // finally subjects can be deleted
-      del.deleteElementTree(elid);
+      deleteElementTree(this._imodel, elid);
     }
   }
 }
 
-/** Delete an element tree starting with the specified top element. The top element is also deleted.
+/** Deletes an element tree starting with the specified top element. The top element is also deleted.
  * @param imodel The iModel
  * @param topElement The parent of the sub-tree
  */
 export function deleteElementTree(imodel: IModelDb, topElement: Id64String): void {
-  const del = new ElementTreeDeleter(imodel);
-  del.deleteElementTree(topElement);
+  const del = new ElementTreeDeleter(imodel, topElement);
+  del.deleteElementTree();
 }
 
-/** Delete all element sub-trees that are selected by the supplied filter.
+/** Deletes all element sub-trees that are selected by the supplied filter.
  * @remarks If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
  * That has the same effect as calling [[deleteElementTree]] on the top element.
  * @param imodel The iModel
  * @param topElement The parent of the sub-tree
+ * @param filter callback that chooses the sub-trees to be deleted.
  */
 export function deleteElementSubTrees(imodel: IModelDb, topElement: Id64String, filter: ElementSubTreePruneFilter): void {
   const del = new SelectedElementSubTreeDeleter(imodel, topElement, filter);
