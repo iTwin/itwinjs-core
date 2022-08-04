@@ -210,12 +210,18 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
   return spans;
 }
 
-/** @internal */
+/**
+ * A valid span identifier is an 8-byte array with at least one non-zero byte
+ * @internal
+ */
 function generateSpanId(): string {
   return randomBytes(8).toString("hex");
 }
 
-/** @internal */
+/**
+ * A valid trace identifier is a 16-byte array with at least one non-zero byte
+ * @internal
+ */
 function generateTraceId(): string {
   return randomBytes(16).toString("hex");
 }
