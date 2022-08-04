@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chalk from "chalk";
-import { Compiler, Stats } from "webpack";
+import { Compiler, Stats, StatsCompilation, StatsLogging } from "webpack";
 
-type StatsFormatter = (stats: Stats.ToJsonOutput) => Stats.ToJsonOutput;
+type StatsFormatter = (stats: StatsCompilation) => StatsCompilation;
 
 // No point in having a stack trace that points to the PrettyLoggingPlugin rethrowing an error message.
 class PrettyLoggingError extends Error {
-  constructor(...params: any[]) {
-    super(...params);
+  constructor(params: string) {
+    super(params);
     delete this.stack;
   }
 }
@@ -60,7 +60,9 @@ export class PrettyLoggingPlugin {
     this._grouped = true;
   }
 
-  public handlePluginLogs(logs: any) {
+  public handlePluginLogs(logs?: Record<string, StatsLogging>) {
+    if (!logs) return;
+
     const logLevelColors: any = {
       error: chalk.red,
       warn: chalk.yellow,
@@ -85,12 +87,12 @@ export class PrettyLoggingPlugin {
   }
 
   // Reformats warnings and errors with react-dev-utils.
-  private handleWarningsAndErrors(elapsed: number, jsonStats: Stats.ToJsonOutput) {
+  private handleWarningsAndErrors(elapsed: number, jsonStats: StatsCompilation) {
     const { errors, warnings } = this._formatter(jsonStats);
-    if (errors.length)
-      throw new PrettyLoggingError(errors.join("\n\n"));
+    if (errors?.length)
+      throw new PrettyLoggingError(errors.map((err) => JSON.stringify(err, null, 2)).join("\n\n"));
 
-    if (warnings.length > 0) {
+    if (warnings?.length) {
       if (process.env.CI) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.CI is set.\nMost CI servers set it automatically.\n`));
         throw new PrettyLoggingError(warnings.join("\n\n"));
@@ -101,7 +103,7 @@ export class PrettyLoggingPlugin {
 
       if (this.isInteractive)
         this.printHeading("Compiled with warnings", "yellow", elapsed);
-      console.log(warnings.join("\n\n"));
+      console.log(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
       console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about eslint warnings.`);
       console.log(`To ignore an eslint warning, add ${chalk.cyan("// eslint-disable-next-line")} to the line before.\n`);
       if (!this.isInteractive)
@@ -113,7 +115,7 @@ export class PrettyLoggingPlugin {
   }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.entryOption.tap("PrettyLoggingPlugin", () => {
+    compiler.hooks.initialize.tap("PrettyLoggingPlugin", () => {
       this.printHeading(this._startMessage);
     });
 
@@ -129,10 +131,10 @@ export class PrettyLoggingPlugin {
       this.printHeading("Files changed, rebuilding...");
     });
 
-    compiler.hooks.done.tap("PrettyLoggingPlugin", (stats: any) => {
+    compiler.hooks.done.tap("PrettyLoggingPlugin", (stats: Stats) => {
       this.clearIfInteractive();
       const elapsed = Date.now() - this._startTime;
-      const jsonStats = stats.toJson({ logging: compiler.options.profile }, true);
+      const jsonStats = stats.toJson({ logging: compiler.options.profile });
 
       if (compiler.options.profile)
         this.handlePluginLogs(jsonStats.logging);

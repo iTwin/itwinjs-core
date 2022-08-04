@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
@@ -15,6 +15,7 @@ import {
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
+  SubCategoryResultRow,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -262,6 +263,16 @@ export abstract class IModelConnection extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /**
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * @param compressedCategoryIds compressed category Ids
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
   /** Execute a query and stream its results

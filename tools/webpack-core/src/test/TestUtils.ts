@@ -4,39 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as webpack from "webpack";
+import { Compiler, Configuration, Stats, StatsCompilation, webpack } from "webpack";
 const MODULE = require("module");
 const { usedDeps } = require("../utils/resolve-recurse/resolve");
 
-function createTestCompiler(web: any, config: any, vol?: any) {
-  let compiler: any;
-  try {
-    compiler = web(config);
-  } catch (err) {
-    console.log(err);
-  }
-  if (vol)
-    compiler.inputFileSystem = vol;
+function createTestCompiler(config: Configuration, vol?: any): Compiler {
+  const compiler = webpack(config);
+  if (vol) compiler.inputFileSystem = vol;
   return compiler;
 }
 
-export async function runWebpack(config: any, vol?: any) {
-  const compiler = createTestCompiler(webpack, config, vol);
+export async function runWebpack(config: Configuration, vol?: any): Promise<StatsCompilation> {
+  const compiler = createTestCompiler(config, vol);
   return new Promise<any>((resolve, reject) => {
-    compiler.run((err: any, stats: any) => (err) ? reject(err) : resolve(stats.toJson({ logging: true })));
+    compiler.run((err?: Error | null, stats?: Stats) => (err) ? reject(err) : resolve(stats?.toJson({ logging: true })));
   });
 }
 
-export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsToTest?: any[], rules?: any[]) {
+export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsToTest?: any[], rules?: any[]): Configuration {
   return {
     mode: "production",
-    entry: [
-      path.join(__dirname, srcFile),
-    ],
+    entry: path.join(__dirname, srcFile),
     output: {
       path: path.join(__dirname, "dist"),
       chunkFilename: path.basename(srcFile),
-      filename: "runtime.js",
+      filename: "[name].js",
       pathinfo: false,
     },
     plugins: pluginsToTest,
@@ -45,6 +37,7 @@ export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsTo
     module: {
       rules,
     },
+    target: "node",
   };
 }
 

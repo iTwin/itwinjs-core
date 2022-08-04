@@ -365,6 +365,47 @@ describe("Unit", () => {
       expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");
       expect(unitSerialization.definition).to.eql("[MILLI]*M");
     });
+
+    it("Numerator is explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Millimeter",
+        description: "Test unit",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "[MILLI]*Units.MM",
+        numerator: 10,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const unit = await ecSchema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJSON(true, true);
+
+      expect(unitSerialization.numerator).to.equal(10);
+      expect(unitSerialization.denominator).to.be.undefined;
+      expect(unitSerialization.offset).to.be.undefined;
+    });
+
+    it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
+      const schemaJson = createSchemaJson({
+        label: "Millimeter",
+        description: "Test unit",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "[MILLI]*Units.MM",
+        denominator: 12,
+        offset: 10,
+      });
+
+      const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const unit = await ecSchema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const unitSerialization = unit!.toJSON(true, true);
+
+      expect(unitSerialization.offset).to.equal(10);
+      expect(unitSerialization.denominator).to.equal(12);
+      expect(unitSerialization.numerator).to.be.undefined;
+    });
   });
 
   describe("toXml", () => {
@@ -380,7 +421,7 @@ describe("Unit", () => {
       offset: 4,
     });
 
-    it("should properly serialize", async () => {
+    it("should properly serialize with all defined", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       const unit = await ecschema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
@@ -391,6 +432,47 @@ describe("Unit", () => {
       expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
       expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
       expect(serialized.getAttribute("numerator")).to.eql("5.1");
+      expect(serialized.getAttribute("denominator")).to.eql("2.4");
+      expect(serialized.getAttribute("offset")).to.eql("4");
+    });
+
+    it("Numerator is explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
+      const testSchemaJson = createSchemaJson({
+        label: "Millimeter",
+        description: "A unit defining the millimeter metric unit of length",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "[MILLI]*Units.MM",
+        numerator: 5.1,
+      });
+
+      const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
+      const unit = await ecschema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const serialized = await unit!.toXml(newDom);
+
+      expect(serialized.getAttribute("numerator")).to.eql("5.1");
+      expect(serialized.getAttribute("denominator")).to.eql("");
+      expect(serialized.getAttribute("offset")).to.eql("");
+    });
+
+    it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
+      const testSchemaJson = createSchemaJson({
+        label: "Millimeter",
+        description: "A unit defining the millimeter metric unit of length",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "[MILLI]*Units.MM",
+        denominator: 2.4,
+        offset: 4,
+      });
+
+      const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
+      const unit = await ecschema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const serialized = await unit!.toXml(newDom);
+
+      expect(serialized.getAttribute("numerator")).to.eql("");
       expect(serialized.getAttribute("denominator")).to.eql("2.4");
       expect(serialized.getAttribute("offset")).to.eql("4");
     });
