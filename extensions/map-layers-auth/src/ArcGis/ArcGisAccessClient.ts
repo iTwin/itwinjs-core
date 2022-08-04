@@ -274,7 +274,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
     const endpointStr = (endpoint === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token");
     const urlObj = new URL(url);
-    if (urlObj.hostname.toLowerCase() === "arcgis.com") {
+    if (urlObj.hostname.toLowerCase().endsWith("arcgis.com")) {
       // ArcGIS Online (fixed)
       // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
 
