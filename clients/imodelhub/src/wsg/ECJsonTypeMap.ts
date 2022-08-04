@@ -248,7 +248,7 @@ type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
 export class ECJsonTypeMap {
   private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
   private static readonly _negetadBracketRegex: RegExp = /[^\[\]]+/g;
-  private static readonly _relationshipDescriptorPairsInParanthesis: RegExp = /\((([a-zA-Z]+:[a-zA-Z]+,?)*)*\)/g;
+  private static readonly _relationshipDescriptorPairsInParanthesis: RegExp = /\([a-zA-Z]*:[a-zA-Z]*(?:,[a-zA-Z]*:[a-zA-Z]*)*\)*/g;
 
   /** Gets an existing entry for a mapped class from the name of the TypeScript class */
   private static getClassByType(typedConstructor: ConstructorType): ClassEntry | undefined {
