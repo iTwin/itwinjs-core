@@ -89,9 +89,6 @@ FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
-  const dragManager = React.useContext(DragManagerContext);
-  const dispatch = React.useContext(NineZoneDispatchContext);
-  const measureNz = React.useContext(MeasureContext);
   assert(!!widget);
   assert(!!floatingWidgetId);
   const item = React.useMemo(() => ({
@@ -99,6 +96,8 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
+  const ref = useHandleAutoSize(dragged);
+
   const isToolSettingsTab = widget.tabs[0] === toolSettingsTabId;
   const className = classnames(
     "nz-widget-floatingWidget",
@@ -110,40 +109,6 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
   // never allow resizing of tool settings - always auto-fit them
   const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
 
-  const updatePosition = React.useRef(true);
-  React.useLayoutEffect(() => {
-    if (!updatePosition.current)
-      return;
-    if (!dragged)
-      return;
-    if (!dragManager.draggedItem)
-      return;
-
-    const rect = ref.current!.measure() as DOMRect;
-    let bounds = new Rectangle(rect.left, rect.top, rect.right, rect.bottom);
-    const nzBounds = measureNz();
-    const pointerPosition = dragManager.draggedItem.info.pointerPosition;
-
-    if (bounds.containsPoint(pointerPosition))
-      return;
-
-    // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
-    if (pointerPosition.x > bounds.right) {
-      const offset = pointerPosition.x - bounds.right + 20;
-      bounds = bounds.offsetX(offset);
-    }
-
-    // Adjust bounds to be relative to 9z origin
-    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
-
-    dispatch({
-      type: "FLOATING_WIDGET_SET_BOUNDS",
-      id: floatingWidgetId,
-      bounds: bounds.toProps(),
-    });
-    updatePosition.current = false;
-  }, [dragged, dragManager, dispatch, floatingWidgetId, measureNz]);
-  const ref = React.useRef<WidgetComponent>(null);
   return (
     <Widget
       className={className}
@@ -169,6 +134,54 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     </Widget >
   );
 });
+
+// Re-adjust bounds so that widget is behind pointer when auto-sized.
+function useHandleAutoSize(dragged: boolean) {
+  const dragManager = React.useContext(DragManagerContext);
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const measureNz = React.useContext(MeasureContext);
+  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  assert(!!floatingWidgetId);
+
+  const updatePosition = React.useRef(true);
+  const ref = React.useRef<WidgetComponent>(null);
+
+  React.useLayoutEffect(() => {
+    if (!updatePosition.current)
+      return;
+    if (!dragged)
+      return;
+    if (!dragManager.draggedItem)
+      return;
+    if (!ref.current)
+      return;
+
+    const rect = ref.current.measure() as DOMRect;
+    let bounds = new Rectangle(rect.left, rect.top, rect.right, rect.bottom);
+    const nzBounds = measureNz();
+    const pointerPosition = dragManager.draggedItem.info.pointerPosition;
+
+    if (bounds.containsPoint(pointerPosition))
+      return;
+
+    // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
+    if (pointerPosition.x > bounds.right) {
+      const offset = pointerPosition.x - bounds.right + 20;
+      bounds = bounds.offsetX(offset);
+    }
+
+    // Adjust bounds to be relative to 9z origin
+    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+
+    dispatch({
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id: floatingWidgetId,
+      bounds: bounds.toProps(),
+    });
+    updatePosition.current = false;
+  }, [dragged, dragManager, dispatch, floatingWidgetId, measureNz]);
+  return ref;
+}
 
 interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;

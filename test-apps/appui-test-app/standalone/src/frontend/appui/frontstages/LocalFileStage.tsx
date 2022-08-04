@@ -11,11 +11,10 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
   StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
-import { BentleyError, Id64String, Logger } from "@itwin/core-bentley";
-import { Cartographic, ColorDef, IModelReadRpcInterface, RenderMode, ViewQueryParams } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, ViewQueryParams } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { BlankConnection, IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
-import { Range3d } from "@itwin/core-geometry";
+import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 import { FillCentered } from "@itwin/core-react";
 import { Button, Headline } from "@itwin/itwinui-react";
 
@@ -206,83 +205,21 @@ function LocalFilePage(props: LocalFilePageProps) {
       filePickerElement.current.click();
     }
   }, [handleElectronFileOpen]);
-
-  const handleBlankConnectionClick = async () => {
-    const connection = await openBlankConnection();
-    if (!connection)
-      return;
-
-    SampleAppIModelApp.setIsIModelLocal(true, true);
-    const viewState = await createBlankViewState(connection);
-    UiFramework.setDefaultViewState(viewState, true);
-    onViewsSelected(connection, []);
-  };
   return (
     <>
       <div style={{ position: "absolute", top: "16px", left: "100px" }}>
         <Headline>{title.current}</Headline>
       </div>
-      <FillCentered style={{ flexDirection: "column", gap: "12px" }}>
-        <FillCentered style={{ height: "unset" }}>
-          {!isElectronApp.current &&
+      <FillCentered>
+        {!isElectronApp.current &&
           <input id="file-input" ref={filePickerElement}
             type="file" accept=".bim,.ibim" onChange={handleFileInputChange}
             style={{ display: "none" }} />
-          }
-          <Button size="large" styleType="cta" onClick={handleButtonClick}>
-            {buttonLabel.current}
-          </Button>
-        </FillCentered >
-        <Button onClick={handleBlankConnectionClick}>
-          Blank Connection
+        }
+        <Button size="large" styleType="cta" onClick={handleButtonClick}>
+          {buttonLabel.current}
         </Button>
       </FillCentered >
     </>
   );
-}
-
-async function openBlankConnection(): Promise<IModelConnection | undefined> {
-  // Close the current iModelConnection
-  await SampleAppIModelApp.closeCurrentIModel();
-
-  // Open the connection
-  Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openBlankConnection: Opening blank connection.`);
-  try {
-    return BlankConnection.create({
-      name: "Exton PA",
-      location: Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}),
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-    });
-  } catch (error: unknown) {
-    alert(BentleyError.getErrorMessage(error));
-  }
-
-  return undefined;
-}
-
-async function createBlankViewState(iModel: IModelConnection) {
-  const ext = iModel.projectExtents;
-  const viewState = SpatialViewState.createBlank(
-    iModel,
-    ext.low,
-    ext.high.minus(ext.low)
-  );
-
-  viewState.setAllow3dManipulations(true);
-
-  viewState.displayStyle.backgroundColor = ColorDef.white;
-  const flags = viewState.viewFlags.copy({
-    grid: false,
-    renderMode: RenderMode.SmoothShade,
-    backgroundMap: false,
-  });
-  viewState.displayStyle.viewFlags = flags;
-
-  IModelApp.viewManager.onViewOpen.addOnce((vp) => {
-    if (vp.view.hasSameCoordinates(viewState)) {
-      vp.applyViewState(viewState);
-    }
-  });
-
-  return viewState;
 }

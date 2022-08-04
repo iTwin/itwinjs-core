@@ -171,7 +171,15 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
       widgets.push({
         id: "WT-1",
         label: "WT-1",
+        canPopout: true,
         getWidgetContent: () => <h2>Top WT-1</h2>,
+      });
+      widgets.push({
+        id: "WT-2",
+        label: "WT-2",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Top WT-2</h2>,
       });
     }
     return widgets;
@@ -194,10 +202,10 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         getWidgetContent: () => <LayoutInfo />,
       });
+    } else if (section === StagePanelSection.End) {
       widgets.push({
         id: "widget-layout-controls",
         label: "Layout Controls",
-        canPopout: true,
         defaultState: WidgetState.Open,
         getWidgetContent: () => <LayoutControls />,
       });

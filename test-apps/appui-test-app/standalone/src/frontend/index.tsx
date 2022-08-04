@@ -45,6 +45,8 @@ import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
+import { openBlankConnection } from "./appui/BlenkConnection";
+import { useHandleURLParams } from "./UrlParams";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -429,6 +431,8 @@ const SampleAppViewer = () => {
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
     };
   }, []);
+
+  useHandleURLParams();
 
   return (
     <Provider store={SampleAppIModelApp.store} >
