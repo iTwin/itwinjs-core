@@ -296,11 +296,12 @@ export class TileAdmin {
   private _tileStorage?: TileStorage;
   private async getTileStorage(): Promise<TileStorage> {
     if (this._tileStorage === undefined) {
-      if(this._cloudStorage !== undefined) {
+      if (this._cloudStorage !== undefined) {
         this._tileStorage = new TileStorage(this._cloudStorage);
       } else {
         await import("reflect-metadata");
-        const azureFrontend = await import("@itwin/object-storage-azure/lib/frontend");
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const azureFrontend = await require("./object-storage-azure")();
         const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
         this._tileStorage = new TileStorage(azureStorage);
       }
@@ -632,7 +633,7 @@ export class TileAdmin {
 
   /** @internal */
   public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
-    if(tile.iModelTree.iModel.iModelId === undefined)
+    if (tile.iModelTree.iModel.iModelId === undefined)
       throw new Error("Provided iModel has no iModelId");
 
     const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);

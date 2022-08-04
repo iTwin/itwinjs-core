@@ -90,6 +90,10 @@ function createConfig(shouldInstrument) {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }),
       }),
+      // certa doesn't like chunks
+      new webpack.optimize.LimitChunkCountPlugin({
+        maxChunks: 1,
+      }),
     ]
   };
 
