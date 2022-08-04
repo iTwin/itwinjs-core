@@ -337,23 +337,7 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!ProcessDetector.isMobileAppBackend)
-      this.validateNativePlatformVersion();
-
     platform.logger = Logger;
-  }
-
-  private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
-    const thisVersion = this.platform.version;
-    if (semver.satisfies(thisVersion, requiredVersion))
-      return;
-    if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
-      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
-      return;
-    }
-    this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
@@ -619,24 +603,24 @@ export class IModelHost {
     const storage = config.tileCacheStorage;
     const credentials = config.tileCacheAzureCredentials;
 
-    if(!service && !storage && !credentials) {
+    if (!service && !storage && !credentials) {
       this.platform.setUseTileCache(true);
       return;
     }
     this.platform.setUseTileCache(false);
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = new CloudStorageTileUploader();
-    if(credentials) {
-      if(storage || service)
+    if (credentials) {
+      if (storage || service)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
       this.setupAzureTileCache(credentials);
     }
-    if(service) {
-      if(!storage)
+    if (service) {
+      if (!storage)
         Logger.logWarning(loggerCategory, "Using tileCacheService without tileCacheStorage is unsupported");
       IModelHost.tileCacheService = service; // eslint-disable-line deprecation/deprecation
     }
-    if(storage)
+    if (storage)
       IModelHost.tileStorage = new TileStorage(storage);
   }
 

@@ -31,7 +31,10 @@ interface StatusBarState {
  */
 export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
-  isInFooterMode: boolean;
+  /** Indicates whether the StatusBar is in footer mode
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
+  isInFooterMode?: boolean;
 }
 
 /** Message type for the [[StatusBar]] React component
@@ -65,7 +68,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     // istanbul ignore else
     if (widgetControl && widgetControl.getReactNode) {
       footerSections = widgetControl.getReactNode({
-        isInFooterMode: this.props.isInFooterMode,
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode: this.props.isInFooterMode ?? true,
         openWidget: this.state.openWidget,
         toastTargetRef: this._handleToastTargetRef,
         onOpenWidget: this._handleOpenWidget,
@@ -74,7 +78,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
     return (
       <StatusBarContext.Provider value={{
-        isInFooterMode: this.props.isInFooterMode,
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode: this.props.isInFooterMode ?? true,
         openWidget: this.state.openWidget,
         toastTargetRef: this._handleToastTargetRef,
         onOpenWidget: this._handleOpenWidget,
@@ -84,7 +89,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
             <Footer // eslint-disable-line deprecation/deprecation
               className={this.props.className}
               messages={this.getFooterMessages()}
-              isInFooterMode={this.props.isInFooterMode}
+              // eslint-disable-next-line deprecation/deprecation
+              isInFooterMode={this.props.isInFooterMode ?? true}
               onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
               style={this.props.style}

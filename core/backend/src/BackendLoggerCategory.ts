@@ -106,8 +106,8 @@ export enum BackendLoggerCategory {
   NativeApp = "core-backend.NativeApp",
 
   /** The logger category used by the following classes:
-   * - [[ViewStateHydrater]]
+   * - [[ViewStateHydrator]]
    * @internal
    */
-  ViewStateHydrater = "core-backend.ViewStateHydrater",
+  ViewStateHydrator = "core-backend.ViewStateHydrator",
 }

@@ -2975,6 +2975,9 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined;
     // @internal
     getSubCategoryPriority(idLo: number, idHi: number): number;
+    ignoreAnimationOverrides(ignore: IgnoreAnimationOverrides): void;
+    // @internal (undocumented)
+    protected readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[];
     // @internal
     ignoreSubCategory: boolean;
     // @internal (undocumented)
@@ -4199,7 +4202,7 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // (undocumented)
+    // @deprecated (undocumented)
     notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -4217,7 +4220,7 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
@@ -4250,6 +4253,15 @@ export class I3dmHeader extends TileHeader {
     get isValid(): boolean;
     // (undocumented)
     readonly length: number;
+}
+
+// @public
+export type IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean;
+
+// @public
+export interface IgnoreAnimationOverridesArgs {
+    readonly animationNodeId: number;
+    readonly elementId: Readonly<Id64.Uint32Pair>;
 }
 
 // @public
@@ -4590,6 +4602,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse>;
+    // (undocumented)
+    querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)

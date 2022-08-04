@@ -85,13 +85,12 @@ internal;DraggedWidgetManager
 internal;DraggedWidgetManagerProps
 internal;DragHandle 
 internal;DragHandleProps 
-internal;DragItemDragStartArgs
 internal;DragManager
 internal;DragManagerContext: React_2.Context
 internal;DragProvider: React_2.NamedExoticComponent
 internal;DragProviderProps
-internal;DragTabDragStartArgs 
-internal;DragTarget = TabTarget | PanelTarget_2 | WidgetTarget_2
+internal;DragStartArgs
+internal;DropTargetState = TabDragDropTargetState | WidgetDragDropTargetState
 internal;Ellipsis(props: CommonProps): JSX.Element
 internal;eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean
 internal;EventEmitter
@@ -111,6 +110,7 @@ internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetClearUserSizedAction
 internal;floatingWidgetClearUserSizedFlag(state: Draft
 internal;FloatingWidgetContext: React_2.Context
+internal;FloatingWidgetDropTargetState
 internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React_2.Context
 internal;FloatingWidgetProps
@@ -191,15 +191,18 @@ internal;HorizontalPanelState
 internal;IconOnlyOnWidgetTabContext: React_2.Context
 internal;initSizeAndPositionProps
 internal;isFloatingLocation(location: TabLocation): location is FloatingLocation
-internal;isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation
+internal;isFloatingWidgetLocation(location: WidgetLocation): location is FloatingWidgetLocation
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
+internal;isPanelDropTargetState(state: DropTargetState): state is PanelDropTargetState
 internal;isPanelLocation(location: TabLocation): location is PanelLocation
-internal;isPanelTarget(target: DragTarget): target is PanelTarget_2
 internal;isPopoutLocation(location: TabLocation): location is PopoutLocation
-internal;isPopoutWidgetLocation(location: WidgetLocation): location is PopoutLocation
-internal;isTabTarget(target: DragTarget): target is TabTarget
-internal;isWidgetTarget(target: DragTarget): target is WidgetTarget_2
+internal;isPopoutWidgetLocation(location: WidgetLocation): location is PopoutWidgetLocation
+internal;isSectionDropTargetState(state: DropTargetState): state is SectionDropTargetState
+internal;isTabDragDropTargetState(state: DropTargetState): state is TabDragDropTargetState
+internal;isTabDropTargetState(state: DropTargetState): state is TabDropTargetState
+internal;isWidgetDragDropTargetState(state: DropTargetState): state is WidgetDragDropTargetState
+internal;isWidgetDropTargetState(state: DropTargetState): state is WidgetDropTargetState
 beta;Item 
 deprecated;Item 
 beta;ItemProps 
@@ -273,6 +276,7 @@ internal;Overflow
 internal;OverflowProps 
 alpha;Panel 
 deprecated;Panel 
+internal;PanelDropTargetState
 internal;PanelInitializeAction
 alpha;PanelProps 
 deprecated;PanelProps 
@@ -324,6 +328,7 @@ beta;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
 internal;ScrollableWidgetContent: React_2.NamedExoticComponent
 internal;ScrollableWidgetContentProps
+internal;SectionDropTargetState
 internal;SendBack: React_2.NamedExoticComponent
 internal;setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState
 internal;setRectangleProps(props: Draft
@@ -368,6 +373,9 @@ internal;StatusHelpers
 internal;StatusMessageProps 
 internal;Tab 
 internal;TabBarButtons: React_2.NamedExoticComponent
+internal;TabDragDropTargetState = PanelDropTargetState | SectionDropTargetState | WidgetDropTargetState | TabDropTargetState | FloatingWidgetDropTargetState
+internal;TabDragStartArgs 
+internal;TabDropTargetState
 internal;TabGroup 
 internal;TabGroupProps 
 internal;TabIdContext: React_2.Context
@@ -383,11 +391,6 @@ internal;TabsState
 internal;TabsStateContext: React_2.Context
 internal;TabState
 internal;TabStateContext: React_2.Context
-internal;TabTargetFloatingWidgetState
-internal;TabTargetPanelState
-internal;TabTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState | TabTargetFloatingWidgetState
-internal;TabTargetTabState
-internal;TabTargetWidgetState
 internal;Title 
 beta;TitleBar 
 internal;TitleBarButton 
@@ -461,15 +464,15 @@ internal;useDrag
 internal;useDraggedItemId
 internal;useDragItem
 internal;UseDragItemArgs
-internal;useDragPanelGrip(args: UseDragPanelGripArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;useDragPanelGrip(args: UseDragPanelGripArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragPanelGripArgs
-internal;useDragResizeHandle(args: UseDragResizeHandleArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;useDragResizeHandle(args: UseDragResizeHandleArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragResizeHandleArgs
-internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: DragTabDragStartArgs) => void
+internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: TabDragStartArgs) => void
 internal;UseDragTabArgs
-internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragToolSettingsArgs
-internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
+internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
@@ -489,9 +492,9 @@ internal;useTabInteractions
 internal;UseTabInteractionsArgs
 internal;UseTabTargetArgs
 internal;useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void): void
+internal;useTargeted(): DropTargetState | undefined
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
-internal;UseWidgetTargetArgs
 internal;VerticalAnchor
 internal;VerticalAnchorHelpers
 internal;VerticalPanelSide = LeftPanelSide | RightPanelSide
@@ -501,6 +504,7 @@ internal;WidgetComponent
 alpha;WidgetContent 
 deprecated;WidgetContent 
 internal;WidgetContentContainer: React_2.NamedExoticComponent
+internal;WidgetContentContainerProps
 internal;WidgetContentContainersContext: React_2.Context
 internal;WidgetContentManager: React_2.NamedExoticComponent
 internal;WidgetContentManagerContext: React_2.Context
@@ -514,7 +518,9 @@ internal;WidgetContentRenderers: React_2.NamedExoticComponent
 internal;WidgetContext: React_2.Context
 internal;WidgetContextArgs
 internal;WidgetDragAction
+internal;WidgetDragDropTargetState = PanelDropTargetState | SectionDropTargetState | WidgetDropTargetState | TabDropTargetState | WindowDropTargetState
 internal;WidgetDragEndAction
+internal;WidgetDropTargetState
 internal;WidgetIdContext: React_2.Context
 internal;WidgetManagerProps
 internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
@@ -563,17 +569,13 @@ internal;WidgetTabsEntryProvider: React_2.NamedExoticComponent
 internal;WidgetTabTarget: React_2.NamedExoticComponent
 internal;WidgetTabTargetProps
 internal;WidgetTarget: React_2.NamedExoticComponent
-internal;WidgetTargetFloatingWidgetState
-internal;WidgetTargetPanelState = TabTargetPanelState
 internal;WidgetTargetProps
-internal;WidgetTargetState = WidgetTargetPanelState | WidgetTargetWidgetState | WidgetTargetTabState | WidgetTargetFloatingWidgetState
-internal;WidgetTargetTabState = TabTargetTabState
-internal;WidgetTargetWidgetState = TabTargetWidgetState
 internal;WidgetToolSettingsState
 internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 deprecated;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 internal;widgetZoneIds: ReadonlyArray
+internal;WindowDropTargetState
 alpha;withContainIn: 
 deprecated;withContainIn: 
 alpha;WithContainInProps

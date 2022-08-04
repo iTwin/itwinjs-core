@@ -10,7 +10,7 @@ import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
 } from "../../appui-layout-react";
-import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
+import { createDragInfo, TestNineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
   it("should render", async () => {
@@ -75,7 +75,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -110,7 +110,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -149,7 +149,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -188,7 +188,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -232,7 +232,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -241,6 +241,7 @@ describe("FloatingTab", () => {
       dragManager.current!.handleTargetChanged({
         type: "panel",
         side: "left",
+        newWidgetId: "",
       });
       fireEvent.mouseUp(document);
     });
@@ -275,28 +276,29 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
         },
       });
       dragManager.current!.handleTargetChanged({
-        type: "widget",
+        type: "section",
         side: "right",
-        widgetIndex: 0,
+        sectionIndex: 0,
+        newWidgetId: "nw1",
       });
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
       type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
-        type: "widget",
+        type: "section",
         side: "right",
-        widgetIndex: 0,
+        sectionIndex: 0,
       },
-    })).should.true;
+    }));
   });
 
 });

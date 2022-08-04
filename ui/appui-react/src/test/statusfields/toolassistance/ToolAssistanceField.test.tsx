@@ -17,6 +17,7 @@ import {
   StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
 } from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
+import { render } from "@testing-library/react";
 
 [true, false].forEach((withDeprecated) =>{
   const testType = withDeprecated ? " (with deprecated (on)openWidget props)" : "";
@@ -35,10 +36,10 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
       }
 
       // eslint-disable-next-line deprecation/deprecation
-      public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+      public getReactNode({ onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
         return (
           <>
-            <ToolAssistanceField isInFooterMode={isInFooterMode} {...(withDeprecated ? {onOpenWidget, openWidget} : {})}
+            <ToolAssistanceField {...(withDeprecated ? {onOpenWidget, openWidget} : {})}
               includePromptAtCursor={true}
               uiStateStorage={uiSettingsStorage} />
           </>
@@ -77,7 +78,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     // cSpell:Ignore TOOLPROMPT
 
     it("Status Bar with ToolAssistanceField should mount", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const helloWorld = "Hello World!";
       const notifications = new AppNotificationManager();
@@ -85,8 +86,41 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
       wrapper.update();
     });
 
+    it("Status Bar with ToolAssistanceField should display prompt", async () => {
+      const wrapper = render(<ToolAssistanceField uiStateStorage={uiSettingsStorage}/>);
+
+      const helloWorld = "Hello World!";
+      const notifications = new AppNotificationManager();
+      notifications.outputPrompt(helloWorld);
+
+      const prompt = wrapper.getByText("Hello World!");
+      expect(prompt).to.exist;
+    });
+
+    it("Status Bar with ToolAssistanceField should display prompt isInFooterMode=true (deprecated)", () => {
+      const wrapper = render(<ToolAssistanceField uiStateStorage={uiSettingsStorage} isInFooterMode={true}/>);
+
+      const helloWorld = "Hello World!";
+      const notifications = new AppNotificationManager();
+      notifications.outputPrompt(helloWorld);
+
+      const prompt = wrapper.getByText("Hello World!");
+      expect(prompt).to.exist;
+    });
+
+    it("Status Bar with ToolAssistanceField should not display prompt isInFooterMode=false (deprecated)", () => {
+      const wrapper = render(<ToolAssistanceField uiStateStorage={uiSettingsStorage} isInFooterMode={false}/>);
+
+      const helloWorld = "Hello World!";
+      const notifications = new AppNotificationManager();
+      notifications.outputPrompt(helloWorld);
+
+      const prompt = wrapper.queryByText("Hello World!");
+      expect(prompt).to.not.exist;
+    });
+
     it("dialog should open and close on click", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const helloWorld = "Hello World!";
       const notifications = new AppNotificationManager();
@@ -103,7 +137,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("passing isNew:true should use newDot", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
@@ -124,7 +158,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("ToolAssistanceImage.Keyboard with a single key should generate key image", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
@@ -141,7 +175,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("should support known icons and multiple sections", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction("icon-clock", "This is the prompt that is fairly long 1234567890");
@@ -179,7 +213,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("ToolAssistanceImage.Keyboard with a key containing multiple chars should use large key", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
@@ -195,7 +229,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("ToolAssistanceImage.Keyboard with 2 keys should use medium keys", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
@@ -211,7 +245,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("ToolAssistanceImage.Keyboard with a modifier key should a medium modifier key & medium key", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
@@ -228,7 +262,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("ToolAssistanceImage.Keyboard with bottomRow should use small keys", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz");
@@ -245,7 +279,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
 
     it("ToolAssistanceImage.Keyboard but keyboardInfo should log error", () => {
       const spyMethod = sinon.spy(Logger, "logError");
-      mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.Keyboard, "Press a key" /* No keyboardInfo */);
@@ -258,7 +292,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
 
     it("ToolAssistanceImage.Keyboard with invalid keyboardInfo should log error", () => {
       const spyMethod = sinon.spy(Logger, "logError");
-      mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([]), "Press key");
@@ -270,7 +304,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("createModifierKeyInstruction should generate valid instruction", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true, ToolAssistanceInputMethod.Both, ToolAssistance.createKeyboardInfo([]));
@@ -293,7 +327,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("should support svg icons in string-based instruction.image", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction("svg:test", "This is the prompt");
@@ -310,7 +344,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
 
     it("invalid modifier key info along with image should log error", () => {
       const spyMethod = sinon.spy(Logger, "logError");
-      mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true, ToolAssistanceInputMethod.Both, ToolAssistance.createKeyboardInfo([]));
@@ -321,7 +355,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("should close on outside click", () => {
-      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
       const footerPopup = wrapper.find(FooterPopup);
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       const toolAssistance = wrapper.find("div.nz-indicator");
@@ -344,7 +378,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("should not close on outside click if pinned", () => {
-      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
       const footerPopup = wrapper.find(FooterPopup);
       const toolAssistance = wrapper.find("div.nz-indicator");
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
@@ -372,7 +406,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("dialog should open and close on click, even if pinned", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const helloWorld = "Hello World!";
       const notifications = new AppNotificationManager();
@@ -396,7 +430,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("should set showPromptAtCursor on toggle click", async () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
       await TestUtils.flushAsyncOperations();
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       expect(toolAssistanceField.length).to.eq(1);
@@ -417,7 +451,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("cursorPrompt should open when tool assistance set", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       expect(toolAssistanceField.length).to.eq(1);
@@ -438,7 +472,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("cursorPrompt should open when tool icon changes", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
@@ -468,7 +502,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("mouse & touch instructions should generate tabs", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
@@ -498,7 +532,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("touch instructions should show", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const notifications = new AppNotificationManager();
       const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
@@ -517,7 +551,7 @@ import TestUtils, { mount, storageMock } from "../../TestUtils";
     });
 
     it("dialog should open, pin and close on click", () => {
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const helloWorld = "Hello World!";
       const notifications = new AppNotificationManager();
