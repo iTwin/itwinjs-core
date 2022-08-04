@@ -345,12 +345,6 @@ export namespace Gradient {
 
     /** Applies this gradient's settings to produce a bitmap image. */
     public getImage(width: number, height: number): ImageBuffer {
-      if (this.mode === Mode.Thematic) {
-        // Allow caller to pass in height but not width. Thematic gradients are always one-dimensional.
-        // NB: The height used to be hardcoded to 8192 here. Now we will let the render system decide.
-        width = 1; // Force width to 1 for thematic gradients.
-      }
-
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
@@ -465,24 +459,20 @@ export namespace Gradient {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            if (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax) {
-              color = settings.marginColor;
-            } else {
-              f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
-              switch (settings.mode) {
-                case ThematicGradientMode.SteppedWithDelimiter:
-                case ThematicGradientMode.IsoLines:
-                case ThematicGradientMode.Stepped: {
-                  if (settings.stepCount > 1) {
-                    const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
-                    color = this.mapColor(fStep);
-                  }
-                  break;
+            f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
+            switch (settings.mode) {
+              case ThematicGradientMode.SteppedWithDelimiter:
+              case ThematicGradientMode.IsoLines:
+              case ThematicGradientMode.Stepped: {
+                if (settings.stepCount > 1) {
+                  const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
+                  color = this.mapColor(fStep);
                 }
-                case ThematicGradientMode.Smooth:
-                  color = this.mapColor(f);
-                  break;
+                break;
               }
+              case ThematicGradientMode.Smooth:
+                color = this.mapColor(f);
+                break;
             }
             for (let i = 0; i < width; i++) {
               image[currentIdx--] = color!.getAlpha();
