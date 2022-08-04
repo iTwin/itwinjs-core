@@ -639,7 +639,7 @@ describe.only("ElementTreeWalker", () => {
     assert.isFalse(doesElementExist(testImodel, drawingCategoryId));
     assert.isTrue(doesElementExist(testImodel, documentListModelId));
     assert.isFalse(doesElementExist(testImodel, drawingModelId));
-    assert.isTrue(doesElementExist(testImodel, drawingGraphicId1));
+    assert.isFalse(doesElementExist(testImodel, drawingGraphicId1)); // contents of drawing model should be gone
     assert.isTrue(doesElementExist(testImodel, physicalModelId));
     assert.isTrue(doesElementExist(testImodel, physicalObjectId1));
     assert.isTrue(doesElementExist(testImodel, physicalObjectId2));
