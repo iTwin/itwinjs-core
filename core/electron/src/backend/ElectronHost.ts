@@ -9,7 +9,7 @@
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
 // Instead, use `ElectronHost.electron.<type>`
 
-import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";

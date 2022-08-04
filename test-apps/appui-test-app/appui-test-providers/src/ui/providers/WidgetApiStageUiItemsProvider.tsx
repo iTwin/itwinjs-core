@@ -45,6 +45,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         defaultState: WidgetState.Open,
         getWidgetContent: () => <h2>Left WL-A</h2>,
+        hideWithUiWhenFloating: true,
       });
       widgets.push({
         id: "WL-B",
@@ -53,8 +54,9 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         icon: "icon-app-2",
         defaultState: WidgetState.Open,
         getWidgetContent: () => <h2>Left WL-B</h2>,
+        hideWithUiWhenFloating: true,
+
       });
-      // eslint-disable-next-line deprecation/deprecation
     } else if (section === StagePanelSection.End) {
       widgets.push({
         id: "WL-1",
@@ -71,7 +73,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         getWidgetContent: () => <h2>Left WL-2</h2>,
       });
-
       widgets.push({
         id: "WL-3",
         label: "WL-3",
@@ -111,7 +112,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         defaultState: WidgetState.Hidden,
         getWidgetContent: () => <h2>Right WR-B</h2>,
       });
-      // eslint-disable-next-line deprecation/deprecation
     } else if (section === StagePanelSection.End) {
       widgets.push({
         id: "WR-1",
@@ -128,7 +128,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         getWidgetContent: () => <h2>Right WR-2</h2>,
       });
-
       widgets.push({
         id: "WR-3",
         label: "WR-3",
