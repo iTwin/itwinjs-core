@@ -45,7 +45,7 @@ export interface WidgetProps extends CommonProps {
 
 /** @internal */
 export interface WidgetComponent {
-  measure: () => SizeProps;
+  measure: () => Rectangle;
 }
 
 /** @internal */
@@ -119,7 +119,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       }, [dispatch, floatingWidgetId]);
       const measure = React.useCallback<WidgetContextArgs["measure"]>(() => {
         const bounds = elementRef.current!.getBoundingClientRect();
-        return bounds;
+        return Rectangle.create(bounds);
       }, []);
       const widgetContextValue = React.useMemo<WidgetContextArgs>(() => ({
         measure,
@@ -161,7 +161,7 @@ ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
 export interface WidgetContextArgs {
-  measure: () => SizeProps;
+  measure: () => Rectangle;
 }
 
 /** @internal */

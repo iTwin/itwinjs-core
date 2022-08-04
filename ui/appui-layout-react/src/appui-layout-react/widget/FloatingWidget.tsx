@@ -156,8 +156,7 @@ function useHandleAutoSize(dragged: boolean) {
     if (!ref.current)
       return;
 
-    const rect = ref.current.measure() as DOMRect;
-    let bounds = new Rectangle(rect.left, rect.top, rect.right, rect.bottom);
+    let bounds = ref.current.measure();
     const nzBounds = measureNz();
     const pointerPosition = dragManager.draggedItem.info.pointerPosition;
 
