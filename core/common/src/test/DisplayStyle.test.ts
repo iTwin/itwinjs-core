@@ -481,13 +481,11 @@ describe("DisplayStyleSettings overrides", () => {
     },
   };
 
-  it.only("creates selective overrides", () => {
+  it("creates selective overrides", () => {
     const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
 
     const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
-      console.log(JSON.stringify(output.ao));
-      console.log(JSON.stringify(expected.ao));
       expect(output).to.deep.equal(expected);
     };
 
