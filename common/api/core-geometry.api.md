@@ -548,7 +548,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     poleProductsXYZW(products: Float64Array, ax: number, ay: number, az: number, aw: number): void;
     tryMultiplyMatrix4dInPlace(matrix: Matrix4d): void;
     tryTransformInPlace(transform: Transform): boolean;
-    updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean;
+    updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail, testAt0?: boolean, testAt1?: boolean): boolean;
     }
 
 // @public
