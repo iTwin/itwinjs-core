@@ -711,6 +711,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       const chainFraction = this.chainDistanceToChainFraction(chainDistance);
       const chainDetail = CurveLocationDetail.createCurveFractionPoint(this, chainFraction, childDetail.point);
       chainDetail.childDetail = childDetail;
+      chainDetail.a = childDetail.a;
       return chainDetail;
     }
     return undefined;

@@ -269,8 +269,15 @@ export class BezierCurve3dH extends BezierCurveBase {
         numUpdates += detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a) ? 1 : 0;
       }
     }
+    numUpdates += this.updateDetailAtFraction (detail, 0.0, spacePoint) ? 1 : 0;
+    numUpdates += this.updateDetailAtFraction (detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean{
+    const xyz = this.fractionToPoint(fraction);
+    const a = xyz.distance(spacePoint);
+    return detail.updateIfCloserCurveFractionPointDistance (this, fraction, xyz, a);
+      }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
    * * any internal extrema in x,y,z
