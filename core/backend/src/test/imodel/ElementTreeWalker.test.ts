@@ -72,8 +72,22 @@ function doesGroupRelationshipExist(imodel: IModelDb, source: Id64String, target
 }
 
 describe.only("ElementTreeWalker", () => {
-  let imodel1: SnapshotDb;
+  let imodel: SnapshotDb;
   let originalEnv: any;
+
+  let repositoryLinkId: Id64String;
+  let jobSubjectId: Id64String;
+  let childSubject: Id64String;
+  let definitionModelId: Id64String;
+  let spatialCategoryId: Id64String;
+  let drawingCategoryId: Id64String;
+  let documentListModelId: Id64String;
+  let drawingModelId: Id64String;
+  let drawingGraphicId1: Id64String;
+  let physicalModelId: Id64String;
+  let physicalObjectId1: Id64String;
+  let physicalObjectId2: Id64String;
+  let physicalObjectId3: Id64String;
 
   before(async () => {
     originalEnv = { ...process.env };
@@ -86,19 +100,9 @@ describe.only("ElementTreeWalker", () => {
   });
 
   beforeEach(async () => {
-    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
-  });
-
-  afterEach(() => {
-    sinon.restore();
-    imodel1.close();
-  });
-
-  it("delete element tree with nested models", () => {
-
-    const testImodel = imodel1;
+    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     /*
       [RepositoryModel]
@@ -117,18 +121,18 @@ describe.only("ElementTreeWalker", () => {
                                           PhysicalObject, PhysicalObject, PhysicalObject (grouped)
     */
 
-    const repositoryLinkId = IModelTestUtils.insertRepositoryLink(testImodel, "test link", "foo", "bar");
-    const jobSubjectId = IModelTestUtils.createJobSubjectElement(testImodel, "Job").insert();
+    repositoryLinkId = IModelTestUtils.insertRepositoryLink(imodel, "test link", "foo", "bar");
+    jobSubjectId = IModelTestUtils.createJobSubjectElement(imodel, "Job").insert();
 
-    const childSubject = Subject.insert(testImodel, jobSubjectId, "Child Subject");
+    childSubject = Subject.insert(imodel, jobSubjectId, "Child Subject");
 
-    const definitionModelId = DefinitionModel.insert(testImodel, jobSubjectId, "Definition");
-    const spatialCategoryId = SpatialCategory.insert(testImodel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    const drawingCategoryId = DrawingCategory.insert(testImodel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    definitionModelId = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+    spatialCategoryId = SpatialCategory.insert(imodel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+    drawingCategoryId = DrawingCategory.insert(imodel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
 
-    const documentListModelId = DocumentListModel.insert(testImodel, jobSubjectId, "Document");
+    documentListModelId = DocumentListModel.insert(imodel, jobSubjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingModelId = Drawing.insert(testImodel, documentListModelId, "Drawing");
+    drawingModelId = Drawing.insert(imodel, documentListModelId, "Drawing");
     const drawingGraphicProps1: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
       model: drawingModelId,
@@ -138,9 +142,9 @@ describe.only("ElementTreeWalker", () => {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId1 = testImodel.elements.insertElement(drawingGraphicProps1);
+    drawingGraphicId1 = imodel.elements.insertElement(drawingGraphicProps1);
 
-    const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, PhysicalPartition.createCode(testImodel, childSubject, "Physical"), false, childSubject);
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, PhysicalPartition.createCode(imodel, childSubject, "Physical"), false, childSubject);
     const elementProps: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
       model: physicalModelId,
@@ -148,32 +152,40 @@ describe.only("ElementTreeWalker", () => {
       code: Code.createEmpty(),
     };
 
-    const physicalObjectId1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    const physicalObjectId2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    const physicalObjectId3 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId2).insert();
-    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId3).insert();
+    physicalObjectId1 = imodel.elements.insertElement(imodel.elements.createElement(elementProps).toJSON());
+    physicalObjectId2 = imodel.elements.insertElement(imodel.elements.createElement(elementProps).toJSON());
+    physicalObjectId3 = imodel.elements.insertElement(imodel.elements.createElement(elementProps).toJSON());
+    ElementGroupsMembers.create(imodel, physicalObjectId1, physicalObjectId2).insert();
+    ElementGroupsMembers.create(imodel, physicalObjectId1, physicalObjectId3).insert();
 
-    assert.isTrue(doesElementExist(testImodel, repositoryLinkId));
-    assert.equal(testImodel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
-    assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
-    assert.equal(testImodel.elements.getElement(spatialCategoryId).model, definitionModelId);
-    assert.equal(testImodel.elements.getElement(drawingCategoryId).model, definitionModelId);
-    assert.equal(testImodel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
-    assert.equal(testImodel.elements.getElement(drawingModelId).model, documentListModelId);
-    assert.equal(testImodel.elements.getElement(drawingGraphicId1).model, drawingModelId);
-    assert.equal(testImodel.elements.getElement(physicalModelId).parent?.id, childSubject);
-    assert.equal(testImodel.elements.getElement(physicalObjectId1).model, physicalModelId);
-    assert.equal(testImodel.elements.getElement(physicalObjectId2).model, physicalModelId);
-    assert.equal(testImodel.elements.getElement(physicalObjectId3).model, physicalModelId);
-    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
-    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
-    assert.isTrue(doesModelExist(testImodel, definitionModelId));
-    assert.isTrue(doesModelExist(testImodel, drawingModelId));
-    assert.isTrue(doesModelExist(testImodel, physicalModelId));
+    assert.isTrue(doesElementExist(imodel, repositoryLinkId));
+    assert.equal(imodel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
+    assert.equal(imodel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
+    assert.equal(imodel.elements.getElement(spatialCategoryId).model, definitionModelId);
+    assert.equal(imodel.elements.getElement(drawingCategoryId).model, definitionModelId);
+    assert.equal(imodel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
+    assert.equal(imodel.elements.getElement(drawingModelId).model, documentListModelId);
+    assert.equal(imodel.elements.getElement(drawingGraphicId1).model, drawingModelId);
+    assert.equal(imodel.elements.getElement(physicalModelId).parent?.id, childSubject);
+    assert.equal(imodel.elements.getElement(physicalObjectId1).model, physicalModelId);
+    assert.equal(imodel.elements.getElement(physicalObjectId2).model, physicalModelId);
+    assert.equal(imodel.elements.getElement(physicalObjectId3).model, physicalModelId);
+    assert.isTrue(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId2));
+    assert.isTrue(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId3));
+    assert.isTrue(doesModelExist(imodel, definitionModelId));
+    assert.isTrue(doesModelExist(imodel, drawingModelId));
+    assert.isTrue(doesModelExist(imodel, physicalModelId));
+  });
 
+  afterEach(() => {
+    sinon.restore();
+    imodel.close();
+  });
+
+  it("DFS search and deleteElementTree", () => {
+    // First, check that DFS search visits elements and models in expected bottom-up order
     {
-      const collector1 = new ElementTreeCollector(testImodel);
+      const collector1 = new ElementTreeCollector(imodel);
       collector1.collect(jobSubjectId);
       assert.isTrue(collector1.subModels.includes(physicalModelId));
       assert.isTrue(collector1.subModels.includes(drawingModelId));
@@ -194,8 +206,9 @@ describe.only("ElementTreeWalker", () => {
       assert.isTrue(collector1.elements.indexOf(physicalModelId) < collector1.elements.indexOf(childSubject), "in bottom-up search, a child element should be visited before its parent element");
     }
 
+    // Exercise the search filters
     {
-      const collector2 = new SelectedElementCollector(testImodel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
+      const collector2 = new SelectedElementCollector(imodel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
       collector2.collect(jobSubjectId);
       assert.isTrue(collector2.definitions.length === 1);
       assert.isTrue(collector2.definitions.includes(spatialCategoryId));
@@ -204,33 +217,31 @@ describe.only("ElementTreeWalker", () => {
       assert.isTrue(collector2.elements.includes(physicalObjectId3));
     }
 
-    deleteElementTree(testImodel, jobSubjectId);
+    // Test the deleteElementTree function
+    deleteElementTree(imodel, jobSubjectId);
 
-    assert.isTrue(doesElementExist(testImodel, repositoryLinkId), "RepositoryLink should not have been deleted, since it is not under Job Subject");
-    assert.isFalse(doesElementExist(testImodel, definitionModelId));
-    assert.isFalse(doesElementExist(testImodel, spatialCategoryId));
-    assert.isFalse(doesElementExist(testImodel, drawingCategoryId));
-    assert.isFalse(doesElementExist(testImodel, documentListModelId));
-    assert.isFalse(doesElementExist(testImodel, drawingModelId));
-    assert.isFalse(doesElementExist(testImodel, drawingGraphicId1));
-    assert.isFalse(doesElementExist(testImodel, physicalModelId));
-    assert.isFalse(doesElementExist(testImodel, physicalObjectId1));
-    assert.isFalse(doesElementExist(testImodel, physicalObjectId2));
-    assert.isFalse(doesElementExist(testImodel, physicalObjectId3));
-    assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
-    assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
-    assert.isFalse(doesElementExist(testImodel, jobSubjectId));
-    assert.isFalse(doesModelExist(testImodel, definitionModelId));
-    assert.isFalse(doesModelExist(testImodel, drawingModelId));
-    assert.isFalse(doesModelExist(testImodel, physicalModelId));
-    assert.isTrue(doesModelExist(testImodel, IModel.repositoryModelId));
-    assert.isTrue(doesModelExist(testImodel, IModel.dictionaryId));
+    assert.isTrue(doesModelExist(imodel, IModel.repositoryModelId));
+    assert.isTrue(doesModelExist(imodel, IModel.dictionaryId));
+    assert.isTrue(doesElementExist(imodel, repositoryLinkId), "RepositoryLink should not have been deleted, since it is not under Job Subject");
+    assert.isFalse(doesElementExist(imodel, definitionModelId));
+    assert.isFalse(doesElementExist(imodel, spatialCategoryId));
+    assert.isFalse(doesElementExist(imodel, drawingCategoryId));
+    assert.isFalse(doesElementExist(imodel, documentListModelId));
+    assert.isFalse(doesElementExist(imodel, drawingModelId));
+    assert.isFalse(doesElementExist(imodel, drawingGraphicId1));
+    assert.isFalse(doesElementExist(imodel, physicalModelId));
+    assert.isFalse(doesElementExist(imodel, physicalObjectId1));
+    assert.isFalse(doesElementExist(imodel, physicalObjectId2));
+    assert.isFalse(doesElementExist(imodel, physicalObjectId3));
+    assert.isFalse(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId2));
+    assert.isFalse(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId3));
+    assert.isFalse(doesElementExist(imodel, jobSubjectId));
+    assert.isFalse(doesModelExist(imodel, definitionModelId));
+    assert.isFalse(doesModelExist(imodel, drawingModelId));
+    assert.isFalse(doesModelExist(imodel, physicalModelId));
   });
 
-  it("delete element sub-tree with nested models", () => {
-
-    const testImodel = imodel1;
-
+  it("deleteElementSubTrees", () => {
     /*
       [RepositoryModel]
         RepositoryLink
@@ -249,85 +260,31 @@ describe.only("ElementTreeWalker", () => {
                                                                                   ^-- PRUNE
     */
 
-    const repositoryLinkId = IModelTestUtils.insertRepositoryLink(testImodel, "test link", "foo", "bar");
-    const jobSubjectId = IModelTestUtils.createJobSubjectElement(testImodel, "Job").insert();
-
-    const childSubject = Subject.insert(testImodel, jobSubjectId, "Child Subject");
-
-    const definitionModelId = DefinitionModel.insert(testImodel, jobSubjectId, "Definition");
-    const spatialCategoryId = SpatialCategory.insert(testImodel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    const drawingCategoryId = DrawingCategory.insert(testImodel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
-
-    const documentListModelId = DocumentListModel.insert(testImodel, jobSubjectId, "Document");
-    assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingModelId = Drawing.insert(testImodel, documentListModelId, "Drawing");
-    const drawingGraphicProps1: GeometricElement2dProps = {
-      classFullName: DrawingGraphic.classFullName,
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "DrawingGraphic1",
-      geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
-      placement: { origin: Point2d.create(2, 2), angle: 0 },
-    };
-    const drawingGraphicId1 = testImodel.elements.insertElement(drawingGraphicProps1);
-
-    const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, PhysicalPartition.createCode(testImodel, childSubject, "Physical"), false, childSubject);
-    const elementProps: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: physicalModelId,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-    };
-
-    const physicalObjectId1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    const physicalObjectId2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    const physicalObjectId3 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
-    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId2).insert();
-    ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId3).insert();
-
-    assert.isTrue(doesElementExist(testImodel, repositoryLinkId));
-    assert.equal(testImodel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
-    assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
-    assert.equal(testImodel.elements.getElement(spatialCategoryId).model, definitionModelId);
-    assert.equal(testImodel.elements.getElement(drawingCategoryId).model, definitionModelId);
-    assert.equal(testImodel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
-    assert.equal(testImodel.elements.getElement(drawingModelId).model, documentListModelId);
-    assert.equal(testImodel.elements.getElement(drawingGraphicId1).model, drawingModelId);
-    assert.equal(testImodel.elements.getElement(physicalModelId).parent?.id, childSubject);
-    assert.equal(testImodel.elements.getElement(physicalObjectId1).model, physicalModelId);
-    assert.equal(testImodel.elements.getElement(physicalObjectId2).model, physicalModelId);
-    assert.equal(testImodel.elements.getElement(physicalObjectId3).model, physicalModelId);
-    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
-    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
-    assert.isTrue(doesModelExist(testImodel, definitionModelId));
-    assert.isTrue(doesModelExist(testImodel, drawingModelId));
-    assert.isTrue(doesModelExist(testImodel, physicalModelId));
-
     const toPrune = new Set<string>();
     toPrune.add(drawingModelId);
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
-    deleteElementSubTrees(testImodel, jobSubjectId, (elid) => toPrune.has(elid));
 
-    assert.isTrue(doesElementExist(testImodel, repositoryLinkId));
-    assert.isTrue(doesElementExist(testImodel, definitionModelId));
-    assert.isTrue(doesElementExist(testImodel, spatialCategoryId));
-    assert.isFalse(doesElementExist(testImodel, drawingCategoryId));
-    assert.isTrue(doesElementExist(testImodel, documentListModelId));
-    assert.isFalse(doesElementExist(testImodel, drawingModelId));
-    assert.isFalse(doesElementExist(testImodel, drawingGraphicId1)); // contents of drawing model should be gone
-    assert.isTrue(doesElementExist(testImodel, physicalModelId));
-    assert.isTrue(doesElementExist(testImodel, physicalObjectId1));
-    assert.isTrue(doesElementExist(testImodel, physicalObjectId2));
-    assert.isFalse(doesElementExist(testImodel, physicalObjectId3));
-    assert.isTrue(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId2));
-    assert.isFalse(doesGroupRelationshipExist(testImodel, physicalObjectId1, physicalObjectId3));
-    assert.isTrue(doesElementExist(testImodel, jobSubjectId));
-    assert.isTrue(doesModelExist(testImodel, definitionModelId));
-    assert.isFalse(doesModelExist(testImodel, drawingModelId));
-    assert.isTrue(doesModelExist(testImodel, physicalModelId));
-    assert.isTrue(doesModelExist(testImodel, IModel.repositoryModelId));
-    assert.isTrue(doesModelExist(testImodel, IModel.dictionaryId));
+    deleteElementSubTrees(imodel, jobSubjectId, (elid) => toPrune.has(elid));
+
+    assert.isTrue(doesElementExist(imodel, repositoryLinkId));
+    assert.isTrue(doesElementExist(imodel, definitionModelId));
+    assert.isTrue(doesElementExist(imodel, spatialCategoryId));
+    assert.isFalse(doesElementExist(imodel, drawingCategoryId));
+    assert.isTrue(doesElementExist(imodel, documentListModelId));
+    assert.isFalse(doesElementExist(imodel, drawingModelId));
+    assert.isFalse(doesElementExist(imodel, drawingGraphicId1)); // contents of drawing model should be gone
+    assert.isTrue(doesElementExist(imodel, physicalModelId));
+    assert.isTrue(doesElementExist(imodel, physicalObjectId1));
+    assert.isTrue(doesElementExist(imodel, physicalObjectId2));
+    assert.isFalse(doesElementExist(imodel, physicalObjectId3));
+    assert.isTrue(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId2));
+    assert.isFalse(doesGroupRelationshipExist(imodel, physicalObjectId1, physicalObjectId3));
+    assert.isTrue(doesElementExist(imodel, jobSubjectId));
+    assert.isTrue(doesModelExist(imodel, definitionModelId));
+    assert.isFalse(doesModelExist(imodel, drawingModelId));
+    assert.isTrue(doesModelExist(imodel, physicalModelId));
+    assert.isTrue(doesModelExist(imodel, IModel.repositoryModelId));
+    assert.isTrue(doesModelExist(imodel, IModel.dictionaryId));
   });
 });
