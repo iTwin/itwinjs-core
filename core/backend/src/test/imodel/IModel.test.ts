@@ -7,7 +7,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64Array, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { assert as beAssert, DbResult, Guid, GuidString, Id64, Id64Array, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
@@ -22,7 +22,7 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionElement, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
@@ -52,73 +52,140 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
+interface ElementTreeWalkerModelInfo { model: Model, isDefn: boolean }
+
+function isDefinitionModel(model: Model): boolean {
+  return (model.id !== IModel.repositoryModelId) && (model instanceof DefinitionModel);
+}
+
+/** Describes how an element or model was reached. This object is immutable. */
+class ElementTreeWalkerScope {
+  public readonly topElement: Id64String = "";
+  /** path of parent elements and enclosing models */
+  public readonly path: Array<Id64String | ElementTreeWalkerModelInfo> = [];
+  /** cached info about the immediately enclosing model (i.e., the last model in path) */
+  public readonly enclosingModelInfo: ElementTreeWalkerModelInfo;
+
+  constructor(topElement: Id64String, model: Model);
+  constructor(enclosingScope: ElementTreeWalkerScope, newScope: Id64String | Model);
+  constructor(arg1: Id64String | ElementTreeWalkerScope, arg2: Model | Id64String) {
+    if (typeof arg1 === "string") {
+      // normal constructor
+      beAssert(arg2 instanceof Model);
+      this.topElement = arg1;
+      this.path.push(this.enclosingModelInfo = { model: arg2, isDefn: isDefinitionModel(arg2) });
+    } else if (arg1 instanceof ElementTreeWalkerScope) {
+      // copy-like constructor
+      beAssert(this.topElement !== "", "must call normal constructor first");
+      this.path = [...arg1.path];
+      if (typeof arg2 === "string") {
+        // with new parent
+        this.path.push(arg2);
+        this.enclosingModelInfo = arg1.enclosingModelInfo;
+      } else {
+        // with new enclosing model
+        this.path.push(this.enclosingModelInfo = { model: arg2, isDefn: isDefinitionModel(arg2) });
+      }
+    } else {
+      throw new Error("invalid constructor signature");
+    }
+  }
+
+  // public getEnclosingModel(): ElementTreeWalkerModelInfo {
+  //   for (let i = this.path.length - 1; i >= 0; --i) {
+  //     const item = this.path[i];
+  //     if (typeof item !== "string")
+  //       return item;
+  //   }
+  //   throw new Error("empty context");
+  // }
+
+  // public isInDefinitionModel(): boolean {
+  //   return this.getEnclosingModel().isDefn;
+  // }
+
+  public get enclosingModel(): Model { return this.enclosingModelInfo.model; }
+  public get inDefinitionModel(): boolean { return this.enclosingModelInfo.isDefn; } // NB: this will return false for the RepositoryModel!
+  public get inRepositoryModel(): boolean { return this.enclosingModelInfo.model.id === IModelDb.repositoryModelId; }
+
+  public static createTopScope(imodel: IModelDb, topElementId: Id64String) {
+    const topElement = imodel.elements.getElement(topElementId);
+    const topElementModel = imodel.models.getModel(topElement.model);
+    return new ElementTreeWalkerScope(topElementId, topElementModel);
+  }
+}
+
 /** Do a depth first search on the tree defined by an element and its submodels and children.
  * Must be subclassed.
  * The main callbacks that should be overridden are:
- *  shouldExploreModel to control depth
- *  shouldReportElement, shouldReportModel to control reporting
- *  reportElement, reportModel to receive reports
+ *  shouldExploreModel - controls search depth
+ *  shouldVisitElement, shouldVisitModel - control which items are visited
+ *  visitElement, visitModel - visit items
  */
-abstract class ElementTreeReporter {
+abstract class ElementTreeWalker {
   constructor(protected _imodel: IModelDb) { }
 
   /** Return true if the reporter should recurse into this model  */
   public shouldExploreModel(_model: Model): boolean { return true; }
   /** Return true if the reporter should report this element  */
-  public shouldReportElement(_elid: Id64String): boolean { return true; }
+  public shouldVisitElement(_elid: Id64String): boolean { return true; }
   /** Return true if the reporter should report this model  */
-  public shouldReportModel(_model: Model): boolean { return true; }
+  public shouldVisitModel(_model: Model): boolean { return true; }
 
   /** Called to report a model */
-  public abstract reportModel(model: Model, inDefinitionModel: boolean): void;
+  public abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
   /** Called to report an element */
-  public abstract reportElement(elid: Id64String, inDefinitionModel: boolean): void;
+  public abstract visitElement(elid: Id64String, scope: ElementTreeWalkerScope): void;
 
   // This is the main tree-walking algorithm
-  protected processElementTree(element: Id64String, inDefinitionModel: boolean) {
+  protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
     const subModel = this._imodel.models.tryGetModel<Model>(element);
     if (subModel !== undefined)
-      this.visitSubModel(subModel, (subModel instanceof DefinitionModel)); // all elements in a DefinitionModel are DefinitionElements or InformationContentElements (https://www.itwinjs.org/bis/domains/biscore.ecschema/#definitionmodel)
+      this.processSubModel(subModel, new ElementTreeWalkerScope(scope, subModel));
 
-    for (const childElement of this._imodel.elements.queryChildren(element))
-      this.visitChildElement(childElement, inDefinitionModel);
+    let parentScope: ElementTreeWalkerScope | undefined;
+    for (const childElement of this._imodel.elements.queryChildren(element)) {
+      if (parentScope === undefined)
+        parentScope = new ElementTreeWalkerScope(scope, element);
+      this.processChildElement(childElement, parentScope);
+    }
 
-    this.visitElement(element, inDefinitionModel);
+    this.processElement(element, scope);
   }
 
-  protected visitSubModel(model: Model, isDefinitionModel: boolean) {
+  protected processSubModel(model: Model, scope: ElementTreeWalkerScope) {
     if (this.shouldExploreModel(model))
-      this.processElementsInModel(model, isDefinitionModel); // => explore elements in the model - invokes onElementInModel with each
+      this.processElementsInModel(model, scope);
 
-    if (this.shouldReportModel(model))
-      this.reportModel(model, isDefinitionModel);
+    if (this.shouldVisitModel(model))
+      this.visitModel(model, scope);
   }
 
-  protected processElementsInModel(model: Model, inDefinitionModel: boolean): void {
+  protected processElementsInModel(model: Model, scope: ElementTreeWalkerScope): void {
     model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=?`, (stmt) => {
       stmt.bindId(1, model.id);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const elid = stmt.getValue(0).getId();
-        this.visitElementInModel(model, inDefinitionModel, elid);
+        this.processElementInModel(model, scope, elid);
       }
     });
   }
 
-  protected visitElementInModel(_model: Model, inDefinitionModel: boolean, elid: Id64String) {
-    this.processElementTree(elid, inDefinitionModel);
+  protected processElementInModel(_model: Model, scope: ElementTreeWalkerScope, elid: Id64String) {
+    this.processElementTree(elid, scope);
   }
 
-  protected visitChildElement(elid: Id64String, inDefinitionModel: boolean) {
-    this.processElementTree(elid, inDefinitionModel);
+  protected processChildElement(elid: Id64String, scope: ElementTreeWalkerScope) {
+    this.processElementTree(elid, scope);
   }
 
-  protected visitElement(elid: Id64String, inDefinitionModel: boolean) {
-    if (this.shouldReportElement(elid))
-      this.reportElement(elid, inDefinitionModel);
+  protected processElement(elid: Id64String, scope: ElementTreeWalkerScope) {
+    if (this.shouldVisitElement(elid))
+      this.visitElement(elid, scope);
   }
 }
 
-class ElementTreeDumper extends ElementTreeReporter {
+class ElementTreeDumper extends ElementTreeWalker {
   private _subModels: Id64Array = [];
   private _definitionModels: Id64Array = [];
   private _elements: Id64Array = [];
@@ -126,15 +193,15 @@ class ElementTreeDumper extends ElementTreeReporter {
 
   public constructor(imodel: IModelDb) { super(imodel); }
 
-  public reportModel(model: Model, isDefinitionModel: boolean): void {
-    if (isDefinitionModel)
+  public visitModel(model: Model, scope: ElementTreeWalkerScope): void {
+    if (scope.enclosingModelInfo.isDefn)
       this._definitionModels.push(model.id);
     else
       this._subModels.push(model.id);
   }
 
-  public reportElement(elid: Id64String, inDefinitionModel: boolean): void {
-    if (inDefinitionModel)
+  public visitElement(elid: Id64String, scope: ElementTreeWalkerScope): void {
+    if (scope.inDefinitionModel)
       this._definitions.push(elid); // may be some other kind of InformationContentElement - that's OK.
     else
       this._elements.push(elid);
@@ -167,39 +234,44 @@ class ElementTreeDumper extends ElementTreeReporter {
   }
 
   public report(topElement: Id64String): void {
-    this.processElementTree(topElement, false);
+    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this._imodel, topElement));
     this.dump();
   }
 }
 
-class ReportIndividualElements extends ElementTreeDumper {
+class SelectedElementReporter extends ElementTreeDumper {
   public constructor(imodel: IModelDb, private _elementsToReport: Id64Array) { super(imodel); }
   public override shouldExploreModel(_model: Model): boolean { return true; }
-  public override shouldReportModel(_model: Model): boolean { return false; }
-  public override shouldReportElement(elid: Id64String): boolean { return this._elementsToReport.includes(elid); }
+  public override shouldVisitModel(_model: Model): boolean { return false; }
+  public override shouldVisitElement(elid: Id64String): boolean { return this._elementsToReport.includes(elid); }
 }
 
-class DeleteEntireTree extends ElementTreeReporter {
+class ElementTreeDeleter extends ElementTreeWalker {
   private _definitionModels: Id64Array = [];
   private _definitions: Id64Array = [];
   private _subjects: Id64Array = [];
 
-  public constructor(imodel: IModelDb, private _topElement: Id64String) { super(imodel); }
+  public constructor(imodel: IModelDb) { super(imodel); }
 
   public override shouldExploreModel(_model: Model): boolean { return true; }
-  public override shouldReportElement(_elid: Id64String): boolean { return true; }
+  public override shouldVisitElement(_elid: Id64String): boolean { return true; }
 
-  public override reportModel(model: Model, isDefinitionModel: boolean): void {
+  public override visitModel(model: Model, scope: ElementTreeWalkerScope): void {
     // model contents were already processed + deleted
-    if (isDefinitionModel)
+    if (scope.inDefinitionModel)
       this._definitionModels.push(model.id);
     else
       model.delete();
   }
 
-  public override reportElement(elid: Id64String, inDefinitionModel: boolean): void {
-    if (inDefinitionModel) {
-      this._definitions.push(elid); // may be some other kind of InformationContentElement - that's OK.
+  private _isDefinitionElement(elid: Id64String): boolean {
+    const el = this._imodel.elements.getElement(elid);
+    return el instanceof DefinitionElement;
+  }
+
+  public override visitElement(elid: Id64String, scope: ElementTreeWalkerScope): void {
+    if ((scope.inDefinitionModel || scope.inRepositoryModel) && this._isDefinitionElement(elid)) {
+      this._definitions.push(elid);
     } else if (this._imodel.elements.tryGetElement<Subject>(elid, Subject) !== undefined) {
       this._subjects.push(elid);
     } else if (this._definitionModels.includes(elid)) {
@@ -215,8 +287,8 @@ class DeleteEntireTree extends ElementTreeReporter {
     }
   }
 
-  protected deleteNormalElementsAndSubModels(): void {
-    this.processElementTree(this._topElement, false);
+  protected deleteNormalElementsAndSubModels(topElement: Id64String): void {
+    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this._imodel, topElement));
   }
 
   protected deleteDefinitions(): void {
@@ -238,8 +310,8 @@ class DeleteEntireTree extends ElementTreeReporter {
     }
   }
 
-  public deleteElementTree(): void {
-    this.deleteNormalElementsAndSubModels();
+  public deleteElementTree(topElement: Id64String): void {
+    this.deleteNormalElementsAndSubModels(topElement); // this deletes some elements and records others for deferred processing
     this.deleteDefinitions();
     this.deleteSubjects();
   }
@@ -1597,7 +1669,7 @@ describe.only("iModel", () => {
     ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId2).insert();
     ElementGroupsMembers.create(testImodel, physicalObjectId1, physicalObjectId3).insert();
 
-    assert.equal(testImodel.elements.getElement(repositoryLinkId).parent?.id, IModel.rootSubjectId);
+    assert.isTrue(doesElementExist(testImodel, repositoryLinkId));
     assert.equal(testImodel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
     assert.equal(testImodel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
     assert.equal(testImodel.elements.getElement(spatialCategoryId).model, definitionModelId);
@@ -1620,12 +1692,13 @@ describe.only("iModel", () => {
     del1.report(jobSubjectId);
 
     console.log("Selected individual elements down in the models");
-    const del2 = new ReportIndividualElements(testImodel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
+    const del2 = new SelectedElementReporter(testImodel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
     del2.report(jobSubjectId);
 
-    const del3 = new DeleteEntireTree(testImodel, jobSubjectId);
-    del3.deleteElementTree();
+    const del3 = new ElementTreeDeleter(testImodel);
+    del3.deleteElementTree(jobSubjectId);
 
+    assert.isTrue(doesElementExist(testImodel, repositoryLinkId), "RepositoryLink should not have been deleted, since it is not under Job Subject");
     assert.isFalse(doesElementExist(testImodel, definitionModelId));
     assert.isFalse(doesElementExist(testImodel, spatialCategoryId));
     assert.isFalse(doesElementExist(testImodel, drawingCategoryId));
