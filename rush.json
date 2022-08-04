@@ -552,7 +552,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "ui-full-stack-tests",
+      "packageName": "ui-end-to-end-tests",
       "projectFolder": "full-stack-tests/ui",
       "reviewCategory": "internal",
       "shouldPublish": false

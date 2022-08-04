@@ -46,8 +46,6 @@ test.describe("widget auto size", () => {
 
     // Top right corner of a floating widget should render close to the top right of a frontstage.
     expect(updatedBoundingBox.x + updatedBoundingBox.width).toBeGreaterThan(frontstageBoundingBox.width - 5);
-
-    // 1px border.
     expect(updatedBoundingBox.y).toBeLessThan(5);
   });
 });
