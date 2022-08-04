@@ -34,6 +34,7 @@ deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
+deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -68,10 +69,12 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions 
-public;class Document 
 public;DocumentListModel 
 public;DocumentPartition 
+beta;DownloadChangesetArg 
+beta;DownloadChangesetRangeArg 
 internal;DownloadJob
+beta;DownloadProgressArg
 internal;DownloadRequest
 internal;Downloads
 public;Drawing 
@@ -92,8 +95,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceDb 
-public;Element 
+internal;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -186,7 +188,8 @@ public;IModelDb
 internal;TileContentState
 internal;Tiles
 public;IModelHost
-public;IModelHostConfiguration
+public;IModelHostConfiguration 
+public;IModelHostOptions
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
@@ -199,7 +202,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
-internal;initializeRpcBackend(): void
+internal;initializeRpcBackend(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
@@ -207,7 +210,7 @@ public;IpcHostOpts
 public;ITwinIdArg
 internal;ITwinWorkspace 
 internal;ITwinWorkspaceContainer 
-beta;ITwinWorkspaceDb 
+internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -263,7 +266,8 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
-public;ProgressFunction = (loaded: number, total: number) => number
+public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
+public;ProgressStatus
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -317,6 +321,11 @@ public;class SpatialLocationType
 public;class SpatialModel 
 public;SpatialViewDefinition 
 public;SQLiteDb 
+public;SQLiteDb
+internal;BlobIO = IModelJsNative.BlobIO
+internal;CloudCache = IModelJsNative.CloudCache
+internal;CloudContainer = IModelJsNative.CloudContainer
+internal;CloudPrefetch = IModelJsNative.CloudPrefetch
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

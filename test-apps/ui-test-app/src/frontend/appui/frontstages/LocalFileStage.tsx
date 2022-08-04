@@ -75,7 +75,6 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         isIModelIndependent={true}
         usage={StageUsage.Private}
         contentManipulationTools={

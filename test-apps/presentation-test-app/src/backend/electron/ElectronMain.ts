@@ -7,7 +7,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
-import { IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHostOptions } from "@itwin/core-backend";
 
 /**
  * Initializes Electron backend
@@ -21,7 +21,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     developmentServer: process.env.NODE_ENV === "development",
     ipcHandlers: [SampleIpcHandler],
   };
-  const iModelHost = new IModelHostConfiguration();
+  const iModelHost: IModelHostOptions = {};
 
   let authClient;
   if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {

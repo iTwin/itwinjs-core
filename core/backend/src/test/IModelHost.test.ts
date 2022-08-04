@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -98,7 +98,7 @@ describe("IModelHost", () => {
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     const cacheSubDir = "imodels";
 
     // Test cache default location
@@ -116,7 +116,7 @@ describe("IModelHost", () => {
   });
 
   it("should set Azure cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -136,7 +136,7 @@ describe("IModelHost", () => {
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     const setUseTileCacheStub = sinon.stub();
@@ -151,7 +151,7 @@ describe("IModelHost", () => {
   });
 
   it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -175,7 +175,7 @@ describe("IModelHost", () => {
   });
 
   it("should cleanup tileCacheService and tileUploader on shutdown", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     await IModelHost.startup(config);

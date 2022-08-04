@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "add querySubCategories to imodelconnection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

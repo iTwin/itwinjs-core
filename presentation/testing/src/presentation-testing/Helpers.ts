@@ -6,11 +6,8 @@
  * @module Helpers
  */
 import * as rimraf from "rimraf";
-// common includes
 import { Guid } from "@itwin/core-bentley";
-// backend includes
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
-// frontend includes
+import { IModelHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -77,9 +74,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   props.backendProps = props.backendProps ?? {};
   if (!props.backendProps.id)
     props.backendProps.id = `test-${Guid.createValue()}`;
-  const cfg = new IModelHostConfiguration();
-  cfg.cacheDir = join(__dirname, ".cache");
-  await IModelHost.startup(cfg);
+  await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
   PresentationBackend.initialize(props.backendProps);
 
   // init frontend

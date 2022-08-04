@@ -13,7 +13,7 @@ import {
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
   IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
   IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps,
-  SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps,ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -24,7 +24,7 @@ import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
-import { ViewStateHydrater } from "../ViewStateHydrater";
+import { ViewStateHydrator } from "../ViewStateHydrator";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -45,8 +45,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewHydrater = new ViewStateHydrater(iModelDb);
+    const viewHydrater = new ViewStateHydrator(iModelDb);
     return viewHydrater.getHydrateResponseProps(options);
+  }
+
+  public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
+    return iModelDb.querySubCategories(decompressedIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
