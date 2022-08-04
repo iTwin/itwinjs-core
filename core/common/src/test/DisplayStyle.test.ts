@@ -341,8 +341,8 @@ describe("DisplayStyleSettings overrides", () => {
       bias: 0.5,
       zLengthCap: 0.25,
       intensity: 1.5,
-      blurDelta: 1,
-      blurSigma: 2,
+      blurDelta: 1.1,
+      blurSigma: 2.1,
       blurTexelStepSize: 3,
       maxDistance: 4,
       texelStepSize: 5,
@@ -481,11 +481,13 @@ describe("DisplayStyleSettings overrides", () => {
     },
   };
 
-  it("creates selective overrides", () => {
+  it.only("creates selective overrides", () => {
     const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
 
     const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
+      console.log(JSON.stringify(output.ao));
+      console.log(JSON.stringify(expected.ao));
       expect(output).to.deep.equal(expected);
     };
 
