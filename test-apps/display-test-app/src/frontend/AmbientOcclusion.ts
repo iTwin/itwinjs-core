@@ -93,7 +93,7 @@ export class AmbientOcclusionEditor {
       parent: slidersDiv,
       name: "Intensity: ",
       id: "viewAttr_AOIntensity",
-      min: "1.0",
+      min: "0.1",
       step: "0.1",
       max: "16.0",
       value: "0.0",
