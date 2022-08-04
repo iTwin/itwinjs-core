@@ -32,6 +32,20 @@ function isDefinitionElement(imodel: IModelDb, elid: Id64String): boolean {
   return el instanceof DefinitionElement;
 }
 
+function isSubjectElement(imodel: IModelDb, elid: Id64String): boolean {
+  const el = imodel.elements.getElement(elid);
+  return el instanceof Subject;
+}
+
+enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, }
+
+function classifyElementForPruning(imodel: IModelDb, elid: Id64String): ElementPruningClassification {
+  const el = imodel.elements.getElement(elid);
+  return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
+    (el instanceof DefinitionElement) ? ElementPruningClassification.PRUNING_CLASS_Definition :
+      ElementPruningClassification.PRUNING_CLASS_Normal;
+}
+
 /** Describes how an element or model was reached. This object is immutable. */
 class ElementTreeWalkerScope {
   public readonly topElement: Id64String = "";
@@ -78,7 +92,7 @@ class ElementTreeWalkerScope {
   private fmtItem(v: Id64String | ElementTreeWalkerModelInfo): string {
     if (typeof v === "string")
       return `element ${v}`;
-    return `model ${v.model.id} ${v.isDefn? "(DEFN)": ""}`;
+    return `model ${v.model.id} ${v.isDefn ? "(DEFN)" : ""}`;
   }
 
   public toString(): string {
@@ -164,8 +178,8 @@ class ElementTreeDumper extends ElementTreeBottomUp {
 
   public constructor(imodel: IModelDb) { super(imodel); }
 
-  public visitModel(model: Model, scope: ElementTreeWalkerScope): void {
-    if (scope.enclosingModelInfo.isDefn)
+  public visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
+    if (isDefinitionModel(model))
       this._definitionModels.push(model.id);
     else
       this._subModels.push(model.id);
@@ -230,9 +244,9 @@ class ElementTreeDeleter extends ElementTreeBottomUp {
   public override shouldVisitElement(_elid: Id64String): boolean { return true; }
 
   // Delete the "normal" models and record the definition models for deferred processing
-  public override visitModel(model: Model, scope: ElementTreeWalkerScope): void {
+  public override visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
     // model contents were already processed + deleted
-    if (scope.inDefinitionModel)
+    if (isDefinitionModel(model))
       this._definitionModels.push(model.id);
     else
       model.delete();
@@ -272,6 +286,7 @@ class ElementTreeDeleter extends ElementTreeBottomUp {
         this._imodel.models.deleteModel(m);
         this._imodel.elements.deleteElement(m);
       } catch (err) {
+        // TODO: Check that this is because defn is still in used.
         // will fail if some of the definitions in the model could not be deleted
       }
     }
@@ -279,8 +294,13 @@ class ElementTreeDeleter extends ElementTreeBottomUp {
     // Finally, delete the parent Subjects. (We defer them, because some of them may be the parents
     // of child definition models, and we have to wait until we have deleted those child models.)
     for (const e of this._subjects) {
-      console.log(`Delete Subject ${e}`);
-      this._imodel.elements.deleteElement(e);
+      try {
+        console.log(`Delete Subject ${e}`);
+        this._imodel.elements.deleteElement(e);
+      } catch (err) {
+        // TODO: Check that this is because defn child model still exists
+        // will fail if the subject still has children, e.g., because a child definition model could not be deleted in the loop above.
+      }
     }
   }
 
@@ -301,33 +321,45 @@ abstract class ElementTreeTopDown {
   public abstract prune(_elid: Id64String, _scope: ElementTreeWalkerScope): void;
 
   protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
+
     if (this.shouldPrune(element, scope)) {
       this.prune(element, scope);
       return;
     }
 
+    this.processChildren(element, scope);
+
+    const subModel = this._imodel.models.tryGetModel<Model>(element);
+    if (subModel !== undefined) {
+      this.processSubModel(subModel, scope);
+    }
+  }
+
+  private processChildren(element: Id64String, scope: ElementTreeWalkerScope) {
     let parentScope: ElementTreeWalkerScope | undefined;
     for (const childElement of this._imodel.elements.queryChildren(element)) {
       if (parentScope === undefined)
         parentScope = new ElementTreeWalkerScope(scope, element);
       this.processElementTree(childElement, parentScope);
     }
-
-    const subModel = this._imodel.models.tryGetModel<Model>(element);
-    if (subModel !== undefined) {
-      const subModelScope = new ElementTreeWalkerScope(scope, subModel);
-      this._imodel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=?`, (stmt) => {
-        stmt.bindId(1, subModel.id);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          const elid = stmt.getValue(0).getId();
-          this.processElementTree(elid, subModelScope);
-        }
-      });
-    }
   }
+
+  private processSubModel(subModel: Model, scope: ElementTreeWalkerScope) {
+    const subModelScope = new ElementTreeWalkerScope(scope, subModel);
+    this._imodel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=?`, (stmt) => {
+      stmt.bindId(1, subModel.id);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const elid = stmt.getValue(0).getId();
+        this.processElementTree(elid, subModelScope);
+      }
+    });
+  }
+
 }
 
-class SelectedElementTreePruner extends ElementTreeTopDown {
+class SelectedElementSubTreeDeleter extends ElementTreeTopDown {
+  private _definitions: Id64Array = [];
+  private _subjects: Id64Array = [];
 
   constructor(imodel: IModelDb, private _elementsToPrune: Id64Set) {
     super(imodel);
@@ -336,13 +368,35 @@ class SelectedElementTreePruner extends ElementTreeTopDown {
   public override shouldPrune(elid: Id64String, _scope: ElementTreeWalkerScope): boolean { return this._elementsToPrune.has(elid); }
 
   public prune(elid: Id64String, scope: ElementTreeWalkerScope): void {
-    console.log(`pruning ${elid}`);
+    if (scope.inRepositoryModel) {
+      const cls = classifyElementForPruning(this._imodel, elid);
+      if (cls === ElementPruningClassification.PRUNING_CLASS_Subject) {
+        this._subjects.push(elid);
+        return;
+      } else if (cls === ElementPruningClassification.PRUNING_CLASS_Definition) {
+        this._definitions.push(elid);
+        return;
+      }
+    } else if (scope.inDefinitionModel) {
+      this._definitions.push(elid);
+      return;
+    }
+
     const del = new ElementTreeDeleter(this._imodel);
     del.deleteElementTree(elid, scope);
   }
 
   public pruneElementTree(top: Id64String) {
-    this.processElementTree(top, ElementTreeWalkerScope.createTopScope(this._imodel, top));
+    this.processElementTree(top, ElementTreeWalkerScope.createTopScope(this._imodel, top)); // deletes normal elements and their sub-trees
+
+    const del = new ElementTreeDeleter(this._imodel);
+
+    for (const elid of this._definitions) // unused definitions can now be deleted
+      del.deleteElementTree(elid);
+
+    for (const elid of this._subjects) { // finally subjects can be deleted
+      del.deleteElementTree(elid);
+    }
   }
 }
 
@@ -371,19 +425,21 @@ describe.only("ElementTreeWalker", () => {
     originalEnv = { ...process.env };
 
     IModelTestUtils.registerTestBimSchema();
-    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
-
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
     process.env = originalEnv;
-    imodel1.close();
+  });
+
+  beforeEach(async () => {
+    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   afterEach(() => {
     sinon.restore();
+    imodel1.close();
   });
 
   it("delete element tree with nested models", () => {
@@ -494,7 +550,7 @@ describe.only("ElementTreeWalker", () => {
     assert.isTrue(doesModelExist(testImodel, IModel.dictionaryId));
   });
 
-  it.only("delete element sub-tree with nested models", () => {
+  it("delete element sub-tree with nested models", () => {
 
     const testImodel = imodel1;
 
@@ -574,7 +630,7 @@ describe.only("ElementTreeWalker", () => {
     toPrune.add(drawingModelId);
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
-    const del3 = new SelectedElementTreePruner(testImodel, toPrune);
+    const del3 = new SelectedElementSubTreeDeleter(testImodel, toPrune);
     del3.pruneElementTree(jobSubjectId);
 
     assert.isTrue(doesElementExist(testImodel, repositoryLinkId));
