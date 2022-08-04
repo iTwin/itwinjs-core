@@ -60,7 +60,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       const activeTab = useActiveTab();
       const elementRef = React.useRef<HTMLDivElement>(null);
       const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
-      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
+      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition, pointerPosition) => {
         assert(!!elementRef.current);
         if (floatingWidgetId !== undefined)
           return;
@@ -82,6 +82,9 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           const offset = initialPointerPosition.x - bounds.right + 20;
           bounds = bounds.offsetX(offset);
         }
+
+        const dragOffset = initialPointerPosition.getOffsetTo(pointerPosition);
+        bounds = bounds.offset(dragOffset);
 
         // Adjust bounds to be relative to 9z origin
         bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
