@@ -10,13 +10,13 @@ A fundamental concept is that real-world entities often have a human-understanda
 
 In iTwin.js, a [Code]($common) contains 3 parts:
 
- 1. **value**. A code's value is just a human-readable string, e.g. "Conference Room 10", "PMP-233", or "PN-2343-12-23-a4", etc. In conversation, people will generally refer to a code's value as "the code" of an asset.
- 2. **scope**. Since code values are meant to be human readable, there must be some way to disambiguate the value by "context". "Conference Room 10" cannot be used in a meaningful conversation unless the context of its building or floor is somehow supplied or implied. The scope of a code supplies the *context* for its value. Unlike code values, the identifiers for scope are *not* meant to be human readable, and instead are in the form of [GUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier). Scope guids themselves identify real-world entities (a building, an floor within a building, a pipe run, etc.). In this manner we say that code values are implicitly "qualified by their scope".
- 3. **spec**. A *code specification* is merely a string that identifies the *type* of a code. In iTwin.js, every [Code]($common) includes a code spec for a few reasons:
+ 1. **Value**. A code's value is just a human-readable string, e.g. "Conference Room 10", "PMP-233", or "KPN-2343-1223a4", etc. In conversation, people will generally refer to a code's value as "the code" of an asset.
+ 2. **Scope**. Since code values are meant to be human readable, there must be some way to disambiguate the value by "context". "Conference Room 10" cannot be used in a meaningful conversation unless the context of its building or floor is somehow supplied or implied. The scope of a code supplies the *context* for its value. Unlike code values, the identifiers for scope are *not* meant to be human readable, and instead are in the form of [GUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier). Scope guids themselves identify real-world entities (a building, an floor within a building, a pipe run, etc.). In this manner we say that code values are implicitly "qualified by their scope".
+ 3. **Spec**. A *code specification* is merely a string that identifies the *type* of a code. In iTwin.js, every [Code]($common) includes a code spec for a few reasons:
 
 - it provides information about how to *interpret* the code (i.e. the "coding convention")
 - it can used to determine the "next available value" within a scope for codes that arranged in sequences.
-- it further qualifies the value/scope pairs by type, so that it is possible for a single scope to have multiple codes with the same value but used for different purposes (e.g. "OHL-32" might be a label for an  "overhead line" and an "open helix lift" in the same facility.)
+- it further qualifies the value/scope pairs by type, so that it is possible for a single scope to have multiple codes with the same value but used for different purposes.
 
 ### Code Uniqueness Within an IModel
 
@@ -43,7 +43,7 @@ The following rules may be helpful:
 - The rules for acquiring/reserving/validating new Codes are *not* the responsibility of the `CodeService`. It is generally expected that some other "master code service" (e.g. an enterprise ERP system) will create new Codes. The `CodeService` merely records them and enforces that Codes within it are unique.
 - In the absence of some other master code service, a `CodeService` can be used as an *index* for creating new unique codes.
 - The Codes in a `CodeService` may originate from external coding systems or from iModels. Therefore a Code in a `CodeService` may or may not relate to an element in an iModel.
-- Every iModel *exists within a single iTwin* (the identity of the iTwin for an iModel may be determined by [IModel.iTwinId]($common)). So, every iModel may have only one `CodeService`.
+- Every iModel may have only one `CodeService`. It must be for its iTwin or one of its iTwin's parent iTwins.
 - An iTwin may be comprised of one or more iModels, so code uniqueness may also span iModels (that is, a Code may not be available in one iModel because it is already used in another iModel in the same iTwin.)
 - If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid of the Code in the `CodeService`.
 - Elements in different iModels of an iTwin *may* have the same Code. The `CodeService` does *not* record where/if Codes are used, and cannot be used to "find" elements. However, the `CodeService` does record the "origin" of a Code. If the origin was an iModel, there's a good chance that there is (or was) an element in that iModel with that Code.
