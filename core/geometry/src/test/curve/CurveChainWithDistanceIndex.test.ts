@@ -12,7 +12,6 @@ import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceI
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import path = require("path");
 
 /* eslint-disable no-console */
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
@@ -46,7 +45,7 @@ describe("CurveChainWithDistanceIndex", () => {
   });
   const pathWithBSplineProblemFile = "./src/test/testInputs/CurveChainWithDistanceIndex/WoodFieldPath/pathWithBSplines.imjs";
 
-    it.only("PathWithBsplineLength", () => {
+    it("PathWithBsplineLength", () => {
       const ck = new Checker();
       const allGeometry: GeometryQuery[] = [];
 
