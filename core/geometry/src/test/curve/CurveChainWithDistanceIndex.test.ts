@@ -43,7 +43,7 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClosestPointProblem");
     expect(ck.getNumErrors()).equals(0);
   });
-  const pathWithBSplineProblemFile = "./src/test/testInputs/CurveChainWithDistanceIndex/WoodFieldPath/pathWithBSplines.imjs";
+  const pathWithBSplineProblemFile = "./src/test/testInputs/CurveChainWithDistanceIndex/WoodfieldPath/pathWithBsplines.imjs";
 
     it("PathWithBsplineLength", () => {
       const ck = new Checker();
