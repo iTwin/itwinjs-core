@@ -1808,6 +1808,8 @@ importers:
       nyc: ^15.1.0
       path-browserify: ^1.0.1
       rimraf: ^3.0.2
+      sinon: ^9.0.2
+      sinon-chai: ^3.2.0
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
       stream-http: ^3.2.0
@@ -1843,6 +1845,8 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.6
       electron: 14.2.9
       fs-extra: 8.1.0
+      sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
