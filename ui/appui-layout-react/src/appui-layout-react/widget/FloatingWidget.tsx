@@ -136,6 +136,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
 });
 
 // Re-adjust bounds so that widget is behind pointer when auto-sized.
+// istanbul ignore next
 function useHandleAutoSize(dragged: boolean) {
   const dragManager = React.useContext(DragManagerContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
