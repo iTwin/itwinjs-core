@@ -13,10 +13,9 @@ import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Elem
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 
-/** @alpha */
-export const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
+const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
-/** @alpha */
+/** @beta */
 export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
@@ -33,7 +32,6 @@ function isDefinitionModel(model: Model): boolean {
 
 enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, PRUNING_CLASS_DefinitionPartition = 3, }
 
-/** @alpha */
 function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
   return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
@@ -43,7 +41,7 @@ function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): Ele
 }
 
 /** Records the path that a tree search took to reach an element or model. This object is immutable.
- * @alpha
+ * @beta
  */
 export class ElementTreeWalkerScope {
   public readonly topElement: Id64String = "";
@@ -136,7 +134,7 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
  *
  * The [[ElementTreeBottomUp.visitElement]] and [[ElementTreeBottomUp.visitModel]] callbacks allow
  * the subclass to process the elements and models that are encountered in the search.
- * @alpha
+ * @beta
  */
 export abstract class ElementTreeBottomUp {
   constructor(protected _iModel: IModelDb) { }
@@ -268,7 +266,7 @@ class SpecialElements {
 
 /** Deletes an entire element tree, including sub-models and child elements.
  * Items are deleted in bottom-up order. Definitions and Subjects are deleted after normal elements.
- * @alpha
+ * @beta
  */
 export class ElementTreeDeleter extends ElementTreeBottomUp {
   private _special: SpecialElements = new SpecialElements();
@@ -313,7 +311,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
  * Parents are visited first, then children, then sub-models.
  * The subclass can "prune" sub-trees from the search. When a sub-tree is "pruned" the search does *not* recurse into it.
  * If a sub-tree is not pruned, then the search does recurse into it.
- * @alpha
+ * @beta
  */
 abstract class ElementTreeTopDown {
   constructor(protected _iModel: IModelDb) { }
@@ -365,7 +363,7 @@ abstract class ElementTreeTopDown {
  * @param elementId The sub-tree parent element.
  * @param scope The path followed by the top-down search to the element
  * @return true if the element and its children and sub-models should be deleted.
- * @alpha
+ * @beta
  */
 export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean;
 
@@ -373,7 +371,7 @@ export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementT
  * This class uses ElementTreeTopDown to visit element sub-trees in top-down order.
  * When the filter function chooses a sub-tree, this class uses ElementTreeDeleter to delete it.
  * Note that when a sub-tree is selected and deleted, its children and sub-models are not visited.
- * @alpha
+ * @beta
  */
 export class ElementSubTreeDeleter extends ElementTreeTopDown {
   private _special: SpecialElements = new SpecialElements();
@@ -414,7 +412,7 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
- * @alpha
+ * @beta
  */
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void {
   const del = new ElementTreeDeleter(iModel, topElement);
@@ -427,7 +425,7 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
- * @alpha
+ * @beta
  */
 export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
   const del = new ElementSubTreeDeleter(iModel, topElement, filter);
