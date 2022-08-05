@@ -808,7 +808,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "nyc",
@@ -933,10 +933,6 @@
     {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "readline",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "recursive-readdir",
@@ -1071,15 +1067,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "webpack-core",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },
     {

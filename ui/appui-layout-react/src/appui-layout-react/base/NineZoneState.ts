@@ -594,35 +594,36 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const widget = state.widgets[action.id];
       const home = floatingWidget.home;
       const panel = state.panels[home.side];
-      let homeWidget;
-      if (home.widgetId) {
-        homeWidget = state.widgets[home.widgetId];
-      } else if (panel.widgets.length === panel.maxWidgetCount) {
+      const destinationWidgetId = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
+
+      let destinationWidget = state.widgets[destinationWidgetId];
+
+      // Use existing panel section (from widgetIndex) if new widgets can't be added to the panel.
+      if (!destinationWidget && panel.widgets.length === panel.maxWidgetCount) {
         const id = panel.widgets[home.widgetIndex];
-        homeWidget = state.widgets[id];
+        destinationWidget = state.widgets[id];
       }
 
-      if (homeWidget) {
-        // Add tabs to an existing widget.
-        homeWidget.tabs.push(...widget.tabs);
+      // Add tabs to an existing widget.
+      if (destinationWidget) {
+        destinationWidget.tabs.push(...widget.tabs);
         removeWidget(state, widget.id);
         return;
       }
 
-      const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
-      // if widget container was removed because it was empty insert it
-      state.widgets[destinationWidgetContainerName] = {
+      // Add a new widget.
+      state.widgets[destinationWidgetId] = {
         activeTabId: widget.tabs[0],
-        id: destinationWidgetContainerName,
+        id: destinationWidgetId,
         minimized: false,
         tabs: [...widget.tabs],
       };
 
-      let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
+      let insertIndex = destinationWidgetId.endsWith("End") ? 1 : 0;
       // istanbul ignore next
       if (0 === panel.widgets.length)
         insertIndex = 0;
-      panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
+      panel.widgets.splice(insertIndex, 0, destinationWidgetId);
       widget.minimized = false;
 
       removeWidget(state, widget.id);
