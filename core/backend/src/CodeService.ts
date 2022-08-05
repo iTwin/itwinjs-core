@@ -382,6 +382,8 @@ export namespace CodeService {
     readonly spec?: CodeSpecName;
     /** If supplied, limit results to only those with this scope Guid */
     readonly scope?: ScopeGuid;
+    /** If supplied, limit results to only those with this origin */
+    readonly origin?: CodeOriginName;
   }
 
   /** Author and origin information supplied when codes are reserved. */
