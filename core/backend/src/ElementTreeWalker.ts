@@ -13,11 +13,13 @@ import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Elem
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 
+/** @alpha */
 export const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
+/** @alpha */
 export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
 
-export function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
+function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
   return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
     stmt.bindId(1, modelId);
     stmt.step();
@@ -25,13 +27,14 @@ export function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
   });
 }
 
-export function isDefinitionModel(model: Model): boolean {
+function isDefinitionModel(model: Model): boolean {
   return (model.id !== IModel.repositoryModelId) && (model instanceof DefinitionModel);
 }
 
-export enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, PRUNING_CLASS_DefinitionPartition = 3, }
+enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, PRUNING_CLASS_DefinitionPartition = 3, }
 
-export function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
+/** @alpha */
+function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
   return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
     (el instanceof DefinitionElement) ? ElementPruningClassification.PRUNING_CLASS_Definition :

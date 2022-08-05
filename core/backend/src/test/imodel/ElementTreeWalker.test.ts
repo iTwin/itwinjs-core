@@ -17,7 +17,7 @@ import {
 } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope, isDefinitionModel } from "../../ElementTreeWalker";
+import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 
 // Test class that collects and prints the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -29,7 +29,7 @@ class ElementTreeCollector extends ElementTreeBottomUp {
   public constructor(iModel: IModelDb) { super(iModel); }
 
   public visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
-    if (isDefinitionModel(model))
+    if (model instanceof DefinitionModel)
       this.definitionModels.push(model.id);
     else
       this.subModels.push(model.id);
