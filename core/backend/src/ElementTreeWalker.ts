@@ -420,7 +420,7 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
 }
 
 /** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
- * @remarks If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
+ * If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
  * That has the same effect as calling [[deleteElementTree]] on the top element.
  * @param iModel The iModel
  * @param topElement Where to start the search.
