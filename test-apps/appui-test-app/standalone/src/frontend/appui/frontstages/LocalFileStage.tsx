@@ -4,22 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import * as React from "react";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, ViewQueryParams } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
+
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
-import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+
+import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
   StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelReadRpcInterface, ViewQueryParams } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
-import { FillCentered } from "@itwin/core-react";
-import { Button, Headline } from "@itwin/itwinui-react";
-
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
+import { Button, Headline } from "@itwin/itwinui-react";
+import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
   const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
@@ -205,6 +206,7 @@ function LocalFilePage(props: LocalFilePageProps) {
       filePickerElement.current.click();
     }
   }, [handleElectronFileOpen]);
+
   return (
     <>
       <div style={{ position: "absolute", top: "16px", left: "100px" }}>
