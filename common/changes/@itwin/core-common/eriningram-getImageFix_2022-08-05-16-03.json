@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Remove renderer-specific logic in Gradient.Symb.getImage()",
+      "comment": "Remove renderer-specific logic in Gradient.Symb.getImage",
       "type": "none"
     }
   ],
