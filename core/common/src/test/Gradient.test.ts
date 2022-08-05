@@ -243,7 +243,7 @@ describe("Gradient.Symb", () => {
     }
   });
 
-  it.only("should produce gradient image of the correct dimensions", () => {
+  it("should produce gradient image of the correct dimensions", () => {
     const symb = Gradient.Symb.fromJSON({
       mode: Gradient.Mode.Thematic,
       flags: Gradient.Flags.Outline,
