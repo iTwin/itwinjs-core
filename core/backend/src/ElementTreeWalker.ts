@@ -5,11 +5,15 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { SubCategory } from "./Category";
 import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
+
+export const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
 interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
 
@@ -79,6 +83,45 @@ export class ElementTreeWalkerScope {
     const topElementModel = iModel.models.getModel(topElement.model);
     return new ElementTreeWalkerScope(topElementId, topElementModel);
   }
+
+  private fmtItem(v: Id64String | ElementTreeWalkerModelInfo): string {
+    if (typeof v === "string")
+      return `element ${v}`;
+    return `model ${v.model.id} ${v.isDefinitionModel ? "(DEFN)" : ""}`;
+  }
+
+  public toString(): string {
+    return `[ ${this.path.map((v) => this.fmtItem(v)).join(" / ")} ]`;
+  }
+}
+
+function fmtElement(iModel: IModelDb, elementId: Id64String): string {
+  const el = iModel.elements.getElement(elementId);
+  return `${el.id} ${el.classFullName} ${el.code.value} ${el.getDisplayLabel()}`;
+}
+
+function fmtModel(model: Model): string {
+  return `${model.id} ${model.classFullName} ${model.name}`;
+}
+
+let isTraceEnabledChecked = -1;
+
+function isTraceEnabled(): boolean {
+  if (isTraceEnabledChecked === -1)
+    isTraceEnabledChecked = Logger.isEnabled(loggerCategory, LogLevel.Trace) ? 1 : 0;
+  return isTraceEnabledChecked === 1;
+}
+
+function logElement(op: string, iModel: IModelDb, elementId: Id64String, scope?: ElementTreeWalkerScope): void {
+  if (isTraceEnabled())
+    Logger.logTrace(loggerCategory, `${op} ${fmtElement(iModel, elementId)} ${scope?.toString()}`);
+}
+
+function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: ElementTreeWalkerScope): void {
+  if (!isTraceEnabled())
+    return;
+  const model: Model = iModel.models.getModel(modelId);
+  Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope?.toString()}`);
 }
 
 /** Does a depth-first search on the tree defined by an element and its sub-models and children.
@@ -176,19 +219,46 @@ class SpecialElements {
     return false; // not a special element
   }
 
+  // It's dangerous to pass a mixture of SubCategories and Categories to deleteDefinitionElements.
+  // That function will delete the Categories first, which automatically deletes all their child
+  // SubCategories (in native code). If a SubCategory in the list is one of those children, then
+  // deleteDefinitionElements will try and fail with an exception to delete that SubCategory in a subsequent step.
+  // To work around this, we delete the SubCategories first, then everything else.
+  private _siftSpecialElements(iModel: IModelDb): Array<string[]> {
+    const subCategories: Id64Array = [];
+    const other: Id64Array = [];
+    this.definitions.forEach((elementId) => {
+      if (iModel.elements.tryGetElement(elementId, SubCategory) !== undefined)
+        subCategories.push(elementId);
+      else
+        other.push(elementId);
+    });
+    return [subCategories, other];
+  }
+
   public deleteSpecialElements(iModel: IModelDb) {
-    iModel.elements.deleteDefinitionElements(this.definitions); // will not deleted definitions that are still in use.
+    for (const definitions of this._siftSpecialElements(iModel)) {
+      if (isTraceEnabled()) definitions.forEach((e) => logElement("try delete", iModel, e));
+      iModel.elements.deleteDefinitionElements(definitions); // will not deleted definitions that are still in use.
+    }
 
     for (const m of this.definitionModels) {
-      if (!isModelEmpty(iModel, m)) // can't delete the model if one or more of the Definitions could not be deleted because still in use.
-        continue;
-      iModel.models.deleteModel(m);
-      iModel.elements.deleteElement(m);
+      if (!isModelEmpty(iModel, m)) {
+        logModel("Model not empty - cannot delete - may contain Definitions that are still in use", iModel, m);
+      } else {
+        logModel("delete", iModel, m);
+        iModel.models.deleteModel(m);
+        iModel.elements.deleteElement(m);
+      }
     }
 
     for (const e of this.subjects) {
-      if (iModel.elements.queryChildren(e).length === 0) // can't delete the Subject if one or more of its child elements was a DefinitionPartition that could not be deleted.
+      if (iModel.elements.queryChildren(e).length !== 0) {
+        logElement("Subject still has children - cannot delete - may have child DefinitionModels", iModel, e);
+      } else {
+        logElement("delete", iModel, e);
         iModel.elements.deleteElement(e);
+      }
     }
   }
 }
@@ -217,11 +287,13 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
 
     // visitElement was called first, and it deleted the elements in the model. So, now it's safe to delete the model itself.
     // TODO: will fail if model has an element that is sub-modeled by a **DefinitionModel**. I hope that never occurs!
+    logModel("delete", this._iModel, model.id, _scope);
     model.delete();
   }
 
   protected override visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void {
     if (!this._special.recordSpecialElement(this._iModel, elementId)) {
+      logElement("delete", this._iModel, elementId, _scope);
       this._iModel.elements.deleteElement(elementId);
     }
   }

@@ -71,7 +71,7 @@ function doesGroupRelationshipExist(iModel: IModelDb, source: Id64String, target
   });
 }
 
-describe.only("ElementTreeWalker", () => {
+describe("ElementTreeWalker", () => {
   let iModel: SnapshotDb;
   let originalEnv: any;
 
@@ -102,6 +102,7 @@ describe.only("ElementTreeWalker", () => {
   });
 
   beforeEach(async () => {
+    // To debug test failures, enable trace-level logging for category "core-backend.IModelDb.ElementTreeWalker"
     iModel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await iModel.importSchemas([schemaPathname]); // will throw an exception if import fails
