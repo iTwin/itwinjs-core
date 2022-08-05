@@ -200,6 +200,14 @@ export class MutableTreeModel implements TreeModel {
   private _tree = new SparseTree<MutableTreeModelNode>();
   private _rootNode: TreeModelRootNode = { depth: -1, id: undefined, numChildren: undefined };
 
+  public constructor(seed?: TreeModel) {
+    if (!seed) {
+      return;
+    }
+
+    cloneSubree(seed, this, undefined);
+  }
+
   /** Returns root node of a tree. This node is not visible and is there to allow having multiple visible root nodes. */
   public getRootNode(): TreeModelRootNode {
     return this._rootNode;
@@ -516,4 +524,29 @@ export function getVisibleDescendants(
   }
 
   return result;
+}
+
+function cloneSubree(source: TreeModel, target: MutableTreeModel, parentId: string | undefined): void {
+  target.setNumChildren(
+    parentId,
+    (parentId === undefined ? source.getRootNode() : source.getNode(parentId)!).numChildren,
+  );
+  for (const [childId, index] of source.getChildren(parentId)?.iterateValues() ?? []) {
+    const node = source.getNode(childId)!;
+    target.setChildren(
+      parentId,
+      [{
+        description: node.description,
+        isExpanded: node.isExpanded,
+        id: node.id,
+        item: node.item,
+        label: node.label,
+        isLoading: !!node.isLoading,
+        numChildren: node.numChildren,
+        isSelected: node.isSelected,
+      }],
+      index,
+    );
+    cloneSubree(source, target, childId);
+  }
 }
