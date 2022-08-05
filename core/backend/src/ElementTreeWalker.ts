@@ -15,7 +15,7 @@ import { DefinitionModel, Model } from "./Model";
 
 export const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
-interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
+export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
 
 export function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
   return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
