@@ -59,7 +59,7 @@ export class ElementTreeWalkerScope {
       this.path.push(this.enclosingModelInfo = { model: arg2, isDefinitionModel: isDefinitionModel(arg2) });
     } else if (arg1 instanceof ElementTreeWalkerScope) {
       // copy-like constructor
-      assert(this.topElement !== "", "must call normal constructor first");
+      this.topElement = arg1.topElement;
       this.path = [...arg1.path];
       if (typeof arg2 === "string") {
         // with new parent
