@@ -91,7 +91,8 @@ describe("Techniques", () => {
       });
 
       // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-      const compileTimeout = "95000";
+      // A timeout of zero means no timeout.
+      const compileTimeout = 0;
       async function compileAllShaders(disabledExtension?: WebGLExtensionName): Promise<void> {
         if (disabledExtension) {
           // The extensions we're disabling are core in WebGL 2.
