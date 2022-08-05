@@ -8,7 +8,7 @@ import assert from 'assert';
 test.describe("widget auto size", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     assert(baseURL);
-    await page.goto(`${baseURL}?frontstage=widgets`);
+    await page.goto(`${baseURL}?frontstage=appui-test-providers:WidgetApi`);
 
     await page.waitForSelector('#uifw-configurableui-wrapper');
 
