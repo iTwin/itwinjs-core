@@ -64,6 +64,7 @@ export interface DiagnosticsScopeLogs {
   scopeCreateTimestamp?: number;
   duration?: number;
   logs?: DiagnosticsLogEntry[];
+  rules?: string[];
 }
 
 /** @alpha */

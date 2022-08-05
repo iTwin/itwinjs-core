@@ -129,7 +129,7 @@ export enum SpanStatusCode {
 
 /** @internal */
 interface Attributes  {
-  [attributeKey: string]: string;
+  [attributeKey: string]: string | string[];
 }
 
 /** @internal */
@@ -197,7 +197,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
     endTime: millisToHrTime(logs.scopeCreateTimestamp + logs.duration),
     status: { code: SpanStatusCode.UNSET },
-    attributes: {},
+    attributes: { ...(logs.rules ? { rules: logs.rules } : undefined) },
     links: [],
     events,
     duration: millisToHrTime(logs.duration),
