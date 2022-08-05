@@ -533,20 +533,7 @@ function cloneSubree(source: TreeModel, target: MutableTreeModel, parentId: stri
   );
   for (const [childId, index] of source.getChildren(parentId)?.iterateValues() ?? []) {
     const node = source.getNode(childId)!;
-    target.setChildren(
-      parentId,
-      [{
-        description: node.description,
-        isExpanded: node.isExpanded,
-        id: node.id,
-        item: node.item,
-        label: node.label,
-        isLoading: !!node.isLoading,
-        numChildren: node.numChildren,
-        isSelected: node.isSelected,
-      }],
-      index,
-    );
+    target.setChildren(parentId, [{ ...node, isLoading: !!node.isLoading }], index);
     cloneSubree(source, target, childId);
   }
 }
