@@ -773,6 +773,7 @@ describe("NineZoneStateReducer", () => {
       expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
       should().not.exist(newState.widgets.fw1);
     });
+
     it("should find saved state when re-adding a floating widget", () => {
       let state = createNineZoneState();
       state = addPanelWidget(state, "left", "leftStart", ["t1"], {
@@ -803,6 +804,33 @@ describe("NineZoneStateReducer", () => {
       expect(floatedState?.floatingWidgets.byId.fw1.hidden).to.be.false;
     });
 
+    it("should send back to existing panel section", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        home: {
+          side: "left",
+          widgetId: undefined,
+          widgetIndex: 0,
+        },
+      });
+      state = addFloatingWidget(state, "fw2", ["t2"], {
+        home: {
+          side: "left",
+          widgetId: undefined,
+          widgetIndex: 0,
+        },
+      });
+      let newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw1",
+      });
+      newState = NineZoneStateReducer(newState, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw2",
+      });
+      newState.panels.left.widgets.should.eql(["leftStart"]);
+      newState.widgets.leftStart.tabs.should.eql(["t1", "t2"]);
+    });
   });
 
   describe("FLOATING_WIDGET_RESIZE", () => {
@@ -1431,12 +1459,14 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
     expect(dockedState).to.not.be.undefined;
-    // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
+
+    // Should be docked to existing widget w/ index of 0 - `rightMiddle`, since `maxWidgetCount` is 2.
+    dockedState.panels.right.widgets.should.eql(["rightMiddle", "rightEnd"]);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply position and preferred size", () => {
@@ -1467,9 +1497,9 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     expect(dockedState).to.not.be.undefined;
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply default position {x:50, y:100} and size {height:400, width:400}", () => {
@@ -1501,12 +1531,11 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
     expect(dockedState).to.not.be.undefined;
-    // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply position and default size of (400,400)", () => {
@@ -1537,9 +1566,9 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     expect(dockedState).to.not.be.undefined;
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should properly handle multiple widget tabs", () => {
