@@ -22,47 +22,48 @@ module.exports = {
       // requires for fs that cause it to fail even though the fs dependency
       // is not used.
       /draco_decoder_nodejs.js$/,
-      /draco_encoder_nodejs.js$/
+      /draco_encoder_nodejs.js$/,
     ],
     rules: [
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /@azure[\/\\]storage-blob|azure-storage|AzureFileHandler|UrlFileHandler/,
-        use: "null-loader"
+        use: "null-loader",
       },
       {
         test: /websocket\.js$/,
-        use: "null-loader"
+        use: "null-loader",
       },
-    ]
+    ],
   },
   stats: "errors-only",
   optimization: {
-    nodeEnv: "production"
-  },
-  resolve: {
-    mainFields: ['module', 'main']
+    nodeEnv: "production",
   },
   externals: {
-    "electron": "commonjs electron",
-    "fs": "fs",
-    "process": "process",
-    "child_process": "child_process",
-    "ws": "commonjs ws",
-  },
-  node: {
-    net: 'empty'
+    electron: "commonjs electron",
+    fs: "fs",
+    process: "process",
+    child_process: "child_process",
+    ws: "commonjs ws",
   },
   plugins: [
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
     new webpack.DefinePlugin({
       "global.GENTLY": false,
-    })
-  ]
+    }),
+  ],
+  resolve: {
+    fallback: {
+      assert: require.resolve("assert"),
+      stream: require.resolve("stream-browserify"),
+      zlib: require.resolve("browserify-zlib"),
+    },
+  },
 };
 
