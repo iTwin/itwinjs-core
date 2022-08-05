@@ -14,6 +14,7 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
