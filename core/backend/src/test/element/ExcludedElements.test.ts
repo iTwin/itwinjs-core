@@ -28,7 +28,7 @@ describe("ExcludedElements", () => {
       const props: DisplayStyleProps = {
         classFullName: DisplayStyle3d.classFullName,
         model: IModel.dictionaryId,
-        code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+        code: { spec: imodel.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: IModel.dictionaryId },
         isPrivate: false,
         jsonProperties: {
           styles: {
@@ -42,7 +42,7 @@ describe("ExcludedElements", () => {
       imodel.saveChanges();
 
       const rows: any[] = [];
-      for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), {rowFormat: QueryRowFormat.UseJsPropertyNames}))
+      for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         rows.push(row);
 
       expect(rows.length).to.equal(1);

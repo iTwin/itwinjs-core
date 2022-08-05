@@ -469,7 +469,7 @@ describe("iModel", () => {
     const props: DisplayStyleProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: IModel.dictionaryId,
-      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      code: { spec: imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: IModel.dictionaryId },
       isPrivate: false,
       jsonProperties: {
         styles: settings,
@@ -945,7 +945,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
