@@ -15,7 +15,7 @@ const imodelId = process.env.IModelId!;
 const serviceUrl = "https://dev-api.bentley.com/imodeljs";
 const drBackend = "navigator-backend";
 const gpBackend = "visualization";
-process.env.IMJS_URL_PREFIX = "dev-";
+
 
 describe("Get RPC Endpoint List", async () => {
     it.skip("Navigator Backend", async () => {
@@ -40,7 +40,7 @@ describe("Get RPC Endpoint List", async () => {
     it("General Purpose Backend", async () => {
         let rpcClient: RpcList = new RpcList(serviceUrl, gpBackend, "v3.0", username, password, "general-purpose-imodeljs-backend-rpc-tests", "general-purpose-imodeljs-backend");
         expect(rpcClient).not.null;
-        
+
         await rpcClient.connect(contextId, imodelId);
         let endpoints: RpcInterfaceEndpoints[] = await rpcClient.getEndpoints();
         await rpcClient.disconnect();
