@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Angle } from "@itwin/core-geometry";
 import { Gradient } from "../Gradient";
 
 describe("Gradient.Symb", () => {
-  it("should round=-trip through JSON", () => {
+  it("should round-trip through JSON", () => {
     let symb = Gradient.Symb.fromJSON({
       mode: Gradient.Mode.Linear,
       flags: Gradient.Flags.Outline,
@@ -241,5 +241,18 @@ describe("Gradient.Symb", () => {
       }
       assert.isTrue(current.equals(prev));
     }
+  });
+
+  it.only("should produce gradient image of the correct dimensions", () => {
+    const symb = Gradient.Symb.fromJSON({
+      mode: Gradient.Mode.Thematic,
+      flags: Gradient.Flags.Outline,
+      tint: 0.6,
+      shift: 1,
+      keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+    });
+    const img = symb.getImage(50, 25);
+    expect(img.width).to.equal(50);
+    expect(img.height).to.equal(25);
   });
 });

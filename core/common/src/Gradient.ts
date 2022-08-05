@@ -343,7 +343,11 @@ export namespace Gradient {
       return imageBuffer;
     }
 
-    /** Applies this gradient's settings to produce a bitmap image. */
+    /** Applies this gradient's settings to produce a bitmap image.
+     * @param width Width of the image
+     * @param height Height of the image
+     * @returns Bitmap image of the specified dimensions. For thematic gradients with a width > 1, pixels in each column will be identical.
+     */
     public getImage(width: number, height: number): ImageBuffer {
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
