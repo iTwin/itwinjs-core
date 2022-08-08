@@ -30,25 +30,20 @@ export interface RulesetSelectorState {
   availableViewDefinitions?: string[];
 }
 export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
-  const [availableViewDefinitions, setAvailableViewDefinitions] = React.useState<Array<{ id: Id64String, class: string, label: string }> | undefined>();
+  const [selectOptions, setSelectOptions] = React.useState<SelectOption<string>[]>([]);
   React.useEffect(() => {
-    setAvailableViewDefinitions([]);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getViewDefinitions(props.imodel).then(setAvailableViewDefinitions);
+    getViewDefinitions(props.imodel).then((result) => {
+      const options =  result.map((definition) => (
+        { value: definition.id, label: definition.label }
+      ));
+      setSelectOptions(options);
+    }
+    );
   }, [props.imodel]);
-  const onViewDefinitionSelected = props.onViewDefinitionSelected;
-  const memoizedOnViewDefinitionSelected = React.useCallback((selectedId: string) => {
-    if (onViewDefinitionSelected)
-      onViewDefinitionSelected(selectedId);
-  }, [onViewDefinitionSelected]);
-  const selectOptions = React.useMemo<SelectOption<string>[]>(() => {
-    return (availableViewDefinitions ?? []).map((definition) => (
-      { value: definition.id, label: definition.label }
-    ));
-  }, [availableViewDefinitions]);
   return (
     <div className="ViewDefinitionSelector">
-      <Select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition}
+      <Select onChange={props.onViewDefinitionSelected} value={props.selectedViewDefinition}
         popoverProps={{ popperOptions: { strategy: "absolute" } }}
         options={selectOptions} size="small" />
     </div>
