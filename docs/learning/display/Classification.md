@@ -1,4 +1,4 @@
-# Classification and Maskingggg
+# Classification and Masking
 
 Spatial classification and planar clip masking are related ways of using one set of models to customize the visualization and/or behavior of another set of models. They are particularly applicable to reality models.
 
