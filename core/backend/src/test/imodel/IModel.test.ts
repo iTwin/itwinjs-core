@@ -469,7 +469,7 @@ describe("iModel", () => {
     const props: DisplayStyleProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: IModel.dictionaryId,
-      code: { spec: imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: IModel.dictionaryId },
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
       isPrivate: false,
       jsonProperties: {
         styles: settings,
@@ -479,6 +479,7 @@ describe("iModel", () => {
     const styleId = imodel2.elements.insertElement(props);
     let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
+    expect(style.code.spec).equal(imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id);
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;

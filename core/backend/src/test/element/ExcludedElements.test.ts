@@ -28,7 +28,7 @@ describe("ExcludedElements", () => {
       const props: DisplayStyleProps = {
         classFullName: DisplayStyle3d.classFullName,
         model: IModel.dictionaryId,
-        code: { spec: imodel.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: IModel.dictionaryId },
+        code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
         isPrivate: false,
         jsonProperties: {
           styles: {

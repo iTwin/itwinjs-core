@@ -22,15 +22,16 @@ export type CodeScopeProps = Id64String | GuidString;
  * @extensions
  */
 export interface CodeProps {
-  /** The stringified 64-bit Id of the code spec for this code. */
-  spec: Id64String;
+  /** Either the stringified 64-bit Id of the CodeSpec for this code, or the name of the CodeSpec. */
+  spec: Id64String | string;
   /** Either the ElementId or the FederationGuid of the element that provides the scope for this code. */
   scope: CodeScopeProps;
   /** the value of this code. May be undefined. */
   value?: string;
 }
 
-/** A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
+/**
+ * A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
  * @public
  */
 export class Code implements CodeProps {
