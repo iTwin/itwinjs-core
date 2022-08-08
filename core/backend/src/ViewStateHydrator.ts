@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
-export class ViewStateHydrater {
+export class ViewStateHydrator {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
@@ -20,8 +20,11 @@ export class ViewStateHydrater {
       promises.push(this.handleAcsId(response, options.acsId));
     if (options.sheetViewAttachmentIds)
       promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.viewStateLoadProps));
-    if (options.notLoadedCategoryIds)
+    // eslint-disable-next-line deprecation/deprecation
+    if (options.notLoadedCategoryIds) {
+      // eslint-disable-next-line deprecation/deprecation
       promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
+    }
     if (options.spatialViewId)
       promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.viewStateLoadProps));
     if (options.notLoadedModelSelectorStateModels)
@@ -32,12 +35,20 @@ export class ViewStateHydrater {
     return response;
   }
 
+  private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
+    const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
+    const results: SubCategoryResultRow[] = await this._imodel.querySubCategories(decompressedIds);
+
+    // eslint-disable-next-line deprecation/deprecation
+    response.categoryIdsResult = results;
+  }
+
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
     let modelProps;
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.ViewStateHydrater, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
+      Logger.logError(BackendLoggerCategory.ViewStateHydrator, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
     }
     response.baseModelProps = modelProps;
   }
@@ -59,28 +70,6 @@ export class ViewStateHydrater {
 
   private async handleSpatialViewId(response: HydrateViewStateResponseProps, spatialViewId: Id64String, viewStateLoadProps?: ViewStateLoadProps) {
     response.spatialViewProps = this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
-  }
-
-  private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
-    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
-    const maxCategoriesPerQuery = 200;
-    const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
-    const result = [];
-    while (decompressedIds.length !== 0) {
-      const end = (decompressedIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : decompressedIds.length;
-      const where = decompressedIds.splice(0, end).join(",");
-      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
-      try {
-        for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-          result.push(row as SubCategoryResultRow);
-        }
-      } catch {
-        // ###TODO: detect cases in which retry is warranted
-        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
-        // incomplete results. Since we're not retrying, that's the best we can do.
-      }
-    }
-    response.categoryIdsResult = result;
   }
 
   private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
