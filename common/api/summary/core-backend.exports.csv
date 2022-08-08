@@ -56,6 +56,8 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
+beta;deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void
+beta;deleteElementTree(iModel: IModelDb, topElement: Id64String): void
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -108,6 +110,12 @@ public;ElementOwnsExternalSourceAspects
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
+beta;ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean
+beta;ElementSubTreeDeleter 
+beta;class ElementTreeBottomUp
+beta;ElementTreeDeleter 
+beta;ElementTreeWalkerModelInfo
+beta;ElementTreeWalkerScope
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
