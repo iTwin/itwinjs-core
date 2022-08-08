@@ -155,20 +155,12 @@ describe("RpcInterface", () => {
   });
 
   it("should allow void return values when using RpcDirectProtocol", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
   });
 
   it("should allow terminating interfaces", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
     try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
@@ -212,10 +204,6 @@ describe("RpcInterface", () => {
   });
 
   it("should describe available RPC endpoints from the frontend", async () => {
-    // if (currentEnvironment !== "http") {
-    //  return;
-    // }
-
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
@@ -445,10 +433,6 @@ describe("RpcInterface", () => {
   });
 
   it("should be able to send large requests as get requests", async () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
     // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
@@ -470,10 +454,6 @@ describe("RpcInterface", () => {
   });
 
   it("should set cache-control headers when applicable", async function () {
-    if (currentEnvironment === "websocket") {
-      return this.skip();
-    }
-
     // Cache-control headers are not applicable to electron apps.
     if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
       return this.skip();

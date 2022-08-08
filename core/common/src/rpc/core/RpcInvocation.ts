@@ -156,7 +156,7 @@ export class RpcInvocation {
     try {
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-      const parameters = request.parametersOverride || RpcMarshaling.deserialize(this.protocol, request.parameters);
+      const parameters = RpcMarshaling.deserialize(this.protocol, request.parameters);
       this.applyPolicies(parameters);
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       (impl as any)[CURRENT_INVOCATION] = this;
@@ -272,7 +272,7 @@ export class RpcInvocation {
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
-      allowCompression: this.operation?.policy.allowResponseCompression || false,
+      allowCompression: this.operation.policy.allowResponseCompression,
     };
 
     this.transformResponseStatus(fulfillment, rawResult);
@@ -300,21 +300,17 @@ export class RpcInvocation {
       return;
     }
 
-    let managedStatus: "notFound" | "pending" | "noContent" | undefined;
+    let managedStatus: "notFound" | "pending" | undefined;
     if (this._pending) {
       managedStatus = "pending";
     } else if (this._notFound) {
       managedStatus = "notFound";
-    } else if (this._noContent) {
-      managedStatus = "noContent";
     }
 
     if (managedStatus) {
       const responseValue = fulfillment.result.objects;
       const status: RpcManagedStatus = { iTwinRpcCoreResponse: true, managedStatus, responseValue };
       fulfillment.result.objects = JSON.stringify(status);
-      status.responseValue = rawResult; // for ipc case
-      fulfillment.rawResult = status;
     }
 
     if (rawResult instanceof BentleyError) {

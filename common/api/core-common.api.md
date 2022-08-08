@@ -114,12 +114,6 @@ export interface AffineTransformProps {
     translationY: number;
 }
 
-// @internal (undocumented)
-export const aggregateLoad: {
-    lastRequest: number;
-    lastResponse: number;
-};
-
 // @public
 export class AmbientLight {
     constructor(json?: AmbientLightProps);
@@ -4713,23 +4707,6 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
-// @internal (undocumented)
-export interface InterceptedRpcRequest {
-    // (undocumented)
-    context: {
-        [index: string]: string;
-    };
-    // (undocumented)
-    definition: {
-        interfaceName: string;
-        interfaceVersion: string;
-    };
-    // (undocumented)
-    operation: string;
-    // (undocumented)
-    parameters: any[];
-}
-
 // @beta
 export enum InternetConnectivityStatus {
     // (undocumented)
@@ -4819,18 +4796,6 @@ export type IpcInvokeReturn = {
 
 // @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
-
-// @internal (undocumented)
-export abstract class IpcSession {
-    // (undocumented)
-    static get active(): IpcSession | undefined;
-    // (undocumented)
-    abstract handleRpc(info: InterceptedRpcRequest): Promise<any>;
-    // (undocumented)
-    static start(session: IpcSession): void;
-    // (undocumented)
-    static stop(): void;
-}
 
 // @public
 export interface IpcSocket {
@@ -7544,11 +7509,9 @@ export interface RpcManagedStatus {
     // (undocumented)
     iTwinRpcCoreResponse: true;
     // (undocumented)
-    managedStatus: "pending" | "notFound" | "noContent";
+    managedStatus: "pending" | "notFound";
     // (undocumented)
-    responseValue: string | {
-        message: string;
-    } | RpcNotFoundResponse;
+    responseValue: string;
 }
 
 // @internal
@@ -7848,8 +7811,6 @@ export abstract class RpcRequest<TResponse = any> {
     get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     get extendedStatus(): string;
-    // (undocumented)
-    _extendedStatus: string;
     findParameterOfType<T>(requiredProperties: {
         [index: string]: string;
     }): T | undefined;
@@ -7891,8 +7852,6 @@ export abstract class RpcRequest<TResponse = any> {
     protected setHeaders(): Promise<void>;
     protected setLastUpdatedTime(): void;
     get status(): RpcRequestStatus;
-    // (undocumented)
-    _status: RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
     // (undocumented)
@@ -8037,14 +7996,6 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @internal (undocumented)
-export class RpcSessionInvocation extends RpcInvocation {
-    // (undocumented)
-    static create(request: InterceptedRpcRequest): RpcSessionInvocation;
-    // (undocumented)
-    get rejected(): boolean;
-}
-
 // @beta
 export enum SchemaState {
     TooNew = 4,
@@ -8134,8 +8085,6 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     operation: SerializedRpcOperation;
     // (undocumented)
     parameters: RpcSerializedValue;
-    // (undocumented)
-    parametersOverride?: any[];
     // (undocumented)
     path: string;
     // (undocumented)

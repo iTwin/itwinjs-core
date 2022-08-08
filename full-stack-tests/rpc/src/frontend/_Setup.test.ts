@@ -7,7 +7,6 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -64,18 +63,5 @@ before(async () => {
       return initializeCloud("http");
     case "electron":
       return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
-    case "websocket":
-      let socketUrl = new URL(window.location.toString());
-      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
-      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
-
-      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
-      return LocalhostIpcApp.startup({ localhostIpcApp: { socketUrl } });
-  }
-});
-
-after(async () => {
-  if (currentEnvironment === "websocket") {
-    await IModelApp.shutdown();
   }
 });
