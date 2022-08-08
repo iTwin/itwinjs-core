@@ -962,6 +962,39 @@
       ]
     },
     { /* PARTIAL */
+    "name": "[BACKEND] appui-test-app/standalone (chrome)",
+    "presentation": {
+      "hidden": true
+    },
+    "cwd": "${workspaceFolder}/test-apps/appui-test-app/standalone",
+    "type": "pwa-node",
+    "request": "launch",
+    "program": "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/backend/main.js",
+    "outFiles": [
+      "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
+      "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
+    ],
+    "cascadeTerminateToConfigurations": [
+      "[FRONTEND] appui-test-app/standalone (chrome)"
+    ]
+  },
+  { /* PARTIAL */
+    "name": "[FRONTEND] appui-test-app/standalone (chrome)",
+    "presentation": {
+      "hidden": true
+    },
+    "type": "pwa-chrome",
+    "request": "launch",
+    "url": "http://localhost:3000/",
+    "outFiles": [
+      "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
+      "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
+    ],
+    "cascadeTerminateToConfigurations": [
+      "[BACKEND] appui-test-app/standalone (chrome)"
+    ]
+  },
+{ /* PARTIAL */
       "name": "[BACKEND] appui-test-app/standalone (electron)",
       "presentation": {
         "hidden": true
@@ -1532,7 +1565,18 @@
       "[FRONTEND] appui-test-app/connected (chrome)"
     ]
   },
-    {
+  {
+    "name": "appui-test-app/standalone (chrome)",
+    "presentation": {
+      "group": "1_TestApps",
+      "order": 1
+    },
+    "configurations": [
+      "[BACKEND] appui-test-app/standalone (chrome)",
+      "[FRONTEND] appui-test-app/standalone (chrome)"
+    ]
+  },
+  {
       "name": "appui-test-app/standalone (electron)",
       "presentation": {
         "group": "1_TestApps",
