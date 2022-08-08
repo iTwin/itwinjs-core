@@ -8,11 +8,13 @@
 
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
-import { PointProps } from "@itwin/appui-abstract";
+import { PointProps, UiError } from "@itwin/appui-abstract";
 import { IconSpec, Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
+
+const category = "appui-layout-react:layout";
 
 /** @internal */
 export interface SizeAndPositionProps extends SizeProps, PointProps { }
@@ -30,6 +32,7 @@ export interface TabState {
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
   readonly hideWithUiWhenFloating?: boolean;
+  readonly hidden?: boolean;
 }
 
 /** @internal */
@@ -883,6 +886,20 @@ export function removeWidgetTab(state: Draft<NineZoneState>, tabId: TabState["id
 export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
   removeWidgetTab(state, tabId);
   // keep state.tabs[tabId] around for preferred size info
+}
+
+/** @internal */
+export function updateTabState(state: NineZoneState, tabId: TabState["id"], args: Partial<TabState>) {
+  if (!(tabId in state.tabs))
+    throw new UiError(category, "Tab not found");
+
+  return produce(state, (draft) => {
+    const tab = draft.tabs[tabId];
+    draft.tabs[tabId] = {
+      ...tab,
+      ...args,
+    };
+  });
 }
 
 function removeWidgetTabInternal(
