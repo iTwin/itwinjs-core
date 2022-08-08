@@ -4,7 +4,6 @@ public;AdditionalTransform
 public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
-internal;aggregateLoad:
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -378,7 +377,6 @@ public;IModelVersionProps =
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
-internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
@@ -387,7 +385,6 @@ internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 public;IpcListener = (evt: Event, ...args: any[]) => void
-internal;class IpcSession
 public;IpcSocket
 public;IpcSocketBackend 
 public;IpcSocketFrontend 
@@ -646,7 +643,6 @@ internal;RpcRoutingMap
 internal;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
-internal;RpcSessionInvocation 
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
