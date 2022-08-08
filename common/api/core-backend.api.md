@@ -4284,6 +4284,22 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
+// @beta
+export class SpecialElementTreeBottomUp extends ElementTreeBottomUp {
+    constructor(iModel: IModelDb);
+    processElementTree(root: Id64String): void;
+    // (undocumented)
+    protected shouldExploreModel(_model: Model): boolean;
+    // (undocumented)
+    protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    special: SpecialElements;
+    // (undocumented)
+    protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected visitModel(_model: Model, _scope: ElementTreeWalkerScope): void;
+}
+
 // @public
 export class SQLiteDb implements IDisposable {
     abandonChanges(): void;
