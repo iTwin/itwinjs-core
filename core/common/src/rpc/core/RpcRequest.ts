@@ -21,8 +21,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
 
-/** @internal */
-export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
+const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
 export class ResponseLike implements Response {
@@ -112,13 +111,8 @@ export abstract class RpcRequest<TResponse = any> {
   private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
-
-  /** @internal */
-  public _status: RpcRequestStatus = RpcRequestStatus.Unknown;
-
-  /** @internal */
-  public _extendedStatus: string = "";
-
+  private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
+  private _extendedStatus: string = "";
   private _connecting: boolean = false;
   private _active: boolean = true;
   private _hasRawListener = false;
@@ -416,7 +410,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
       const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
-      value.objects = managedStatus.responseValue as string;
+      value.objects = managedStatus.responseValue;
 
       if (managedStatus.managedStatus === "pending") {
         status = RpcRequestStatus.Pending;

@@ -11,9 +11,8 @@
     "cover": "npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
+    "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
-    "test:chrome-websocket": "certa -r chrome -b ./lib/backend/websocket.js",
     "test:electron": "certa -r electron -b ./lib/backend/electron.js",
     "test:direct": "certa -r node -b ./lib/backend/direct.js",
     "webpack:test": "webpack --config webpack.config.js 1>&2"

@@ -6,19 +6,10 @@ import { assert } from "chai";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { TestRpcInterface, WebRoutingInterface } from "../common/TestRpcInterface";
 import { RpcProtocol, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-common";
-import { currentEnvironment } from "./_Setup.test";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Routing", () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
-
     it("should always send and recieve protocolVersion without prefectch", async () => {
-      if (currentEnvironment === "websocket") {
-        return;
-      }
-
       const originalProtocolVersion = RpcProtocol.protocolVersion;
       (RpcProtocol as any).protocolVersion = 99999;
       assert.notEqual(RpcProtocol.protocolVersion, originalProtocolVersion); // sanity check
@@ -35,10 +26,6 @@ if (!ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should honor retry-after", async () => {
-      if (currentEnvironment === "websocket") {
-        return;
-      }
-
       const client = WebRoutingInterface.getClient();
       const sent = Date.now();
 
