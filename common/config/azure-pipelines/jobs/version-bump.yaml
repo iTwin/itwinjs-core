@@ -40,9 +40,22 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-  - job : Validate
-    displayName: Validate version
+  - job: Bump
+    displayName: Bump Version
     steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      displayName: Use Node 12.x
+      inputs:
+        versionSpec: 12.x
+        checkLatest: true
+
+    - bash: |
+        git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+      displayName: Setup Git
+
     - bash: |
         # Get version and remove quotes
         getVer=$(jq '.[] | .version' common/config/rush/version-policies.json)
@@ -78,23 +91,7 @@ jobs:
 
         echo "version validation failed"
         exit 1
-
-  - job: Bump
-    dependsOn: Validate
-    displayName: Bump Version
-    steps:
-    - checkout: self
-
-    - task: NodeTool@0
-      displayName: Use Node 12.x
-      inputs:
-        versionSpec: 12.x
-        checkLatest: true
-
-    - bash: |
-        git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-        git config --local user.name imodeljs-admin
-      displayName: Setup Git
+      displayName: Validate version
 
     # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
     - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
