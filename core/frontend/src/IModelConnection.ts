@@ -14,7 +14,7 @@ import {
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
+  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -69,10 +69,12 @@ export abstract class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection. */
   public readonly tiles: Tiles;
+  /** The set of [Category]($backend)'s in this IModelConnection. */
+  public readonly categories: IModelConnection.Categories;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
    */
-  public readonly subcategories: SubCategoriesCache;
+  public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection
@@ -215,16 +217,22 @@ export abstract class IModelConnection extends IModel {
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
+    this.categories = new IModelConnection.Categories(this);
+
     this.selectionSet = new SelectionSet(this);
     this.hilited = new HiliteSet(this);
+
     this.tiles = new Tiles(this);
-    this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);
+    });
+
+    this.hilited.onModelSubCategoryModeChanged.addListener(() => {
+      IModelApp.viewManager.onSelectionSetChanged(this);
     });
   }
 
@@ -1082,6 +1090,56 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
+    }
+  }
+
+  /** @public */
+  export namespace Categories {
+    /** A subset of the information describing a [SubCategory]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]
+     * or [[IModelConnection.Categories.getSubCategoryInfo]].
+     */
+    export interface SubCategoryInfo {
+      /** The [SubCategory]($backend)'s element Id. */
+      readonly id: Id64String;
+      /** The Id of the [Category]($backend) to which this [SubCategory]($backend) belongs. */
+      readonly categoryId: Id64String;
+      /** Visual parameters applied to geometry belonging to this [SubCategory]($backend). */
+      readonly appearance: Readonly<SubCategoryAppearance>;
+    }
+
+    /** A subset of the information describing a [Category]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]. */
+    export interface CategoryInfo {
+      /** The category's element Id. */
+      readonly id: Id64String;
+      /** For each [SubCategory]($backend) belonging to this [Category]($backend), a mapping from the SubCategory's element Id to its properties. */
+      readonly subCategories: Map<Id64String, SubCategoryInfo>;
+    }
+  }
+
+  /** Provides access to information about the [Category]($backend)'s stored in an [[IModelConnection]].
+   * This information is cached internally so that repeated requests need not query the backend.
+   * @see [[IModelConnection.categories]] for the categories associated with a specific iModel.
+   */
+  export class Categories {
+    /** @internal */
+    public readonly cache: SubCategoriesCache;
+
+    /** @internal */
+    public constructor(iModel: IModelConnection) {
+      this.cache = new SubCategoriesCache(iModel);
+    }
+
+    /** Obtain information about one or more [Category]($backend)'s. */
+    public async getCategoryInfo(categoryIds: Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
+      return this.cache.getCategoryInfo(categoryIds);
+    }
+
+    /** Obtain information about one or more [SubCategory]($backend)'s belonging to the specified [Category]($backend). */
+    public async getSubCategoryInfo(args: {
+      category: Id64String;
+      subCategories: Iterable<Id64String>;
+    }): Promise<Map<Id64String, Categories.SubCategoryInfo>> {
+      return this.cache.getSubCategoryInfo(args.category, args.subCategories);
     }
   }
 }

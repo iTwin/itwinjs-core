@@ -105,6 +105,9 @@
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
     },
+    "ChangeHiliteMode": {
+      "keyin": "fdt hilite mode"
+    },
     "ChangeEmphasisSettings": {
       "keyin": "fdt emphasis settings"
     },
