@@ -9,11 +9,6 @@ test.describe("widget auto size", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     assert(baseURL);
     await page.goto(`${baseURL}?frontstage=appui-test-providers:WidgetApi`);
-
-    await page.waitForSelector('#uifw-configurableui-wrapper');
-
-    // Expect a title "to contain" a substring.
-    await expect(page).toHaveTitle(/AppUI Standalone Test App/);
   });
 
   test("auto-sized floating widget should folow the cursor when undocked", async ({ page }) => {

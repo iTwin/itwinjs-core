@@ -13,6 +13,7 @@ import { ToolbarHelper } from "@itwin/appui-react";
 import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
+import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
 
 /**
  * WidgetApiStageUiItemsProvider provides widget in the bottom panel that can exercise the Widget API on Widgets in the other panels.
@@ -24,6 +25,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
 
   public static register(localizationNamespace: string) {
     UiItemsManager.register(new WidgetApiStageUiItemsProvider(localizationNamespace), { stageIds: [WidgetApiStage.stageId] });
+    SetWidgetStateTool.register(localizationNamespace);
   }
 
   constructor(_localizationNamespace: string) {
