@@ -189,6 +189,7 @@ import { StatusCodeWithMessage } from '@itwin/core-bentley';
 import { StorageValue } from '@itwin/core-common';
 import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryProps } from '@itwin/core-common';
+import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TelemetryManager } from '@itwin/core-telemetry';
@@ -383,7 +384,7 @@ export enum BackendLoggerCategory {
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas",
     // @internal
-    ViewStateHydrater = "core-backend.ViewStateHydrater"
+    ViewStateHydrator = "core-backend.ViewStateHydrator"
 }
 
 // @internal
@@ -865,6 +866,12 @@ export abstract class DefinitionSet extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @beta
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
+
+// @beta
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 
 // @public
 export class DetailCallout extends Callout {
@@ -1540,6 +1547,75 @@ export class ElementRefersToElements extends Relationship {
     static get className(): string;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
+}
+
+// @beta
+export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean;
+
+// @beta
+export class ElementSubTreeDeleter extends ElementTreeTopDown {
+    constructor(iModel: IModelDb, topElement: Id64String, shouldPruneCb: ElementSubTreeDeleteFilter, scope?: ElementTreeWalkerScope);
+    // (undocumented)
+    protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void;
+    pruneElementTree(): void;
+    // (undocumented)
+    protected shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean;
+}
+
+// @beta
+export abstract class ElementTreeBottomUp {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    protected _iModel: IModelDb;
+    protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope): void;
+    protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
+    protected abstract visitElement(elementId: Id64String, scope: ElementTreeWalkerScope): void;
+    protected abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
+}
+
+// @beta
+export class ElementTreeDeleter extends ElementTreeBottomUp {
+    constructor(iModel: IModelDb, topElement: Id64String, scope?: ElementTreeWalkerScope);
+    deleteElementTree(): void;
+    // (undocumented)
+    protected shouldExploreModel(_model: Model): boolean;
+    // (undocumented)
+    protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected visitModel(model: Model, _scope: ElementTreeWalkerScope): void;
+}
+
+// @beta (undocumented)
+export interface ElementTreeWalkerModelInfo {
+    // (undocumented)
+    isDefinitionModel: boolean;
+    // (undocumented)
+    model: Model;
+}
+
+// @beta
+export class ElementTreeWalkerScope {
+    constructor(topElement: Id64String, model: Model);
+    constructor(enclosingScope: ElementTreeWalkerScope, newScope: Id64String | Model);
+    // (undocumented)
+    static createTopScope(iModel: IModelDb, topElementId: Id64String): ElementTreeWalkerScope;
+    // (undocumented)
+    get enclosingModel(): Model;
+    readonly enclosingModelInfo: ElementTreeWalkerModelInfo;
+    // (undocumented)
+    get inDefinitionModel(): boolean;
+    // (undocumented)
+    get inRepositoryModel(): boolean;
+    readonly path: Array<Id64String | ElementTreeWalkerModelInfo>;
+    // (undocumented)
+    readonly topElement: Id64String;
+    // (undocumented)
+    toString(): string;
 }
 
 // @public
@@ -2393,6 +2469,8 @@ export abstract class IModelDb extends IModel {
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
+    // @internal
+    querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
@@ -4204,6 +4282,22 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+}
+
+// @beta
+export class SpecialElementTreeBottomUp extends ElementTreeBottomUp {
+    constructor(iModel: IModelDb);
+    processElementTree(root: Id64String): void;
+    // (undocumented)
+    protected shouldExploreModel(_model: Model): boolean;
+    // (undocumented)
+    protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    special: SpecialElements;
+    // (undocumented)
+    protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected visitModel(_model: Model, _scope: ElementTreeWalkerScope): void;
 }
 
 // @public

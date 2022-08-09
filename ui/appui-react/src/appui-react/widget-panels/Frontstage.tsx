@@ -305,7 +305,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
   }
 
   const activeWidget = visibleWidgets.find((widget) => widget.isActive);
-  const minimized = !activeWidget;
+  const minimized = false;
   // istanbul ignore else
   if (activeWidget?.defaultState !== WidgetState.Floating) {
     state = addPanelWidget(state, side, widgetId, tabs, {
