@@ -293,6 +293,7 @@ class SpecialElements {
 /** Deletes an entire element tree, including sub-models and child elements.
  * Items are deleted in bottom-up order. Definitions and Subjects are deleted after normal elements.
  * Call deleteNormalElements on each tree. Then call deleteSpecialElements.
+ * @see deleteElementTree for a simple way to use this class.
  * @beta
  */
 export class ElementTreeDeleter extends ElementTreeBottomUp {
@@ -405,10 +406,11 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
   private _treeDeleter: ElementTreeDeleter;
   private _shouldPruneCb: ElementSubTreeDeleteFilter;
 
-  /** Construct an ElementSubTreeDeleter. @see pruneElementTree.
+  /** Construct an ElementSubTreeDeleter.
    * @param iModel The iModel
    * @param topElement Where to start the search.
    * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
+   * @see deleteElementSubTrees for a simple way to use this class.
    */
   public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter) {
     super(iModel);
