@@ -54,9 +54,9 @@ export class ITwinLocalization implements Localization {
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
+      maxRetries: 1, // prevents wasted time and potential timeouts when requesting localization files throws an error
       backend: this._backendOptions,
       detection: this._detectionOptions,
-      maxRetries: 1,
       ...options?.initOptions,
     };
 
