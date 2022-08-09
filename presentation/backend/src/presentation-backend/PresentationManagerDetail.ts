@@ -5,7 +5,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { IDisposable } from "@itwin/core-bentley";
+import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
@@ -134,7 +134,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+    const { requestId, imodel, locale, unitSystem, diagnostics, cancelEvent, ...strippedParams } = params;
     this._onManagerUsed?.();
 
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
@@ -154,13 +154,14 @@ export class PresentationManagerDetail implements IDisposable {
       nativeRequestParams.params.diagnostics = { perf: !!perf, ...diagnosticsOptions };
     }
 
-    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
+    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
     if (response.diagnostics) {
       const duration = (diagnostics && typeof diagnostics.perf === "object") ? diagnostics.perf.duration : undefined;
       const filteredDiagnostics = filterDiagnostics({ logs: [response.diagnostics] }, duration);
       diagnosticsListener && filteredDiagnostics && diagnosticsListener(filteredDiagnostics);
       this._diagnosticsCallback && filteredDiagnostics && this._diagnosticsCallback(convertToReadableSpans(filteredDiagnostics));
     }
+
     return response.result;
   }
 }
@@ -171,6 +172,7 @@ interface RequestParams {
   imodel: IModelDb;
   locale?: string;
   unitSystem?: UnitSystemKey;
+  cancelEvent?: BeEvent<() => void>;
 }
 
 function setupRulesetDirectories(
