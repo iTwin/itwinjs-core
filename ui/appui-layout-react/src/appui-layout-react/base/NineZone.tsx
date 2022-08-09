@@ -20,10 +20,10 @@ import {
 import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
 
-/** @internal future */
+/** @internal */
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 
-/** @internal future */
+/** @internal */
 export interface NineZoneProps {
   children?: React.ReactNode;
   dispatch: NineZoneDispatch;
@@ -51,7 +51,7 @@ export interface NineZoneLabels {
   popoutActiveTab?: string;
 }
 
-/** @internal future */
+/** @internal */
 export function NineZone(props: NineZoneProps) {
   const { children, ...providerProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const measurerRef = React.useRef<HTMLDivElement>(null);

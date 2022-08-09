@@ -34,6 +34,7 @@ deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
+deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -55,6 +56,8 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
+beta;deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void
+beta;deleteElementTree(iModel: IModelDb, topElement: Id64String): void
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -68,10 +71,12 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions 
-public;class Document 
 public;DocumentListModel 
 public;DocumentPartition 
+beta;DownloadChangesetArg 
+beta;DownloadChangesetRangeArg 
 internal;DownloadJob
+beta;DownloadProgressArg
 internal;DownloadRequest
 internal;Downloads
 public;Drawing 
@@ -92,8 +97,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceDb 
-public;Element 
+internal;EditableWorkspaceDb 
 public;ElementAspect 
 beta;ElementDrivesElement 
 beta;ElementDrivesElementProps 
@@ -106,6 +110,12 @@ public;ElementOwnsExternalSourceAspects
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
+beta;ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean
+beta;ElementSubTreeDeleter 
+beta;class ElementTreeBottomUp
+beta;ElementTreeDeleter 
+beta;ElementTreeWalkerModelInfo
+beta;ElementTreeWalkerScope
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
@@ -208,7 +218,7 @@ public;IpcHostOpts
 public;ITwinIdArg
 internal;ITwinWorkspace 
 internal;ITwinWorkspaceContainer 
-beta;ITwinWorkspaceDb 
+internal;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -264,7 +274,8 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 internal;ProcessChangesetOptions
-public;ProgressFunction = (loaded: number, total: number) => number
+public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
+public;ProgressStatus
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -317,7 +328,13 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
+beta;SpecialElementTreeBottomUp 
 public;SQLiteDb 
+public;SQLiteDb
+internal;BlobIO = IModelJsNative.BlobIO
+internal;CloudCache = IModelJsNative.CloudCache
+internal;CloudContainer = IModelJsNative.CloudContainer
+internal;CloudPrefetch = IModelJsNative.CloudPrefetch
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

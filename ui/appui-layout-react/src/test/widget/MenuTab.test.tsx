@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget,
@@ -87,7 +88,7 @@ describe("MenuTab", () => {
     const close = sinon.spy();
     render(
       <WidgetOverflowContext.Provider value={{ close }}>
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+        <WidgetContext.Provider value={{ measure: () => new Rectangle() }}>
           <WidgetMenuTab />
         </WidgetContext.Provider>
       </WidgetOverflowContext.Provider>,

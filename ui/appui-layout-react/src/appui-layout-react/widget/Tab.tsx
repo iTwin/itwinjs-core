@@ -20,6 +20,7 @@ import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
 import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { TabIdContext } from "./ContentRenderer";
+import { TabTarget } from "../target/TabTarget";
 import { WidgetMenuTab } from "./MenuTab";
 import { WidgetOverflowContext } from "./Overflow";
 
@@ -51,14 +52,14 @@ export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTab
 }
 
 /** Properties of [[WidgetTab]] component.
- * @internal future
+ * @internal
  */
 export interface WidgetTabProps extends CommonProps {
   badge?: React.ReactNode;
 }
 
 /** Component that displays a tab in a side panel widget.
- * @internal future
+ * @internal
  */
 export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const widgetOverflow = React.useContext(WidgetOverflowContext);
@@ -111,6 +112,7 @@ const WidgetTabComponent = React.memo<WidgetTabProps>(function WidgetTabComponen
       {props.badge && <div className="nz-badge">
         {props.badge}
       </div>}
+      <TabTarget />
     </div>
   );
 });
@@ -140,7 +142,6 @@ export function useTabInteractions<T extends HTMLElement>({
 
   const clickCount = React.useRef(0);
   const doubleClickTimer = React.useRef(new Timer(300));
-  const dragStartTimer = React.useRef(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
 
   const { id } = tab;
@@ -179,8 +180,8 @@ export function useTabInteractions<T extends HTMLElement>({
     bounds = bounds.offset(nzOffset);
     const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
     let position = bounds.topLeft();
-    const size = widgetContext.measure();
-    const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
+    const widgetBounds = widgetContext.measure();
+    const widgetSize = restrainInitialWidgetSize(widgetBounds.getSize(), nzBounds.getSize());
     if (overflown) {
       position = initialPointerPosition.current.offset(nzOffset);
       position = position.offset({ x: -7, y: -7 });
@@ -200,7 +201,6 @@ export function useTabInteractions<T extends HTMLElement>({
     });
     onDragStart?.();
 
-    dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
   }, [measure, tab.userSized, tab.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, handleDragTabStart, dispatch, floatingWidgetId, side, widgetId, id, onDragStart, overflown]);
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
@@ -210,9 +210,9 @@ export function useTabInteractions<T extends HTMLElement>({
     });
 
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
-    dragStartTimer.current.start();
   }, [dispatch, floatingWidgetId]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
+    // istanbul ignore next
     if (!initialPointerPosition.current)
       return;
     const distance = initialPointerPosition.current.getDistanceTo({ x: args.clientX, y: args.clientY });
@@ -224,20 +224,12 @@ export function useTabInteractions<T extends HTMLElement>({
     clickCount.current++;
     initialPointerPosition.current = undefined;
     doubleClickTimer.current.start();
-    dragStartTimer.current.stop();
   }, []);
 
   const pointerCaptorRef = usePointerCaptor<T>(handlePointerDown, handlePointerMove, handlePointerUp);
   const ref = React.useRef<T>();
   const refs = useRefs(pointerCaptorRef, ref);
 
-  React.useEffect(() => {
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(handleDragStart);
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [handleDragStart]);
   React.useEffect(() => {
     const timer = doubleClickTimer.current;
     timer.setOnExecute(() => {

@@ -4,6 +4,7 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
@@ -852,7 +853,7 @@ export interface EnumerationInfo {
 // @alpha (undocumented)
 export interface ExpandedNodeUpdateRecord {
     // (undocumented)
-    node: Node;
+    node: Node_2;
     // (undocumented)
     position: number;
 }
@@ -1557,10 +1558,15 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 export interface NavigationPropertyInfo {
     classInfo: ClassInfo;
     isForwardRelationship: boolean;
+    isTargetPolymorphic: boolean;
+    targetClassInfo: ClassInfo;
 }
 
 // @beta (undocumented)
 export namespace NavigationPropertyInfo {
+    export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfo;
     export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
     export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -1574,6 +1580,10 @@ export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     classInfo: TClassInfoJSON;
     // (undocumented)
     isForwardRelationship: boolean;
+    // (undocumented)
+    isTargetPolymorphic: boolean;
+    // (undocumented)
+    targetClassInfo: TClassInfoJSON;
 }
 
 // @public
@@ -1661,7 +1671,7 @@ export interface NoCategoryIdentifier {
 }
 
 // @public
-export interface Node {
+interface Node_2 {
     // @deprecated
     backColor?: string;
     description?: string;
@@ -1689,20 +1699,21 @@ export interface Node {
 }
 
 // @public (undocumented)
-export namespace Node {
-    export function fromJSON(json: NodeJSON | string): Node;
+namespace Node_2 {
+    function fromJSON(json: NodeJSON | string): Node_2;
     // @internal (undocumented)
-    export function fromPartialJSON(json: PartialNodeJSON): PartialNode;
+    function fromPartialJSON(json: PartialNodeJSON): PartialNode;
     // @internal
-    export function listFromJSON(json: NodeJSON[] | string): Node[];
+    function listFromJSON(json: NodeJSON[] | string): Node_2[];
     // @internal
-    export function listReviver(key: string, value: any): any;
+    function listReviver(key: string, value: any): any;
     // @internal
-    export function reviver(key: string, value: any): any;
-    export function toJSON(node: Node): NodeJSON;
+    function reviver(key: string, value: any): any;
+    function toJSON(node: Node_2): NodeJSON;
     // @internal (undocumented)
-    export function toPartialJSON(node: PartialNode): PartialNodeJSON;
+    function toPartialJSON(node: PartialNode): PartialNodeJSON;
 }
+export { Node_2 as Node }
 
 // @public
 export interface NodeArtifactsRule extends RuleBase {
@@ -1731,7 +1742,7 @@ export interface NodeDeletionInfoJSON {
 
 // @public
 export interface NodeInsertionInfo {
-    node: Node;
+    node: Node_2;
     parent?: NodeKey;
     position: number;
     // (undocumented)
@@ -1818,7 +1829,7 @@ export interface NodePathElement {
     filteringData?: NodePathFilteringData;
     index: number;
     isMarked?: boolean;
-    node: Node;
+    node: Node_2;
 }
 
 // @public (undocumented)
@@ -1886,7 +1897,8 @@ export interface NodeUpdateInfoJSON {
 }
 
 // @public
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
+export { Omit_2 as Omit }
 
 // @public
 export type Paged<TOptions extends {}> = TOptions & {
@@ -1911,7 +1923,7 @@ export interface ParentCategoryIdentifier {
 }
 
 // @public
-export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type PartialBy<T, K extends keyof T> = Omit_2<T, K> & Partial<Pick<T, K>>;
 
 // @public
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
@@ -1926,7 +1938,7 @@ export namespace PartialHierarchyModification {
 export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
 
 // @public
-export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
+export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 
 // @public
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
@@ -2002,7 +2014,7 @@ export class PresentationRpcInterface extends RpcInterface {
 }
 
 // @public
-export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
+export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit_2<TManagerRequestOptions, "imodel" | "diagnostics"> & {
     clientId?: string;
     diagnostics?: RpcDiagnosticsOptions;
 };
@@ -2410,12 +2422,14 @@ export enum RelatedPropertiesSpecialValues {
 // @public
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
+    forceCreateRelationshipCategory?: boolean;
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
+    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     // @beta
     skipIfDuplicate?: boolean;
 }
@@ -2502,7 +2516,7 @@ export interface RootNodeRule extends NavigationRuleBase {
 }
 
 // @alpha (undocumented)
-export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
+export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal
 export class RpcRequestsHandler implements IDisposable {
@@ -2551,7 +2565,7 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
-    }
+}
 
 // @internal
 export interface RpcRequestsHandlerProps {
@@ -2588,7 +2602,7 @@ export class RulesetsFactory {
         ruleset: Ruleset;
         description: string;
     }>;
-    }
+}
 
 // @public
 export type RulesetVariable = BooleanRulesetVariable | StringRulesetVariable | IntRulesetVariable | IntsRulesetVariable | Id64RulesetVariable | Id64sRulesetVariable;
@@ -2920,7 +2934,7 @@ export interface SubCondition {
 }
 
 // @public
-export type Subtract<T, K> = Omit<T, keyof K>;
+export type Subtract<T, K> = Omit_2<T, keyof K>;
 
 // @public
 export interface SupplementationInfo {
@@ -3066,6 +3080,11 @@ export enum VariableValueTypes {
     IntArray = "int[]",
     String = "string"
 }
+
+// @public
+export type WithCancelEvent<TOptions extends {}> = TOptions & {
+    cancelEvent?: BeEvent<() => void>;
+};
 
 
 // (No @packageDocumentation comment for this package)

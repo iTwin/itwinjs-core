@@ -28,8 +28,8 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
 
   it("should find and copy assets directories from packages in node_modules/@bentley", async () => {
     setApplicationDir(path.join(__dirname, "assets/copy-bentley-static-resources-plugin-test"));
-    const result = await runWebpack(testConfig, vol);
-    expect(result.logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
+    const { logging } = await runWebpack(testConfig, vol);
+    expect(logging).to.not.have.property("CopyBentleyStaticResourcesPlugin");
     expect(fs.readFileSync(path.join(__dirname, "dist/assets/staticResourcePlugin.js"), "utf8")).to.equal(`console.log("Fake resource");`);
   });
 

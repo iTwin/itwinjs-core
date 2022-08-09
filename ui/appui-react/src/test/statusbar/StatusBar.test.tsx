@@ -12,7 +12,7 @@ import {
 import { MessageSeverity, WidgetState } from "@itwin/appui-abstract";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
-  StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+  StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { MessageManager } from "../../appui-react/messages/MessageManager";
@@ -25,10 +25,10 @@ describe("StatusBar", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode(): React.ReactNode {
       return (
         <>
-          <MessageCenterField isInFooterMode={isInFooterMode} />
+          <MessageCenterField />
         </>
       );
     }
@@ -53,12 +53,22 @@ describe("StatusBar", () => {
     MessageManager.clearMessages();
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
   });
 
+  [true, false, undefined].map((isInFooterMode) => {
+    it(`StatusBar should handle isInFooterMode=${isInFooterMode}${isInFooterMode !== undefined ? " (deprecated)" : ""}`, async () => {
+      const spy = sinon.spy(widgetControl as StatusBarWidgetControl, "getReactNode");
+      render(<StatusBar widgetControl={widgetControl} isInFooterMode={isInFooterMode} />);
+
+      expect(spy.alwaysCalledWith(sinon.match({isInFooterMode: isInFooterMode ?? true}))).to.be.true;
+      spy.restore();
+    });
+  });
+
   it("StatusBar should render a Toast message", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
     act(() => {
@@ -73,7 +83,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render a Sticky message", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     act(() => {
@@ -88,7 +98,7 @@ describe("StatusBar", () => {
   });
 
   it("Sticky message should close on button click", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     act(() => {
@@ -105,7 +115,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render an Activity message", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
@@ -121,7 +131,7 @@ describe("StatusBar", () => {
   });
 
   it("Activity message should be canceled", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -137,7 +147,7 @@ describe("StatusBar", () => {
   });
 
   it("Activity message should be dismissed", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -153,7 +163,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render Toast, Sticky & Activity messages", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details1 = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.", "A detailed message.");
     const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief sticky message.", "A detailed message.", OutputMessageType.Sticky);
@@ -180,7 +190,7 @@ describe("StatusBar", () => {
   it("StatusBar should render maximum of 3 Sticky messages", async () => {
     MessageManager.maxDisplayedStickyMessages = 3;
 
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
     act(() => {
@@ -212,7 +222,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should not render a Pointer message", () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
     act(() => {
@@ -223,7 +233,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should clear messages", async () => {
-    render(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    render(<StatusBar widgetControl={widgetControl} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief toast message.", "A detailed message.", OutputMessageType.Sticky);
     act(() => {

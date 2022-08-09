@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, createTabState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
@@ -267,7 +268,7 @@ describe("WidgetTab", () => {
         state={nineZone}
         dispatch={dispatch}
       >
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+        <WidgetContext.Provider value={{ measure: () => new Rectangle() }}>
           <WidgetStateContext.Provider value={nineZone.widgets.w1}>
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetStateContext.Provider>
@@ -305,34 +306,6 @@ describe("WidgetTab", () => {
     act(() => {
       fireEvent.mouseDown(tab);
       fireEvent.mouseMove(document, { clientX: 5, clientY: 0 });
-    });
-    sinon.assert.notCalled(dispatch);
-  });
-
-  it("should not dispatch WIDGET_TAB_DRAG_START w/o initial pointer position", () => {
-    const fakeTimers = sinon.useFakeTimers();
-    const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    render(
-      <TestNineZoneProvider
-        state={nineZone}
-        dispatch={dispatch}
-      >
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
-          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-            <WidgetTabProvider tab={nineZone.tabs.t1} />
-          </WidgetStateContext.Provider>
-        </WidgetContext.Provider>
-      </TestNineZoneProvider>,
-    );
-    const tab = document.getElementsByClassName("nz-widget-tab")[0];
-    act(() => {
-      fireEvent.mouseDown(tab);
-      fakeTimers.tick(300);
-      dispatch.resetHistory();
-      fireEvent.mouseMove(document, { clientX: 20 });
     });
     sinon.assert.notCalled(dispatch);
   });
