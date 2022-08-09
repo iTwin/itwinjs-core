@@ -328,7 +328,6 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-beta;SpecialElementTreeBottomUp 
 public;SQLiteDb 
 public;SQLiteDb
 internal;BlobIO = IModelJsNative.BlobIO
