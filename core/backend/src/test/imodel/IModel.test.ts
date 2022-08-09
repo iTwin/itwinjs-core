@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
@@ -32,8 +31,9 @@ import {
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions } from "../TestUtils";
 
 // spell-checker: disable
 
@@ -1927,6 +1927,39 @@ describe("iModel", () => {
     });
 
     const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by ECEF with 0,0,0 rotation", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 0, pitch: 0, roll: 0 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3_000.bim");
     const iModel = SnapshotDb.createEmpty(testFile, args);
 
     assert.isTrue(iModel.ecefLocation === undefined);

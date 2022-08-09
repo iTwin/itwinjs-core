@@ -14,6 +14,7 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
@@ -174,6 +175,6 @@ export * from "./IModelDb"; // must be last
  * APIs for loading and using Settings and Workspace resources
  */
 /**
- * @docs-group-description ViewStateHydrater
+ * @docs-group-description ViewStateHydrator
  * Class responsible for loading ViewStates.
  */

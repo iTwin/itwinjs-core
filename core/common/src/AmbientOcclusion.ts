@@ -18,11 +18,11 @@ export namespace AmbientOcclusion {
     readonly bias?: number;
     /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.0025.  The full range of linear depth is 0 to 1. */
     readonly zLengthCap?: number;
-    /** If defined, the maximum distance from the camera's near plane in meters at which ambient occlusion will be applied. If undefined, the maximum distance defaults to 100. */
+    /** If defined, the maximum distance from the camera's near plane in meters at which ambient occlusion will be applied. If undefined, the maximum distance defaults to 10000. */
     readonly maxDistance?: number;
     /** If defined, raise the final ambient occlusion to the power of this value. Larger values make the ambient shadows darker. If undefined, the intensity defaults to 2.0. */
     readonly intensity?: number;
-    /** If defined, indicates the distance to step toward the next texel sample in the current direction. If undefined, texelStepSize defaults to 1.95. */
+    /** If defined, indicates the texel distance to step toward the next texel sample in the current direction. For portions of geometry close to the near plane, this value will be what is used. As portions of geometry extend away from the near plane, this value will gradually reduce until it reaches a minimum value of 1.0 at the far plane. If undefined, texelStepSize defaults to 1.95. */
     readonly texelStepSize?: number;
     /** If defined, blurDelta is used to compute the weight of a Gaussian filter. The equation is exp((-0.5 * blurDelta * blurDelta) / (blurSigma * blurSigma)). If undefined, blurDelta defaults to 1.0. */
     readonly blurDelta?: number;
@@ -36,7 +36,7 @@ export namespace AmbientOcclusion {
   export class Settings implements Props {
     private static _defaultBias: number = 0.25;
     private static _defaultZLengthCap: number = 0.0025;
-    private static _defaultMaxDistance: number = 100.0;
+    private static _defaultMaxDistance: number = 10000.0;
     private static _defaultIntensity: number = 1.0;
     private static _defaultTexelStepSize: number = 1;
     private static _defaultBlurDelta: number = 1.0;
@@ -72,14 +72,14 @@ export namespace AmbientOcclusion {
 
     public toJSON(): Props {
       return {
-        bias: this.bias,
-        zLengthCap: this.zLengthCap,
-        maxDistance: this.maxDistance,
-        intensity: this.intensity,
-        texelStepSize: this.texelStepSize,
-        blurDelta: this.blurDelta,
-        blurSigma: this.blurSigma,
-        blurTexelStepSize: this.blurTexelStepSize,
+        bias: this.bias !== Settings._defaultBias ? this.bias : undefined,
+        zLengthCap: this.zLengthCap !== Settings._defaultZLengthCap ? this.zLengthCap : undefined,
+        maxDistance: this.maxDistance !== Settings._defaultMaxDistance ? this.maxDistance : undefined,
+        intensity: this.intensity !== Settings._defaultIntensity ? this.intensity : undefined,
+        texelStepSize: this.texelStepSize !== Settings._defaultTexelStepSize ? this.texelStepSize : undefined,
+        blurDelta: this.blurDelta !== Settings._defaultBlurDelta ? this.blurDelta : undefined,
+        blurSigma: this.blurSigma !== Settings._defaultBlurSigma ? this.blurSigma : undefined,
+        blurTexelStepSize: this.blurTexelStepSize !== Settings._defaultBlurTexelStepSize ? this.blurTexelStepSize : undefined,
       };
     }
   }

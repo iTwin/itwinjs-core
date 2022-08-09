@@ -9,7 +9,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BeModifierKeys } from '@itwin/core-frontend';
 import { BeTouchEvent } from '@itwin/core-frontend';
 import { Box } from '@svgdotjs/svg.js';
-import { Element } from '@svgdotjs/svg.js';
+import { Element as Element_2 } from '@svgdotjs/svg.js';
 import { EventHandled } from '@itwin/core-frontend';
 import { G } from '@svgdotjs/svg.js';
 import { Marker } from '@svgdotjs/svg.js';
@@ -19,7 +19,7 @@ import { Point3d } from '@itwin/core-geometry';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { ScreenViewport } from '@itwin/core-frontend';
 import { Svg } from '@svgdotjs/svg.js';
-import { Text } from '@svgdotjs/svg.js';
+import { Text as Text_2 } from '@svgdotjs/svg.js';
 import { Transform } from '@itwin/core-geometry';
 import { Viewport } from '@itwin/core-frontend';
 import { XAndY } from '@itwin/core-geometry';
@@ -58,7 +58,7 @@ export class CloudTool extends RedlineTool {
     // (undocumented)
     protected clearDynamicsMarkup(isDynamics: boolean): void;
     // (undocumented)
-    protected _cloud?: Element;
+    protected _cloud?: Element_2;
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
@@ -91,7 +91,7 @@ export class DistanceTool extends ArrowTool {
 
 // @public
 export class EditTextTool extends MarkupTool {
-    constructor(text?: G | Text | undefined, _fromPlaceTool?: boolean);
+    constructor(text?: G | Text_2 | undefined, _fromPlaceTool?: boolean);
     // (undocumented)
     boxed?: G;
     // (undocumented)
@@ -113,7 +113,7 @@ export class EditTextTool extends MarkupTool {
     protected showPrompt(): void;
     startEditor(): void;
     // (undocumented)
-    text?: G | Text | undefined;
+    text?: G | Text_2 | undefined;
     // (undocumented)
     static toolId: string;
 }
@@ -132,7 +132,7 @@ export class EllipseTool extends RedlineTool {
 
 // @public
 export class Handles {
-    constructor(ss: MarkupSelected, el: Element);
+    constructor(ss: MarkupSelected, el: Element_2);
     // (undocumented)
     active?: ModifyHandle;
     cancelDrag(): void;
@@ -143,7 +143,7 @@ export class Handles {
     // (undocumented)
     draw(): void;
     // (undocumented)
-    el: Element;
+    el: Element_2;
     endDrag(undo: UndoManager): EventHandled;
     // (undocumented)
     group: G;
@@ -406,14 +406,14 @@ export interface MarkupData extends MarkupSvgData {
 // @public
 export class MarkupSelected {
     constructor(svg: G);
-    add(el: Element): void;
+    add(el: Element_2): void;
     // (undocumented)
     clearEditors(): void;
     // (undocumented)
     deleteAll(undo: UndoManager): void;
-    drop(el: Element): boolean;
+    drop(el: Element_2): boolean;
     // (undocumented)
-    readonly elements: Set<Element>;
+    readonly elements: Set<Element_2>;
     // (undocumented)
     emptyAll(): void;
     // (undocumented)
@@ -421,14 +421,14 @@ export class MarkupSelected {
     // (undocumented)
     handles?: Handles;
     // (undocumented)
-    has(el: Element): boolean;
+    has(el: Element_2): boolean;
     // (undocumented)
     get isEmpty(): boolean;
     readonly onChanged: BeEvent<(selected: MarkupSelected) => void>;
-    replace(oldEl: Element, newEl: Element): void;
-    reposition(cmdName: string, undo: UndoManager, fn: (el: Element) => void): void;
+    replace(oldEl: Element_2, newEl: Element_2): void;
+    reposition(cmdName: string, undo: UndoManager, fn: (el: Element_2) => void): void;
     // (undocumented)
-    restart(el?: Element): void;
+    restart(el?: Element_2): void;
     // (undocumented)
     get size(): number;
     // (undocumented)
@@ -448,7 +448,7 @@ export interface MarkupSvgData {
 // @public
 export abstract class MarkupTool extends PrimitiveTool {
     // @internal (undocumented)
-    createBoxedText(g: G, text: Text): G;
+    createBoxedText(g: G, text: Text_2): G;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
@@ -471,15 +471,15 @@ export abstract class MarkupTool extends PrimitiveTool {
     onUnsuspend(): Promise<void>;
     // (undocumented)
     protected outputMarkupPrompt(msg: string): void;
-    pickElement(pt: XAndY): Element | undefined;
+    pickElement(pt: XAndY): Element_2 | undefined;
     // (undocumented)
     redoPreviousStep(): Promise<boolean>;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
-    protected setCurrentStyle(element: Element, canBeFilled: boolean): void;
+    protected setCurrentStyle(element: Element_2, canBeFilled: boolean): void;
     // (undocumented)
-    protected setCurrentTextStyle(element: Element): void;
+    protected setCurrentTextStyle(element: Element_2): void;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
@@ -494,14 +494,14 @@ export abstract class MarkupTool extends PrimitiveTool {
 export abstract class ModifyHandle {
     constructor(handles: Handles);
     // (undocumented)
-    addTouchPadding(visible: Element, handles: Handles): Element;
+    addTouchPadding(visible: Element_2, handles: Handles): Element_2;
     // (undocumented)
     handles: Handles;
     abstract modify(ev: BeButtonEvent): void;
     // (undocumented)
     onClick(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    setMouseHandler(target: Element): void;
+    setMouseHandler(target: Element_2): void;
     abstract setPosition(): void;
     startDrag(_ev: BeButtonEvent, makeCopy?: boolean): void;
     // (undocumented)
@@ -577,7 +577,7 @@ export abstract class RedlineTool extends MarkupTool {
     // (undocumented)
     protected _nRequiredPoints: number;
     // (undocumented)
-    protected onAdded(el: Element): void;
+    protected onAdded(el: Element_2): void;
     // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
@@ -609,8 +609,8 @@ export class SelectTool extends MarkupTool {
     // (undocumented)
     protected boxSelectStart(ev: BeButtonEvent): boolean;
     // (undocumented)
-    get flashedElement(): Element | undefined;
-    set flashedElement(el: Element | undefined);
+    get flashedElement(): Element_2 | undefined;
+    set flashedElement(el: Element_2 | undefined);
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -673,7 +673,7 @@ export class SymbolTool extends RedlineTool {
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
-    protected _symbol?: Element;
+    protected _symbol?: Element_2;
     // (undocumented)
     protected _symbolData?: string | undefined;
     // (undocumented)
@@ -681,7 +681,7 @@ export class SymbolTool extends RedlineTool {
 }
 
 // @internal
-export class Title extends Element {
+export class Title extends Element_2 {
     constructor(node: any);
     // (undocumented)
     bbox(): Box;
@@ -701,10 +701,10 @@ export class Title extends Element {
 export class UndoManager {
     doRedo(): void;
     doUndo(): void;
-    onAdded(elem: Element): void;
-    onDelete(elem: Element): void;
-    onModified(newElem: Element, oldElem: Element): void;
-    onRepositioned(elem: Element, oldIndex: number, oldParent: Element): void;
+    onAdded(elem: Element_2): void;
+    onDelete(elem: Element_2): void;
+    onModified(newElem: Element_2, oldElem: Element_2): void;
+    onRepositioned(elem: Element_2, oldIndex: number, oldParent: Element_2): void;
     performOperation(cmdName: string, fn: VoidFunction): void;
     get redoPossible(): boolean;
     get redoString(): string | undefined;
@@ -721,7 +721,6 @@ export interface WidthAndHeight {
     // (undocumented)
     width: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

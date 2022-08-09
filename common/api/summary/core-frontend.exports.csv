@@ -33,6 +33,7 @@ beta;AngleDescription
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
 internal;AnimationBranchStates
+internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
@@ -397,6 +398,7 @@ beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
 public;ModelState 
+public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
@@ -510,7 +512,6 @@ internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
-internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
@@ -545,7 +546,6 @@ public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
-public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
@@ -554,8 +554,6 @@ public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-alpha;ServiceExtensionProvider 
-alpha;ServiceExtensionProviderProps
 public;SetupCameraTool 
 public;SetupWalkCameraTool 
 public;SheetModelState 
@@ -581,7 +579,6 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
