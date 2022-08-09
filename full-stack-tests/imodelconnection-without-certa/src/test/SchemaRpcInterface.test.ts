@@ -10,7 +10,7 @@ import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { TestContext } from "../TestContext";
 import { SchemaKey, SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
-describe.skip("Schema RPC Interface", () => {
+describe("Schema RPC Interface", () => {
 
   let iModel: IModelConnection;
   let testContext: TestContext;
