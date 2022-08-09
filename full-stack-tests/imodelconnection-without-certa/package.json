@@ -13,6 +13,7 @@
     "test": "",
     "test:integration": "mocha -r jsdom-global/register -r ./src/test/setup.js",
     "cover": "",
+    "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "devDependencies": {
