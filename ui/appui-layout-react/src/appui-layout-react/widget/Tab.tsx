@@ -180,8 +180,8 @@ export function useTabInteractions<T extends HTMLElement>({
     bounds = bounds.offset(nzOffset);
     const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
     let position = bounds.topLeft();
-    const size = widgetContext.measure();
-    const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
+    const widgetBounds = widgetContext.measure();
+    const widgetSize = restrainInitialWidgetSize(widgetBounds.getSize(), nzBounds.getSize());
     if (overflown) {
       position = initialPointerPosition.current.offset(nzOffset);
       position = position.offset({ x: -7, y: -7 });

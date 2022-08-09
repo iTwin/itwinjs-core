@@ -498,8 +498,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
         continue;
       }
-      const size = ref.current.measure();
-      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
+      const bounds = ref.current.measure();
+      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, bounds.getSize()), to: undefined });
     }
     if (panel.widgets.length < prevPanelWidgets.length) {
       // Widget removed.
@@ -576,8 +576,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         break;
       }
-      const size = ref.current.measure();
-      widgetTransition.to = getSize(horizontal.current, size);
+      const bounds = ref.current.measure();
+      widgetTransition.to = getSize(horizontal.current, bounds.getSize());
 
       if (widgetTransition.from !== widgetTransition.to) {
         initTransition = true;
@@ -637,8 +637,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         return;
       }
-      const size = ref.current.measure();
-      const from = getSize(horizontal.current, size);
+      const bounds = ref.current.measure();
+      const from = getSize(horizontal.current, bounds.getSize());
       widgetTransitions.current.set(wId, { from, to: undefined });
     }
   }, [panel.widgets]);
