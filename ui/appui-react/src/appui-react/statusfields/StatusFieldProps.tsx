@@ -13,8 +13,10 @@ import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
  * @public
  */
 export interface StatusFieldProps extends CommonProps {
-  /** Indicates whether the StatusBar is in footer mode */
-  isInFooterMode: boolean;
+  /** Indicates whether the StatusBar is in footer mode
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
+  isInFooterMode?: boolean;
   /** Function called when the widget is opened or closed.
    * @deprecated In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
    */

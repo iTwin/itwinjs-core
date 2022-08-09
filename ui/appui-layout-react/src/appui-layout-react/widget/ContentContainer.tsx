@@ -15,7 +15,12 @@ import { WidgetStateContext } from "./Widget";
 import { PanelSideContext } from "../widget-panels/Panel";
 
 /** @internal */
-export const WidgetContentContainer = React.memo(function WidgetContentContainer() { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
+export interface WidgetContentContainerProps {
+  children?: React.ReactNode;
+}
+
+/** @internal */
+export const WidgetContentContainer = React.memo(function WidgetContentContainer(props: WidgetContentContainerProps) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   const side = React.useContext(PanelSideContext);
@@ -25,13 +30,18 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
     widgetContentManager.setContainer(widget.activeTabId, instance);
   }, [widget.activeTabId, widgetContentManager]);
   const className = classnames(
-    "nz-widget-content-container",
+    "nz-widget-contentContainer",
     undefined === side && widget.minimized && "nz-minimized",
   );
   return (
     <div
       className={className}
-      ref={ref}
-    />
+    >
+      <div
+        className="nz-content"
+        ref={ref}
+      />
+      {props.children}
+    </div>
   );
 });

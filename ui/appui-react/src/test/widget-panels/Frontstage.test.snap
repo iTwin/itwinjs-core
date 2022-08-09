@@ -344,6 +344,7 @@ Object {
     },
     "t1": Object {
       "canPopout": undefined,
+      "hideWithUiWhenFloating": false,
       "iconSpec": undefined,
       "id": "t1",
       "isFloatingStateWindowResizable": true,

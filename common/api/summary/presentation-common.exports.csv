@@ -403,3 +403,4 @@ public;VariableValue = boolean | string | number | number[] | Id64String | Id64S
 public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
 public;VariableValueType
 public;VariableValueTypes
+public;WithCancelEvent
