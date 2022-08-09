@@ -40,6 +40,7 @@ export interface TabsState { readonly [id: string]: TabState }
 
 /** @internal */
 export interface WidgetState {
+  // Preferred active tab. The tab might not be active if it is hidden.
   readonly activeTabId: TabState["id"];
   readonly id: string;
   readonly minimized: boolean;
@@ -672,7 +673,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
     case "WIDGET_TAB_CLICK": {
       const widget = state.widgets[action.widgetId];
-      // const isActive = action.id === widget.activeTabId;
       const floatingWidget = state.floatingWidgets.byId[action.widgetId];
       if (floatingWidget) {
         const size = Rectangle.create(floatingWidget.bounds).getSize();

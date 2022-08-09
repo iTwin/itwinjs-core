@@ -948,6 +948,9 @@ export function setWidgetState(
     return produce(state, (draft) => {
       const id = widgetDef.id;
       let location = findTab(state, id);
+      if (id in state.tabs) {
+        state = updateTabState(state, id, { hidden: false });
+      }
       if (!location) {
         addRemovedTab(draft, widgetDef);
         location = findTab(state, id);

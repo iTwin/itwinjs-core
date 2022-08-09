@@ -18,7 +18,7 @@ import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
-import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
+import { ActiveTabIdContext, restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { TabIdContext } from "./ContentRenderer";
 import { TabTarget } from "../target/TabTarget";
 import { WidgetMenuTab } from "./MenuTab";
@@ -76,14 +76,13 @@ const WidgetTabComponent = React.memo<WidgetTabProps>(function WidgetTabComponen
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(!!widget);
-
-  const { id } = tab;
+  const activeTabId = React.useContext(ActiveTabIdContext);
 
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(widgetTabsEntryContext?.onResize);
   const pointerCaptorRef = useTabInteractions({});
   const refs = useRefs<HTMLDivElement>(resizeObserverRef, pointerCaptorRef);
 
-  const active = widget.activeTabId === id;
+  const active = activeTabId === tab.id;
   const className = classnames(
     "nz-widget-tab",
     active && "nz-active",
