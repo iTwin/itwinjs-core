@@ -10,7 +10,7 @@ import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String, SpanKind } from "@itwin/core-bentley";
-import { Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
+import { Attributes, Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
 import { randomBytes } from "crypto";
 
 /** @internal */
@@ -128,11 +128,6 @@ export enum SpanStatusCode {
 }
 
 /** @internal */
-interface Attributes  {
-  [attributeKey: string]: string | string[];
-}
-
-/** @internal */
 export interface TimedEvent {
   time: HrTime;
   name: string;
@@ -197,7 +192,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
     endTime: millisToHrTime(logs.scopeCreateTimestamp + logs.duration),
     status: { code: SpanStatusCode.UNSET },
-    attributes: { ...(logs.rules ? { rules: logs.rules } : undefined) },
+    attributes: { ...(logs.attributes ? logs.attributes : undefined) },
     links: [],
     events,
     duration: millisToHrTime(logs.duration),

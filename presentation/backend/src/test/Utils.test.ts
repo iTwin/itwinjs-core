@@ -208,7 +208,7 @@ describe("convertToReadableSpans", () => {
     const actualSpans = convertToReadableSpans({
       logs: [
         { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
-        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40, rules: ["rule1", "rule2"] },
+        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40, attributes: { rules: ["rule1", "rule2"] } },
       ],
     });
 

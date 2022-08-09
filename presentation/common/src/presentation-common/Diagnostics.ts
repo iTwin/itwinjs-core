@@ -59,12 +59,17 @@ export interface DiagnosticsLogMessage {
 }
 
 /** @alpha */
+export interface Attributes  {
+  [attributeKey: string]: string | string[];
+}
+
+/** @alpha */
 export interface DiagnosticsScopeLogs {
   scope: string;
   scopeCreateTimestamp?: number;
   duration?: number;
   logs?: DiagnosticsLogEntry[];
-  rules?: string[];
+  attributes?: Attributes;
 }
 
 /** @alpha */
