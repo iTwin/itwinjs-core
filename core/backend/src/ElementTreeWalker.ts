@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { IModel, IModelError } from "@itwin/core-common";
+import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
