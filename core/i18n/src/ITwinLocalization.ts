@@ -8,8 +8,7 @@
 
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
-import { BackendOptions } from "i18next-http-backend";
-import XHR from "i18next-xhr-backend";
+import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
 
@@ -51,17 +50,19 @@ export class ITwinLocalization implements Localization {
       caches: [],
       ...options?.detectorOptions,
     };
+
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
       backend: this._backendOptions,
       detection: this._detectionOptions,
+      maxRetries: 1,
       ...options?.initOptions,
     };
 
     this.i18next
       .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
-      .use(options?.backendPlugin ?? XHR)
+      .use(options?.backendPlugin ?? Backend)
       .use(TranslationLogger);
   }
 
@@ -200,10 +201,10 @@ export class ITwinLocalization implements Localization {
           return resolve();
 
         // Here we got a non-null err object.
-        // This method is called when the system has attempted to load the resources for the namespace for each
-        // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-        // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
-        // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
+        // This method is called when the system has attempted to load the resources for the namespaces for each possible locale.
+        // For example 'fr-ca' might be the most specific locale, in which case 'fr' and 'en' are fallback locales.
+        // Using Backend from i18next-http-backend, err will be an array of strings of each namespace it tried to read and its locale.
+        // There might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible locale.
         let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
 
         try {
