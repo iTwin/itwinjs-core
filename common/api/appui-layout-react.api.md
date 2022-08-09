@@ -489,7 +489,7 @@ export class DragManager {
     // (undocumented)
     isDraggedType(type: DragItem["type"]): boolean;
     // (undocumented)
-    isTargeted(target: DropTargetState): any;
+    isTargeted(target: DropTargetState): boolean;
     // (undocumented)
     get onDrag(): Event_2<DragEventHandler>;
     // (undocumented)
@@ -2096,12 +2096,12 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
         zones: {
-            2: ZoneManagerProps;
             1: ZoneManagerProps;
+            2: ZoneManagerProps;
             3: ZoneManagerProps;
             4: ZoneManagerProps;
-            6: ZoneManagerProps;
             7: ZoneManagerProps;
+            6: ZoneManagerProps;
             8: ZoneManagerProps;
             9: ZoneManagerProps;
         };
