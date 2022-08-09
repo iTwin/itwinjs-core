@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { IModel } from "@itwin/core-common";
+import { assert, DbResult, Id64Array, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel, IModelError } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -21,8 +21,8 @@ function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64
   const children: Id64Array = [];
   const parents: Id64Array = [];
   for (const eid of ids) {
-    const el = iModel.elements.getElement(eid);
-    if (el.parent !== undefined && ids.includes(el.parent.id))
+    const parentId = iModel.elements.queryParent(eid);
+    if (parentId !== undefined && ids.includes(parentId))
       children.push(eid);
     else
       parents.push(eid);
