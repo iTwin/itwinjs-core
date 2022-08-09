@@ -4,7 +4,6 @@
 
 ```ts
 
-import { BeEvent } from '@itwin/core-bentley';
 import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
@@ -51,7 +50,6 @@ import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpdateInfoJSON } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
-import { WithCancelEvent } from '@itwin/presentation-common';
 
 // @public (undocumented)
 export interface BackendDiagnosticsAttribute {
@@ -201,26 +199,26 @@ export class PresentationManager {
     // @alpha (undocumented)
     computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     dispose(): void;
-    getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
-    getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
+    getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
+    getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
+    getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
+    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     // @internal (undocumented)
     getDetail(): PresentationManagerDetail;
-    getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
+    getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     // @alpha
-    getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
-    getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
+    getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
-    getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
-    getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
-    getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
+    getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number>;
+    getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]>;
