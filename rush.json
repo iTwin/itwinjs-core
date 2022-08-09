@@ -515,12 +515,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-full-stack-tests",
-      "projectFolder": "full-stack-tests/presentation",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
@@ -539,6 +533,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "presentation-full-stack-tests",
+      "projectFolder": "full-stack-tests/presentation",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
@@ -550,6 +550,12 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "ui-end-to-end-tests",
+      "projectFolder": "full-stack-tests/ui",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }
