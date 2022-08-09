@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Mon, 01 Aug 2022 13:36:56 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+### Updates
+
+- Add a keyin to toggle the model-subcategory mode of the hilite set.
 
 ## 3.2.7
 Mon, 01 Aug 2022 13:36:56 GMT
