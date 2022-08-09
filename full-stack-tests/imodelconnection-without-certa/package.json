@@ -10,8 +10,9 @@
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "test": "mocha -r jsdom-global/register -r ./src/test/setup.js",
-    "cover": "nyc npm -s test",
+    "test": "",
+    "test:integration": "mocha -r jsdom-global/register -r ./src/test/setup.js",
+    "cover": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "devDependencies": {
