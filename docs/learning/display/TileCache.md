@@ -10,6 +10,7 @@ Cloud-based caches are appropriate for multi-user web apps. If such a cache is c
 A local SQLite database is appropriate for desktop and mobile apps, for which the backend (and the iModel) resides on the same device as the frontend and which may sometimes be operated in an environment with poor or no connectivity. In the future, it could be made possible for such apps to employ a hybrid approach in which they consult a cloud-based cache while connected to the network but fall back to the local cache during periods of poor connectivity.
 
 A cached tile remains valid as long as the following conditions hold:
+
 - The geometry contained with the tile tree's corresponding model has not changed.
   - This is tracked by a GeometryGuid column that is automatically updated when the placement or geometry of any element within the model is modified, or a geometric element is added or removed.
 - The version number of the tile format has not changed since the tile was generated.
@@ -20,4 +21,4 @@ A tile generation agent may be employed to prepopulate portions of a cloud-based
 You can configure a cloud-storage tile cache for your application backend in one of two ways:
 
 1. Supply your Azure blob storage credentials to [IModelHostOptions.tileCacheAzureCredentials]($backend) to use the built-in Azure blob storage cache; or
-2. Supply a custom cloud storage provider to [IModelHostOptions.tileCacheStorage]($backend).
+2. Supply a [custom cloud storage provider](https://github.com/iTwin/object-storage/) to [IModelHostOptions.tileCacheStorage]($backend).
