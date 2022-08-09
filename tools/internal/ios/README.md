@@ -9,7 +9,7 @@ Steps 1 and 2 occur when running `npm run ios:build:tests`
     - Test assets are copied to lib/ios/assets.
 
 3. Build and Run core-test-runner.
-    - The ASSET_ROOT environmnet vaiable is set to "./lib/ios/assets/" in core-test-runner/Config.xcconfig. This directory is copied in a "Run Script" build phase defined in the app target in core-test-runner.xcodeproj.
+    - The ASSET_ROOT environment variable is set to "./lib/ios/assets/" in `core-test-runner/Config.xcconfig`. This directory is copied in a "Run Script" build phase defined in the app target in core-test-runner.xcodeproj.
     - The `runTests` function is triggered when the ContentView appears. It creates an instance of IModelJsHost and directs it to main.js, produced in step 1 above. A callback is provided that updates the ui with the test results.The xcui test waits for this ui update and only passes if none of the mocha tests have failed. The callback is triggered by `notifyListening` (see runMocha.js).
 
 4. Upload to App Center (optional).

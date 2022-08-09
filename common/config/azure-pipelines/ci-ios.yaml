@@ -45,9 +45,9 @@ jobs:
         clean: true
 
       - task: NodeTool@0
-        displayName: "Use Node 14.17.4"
+        displayName: "Use Node 16.13.x"
         inputs:
-          versionSpec: 14.17.4
+          versionSpec: 16.13.x
           checkLatest: true
 
       - script: |

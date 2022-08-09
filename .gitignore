@@ -39,6 +39,7 @@ common/autoinstallers/*/.npmrc
 
 # xcode
 /**/xcuserdata
+/**/DerivedData
 
 # Output of 'npm pack'
 *.tgz
