@@ -34,6 +34,7 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
         },
         canPopout: true,
       });
+
       widgets.push({
         id: "FW-1",
         label: "FW-1",

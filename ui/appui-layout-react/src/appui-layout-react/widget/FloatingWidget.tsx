@@ -63,7 +63,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     hideFloatingWidget && "nz-hidden",
   ), [minimized, hideFloatingWidget]);
 
-  const isVisible = useHasVisibleTabs(tabs);
+  const isVisible = useIsVisible(tabs);
   if (!isVisible)
     return null;
   return (
@@ -90,11 +90,15 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-function useHasVisibleTabs(tabIds: WidgetState["tabs"]) {
+function useIsVisible(tabIds: WidgetState["tabs"]) {
   const tabsState = React.useContext(TabsStateContext);
   return React.useMemo(() => {
-    const tabs = tabIds.map((tabId) => tabsState[tabId]);
-    return tabs.some((tab) => !tab.hidden);
+    for (const tabId of tabIds) {
+      const tab = tabsState[tabId];
+      if (!tab.hidden)
+        return true;
+    }
+    return false;
   }, [tabsState, tabIds]);
 }
 

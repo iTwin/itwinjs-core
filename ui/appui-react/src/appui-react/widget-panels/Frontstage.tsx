@@ -408,8 +408,8 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   return state;
 }
 
-/** Removes widgets with Hidden defaultState. */
-function removeHiddenWidgets(state: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
+/** Hide widgets with Hidden defaultState. */
+function hideWidgets(state: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
   const tabs = Object.values(state.tabs);
   for (const tab of tabs) {
     const widgetDef = frontstageDef.findWidgetDef(tab.id);
@@ -417,9 +417,7 @@ function removeHiddenWidgets(state: NineZoneState, frontstageDef: FrontstageDef)
       continue;
 
     if (widgetDef.defaultState === WidgetState.Hidden) {
-      state = produce(state, (draft) => {
-        hideWidget(draft, widgetDef);
-      });
+      state = hideWidget(state, widgetDef);
     }
   }
 
@@ -693,7 +691,7 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
     }
   });
   nineZone = addMissingWidgets(frontstageDef, nineZone);
-  nineZone = removeHiddenWidgets(nineZone, frontstageDef);
+  nineZone = hideWidgets(nineZone, frontstageDef);
   nineZone = processPopoutWidgets(nineZone, frontstageDef);
 
   return nineZone;
@@ -1073,7 +1071,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         ) {
           const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
           let state = addMissingWidgets(frontstageDef, restored);
-          state = removeHiddenWidgets(state, frontstageDef);
+          state = hideWidgets(state, frontstageDef);
           state = processPopoutWidgets(state, frontstageDef);
           frontstageDef.nineZoneState = state;
           return;
@@ -1248,7 +1246,7 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
       return;
     state = addMissingWidgets(def, state);
     state = removeMissingWidgets(def, state);
-    state = removeHiddenWidgets(state, def); // TODO: should only apply to widgets provided by registered provider in onUiProviderRegisteredEvent.
+    state = hideWidgets(state, def); // TODO: should only apply to widgets provided by registered provider in onUiProviderRegisteredEvent.
     def.nineZoneState = state;
   };
 

@@ -4,26 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect, Page } from '@playwright/test';
 import assert from 'assert';
-import { activeTabLocator, floatingWidgetLocator, runKeyin, tabLocator } from './Utils';
+import { activeTabLocator, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
 
 enum WidgetState {
   Open = 0,
   Closed = 1,
   Hidden = 2,
-}
-
-// Known widget ids.
-enum Widget {
-  ViewAttributes = "appui-test-providers:ViewAttributesWidget",
-  FW1 = "FW-1",
-  FW2 = "FW-2",
-  FW3 = "FW-3",
-}
-
-// Known floating widget container ids.
-enum FloatingWidget {
-  ViewAttributes = "appui-test-providers:ViewAttributesWidget",
-  Floating = "appui-test-providers:floating-widget",
 }
 
 async function setWidgetState(page: Page, widgetId: string, widgetState: WidgetState) {
@@ -37,49 +23,49 @@ test.describe("widget state", () => {
   });
 
   test("should hide a floating widget", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, FloatingWidget.ViewAttributes);
+    const widget = floatingWidgetLocator(page, "appui-test-providers:ViewAttributesWidget");
     const tab = tabLocator(page, "View Attributes");
     await expect(tab).toBeVisible();
     await expect(widget).toBeVisible();
 
-    await setWidgetState(page, Widget.ViewAttributes, WidgetState.Hidden);
+    await setWidgetState(page, "appui-test-providers:ViewAttributesWidget", WidgetState.Hidden);
     await expect(tab).not.toBeVisible();
     await expect(widget).not.toBeVisible();
 
-    await setWidgetState(page, Widget.ViewAttributes, WidgetState.Open);
+    await setWidgetState(page, "appui-test-providers:ViewAttributesWidget", WidgetState.Open);
     await expect(tab).toBeVisible();
     await expect(widget).toBeVisible();
   });
 
   test("should hide a floating widget (multiple tabs)", async ({ page }) => {
     const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
-    const tab1 = tabLocator(page, Widget.FW1);
-    const tab2 = tabLocator(page, Widget.FW2);
-    const tab3 = tabLocator(page, Widget.FW3);
+    const tab1 = tabLocator(page, "FW-1");
+    const tab2 = tabLocator(page, "FW-2");
+    const tab3 = tabLocator(page, "FW-3");
     await expect(tab1).toBeVisible();
     await expect(tab2).toBeVisible();
     await expect(tab3).toBeVisible();
     await expect(widget).toBeVisible();
 
-    await setWidgetState(page, Widget.FW1, WidgetState.Hidden);
+    await setWidgetState(page, "FW-1", WidgetState.Hidden);
     await expect(tab1).not.toBeVisible();
     await expect(tab2).toBeVisible();
     await expect(tab3).toBeVisible();
     await expect(widget).toBeVisible();
 
-    await setWidgetState(page, Widget.FW2, WidgetState.Hidden);
+    await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await expect(tab1).not.toBeVisible();
     await expect(tab2).not.toBeVisible();
     await expect(tab3).toBeVisible();
     await expect(widget).toBeVisible();
 
-    await setWidgetState(page, Widget.FW3, WidgetState.Hidden);
+    await setWidgetState(page, "FW-3", WidgetState.Hidden);
     await expect(tab1).not.toBeVisible();
     await expect(tab2).not.toBeVisible();
     await expect(tab3).not.toBeVisible();
     await expect(widget).not.toBeVisible();
 
-    await setWidgetState(page, Widget.FW1, WidgetState.Open);
+    await setWidgetState(page, "FW-1", WidgetState.Open);
     await expect(tab1).toBeVisible();
     await expect(tab2).not.toBeVisible();
     await expect(tab3).not.toBeVisible();
@@ -89,27 +75,97 @@ test.describe("widget state", () => {
   test("should maintain active tab when widgets are hidden", async ({ page }) => {
     const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
     const activeTab = activeTabLocator(widget);
-    const tab1 = tabLocator(page, Widget.FW1);
-    const tab2 = tabLocator(page, Widget.FW2);
-    const tab3 = tabLocator(page, Widget.FW3);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-1");
 
-    await setWidgetState(page, Widget.FW1, WidgetState.Hidden);
+    await setWidgetState(page, "FW-1", WidgetState.Hidden);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-2");
 
-    await setWidgetState(page, Widget.FW2, WidgetState.Hidden);
+    await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-3");
 
-    await setWidgetState(page, Widget.FW3, WidgetState.Hidden);
+    await setWidgetState(page, "FW-3", WidgetState.Hidden);
     await expect(activeTab).not.toBeVisible();
 
-    await setWidgetState(page, Widget.FW2, WidgetState.Open);
+    await setWidgetState(page, "FW-2", WidgetState.Open);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-2");
 
-    await setWidgetState(page, Widget.FW1, WidgetState.Closed);
+    await setWidgetState(page, "FW-1", WidgetState.Closed);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-2");
 
-    await setWidgetState(page, Widget.FW3, WidgetState.Open);
+    await setWidgetState(page, "FW-3", WidgetState.Open);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-3");
+  });
+
+  test("should hide a panel section", async ({ page }) => {
+    const panel = panelLocator(page, "left");
+    const widget = widgetLocator(page, { panel });
+    const tab = tabLocator(page, "WL-A");
+    await expect(tab).toBeVisible();
+    await expect(widget).toHaveCount(2);
+
+    await setWidgetState(page, "WL-A", WidgetState.Hidden);
+    await expect(tab).not.toBeVisible();
+    await expect(widget).toHaveCount(1);
+  });
+
+  test("should hide a panel section (multiple tabs)", async ({ page }) => {
+    const panel = panelLocator(page, "left");
+    const widget = widgetLocator(page, { panel });
+    const tab1 = tabLocator(page, "WL-1");
+    const tab2 = tabLocator(page, "WL-2");
+    const tab3 = tabLocator(page, "WL-3");
+    await expect(tab1).toBeVisible();
+    await expect(tab2).toBeVisible();
+    await expect(tab3).toBeVisible();
+    await expect(widget).toHaveCount(2);
+
+    await setWidgetState(page, "WL-1", WidgetState.Hidden);
+    await expect(tab1).not.toBeVisible();
+    await expect(tab2).toBeVisible();
+    await expect(tab3).toBeVisible();
+    await expect(widget).toHaveCount(2);
+
+    await setWidgetState(page, "WL-2", WidgetState.Hidden);
+    await expect(tab1).not.toBeVisible();
+    await expect(tab2).not.toBeVisible();
+    await expect(tab3).toBeVisible();
+    await expect(widget).toHaveCount(2);
+
+    await setWidgetState(page, "WL-3", WidgetState.Hidden);
+    await expect(tab1).not.toBeVisible();
+    await expect(tab2).not.toBeVisible();
+    await expect(tab3).not.toBeVisible();
+    await expect(widget).toHaveCount(1);
+
+    await setWidgetState(page, "WL-1", WidgetState.Open);
+    await expect(tab1).toBeVisible();
+    await expect(tab2).not.toBeVisible();
+    await expect(tab3).not.toBeVisible();
+    await expect(widget).toHaveCount(2);
+  });
+
+  test("should hide a panel", async ({ page }) => {
+    const panel = panelLocator(page, "left");
+    const widget = widgetLocator(page, { panel });
+    await expect(panel).toBeVisible();
+    await expect(widget).toHaveCount(2);
+
+    await setWidgetState(page, "WL-A", WidgetState.Hidden);
+    await expect(panel).toBeVisible();
+    await expect(widget).toHaveCount(1);
+
+    await setWidgetState(page, "WL-1", WidgetState.Hidden);
+    await setWidgetState(page, "WL-2", WidgetState.Hidden);
+    await setWidgetState(page, "WL-3", WidgetState.Hidden);
+    await expect(panel).not.toBeVisible();
+    await expect(widget).toHaveCount(0);
+
+    await setWidgetState(page, "WL-1", WidgetState.Open);
+    await expect(panel).toBeVisible();
+    await expect(widget).toHaveCount(1);
+
+    await setWidgetState(page, "WL-A", WidgetState.Open);
+    await expect(panel).toBeVisible();
+    await expect(widget).toHaveCount(2);
   });
 });

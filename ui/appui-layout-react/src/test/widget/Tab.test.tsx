@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
+  ActiveTabIdContext,
   addPanelWidget, addTab, createNineZoneState, createTabState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../appui-layout-react";
@@ -22,13 +23,15 @@ describe("WidgetTab", () => {
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-          <WidgetTabsEntryContext.Provider value={{
-            lastNotOverflown: false,
-          }}>
-            <WidgetTabProvider
-              tab={nineZone.tabs.t1}
-            />
-          </WidgetTabsEntryContext.Provider>
+          <ActiveTabIdContext.Provider value={"t1"}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTabProvider
+                tab={nineZone.tabs.t1}
+              />
+            </WidgetTabsEntryContext.Provider>
+          </ActiveTabIdContext.Provider>
         </WidgetStateContext.Provider>
       </TestNineZoneProvider>,
     );

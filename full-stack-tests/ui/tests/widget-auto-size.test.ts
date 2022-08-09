@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect } from '@playwright/test';
 import assert from 'assert';
-import { tabLocator } from './Utils';
+import { tabLocator, widgetLocator } from './Utils';
 
 test.describe("widget auto size", () => {
   test.beforeEach(async ({ page, baseURL }) => {
@@ -17,7 +17,7 @@ test.describe("widget auto size", () => {
 
     // Widget from end section of a bottom panel.
     const tab = tabLocator(page, "Layout Controls");
-    const widget = page.locator(".nz-widget-widget", { has: tab });
+    const widget = widgetLocator(page, { tab });
     const titleBarHandle = widget.locator(".nz-handle");
 
     const boundingBox = await titleBarHandle.boundingBox();

@@ -49,16 +49,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         getWidgetContent: () => <h2>Left WL-A</h2>,
         hideWithUiWhenFloating: true,
       });
-      widgets.push({
-        id: "WL-B",
-        label: "WL-B",
-        canPopout: true,
-        icon: "icon-app-2",
-        defaultState: WidgetState.Open,
-        getWidgetContent: () => <h2>Left WL-B</h2>,
-        hideWithUiWhenFloating: true,
-
-      });
     } else if (section === StagePanelSection.End) {
       widgets.push({
         id: "WL-1",
@@ -81,14 +71,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         icon: "icon-smiley-happy-very",
         canPopout: true,
         getWidgetContent: () => <h2>Left WL-3</h2>,
-      });
-      widgets.push({
-        id: "WL-4",
-        label: "WL-4",
-        icon: "icon-smiley-sad-very",
-        canPopout: true,
-        defaultState: WidgetState.Open,
-        getWidgetContent: () => <h2>Left WL-4</h2>,
       });
     }
     return widgets;

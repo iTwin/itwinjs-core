@@ -724,7 +724,8 @@ export class FrontstageDef {
         collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
       }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
+      const hidden = this.nineZoneState.tabs[widgetDef.id].hidden;
+      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel && !hidden) // TODO: preferred active tab might be hidden.
         return WidgetState.Open;
       else
         return WidgetState.Closed;

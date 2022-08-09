@@ -598,7 +598,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -651,7 +651,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -698,7 +698,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels[side].widgets), {
       initialProps: {
         state,
         side,
@@ -748,7 +748,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -794,7 +794,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -837,7 +837,7 @@ describe("useAnimatePanelWidgets", () => {
     let state = createNineZoneState();
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addTab(state, "t1");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -865,7 +865,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -911,7 +911,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addPanelWidget(state, "left", "w2", ["t2"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
-    const { result } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -951,7 +951,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addPanelWidget(state, "left", "w2", ["t2"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
-    const { result } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -987,7 +987,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         state,
       },
@@ -1022,7 +1022,7 @@ describe("useAnimatePanelWidgets", () => {
     state = addTab(state, "t1");
     state = addTab(state, "t2");
 
-    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
+    const { result, rerender } = renderHook(() => useAnimatePanelWidgets(state.panels.left.widgets), {
       initialProps: {
         onAfterRender: () => { },
         state,

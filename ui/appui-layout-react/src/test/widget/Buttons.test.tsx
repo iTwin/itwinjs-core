@@ -43,7 +43,9 @@ describe("TabBarButtons", () => {
             <WidgetStateContext.Provider value={nineZone.widgets.fw1}>
               <FloatingWidgetIdContext.Provider value="fw1">
                 <FloatingWidgetContext.Provider value={createFloatingWidgetState("fw1")}>
-                  <TabBarButtons />
+                  <ActiveTabIdContext.Provider value="t1">
+                    <TabBarButtons />
+                  </ActiveTabIdContext.Provider>
                 </FloatingWidgetContext.Provider>
               </FloatingWidgetIdContext.Provider>,
             </WidgetStateContext.Provider>
@@ -115,7 +117,9 @@ describe("TabBarButtons", () => {
           <TabsStateContext.Provider value={nineZone.tabs}>
             <WidgetStateContext.Provider value={nineZone.widgets.w1}>
               <WidgetIdContext.Provider value="w1">
-                <TabBarButtons />
+                <ActiveTabIdContext.Provider value="t1">
+                  <TabBarButtons />
+                </ActiveTabIdContext.Provider>
               </WidgetIdContext.Provider>
             </WidgetStateContext.Provider>
           </TabsStateContext.Provider>
@@ -136,7 +140,9 @@ describe("TabBarButtons", () => {
           <TabsStateContext.Provider value={nineZone.tabs}>
             <WidgetStateContext.Provider value={nineZone.widgets.w1}>
               <WidgetIdContext.Provider value="w1">
-                <TabBarButtons />
+                <ActiveTabIdContext.Provider value="t1">
+                  <TabBarButtons />
+                </ActiveTabIdContext.Provider>
               </WidgetIdContext.Provider>
             </WidgetStateContext.Provider>
           </TabsStateContext.Provider>
@@ -158,7 +164,9 @@ describe("TabBarButtons", () => {
           <TabsStateContext.Provider value={nineZone.tabs}>
             <WidgetStateContext.Provider value={nineZone.widgets.w1}>
               <WidgetIdContext.Provider value="main">
-                <TabBarButtons />
+                <ActiveTabIdContext.Provider value="t1">
+                  <TabBarButtons />
+                </ActiveTabIdContext.Provider>
               </WidgetIdContext.Provider>
             </WidgetStateContext.Provider>
           </TabsStateContext.Provider>
@@ -178,7 +186,9 @@ describe("TabBarButtons", () => {
         <PanelSideContext.Provider value="left">
           <TabsStateContext.Provider value={nineZone.tabs}>
             <WidgetStateContext.Provider value={nineZone.widgets.w1}>
-              <TabBarButtons />
+              <ActiveTabIdContext.Provider value="t1">
+                <TabBarButtons />
+              </ActiveTabIdContext.Provider>
             </WidgetStateContext.Provider>
           </TabsStateContext.Provider>
         </PanelSideContext.Provider>
