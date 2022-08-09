@@ -30,6 +30,8 @@ steps:
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
       # full-stack-tests/ecschema-rpc-interface/package.json
       node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
+      # full-stack-tests/imodelconnection-without-certa/package.json
+      node ./common/scripts/install-run-rush build -v --to imodelconnection-without-certa
       # full-stack-tests/rpc/package.json
       node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
       # full-stack-tests/rpc-interface/package.json
@@ -60,6 +62,11 @@ steps:
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
     displayName: "Run ECSchema RPC Interface Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/imodelconnection-without-certa"
+    displayName: "Run IModelConnection Without Certa Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer
@@ -98,6 +105,13 @@ steps:
     inputs:
       testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
       testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish IModelConnection Without Certa Integration Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/imodelconnection-without-certa/lib/test/junit_results.xml"
+      testRunTitle: "iModelConnection Without Certa - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

@@ -11,7 +11,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "test": "",
-    "test:integration": "mocha -r jsdom-global/register -r ./src/test/setup.js",
+    "test:integration": "mocha -r jsdom-global/register -r ./src/test/setup.js -R node_modules/@itwin/build-tools/mocha-reporter",
     "cover": "",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
