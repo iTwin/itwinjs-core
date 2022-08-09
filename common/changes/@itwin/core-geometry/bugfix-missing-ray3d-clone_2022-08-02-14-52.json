@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>.",
+      "comment": "Add missing call to clone when calling Ray3d.createStartEnd.",
       "type": "none"
     }
   ],

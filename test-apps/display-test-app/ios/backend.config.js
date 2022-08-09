@@ -46,30 +46,36 @@ function getConfig(env) {
       rules: [
         {
           test: /AzCopyFileHandler\.js/g,
-          use: 'null-loader'
+          use: "null-loader",
         },
         {
           test: /itwin\+electron-authorization/g,
-          use: 'null-loader'
+          use: "null-loader",
         },
         {
           test: /ElectronBackend\.js/g,
-          use: 'null-loader'
-        }
-      ]
+          use: "null-loader",
+        },
+      ],
     },
     stats: {
-      warnings: false
-    },
-    externals: {
-      "electron": "electron",
-      "bufferutil": "bufferutil",
-      "utf-8-validate": "utf-8-validate"
+      warnings: false,
     },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new webpack.DefinePlugin({ "global.GENTLY": false, "process.version": "'v10.9.0'" })
+      new webpack.DefinePlugin({
+        "global.GENTLY": false,
+        "process.version": "'v10.9.0'",
+      }),
+      new webpack.ExternalsPlugin("commonjs", [
+        "@bentley/imodeljs-native",
+        "@bentley/imodeljs-native/package.json",
+        "node-report/api",
+        "electron",
+        "bufferutil",
+        "utf-8-validate"
+      ]),
     ],
   };
 
