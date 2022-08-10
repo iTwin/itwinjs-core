@@ -157,7 +157,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       return;
 
     this._processingQueue.push(message);
-    this.processMessages();
+    await this.processMessages();
   }
 
   private async processMessages() {
@@ -189,6 +189,6 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       }
     }
 
-    this.processMessages();
+    await this.processMessages();
   }
 }
