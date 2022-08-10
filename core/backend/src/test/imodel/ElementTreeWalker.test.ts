@@ -2,22 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Code, GeometricElement2dProps, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Point2d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  Code, GeometricElement2dProps, GeometricElementProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
-import {
-  Point2d,
-} from "@itwin/core-geometry";
-import {
-  DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject,
-} from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -84,6 +78,8 @@ describe("ElementTreeWalker", () => {
   let drawingCategoryId: Id64String;
   let drawingSubCategory1Id: Id64String;
   let drawingSubCategory2Id: Id64String;
+  let xsGroup: Id64String;
+  let xsElement: Id64String;
   let documentListModelId: Id64String;
   let drawingModelId: Id64String;
   let drawingGraphicId1: Id64String;
@@ -107,7 +103,8 @@ describe("ElementTreeWalker", () => {
     // Logger.initializeToConsole();
     // Logger.setLevel("core-backend.IModelDb.ElementTreeWalker", LogLevel.Trace);
 
-    iModel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    const iModelFileName = IModelTestUtils.prepareOutputFile("ElementTreeWalker", "Test.bim");
+    iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await iModel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
@@ -118,6 +115,8 @@ describe("ElementTreeWalker", () => {
           +- DefinitionParitition  --   [DefinitionModel]
           |                               DrawingCategory
           |                                 default SubCategory + 2 non-default SubCategories
+          |                               ExternalSourceGroup
+          |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
           |
@@ -141,6 +140,9 @@ describe("ElementTreeWalker", () => {
     drawingCategoryId = DrawingCategory.insert(iModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
     drawingSubCategory1Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
     drawingSubCategory2Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
+
+    xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
+    xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
 
     documentListModelId = DocumentListModel.insert(iModel, jobSubjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
@@ -178,6 +180,8 @@ describe("ElementTreeWalker", () => {
     assert.equal(iModel.elements.getElement(drawingCategoryId).model, drawingDefinitionModelId);
     assert.equal(iModel.elements.getElement(drawingSubCategory1Id).parent?.id, drawingCategoryId);
     assert.equal(iModel.elements.getElement(drawingSubCategory2Id).parent?.id, drawingCategoryId);
+    assert.equal(iModel.elements.getElement(xsGroup).model, drawingDefinitionModelId);
+    assert.equal(iModel.elements.getElement(xsElement).parent?.id, xsGroup);
     assert.equal(iModel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
     assert.equal(iModel.elements.getElement(drawingModelId).model, documentListModelId);
     assert.equal(iModel.elements.getElement(drawingGraphicId1).model, drawingModelId);
@@ -246,6 +250,8 @@ describe("ElementTreeWalker", () => {
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesElementExist(iModel, spatialCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
+    assert.isFalse(doesElementExist(iModel, xsGroup));
+    assert.isFalse(doesElementExist(iModel, xsElement));
     assert.isFalse(doesElementExist(iModel, documentListModelId));
     assert.isFalse(doesElementExist(iModel, drawingModelId));
     assert.isFalse(doesElementExist(iModel, drawingGraphicId1));
@@ -270,6 +276,8 @@ describe("ElementTreeWalker", () => {
           +- DefinitionParitition  --   [DefinitionModel]
           |                               DrawingCategory                         <-- PRUNE
           |                                 default SubCategory + 2 non-default SubCategories
+          |                               ExternalSourceGroup
+          |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
           |
@@ -302,6 +310,8 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.isTrue(doesElementExist(iModel, definitionModelId));
     assert.isTrue(doesElementExist(iModel, drawingDefinitionModelId));
+    assert.equal(iModel.elements.getElement(xsGroup).model, drawingDefinitionModelId);
+    assert.equal(iModel.elements.getElement(xsElement).parent?.id, xsGroup);
     assert.isTrue(doesElementExist(iModel, spatialCategoryId));
     assert.isTrue(doesElementExist(iModel, documentListModelId));
     assert.isTrue(doesElementExist(iModel, physicalModelId));
@@ -324,6 +334,8 @@ describe("ElementTreeWalker", () => {
           +- DefinitionParitition  --   [DefinitionModel]                         <-- PRUNE
           |                               DrawingCategory
           |                                 default SubCategory + 2 non-default SubCategories
+          |                               ExternalSourceGroup
+          |                                 ExternalSource child1
           +- DefinitionParitition  --   [DefinitionModel]
           |                               SpatialCategory
           |
@@ -347,6 +359,8 @@ describe("ElementTreeWalker", () => {
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingSubCategory1Id));
     assert.isFalse(doesElementExist(iModel, drawingSubCategory2Id));
+    assert.isFalse(doesElementExist(iModel, xsGroup));
+    assert.isFalse(doesElementExist(iModel, xsElement));
     assert.isFalse(doesElementExist(iModel, documentListModelId));
     assert.isFalse(doesModelExist(iModel, documentListModelId));
     assert.isFalse(doesElementExist(iModel, drawingModelId));
