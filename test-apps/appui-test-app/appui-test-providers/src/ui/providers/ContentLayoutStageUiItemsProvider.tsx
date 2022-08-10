@@ -5,10 +5,13 @@
 /* eslint-disable react/display-name */
 
 import {
+  AbstractWidgetProps,
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  StagePanelLocation,
+  StagePanelSection,
   StageUsage,
   StatusBarSection,
-  ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider,
+  ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import * as React from "react";
 import { StatusBarItemUtilities, ToolbarHelper } from "@itwin/appui-react";
@@ -17,6 +20,7 @@ import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
 import { ContentLayoutStage } from "../frontstages/ContentLayout";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
+import { ViewportWidgetComponent } from "../widgets/ViewportWidget";
 
 /**
  * The ContentLayoutStageUiItemsProvider provides additional items only to the `ContentLayoutStage` frontstage.
@@ -66,6 +70,25 @@ export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
+    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    if (stageUsage === StageUsage.General && location === StagePanelLocation.Bottom && section === StagePanelSection.Start) {
+      const widget: AbstractWidgetProps = {
+        id: "appui-test-providers:viewport-widget",
+        label: "Viewport",
+        icon: "icon-bentley-systems",
+        defaultState: WidgetState.Floating,
+        isFloatingStateSupported: true,
+        floatingContainerId: "appui-test-providers:viewport-widget",
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => <ViewportWidgetComponent />,
+      };
+
+      widgets.push(widget);
+    }
+    return widgets;
+  }
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
