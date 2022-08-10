@@ -74,7 +74,7 @@
     "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",
     "@types/node": "16.11.7",
-    "@types/semver": "^7.3.9",
+    "@types/semver": "7.3.10",
     "@types/sinon": "^9.0.0",
     "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
@@ -96,7 +96,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.4.2",
+    "@bentley/imodeljs-native": "3.4.3",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
