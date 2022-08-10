@@ -241,42 +241,42 @@
       "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/core-react",
       "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/components-react",
       "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/imodel-components-react",
       "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/appui-layout-react",
       "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/appui-react",
       "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "appui-packages-version"
     },
     {
       "packageName": "@itwin/ecschema-metadata",

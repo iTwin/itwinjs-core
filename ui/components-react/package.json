@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.4.0-dev.8",
+  "version": "4.0.0-dev.1",
   "description": "iTwin.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.4.0-dev.8",
+    "@itwin/appui-abstract": "workspace:^4.0.0-dev.1",
     "@itwin/core-bentley": "workspace:^3.4.0-dev.8",
     "@itwin/core-react": "workspace:^3.4.0-dev.8",
     "react": "^17.0.0",

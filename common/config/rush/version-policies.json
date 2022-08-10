@@ -4,5 +4,11 @@
     "definitionName": "lockStepVersion",
     "version": "3.4.0-dev.8",
     "nextBump": "prerelease"
+  },
+  {
+    "policyName": "appui-packages-version",
+    "definitionName": "lockStepVersion",
+    "version": "4.0.0-dev.1",
+    "nextBump": "prerelease"
   }
 ]
