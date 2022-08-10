@@ -795,7 +795,7 @@ export namespace IModelJson {
     private static getCorrectedKnotsForClosedClamped(numPoles: number, knots: number[], order: number, newKnots: number[]): boolean {
       const numKnots = knots.length;
       if (numPoles + 2 * order - 1 === numKnots
-        && knots[0] < knots[1]                            // START HERE: this is the DGN fake-closed case. It currently only works for quadratic! Need to generalize. Rule out linear, which is OpenByAddingControlPoints.
+        && knots[0] < knots[1]                            // START HERE: this is the DGN fake-closed case. It currently only works for quadratic! Need to generalize. Rule out linear closed, which is OpenByAddingControlPoints.
         && knots[numKnots - 2] < knots[numKnots - 1]) {
         const a0 = knots[1];
         const a1 = knots[numKnots - 2];
