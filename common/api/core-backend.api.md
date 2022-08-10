@@ -1554,11 +1554,10 @@ export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementT
 
 // @beta
 export class ElementSubTreeDeleter extends ElementTreeTopDown {
-    constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
-    deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
-    deleteSpecialElementSubTrees(): void;
+    constructor(iModel: IModelDb, topElement: Id64String, shouldPruneCb: ElementSubTreeDeleteFilter, scope?: ElementTreeWalkerScope);
     // (undocumented)
     protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void;
+    pruneElementTree(): void;
     // (undocumented)
     protected shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean;
 }
@@ -1579,14 +1578,12 @@ export abstract class ElementTreeBottomUp {
 
 // @beta
 export class ElementTreeDeleter extends ElementTreeBottomUp {
-    deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
-    deleteSpecialElements(): void;
+    constructor(iModel: IModelDb, topElement: Id64String, scope?: ElementTreeWalkerScope);
+    deleteElementTree(): void;
     // (undocumented)
     protected shouldExploreModel(_model: Model): boolean;
     // (undocumented)
     protected shouldVisitElement(_elementId: Id64String): boolean;
-    // (undocumented)
-    protected _special: SpecialElements;
     // (undocumented)
     protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
     // (undocumented)
@@ -2536,7 +2533,6 @@ export namespace IModelDb {
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
-        queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
@@ -4286,6 +4282,22 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+}
+
+// @beta
+export class SpecialElementTreeBottomUp extends ElementTreeBottomUp {
+    constructor(iModel: IModelDb);
+    processElementTree(root: Id64String): void;
+    // (undocumented)
+    protected shouldExploreModel(_model: Model): boolean;
+    // (undocumented)
+    protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    special: SpecialElements;
+    // (undocumented)
+    protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected visitModel(_model: Model, _scope: ElementTreeWalkerScope): void;
 }
 
 // @public
