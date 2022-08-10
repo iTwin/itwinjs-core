@@ -1042,6 +1042,12 @@ export abstract class DefinitionSet extends DefinitionElement {
     static get className(): string;
 }
 
+// @beta
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
+
+// @beta
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
 // @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -1716,6 +1722,78 @@ export class ElementRefersToElements extends Relationship {
     static get className(): string;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
+}
+
+// @beta
+export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean;
+
+// @beta
+export class ElementSubTreeDeleter extends ElementTreeTopDown {
+    constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
+    deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
+    deleteSpecialElementSubTrees(): void;
+    // (undocumented)
+    protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean;
+}
+
+// @beta
+export abstract class ElementTreeBottomUp {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    protected _iModel: IModelDb;
+    protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope): void;
+    protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean;
+    protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
+    protected abstract visitElement(elementId: Id64String, scope: ElementTreeWalkerScope): void;
+    protected abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
+}
+
+// @beta
+export class ElementTreeDeleter extends ElementTreeBottomUp {
+    deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
+    deleteSpecialElements(): void;
+    // (undocumented)
+    protected shouldExploreModel(_model: Model): boolean;
+    // (undocumented)
+    protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    protected _special: SpecialElements;
+    // (undocumented)
+    protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
+    // (undocumented)
+    protected visitModel(model: Model, _scope: ElementTreeWalkerScope): void;
+}
+
+// @beta (undocumented)
+export interface ElementTreeWalkerModelInfo {
+    // (undocumented)
+    isDefinitionModel: boolean;
+    // (undocumented)
+    model: Model;
+}
+
+// @beta
+export class ElementTreeWalkerScope {
+    constructor(topElement: Id64String, model: Model);
+    constructor(enclosingScope: ElementTreeWalkerScope, newScope: Id64String | Model);
+    // (undocumented)
+    static createTopScope(iModel: IModelDb, topElementId: Id64String): ElementTreeWalkerScope;
+    // (undocumented)
+    get enclosingModel(): Model;
+    readonly enclosingModelInfo: ElementTreeWalkerModelInfo;
+    // (undocumented)
+    get inDefinitionModel(): boolean;
+    // (undocumented)
+    get inRepositoryModel(): boolean;
+    readonly path: Array<Id64String | ElementTreeWalkerModelInfo>;
+    // (undocumented)
+    readonly topElement: Id64String;
+    // (undocumented)
+    toString(): string;
 }
 
 // @public
@@ -2637,6 +2715,7 @@ export namespace IModelDb {
         queryElementIdByCode(code: Required<CodeProps>): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
+        queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;

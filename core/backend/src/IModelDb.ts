@@ -1749,6 +1749,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
+    /** Query for the parent of the specified element.
+     * @param elementId The element to check for a parent
+     * @returns The identifier of the element's parent or undefined if the element has no parent
+     * @throws [[IModelError]] if the element does not exist
+     */
+    public queryParent(elementId: Id64String): Id64String | undefined {
+      return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
+        stmt.bindId(1, elementId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+        const value = stmt.getValue(0);
+        return value.isNull ? undefined : value.getId();
+      });
+    }
+
     /** Returns true if the specified Element has a sub-model.
      * @see [[IModelDb.Models.getSubModel]]
      */

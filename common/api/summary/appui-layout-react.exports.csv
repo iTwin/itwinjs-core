@@ -472,7 +472,7 @@ internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize
 internal;UseDragTabArgs
 internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragToolSettingsArgs
-internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragStartArgs) => void
+internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => void
 internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
@@ -520,6 +520,7 @@ internal;WidgetContextArgs
 internal;WidgetDragAction
 internal;WidgetDragDropTargetState = PanelDropTargetState | SectionDropTargetState | WidgetDropTargetState | TabDropTargetState | WindowDropTargetState
 internal;WidgetDragEndAction
+internal;WidgetDragStartArgs 
 internal;WidgetDropTargetState
 internal;WidgetIdContext: React_2.Context
 internal;WidgetManagerProps
