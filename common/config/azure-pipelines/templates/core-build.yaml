@@ -51,9 +51,8 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
-  - publish: /core/backend/lib/cjs/test/.cache/Workspace/cloud/cachefile.bcv
+  - publish: $(System.DefaultWorkingDirectory)/core/backend/lib/cjs/test/.cache/Workspace/cloud/cachefile.bcv
     artifact: geo_workspace_bcv
-    workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
