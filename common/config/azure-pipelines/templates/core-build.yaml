@@ -20,10 +20,10 @@ steps:
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js audit
-    displayName: rush audit
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+  # - script: node common/scripts/install-run-rush.js audit
+  #   displayName: rush audit
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
@@ -32,9 +32,9 @@ steps:
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  - script: node common/scripts/install-run-rush.js lint
-    displayName: rush lint
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js lint
+  #   displayName: rush lint
+  #   workingDirectory: ${{ parameters.workingDir }}
 
   - script: node ./common/scripts/install-run-rush webpack:test -v
     displayName: "rush webpack:test (for rush cover)"
@@ -50,6 +50,10 @@ steps:
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+
+  - publish: /core/backend/lib/cjs/test/.cache/Workspace/cloud/cachefile.bcv
+    artifact: geo_workspace_bcv
+    workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
